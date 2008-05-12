@@ -81,11 +81,27 @@ function makeProcess() {
 		},
 		requestContent: function (transform) {
 			
+		},
+		linkExists: function (from,type,to) {
+			var query = genString(from,type,to);
+			if (hash[query]) {
+				var oneLinkSet = hash[query].links;
+				var mylink;
+				forEach(oneLinkSet, function(alink){
+					mylink = alink;
+				});
+				return mylink;
+			} else {
+				return false;
+			}
 		}
 	}
 }
 
 function makeLink(from, type, to) {
+	var existLink = from.linkExists(from, type, to);
+	if (existLink) return existLink;
+	
 	var link = makeProcess();
 	link.getFrom = function () {
 		return from;
@@ -100,6 +116,10 @@ function makeLink(from, type, to) {
 	link.getContent = function () {
 		// return XML..
 	}
+	from.register(link);
+	type.register(link);
+	to.register(link);
+	return link;
 }
 
 function makeTransform() {
@@ -107,8 +127,6 @@ function makeTransform() {
 	// ...
 }
 
-
-
-var p = makeProcess();
-var q = makeProcess();
-var r = makeProcess();
+function TestObject() {
+	this.foo = "bar";
+}
