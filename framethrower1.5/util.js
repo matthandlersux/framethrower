@@ -16,7 +16,6 @@ function typeOf(value){
 
 // Arrays/Objects
 
-<<<<<<< .mine
 function arrayLike(o) {
 	if (typeOf(o.length) === "number") {
 		return true;
@@ -42,24 +41,6 @@ function forEach(o, f) {
 			f(o[i], i);
 		}
 	}
-=======
-function forEach(o, f){
-    if (typeOf(o.length) === "number") { // array-like
-        for (var i = 0, len = o.length; i < len; i++) {
-            f(o[i], i);
-        }
-    }
-    else 
-        if (typeOf(o) === "object") {
-            for (var i in o) 
-                if (o.hasOwnProperty(i)) {
-                    f(o[i], i);
-                }
-        }
-        else {
-            throw "forEach: type error";
-        }
->>>>>>> .r10
 }
 
 function any(o, f) {
