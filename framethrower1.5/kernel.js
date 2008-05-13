@@ -10,38 +10,48 @@ var localIds = function () {
 	};
 }();
 
-function genString(from, type, to) {
-	function maybeId(p) {
-		if (p) {
-			return p.getId();
-		} else {
-			return "";
-		}
-	}
-	return "links," + maybeId(from) + "," + maybeId(type) + "," + maybeId(to);
-}
+// keeps a cache mapping serverIds to proxy processes,
+// used to see if we already have a proxy process for a given serverId
+var serverIds = {};
 
-function genAllLinkQueries(from, type, to) {
-	function genQuery(from, type, to) {
-		return {q: "links", from: from, type: type, to: to};
-	}
-	return [
-		genQuery(from, type, to),
-		genQuery(null, type, to),
-		genQuery(from, null, to),
-		genQuery(from, type, null),
-		genQuery(null, null, to),
-		genQuery(null, type, null),
-		genQuery(from, null, null)
-	];
-}
 
+
+function genLinkQuery(from, type, to) {
+	return {q: "links", from: from, type: type, to: to};
+}
 
 function stringify(query) {
 	if (query.q === "content") {
-		return "content";
+		return "content" + query.of.getId();
 	} else if (query.q === "links") {
-		return genString(query.from, query.type, query.to);
+		function maybeId(p) {
+			if (p) {
+				return p.getId();
+			} else {
+				return "";
+			}
+		}
+		return "links," + maybeId(from) + "," + maybeId(type) + "," + maybeId(to);
+	}
+}
+
+
+function locallyAnswerable(query) {
+	if (query.q === "content") {
+		if (query.of.local) {
+			return true;
+		} else {
+			return false;
+		}
+	} else if(query.q === "links") {
+		if (
+				(query.from && query.from.isLocal()) ||
+				(query.type && query.type.isLocal()) ||
+				(query.to && query.to.isLocal()) ) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
 
@@ -53,8 +63,13 @@ function makeProcess(initContent, serverId) {
 	
 	var id, local;
 	if (serverId) {
-		id = serverId;
-		local = false;
+		if (serverIds[serverId]) {
+			return serverIds[serverId];
+		} else {
+			serverIds[serverId] = process;
+			id = serverId;
+			local = false;
+		}
 	} else {
 		id = localIds.get();
 		local = true;
@@ -90,7 +105,7 @@ function makeProcess(initContent, serverId) {
 		if (transform) {
 			// inform the transform
 		} else {
-			forEach(informs, function (transform) {
+			forEach(informs[qs], function (transform) {
 				// inform the transform
 			});
 		}
@@ -107,22 +122,11 @@ function makeProcess(initContent, serverId) {
 		informs[qs][transform.getId()] = transform;
 		
 		// determine if the query should be answered locally
-		var answerLocally;
-		if (query.q === "content") {
-			if (local) {
-				answerLocally = true;
-			} else {
-				answerLocally = false;
-			}
-		} else if(query.q === "links") {
-			if (
-					(query.from && query.from.isLocal()) ||
-					(query.type && query.type.isLocal()) ||
-					(query.to && query.to.isLocal())
-				) {
-				answerLocally = true;
-			} else {
-				answerLocally = false;
+		var answerLocally = locallyAnswerable(query);
+
+		if (answerLocally) {
+			if (!hash[qs]) {
+				hash[qs] = {};
 			}
 		}
 		
@@ -140,44 +144,31 @@ function makeProcess(initContent, serverId) {
 	};
 	
 	
-	// I'm not done yet.....
-	
-	
-	process.register = function (link) {
-		var allQueries = genAllStrings(link.getFrom(), link.getType(), link.getTo());
-		forEach(allQueries, function (qs) {
-			if (!hash[qs]) {
-				hash[qs] = {links: {}, informs: {}};
-			}
-			hash[qs].links[link.getId()] = link;
-			process.inform(query);
-		});
-	};
-
-
-
-
-
-
-
-	process.requestContent = function (transform) {
-		
-	};
-	process.linkExists = function (from,type,to) {
-		var query = genString(from,type,to);
-		if (hash[query]) {
-			return values(hash[query].links)[0];
-		} else {
-			return false;
+	// should only be used for queries that can be answered locally
+	process.requestOnce = function(query) {
+		var qs = stringify(query);
+		if (!hash[qs]) {
+			hash[qs] = {};
 		}
+		return hash[qs];
 	};
+	
+	
+	process.registerLink = function (query, link) {
+		if (!hash[query]) {
+			hash[query] = {};
+		}
+		hash[query][link.getId()] = link;
+	};
+	
 	
 	// debugging
-	process.getHash = function () {
-		return hash;
-	};
-	process.getContent = function () {
-		return content;
+	process.debug = function () {
+		return {
+			informs: informs,
+			hash: hash,
+			serverHash: serverHash
+		};
 	};
 	
 	return process;
@@ -185,10 +176,14 @@ function makeProcess(initContent, serverId) {
 
 
 
-
-function makeLink(from, type, to) {
-	var existLink = from.linkExists(from, type, to);
-	if (existLink) return existLink;
+// should only be called for making local links
+function makeLink(from, type, to) {	
+	// check if link already exists
+	var existingLinks = values(from.requestOnce(genLinkQuery(from, type, to)));
+	if (existingLinks.length > 0) {
+		return existingLinks[0];
+	}
+	
 	
 	var link = makeProcess();
 	link.getFrom = function () {
@@ -204,9 +199,19 @@ function makeLink(from, type, to) {
 	link.getContent = function () {
 		// return XML..
 	};
-	from.register(link);
-	type.register(link);
-	to.register(link);
+	
+	
+	// register the link where appropriate
+	from.registerLink(genLinkQuery(from, null, null), link);
+	from.registerLink(genLinkQuery(from, type, null), link);
+	from.registerLink(genLinkQuery(from, null, to), link);
+	from.registerLink(genLinkQuery(from, type, to), link);
+	
+	type.registerLink(genLinkQuery(null, type, null), link);
+	
+	to.registerLink(genLinkQuery(null, type, to), link);
+	to.registerLink(genLinkQuery(null, null, to), link);
+	
 	return link;
 }
 
