@@ -70,6 +70,21 @@ function isEmpty(o) {
 	});
 }
 
+function values(o) {
+	var ret = [];
+	forEach(o, function (v, k) {
+		ret.push(v);
+	});
+	return ret;
+}
+function keys(o) {
+	var ret = [];
+	forEach(o, function (v, k) {
+		ret.push(k);
+	});
+	return ret;
+}
+
 // DOM/XML Nodes
 
 var xmlns = {

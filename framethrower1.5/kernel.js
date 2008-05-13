@@ -7,35 +7,30 @@ var localIds = function () {
 			count++;
 			return "local" + count;
 		}
-	}
+	};
 }();
 
 function genString(from, type, to) {
-	var ret = "";
-	if (from) {
-		ret += from.getId();
+	function maybeId(p) {
+		if (p) {
+			return p.getId();
+		} else {
+			return "";
+		}
 	}
-	ret += ",";
-	if (type) {
-		ret += type.getId();
-	}
-	ret += ",";
-	if (to) {
-		ret += to.getId();
-	}
-	return ret;
+	return maybeId(from) + "," + maybeId(type) + "," + maybeId(to);
 }
 
 function genAllStrings(from, type, to) {
-	var ret = [];
-	ret.push(genString(from, type, to));
-	ret.push(genString(null, type, to));
-	ret.push(genString(from, null, to));
-	ret.push(genString(from, type, null));
-	ret.push(genString(null, null, to));
-	ret.push(genString(null, type, null));
-	ret.push(genString(from, null, null));
-	return ret;
+	return [
+		genString(from, type, to),
+		genString(null, type, to),
+		genString(from, null, to),
+		genString(from, type, null),
+		genString(null, null, to),
+		genString(null, type, null),
+		genString(from, null, null)
+	];
 }
 
 
@@ -85,12 +80,7 @@ function makeProcess(initContent) {
 		linkExists: function (from,type,to) {
 			var query = genString(from,type,to);
 			if (hash[query]) {
-				var oneLinkSet = hash[query].links;
-				var mylink;
-				forEach(oneLinkSet, function(alink){
-					mylink = alink;
-				});
-				return mylink;
+				return values(hash[query].links)[0];
 			} else {
 				return false;
 			}
@@ -103,7 +93,7 @@ function makeProcess(initContent) {
 		getContent: function () {
 			return content;
 		}
-	}
+	};
 }
 
 function makeLink(from, type, to) {
@@ -123,7 +113,7 @@ function makeLink(from, type, to) {
 	// overrides process's getContent..
 	link.getContent = function () {
 		// return XML..
-	}
+	};
 	from.register(link);
 	type.register(link);
 	to.register(link);
