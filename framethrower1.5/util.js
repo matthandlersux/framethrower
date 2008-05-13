@@ -85,6 +85,17 @@ function keys(o) {
 	return ret;
 }
 
+// used for merging objects
+function merge() {
+	var ret = {};
+	forEach(arguments, function (arg) {
+		forEach(arg, function (v, k) {
+			ret[k] = v;
+		});
+	});
+	return ret;
+}
+
 // DOM/XML Nodes
 
 var xmlns = {
