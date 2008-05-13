@@ -8,6 +8,22 @@ function runTests() {
 	is(l,l,"Same Link equality test");
 	is(l,l2,"Link with same from, type, to equality test");
 	
-	var t = new TestObject();
-	var x = "andrew";
+	var childType = makeProcess("childType");
+	var siblingType = makeProcess("siblingType");
+	var rootProcess = loadXMLtoProcessesNow("xml/oldnode.xml", childType, siblingType);
+
+	var hash = rootProcess.getHash();
+	var content = rootProcess.getContent();
+	is(content,"xml","loadXMLtoProcessesTest1");
+
+	var query = genString(rootProcess,childType,null);
+	var oneLinkSet = hash[query].links;
+	var childLink;
+	forEach(oneLinkSet, function(alink){
+		childLink = alink;
+	});
+	var to = childLink.getTo();
+	var tocontent = to.getContent();
+
+	var x = 4;
 }

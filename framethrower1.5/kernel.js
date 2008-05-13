@@ -40,10 +40,10 @@ function genAllStrings(from, type, to) {
 
 
 
-function makeProcess() {
+function makeProcess(initContent) {
 	var hash = {};
 	var id = localIds.get();
-	var content = null;
+	var content = initContent;
 	var informsContent = [];
 
 	function inform(transform, links) {
@@ -94,6 +94,14 @@ function makeProcess() {
 			} else {
 				return false;
 			}
+		},
+		//just for testing
+		getHash: function () {
+			return hash;
+		},
+		//just for testing
+		getContent: function () {
+			return content;
 		}
 	}
 }
@@ -125,8 +133,4 @@ function makeLink(from, type, to) {
 function makeTransform() {
 	var transform = makeLink();
 	// ...
-}
-
-function TestObject() {
-	this.foo = "bar";
 }
