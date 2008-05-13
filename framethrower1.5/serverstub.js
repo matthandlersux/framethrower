@@ -16,66 +16,59 @@ var serverStub = function () {
 		};
 	}();
 	
+
 	function makeServerProcess(initContent) {
+		var process = {};
+		
+		var id;
+		process.getId = function () {
+			return id;
+		};
+		
+		/*
+		hash and callbacks take as keys query strings
+		*/
+		var callbacks = {};
 		var hash = {};
-		var id = serverIds.get();
-		var content = initContent;
-		var callbacksContent = [];
 	
-		function inform(callback, links) {
-			
-		}
-		function informContent(callback) {
-			
+		/*
+		updates all listeners of a query to the new value of the query
+		optionally takes a transform in which case only updates that transform
+		*/
+		function inform(query) {
+			var qs = stringify(query);
+			var answer = hash[qs];
+			forEach(callbacks[qs], function (callback) {
+				callback(answer);
+			});
 		}
 		
-		return {
-			getId: function () {
-				return id;
-			},
-			register: function (link) {
-				var allStrings = genAllStrings(link.getFrom(), link.getType(), link.getTo());
-				forEach(allStrings, function (key) {
-					if (!hash[key]) {
-						hash[key] = {links: {}, callbacks: []};
-					}
-					hash[key].links[link.getId()] = link;
-					forEach(hash[key].callbacks, function (i) {
-						inform(i, hash[key].links);
-					});
-				});
-			},
-			request: function (callback, query) {
-				// assuming query is one of those strings...
-				if (!hash[query]) {
-					hash[query] = {links: {}, callbacks: []};
-				}
-				hash[query].callbacks.push(callback);
 	
-				// do the inform immediately, even though hasn't actually been a change...
-				inform(callback, hash[query].links);
-			},
-			requestContent: function (callback) {
-				
-			},
-			linkExists: function (from,type,to) {
-				var query = genString(from,type,to);
-				if (hash[query]) {
-					return values(hash[query].links)[0];
-				} else {
-					return false;
-				}
-			},
-			//just for testing
-			getHash: function () {
-				return hash;
-			},
-			//just for testing
-			getContent: function () {
-				return content;
+		process.request = function (callback, query) {
+			var qs = stringify(query);
+			
+			// add the transform to the informs record
+			if (!callbacks[qs]) {
+				callbacks[qs] = {};
 			}
+			informs[qs].push(callback);
+			inform(query);
 		};
+		
+		process.registerLink = function (query, link) {
+			if (!hash[query]) {
+				hash[query] = {};
+			}
+			hash[query][link.getId()] = link;
+		};
+	
+		// debugging
+		process.getHash = function () {
+			return hash;
+		};
+		return process;
 	}
+
 	
 	function createServerProcess(initContent, callback) {
 		var serverProcess = makeServerProcess(initContent);
@@ -96,13 +89,17 @@ var serverStub = function () {
 		link.getTo = function () {
 			return to;
 		};
-		// overrides process's getContent..
-		link.getContent = function () {
-			// return XML..
-		};
-		from.register(link);
-		type.register(link);
-		to.register(link);
+
+		// register the link where appropriate
+		from.registerLink(genLinkQuery(from, null, null), link);
+		from.registerLink(genLinkQuery(from, type, null), link);
+		from.registerLink(genLinkQuery(from, null, to), link);
+		from.registerLink(genLinkQuery(from, type, to), link);
+		
+		type.registerLink(genLinkQuery(null, type, null), link);
+		
+		to.registerLink(genLinkQuery(null, type, to), link);
+		to.registerLink(genLinkQuery(null, null, to), link);
 		return link;
 	}
 	
@@ -116,20 +113,33 @@ var serverStub = function () {
 		var type = serverProcessHash[typeServerId];
 		var to = serverProcessHash[toServerId];
 		var link = makeServerLink(from, type, to);
-		var newLinkId = serverIds.get();
+		var newLinkId = link.getId();
 		serverProcessHash[newLinkId] = link;
 		callback(newLinkId);
 	}
 	
-	function serverQuery(query, serverId, callback){
-		var process = serverProcessHash[serverId];
+	function getQueryFromServer(query, callback){
+		var process;
+		if (query.q === "content") {
+			process = query.of;
+		} else if (query.q === "links") {
+			if (query.from) {
+				process = serverProcessHash[query.from.getId()];
+			}
+			else if (query.to) {
+				process = serverProcessHash[query.from.getId()];
+			}
+			else {
+				process = serverProcessHash[query.from.getId()];
+			}
+		}
 		process.request(callback, query);
 	}
 	
 	return {
 		createServerLink: createServerLink,
 		createServerProcess: createServerProcess,
-		serverQuery: serverQuery
+		getQueryFromServer: getQueryFromServer
 	}
 	
 }
