@@ -20,12 +20,12 @@ var serverStub = function () {
 		var hash = {};
 		var id = serverIds.get();
 		var content = initContent;
-		var informsContent = [];
+		var callbacksContent = [];
 	
-		function inform(transform, links) {
+		function inform(callback, links) {
 			
 		}
-		function informContent(transform) {
+		function informContent(callback) {
 			
 		}
 		
@@ -37,25 +37,25 @@ var serverStub = function () {
 				var allStrings = genAllStrings(link.getFrom(), link.getType(), link.getTo());
 				forEach(allStrings, function (key) {
 					if (!hash[key]) {
-						hash[key] = {links: {}, informs: {}};
+						hash[key] = {links: {}, callbacks: []};
 					}
 					hash[key].links[link.getId()] = link;
-					forEach(hash[key].informs, function (i) {
+					forEach(hash[key].callbacks, function (i) {
 						inform(i, hash[key].links);
 					});
 				});
 			},
-			request: function (transform, query) {
+			request: function (callback, query) {
 				// assuming query is one of those strings...
 				if (!hash[query]) {
-					hash[query] = {links: {}, informs: {}};
+					hash[query] = {links: {}, callbacks: []};
 				}
-				hash[query].informs[transform.getId()] = transform;
+				hash[query].callbacks.push(callback);
 	
 				// do the inform immediately, even though hasn't actually been a change...
-				inform(transform, hash[query].links);
+				inform(callback, hash[query].links);
 			},
-			requestContent: function (transform) {
+			requestContent: function (callback) {
 				
 			},
 			linkExists: function (from,type,to) {
@@ -121,15 +121,15 @@ var serverStub = function () {
 		callback(newLinkId);
 	}
 	
-	function getHashInfo(query, serverId, callback){
+	function serverQuery(query, serverId, callback){
 		var process = serverProcessHash[serverId];
-		callback(process.getHash[query]);
+		process.request(callback, query);
 	}
 	
 	return {
 		createServerLink: createServerLink,
 		createServerProcess: createServerProcess,
-		getHashInfo: getHashInfo
+		serverQuery: serverQuery
 	}
 	
 }
