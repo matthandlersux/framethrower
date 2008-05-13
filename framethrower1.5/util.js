@@ -16,6 +16,33 @@ function typeOf(value){
 
 // Arrays/Objects
 
+<<<<<<< .mine
+function arrayLike(o) {
+	if (typeOf(o.length) === "number") {
+		return true;
+	} else {
+		return false;
+	}
+}
+function objectLike(o) {
+	if (typeOf(o) === "object") {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+function forEach(o, f) {
+	if (arrayLike(o)) {
+		for (var i = 0, len = o.length; i < len; i++) {
+			f(o[i], i);
+		}
+	} else if (objectLike(o)) {
+		for (var i in o) if (o.hasOwnProperty(i)) {
+			f(o[i], i);
+		}
+	}
+=======
 function forEach(o, f){
     if (typeOf(o.length) === "number") { // array-like
         for (var i = 0, len = o.length; i < len; i++) {
@@ -32,6 +59,34 @@ function forEach(o, f){
         else {
             throw "forEach: type error";
         }
+>>>>>>> .r10
+}
+
+function any(o, f) {
+	if (arrayLike(o)) {
+		for (var i = 0, len = o.length; i < len; i++) {
+			if (f(o[i], i)) {
+				return true;
+			}
+		}
+	} else if (typeOf(o) === "object") {
+		for (var i in o) if (o.hasOwnProperty(i)) {
+			if (f(o[i], i)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+function all(o, f) {
+	return !any(o, function (v, k) {
+		return !f(v, k);
+	});
+}
+function isEmpty(o) {
+	return any(o, function () {
+		return true;
+	});
 }
 
 // DOM/XML Nodes
