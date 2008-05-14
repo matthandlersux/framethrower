@@ -106,17 +106,18 @@ function is(a, b, msg) {
 	}
 }
 
-function stringify(o) {
-	if (typeOf(o) === "object" && o.nodeType !== undefined) {
-		var serializer = new XMLSerializer();
-		var xml = serializer.serializeToString(o);
-		return xml;
-	} else {
-		return JSON.stringify(o);
-	}
-}
-
 function logTest(pf, msg, a, b) {
+	function stringify(o) {
+		if (typeOf(o) === "object" && o.nodeType !== undefined) {
+			var serializer = new XMLSerializer();
+			var xml = serializer.serializeToString(o);
+			return xml;
+		} else {
+			return JSON.stringify(o);
+		}
+	}
+	
+	
 	console.log(pf, msg, a, b);
 	var table = document.getElementById("testTable");
 	var tr = document.createElement("tr");
@@ -142,9 +143,13 @@ function logTest(pf, msg, a, b) {
 	tr.appendChild(createPassFail(pf));
 	tr.appendChild(createTD(msg));
 	var shortA = stringify(a);
-	if(shortA.length>90){shortA = shortA.substring(0,90) + "...";}
-	var shortB = stringify(b)
-	if(shortB.length>90){shortB = shortB.substring(0,90) + "...";}
+	if (shortA.length>90) {
+		shortA = shortA.substring(0,90) + "...";
+	}
+	var shortB = stringify(b);
+	if (shortB.length>90) {
+		shortB = shortB.substring(0,90) + "...";
+	}
 	
 	tr.appendChild(createTD(shortA));
 	tr.appendChild(createTD(shortB));

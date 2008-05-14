@@ -5,7 +5,7 @@ var localIds = function () {
 	return {
 		get: function () {
 			count++;
-			return "local" + count;
+			return "local." + count;
 		}
 	};
 }();
@@ -31,7 +31,7 @@ function stringify(query) {
 				return "";
 			}
 		}
-		return "links," + maybeId(from) + "," + maybeId(type) + "," + maybeId(to);
+		return "links," + maybeId(query.from) + "," + maybeId(query.type) + "," + maybeId(query.to);
 	}
 }
 
