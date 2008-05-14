@@ -16,6 +16,36 @@ var serverIds = {};
 
 
 
+
+/*
+This is similar to a normal hash table (an object)
+but fixes accessing using hasOwnProperty, so unkosher words can be used as keys
+and, more importantly, if you access a key that doesn't exist, an empty object ({}) is returned
+*/
+function makeHashTable() {
+	var hashTable = {};
+	var records = {};
+	hashTable.get = function (key) {
+		if (records.hasOwnProperty(key)) {
+			return records[key];
+		} else {
+			records[key] = {};
+			return records[key];
+		}
+	};
+	hashTable.set = function (key, value) {
+		records[key] = value;
+	};
+	
+	hashTable.debug = function () {
+		return records;
+	};
+	
+	return hashTable;
+}
+
+
+
 function genLinkQuery(from, type, to) {
 	return {q: "links", from: from, type: type, to: to};
 }
@@ -34,7 +64,6 @@ function stringify(query) {
 		return "links," + maybeId(query.from) + "," + maybeId(query.type) + "," + maybeId(query.to);
 	}
 }
-
 
 function locallyAnswerable(query) {
 	if (query.q === "content") {
@@ -56,10 +85,8 @@ function locallyAnswerable(query) {
 }
 
 
-
 function makeProcess(initContent, serverId) {
 	var process = {};
-	
 	
 	var id, local;
 	if (serverId) {
@@ -86,9 +113,9 @@ function makeProcess(initContent, serverId) {
 	/*
 	informs, hash, and serverHash take as keys query strings
 	*/
-	var informs = {};
-	var hash = {};
-	var serverHash = {};
+	var informs = makeHashTable();
+	var localHash = makeHashTable();
+	var serverHash = makeHashTable();
 
 	/*
 	updates all listeners of a query to the new value of the query
@@ -98,14 +125,14 @@ function makeProcess(initContent, serverId) {
 		var qs = stringify(query);
 		var answer;
 		if (query.q === "content") {
-			answer = hash[qs];
+			answer = localHash.get(qs);
 		} else if (query.q === "links") {
-			answer = merge(hash[qs], serverHash[qs]);
+			answer = merge(localHash.get(qs), serverHash.get(qs));
 		}
 		if (transform) {
 			// inform the transform
 		} else {
-			forEach(informs[qs], function (transform) {
+			forEach(informs.get(qs), function (transform) {
 				// inform the transform
 			});
 		}
@@ -116,20 +143,10 @@ function makeProcess(initContent, serverId) {
 		var qs = stringify(query);
 		
 		// add the transform to the informs record
-		if (!informs[qs]) {
-			informs[qs] = {};
-		}
-		informs[qs][transform.getId()] = transform;
+		informs.get(qs)[transform.getId()] = transform;
 		
 		// determine if the query should be answered locally
 		var answerLocally = locallyAnswerable(query);
-
-		if (answerLocally) {
-			if (!hash[qs]) {
-				hash[qs] = {};
-			}
-		}
-		
 		
 		if (answerLocally || serverHash[qs]) {
 			// notify the transform immediately
@@ -137,37 +154,29 @@ function makeProcess(initContent, serverId) {
 		} else {
 			// request the query from the server
 			getQueryFromServer(query, function (answer) {
-				serverHash[qs] = answer;
+				serverHash.set(qs, answer);
 				inform(query);
 			});
 		}
 	};
 	
-	
 	// should only be used for queries that can be answered locally
 	process.requestOnce = function(query) {
 		var qs = stringify(query);
-		if (!hash[qs]) {
-			hash[qs] = {};
-		}
-		return hash[qs];
+		return localHash.get(qs);
 	};
-	
 	
 	process.registerLink = function (query, link) {
-		if (!hash[query]) {
-			hash[query] = {};
-		}
-		hash[query][link.getId()] = link;
+		var qs = stringify(query);
+		localHash.get(qs)[link.getId()] = link;
 	};
 	
 	
-	// debugging
 	process.debug = function () {
 		return {
-			informs: informs,
-			hash: hash,
-			serverHash: serverHash
+			informs: informs.debug(),
+			localHash: localHash.debug(),
+			serverHash: serverHash.debug()
 		};
 	};
 	
@@ -184,7 +193,6 @@ function makeLink(from, type, to) {
 		return existingLinks[0];
 	}
 	
-	
 	var link = makeProcess();
 	link.getFrom = function () {
 		return from;
@@ -199,7 +207,6 @@ function makeLink(from, type, to) {
 	link.getContent = function () {
 		// return XML..
 	};
-	
 	
 	// register the link where appropriate
 	from.registerLink(genLinkQuery(from, null, null), link);
