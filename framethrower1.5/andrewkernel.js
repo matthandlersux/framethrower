@@ -30,19 +30,24 @@ function makeObject(inType, my){
 		});
 	}
 	
-	object.regInputOfApp = function(app) {		
+	object.regInputOfApp = function(app) {
 		my.inputOfApps.push(app);
+		forEach(my.queryTable, function(entryList){
+			forEach(entryList, function(entry){
+				var callBack = entry.queryCallBack;
+				var tail = entry.tail;
+				app.getResult.registerQuery(callBack, tail);
+			});
+		});
 	};
 	
-	object.registerQuery = function(queryCallBack, objectList) {
-		my.queryTable[objectList.head].push({'queryCallBack':queryCallBack, 'tail':objectList.tail});
+	object.registerQuery = function(queryCallBack, objectList){
+		my.queryTable[objectList.head].push({
+			'queryCallBack': queryCallBack,
+			'tail': objectList.tail
+		});
 		forEach(inputOfApps, function(app){
 			app.getResult.registerQuery(queryCallBack, objectList.tail);
-		});
-		forEach(funcOfApps, function(app){
-			if (head == null || (app.getInput == head)) {
-				app.getResult.registerQuery(queryCallBack, objectList.tail);
-			}
 		});
 	};
 	
@@ -68,6 +73,18 @@ function makeFunctionObject(inFunction, my, inObject) {
 	
 	inObject.regFuncOfApp = function(app) {
 		my.funcOfApps.push(app);
+
+		forEach(my.queryTable[app.getInput()], function(entry){
+			var callBack = entry.queryCallBack;
+			var tail = entry.tail;
+			app.getResult.registerQuery(callBack, tail);
+		});
+
+		forEach(my.queryTable[null], function(entry){
+			var callBack = entry.queryCallBack;
+			var tail = entry.tail;
+			app.getResult.registerQuery(callBack, tail);
+		});
 	};
 	
 	//override update
@@ -172,11 +189,8 @@ function makeInfon(infonContent, my, inObject){
 		forEach(my.inputOfApps, function(app){
 			app.computeResult();
 		});
-		forEach(my.queryTable, function(head, valueArray){
-			forEach(valueArray, function(value){
-				//maybe the callback should be with inContent, not inObject?
-				value.queryCallBack(inObject);
-			});
+		forEach(my.queryTable[null], function(entry){
+			value.queryCallBack(inObject);
 		});
 	}
 	
@@ -220,11 +234,13 @@ function makeApp(funcObject, inputObject){
 	app.computeResult = function(){
 		//the function in funcObject will update the resultObject content and type
 		//this way we keep any links to the resultObject constant
+		//maybe will do this through some "mutations" coming out of the function
 		if (funcObject.getType == "function") {
 			var resultPair = funcObject.getContent()(inputObject);
 			result.update(resultPair.type, resultPair.value);
 		}
 		//we don't want this to do anything if the funcobject is a query
+		//this shouldn't happen since we don't register this app as a function
 	}
 	
 	//if the funcObject is a query, register it on the input with a callback function
@@ -236,8 +252,10 @@ function makeApp(funcObject, inputObject){
 		}, funcObject.getObjectList());
 	}
 	
-	funcObject.regFuncOfApp(app);
-	inputObject.regInputOfApp(app);
+	if (funcObject.getType == "function") {
+		funcObject.regFuncOfApp(app);
+		inputObject.regInputOfApp(app);
+	}
 	
 	return app;
 }
