@@ -2,7 +2,9 @@
  * @author boobideedoobop
  */
 
-makeObject
+function makeObject(){
+
+}
 	registerApp
 	informsThing(query,who,port?)
 

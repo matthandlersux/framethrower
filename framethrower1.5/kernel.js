@@ -1,5 +1,3 @@
-// Andrew Testing an Edit from His House
-
 // localIds.get() returns a unique Id
 var localIds = function () {
 	var count = 0;
