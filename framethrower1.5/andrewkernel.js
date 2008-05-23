@@ -107,7 +107,7 @@ function makeFunctionObject(inFunction, my, inObject) {
 			app.getResult.registerQuery(queryCallBack, objectList.tail);
 		});
 		forEach(funcOfApps, function(app){
-			if (head == null || (app.getInput == head)) {
+			if (head === null || (app.getInput === head)) {
 				app.getResult.registerQuery(queryCallBack, objectList.tail);
 			}
 		});
@@ -190,7 +190,7 @@ function makeInfon(infonContent, my, inObject){
 			app.computeResult();
 		});
 		forEach(my.queryTable[null], function(entry){
-			value.queryCallBack(inObject);
+			entry.queryCallBack(inObject);
 		});
 	}
 	
