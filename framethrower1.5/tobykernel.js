@@ -161,6 +161,28 @@ function makeFunctionContent(f, numArgs) {
 	return make(f, numArgs, []);
 }
 
+// this might be a more efficient way to build a curried function, that doesn't use slice
+// supply with a function f(self, p1, p2, ..., pn) and numArgs === n
+/*
+function makeFunctionContentNoSlice(f, numArgs) {
+	function make(f, numArgs, soFar) {
+		return function (self, input) {
+			if (soFar.length === 0) {
+				soFar = push(soFar, self);
+			}
+			soFar = {head:input, tail:soFar, isEmpty: false};
+			numArgs -= 1;
+			if (numArgs === 0) {
+				return f.apply(null, soFar.toReverseArray());
+			} else {
+				return make(f, numArgs, soFar);
+			}
+		};
+	}
+	return make(f, numArgs, []);
+}
+*/
+
 function makeRelationContent(numArgs) {
 	return makeFunctionContent(function () {
 		return makeInfonContent(arguments[0], Array.prototype.slice.apply(arguments, [1]));
