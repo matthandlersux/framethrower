@@ -185,7 +185,7 @@ function makeProcess(initContent, serverId) {
 
 
 // should only be called for making local links
-function makeLink(from, type, to) {	
+function makeLink(from, type, to) {
 	// check if link already exists
 	var existingLinks = values(from.requestOnce(genLinkQuery(from, type, to)));
 	if (existingLinks.length > 0) {
