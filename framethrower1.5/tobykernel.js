@@ -16,15 +16,15 @@ function makeList(array) {
 }
 
 
-var localIdGenerator = function () {
+var idGenerator = (function (prefix) {
 	var count = 0;
 	return {
 		get: function () {
 			count += 1;
-			return "local." + count;
+			return prefix + count;
 		}
 	};
-};
+})("local.");
 
 var objectCache = {};
 
@@ -32,7 +32,7 @@ var objectCache = {};
 function makeObject(content, func, input) {
 	var o = {};
 	
-	var id = localIdGenerator.get();
+	var id = idGenerator.get();
 	objectCache[id] = o;
 	o.getId = function () {
 		return id;
@@ -108,6 +108,15 @@ function makeObject(content, func, input) {
 	// should be called when a result object needs to reevaluate
 	o.reevaluate = function () {
 		setContent(runFuncOnInput(func, input));
+	};
+	
+	o.debug = function () {
+		return {
+			asInput: asInput,
+			asFunc: asFunc,
+			informAsInput: informAsInput,
+			informAsFunc: informAsFunc
+		};
 	};
 	
 	return o;
