@@ -116,9 +116,9 @@ function makeObject(content, func, input) {
 
 function runFuncOnInput(func, input) {
 	if (func.content.withContent) {
-		return func.content.content(func, input, input.content);
+		return func.getContent().content(func, input, input.getContent());
 	} else {
-		return func.content.content(func, input);
+		return func.getContent().content(func, input);
 	}
 }
 
