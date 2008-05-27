@@ -96,9 +96,10 @@ function makeObject(content, func, input) {
 		if (alreadyDone) {
 			return alreadyDone;
 		} else {
-			var result = makeObject(runFuncOnInput(o, input), o, input);
+			var result = makeObject(null, o, input);
 			o.registerAsFunc(input, result);
 			input.registerAsInput(o, result);
+			result.reevaluate();
 			return result;
 		}
 	};
@@ -153,14 +154,11 @@ function makeFunctionContent(f, numArgs) {
 
 function makeRelationContent(numArgs) {
 	return makeFunctionContent(function () {
-		return makeContent("infon", {
-			relation: arguments[0],
-			parameters: Array.prototype.slice.apply(arguments, [1])
-		});
-	});
+		return makeInfonContent(arguments[0], Array.prototype.slice.apply(arguments, [1]));
+	}, numArgs);
 }
 
-function makeInfonObject(rel, args) {
+function makeInfonContent(rel, args) {
 	return makeContent("infon", {
 		relation: rel,
 		parameters: args
