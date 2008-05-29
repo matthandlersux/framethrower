@@ -30,6 +30,10 @@ function makeObject(content) {
 		// propagate...
 	};
 	
+	o.getOutput = function () {
+		return content;
+	};
+	
 	return o;
 }
 
@@ -37,7 +41,7 @@ function makeObject(content) {
 function makeRelation() {
 	var relation = makeObject();
 	
-	var infons = {};
+	var infons = makeOhash(stringifyParams);
 	
 	function makeInfon(params) {
 		var infon = makeObject({
@@ -52,13 +56,12 @@ function makeRelation() {
 	}
 	
 	o.makeInfon = function (params) {
-		var stringified = stringifyParams(params);
-		var existing = infons[stringified];
+		var existing = infons.get(params);
 		if (existing) {
 			return existing;
 		} else {
 			var infon = makeInfon(params);
-			infons[stringified] = infon;
+			infons.set(params, infon);
 			return infon;
 		}
 	};
@@ -70,11 +73,61 @@ function makeRelation() {
 
 
 /*
-constraint
-	involves object
-	relation object
-	
+constraints
+
+type: "involves",
+which: Object
+
+type: "relation",
+which: Relation
+
+type: "role",
+relation: Relation
+role: String,
+which: Object
+
 */
+
+function makeQuery(constraints) {
+	var query = makeObject(constraints);
+	
+	var ohash = makeOhash(stringifyConstraint);
+	
+	query.getOutput = function () {
+		
+	};
+	
+	return query;
+}
+
+
+
+
+
+function makeOhash(stringify) {
+	var ohash = {};
+	
+	var hash = {};
+	
+	ohash.get = function(key) {
+		var stringified = stringify(key);
+		return hash[stringified].value;
+	};
+	
+	ohash.set = function (key, value) {
+		var stringified = stringify(key);
+		hash[stringified] = {key: key, value: value};
+	};
+	
+	ohash.forEach = function (f) {
+		forEach(hash, function (entry) {
+			f(entry.key, entry.value);
+		});
+	};
+	
+	return ohash;
+}
+
 
 
 
