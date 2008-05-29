@@ -77,14 +77,31 @@ function makeRelation(input) {
 			relation: relation,
 			params: params
 		});
-		infon.xmlize = function () {
-			var content = infon.getOutput();
-			// construct XML from content (relation and params)
+		
+		infon.satisfies = function(constraint) {
+			var content= infon.getInput();
+			if (constraint.type === "involves") {
+				var ret = false;
+				var match = constraint.which;
+				forEach(infon.params, function (o) {
+					ret = ret || o === match;
+				});
+				return ret;
+			} else if (constraint.type === "role") {
+				return constraint.relation === content.relation && content.params[constraint.role] === constraint.which;
+			}
 		};
+		
+		/*infon.xmlize = function () {
+			var content = infon.getInput();
+			// construct XML from content (relation and params)
+		};*/
+		
 		relation.register(infon);
 		forEach(params, function (o) {
 			o.register(infon);
 		});
+		
 		return infon;
 	}
 	
@@ -109,7 +126,12 @@ function makeQuery(constraints) {
 	
 	query.register = function (infon) {
 		satisfiedBy[infon.getId()] = infon;
-		// inform furtherQueries...
+		// inform furtherQueries
+		furtherQueries.forEach(function (q, constraint) {
+			if (infon.satisfies(constraint)) {
+				q.register(infon);
+			}
+		});
 	};
 	
 	return query;
@@ -148,7 +170,7 @@ function makeOhash(stringify) {
 	
 	ohash.forEach = function (f) {
 		forEach(hash, function (entry) {
-			f(entry.key, entry.value);
+			f(entry.value, entry.key);
 		});
 	};
 	
