@@ -6,10 +6,11 @@ function makeCircle(){
 
 }
 
+var string = "sdf";
 
 var makeObjectToXML = function(testFunc){
 	function makeXMLObject(object, objectName){
-		var objectNode = document.createElement(objectName);
+		var objectNode = document.createElementNS("",objectName.toLowerCase());
 		if (object !== null) {
 			if (typeof object !== 'object' && typeof object !== 'function') {
 				var contentTextNode = document.createTextNode(object);
@@ -39,7 +40,7 @@ var makeObjectToXML = function(testFunc){
 	}
 	
 	return function makeXMLObjectTop(object, objectName){
-		var objectNode = document.createElement(objectName);
+		var objectNode = document.createElementNS("",objectName);
 		for (name in object) {
 			if (typeof object[name] === 'function') {
 				if (name.slice(0, 3) === "get") {
@@ -57,7 +58,7 @@ var makeObjectToXML = function(testFunc){
 };
 
 
-function draw(){
+function makeXML(){
 	var inputcontent = "input object content";
 	var inputObject = makeObject(inputcontent);
 	
@@ -68,9 +69,15 @@ function draw(){
 	var funccontent = {withContent:false, content:simpleCopyFunc, otherObj:inputObject};
 	var funcObject = makeObject(funccontent);
 
-	//var resultObject = funcObject.runOnInput(inputObject);
-	
-	//console.log("resultObjectContent: " + resultObject.getContent());
+	//give each object an x and y position
+	var i = 1;
+	forEach(objectCache, function(object){
+		//object.id = 'local.1';
+		object.x = 50 + 100*i;
+		object.y = 50 + 100*i;
+		i++;
+	});
+
 	
 	function testTopLevelObject(object){
 		if (object.getId) {
@@ -82,31 +89,25 @@ function draw(){
 		}
 		return false;
 	}
-	
+
 	var objectToXML = makeObjectToXML(testTopLevelObject);
-			
+	var objectsRootNode = document.createElementNS("","objects");
 	forEach(objectCache, function(object){
 		var root = objectToXML(object, "object");
-		document.firstChild.appendChild(root);
+		objectsRootNode.appendChild(root);
 	});
 	
-	
-/*
-	//document.firstChild.innerHTML += "<b>hello!</b>";
-	bodyElement = document.getElementById('body');
-	svgElement = document.getElementById('svgelement');
-	bodyElement.innerHTML += svgElement.id;
-	var svgChildren = svgElement.childNodes;
-	forEach(svgChildren, function(child){
-		bodyElement.innerHTML += '<br /> ' + child.nodeName;
-	});
-*/
+
 	var andrewtest = compileXSL(loadXMLNow("andrewtest.xsl"));
 	var input = loadXMLNow("andrewinput.xml");
 	
-	var output = andrewtest(input, {});
+	document.firstChild.appendChild(objectsRootNode);
+	
+	var output = andrewtest(objectsRootNode, {});
+	
+	//document.firstChild.appendChild(output);	
 	
 	var svgdiv = document.getElementById('svgdiv');
-	svgdiv.parentNode.replaceChild(output, svgdiv);
-	
+	//svgdiv.parentNode.replaceChild(output, svgdiv);
+	return output;
 }

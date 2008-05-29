@@ -6,7 +6,9 @@
 	version="1.0">
 	
 	<xsl:template match="objects">
-		<html:div>
+		
+			<!--
+			<html:div>All
 		<svg:svg version="1.1"
 		    id="svgelement"
 		    preserveAspectRatio="xMidYMid slice"
@@ -18,10 +20,13 @@
 		    <svg:rect x="0" y="0" width="100%" height="100%" fill="url(#gradient)" />
 			<xsl:apply-templates mode="svg"/>
 		</svg:svg>
-		<html:div>
+		!-->
+		<html:div>Object Cache
 			<xsl:apply-templates mode="html"/>
 		</html:div>
+		<!--
 		</html:div>
+		!-->
 	</xsl:template>
 
 	<xsl:template mode = "svg" match="objects/object">
@@ -32,15 +37,21 @@
 	</xsl:template>
 	
 	<xsl:template mode = "html" match="objects/object">
-		<xsl:variable name="name" select="name"/>
 		<html:div>
 			<xsl:call-template name="position">
 				<xsl:with-param name="xvar" select="x - 10" />
 				<xsl:with-param name="yvar" select="y - 10" />
 			</xsl:call-template>
-			<xsl:value-of select="name"/>
+			<xsl:value-of select="id"/>
+			<xsl:apply-templates/>
 		</html:div>
 	</xsl:template>	
+	
+	<xsl:template match="*">
+		<html:div>
+			<xsl:value-of  select="name()"/>: <xsl:apply-templates/>
+		</html:div>
+	</xsl:template>
 	
 	<xsl:template name="position">
 		<xsl:param name="xvar" />
