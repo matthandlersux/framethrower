@@ -259,7 +259,6 @@ m = {
 
 	/* ==== parse menu DOM ==== */
 	setMenuTree : function (theNode, parent) {
-		console.log("TagName: " + theNode.tagName);
 		if (theNode.tagName == "html:div" || theNode.tagName == "html:a") {
 			/* ==== Node Label ==== */
 			var s = theNode.innerHTML;
@@ -308,7 +307,6 @@ m = {
 }
 
 var load = function(rootNode) {
-
 	/* ==== initial size ==== */
 	resize();
 	/* ==== create SVGVML container ==== */
