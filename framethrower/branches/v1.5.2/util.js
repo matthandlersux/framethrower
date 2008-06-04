@@ -197,6 +197,12 @@ function compileXSL(xsl){
         
         // Execute
         try {
+			//XSLTProcessor doesn't do well with a node with no parent
+			//so create a meaningless parent node and add source as a child
+			if(!source.parentNode){
+				var parent = document.createElementNS("","parent");
+				parent.appendChild(source);
+			}
             var result = p.transformToDocument(source);
         } 
         catch (e) {

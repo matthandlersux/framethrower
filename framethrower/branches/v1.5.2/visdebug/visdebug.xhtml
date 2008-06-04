@@ -1,4 +1,8 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:svg="http://www.w3.org/2000/svg">
 <head>
   <title>FT Vis Debug</title>
 	<script src="../util.js"></script>
@@ -10,13 +14,24 @@
     body.invalid stop.end { stop-color:red; }
     #err { display:none; }
     body.invalid #err { display:inline; }
+	body {
+		margin: 0px;
+	}
   </style>
 </head>
-<body id="body" onload="draw()"
-   style="position:absolute; z-index:0; border:1px solid black; left:5%; top:5%; width:90%; height:90%;">
-  <div id="svgdiv">
-  	
-  </div>
-  
+<body id="body" onload="visDebug().init()"
+   style="position:absolute; z-index:0; border:1px solid black; left:0px; top:0px; width:100%; height:100%;">
+		<svg:svg version="1.1"
+		    id="svgelements"
+		    preserveAspectRatio="xMidYMid slice"
+		    style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:-1;">
+			<svg:linearGradient id="gradient">
+				<svg:stop class="begin" offset="0%"/>
+				<svg:stop class="end" offset="100%"/>
+	    	</svg:linearGradient>
+		    <svg:rect x="0" y="0" width="100%" height="100%" fill="url(#gradient)" />
+		</svg:svg>
+		<div id="htmlelements">
+		</div>
 </body>
 </html>

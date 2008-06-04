@@ -2,86 +2,22 @@
  * @author boobideedoobop
  */
 
-function makeCircle(){
+var xm;
+var ym;
 
+document.onmousemove = function(e) {
+	if (window.event) e=window.event;
+	xm = (e.x || e.clientX);
+	ym = (e.y || e.clientY);
 }
 
-var string = "sdf";
-
-var makeObjectToXML = function(testFunc){
-	function makeXMLObject(object, objectName){
-		var objectNode = document.createElementNS("",objectName.toLowerCase());
-		if (object !== null) {
-			if (typeof object !== 'object' && typeof object !== 'function') {
-				var contentTextNode = document.createTextNode(object);
-				objectNode.appendChild(contentTextNode);
-			}
-			else if (typeof object === 'function') {
-				var contentTextNode = document.createTextNode('function');
-				objectNode.appendChild(contentTextNode);
-			}
-			else if (typeof object === 'object' && (answer = testFunc(object))) {
-					var contentTextNode = document.createTextNode(answer);
-					objectNode.appendChild(contentTextNode);
-			} else {
-				for (name in object) {
-					if (typeof object[name] === 'function' && name.slice(0, 3) === "get") {
-						var childNode = makeXMLObject(object[name](), name.slice(3));
-						objectNode.appendChild(childNode);
-					}
-					else {
-						var childNode = makeXMLObject(object[name], name);
-						objectNode.appendChild(childNode);
-					}
-				}
-			}
-		}
-		return objectNode;
-	}
+var visDebug = function(){
+	var O = {}; //objects being displayed on screen
 	
-	return function makeXMLObjectTop(object, objectName){
-		var objectNode = document.createElementNS("",objectName);
-		for (name in object) {
-			if (typeof object[name] === 'function') {
-				if (name.slice(0, 3) === "get") {
-					var childNode = makeXMLObject(object[name](), name.slice(3));
-					objectNode.appendChild(childNode);
-				}
-			} else if (object[name] !== null) {
-				var childNode = makeXMLObject(object[name], name);
-				objectNode.appendChild(childNode);
-			}
-		}
-		return objectNode;
-	}
-	
-};
-
-
-function makeXML(){
-	var inputcontent = "input object content";
-	var inputObject = makeObject(inputcontent);
-	
-	var simpleCopyFunc = function(func, input){
-		return input.getContent();
-	}
-	
-	var funccontent = {withContent:false, content:simpleCopyFunc, otherObj:inputObject};
-	var funcObject = makeObject(funccontent);
-
-	//give each object an x and y position
-	var i = 1;
-	forEach(objectCache, function(object){
-		//object.id = 'local.1';
-		object.x = 50 + 100*i;
-		object.y = 50 + 100*i;
-		i++;
-	});
-
-	
+	//function to help the xml format of the object cache resolve pointers to other objects in the object cache
 	function testTopLevelObject(object){
 		if (object.getId) {
-			for(id in objectCache){
+			for (var id in objectCache) {
 				if (object === objectCache[id]) {
 					return id;
 				}
@@ -89,23 +25,261 @@ function makeXML(){
 		}
 		return false;
 	}
-
+			
+	function makeObjectToXML(testFunc){
+		//array to keep track of pointers to other objects in the object cache
+		var links = {};
+		
+		//makes object into an xml object with root node name objectName
+		//will check for "top level" objects in the object cache, and will
+		//create links in the links object as a side effect
+		function makeXMLObject(object, objectName){
+			var objectNode = document.createElementNS("", objectName.toLowerCase());
+			if (object !== null) {
+				if (typeof object !== 'object' && typeof object !== 'function') {
+					var contentTextNode = document.createTextNode(object);
+					objectNode.appendChild(contentTextNode);
+				}
+				else 
+					if (typeof object === 'function') {
+						var contentTextNode = document.createTextNode('function');
+						objectNode.appendChild(contentTextNode);
+					}
+					else 
+						if (typeof object === 'object' && (answer = testFunc(object))) {
+							var contentTextNode = document.createTextNode(answer);
+							objectNode.appendChild(contentTextNode);
+							if (!links[objectName]) 
+								links[objectName] = [];
+							links[objectName].push(answer);
+						}
+						else {
+							for (name in object) {
+								if (typeof object[name] === 'function' && name.slice(0, 3) === "get") {
+									var childNode = makeXMLObject(object[name](), name.slice(3));
+									objectNode.appendChild(childNode);
+								}
+								else {
+									var childNode = makeXMLObject(object[name], name);
+									objectNode.appendChild(childNode);
+								}
+							}
+						}
+			}
+			return objectNode;
+		}
+		
+		return function makeXMLObjectTop(object, objectName, linkName){
+			links = {};
+			var objectNode = document.createElementNS("", objectName);
+			for (name in object) {
+				if (typeof object[name] === 'function') {
+					if (name.slice(0, 3) === "get") {
+						var childNode = makeXMLObject(object[name](), name.slice(3));
+						objectNode.appendChild(childNode);
+					}
+				}
+				else 
+					if (object[name] !== null) {
+						var childNode = makeXMLObject(object[name], name);
+						objectNode.appendChild(childNode);
+					}
+			}
+			
+			//go through links object, and make xml object for each link
+			var returnObject = {object:objectNode, links:{}};
+			
+			var from = testFunc(object);
+			for (key in links) {
+				var keylinks = links[key];
+				forEach(keylinks, function(link){
+					var linkElement = document.createElementNS("", linkName);
+					linkElement.setAttribute("type", key);
+					linkElement.setAttribute("from", from);
+					linkElement.setAttribute("to", link);
+					returnObject['links']["link:" + key + link] = linkElement;
+				});
+			}
+			return returnObject;
+		}
+	}
+	
+	//function to convert object cache to xml format
 	var objectToXML = makeObjectToXML(testTopLevelObject);
-	var objectsRootNode = document.createElementNS("","objects");
-	forEach(objectCache, function(object){
-		var root = objectToXML(object, "object");
-		objectsRootNode.appendChild(root);
-	});
 	
-	//var input = loadXMLNow("andrewinput.xml");
-	var andrewtest = compileXSL(loadXMLNow("andrewtest.xsl"));
+	
+	function updatePosition(id){
+		
+		var svgelement = O[id].objectsvg;
+		var htmlelement = O[id].objecthtml;
+		
+		svgelement.setAttribute("cx", O[id].x);
+		svgelement.setAttribute("cy", O[id].y);
+		
+		htmlelement.style.left = O[id].x + "px";
+		htmlelement.style.top = O[id].y + "px";		
+		
+		for (var key in O[id].linkssvg) {
+			var fromindex = O[id].xmlNodes.links[key].getAttribute('from');
+			var toindex = O[id].xmlNodes.links[key].getAttribute('to');
+			var fromx = O[fromindex].x;
+			var fromy = O[fromindex].y;
+			var tox = O[toindex].x;
+			var toy = O[toindex].y;
+			
+			var midx1 = (tox - fromx) * 3 / 8 + fromx * 1;
+			var midy1 = (toy - fromy) * 1 / 8 + fromy * 1;
+			var midx2 = (tox - fromx) * 1 / 2 + fromx * 1;
+			var midy2 = (toy - fromy) * 1 / 2 + fromy * 1;
+			
+			O[id].linkssvg[key].setAttribute("d", "M" + fromx + "," + fromy + " Q" + midx1 + "," + midy1 + " " + midx2 + "," + midy2 + " T" + tox + "," + toy);
+		}
+	}
+	
+	
+	
+	
+	return {
+		run: function(){
+			/*
+			//do some global behaviour if we are currently dragging
+			if (m.drag) m.X = xm - m.ox, m.Y = ym - m.oy;
+			//do some global movements all the time like rotation
+			m.ks += m.rS;
+			//run the run method of each sub object
+			for (var i in m.O) m.O[i].run();
+			*/
+		},
+				
+		init: function(){
+			//create some objects to populate the object cache
+			var inputcontent = "input object content";
+			var inputObject = makeObject(inputcontent);
+			
+			var simpleCopyFunc = function(func, input){
+				return input.getContent();
+			}
+			
+			var funccontent = {
+				withContent: false,
+				content: simpleCopyFunc,
+				otherObj: inputObject
+			};
+			var funcObject = makeObject(funccontent);
+			
+			var thirdObject = makeObject("howdy");
+			
+			var fourthcontent = {
+				myfavobject: thirdObject
+			};
+			
+			var fourthObject = makeObject(fourthcontent);
+			
+			var objectsRootNode = document.createElementNS("", "objects");
+			
+			for (var id in objectCache) {
+				O[id] = {};
+				var object = objectCache[id];
+				O[id].xmlNodes = objectToXML(object, "object", "link");
+			}
+			
+			//convert object xml format to svg and html	
+			var object2svg = compileXSL(loadXMLNow("object2svg.xsl"));
+			var object2html = compileXSL(loadXMLNow("object2html.xsl"));
+			
+			var svgoutput = {};
+			var htmloutput = {};
+			
+			for (var id in O) {
+				var nodes = O[id].xmlNodes;
+				O[id].linkssvg = {};
+				O[id].linkshtml = {};
+				//create svg and html for the objects
+				
+				var svgresult = object2svg(nodes['object'], {});
+				if (svgresult) {
+					O[id].objectsvg = svgresult;
+				}
+				
+				var htmlresult = object2html(nodes['object'], {});
+				if (htmlresult) {
+					O[id].objecthtml = htmlresult;
+				}
+				//create svg and html for the links
 
-	document.firstChild.appendChild(objectsRootNode);
-	
-	var output = andrewtest(objectsRootNode, {});
-	//document.firstChild.appendChild(output);	
-	
-	var svgdiv = document.getElementById('svgdiv');
-	//svgdiv.parentNode.replaceChild(output, svgdiv);
-	return output;
+				for(key in nodes['links']){
+					var node = nodes['links'][key];
+					
+					var svgresult = object2svg(node, {});
+					if (svgresult) {
+						O[id].linkssvg[key] = svgresult;
+					}
+					
+					var htmlresult = object2html(node, {});
+					if (htmlresult) {
+						O[id].linkshtml[key] = htmlresult;
+					}
+				}
+			}
+			
+			//add svg and html to page
+			
+			var svgdiv = document.getElementById('svgelements');
+			var htmldiv = document.getElementById('htmlelements');
+			
+			forEach(O, function(object){
+				svgdiv.appendChild(object.objectsvg);
+				forEach(object.linkssvg, function(svgnode){
+					svgdiv.appendChild(svgnode);
+				});
+				htmldiv.appendChild(object.objecthtml);
+				forEach(object.linkshtml, function(htmlnode){
+					htmldiv.appendChild(htmlnode);
+				});
+			});
+			
+
+/*			
+			//give each object a mouseup function
+			for (var id in svgoutput) {
+				var svgelements = svgoutput[id];
+				var htmlelements = htmloutput[id];
+				for (var index in svgelements) {
+					var svgelement = svgelements[index];
+					if (svgelement.nodeName === "svg:circle") {
+						var drag = false;
+						svgelement.onmousedown = function(){
+							drag = true;
+						}
+						svgelement.onmouseup = function(){
+							this.setAttribute("cx", xm);
+							this.setAttribute("cy", ym);
+							drag = false;
+						}
+						svgelement.run = function(){
+							if (drag) {
+								this.setAttribute("cx", xm);
+								this.setAttribute("cy", ym);
+							}
+						}
+					}
+				}
+			}
+	*/		
+			
+			//give each object an x and y position
+			var i = 1;
+			for (var id in O) {
+				O[id].x = 50 + 100 * i;
+				O[id].y = 50 + 100 * i;
+				O[id].x = Math.random()*400;
+				O[id].y = Math.random()*400;
+				i++;
+			}
+
+			for (var id in O) {
+				updatePosition(id);
+			}
+		}
+	}
 }
