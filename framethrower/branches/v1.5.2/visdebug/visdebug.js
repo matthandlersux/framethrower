@@ -114,8 +114,15 @@ var visDebug = function(){
 		var svgelement = this.objectsvg;
 		var htmlelement = this.objecthtml;
 		
-		svgelement.setAttribute("cx", this.x);
-		svgelement.setAttribute("cy", this.y);
+		var svgresult = object2svg(this.xmlNodes.object, {fromx:this.x,fromy:this.y});
+		if (svgresult) {
+			var parentNode = this.objectsvg.parentNode;
+			parentNode.replaceChild(svgresult,this.objectsvg);
+			
+			svgresult.onmousedown = this.objectsvg.onmousedown;
+			svgresult.obj = this.objectsvg.obj;
+			this.objectsvg = svgresult;
+		}
 		
 		htmlelement.style.left = this.x-15 + "px";
 		htmlelement.style.top = this.y+5 + "px";		
@@ -133,7 +140,12 @@ var visDebug = function(){
 			var midx2 = (tox - fromx) * 1 / 2 + fromx * 1;
 			var midy2 = (toy - fromy) * 1 / 2 + fromy * 1;
 			
-			this.linkssvg[key].firstChild.setAttribute("d", "M" + fromx + "," + fromy + " Q" + midx1 + "," + midy1 + " " + midx2 + "," + midy2 + " T" + tox + "," + toy);
+			var svgresult = object2svg(this.xmlNodes.links[key], {fromx:fromx,fromy:fromy,midx1:midx1,midy1:midy1,midx2:midx2,midy2:midy2,tox:tox,toy:toy});
+			if (svgresult) {
+				var parentNode = this.linkssvg[key].node.parentNode;
+				parentNode.replaceChild(svgresult,this.linkssvg[key].node);
+				this.linkssvg[key].node = svgresult;
+			}
 		}
 	}
 	
@@ -234,7 +246,7 @@ var visDebug = function(){
 				O[id].linkshtml = {};
 				//create svg and html for the objects
 				
-				var svgresult = object2svg(nodes['object'], {});
+				var svgresult = object2svg(nodes['object'], {fromx:'0',fromy:'0'});
 				if (svgresult) {
 					O[id].objectsvg = svgresult;
 				}
@@ -248,9 +260,10 @@ var visDebug = function(){
 				for(key in nodes['links']){
 					var node = nodes['links'][key];
 					
-					var svgresult = object2svg(node, {});
+					var svgresult = object2svg(node, {fromx:'0',fromy:'0',midx1:'0',midy1:'0',midx2:'0',midy2:'0',tox:'0',toy:'0'});
 					if (svgresult) {
-						O[id].linkssvg[key] = svgresult;
+						O[id].linkssvg[key] = {};
+						O[id].linkssvg[key].node = svgresult;
 					}
 					
 					var htmlresult = object2html(node, {params:'id'});
@@ -283,7 +296,7 @@ var visDebug = function(){
 				var object = O[id];
 				svgdiv.appendChild(object.objectsvg);
 				forEach(object.linkssvg, function(svgnode){
-					svgdiv.insertBefore(svgnode,sepdiv);
+					svgdiv.insertBefore(svgnode.node,sepdiv);
 				});
 			});
 			forEach(newids, function(id){
@@ -298,8 +311,8 @@ var visDebug = function(){
 			//give each svgobject a mouseup function and pointer back to the parent object
 			forEach(newids, function(id){
 				var object = O[id];
-				object.objectsvg.onmousedown = mousedown;
 				object.updatePosition = updatePosition;
+				object.objectsvg.onmousedown = mousedown;
 				object.objectsvg.obj = object;
 			});
 			
@@ -313,9 +326,9 @@ var visDebug = function(){
 				i++;
 			});
 
-			for (var id in O) {
+			forEach(newids, function(id){
 				O[id].updatePosition();
-			}
+			});
 		}
 	}
 }();
