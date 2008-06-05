@@ -5,22 +5,35 @@
     xmlns:svg="http://www.w3.org/2000/svg"
 	version="1.0">
 
+	<xsl:param name="params" />
+
 	<xsl:template match="object">
 		<html:div>
 			<xsl:call-template name="position">
 				<xsl:with-param name="xvar" select="x - 10" />
 				<xsl:with-param name="yvar" select="y - 10" />
 			</xsl:call-template>
-			<xsl:value-of select="id"/>
-			<xsl:apply-templates/>
+			<xsl:if test="$params = 'id'">
+				<xsl:value-of select="id"/>
+			</xsl:if>
+			<xsl:if test="$params = 'all'">
+				<xsl:apply-templates>
+					<xsl:with-param name="xpos" select="5"/>
+				</xsl:apply-templates>
+			</xsl:if>
 		</html:div>
 	</xsl:template>
 	
+	<xsl:template match="link">
+	</xsl:template>
+	
 	<xsl:template match="*">
-		<html:div>
-			<!--
-			<xsl:value-of  select="name()"/>: <xsl:apply-templates/>
-			!-->
+		<xsl:param name="xpos" />
+		<html:div style="position:relative;left:{$xpos}px;">
+			<xsl:value-of  select="name()"/>: 
+			<xsl:apply-templates>
+				<xsl:with-param name="xpos" select="$xpos+15"/>
+			</xsl:apply-templates>
 		</html:div>
 	</xsl:template>
 	
