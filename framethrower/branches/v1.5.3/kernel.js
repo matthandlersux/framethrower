@@ -17,6 +17,8 @@ function makeObject(parentSituation, id) {
 		return parentSituation;
 	};
 	
+	// TODO
+	
 	// involvements with infons
 	
 	// correspondences
@@ -25,6 +27,8 @@ function makeObject(parentSituation, id) {
 	
 	return o;
 }
+
+// Queries TODO
 
 function makeSituation(parentSituation, id, nextId) {
 	var situation = makeObject(id);
@@ -53,6 +57,11 @@ function makeSituation(parentSituation, id, nextId) {
 		relation.makeInfon = function (id, arcs) {
 			var infon = situation.makeObject(id);
 			
+			// check if already exists
+			// register involvement among args
+			// register invovlement of relation? query informing?
+			
+			// TODO
 			forEach(arcs, function (arc) {
 				var role = arc.role;
 				var arg = arc.arg;
