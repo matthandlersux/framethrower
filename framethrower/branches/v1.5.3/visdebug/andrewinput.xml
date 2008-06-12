@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<objects>
+	<object>
+		<x>80</x>
+		<y>90</y>
+		<name>bob</name>
+	</object>
+	<object>
+		<x>200</x>
+		<y>280</y>
+		<name>sal</name>
+	</object>
+</objects>
