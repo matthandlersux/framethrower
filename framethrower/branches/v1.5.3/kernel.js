@@ -1,34 +1,80 @@
 function makeObject(parentSituation, id) {
 	var o = {};
-	var content = null;
-	var correspondsIn = [];
-	var correspondsOut = [];
 	
 	o.getId = function () {
 		return id;
-	};
-	
-	o.remove = function () {
-		
-	};
-	
-	o.setContent = function (inContent) {
-		content = inContent;
-	};
-	
-	o.getContent = function () {
-		return content;
 	};
 	
 	o.getSituation = function () {
 		return parentSituation;
 	};
 	
+	o.remove = function () {
+		
+	};
+	
+	// =============================
+	// content
+	// =============================
+	
+	var content = null;
+	
+	o.setContent = function (newContent) {
+		content = newContent;
+		// TODO add reactivity hook
+	};
+	
+	o.getContent = function () {
+		return content;
+	};
+	
+	// =============================
+	// involvements with infons
+	// =============================
+	
+	var involvements = makeOhash(stringifyObject);
+	
+	o.addInvolvement = function (role, infon) {
+		var infons = involvements.getOrMake(role, makeOhash);
+		infons.set(o, infon);
+	};
+	
+	o.removeInvolvement = function (role, infon) {
+		var infons = involvements.get(role);
+		if (infons) {
+			infons.remove(infon);
+		}
+	};
+	
+	o.getInvolvements = function (role) {
+		var ret = [];
+		if (role === undefined) {
+			// return all infons
+			involvments.forEach(function (infons) {
+				infons.forEach(function (infon) {
+					ret.push[infon];
+				});
+			});
+		} else {
+			var infons = involvements.get(role);
+			if (infons) {
+				infons.forEach(function (infon) {
+					ret.push[infon];
+				});
+			}
+		}
+		return ret;
+	};
+	
+	// =============================
+	// correspondences
+	// =============================
+	
 	// TODO
 	
-	// involvements with infons
+	var correspondsIn = [];
+	var correspondsOut = [];
 	
-	// correspondences
 	o.setCorrespondsIn = function (obj) {
 		correspondsIn.push(obj);
 	};
@@ -45,7 +91,12 @@ function makeObject(parentSituation, id) {
 		return correspondsOut;
 	};
 	
+	// =============================
 	// reactively informs
+	// =============================
+	
+	// TODO
+	
 	
 	return o;
 }
@@ -76,23 +127,38 @@ function makeSituation(parentSituation, id, nextId) {
 	situation.makeRelation = function (id) {
 		var relation = situation.makeObject(id);
 		
+		var infons = makeOhash(stringifyArcs);
+		
 		relation.makeInfon = function (id, arcs) {
-			var infon = situation.makeObject(id);
-			
-			// check if already exists
-			// register involvement among args
-			// register invovlement of relation? query informing?
-			
-			// TODO
-			forEach(arcs, function (arc) {
-				var role = arc.role;
-				var arg = arc.arg;
+			return infons.getOrMake(arcs, function () {
+				var infon = situation.makeObject(id);
+				var old = infon;
+				
+				// register involvement with args
+				forEach(arcs, function (arc) {
+					arc.arg.addInvolvement(arc.role, infon);
+				});
+				
+				infon.remove = function () {
+					forEach(arcs, function (arc) {
+						arc.arg.removeInvolvement(arc.role, infon);
+					});
+					old.remove();
+				};
+				
+				infon.getArcs = function () {
+					return arcs;
+				};
+				
+				return infon;
 			});
-			
-			return infon;
 		};
 		
 		return relation;
+	};
+	
+	situation.makeQuery = function () {
+		
 	};
 	
 	situation.makeSituation = function (id, nextId) {
@@ -103,4 +169,74 @@ function makeSituation(parentSituation, id, nextId) {
 	};
 	
 	return situation;
+}
+
+
+
+// ========================================================================
+// Utility
+// ========================================================================
+
+function makeOhash(stringify) {
+	var ohash = {};
+	
+	var hash = {};
+	
+	ohash.get = function(key) {
+		var stringified = stringify(key);
+		return hash[stringified].value;
+	};
+	
+	ohash.set = function (key, value) {
+		var stringified = stringify(key);
+		hash[stringified] = {key: key, value: value};
+	};
+	
+	ohash.remove = function (key) {
+		var stringified = stringify(key);
+		delete hash[stringified];
+	};
+	
+	ohash.getOrMake = function (key, constructor) {
+		var stringified = stringify(key);
+		if (hash[stringified]) {
+			return hash[stringified].value;
+		} else {
+			var value = constructor();
+			hash[stringified] = {key: key, value: value};
+			return value;
+		}
+	};
+	
+	ohash.forEach = function (f) {
+		forEach(hash, function (entry) {
+			f(entry.value, entry.key);
+		});
+	};
+	
+	return ohash;
+}
+
+// ========================================================================
+// Stringification
+// ========================================================================
+
+// The only stringification rule is that parens "()" must be balanced
+// This makes it possible to reuse stringification functions while keeping uniqueness
+
+function stringifyObject(o) {
+	return o.getId();
+}
+
+// arcs :: [{role: Role, arg: Object}]
+function stringifyArcs(arcs) {
+	function stringifyArc(arc) {
+		return "((" + stringifyObject(arc.role) + ")(" + stringifyObject(arc.arg) + "))";
+	}
+	var strings = [];
+	forEach(arcs, function (arc) {
+		strings.push(stringifyArc(arc));
+	});
+	strings.sort();
+	return strings.join("");
 }
