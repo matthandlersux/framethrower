@@ -1,5 +1,8 @@
 function makeObject(parentSituation, id) {
 	var o = {};
+	var content = null;
+	var correspondsIn = [];
+	var correspondsOut = [];
 	
 	o.getId = function () {
 		return id;
@@ -9,8 +12,12 @@ function makeObject(parentSituation, id) {
 		
 	};
 	
-	o.setContent = function () {
-		
+	o.setContent = function (inContent) {
+		content = inContent;
+	};
+	
+	o.getContent = function () {
+		return content;
 	};
 	
 	o.getSituation = function () {
@@ -22,6 +29,21 @@ function makeObject(parentSituation, id) {
 	// involvements with infons
 	
 	// correspondences
+	o.setCorrespondsIn = function (obj) {
+		correspondsIn.push(obj);
+	};
+	
+	o.setCorrespondsOut = function (obj) {
+		correspondsOut.push(obj);
+	};
+	
+	o.getCorrespondsIn = function () {
+		return correspondsIn;
+	};
+	
+	o.getCorrespondsOut = function () {
+		return correspondsOut;
+	};
 	
 	// reactively informs
 	
@@ -31,7 +53,7 @@ function makeObject(parentSituation, id) {
 // Queries TODO
 
 function makeSituation(parentSituation, id, nextId) {
-	var situation = makeObject(id);
+	var situation = makeObject(parentSituation, id);
 	
 	if (nextId === undefined) {
 		nextId = 0;

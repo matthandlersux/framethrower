@@ -95,3 +95,73 @@ function merge() {
 	});
 	return ret;
 }
+
+// useful for testing...
+function loadXMLNow(url){
+    var req = new XMLHttpRequest();
+    req.open("GET", url, false);
+    req.send(null);
+    return req.responseXML.firstChild;
+}
+
+// DOM/XML Nodes
+
+var xmlns = {
+    f: "http://www.filmsfolded.com/xsl/ui",
+    xsl: "http://www.w3.org/1999/XSL/Transform",
+    html: "http://www.w3.org/1999/xhtml",
+    svg: "http://www.w3.org/2000/svg"
+};
+
+
+// Node -> (Node, {Node | String | Number} -> Node)
+function compileXSL(xsl){
+    if (xsl.nodeType === 9) 
+        xsl = xsl.firstChild;
+    
+    // this is required for xpath's within the xsl (that use namespaces) to work correctly
+    function addxmlns(xml){
+        forEach(xmlns, function(uri, prefix){
+            xml.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + prefix, uri);
+        });
+    }
+    addxmlns(xsl);
+    
+    var p = new XSLTProcessor();
+    
+    // Compile
+    try {
+        p.importStylesheet(xsl);
+    } 
+    catch (e) {
+        console.log("Compilation Error", xsl, e);
+    }
+    
+    return function(source, params){
+        // Set parameters
+        forEach(params, function(value, param){
+            p.setParameter(null, param, value);
+        });
+        
+        // Execute
+        try {
+			//XSLTProcessor doesn't do well with a node with no parent
+			//so create a meaningless parent node and add source as a child
+			if(!source.parentNode){
+				var parent = document.createElementNS("","parent");
+				parent.appendChild(source);
+			}
+            var result = p.transformToDocument(source);
+        } 
+        catch (e) {
+            console.log("Execution Error", xsl, source, params, e);
+        }
+        
+        // Clear parameters
+        forEach(params, function(value, param){
+            p.removeParameter(null, param);
+        });
+        
+        return result.firstChild;
+    };
+}
