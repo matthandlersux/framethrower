@@ -126,24 +126,25 @@ function makeSituation(parentSituation, id, nextId) {
 	
 	situation.makeRelation = function (id) {
 		var relation = situation.makeObject(id);
+		var old = relation;
 		
 		var infons = makeOhash(stringifyArcs);
 		
 		relation.makeInfon = function (id, arcs) {
 			return infons.getOrMake(arcs, function () {
 				var infon = situation.makeObject(id);
-				var old = infon;
 				
 				// register involvement with args
 				forEach(arcs, function (arc) {
 					arc.arg.addInvolvement(arc.role, infon);
 				});
 				
+				var oldRemove = infon.remove;
 				infon.remove = function () {
 					forEach(arcs, function (arc) {
 						arc.arg.removeInvolvement(arc.role, infon);
 					});
-					old.remove();
+					oldRemove();
 				};
 				
 				infon.getArcs = function () {
@@ -152,6 +153,14 @@ function makeSituation(parentSituation, id, nextId) {
 				
 				return infon;
 			});
+		};
+		
+		var oldRemove = relation.remove;
+		relation.remove = function () {
+			infons.forEach(function (infon) {
+				infon.remove();
+			});
+			oldRemove();
 		};
 		
 		return relation;
