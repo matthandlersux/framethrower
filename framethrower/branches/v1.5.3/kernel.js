@@ -32,6 +32,10 @@ function makeObject(parentSituation, id) {
 		return content;
 	};
 	
+	o.queryContent = function () {
+		// TODO
+	};
+	
 	// =============================
 	// involvements with infons
 	// =============================
@@ -74,6 +78,10 @@ function makeObject(parentSituation, id) {
 		return ret;
 	};
 	
+	o.queryInvolvements = function () {
+		// TODO
+	};
+	
 	// =============================
 	// correspondences
 	// =============================
@@ -104,6 +112,14 @@ function makeObject(parentSituation, id) {
 		return correspondOut;
 	};
 	
+	o.queryCorrespondsIn = function () {
+		
+	};
+	
+	o.queryCorrespondsOut = function () {
+		
+	};
+	
 	// =============================
 	// reactively informs
 	// =============================
@@ -113,6 +129,90 @@ function makeObject(parentSituation, id) {
 	
 	return o;
 }
+
+
+// Queries TODO
+
+
+function makeSituation(parentSituation, id, nextId) {
+	var situation = makeObject(parentSituation, id);
+	
+	if (nextId === undefined) {
+		nextId = 0;
+	}
+	function getNextId() {
+		nextId += 1;
+		return id + "." + nextId;
+	}
+	
+	situation.makeObject = function (id) {
+		if (id === undefined) {
+			id = getNextId();
+		}
+		return makeObject(situation, id);
+	};
+	
+	situation.makeGhost = situation.makeObject;
+	situation.makeIndividual = situation.makeObject;
+	situation.makeRole = situation.makeObject;
+	
+	situation.makeRelation = function (id) {
+		var relation = situation.makeObject(id);
+		
+		var infons = makeOhash(stringifyArcs);
+		
+		relation.makeInfon = function (id, arcs) {
+			return infons.getOrMake(arcs, function () {
+				var infon = situation.makeObject(id);
+				
+				// register involvement with args
+				forEach(arcs, function (arc) {
+					arc.arg.addInvolvement(arc.role, infon);
+				});
+				
+				var oldRemove = infon.remove;
+				infon.remove = function () {
+					forEach(arcs, function (arc) {
+						arc.arg.removeInvolvement(arc.role, infon);
+					});
+					infons.remove(arcs);
+					oldRemove();
+				};
+				
+				infon.getArcs = function () {
+					return arcs;
+				};
+				
+				return infon;
+			});
+		};
+		
+		var oldRemove = relation.remove;
+		relation.remove = function () {
+			infons.forEach(function (infon) {
+				infon.remove();
+			});
+			oldRemove();
+		};
+		
+		return relation;
+	};
+	
+	situation.makeQuery = function () {
+		
+	};
+	
+	situation.makeSituation = function (id, nextId) {
+		if (id === undefined) {
+			id = getNextId();
+		}
+		return makeSituation(situation, id, nextId);
+	};
+	
+	return situation;
+}
+
+
 
 function makeCorrespondence(a, b) {
 	// find the lowest situation that contains both a and b
@@ -211,87 +311,6 @@ function makeCorrespondence(a, b) {
 		makeC(ghost, aHighest);
 		makeC(ghost, bHighest);
 	}
-}
-
-
-// Queries TODO
-
-
-function makeSituation(parentSituation, id, nextId) {
-	var situation = makeObject(parentSituation, id);
-	
-	if (nextId === undefined) {
-		nextId = 0;
-	}
-	function getNextId() {
-		nextId += 1;
-		return id + "." + nextId;
-	}
-	
-	situation.makeObject = function (id) {
-		if (id === undefined) {
-			id = getNextId();
-		}
-		return makeObject(situation, id);
-	};
-	
-	situation.makeGhost = situation.makeObject;
-	situation.makeIndividual = situation.makeObject;
-	situation.makeRole = situation.makeObject;
-	
-	situation.makeRelation = function (id) {
-		var relation = situation.makeObject(id);
-		
-		var infons = makeOhash(stringifyArcs);
-		
-		relation.makeInfon = function (id, arcs) {
-			return infons.getOrMake(arcs, function () {
-				var infon = situation.makeObject(id);
-				
-				// register involvement with args
-				forEach(arcs, function (arc) {
-					arc.arg.addInvolvement(arc.role, infon);
-				});
-				
-				var oldRemove = infon.remove;
-				infon.remove = function () {
-					forEach(arcs, function (arc) {
-						arc.arg.removeInvolvement(arc.role, infon);
-					});
-					oldRemove();
-				};
-				
-				infon.getArcs = function () {
-					return arcs;
-				};
-				
-				return infon;
-			});
-		};
-		
-		var oldRemove = relation.remove;
-		relation.remove = function () {
-			infons.forEach(function (infon) {
-				infon.remove();
-			});
-			oldRemove();
-		};
-		
-		return relation;
-	};
-	
-	situation.makeQuery = function () {
-		
-	};
-	
-	situation.makeSituation = function (id, nextId) {
-		if (id === undefined) {
-			id = getNextId();
-		}
-		return makeSituation(situation, id, nextId);
-	};
-	
-	return situation;
 }
 
 
