@@ -484,6 +484,7 @@ var visDebug = function(){
 			oc(SC);
 			oc(JB);
 			oc(s);
+			console.log('subversion test');
 		}
 	};
 }();
