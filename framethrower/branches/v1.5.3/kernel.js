@@ -58,7 +58,7 @@ function makeObject(parentSituation, id) {
 		var ret = [];
 		if (role === undefined) {
 			// return all infons
-			involvments.forEach(function (infons) {
+			involvements.forEach(function (infons) {
 				infons.forEach(function (infon) {
 					ret.push[infon];
 				});
