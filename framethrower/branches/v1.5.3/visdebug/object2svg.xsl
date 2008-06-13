@@ -6,18 +6,18 @@
 	xmlns:xlink="http://www.w3.org/1999/xlink"
 	version="1.0">
 
-<xsl:param name="fromx" />
-<xsl:param name="fromy" />
-<xsl:param name="midx1" />
-<xsl:param name="midy1" />
-<xsl:param name="midx2" />
-<xsl:param name="midy2" />
-<xsl:param name="tox" />
-<xsl:param name="toy" />
-
+	<xsl:param name="fromx" />
+	<xsl:param name="fromy" />
+	<xsl:param name="midx1" />
+	<xsl:param name="midy1" />
+	<xsl:param name="midx2" />
+	<xsl:param name="midy2" />
+	<xsl:param name="tox" />
+	<xsl:param name="toy" />
+	<xsl:param name="r" />
 	
 	<xsl:template match="object">
-	    <svg:circle r="20" fill="url(#gradient)">
+	    <svg:circle r="{$r}" fill="url(#gradient)">
 	    	<xsl:attribute name="cx">
 				<xsl:value-of select="$fromx" />
 			</xsl:attribute>
@@ -38,7 +38,7 @@
 						<xsl:value-of select="@type" />
 					</svg:tspan>
 				</svg:textPath>
-			</svg:text>
+			</svg:text>		
 		</svg:g>
 	</xsl:template>
 	
