@@ -78,25 +78,30 @@ function makeObject(parentSituation, id) {
 	// correspondences
 	// =============================
 	
-	// TODO
+	var correspondsIn = makeOhash(stringifyObject);
+	var correspondOut = null;
 	
-	var correspondsIn = [];
-	var correspondsOut = [];
-	
-	o.setCorrespondsIn = function (obj) {
-		correspondsIn.push(obj);
+	o.addCorrespondIn = function (obj) {
+		correspondsIn.set(obj, obj);
+	};
+	o.removeCorrespondIn = function (obj) {
+		correspondsIn.remove(obj);
 	};
 	
-	o.setCorrespondsOut = function (obj) {
-		correspondsOut.push(obj);
+	o.setCorrespondOut = function (obj) {
+		correspondOut = obj;
 	};
 	
 	o.getCorrespondsIn = function () {
-		return correspondsIn;
+		var ret = [];
+		correspondsIn.forEach(function (obj) {
+			ret.push(obj);
+		});
+		return ret;
 	};
 	
-	o.getCorrespondsOut = function () {
-		return correspondsOut;
+	o.getCorrespondOut = function () {
+		return correspondOut;
 	};
 	
 	// =============================
@@ -111,12 +116,106 @@ function makeObject(parentSituation, id) {
 
 function makeCorrespondence(a, b) {
 	// find the lowest situation that contains both a and b
+	var aSit = a.getSituation();
+	var bSit = b.getSituation();
+	var aSits = [aSit];
+	var bSits = [bSit];
+	function checkMatch() {
+		function check(sit, sits) {
+			for (var i=0, len = sits.length; i < len; i++) {
+				if (sit === sits[i]) {
+					sits.splice(i+1, sits.length);
+					return true;
+				}
+			}
+		}
+		return check(aSit, bSits) || check(bSit, aSits);
+	}
+	while (!checkMatch()) {
+		aSit = aSit.getSituation();
+		bSit = bSit.getSituation();
+		aSits.push(aSit);
+		bSits.push(bSit);
+	}
+	// okay, now aSits contains a's parent situations up to the lowest common situation, likewise for bSits
+	var common = aSits[aSits.length - 1];
 	
+	
+	// checks if o is in any of sits
+	function isIn(o, sits) {
+		var sit = o.getSituation();
+		return any(sits, function (s) {
+			return s === sit;
+		});
+	}
+	
+	// go up correspond out while staying within sits
+	function getHighest(start, sits) {
+		var highest = start;
+		var next = start.getCorrespondOut();
+		while (next && isIn(next, sits)) {
+			highest = next;
+			next = highest.getCorrespondOut();
+		}
+		return highest;
+	}
+	var aHighest = getHighest(a, aSits);
+	var bHighest = getHighest(b, bSits);
+	
+	var aHighestSit = aHighest.getSituation();
+	var bHighestSit = bHighest.getSituation();
+	
+	// go down corresponds in while staying within sits
+	function getLowest(start, sits) {
+		function choosePath(choices) {
+			var ret = false;
+			forEach(choices, function (choice) {
+				if (isIn(choice, sits)) {
+					ret = choice;
+				}
+			});
+			return ret;
+		}
+		
+		var lowest = start;
+		var next = choosePath(start.getCorrespondsIn());
+		while (next) {
+			lowest = next;
+			next = choosePath(next.getCorrespondsIn());
+		}
+		return lowest;
+	}
+	
+	function makeC(high, low) {
+		var p = low.getCorrespondOut();
+		if (p) {
+			p.removeCorrespondIn(low);
+			p.addCorrespondIn(high);
+		}
+		high.addCorrespondIn(low);
+		low.setCorrespondOut(high);
+	}
+	
+	if (aHighestSit === common && bHighestSit === common) {
+		// merge aHighest and bHighest
+		// TODO
+	} else if (aHighestSit === common) {
+		var lowest = getLowest(aHighest, bSits);
+		makeC(lowest, bHighest);
+	} else if (bHighestSit === common) {
+		var lowest = getLowest(bHighest, aSits);
+		makeC(lowest, aHighest);
+	} else {
+		// make "ghost" object in common situation
+		var ghost = situation.makeGhost();
+		makeC(ghost, aHighest);
+		makeC(ghost, bHighest);
+	}
 }
 
 
-
 // Queries TODO
+
 
 function makeSituation(parentSituation, id, nextId) {
 	var situation = makeObject(parentSituation, id);
@@ -136,6 +235,7 @@ function makeSituation(parentSituation, id, nextId) {
 		return makeObject(situation, id);
 	};
 	
+	situation.makeGhost = situation.makeObject;
 	situation.makeIndividual = situation.makeObject;
 	situation.makeRole = situation.makeObject;
 	
