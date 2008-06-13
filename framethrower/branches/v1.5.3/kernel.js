@@ -10,7 +10,11 @@ function makeObject(parentSituation, id) {
 	};
 	
 	o.remove = function () {
-		
+		involvements.forEach(function (infons) {
+			infons.forEach(function (infon) {
+				infon.remove();
+			});
+		});
 	};
 	
 	// =============================
@@ -32,10 +36,14 @@ function makeObject(parentSituation, id) {
 	// involvements with infons
 	// =============================
 	
-	var involvements = makeOhash(stringifyObject);
+	function makeObjectHash() {
+		return makeOhash(stringifyObject);
+	}
+	
+	var involvements = makeObjectHash();
 	
 	o.addInvolvement = function (role, infon) {
-		var infons = involvements.getOrMake(role, makeOhash);
+		var infons = involvements.getOrMake(role, makeObjectHash);
 		infons.set(o, infon);
 	};
 	
@@ -101,6 +109,13 @@ function makeObject(parentSituation, id) {
 	return o;
 }
 
+function makeCorrespondence(a, b) {
+	// find the lowest situation that contains both a and b
+	
+}
+
+
+
 // Queries TODO
 
 function makeSituation(parentSituation, id, nextId) {
@@ -126,7 +141,6 @@ function makeSituation(parentSituation, id, nextId) {
 	
 	situation.makeRelation = function (id) {
 		var relation = situation.makeObject(id);
-		var old = relation;
 		
 		var infons = makeOhash(stringifyArcs);
 		
