@@ -13,6 +13,8 @@
   <style>
     stop.begin { stop-color:yellow; }
     stop.end { stop-color:green; }
+	stop.bluebegin { stop-color:red;}
+	stop.blueend {stop-color:blue;}
     body.invalid stop.end { stop-color:red; }
     #err { display:none; }
     body.invalid #err { display:inline; }
@@ -30,6 +32,10 @@
 			<svg:linearGradient id="gradient">
 				<svg:stop class="begin" offset="0%"/>
 				<svg:stop class="end" offset="100%"/>
+	    	</svg:linearGradient>
+			<svg:linearGradient id="bluegradient">
+				<svg:stop class="bluebegin" offset="0%"/>
+				<svg:stop class="blueend" offset="100%"/>
 	    	</svg:linearGradient>
 		    <svg:rect x="0" y="0" width="100%" height="100%" fill="url(#gradient)" />
 			<div id="sepdiv" />

@@ -16,8 +16,19 @@
 	<xsl:param name="toy" />
 	<xsl:param name="r" />
 	
-	<xsl:template match="object">
+	<xsl:template match="situation">
 	    <svg:circle r="{$r}" fill="url(#gradient)">
+	    	<xsl:attribute name="cx">
+				<xsl:value-of select="$fromx" />
+			</xsl:attribute>
+	    	<xsl:attribute name="cy">
+				<xsl:value-of select="$fromy" />
+			</xsl:attribute>
+	    </svg:circle>
+	</xsl:template>
+
+	<xsl:template match="object|individual">
+	    <svg:circle r="{$r}" fill="url(#blueÅgradient)">
 	    	<xsl:attribute name="cx">
 				<xsl:value-of select="$fromx" />
 			</xsl:attribute>

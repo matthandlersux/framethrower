@@ -60,7 +60,7 @@ var visDebug = function(){
 		var key;
 		for (key in this.xmlNodes.links) {
 			if(this.xmlNodes.links.hasOwnProperty(key)){
-				if(this.xmlNodes.links[key].getAttribute('type') === 'Situation'){
+				if(this.xmlNodes.links[key].getAttribute('type').match(/Situation/)){
 					if (O[this.xmlNodes.links[key].getAttribute('from')] === this) {
 					
 						var toObj = O[this.xmlNodes.links[key].getAttribute('to')];
@@ -95,7 +95,7 @@ var visDebug = function(){
 		
 		for (key in this.xmlNodes.links) {
 			if(this.xmlNodes.links.hasOwnProperty(key)){
-				if(this.xmlNodes.links[key].getAttribute('type') === 'Situation'){
+				if(this.xmlNodes.links[key].getAttribute('type').match(/Situation/)){
 					if (O[this.xmlNodes.links[key].getAttribute('to')] === this) {
 						var fromObj = O[this.xmlNodes.links[key].getAttribute('from')];
 						fromObj.x += this.x-this.prevX;
@@ -254,19 +254,15 @@ var visDebug = function(){
 					//}
 				}
 			}
-			
-			console.log('before makeXML');
-			
+						
 			forEach(newids, function(id){
 				if(!O[id]){
 					O[id] = {};
 				}
 				var obj = objectCache[id];
-				O[id].xmlNodes = objectToXML(obj, "object", "link");
+				O[id].xmlNodes = objectToXML(obj, obj.getType(), "link");
 			});
-			
-			console.log('done makeXML');
-			
+						
 			
 			//convert object xml format to svg and html	
 
@@ -276,6 +272,8 @@ var visDebug = function(){
 			
 			forEach(newids, function(id){
 				var nodes = O[id].xmlNodes;
+				console.dirxml(nodes.obj);
+				
 				O[id].linkssvg = {};
 				O[id].linkshtml = {};
 				//create svg and html for the objects
@@ -294,7 +292,11 @@ var visDebug = function(){
 				for (key in nodes.links) {
 					if(nodes.links.hasOwnProperty(key)){
 						var node = nodes.links[key];
-						if(node.getAttribute('type') !== 'Situation'){
+						console.dirxml(node);
+						if(!node.getAttribute('type').match(/Situation/) && !node.getAttribute('type').match(/Objects/)){
+							if(node.parentNode){
+								console.log(node.parentNode.nodeName);
+							}
 							svgresult = object2svg(node, {fromx:'0',fromy:'0',midx1:'0',midy1:'0',midx2:'0',midy2:'0',tox:'0',toy:'0'});
 							if (svgresult) {
 								O[id].linkssvg[key] = {};
@@ -337,7 +339,7 @@ var visDebug = function(){
 			forEach(newids, function(id){
 				for (var key in O[id].xmlNodes.links) {
 					if(O[id].xmlNodes.links.hasOwnProperty(key)){
-						if(O[id].xmlNodes.links[key].getAttribute('type') === 'Situation'){
+						if(O[id].xmlNodes.links[key].getAttribute('type').match(/Situation/)){
 							if (O[id].xmlNodes.links[key].getAttribute('to') === id) {
 								var fromObj = O[O[id].xmlNodes.links[key].getAttribute('from')];
 								if(O[id].z <= fromObj.z){
@@ -359,7 +361,7 @@ var visDebug = function(){
 					if(O.hasOwnProperty(id)){
 						for (var key in O[id].xmlNodes.links) {
 							if(O[id].xmlNodes.links.hasOwnProperty(key)){
-								if(O[id].xmlNodes.links[key].getAttribute('type') === 'Situation'){
+								if(O[id].xmlNodes.links[key].getAttribute('type').match(/Situation/)){
 									if (O[id].xmlNodes.links[key].getAttribute('to') === id) {
 										var fromObj = O[O[id].xmlNodes.links[key].getAttribute('from')];
 										if(O[id].z <= fromObj.z){

@@ -7,8 +7,10 @@ function makeObjectToXML(testFunc){
 	//makes object into an xml object with root node name objectName
 	//will check for "top level" objects in the object cache, and will
 	//create links in the links object as a side effect
-	function makeXMLObject(obj, objectName){
-		
+	function makeXMLObject(obj, objectName, path){
+		if(!path){
+			path = '';
+		}
 		if(typeof objectName === 'number'){
 			objectName = 'n' + objectName;
 		}
@@ -29,17 +31,18 @@ function makeObjectToXML(testFunc){
 					if (typeof obj === 'object' && (answer = testFunc(obj))) {
 						contentTextNode = document.createTextNode(answer);
 						objectNode.appendChild(contentTextNode);
-						if (!links[objectName]) {
-							links[objectName] = [];
+						path = path + '/' + objectName;
+						if (!links[path]) {
+							links[path] = [];
 						}
-						links[objectName].push(answer);
+						links[path].push(answer);
 					}
 					else {
 						for (name in obj) {
 							if(obj.hasOwnProperty(name)){
 								var childNode;
 								if (typeof obj[name] === 'function' && name.slice(0, 3) === "get") {
-									childNode = makeXMLObject(obj[name](), name.slice(3));
+									childNode = makeXMLObject(obj[name](), name.slice(3), path);
 									objectNode.appendChild(childNode);
 								}
 								else {
@@ -47,9 +50,9 @@ function makeObjectToXML(testFunc){
 										if('n' + name === 'n2'){
 											console.log('found n2 2');
 										}
-										childNode = makeXMLObject(obj[name], 'n' + name);
+										childNode = makeXMLObject(obj[name], 'n' + name, path + '/' + objectName);
 									} else {
-										childNode = makeXMLObject(obj[name], name);										
+										childNode = makeXMLObject(obj[name], name, path + '/' + objectName);										
 									}
 									objectNode.appendChild(childNode);
 								}
