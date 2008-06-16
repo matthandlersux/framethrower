@@ -1,3 +1,18 @@
+
+// ========================================================================
+// Keeping track of objects and their unique id's
+// ========================================================================
+
+var idGenerator = (function (prefix) {
+	var count = 0;
+	return {
+		get: function () {
+			count += 1;
+			return prefix + count;
+		}
+	};
+})("local.");
+
 // ========================================================================
 // Reactive Queries
 // ========================================================================
@@ -26,171 +41,181 @@ function makeQuery(getter) {
 // Objects, Situations, Relations, Infons
 // ========================================================================
 
-function makeObject(parentSituation, id) {
-	var o = {};
-	
-	o.getId = function () {
-		return id;
-	};
-	
-	o.getSituation = function () {
-		return parentSituation;
-	};
-	
-	o.remove = function () {
-		// remove all infons that i'm involved in
-		involves.forEach(function (infons) {
-			infons.forEach(function (infon) {
-				infon.remove();
-			});
-		});
-		// bridge any correspondences
-		// TODO
-		// remove any functions that have queried me
-		// TODO
-	};
-	
-	// =============================
-	// content
-	// =============================
-	
-	var content = null;
-	
-	o.getContent = function () {
-		return content;
-	};
-	
-	var queryContent = makeQuery(o.getContent);
-	
-	o.setContent = function (newContent) {
-		content = newContent;
-		queryContent.trigger(newContent);
-	};
-	
-	o.queryContent = queryContent.register;
-	
-	// =============================
-	// involvements with infons
-	// =============================
-	
-	function makeObjectHash() {
-		return makeOhash(stringifyObject);
+function makeSituation(parentSituation, id) {
+	if (id === undefined) {
+		id = idGenerator.get();
 	}
 	
-	var involves = makeObjectHash();
-	
-	o.getInvolves = function (role) {
-		var ret = [];
-		if (role === undefined) {
-			// return all infons
+	function makeObject(parentSituation, id) {
+		if (id === undefined) {
+			id = idGenerator.get();
+		}
+		
+		var o = {};
+
+		o.getId = function () {
+			return id;
+		};
+
+		o.getSituation = function () {
+			return parentSituation;
+		};
+
+		o.remove = function () {
+			// remove all infons that i'm involved in
 			involves.forEach(function (infons) {
 				infons.forEach(function (infon) {
-					ret.push[infon];
+					infon.remove();
 				});
 			});
-		} else {
+			// bridge any correspondences
+			// TODO
+			// remove any functions that have queried me
+			// TODO
+			// remove from parent situation
+			if (parentSituation) {
+				parentSituation.removeObject(o);
+			}
+		};
+
+		// =============================
+		// content
+		// =============================
+
+		var content = null;
+
+		o.getContent = function () {
+			return content;
+		};
+
+		var queryContent = makeQuery(o.getContent);
+
+		o.setContent = function (newContent) {
+			content = newContent;
+			queryContent.trigger(newContent);
+		};
+
+		o.queryContent = queryContent.register;
+
+		// =============================
+		// involvements with infons
+		// =============================
+
+		var involves = makeObjectHash();
+
+		o.getInvolves = function (role) {
+			var ret = [];
+			if (role === undefined) {
+				// return all infons
+				involves.forEach(function (infons) {
+					infons.forEach(function (infon) {
+						ret.push[infon];
+					});
+				});
+			} else {
+				var infons = involves.get(role);
+				if (infons) {
+					infons.forEach(function (infon) {
+						ret.push[infon];
+					});
+				}
+			}
+			return ret;
+		};
+
+		var queryInvolves = makeQuery(o.getInvolves);
+
+		o.addInvolve = function (role, infon) {
+			var infons = involves.getOrMake(role, makeObjectHash);
+			infons.set(o, infon);
+			queryInvolves.trigger();
+		};
+
+		o.removeInvolve = function (role, infon) {
 			var infons = involves.get(role);
 			if (infons) {
-				infons.forEach(function (infon) {
-					ret.push[infon];
-				});
+				infons.remove(infon);
 			}
-		}
-		return ret;
-	};
-	
-	var queryInvolves = makeQuery(o.getInvolves);
-	
-	o.addInvolve = function (role, infon) {
-		var infons = involves.getOrMake(role, makeObjectHash);
-		infons.set(o, infon);
-		queryInvolves.trigger();
-	};
-	
-	o.removeInvolve = function (role, infon) {
-		var infons = involves.get(role);
-		if (infons) {
-			infons.remove(infon);
-		}
-		queryInvolves.trigger();
-	};
-	
-	o.queryInvolves = queryInvolves.register;
-	
-	// =============================
-	// correspondences
-	// =============================
-	
-	var correspondsIn = makeOhash(stringifyObject);
-	var correspondOut = null;
-	
-	o.getCorrespondsIn = function () {
-		var ret = [];
-		correspondsIn.forEach(function (obj) {
-			ret.push(obj);
-		});
-		return ret;
-	};
-	
-	o.getCorrespondOut = function () {
-		return correspondOut;
-	};
-	
-	var queryCorrespondsIn = makeQuery(o.getCorrespondsIn);
-	var queryCorrespondOut = makeQuery(o.getCorrespondOut);
-	
-	o.addCorrespondIn = function (obj) {
-		correspondsIn.set(obj, obj);
-		queryCorrespondsIn.trigger();
-	};
-	o.removeCorrespondIn = function (obj) {
-		correspondsIn.remove(obj);
-		queryCorrespondsIn.trigger();
-	};
-	
-	o.setCorrespondOut = function (obj) {
-		correspondOut = obj;
-		queryCorrespondOut.trigger();
-	};
-	
-	o.queryCorrespondsIn = queryCorrespondsIn.register;
-	o.queryCorrespondOut = queryCorrespondOut.register;
-	
-	
-	return o;
-}
+			queryInvolves.trigger();
+		};
+
+		o.queryInvolves = queryInvolves.register;
+
+		// =============================
+		// correspondences
+		// =============================
+
+		var correspondsIn = makeOhash(stringifyObject);
+		var correspondOut = null;
+
+		o.getCorrespondsIn = function () {
+			return correspondsIn.asArray();
+		};
+
+		o.getCorrespondOut = function () {
+			return correspondOut;
+		};
+
+		var queryCorrespondsIn = makeQuery(o.getCorrespondsIn);
+		var queryCorrespondOut = makeQuery(o.getCorrespondOut);
+
+		o.addCorrespondIn = function (obj) {
+			correspondsIn.set(obj, obj);
+			queryCorrespondsIn.trigger();
+		};
+		o.removeCorrespondIn = function (obj) {
+			correspondsIn.remove(obj);
+			queryCorrespondsIn.trigger();
+		};
+
+		o.setCorrespondOut = function (obj) {
+			correspondOut = obj;
+			queryCorrespondOut.trigger();
+		};
+
+		o.queryCorrespondsIn = queryCorrespondsIn.register;
+		o.queryCorrespondOut = queryCorrespondOut.register;
 
 
-function makeSituation(parentSituation, id, nextId) {
+		return o;
+	}
+	
+	
 	var situation = makeObject(parentSituation, id);
 	
-	if (nextId === undefined) {
-		nextId = 0;
-	}
-	function getNextId() {
-		nextId += 1;
-		return id + "." + nextId;
-	}
+	var objects = makeObjectHash();
 	
-	situation.makeObject = function (id) {
-		if (id === undefined) {
-			id = getNextId();
-		}
-		return makeObject(situation, id);
+	situation.getObjects = function () {
+		return objects.asArray();
 	};
 	
-	situation.makeGhost = situation.makeObject;
-	situation.makeIndividual = situation.makeObject;
-	situation.makeRole = situation.makeObject;
+	var queryObjects = makeQuery(situation.getObjects);
+	situation.queryObjects = queryObjects.register;
+	
+	function makeChildObject(id) {
+		var o = makeObject(situation, id);
+		objects.set(o, o);
+		queryObjects.trigger();
+		return o;
+	}
+	
+	situation.removeObject = function (o) {
+		objects.remove(o);
+		queryObjects.trigger();
+	};
+	
+	situation.makeGhost = makeChildObject;
+	situation.makeIndividual = makeChildObject;
+	situation.makeRole = makeChildObject;
 	
 	situation.makeRelation = function (id) {
-		var relation = situation.makeObject(id);
+		var relation = makeChildObject(id);
 		
 		var infons = makeOhash(stringifyArcs);
 		
 		relation.makeInfon = function (id, arcs) {
 			return infons.getOrMake(arcs, function () {
-				var infon = situation.makeObject(id);
+				var infon = makeChildObject(id);
 				
 				// register involvement with args
 				forEach(arcs, function (arc) {
@@ -225,11 +250,8 @@ function makeSituation(parentSituation, id, nextId) {
 		return relation;
 	};
 	
-	situation.makeSituation = function (id, nextId) {
-		if (id === undefined) {
-			id = getNextId();
-		}
-		return makeSituation(situation, id, nextId);
+	situation.makeSituation = function (id) {
+		return makeSituation(situation, id);
 	};
 	
 	return situation;
@@ -385,6 +407,14 @@ function makeOhash(stringify) {
 		});
 	};
 	
+	ohash.asArray = function () {
+		var ret = [];
+		ohash.forEach(function (val) {
+			ret.push(val);
+		});
+		return ret;
+	};
+	
 	return ohash;
 }
 
@@ -397,6 +427,10 @@ function makeOhash(stringify) {
 
 function stringifyObject(o) {
 	return o.getId();
+}
+
+function makeObjectHash() {
+	return makeOhash(stringifyObject);
 }
 
 // arcs :: [{role: Role, arg: Object}]
