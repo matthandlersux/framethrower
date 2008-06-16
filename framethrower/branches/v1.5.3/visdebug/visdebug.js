@@ -134,9 +134,10 @@ var visDebug = function(){
 	var objectToXML = makeObjectToXML(testTopLevelObject);
 	
 	
-	function updatePosition(){
+	function updatePosition(direction){
 		var svgelement = this.objectsvg;
 		var htmlelement = this.objecthtml;
+		
 		
 		//check x,y and r against containing situations and contained situations...
 		var key;
@@ -148,18 +149,28 @@ var visDebug = function(){
 						var toObj = O[this.xmlNodes.links[key].getAttribute('to')];
 					
 						if(this.r > toObj.r*3/5){
-							this.r = toObj.r/4;
+							if(direction === 'up'){
+								toObj.r = this.r * 5/3 + 1;
+								toObj.updatePosition('up');
+							}else{
+								this.r = toObj.r/4;
+								if(this.r < 40){
+									this.r = 40;
+									toObj.r = this.r * 5/3 + 1;
+									toObj.updatePosition('up');
+								}
+							}
 						}
-					
+
 						var x = this.x - toObj.x;
 						var y = this.y - toObj.y;
 						var r = toObj.r-this.r;
-					
+
 						if(Math.pow(x,2) + Math.pow(y,2) > Math.pow(r,2)){						
 							var atan = Math.atan2(y,x);
 							this.x = toObj.x + Math.cos(atan) * Math.abs(r);
 							this.y = toObj.y + Math.sin(atan) * Math.abs(r);
-						}	
+						}
 					}
 				}
 			}
@@ -236,9 +247,33 @@ var visDebug = function(){
 	var selectO = {};
 	var drawnO = selectO;
 	var objectCache = {};
-	var runcheck = false;
-
+	var runcheck = false;	
+	
 	return {
+		submitenter: function(myfield,e){
+			var keycode;
+			if (window.event){
+				keycode = window.event.keyCode;
+			} else if (e) {
+				keycode = e.which;
+			}
+			else return true;
+
+			if (keycode == 13) {
+				console.log(myfield.value);
+				var command = myfield.value;
+				myfield.value = "";
+				var result = eval(command,this.submitenter);
+				if(command.indexOf('makeSituation')!=-1){
+					objectCache[result.getId()] = result;
+				}
+				this.objectCache2Screen();
+				return false;
+			} else {
+				return true;
+			}
+		},
+		
 		run: function(){
 			if(runcheck){
 				//alert('runcheck problem');
@@ -274,6 +309,25 @@ var visDebug = function(){
 		},
 				
 		objectCache2Screen: function(){
+			//clear out the current svg and html
+			var svgdiv = document.getElementById('svgelements');
+			var htmldiv = document.getElementById('htmlelements');
+			
+			var sepdiv = document.getElementById('sepdiv');
+			
+			var current = sepdiv;
+
+			var next;
+			while(current){
+				next = current.nextSibling;
+				svgdiv.removeChild(current);
+				current = next;
+			}
+			svgdiv.appendChild(sepdiv);
+			while(htmldiv.firstChild){
+				htmldiv.removeChild(htmldiv.firstChild);
+			}
+			
 			var newids = [];
 			for (var id in objectCache) {
 				if(objectCache.hasOwnProperty(id)){
@@ -397,12 +451,6 @@ var visDebug = function(){
 			
 			
 			//add svg and html to page
-			
-			var svgdiv = document.getElementById('svgelements');
-			var htmldiv = document.getElementById('htmlelements');
-			
-			var sepdiv = document.getElementById('sepdiv');
-			
 			forEach(newids, function(id){
 				var obj = O[id];
 				if(O[id].insertBeforeId){
@@ -416,7 +464,8 @@ var visDebug = function(){
 					svgdiv.appendChild(obj.objectsvg);
 				}
 				forEach(obj.linkssvg, function(svgnode){
-					svgdiv.insertBefore(svgnode.node,sepdiv);
+					//svgdiv.insertBefore(svgnode.node,sepdiv);
+					svgdiv.appendChild(svgnode.node);
 				});
 			});
 			forEach(newids, function(id){
@@ -474,9 +523,9 @@ var visDebug = function(){
 			var JB = GF.makeIndividual();
 			JB.setContent({name:'James Bond',type:'person'});
 
-			JB.setCorrespondsOut(SC);
-			SC.setCorrespondsIn(JB);
-
+			//JB.setCorrespondsOut(SC);
+			//SC.setCorrespondsIn(JB);
+			makeCorrespondence(SC,JB);
 
 			//put all of the objects in the object cache
 			
