@@ -249,6 +249,7 @@ var visDebug = function(){
 	var objectCache = {};
 	var runcheck = false;
 	var isNewChange = false;
+	var initContext = null;
 	
 	return {
 		submitenter: function(myfield,e){
@@ -264,10 +265,22 @@ var visDebug = function(){
 				console.log(myfield.value);
 				var command = myfield.value;
 				myfield.value = "";
-				var result = eval(command,this.init);
-				if(command.indexOf('make')!=-1){
-					objectCache[result.getId()] = result;
+				var result = eval(command,initContext);
+				
+				var regexp = /(\w*\.)?make(\w*)\(.*\)/;
+				
+				var subcommand = command.match(regexp);
+
+				if(subcommand){
+					if(subcommand[0]){
+						subcommand = subcommand[0];
+					}	
+					subcommand = 'temp = ' + subcommand + ';';
+					var temp = eval(subcommand,initContext);
+					command = command.replace(regexp,'temp');
+					objectCache[temp.getId()] = temp;
 				}
+				eval(command,initContext);
 				isNewChange = true;
 				this.objectCache2Screen();
 				return false;
@@ -517,7 +530,7 @@ var visDebug = function(){
 			
 			var rootId = 'rootId';
 			
-			s = makeSituation(null, rootId);
+			var s = makeSituation(null, rootId);
 			
 			var GF = s.makeSituation();
 			GF.setContent({name:'Goldfinger', type:'movie'});
@@ -540,6 +553,13 @@ var visDebug = function(){
 			oc(SC);
 			oc(JB);
 			oc(s);
+			
+			var myF = function(x){alert(x)};
+			
+			//JB.queryContent(myF, 'queryparam2');
+			
+			initContext = function(){};
+			
 			console.log('subversion test');
 		}
 	};
