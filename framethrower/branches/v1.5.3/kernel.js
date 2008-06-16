@@ -10,11 +10,16 @@ function makeObject(parentSituation, id) {
 	};
 	
 	o.remove = function () {
-		involvements.forEach(function (infons) {
+		// remove all infons that i'm involved in
+		involves.forEach(function (infons) {
 			infons.forEach(function (infon) {
 				infon.remove();
 			});
 		});
+		// bridge any correspondences
+		// TODO
+		// remove any functions that have queried me
+		// TODO
 	};
 	
 	// =============================
@@ -32,10 +37,6 @@ function makeObject(parentSituation, id) {
 		return content;
 	};
 	
-	o.queryContent = function () {
-		// TODO
-	};
-	
 	// =============================
 	// involvements with infons
 	// =============================
@@ -44,31 +45,31 @@ function makeObject(parentSituation, id) {
 		return makeOhash(stringifyObject);
 	}
 	
-	var involvements = makeObjectHash();
+	var involves = makeObjectHash();
 	
-	o.addInvolvement = function (role, infon) {
-		var infons = involvements.getOrMake(role, makeObjectHash);
+	o.addInvolve = function (role, infon) {
+		var infons = involves.getOrMake(role, makeObjectHash);
 		infons.set(o, infon);
 	};
 	
-	o.removeInvolvement = function (role, infon) {
-		var infons = involvements.get(role);
+	o.removeInvolve = function (role, infon) {
+		var infons = involves.get(role);
 		if (infons) {
 			infons.remove(infon);
 		}
 	};
 	
-	o.getInvolvements = function (role) {
+	o.getInvolves = function (role) {
 		var ret = [];
 		if (role === undefined) {
 			// return all infons
-			involvements.forEach(function (infons) {
+			involves.forEach(function (infons) {
 				infons.forEach(function (infon) {
 					ret.push[infon];
 				});
 			});
 		} else {
-			var infons = involvements.get(role);
+			var infons = involves.get(role);
 			if (infons) {
 				infons.forEach(function (infon) {
 					ret.push[infon];
@@ -76,10 +77,6 @@ function makeObject(parentSituation, id) {
 			}
 		}
 		return ret;
-	};
-	
-	o.queryInvolvements = function () {
-		// TODO
 	};
 	
 	// =============================
@@ -112,19 +109,29 @@ function makeObject(parentSituation, id) {
 		return correspondOut;
 	};
 	
-	o.queryCorrespondsIn = function () {
-		
-	};
-	
-	o.queryCorrespondsOut = function () {
-		
-	};
-	
 	// =============================
 	// reactively informs
 	// =============================
 	
-	// TODO
+	function makeQuery(get, ohash) {
+		return function (callback, func) {
+			callback(get());
+			var entry = ohash.getOrMake(func, function () {
+				return [];
+			});
+			entry.push(callback);
+		};
+	}
+	
+	var informContent = makeOhash();
+	var informInvolves = makeOhash();
+	var informCorrespondsIn = makeOhash();
+	var informCorrespondOut = makeOhash();
+	
+	o.queryContent = makeQuery(o.getContent, informContent);
+	o.queryInvolves = makeQuery(o.getInvolves, informInvolves);
+	o.queryCorrespondsIn = makeQuery(o.getCorrespondsIn, informCorrespondsIn);
+	o.queryCorrespondOut = makeQuery(o.getCorrespondOut, informCorrespondsOut);
 	
 	
 	return o;
@@ -167,13 +174,13 @@ function makeSituation(parentSituation, id, nextId) {
 				
 				// register involvement with args
 				forEach(arcs, function (arc) {
-					arc.arg.addInvolvement(arc.role, infon);
+					arc.arg.addInvolve(arc.role, infon);
 				});
 				
 				var oldRemove = infon.remove;
 				infon.remove = function () {
 					forEach(arcs, function (arc) {
-						arc.arg.removeInvolvement(arc.role, infon);
+						arc.arg.removeInvolve(arc.role, infon);
 					});
 					infons.remove(arcs);
 					oldRemove();
@@ -323,6 +330,12 @@ function makeOhash(stringify) {
 	var ohash = {};
 	
 	var hash = {};
+	
+	if (stringify === undefined) {
+		stringify = function (x) {
+			return x;
+		};
+	}
 	
 	ohash.get = function(key) {
 		var stringified = stringify(key);
