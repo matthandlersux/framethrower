@@ -13,6 +13,8 @@ var idGenerator = (function (prefix) {
 	};
 })("local.");
 
+var objectCache = makeOhash();
+
 // ========================================================================
 // Reactive Queries
 // ========================================================================
@@ -42,16 +44,14 @@ function makeQuery(getter) {
 // ========================================================================
 
 function makeSituation(parentSituation, id) {
-	if (id === undefined) {
-		id = idGenerator.get();
-	}
-	
 	function makeObject(parentSituation, id) {
 		if (id === undefined) {
 			id = idGenerator.get();
 		}
 		
 		var o = {};
+		
+		objectCache.set(id, o);
 
 		o.getId = function () {
 			return id;
@@ -68,14 +68,20 @@ function makeSituation(parentSituation, id) {
 					infon.remove();
 				});
 			});
+			
 			// bridge any correspondences
 			// TODO
+			
 			// remove any functions that have queried me
-			// TODO
+			// TODO ?
+			
 			// remove from parent situation
 			if (parentSituation) {
 				parentSituation.removeObject(o);
 			}
+			
+			// remove from object cache
+			objectCache.remove(id);
 		};
 
 		// =============================
@@ -149,7 +155,7 @@ function makeSituation(parentSituation, id) {
 		var correspondOut = null;
 
 		o.getCorrespondsIn = function () {
-			return correspondsIn.asArray();
+			return correspondsIn.toArray();
 		};
 
 		o.getCorrespondOut = function () {
@@ -193,7 +199,7 @@ function makeSituation(parentSituation, id) {
 	var objects = makeObjectHash();
 	
 	situation.getObjects = function () {
-		return objects.asArray();
+		return objects.toArray();
 	};
 	
 	var queryObjects = makeQuery(situation.getObjects);
@@ -455,7 +461,7 @@ function makeOhash(stringify) {
 		});
 	};
 	
-	ohash.asArray = function () {
+	ohash.toArray = function () {
 		var ret = [];
 		ohash.forEach(function (val) {
 			ret.push(val);
