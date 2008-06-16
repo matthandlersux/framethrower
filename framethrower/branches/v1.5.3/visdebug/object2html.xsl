@@ -17,7 +17,7 @@
 				<xsl:value-of select="id"/>
 			</xsl:if>
 			<xsl:if test="$params = 'all'">
-				<xsl:apply-templates>
+				<xsl:apply-templates mode="inner">
 					<xsl:with-param name="xpos" select="5"/>
 				</xsl:apply-templates>
 			</xsl:if>
@@ -27,11 +27,11 @@
 	<xsl:template match="link">
 	</xsl:template>
 	
-	<xsl:template match="*">
+	<xsl:template match="*" mode="inner">
 		<xsl:param name="xpos" />
 		<html:div style="position:relative;left:{$xpos}px;">
 			<xsl:value-of  select="name()"/>: 
-			<xsl:apply-templates>
+			<xsl:apply-templates mode="inner">
 				<xsl:with-param name="xpos" select="$xpos+15"/>
 			</xsl:apply-templates>
 		</html:div>

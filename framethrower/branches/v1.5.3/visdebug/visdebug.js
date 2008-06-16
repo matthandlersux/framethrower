@@ -207,6 +207,8 @@ var visDebug = function(){
 				drawnO.isNewChange = false;
 				var infoDiv = document.getElementById("info");
 				var htmlresult = object2html(selectO.xmlNodes.obj, {params:'all'});
+				console.dirxml(selectO.xmlNodes.obj);
+				console.dirxml(htmlresult);
 				if (infoDiv.firstChild) {
 					infoDiv.replaceChild(htmlresult, infoDiv.firstChild);
 				}
@@ -272,7 +274,6 @@ var visDebug = function(){
 			
 			forEach(newids, function(id){
 				var nodes = O[id].xmlNodes;
-				console.dirxml(nodes.obj);
 				
 				O[id].linkssvg = {};
 				O[id].linkshtml = {};
@@ -292,11 +293,7 @@ var visDebug = function(){
 				for (key in nodes.links) {
 					if(nodes.links.hasOwnProperty(key)){
 						var node = nodes.links[key];
-						console.dirxml(node);
 						if(!node.getAttribute('type').match(/Situation/) && !node.getAttribute('type').match(/Objects/)){
-							if(node.parentNode){
-								console.log(node.parentNode.nodeName);
-							}
 							svgresult = object2svg(node, {fromx:'0',fromy:'0',midx1:'0',midy1:'0',midx2:'0',midy2:'0',tox:'0',toy:'0'});
 							if (svgresult) {
 								O[id].linkssvg[key] = {};
@@ -468,8 +465,6 @@ var visDebug = function(){
 			//JB.queryContent(myF, 'queryparam2');
 			
 			initContext = function(){};
-			
-			console.log('subversion test');
 		}
 	};
 }();
