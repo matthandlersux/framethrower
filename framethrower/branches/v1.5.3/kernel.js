@@ -182,6 +182,9 @@ function makeSituation(parentSituation, id) {
 	
 	
 	var situation = makeObject(parentSituation, id);
+	situation.getType = function () {
+		return "situation";
+	};
 	
 	// =============================
 	// objects within the situation
@@ -218,28 +221,43 @@ function makeSituation(parentSituation, id) {
 	
 	situation.makeGhost = function () {
 		var ghost = makeChildObject();
+		ghost.getType = function () {
+			return "ghost";
+		};
 		situation.addObject(ghost);
 		return ghost;
 	};
 	situation.makeIndividual = function () {
 		var individual = makeChildObject();
+		individual.getType = function () {
+			return "individual";
+		};
 		situation.addObject(individual);
 		return individual;
 	};
 	situation.makeRole = function () {
 		var role = makeChildObject();
+		role.getType = function () {
+			return "role";
+		};
 		situation.addObject(role);
 		return role;
 	};
 	
 	situation.makeRelation = function (id) {
 		var relation = makeChildObject(id);
+		relation.getType = function () {
+			return "relation";
+		};
 		
 		var infons = makeOhash(stringifyArcs);
 		
 		relation.makeInfon = function (id, arcs) {
 			return infons.getOrMake(arcs, function () {
 				var infon = makeChildObject(id);
+				infon.getType = function () {
+					return "infon";
+				};
 				
 				// register involvement with args
 				forEach(arcs, function (arc) {
