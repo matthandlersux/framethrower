@@ -78,6 +78,9 @@ var visDebug = function(){
 									}
 									else {
 										if(obj.constructor === Array){
+											if('n' + name === 'n2'){
+												console.log('found n2 2');
+											}
 											childNode = makeXMLObject(obj[name], 'n' + name);
 										} else {
 											childNode = makeXMLObject(obj[name], name);										
@@ -265,7 +268,6 @@ var visDebug = function(){
 				console.log(myfield.value);
 				var command = myfield.value;
 				myfield.value = "";
-				var result = eval(command,initContext);
 				
 				var regexp = /(\w*\.)?make(\w*)\(.*\)/;
 				
@@ -274,7 +276,7 @@ var visDebug = function(){
 				if(subcommand){
 					if(subcommand[0]){
 						subcommand = subcommand[0];
-					}	
+					}
 					subcommand = 'temp = ' + subcommand + ';';
 					var temp = eval(subcommand,initContext);
 					command = command.replace(regexp,'temp');
@@ -283,6 +285,7 @@ var visDebug = function(){
 				eval(command,initContext);
 				isNewChange = true;
 				this.objectCache2Screen();
+				
 				return false;
 			} else {
 				return true;
@@ -353,6 +356,8 @@ var visDebug = function(){
 				}
 			}
 			
+			console.log('before makeXML');
+			
 			forEach(newids, function(id){
 				if(!O[id]){
 					O[id] = {};
@@ -360,6 +365,9 @@ var visDebug = function(){
 				var obj = objectCache[id];
 				O[id].xmlNodes = objectToXML(obj, "object", "link");
 			});
+			
+			console.log('done makeXML');
+			
 			
 			//convert object xml format to svg and html	
 
