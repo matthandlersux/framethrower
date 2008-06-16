@@ -183,6 +183,10 @@ function makeSituation(parentSituation, id) {
 	
 	var situation = makeObject(parentSituation, id);
 	
+	// =============================
+	// objects within the situation
+	// =============================
+	
 	var objects = makeObjectHash();
 	
 	situation.getObjects = function () {
@@ -193,20 +197,40 @@ function makeSituation(parentSituation, id) {
 	situation.queryObjects = queryObjects.register;
 	
 	function makeChildObject(id) {
-		var o = makeObject(situation, id);
-		objects.set(o, o);
-		queryObjects.trigger();
+		var o = makeObject(situation, id);		
 		return o;
 	}
+	
+	situation.addObject = function (o) {
+		console.log("adding child object", "situation:", situation.getId(), "object:", o.getId());
+		objects.set(o, o);
+		queryObjects.trigger();
+	};
 	
 	situation.removeObject = function (o) {
 		objects.remove(o);
 		queryObjects.trigger();
 	};
 	
-	situation.makeGhost = makeChildObject;
-	situation.makeIndividual = makeChildObject;
-	situation.makeRole = makeChildObject;
+	// =============================
+	// constructors
+	// =============================
+	
+	situation.makeGhost = function () {
+		var ghost = makeChildObject();
+		situation.addObject(ghost);
+		return ghost;
+	};
+	situation.makeIndividual = function () {
+		var individual = makeChildObject();
+		situation.addObject(individual);
+		return individual;
+	};
+	situation.makeRole = function () {
+		var role = makeChildObject();
+		situation.addObject(role);
+		return role;
+	};
 	
 	situation.makeRelation = function (id) {
 		var relation = makeChildObject(id);
@@ -235,6 +259,8 @@ function makeSituation(parentSituation, id) {
 					return arcs;
 				};
 				
+				situation.addObject(infon);
+				
 				return infon;
 			});
 		};
@@ -247,11 +273,15 @@ function makeSituation(parentSituation, id) {
 			oldRemove();
 		};
 		
+		situation.addObject(relation);
+		
 		return relation;
 	};
 	
 	situation.makeSituation = function (id) {
-		return makeSituation(situation, id);
+		var s = makeSituation(situation, id);
+		situation.addObject(s);
+		return s;
 	};
 	
 	return situation;

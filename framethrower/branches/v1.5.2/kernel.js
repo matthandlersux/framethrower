@@ -31,6 +31,65 @@ Object
 	Query
 */
 
+
+function makeConnection(from, fromRole, to, toRole) {
+	
+}
+
+
+function makeQuery() {
+	var query = {};
+	
+	var further = makeOhash(stringifyConstraint);
+	
+	return query;
+}
+
+
+
+function makeObject() {
+	var o = {};
+	
+	var id = idGenerator.get();
+	objectCache[id] = o;
+	o.getId = function () {
+		return id;
+	};
+	
+	
+	var connectionsIn = {};
+	var connectionsOut = {};
+	
+	
+	
+	return o;
+}
+
+function makeIndividual(content) {
+	var individual = makeObject();
+	
+	individual.setContent = function (newContent) {
+		content = newContent;
+	};
+	
+	individual.getOutput = function (name) {
+		if (name === "content") {
+			return content;
+		}
+	};
+}
+
+function makeFunction() {
+	var func = makeObject();
+	
+	func.makeApplication = function (params) {
+		forEach(params, function (param, role) {
+			param["object"]
+		});
+	};
+}
+
+
 function makeObject(input) {
 	var o = {};
 	
@@ -73,28 +132,27 @@ function makeRelation(input) {
 	var infons = makeOhash(stringifyParams);
 	
 	function makeInfon(params) {
-		var infon = makeTrackedObject({
-			relation: relation,
-			params: params
+		var infon = makeTrackedObject();
+		
+		var involvesParams = {};
+		forEach(params, function (p) {
+			involvesParams[p] = true;
 		});
 		
 		infon.satisfies = function(constraint) {
-			var content= infon.getInput();
 			if (constraint.type === "involves") {
-				var ret = false;
-				var match = constraint.which;
-				forEach(infon.params, function (o) {
-					ret = ret || o === match;
-				});
-				return ret;
+				if (constraint.as === "relation") {
+					return constraint.relation === relation;
+				} else if (constraint.as === "") {
+					
+				}
 			} else if (constraint.type === "role") {
-				return constraint.relation === content.relation && content.params[constraint.role] === constraint.which;
+				return constraint.relation === relation && params[constraint.role] === constraint.which;
 			}
 		};
 		
 		/*infon.xmlize = function () {
-			var content = infon.getInput();
-			// construct XML from content (relation and params)
+			// construct XML from relation and params
 		};*/
 		
 		relation.register(infon);
@@ -186,6 +244,7 @@ function makeOhash(stringify) {
 a constraint is either
 	{
 		type: "involves",
+		as: "relation" | "role" | "function" | "parameter"
 		which: Object
 	}
 or
@@ -198,12 +257,12 @@ or
 */
 function stringifyConstraint(constraint) {
 	if (constraint.type === "involves") {
-		return "type:" + constraint.type + ",which:" + constraint.which.getId();
+		return "type:" + constraint.type + ",as:" + constraint.as + ",which:" + constraint.which.getId();
 	} else if (constraint.type === "role") {
 		return "type:" + constraint.type + ",relation:" + constraint.relation.getId() + ",role:" + constraint.role + ",which:" + constraint.which.getId();
 	} else {
 		throw {
-			name: "InvalidConstraint",
+			name: "InvalidConstraintType",
 			constraint: constraint
 		};
 	}
