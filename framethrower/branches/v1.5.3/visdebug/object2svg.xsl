@@ -28,7 +28,7 @@
 	</xsl:template>
 
 	<xsl:template match="object|individual">
-	    <svg:circle r="{$r}" fill="url(#blueÅgradient)">
+	    <svg:circle r="{$r}" fill="url(#bluegradient)">
 	    	<xsl:attribute name="cx">
 				<xsl:value-of select="$fromx" />
 			</xsl:attribute>
