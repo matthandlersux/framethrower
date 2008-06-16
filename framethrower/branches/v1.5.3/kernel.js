@@ -1,3 +1,31 @@
+// ========================================================================
+// Reactive Queries
+// ========================================================================
+
+function makeQuery(getter) {
+	var ohash = makeOhash();
+	return {
+		register: function (callback, func) {
+			callback(getter());
+			var entry = ohash.getOrMake(func, function () {
+				return [];
+			});
+			entry.push(callback);
+		},
+		trigger: function () {
+			ohash.forEach(function (callbacks) {
+				forEach(callbacks, function (callback) {
+					callback(getter());
+				});
+			});
+		}
+	};
+}
+
+// ========================================================================
+// Objects, Situations, Relations, Infons
+// ========================================================================
+
 function makeObject(parentSituation, id) {
 	var o = {};
 	
@@ -28,14 +56,18 @@ function makeObject(parentSituation, id) {
 	
 	var content = null;
 	
-	o.setContent = function (newContent) {
-		content = newContent;
-		// TODO add reactivity hook
-	};
-	
 	o.getContent = function () {
 		return content;
 	};
+	
+	var queryContent = makeQuery(o.getContent);
+	
+	o.setContent = function (newContent) {
+		content = newContent;
+		queryContent.trigger(newContent);
+	};
+	
+	o.queryContent = queryContent.register;
 	
 	// =============================
 	// involvements with infons
@@ -46,18 +78,6 @@ function makeObject(parentSituation, id) {
 	}
 	
 	var involves = makeObjectHash();
-	
-	o.addInvolve = function (role, infon) {
-		var infons = involves.getOrMake(role, makeObjectHash);
-		infons.set(o, infon);
-	};
-	
-	o.removeInvolve = function (role, infon) {
-		var infons = involves.get(role);
-		if (infons) {
-			infons.remove(infon);
-		}
-	};
 	
 	o.getInvolves = function (role) {
 		var ret = [];
@@ -79,23 +99,30 @@ function makeObject(parentSituation, id) {
 		return ret;
 	};
 	
+	var queryInvolves = makeQuery(o.getInvolves);
+	
+	o.addInvolve = function (role, infon) {
+		var infons = involves.getOrMake(role, makeObjectHash);
+		infons.set(o, infon);
+		queryInvolves.trigger();
+	};
+	
+	o.removeInvolve = function (role, infon) {
+		var infons = involves.get(role);
+		if (infons) {
+			infons.remove(infon);
+		}
+		queryInvolves.trigger();
+	};
+	
+	o.queryInvolves = queryInvolves.register;
+	
 	// =============================
 	// correspondences
 	// =============================
 	
 	var correspondsIn = makeOhash(stringifyObject);
 	var correspondOut = null;
-	
-	o.addCorrespondIn = function (obj) {
-		correspondsIn.set(obj, obj);
-	};
-	o.removeCorrespondIn = function (obj) {
-		correspondsIn.remove(obj);
-	};
-	
-	o.setCorrespondOut = function (obj) {
-		correspondOut = obj;
-	};
 	
 	o.getCorrespondsIn = function () {
 		var ret = [];
@@ -109,36 +136,29 @@ function makeObject(parentSituation, id) {
 		return correspondOut;
 	};
 	
-	// =============================
-	// reactively informs
-	// =============================
+	var queryCorrespondsIn = makeQuery(o.getCorrespondsIn);
+	var queryCorrespondOut = makeQuery(o.getCorrespondOut);
 	
-	function makeQuery(get, ohash) {
-		return function (callback, func) {
-			callback(get());
-			var entry = ohash.getOrMake(func, function () {
-				return [];
-			});
-			entry.push(callback);
-		};
-	}
+	o.addCorrespondIn = function (obj) {
+		correspondsIn.set(obj, obj);
+		queryCorrespondsIn.trigger();
+	};
+	o.removeCorrespondIn = function (obj) {
+		correspondsIn.remove(obj);
+		queryCorrespondsIn.trigger();
+	};
 	
-	var informContent = makeOhash();
-	var informInvolves = makeOhash();
-	var informCorrespondsIn = makeOhash();
-	var informCorrespondOut = makeOhash();
+	o.setCorrespondOut = function (obj) {
+		correspondOut = obj;
+		queryCorrespondOut.trigger();
+	};
 	
-	o.queryContent = makeQuery(o.getContent, informContent);
-	o.queryInvolves = makeQuery(o.getInvolves, informInvolves);
-	o.queryCorrespondsIn = makeQuery(o.getCorrespondsIn, informCorrespondsIn);
-	o.queryCorrespondOut = makeQuery(o.getCorrespondOut, informCorrespondsOut);
+	o.queryCorrespondsIn = queryCorrespondsIn.register;
+	o.queryCorrespondOut = queryCorrespondOut.register;
 	
 	
 	return o;
 }
-
-
-// Queries TODO
 
 
 function makeSituation(parentSituation, id, nextId) {
@@ -203,10 +223,6 @@ function makeSituation(parentSituation, id, nextId) {
 		};
 		
 		return relation;
-	};
-	
-	situation.makeQuery = function () {
-		
 	};
 	
 	situation.makeSituation = function (id, nextId) {
