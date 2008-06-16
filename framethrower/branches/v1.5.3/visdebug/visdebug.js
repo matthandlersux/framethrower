@@ -247,7 +247,8 @@ var visDebug = function(){
 	var selectO = {};
 	var drawnO = selectO;
 	var objectCache = {};
-	var runcheck = false;	
+	var runcheck = false;
+	var isNewChange = false;
 	
 	return {
 		submitenter: function(myfield,e){
@@ -263,10 +264,11 @@ var visDebug = function(){
 				console.log(myfield.value);
 				var command = myfield.value;
 				myfield.value = "";
-				var result = eval(command,this.submitenter);
-				if(command.indexOf('makeSituation')!=-1){
+				var result = eval(command,this.init);
+				if(command.indexOf('make')!=-1){
 					objectCache[result.getId()] = result;
 				}
+				isNewChange = true;
 				this.objectCache2Screen();
 				return false;
 			} else {
@@ -285,8 +287,9 @@ var visDebug = function(){
 				dragO.y = ym;
 				dragO.updatePosition();
 			}
-			if (drawnO !== selectO){
+			if (drawnO !== selectO || (isNewChange && selectO && selectO.xmlNodes)){
 				drawnO = selectO;
+				drawnO.isNewChange = false;
 				var infoDiv = document.getElementById("info");
 				var htmlresult = object2html(selectO.xmlNodes.obj, {params:'all'});
 				if (infoDiv.firstChild) {
@@ -331,14 +334,16 @@ var visDebug = function(){
 			var newids = [];
 			for (var id in objectCache) {
 				if(objectCache.hasOwnProperty(id)){
-					if (!O[id]){
+					//if (!O[id]){
 						newids.push(id);
-					}
+					//}
 				}
 			}
 			
 			forEach(newids, function(id){
-				O[id] = {};
+				if(!O[id]){
+					O[id] = {};
+				}
 				var obj = objectCache[id];
 				O[id].xmlNodes = objectToXML(obj, "object", "link");
 			});
@@ -488,12 +493,14 @@ var visDebug = function(){
 			//give each object an x and y position
 			var i = 1;
 			forEach(newids, function(id){
-				O[id].x = Math.random()*400;
-				O[id].prevX = O[id].x;
-				O[id].y = Math.random()*400;
-				O[id].prevY = O[id].y;
-				O[id].r = 300 + Math.random()*8;
-				i++;
+				if(!O[id].x){
+					O[id].x = Math.random()*400;
+					O[id].prevX = O[id].x;
+					O[id].y = Math.random()*400;
+					O[id].prevY = O[id].y;
+					O[id].r = 300 + Math.random()*8;
+					i++;
+				}
 			});
 
 			forEach(newids, function(id){
@@ -510,7 +517,7 @@ var visDebug = function(){
 			
 			var rootId = 'rootId';
 			
-			var s = makeSituation(null, rootId);
+			s = makeSituation(null, rootId);
 			
 			var GF = s.makeSituation();
 			GF.setContent({name:'Goldfinger', type:'movie'});
