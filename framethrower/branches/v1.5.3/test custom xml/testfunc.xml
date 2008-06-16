@@ -1,0 +1,13 @@
+<f:function name="printContent"
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	<f:param name="focus" />
+	<f:derived name="focusContent">
+		<f:query for="content" select="$focus" />
+	</f:derived>
+	<xsl:template>
+		<xsl:copy-of select="$focusContent" />
+	</xsl:template>
+</f:function>

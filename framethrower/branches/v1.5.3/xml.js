@@ -5,6 +5,15 @@ var xmlns = {
     svg: "http://www.w3.org/2000/svg"
 };
 
+/* Put these in your root xml element
+
+xmlns:f="http://www.filmsfolded.com/xsl/ui"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+xmlns:html="http://www.w3.org/1999/xhtml"
+xmlns:svg="http://www.w3.org/2000/svg"
+
+*/
+
 function xpath(expression, parentElement){
     function nsResolver(prefix){
         return xmlns[prefix] || null;
@@ -28,6 +37,11 @@ function loadXMLNow(url){
     req.open("GET", url, false);
     req.send(null);
     return req.responseXML.firstChild;
+}
+
+
+function createDocument() {
+	return document.implementation.createDocument("", "", null);
 }
 
 
