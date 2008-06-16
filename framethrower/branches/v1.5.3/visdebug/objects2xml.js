@@ -47,9 +47,6 @@ function makeObjectToXML(testFunc){
 								}
 								else {
 									if(obj.constructor === Array){
-										if('n' + name === 'n2'){
-											console.log('found n2 2');
-										}
 										childNode = makeXMLObject(obj[name], 'n' + name, path + '/' + objectName);
 									} else {
 										childNode = makeXMLObject(obj[name], name, path + '/' + objectName);										

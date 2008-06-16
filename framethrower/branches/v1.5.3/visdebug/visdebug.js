@@ -12,6 +12,7 @@ var visDebug = function(){
 	var selectO = {};
 	var drawnO = selectO;
 	var objectCache = {};
+	var rootSit = {};
 	var runcheck = false;
 	var isNewChange = false;
 	var initContext = null;
@@ -167,7 +168,7 @@ var visDebug = function(){
 				console.log(myfield.value);
 				var command = myfield.value;
 				myfield.value = "";
-				
+				/*
 				var regexp = /(\w*\.)?make(\w*)\(.*\)/;
 				
 				var subcommand = command.match(regexp);
@@ -181,9 +182,10 @@ var visDebug = function(){
 					command = command.replace(regexp,'temp');
 					objectCache[temp.getId()] = temp;
 				}
+				*/
 				eval(command,initContext);
 				isNewChange = true;
-				this.objectCache2Screen();
+				this.rootSit2Screen();
 				
 				return false;
 			} else {
@@ -207,8 +209,6 @@ var visDebug = function(){
 				drawnO.isNewChange = false;
 				var infoDiv = document.getElementById("info");
 				var htmlresult = object2html(selectO.xmlNodes.obj, {params:'all'});
-				console.dirxml(selectO.xmlNodes.obj);
-				console.dirxml(htmlresult);
 				if (infoDiv.firstChild) {
 					infoDiv.replaceChild(htmlresult, infoDiv.firstChild);
 				}
@@ -228,7 +228,7 @@ var visDebug = function(){
 			*/
 		},
 				
-		objectCache2Screen: function(){
+		rootSit2Screen: function(){
 			//clear out the current svg and html
 			var svgdiv = document.getElementById('svgelements');
 			var htmldiv = document.getElementById('htmlelements');
@@ -248,6 +248,21 @@ var visDebug = function(){
 				htmldiv.removeChild(htmldiv.firstChild);
 			}
 			
+			
+			//populate the objectCache by traversing the situation tree structure
+			objectCache = {};
+			
+			var recurseTree = function(obj){
+				objectCache[obj.getId()] = obj;
+				if(obj.getObjects){
+					forEach(obj.getObjects(), function(childObj){
+						recurseTree(childObj);
+					});
+				}
+			}
+			
+			recurseTree(rootSit);			
+			
 			var newids = [];
 			for (var id in objectCache) {
 				if(objectCache.hasOwnProperty(id)){
@@ -256,7 +271,7 @@ var visDebug = function(){
 					//}
 				}
 			}
-						
+				
 			forEach(newids, function(id){
 				if(!O[id]){
 					O[id] = {};
@@ -264,7 +279,7 @@ var visDebug = function(){
 				var obj = objectCache[id];
 				O[id].xmlNodes = objectToXML(obj, obj.getType(), "link");
 			});
-						
+									
 			
 			//convert object xml format to svg and html	
 
@@ -427,44 +442,22 @@ var visDebug = function(){
 			});
 		},
 
-		init: function(){
+		init: function(testFunc){
 			//create some objects to populate the object cache
-			
-			var oc = function(obj){
-				objectCache[obj.getId()] = obj;
-			};
-			
+						
 			var rootId = 'rootId';
-			
 			var s = makeSituation(null, rootId);
-			
-			var GF = s.makeSituation();
-			GF.setContent({name:'Goldfinger', type:'movie'});
-			
-			s.setContent({name:'world'});
-			
-			var SC = s.makeIndividual();
-			SC.setContent({name:'Sean Connery',type:'person'});
-
-			var JB = GF.makeIndividual();
-			JB.setContent({name:'James Bond',type:'person'});
-
-			//JB.setCorrespondsOut(SC);
-			//SC.setCorrespondsIn(JB);
-			makeCorrespondence(SC,JB);
-
-			//put all of the objects in the object cache
-			
-			oc(GF);
-			oc(SC);
-			oc(JB);
-			oc(s);
-			
+			rootSit = s;
+		
 			var myF = function(x){alert(x)};
 			
+			var G = {};
+			testFunc(s,G);
 			//JB.queryContent(myF, 'queryparam2');
 			
 			initContext = function(){};
+			
+			this.rootSit2Screen();
 		}
 	};
 }();
