@@ -415,7 +415,7 @@ function makeCorrespondence(a, b) {
 		makeC(lowest, aHighest);
 	} else {
 		// make "ghost" object in common situation
-		var ghost = situation.makeGhost();
+		var ghost = common.makeGhost();
 		makeC(ghost, aHighest);
 		makeC(ghost, bHighest);
 	}
