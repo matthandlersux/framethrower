@@ -49,6 +49,18 @@
 	    </svg:circle>
 	</xsl:template>
 
+	<xsl:template match="relation|role|infon">
+	    <svg:circle r="{$r}" fill="url(#relationgradient)">
+	    	<xsl:attribute name="cx">
+				<xsl:value-of select="$fromx" />
+			</xsl:attribute>
+	    	<xsl:attribute name="cy">
+				<xsl:value-of select="$fromy" />
+			</xsl:attribute>
+	    </svg:circle>
+	</xsl:template>
+
+
 	<xsl:template match="link">
 		<svg:g>
 			<svg:path id="{@from}{@type}{@to}" d="M{$fromx},{$fromy} Q{$midx1},{$midy1} {$midx2},{$midy2} T{$tox},{$toy}"

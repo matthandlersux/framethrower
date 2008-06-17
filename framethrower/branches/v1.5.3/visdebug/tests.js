@@ -1,5 +1,23 @@
+function infonTest(s, G){
+	var relation = s.makeRelation();
+	var role = s.makeRole();
+
+	var individual = s.makeIndividual();
+
+	var arc = {arg:individual,role:role};
+	var arcs = [arc];
+	
+	var infon = relation.makeInfon('testid',arcs);
+	console.dir(infon);
+}
+
+
+
+
+
+
 //function to run tests, takes the root situation s as input and an object G available in the debug context (to share objects)
-function test(s, G){
+function randomCorrespondence(s, G){
 	var s1 = s.makeSituation();
 	var s2 = s.makeSituation();
 	var s11 = s1.makeSituation();
@@ -20,12 +38,6 @@ function test(s, G){
 	for(var i = 0; i<ind.length;i++){
 		ind[i].setContent('ind' + i);
 	}
-	
-	/*
-	makeCorrespondence(ind[0],ind[1]);
-	makeCorrespondence(ind[0],ind[2]);
-	makeCorrespondence(ind[3],ind[0]);
-	*/
 	
 	var pairs = [];
 	
