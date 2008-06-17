@@ -7,7 +7,7 @@ function infonTest(s, G){
 	var arc = {arg:individual,role:role};
 	var arcs = [arc];
 	
-	var infon = relation.makeInfon('testid',arcs);
+	var infon = relation.makeInfon(undefined,arcs);
 }
 
 
