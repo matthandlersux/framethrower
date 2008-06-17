@@ -270,14 +270,12 @@ function makeSituation(parentSituation, id) {
 					arc.arg.addInvolve(arc.role, infon);
 				});
 				
-				var oldRemove = infon.remove;
-				infon.remove = function () {
+				infon.remove = extendFunctionality(infon.remove, function () {
 					forEach(arcs, function (arc) {
 						arc.arg.removeInvolve(arc.role, infon);
 					});
 					infons.remove(arcs);
-					oldRemove();
-				};
+				});
 				
 				infon.getArcs = function () {
 					return arcs;
@@ -293,13 +291,11 @@ function makeSituation(parentSituation, id) {
 			});
 		};
 		
-		var oldRemove = relation.remove;
-		relation.remove = function () {
+		relation.remove = extendFunctionality(relation.remove, function () {
 			infons.forEach(function (infon) {
 				infon.remove();
 			});
-			oldRemove();
-		};
+		});
 		
 		situation.addObject(relation);
 		
@@ -329,10 +325,20 @@ function makeSituation(parentSituation, id) {
 					queryOutput.trigger();
 				});
 				
+				apply.remove = extendFunctionality(apply.remove, function () {
+					applies.remove(params);
+				});
+				
 				situation.addObject(apply);
 				return apply;
 			});
 		};
+		
+		func.remove = extendFunctionality(func.remove, function () {
+			applies.forEach(function (apply) {
+				apply.remove();
+			});
+		});
 		
 		situation.addObject(func);
 		return func;
@@ -517,6 +523,15 @@ function makeOhash(stringify) {
 	return ohash;
 }
 
+
+function extendFunctionality(f, newf) {
+	return function () {
+		newf.apply(null, arguments);
+		f.apply(null, arguments);
+	};
+}
+
+
 // ========================================================================
 // Stringification
 // ========================================================================
@@ -527,7 +542,6 @@ function makeOhash(stringify) {
 function stringifyObject(o) {
 	return o.getId();
 }
-
 function makeObjectHash() {
 	return makeOhash(stringifyObject);
 }
