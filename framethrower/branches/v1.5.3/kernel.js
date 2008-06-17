@@ -283,6 +283,10 @@ function makeSituation(parentSituation, id) {
 					return arcs;
 				};
 				
+				infon.getRelation = function () {
+					return relation;
+				};
+				
 				situation.addObject(infon);
 				
 				return infon;

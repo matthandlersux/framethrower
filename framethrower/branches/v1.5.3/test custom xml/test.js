@@ -3,7 +3,7 @@ var t = loadXMLNow("testfunc.xml");
 //console.dirxml(extractXSLFromCustomXML(t));
 
 
-var comp = compileCustom(t);
+//var comp = compileCustom(t);
 
 //console.dirxml(comp({focusContent:"a string"}));
 
