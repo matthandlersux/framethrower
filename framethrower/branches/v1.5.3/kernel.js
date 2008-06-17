@@ -331,6 +331,7 @@ function makeCorrespondence(a, b) {
 		return check(aSit, bSits) || check(bSit, aSits);
 	}
 	while (!checkMatch()) {
+		//TODO: fix this loop, seems not quite right
 		aSit = aSit.getSituation();
 		bSit = bSit.getSituation();
 		aSits.push(aSit);
