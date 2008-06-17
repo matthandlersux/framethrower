@@ -8,6 +8,8 @@
 		<f:query for="content" select="$focus" />
 	</f:derived>
 	<xsl:template>
-		<xsl:copy-of select="$focusContent" />
+		<html:div>
+			<xsl:copy-of select="$focusContent" />
+		</html:div>
 	</xsl:template>
 </f:function>

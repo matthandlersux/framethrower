@@ -321,21 +321,29 @@ function makeCorrespondence(a, b) {
 	var bSits = [bSit];
 	function checkMatch() {
 		function check(sit, sits) {
-			for (var i=0, len = sits.length; i < len; i++) {
-				if (sit === sits[i]) {
-					sits.splice(i+1, sits.length);
-					return true;
+			if (sit) {
+				for (var i=0, len = sits.length; i < len; i++) {
+					if (sit === sits[i]) {
+						sits.splice(i+1, sits.length);
+						return true;
+					}
 				}
 			}
 		}
 		return check(aSit, bSits) || check(bSit, aSits);
 	}
 	while (!checkMatch()) {
-		//TODO: fix this loop, seems not quite right
-		aSit = aSit.getSituation();
-		bSit = bSit.getSituation();
-		aSits.push(aSit);
-		bSits.push(bSit);
+		if (aSit) {
+			aSit = aSit.getSituation();
+			aSits.push(aSit);
+		}
+		if (bSit) {
+			bSit = bSit.getSituation();
+			bSits.push(bSit);
+		}
+		if (!aSit && !bSit) {
+			throw "Objects not part of the same root situation";
+		}
 	}
 	// okay, now aSits contains a's parent situations up to the lowest common situation, likewise for bSits
 	var common = aSits[aSits.length - 1];

@@ -31,6 +31,16 @@ function extractXSLFromCustomXML(xml) {
 	return ss;
 }
 
+var blankXML = createDocument();
+blankXML.appendChild(blankXML.createElementNS("", "nothing"));
+
+function compileCustom(xml) {
+	var xsl = extractXSLFromCustomXML(xml);
+	var compiled = compileXSL(xsl);
+	return function (params) {
+		return compiled(blankXML, params);
+	};
+}
 
 
 function makeFunc(xml) {
