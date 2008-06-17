@@ -1,9 +1,3 @@
-function parseXMLFunc(xml) {
-	var paramNodes = xpath("f:param", xml);
-	var derivedNodes = xpath("f:derived", xml);
-	
-}
-
 function extractXSLFromCustomXML(xml) {
 	var xslDoc = createDocument();
 	var ss = xslDoc.createElementNS(xmlns["xsl"], "stylesheet");
@@ -84,32 +78,4 @@ function getDerivements(xml, params, id, callback) {
 			of.queryContent(cb, id);
 		} // TODO rest of the queries
 	});
-}
-
-
-function makeFunc(xml) {
-	var f = {};
-	
-	
-	
-	var applies = makeOhash(stringifyParams);
-	
-	f.makeApply = function (params) {
-		return applies.getOrMake(params, function () {
-			var apply = {};
-			
-			
-		});
-	};
-	
-	return f;
-}
-
-function stringifyParams(params) {
-	var strings = [];
-	forEach(params, function (val, p) {
-		strings.push("((" + p + ")(" + stringifyObject(val) + "))");
-	});
-	strings.sort();
-	return strings.join("");
 }

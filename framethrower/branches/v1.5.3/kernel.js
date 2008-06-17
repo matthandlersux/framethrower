@@ -528,7 +528,7 @@ function makeObjectHash() {
 	return makeOhash(stringifyObject);
 }
 
-// arcs :: [{role: Role, arg: Object}]
+// arcs : [{role: Role, arg: Object}]
 function stringifyArcs(arcs) {
 	function stringifyArc(arc) {
 		return "((" + stringifyObject(arc.role) + ")(" + stringifyObject(arc.arg) + "))";
@@ -536,6 +536,16 @@ function stringifyArcs(arcs) {
 	var strings = [];
 	forEach(arcs, function (arc) {
 		strings.push(stringifyArc(arc));
+	});
+	strings.sort();
+	return strings.join("");
+}
+
+// params : {String: Object}
+function stringifyParams(params) {
+	var strings = [];
+	forEach(params, function (val, p) {
+		strings.push("((" + p + ")(" + stringifyObject(val) + "))");
 	});
 	strings.sort();
 	return strings.join("");
