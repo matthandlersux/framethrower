@@ -16,8 +16,11 @@ var visDebug = function(){
 	var runcheck = false;
 	var isNewChange = false;
 	var initContext = null;
+	var rPressed = false;
 	var xm;
 	var ym;
+	var offsetx;
+	var offsety;
 
 	document.onmousemove = function(e) {
 		if (window.event) {
@@ -37,6 +40,18 @@ var visDebug = function(){
 		drag = false;
 		dragO = null;
 	};
+	
+	document.onkeydown = function(e) {
+		if(e.keyCode === 82){
+			rPressed = true;
+		}
+	}
+	
+	document.onkeyup = function(e) {
+		if(e.keyCode === 82){
+			rPressed = false;
+		}
+	}
 	
 	//function to help the xml format of the object cache resolve pointers to other objects in the object cache
 	function testTopLevelObject(obj){
@@ -66,11 +81,8 @@ var visDebug = function(){
 					
 						var toObj = O[this.xmlNodes.links[key].getAttribute('to')];
 					
-						if(this.r > toObj.r*3/5){
-							if(direction === 'up'){
-								toObj.r = this.r * 5/3 + 1;
-								toObj.updatePosition('up');
-							}else{
+						if(direction === 'init'){
+							if(this.r > toObj.r*3/5){
 								this.r = toObj.r/4;
 								if(this.r < 40){
 									this.r = 40;
@@ -78,6 +90,22 @@ var visDebug = function(){
 									toObj.updatePosition('up');
 								}
 							}
+						} else if(direction === 'up'){
+							if(this.r > toObj.r*3/5){
+								toObj.r = this.r * 5/3 + 1;
+								toObj.updatePosition('up');
+							}
+						} else{
+							
+							if(this.r > toObj.r*9/10){
+								this.r = toObj.r*9/10;
+								if(this.r < 40){
+									this.r = 40;
+									toObj.r = this.r * 5/3 + 1;
+									toObj.updatePosition('up');
+								}
+							}
+							
 						}
 
 						var x = this.x - toObj.x;
@@ -101,7 +129,11 @@ var visDebug = function(){
 						var fromObj = O[this.xmlNodes.links[key].getAttribute('from')];
 						fromObj.x += this.x-this.prevX;
 						fromObj.y += this.y-this.prevY;
-						fromObj.updatePosition();
+						if(direction === 'init'){
+							fromObj.updatePosition(direction);
+						} else {
+							fromObj.updatePosition();							
+						}
 					}
 				}
 			}
@@ -148,10 +180,12 @@ var visDebug = function(){
 		}
 	}
 	
-	function mousedown(){
+	function mousedown(e){
 		drag = true;
 		dragO = this.obj;
 		selectO = this.obj;
+		offsetx = xm - dragO.x;
+		offsety = dragO.y - ym;
 	}
 	
 	return {
@@ -200,8 +234,12 @@ var visDebug = function(){
 			}
 			runcheck = true;
 			if (drag){
-				dragO.x = xm;
-				dragO.y = ym;
+				if(rPressed){
+					dragO.r = 1.5*Math.sqrt(Math.pow(xm-dragO.x,2) + Math.pow(ym- dragO.y,2));
+				}else{
+					dragO.x = xm - offsetx;
+					dragO.y = ym + offsety;
+				}
 				dragO.updatePosition();
 			}
 			if (drawnO !== selectO || (isNewChange && selectO && selectO.xmlNodes)){
@@ -440,7 +478,7 @@ var visDebug = function(){
 			});
 
 			forEach(newids, function(id){
-				O[id].updatePosition();
+				O[id].updatePosition('init');
 			});
 		},
 
