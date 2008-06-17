@@ -3,9 +3,19 @@ function infonTest(s, G){
 	var role = s.makeRole();
 
 	var individual = s.makeIndividual();
+	var individual2 = s.makeIndividual();
+
+	var subsit = s.makeSituation();
+	var subsit2 = subsit.makeSituation();
+	
+	var individual3 = subsit2.makeIndividual();
+	
 
 	var arc = {arg:individual,role:role};
-	var arcs = [arc];
+	var arc2 = {arg:individual2,role:role};
+	var arc3 = {arg:individual3,role:role};
+	
+	var arcs = [arc,arc2,arc3];
 	
 	var infon = relation.makeInfon(undefined,arcs);
 }
