@@ -1,35 +1,39 @@
 //function to run tests, takes the root situation s as input and an object G available in the debug context (to share objects)
 function test(s, G){
-	var GF = s.makeSituation();	
-	GF.setContent({name:'Goldfinger', type:'movie'});
+	var s1 = s.makeSituation();
+	var s2 = s.makeSituation();
+	var s11 = s1.makeSituation();
+	var s12 = s1.makeSituation();
+	var s21 = s2.makeSituation();
+	var s22 = s2.makeSituation();
 	
-	s.setContent({name:'world'});
 	
-	var SC = s.makeIndividual();
-	SC.setContent({name:'Sean Connery',type:'person'});
+	var ind = [];
+	ind[0] = s.makeIndividual();
+	ind[1] = s1.makeIndividual();
+	ind[2] = s2.makeIndividual();
+ 	ind[3] = s11.makeIndividual();
+ 	ind[4] = s12.makeIndividual();
+ 	ind[5] = s21.makeIndividual();
+	ind[6] = s22.makeIndividual();
+	
+	for(var i = 0; i<ind.length;i++){
+		ind[i].setContent('ind' + i);
+	}
+	
+	
+	makeCorrespondence(ind[0],ind[1]);
+	makeCorrespondence(ind[0],ind[2]);
+	makeCorrespondence(ind[3],ind[0]);
+	
+/*
+	for(var i = 0; i<ind.length;i++){
+		for(var j = i+1; j<ind.length;j++){
+			makeCorrespondence(ind[i],ind[j]);
+			alert('done: ' + i + ", " + j);
+		}		
+	}
+*/	
 
-	var JB = GF.makeIndividual();
-	JB.setContent({name:'James Bond',type:'person'});
-
-	//JB.setCorrespondsOut(SC);
-	//SC.setCorrespondsIn(JB);
-	makeCorrespondence(SC,JB);
 	
-	
-	var GE = s.makeSituation();
-	GE.setContent('GoldenEye');
-	var JBinGE = GE.makeIndividual();
-	JBinGE.setContent('James Bond in Goldeneye');
-	makeCorrespondence(JB,JBinGE);
-	var innerMovie = GE.makeSituation();
-	var innerJB = innerMovie.makeIndividual();
-	makeCorrespondence(JB,innerJB);
-	
-	G.GF = GF;
-	G.SC = SC;
-	G.JB = JB;
-	G.GE = GE;
-	G.JBinGE = JBinGE;
-	G.innerMovie = innerMovie;
-	G.innerJB = innerJB;
 }
