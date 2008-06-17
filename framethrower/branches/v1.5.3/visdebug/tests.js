@@ -4,8 +4,8 @@ function test(s, G){
 	var s2 = s.makeSituation();
 	var s11 = s1.makeSituation();
 	var s12 = s1.makeSituation();
-	var s21 = s2.makeSituation();
-	var s22 = s2.makeSituation();
+	//var s21 = s2.makeSituation();
+	//var s22 = s2.makeSituation();
 	
 	
 	var ind = [];
@@ -14,26 +14,44 @@ function test(s, G){
 	ind[2] = s2.makeIndividual();
  	ind[3] = s11.makeIndividual();
  	ind[4] = s12.makeIndividual();
- 	ind[5] = s21.makeIndividual();
-	ind[6] = s22.makeIndividual();
+ 	//ind[5] = s21.makeIndividual();
+	//ind[6] = s22.makeIndividual();
 	
 	for(var i = 0; i<ind.length;i++){
 		ind[i].setContent('ind' + i);
 	}
 	
-	
+	/*
 	makeCorrespondence(ind[0],ind[1]);
 	makeCorrespondence(ind[0],ind[2]);
 	makeCorrespondence(ind[3],ind[0]);
+	*/
 	
-/*
+	var pairs = [];
+	
+
 	for(var i = 0; i<ind.length;i++){
 		for(var j = i+1; j<ind.length;j++){
-			makeCorrespondence(ind[i],ind[j]);
-			alert('done: ' + i + ", " + j);
+			//makeCorrespondence(ind[i],ind[j]);
+			pairs.push({1:i,2:j});
+			//alert('done: ' + i + ", " + j);
 		}		
 	}
-*/	
+
+
+	//randomly sort the pairs
+	
+	var randomNum = function(a,b){
+		return Math.random()*2-1;
+	}
+	
+	pairs.sort(randomNum);
+
+	//for(var i=0;i<pairs.length;i++){
+	for(var i=0;i<3;i++){	
+		makeCorrespondence(ind[pairs[i][1]],ind[pairs[i][2]]);
+	}
+
 
 	
 }

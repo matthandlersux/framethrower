@@ -295,6 +295,7 @@ var visDebug = function(){
 				//create svg and html for the objects
 				
 				var svgresult = object2svg(nodes.obj, {fromx:'0',fromy:'0',r:'20'});
+								
 				if (svgresult) {
 					O[id].objectsvg = svgresult;
 				}
@@ -302,7 +303,8 @@ var visDebug = function(){
 				var htmlresult = object2html(nodes.obj, {params:'id'});
 				if (htmlresult) {
 					O[id].objecthtml = htmlresult;
-				}
+				}				
+				
 				//create svg and html for the links
 
 				for (key in nodes.links) {

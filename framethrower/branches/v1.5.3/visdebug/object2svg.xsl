@@ -38,6 +38,16 @@
 	    </svg:circle>
 	</xsl:template>
 
+	<xsl:template match="ghost">
+	    <svg:circle r="{$r}" fill="url(#bluegradient)" opacity=".3">
+	    	<xsl:attribute name="cx">
+				<xsl:value-of select="$fromx" />
+			</xsl:attribute>
+	    	<xsl:attribute name="cy">
+				<xsl:value-of select="$fromy" />
+			</xsl:attribute>
+	    </svg:circle>
+	</xsl:template>
 
 	<xsl:template match="link">
 		<svg:g>
