@@ -8,7 +8,6 @@ function infonTest(s, G){
 	var arcs = [arc];
 	
 	var infon = relation.makeInfon('testid',arcs);
-	console.dir(infon);
 }
 
 
