@@ -42,6 +42,50 @@ function compileCustom(xml) {
 	};
 }
 
+function getDerivements(xml, params, id, callback) {
+	// calls callback with params and derived parameters (passed in as an object)
+	// when all derived parameters are in, and then whenever a derived parameter changes
+	var derivedNodes = xpath("f:derived", xml);
+	var derive = {};
+	forEach(derivedNodes, function (n) {
+		var name = n.getAttributeNS("", "name");
+		derive[name] = {completed: false, value: null};
+	});
+	
+	//console.log("collected derived", derive);
+	
+	var callParams = {};
+	forEach(params, function (p, name) {
+		callParams[name] = p.getId();
+	});
+	function checkDone() {
+		var done = true;
+		forEach(derive, function (d, name) {
+			done = done && d.completed;
+			callParams[name] = d.value;
+		});
+		if (done) {
+			//console.log("derivements all done");
+			//console.dir(callParams);
+			callback(callParams);
+		}
+	}
+	
+	forEach(derivedNodes, function (n) {
+		var name = n.getAttributeNS("", "name");
+		var query = n.getAttributeNS("", "query");
+		var of = params[n.getAttributeNS("", "of")];
+		function cb(val) {
+			derive[name].value = val;
+			derive[name].completed = true;
+			checkDone();
+		}
+		if (query === "content") {
+			of.queryContent(cb, id);
+		} // TODO rest of the queries
+	});
+}
+
 
 function makeFunc(xml) {
 	var f = {};

@@ -45,7 +45,7 @@ function makeQuery(getter) {
 
 function makeSituation(parentSituation, id) {
 	function makeObject(parentSituation, id) {
-		if (id === undefined) {
+		if (id === undefined || id === null || id === false) {
 			id = idGenerator.get();
 		}
 		
@@ -300,6 +300,38 @@ function makeSituation(parentSituation, id) {
 		situation.addObject(relation);
 		
 		return relation;
+	};
+	
+	situation.makeFunction = function (id, xml) {
+		var func = makeChildObject(id);
+		
+		var applies = makeOhash(stringifyParams);
+		
+		var compiled = compileCustom(xml);
+		
+		func.makeApply = function (id, params) {
+			return applies.getOrMake(params, function () {
+				var apply = makeChildObject(id);
+				
+				var output = null;
+				apply.getOutput = function () {
+					return output;
+				};
+				var queryOutput = makeQuery(apply.getOutput);
+				apply.queryOutput = queryOutput.register;
+				
+				getDerivements(xml, params, apply.getId(), function (ps) {
+					output = compiled(ps);
+					queryOutput.trigger();
+				});
+				
+				situation.addObject(apply);
+				return apply;
+			});
+		};
+		
+		situation.addObject(func);
+		return func;
 	};
 	
 	situation.makeSituation = function (id) {

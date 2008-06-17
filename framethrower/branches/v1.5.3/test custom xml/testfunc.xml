@@ -4,9 +4,7 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:svg="http://www.w3.org/2000/svg">
 	<f:param name="focus" />
-	<f:derived name="focusContent">
-		<f:query for="content" select="$focus" />
-	</f:derived>
+	<f:derived name="focusContent" query="content" of="focus" />
 	<xsl:template>
 		<html:div>
 			<xsl:copy-of select="$focusContent" />
