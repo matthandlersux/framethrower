@@ -22,6 +22,20 @@ var visDebug = function(){
 	var ym;
 	var offsetx;
 	var offsety;
+	var initx;
+	var inity;
+	var curorig_x;
+	var curorig_y;
+	var orig_width;
+	var orig_height;
+	var curorig_width;
+	var curorig_height;
+	var midx;
+	var midy;
+	var svgelements;
+	var svgPoint;
+	var basezoom=1;
+	var zoomfactor=1;
 
 	document.onmousemove = function(e) {
 		if (window.event) {
@@ -46,7 +60,10 @@ var visDebug = function(){
 		if(e.keyCode === 82){
 			rPressed = true;
 		} else if(e.keyCode === 90){
+			initx = xm;
+			inity = ym;
 			zPressed = true;
+			basezoom = zoomfactor;
 		}
 		
 	}
@@ -158,8 +175,8 @@ var visDebug = function(){
 		}
 		
 		
-		htmlelement.style.left = this.x-15 + "px";
-		htmlelement.style.top = this.y+5 + "px";		
+		//htmlelement.style.left = this.x-15 + "px";
+		//htmlelement.style.top = this.y+5 + "px";		
 		
 		for (key in this.linkssvg) {
 			if(this.linkssvg.hasOwnProperty(key)){
@@ -189,9 +206,23 @@ var visDebug = function(){
 		drag = true;
 		dragO = this.obj;
 		selectO = this.obj;
-		offsetx = xm - dragO.x;
-		offsety = dragO.y - ym;
+		offsetx = dragO.x;
+		offsety = dragO.y;
+		var point = calcCoord(xm,ym,svgelements);
+		initx = point.x;
+		inity = point.y;
 	}
+	
+	function calcCoord(x,y,ctmNode) {
+		svgPoint.x = x;
+		svgPoint.y = y;
+		var matrix = ctmNode.getScreenCTM();
+		svgPoint = svgPoint.matrixTransform(matrix.inverse());
+	
+		//undo the effect of viewBox and zoomin/scroll
+		return svgPoint;
+	}
+	
 	
 	return {
 		submitenter: function(myfield,e){
@@ -239,15 +270,12 @@ var visDebug = function(){
 			}
 			runcheck = true;
 			if (drag){
+				var point = calcCoord(xm,ym,svgelements);
 				if(rPressed){
-					dragO.r = 1.5*Math.sqrt(Math.pow(xm-dragO.x,2) + Math.pow(ym- dragO.y,2));
-				} else if (zPressed){
-					//var svgelements = document.getElementById('svgelements');
-					//svgelements.viewBox.baseVal.height = Math.round((ym));
-					//svgelements.viewBox.baseVal.width = Math.round((xm));
+					dragO.r = 1.5*Math.sqrt(Math.pow(point.x-dragO.x,2) + Math.pow(point.y- dragO.y,2));
 				} else {
-					dragO.x = xm - offsetx;
-					dragO.y = ym + offsety;
+					dragO.x = point.x - initx + offsetx;
+					dragO.y = point.y - inity + offsety;
 				}
 				dragO.updatePosition();
 			}
@@ -262,9 +290,21 @@ var visDebug = function(){
 				else {
 					infoDiv.appendChild(htmlresult);
 				}
+			} else if (zPressed){
+				//svgelements.viewBox.baseVal.height = Math.round((ym));
+				//svgelements.viewBox.baseVal.width = Math.round((xm));
+				zoomfactor = basezoom+(xm-initx)/200;
+				if(zoomfactor < 1){
+					zoomfactor = Math.abs(1/(zoomfactor-2));
+				}
+				//var zoomfactor = 1.25;
+				curorig_width= orig_width*zoomfactor;
+				curorig_height= orig_height*zoomfactor;
+				curorig_x = midx - (curorig_width/2);
+				curorig_y = midy - (curorig_height/2);
+				
+				svgelements.setAttribute("viewBox",curorig_x+" "+curorig_y+" "+curorig_width+" "+curorig_height);
 			}
-			
-
 									
 			runcheck = false;
 			
@@ -350,10 +390,10 @@ var visDebug = function(){
 					O[id].objectsvg = svgresult;
 				}
 				
-				var htmlresult = object2html(nodes.obj, {params:'id'});
-				if (htmlresult) {
-					O[id].objecthtml = htmlresult;
-				}				
+				//var htmlresult = object2html(nodes.obj, {params:'id'});
+				//if (htmlresult) {
+				//	O[id].objecthtml = htmlresult;
+				//}				
 				
 				//create svg and html for the links
 
@@ -367,10 +407,10 @@ var visDebug = function(){
 								O[id].linkssvg[key].node = svgresult;
 							}
 					
-							htmlresult = object2html(node, {params:'id'});
-							if (htmlresult) {
-								O[id].linkshtml[key] = htmlresult;
-							}
+							//htmlresult = object2html(node, {params:'id'});
+							//if (htmlresult) {
+							//	O[id].linkshtml[key] = htmlresult;
+							//}
 						}
 					}
 				}
@@ -459,6 +499,8 @@ var visDebug = function(){
 					svgdiv.appendChild(svgnode.node);
 				});
 			});
+		
+		/*
 			forEach(newids, function(id){
 				var obj = O[id];
 				htmldiv.appendChild(obj.objecthtml);
@@ -466,7 +508,7 @@ var visDebug = function(){
 					htmldiv.appendChild(htmlnode);
 				});
 			});
-			
+		*/	
 
 			//give each svgobject a mouseup function and pointer back to the parent object
 			forEach(newids, function(id){
@@ -495,6 +537,29 @@ var visDebug = function(){
 		},
 
 		init: function(testFunc){
+			//setup some display variables
+			svgelements = document.getElementById('svgelements');
+			svgPoint = svgelements.createSVGPoint();
+			
+			console.dir(svgelements.getScreenCTM());
+			
+			actual_width = svgelements.width;
+			actual_height = svgelements.height;
+			
+			var vb = svgelements.getAttribute("viewBox");
+			if(vb) {
+				var vba = vb.split(" "); //comes out with four string array
+				curorig_x = Number(vba[0]);
+				curorig_y = Number(vba[1]);
+				curorig_width = Number(vba[2]);
+				curorig_height = Number(vba[3]);
+				orig_height = curorig_height;
+				orig_width = curorig_width;
+				midx = curorig_x+(curorig_width/2);
+				midy = curorig_y+(curorig_height/2);
+			}
+			
+			
 			//create some objects to populate the object cache
 						
 			var rootId = 'rootId';
