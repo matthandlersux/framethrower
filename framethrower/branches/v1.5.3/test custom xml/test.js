@@ -18,3 +18,13 @@ jb.setContent("James Bond");
 var f = s.makeFunction(null, t);
 
 var a = f.makeApply(null, {focus: jb});
+
+var relation = s.makeRelation();
+var role = s.makeRole();
+
+var individual = s.makeIndividual();
+
+var arc = {arg:individual,role:role};
+var arcs = [arc];
+
+var infon = relation.makeInfon(undefined,arcs);

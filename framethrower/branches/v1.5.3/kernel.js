@@ -304,6 +304,9 @@ function makeSituation(parentSituation, id) {
 	
 	situation.makeFunction = function (id, xml) {
 		var func = makeChildObject(id);
+		func.getType = function () {
+			return "function";
+		};
 		
 		var applies = makeOhash(stringifyParams);
 		
@@ -312,6 +315,9 @@ function makeSituation(parentSituation, id) {
 		func.makeApply = function (id, params) {
 			return applies.getOrMake(params, function () {
 				var apply = makeChildObject(id);
+				apply.getType = function () {
+					return "apply";
+				};
 				
 				var output = null;
 				apply.getOutput = function () {
@@ -325,6 +331,13 @@ function makeSituation(parentSituation, id) {
 					queryOutput.trigger();
 				});
 				
+				apply.getParams = function () {
+					return params;
+				};
+				apply.getFunction = function () {
+					return func;
+				};
+				
 				apply.remove = extendFunctionality(apply.remove, function () {
 					applies.remove(params);
 				});
@@ -332,6 +345,10 @@ function makeSituation(parentSituation, id) {
 				situation.addObject(apply);
 				return apply;
 			});
+		};
+		
+		func.getXML = function () {
+			return xml;
 		};
 		
 		func.remove = extendFunctionality(func.remove, function () {
