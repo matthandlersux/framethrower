@@ -17,6 +17,7 @@ var visDebug = function(){
 	var isNewChange = false;
 	var initContext = null;
 	var rPressed = false;
+	var zPressed = false;
 	var xm;
 	var ym;
 	var offsetx;
@@ -44,12 +45,17 @@ var visDebug = function(){
 	document.onkeydown = function(e) {
 		if(e.keyCode === 82){
 			rPressed = true;
+		} else if(e.keyCode === 90){
+			zPressed = true;
 		}
+		
 	}
 	
 	document.onkeyup = function(e) {
 		if(e.keyCode === 82){
 			rPressed = false;
+		} else if(e.keyCode === 90){
+			zPressed = false;
 		}
 	}
 	
@@ -70,7 +76,6 @@ var visDebug = function(){
 	function updatePosition(direction){
 		var svgelement = this.objectsvg;
 		var htmlelement = this.objecthtml;
-		
 		
 		//check x,y and r against containing situations and contained situations...
 		var key;
@@ -236,7 +241,11 @@ var visDebug = function(){
 			if (drag){
 				if(rPressed){
 					dragO.r = 1.5*Math.sqrt(Math.pow(xm-dragO.x,2) + Math.pow(ym- dragO.y,2));
-				}else{
+				} else if (zPressed){
+					//var svgelements = document.getElementById('svgelements');
+					//svgelements.viewBox.baseVal.height = Math.round((ym));
+					//svgelements.viewBox.baseVal.width = Math.round((xm));
+				} else {
 					dragO.x = xm - offsetx;
 					dragO.y = ym + offsety;
 				}
@@ -254,6 +263,9 @@ var visDebug = function(){
 					infoDiv.appendChild(htmlresult);
 				}
 			}
+			
+
+									
 			runcheck = false;
 			
 			/*
