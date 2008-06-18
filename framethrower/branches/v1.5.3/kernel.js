@@ -115,14 +115,14 @@ function makeSituation(parentSituation, id) {
 				// return all infons
 				involves.forEach(function (infons) {
 					infons.forEach(function (infon) {
-						ret.push[infon];
+						ret.push(infon);
 					});
 				});
 			} else {
 				var infons = involves.get(role);
 				if (infons) {
 					infons.forEach(function (infon) {
-						ret.push[infon];
+						ret.push(infon);
 					});
 				}
 			}
@@ -133,7 +133,7 @@ function makeSituation(parentSituation, id) {
 
 		o.addInvolve = function (role, infon) {
 			var infons = involves.getOrMake(role, makeObjectHash);
-			infons.set(o, infon);
+			infons.set(infon, infon);
 			queryInvolves.trigger();
 		};
 
