@@ -28,8 +28,6 @@ var visDebug = function(){
 	var curorig_y;
 	var orig_width;
 	var orig_height;
-	var curorig_width;
-	var curorig_height;
 	var midx;
 	var midy;
 	var svgelements;
@@ -291,19 +289,16 @@ var visDebug = function(){
 					infoDiv.appendChild(htmlresult);
 				}
 			} else if (zPressed){
-				//svgelements.viewBox.baseVal.height = Math.round((ym));
-				//svgelements.viewBox.baseVal.width = Math.round((xm));
 				zoomfactor = basezoom+(xm-initx)/200;
-				if(zoomfactor < 1){
-					zoomfactor = Math.abs(1/(zoomfactor-2));
+				if(zoomfactor <= 0.1){
+					zoomfactor = 0.1;
 				}
-				//var zoomfactor = 1.25;
-				curorig_width= orig_width*zoomfactor;
-				curorig_height= orig_height*zoomfactor;
-				curorig_x = midx - (curorig_width/2);
-				curorig_y = midy - (curorig_height/2);
+				var width = orig_width*zoomfactor;
+				var height = orig_height*zoomfactor;
 				
-				svgelements.setAttribute("viewBox",curorig_x+" "+curorig_y+" "+curorig_width+" "+curorig_height);
+				curorig_x = midx - (width/2);
+				curorig_y = midy - (height/2);
+				svgelements.setAttribute("viewBox",curorig_x+" "+curorig_y+" "+width+" "+height);
 			}
 									
 			runcheck = false;
@@ -551,12 +546,10 @@ var visDebug = function(){
 				var vba = vb.split(" "); //comes out with four string array
 				curorig_x = Number(vba[0]);
 				curorig_y = Number(vba[1]);
-				curorig_width = Number(vba[2]);
-				curorig_height = Number(vba[3]);
-				orig_height = curorig_height;
-				orig_width = curorig_width;
-				midx = curorig_x+(curorig_width/2);
-				midy = curorig_y+(curorig_height/2);
+				orig_height = Number(vba[3]);
+				orig_width = Number(vba[2]);
+				midx = curorig_x+(orig_width/2);
+				midy = curorig_y+(orig_height/2);
 			}
 			
 			
