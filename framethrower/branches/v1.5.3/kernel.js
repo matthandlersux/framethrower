@@ -44,10 +44,11 @@ function makeQuery(getter) {
 // ========================================================================
 
 function makeSituation(parentSituation, id) {
-	function makeObject(parentSituation, id) {
+	function makeObject(parentSituation, id, my) {
 		if (id === undefined || id === null || id === false) {
 			id = idGenerator.get();
 		}
+		my = my || {};
 		
 		var o = {};
 		
@@ -164,7 +165,9 @@ function makeSituation(parentSituation, id) {
 		// =============================
 
 		var correspondsIn = makeOhash(stringifyObject);
+		my.correspondsIn = correspondsIn;
 		var correspondOut = null;
+		my.correspondOut = correspondOut;
 
 		o.getCorrespondsIn = function () {
 			return correspondsIn.toArray();
@@ -194,7 +197,6 @@ function makeSituation(parentSituation, id) {
 		o.queryCorrespondsIn = queryCorrespondsIn.register;
 		o.queryCorrespondOut = queryCorrespondOut.register;
 
-
 		return o;
 	}
 	
@@ -217,8 +219,8 @@ function makeSituation(parentSituation, id) {
 	var queryObjects = makeQuery(situation.getObjects);
 	situation.queryObjects = queryObjects.register;
 	
-	function makeChildObject(id) {
-		var o = makeObject(situation, id);		
+	function makeChildObject(id, my) {
+		var o = makeObject(situation, id, my);		
 		return o;
 	}
 	
@@ -237,21 +239,27 @@ function makeSituation(parentSituation, id) {
 	// constructors
 	// =============================
 	
-	situation.makeGhost = function (id) {
-		var ghost = makeChildObject(id);
+	situation.makeGhost = function (id, my) {
+		my = my || {};
+		var ghost = makeChildObject(id, my);
 		ghost.getType = function () {
 			return "ghost";
 		};
 		situation.addObject(ghost);
-		
-		ghost.removeCorrespondIn = postExtendFunctionality(ghost.removeCorrespondIn, function () {
-			//remove any contained objects
-			if (ghost.getCorrespondsIn().length < 2) {
+
+		//override the object.removeCorrespondIn method to remove useless ghosts
+		var super_removeCorrespondIn = ghost.superior('removeCorrespondIn');		
+		ghost.removeCorrespondIn = function (obj) {
+			super_removeCorrespondIn(obj);
+			//remove this ghost if it has less than 2 correspondsIn
+			if (my.correspondsIn.count() < 2) {
 				ghost.remove();
 			}
-		});
+		};
+		
 		return ghost;
 	};
+	
 	situation.makeIndividual = function (id) {
 		var individual = makeChildObject(id);
 		individual.getType = function () {
@@ -566,7 +574,7 @@ function makeOhash(stringify) {
 			i++;
 		});
 		return i;
-	}
+	};
 	
 	ohash.toArray = function () {
 		var ret = [];
@@ -578,7 +586,7 @@ function makeOhash(stringify) {
 	
 	ohash.isEmpty = function () {
 		return isEmpty(hash);
-	}
+	};
 	
 	return ohash;
 }

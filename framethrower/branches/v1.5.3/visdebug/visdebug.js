@@ -71,7 +71,7 @@ var visDebug = function(){
 		} else if(e.keyCode === 90){
 			zPressed = false;
 		}
-	}
+	};
 	
 	//function to help the xml format of the object cache resolve pointers to other objects in the object cache
 	function testTopLevelObject(obj){
@@ -252,7 +252,7 @@ var visDebug = function(){
 				*/
 				eval(command,initContext);
 				isNewChange = true;
-				this.rootSit2Screen();
+				this.rootSit2Screen();				
 				
 				return false;
 			} else {
@@ -343,9 +343,10 @@ var visDebug = function(){
 						recurseTree(childObj);
 					});
 				}
-			}
+			};
 			
-			recurseTree(rootSit);			
+			
+			recurseTree(rootSit);		
 			
 			var newids = [];
 			for (var id in objectCache) {
@@ -355,7 +356,8 @@ var visDebug = function(){
 					//}
 				}
 			}
-				
+			
+			
 			forEach(newids, function(id){
 				if(!O[id]){
 					O[id] = {};
@@ -363,7 +365,6 @@ var visDebug = function(){
 				var obj = objectCache[id];
 				O[id].xmlNodes = objectToXML(obj, obj.getType(), "link");
 			});
-									
 			
 			//convert object xml format to svg and html	
 
@@ -556,7 +557,7 @@ var visDebug = function(){
 			var s = makeSituation(null, rootId);
 			rootSit = s;
 		
-			var myF = function(x){alert(x)};
+			var myF = function(x){alert(x);};
 			
 			var G = {};
 			testFunc(s,G);

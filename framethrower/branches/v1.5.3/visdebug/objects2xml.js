@@ -14,7 +14,7 @@ function makeObjectToXML(testFunc){
 		if(typeof objectName === 'number'){
 			objectName = 'n' + objectName;
 		}
-		
+				
 		var objectNode = document.createElementNS("", objectName.toLowerCase());
 		var contentTextNode;
 		if (obj !== null) {
