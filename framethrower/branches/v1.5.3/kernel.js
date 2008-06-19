@@ -243,6 +243,13 @@ function makeSituation(parentSituation, id) {
 			return "ghost";
 		};
 		situation.addObject(ghost);
+		
+		ghost.removeCorrespondIn = postExtendFunctionality(ghost.removeCorrespondIn, function () {
+			//remove any contained objects
+			if (ghost.getCorrespondsIn().length < 2) {
+				ghost.remove();
+			}
+		});
 		return ghost;
 	};
 	situation.makeIndividual = function (id) {
@@ -379,15 +386,12 @@ function makeSituation(parentSituation, id) {
 		return s;
 	};
 	
-	//crappy way to override remove while still calling the inherited method
-	var objRemove = situation.remove;
-	situation.remove = function (){
+	situation.remove = extendFunctionality(situation.remove, function () {
 		//remove any contained objects
 		objects.forEach(function(subObject){
 			subObject.remove();
 		});
-		objRemove();
-	};
+	});
 	
 	return situation;
 }
@@ -584,6 +588,13 @@ function extendFunctionality(f, newf) {
 	return function () {
 		newf.apply(null, arguments);
 		f.apply(null, arguments);
+	};
+}
+
+function postExtendFunctionality(f, newf) {
+	return function () {
+		f.apply(null, arguments);
+		newf.apply(null, arguments);
 	};
 }
 
