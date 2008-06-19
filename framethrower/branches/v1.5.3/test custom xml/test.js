@@ -28,3 +28,11 @@ var arc = {arg:individual,role:role};
 var arcs = [arc];
 
 var infon = relation.makeInfon(undefined,arcs);
+
+
+
+var serialized = serializeObject(s);
+
+importAs("copy.", serialized, s);
+
+console.dirxml(serializeObject(s));

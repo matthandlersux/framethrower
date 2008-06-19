@@ -222,7 +222,7 @@ function importAs(prefix, xml, situation) {
 		// we import situations first so that correspondences in have somewhere to point to
 		
 		var situationNodes = xpath("f:situation", xml);
-		var otherNodes = xpath("*[not(self::f:situation)]");
+		var otherNodes = xpath("*[not(self::f:situation)]", xml);
 		
 		importNodes(situationNodes, o);
 		importNodes(otherNodes, o);
@@ -243,7 +243,7 @@ function importAs(prefix, xml, situation) {
 		if (relation) {
 			var isReady = true;
 			var arcs = [];
-			var xmlarcs = xpath("arc", xml);
+			var xmlarcs = xpath("f:arc", xml);
 			forEach(xmlarcs, function (xmlarc) {
 				var role = ready(xmlarc.getAttributeNS("", "role"));
 				var arg = ready(xmlarc.getAttributeNS("", "arg"));
@@ -251,6 +251,7 @@ function importAs(prefix, xml, situation) {
 				arcs.push({role: role, arg: arg});
 			});
 			if (isReady) {
+				console.log("importing infon", arcs);
 				return addCC(relation.makeInfon(id, arcs));
 			}
 		}

@@ -225,24 +225,24 @@ function makeSituation(parentSituation, id) {
 	// constructors
 	// =============================
 	
-	situation.makeGhost = function () {
-		var ghost = makeChildObject();
+	situation.makeGhost = function (id) {
+		var ghost = makeChildObject(id);
 		ghost.getType = function () {
 			return "ghost";
 		};
 		situation.addObject(ghost);
 		return ghost;
 	};
-	situation.makeIndividual = function () {
-		var individual = makeChildObject();
+	situation.makeIndividual = function (id) {
+		var individual = makeChildObject(id);
 		individual.getType = function () {
 			return "individual";
 		};
 		situation.addObject(individual);
 		return individual;
 	};
-	situation.makeRole = function () {
-		var role = makeChildObject();
+	situation.makeRole = function (id) {
+		var role = makeChildObject(id);
 		role.getType = function () {
 			return "role";
 		};
@@ -499,7 +499,12 @@ function makeOhash(stringify) {
 	
 	ohash.get = function(key) {
 		var stringified = stringify(key);
-		return hash[stringified].value;
+		var entry = hash[stringified];
+		if (entry) {
+			return entry.value;
+		} else {
+			return undefined;
+		}
 	};
 	
 	ohash.set = function (key, value) {
