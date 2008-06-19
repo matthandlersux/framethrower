@@ -86,12 +86,12 @@ function makeSituation(parentSituation, id) {
 			
 			// remove any functions that have queried me
 			// TODO ?
-			
+						
 			// remove from parent situation
 			if (parentSituation) {
 				parentSituation.removeObject(o);
 			}
-			
+						
 			// remove from object cache
 			objectCache.remove(id);
 		};
@@ -377,6 +377,16 @@ function makeSituation(parentSituation, id) {
 		var s = makeSituation(situation, id);
 		situation.addObject(s);
 		return s;
+	};
+	
+	//crappy way to override remove while still calling the inherited method
+	var objRemove = situation.remove;
+	situation.remove = function (){
+		//remove any contained objects
+		objects.forEach(function(subObject){
+			subObject.remove();
+		});
+		objRemove();
 	};
 	
 	return situation;
