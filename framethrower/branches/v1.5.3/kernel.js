@@ -70,7 +70,17 @@ function makeSituation(parentSituation, id) {
 			});
 			
 			// bridge any correspondences
-			// TODO
+			if (correspondOut) {
+				correspondOut.removeCorrespondIn(this);
+				correspondsIn.forEach(function (corresponderIn){
+					correspondOut.addCorrespondIn(corresponderIn);
+					corresponderIn.setCorrespondOut(correspondOut);
+				});
+			} else {
+				correspondsIn.forEach(function (corresponderIn){
+					corresponderIn.setCorrespondOut(null);
+				});
+			}
 			
 			// remove any functions that have queried me
 			// TODO ?
