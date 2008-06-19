@@ -70,17 +70,19 @@ function makeSituation(parentSituation, id) {
 			});
 			
 			// bridge any correspondences
+			var newOut = null;
 			if (correspondOut) {
 				correspondOut.removeCorrespondIn(this);
-				correspondsIn.forEach(function (corresponderIn){
-					correspondOut.addCorrespondIn(corresponderIn);
-					corresponderIn.setCorrespondOut(correspondOut);
-				});
-			} else {
-				correspondsIn.forEach(function (corresponderIn){
-					corresponderIn.setCorrespondOut(null);
-				});
-			}
+				newOut = correspondOut;
+			} else if (correspondsIn.count()>1) {
+				newOut = parentSituation.makeGhost();
+			}			
+			correspondsIn.forEach(function (corresponderIn){
+				if (newOut) {
+					newOut.addCorrespondIn(corresponderIn);
+				}
+				corresponderIn.setCorrespondOut(newOut);
+			});
 			
 			// remove any functions that have queried me
 			// TODO ?
@@ -544,6 +546,14 @@ function makeOhash(stringify) {
 		});
 	};
 	
+	ohash.count = function(){
+		var i = 0;
+		forEach(hash, function () {
+			i++;
+		});
+		return i;
+	}
+	
 	ohash.toArray = function () {
 		var ret = [];
 		ohash.forEach(function (val) {
@@ -551,6 +561,10 @@ function makeOhash(stringify) {
 		});
 		return ret;
 	};
+	
+	ohash.isEmpty = function () {
+		return isEmpty(hash);
+	}
 	
 	return ohash;
 }

@@ -63,8 +63,7 @@ var visDebug = function(){
 			zPressed = true;
 			basezoom = zoomfactor;
 		}
-		
-	}
+	};
 	
 	document.onkeyup = function(e) {
 		if(e.keyCode === 82){
@@ -535,9 +534,7 @@ var visDebug = function(){
 			//setup some display variables
 			svgelements = document.getElementById('svgelements');
 			svgPoint = svgelements.createSVGPoint();
-			
-			console.dir(svgelements.getScreenCTM());
-			
+						
 			actual_width = svgelements.width;
 			actual_height = svgelements.height;
 			
