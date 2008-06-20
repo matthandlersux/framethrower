@@ -243,7 +243,6 @@ function makeSituation(parentSituation, id) {
 	}
 	
 	situation.addObject = function (o) {
-		console.log("adding child object", "situation:", situation.getId(), "object:", o.getId());
 		objects.set(o, o);
 		queryObjects.trigger();
 	};
