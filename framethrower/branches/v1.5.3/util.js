@@ -185,3 +185,4 @@ Object.method('superior', function(name) {
 		return method.apply(that, arguments);
 	};
 });
+

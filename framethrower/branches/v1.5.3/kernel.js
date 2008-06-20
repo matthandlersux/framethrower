@@ -39,29 +39,48 @@ function makeQuery(getter) {
 	};
 }
 
+
+// ========================================================================
+// Identifiables
+// ========================================================================
+
+function makeIded(id, my) {
+	my = my || {};
+	if (id === undefined || id === null || id === false) {
+		id = idGenerator.get();
+	}
+	var o = {};
+	
+	objectCache.set(id, o);
+
+	o.getId = function () {
+		return id;
+	};
+	
+	o.remove = function () {
+		// remove from object cache
+		objectCache.remove(id);
+	};
+	
+	return o;
+}
+
+
 // ========================================================================
 // Objects, Situations, Relations, Infons
 // ========================================================================
 
 function makeSituation(parentSituation, id) {
 	function makeObject(parentSituation, id, my) {
-		if (id === undefined || id === null || id === false) {
-			id = idGenerator.get();
-		}
 		my = my || {};
-		
-		var o = {};
-		
-		objectCache.set(id, o);
 
-		o.getId = function () {
-			return id;
-		};
-
+		var o = makeIded(id, my);
+		
 		o.getSituation = function () {
 			return parentSituation;
 		};
 
+		var superRemove = o.remove;
 		o.remove = function () {
 			// remove all infons that i'm involved in
 			involves.forEach(function (infons) {
@@ -92,9 +111,8 @@ function makeSituation(parentSituation, id) {
 			if (parentSituation) {
 				parentSituation.removeObject(o);
 			}
-						
-			// remove from object cache
-			objectCache.remove(id);
+			
+			superRemove();
 		};
 
 		// =============================
@@ -297,12 +315,15 @@ function makeSituation(parentSituation, id) {
 					arc.arg.addInvolve(arc.role, infon);
 				});
 				
-				infon.remove = extendFunctionality(infon.remove, function () {
+				var superRemove = infon.remove;
+				infon.remove = function () {
 					forEach(arcs, function (arc) {
 						arc.arg.removeInvolve(arc.role, infon);
 					});
 					infons.remove(arcs);
-				});
+					
+					superRemove();
+				};
 				
 				infon.getArcs = function () {
 					return arcs;
@@ -318,11 +339,13 @@ function makeSituation(parentSituation, id) {
 			});
 		};
 		
-		relation.remove = extendFunctionality(relation.remove, function () {
+		var superRemove = relation.remove;
+		relation.remove = function () {
 			infons.forEach(function (infon) {
 				infon.remove();
 			});
-		});
+			superRemove();
+		};
 		
 		situation.addObject(relation);
 		
@@ -365,9 +388,11 @@ function makeSituation(parentSituation, id) {
 					return func;
 				};
 				
-				apply.remove = extendFunctionality(apply.remove, function () {
+				var superRemove = apply.remove;
+				apply.remove = function () {
 					applies.remove(params);
-				});
+					superRemove();
+				};
 				
 				situation.addObject(apply);
 				return apply;
@@ -378,11 +403,13 @@ function makeSituation(parentSituation, id) {
 			return xml;
 		};
 		
-		func.remove = extendFunctionality(func.remove, function () {
+		var superRemove = func.remove;
+		func.remove = function () {
 			applies.forEach(function (apply) {
 				apply.remove();
 			});
-		});
+			superRemove();
+		};
 		
 		situation.addObject(func);
 		return func;
@@ -394,12 +421,14 @@ function makeSituation(parentSituation, id) {
 		return s;
 	};
 	
-	situation.remove = extendFunctionality(situation.remove, function () {
+	var superRemove = situation.remove;
+	situation.remove = function () {
 		//remove any contained objects
 		objects.forEach(function(subObject){
 			subObject.remove();
 		});
-	});
+		superRemove();
+	};
 	
 	return situation;
 }
@@ -591,20 +620,6 @@ function makeOhash(stringify) {
 	return ohash;
 }
 
-
-function extendFunctionality(f, newf) {
-	return function () {
-		newf.apply(null, arguments);
-		f.apply(null, arguments);
-	};
-}
-
-function postExtendFunctionality(f, newf) {
-	return function () {
-		f.apply(null, arguments);
-		newf.apply(null, arguments);
-	};
-}
 
 
 // ========================================================================
