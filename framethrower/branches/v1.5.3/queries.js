@@ -13,6 +13,207 @@ function makeIdGenerator() {
 var qIds = makeIdGenerator();
 
 
+function makeQ(qOut, removeParentConnection) {
+	var q = {};
+	
+	var id = qIds.get();
+	q.getId = function () {
+		return id;
+	};
+	
+	var children = makeObjectHash();
+	var output = makeObjectHash();
+	
+	qOut.add = function (o) {
+		output.set(o, o);
+		children.forEach(function (childIn) {
+			childIn.add(o);
+		});
+	};
+	qOut.remove = function (o) {
+		output.remove(o);
+		children.forEach(function (childIn) {
+			childIn.remove(o);
+		});
+	};
+	
+	
+	q.spawn = function (inAdd, inRemove) {
+		var spawnedOut = {};
+		var spawned = makeQ(spawnedOut, function () {
+			children.remove(spawned);
+		});
+		
+		var qIn = {
+			add: function (o) {
+				inAdd(o, spawnedOut);
+			},
+			remove: function (o) {
+				inRemove(o, spawnedOut);
+			}
+		};
+		children.set(spawned, qIn);
+		// get it caught up
+		output.forEach(function (o) {
+			qIn.add(o);
+		});
+		return spawned;
+	};
+	
+	
+	q.remove = function () {
+		// remove children
+		children.forEach(function (childIn, child) {
+			child.remove();
+		});
+		
+		// remove parent connection
+		if (removeParentConnection) {
+			removeParentConnection();
+		}
+	};
+	
+	return q;
+}
+
+
+
+function makeCrossReference() {
+	var cr = {};
+	
+	var inputs = makeObjectHash();
+	var outputs = makeObjectHash();
+	
+	cr.hasInput = function (input) {
+		return inputs.get(input);
+	};
+	
+	cr.addLink = function (input, output, callback) {
+		if (!outputs.get(output)) {
+			callback(output);
+		}
+		inputs.getOrMake(input, makeObjectHash).set(output, output);
+		outputs.getOrMake(output, makeObjectHash).set(input, input);
+	};
+	
+	function checkDead(output, callback) {
+		var ins = outputs.get(output);
+		if (ins.isEmpty()) {
+			outputs.remove(output);
+			callback(output);
+		}
+	}
+	
+	cr.removeLink = function (input, output, callback) {
+		var outs = inputs.get(input);
+		if (outs) {
+			outs.remove(output);
+			var ins = outputs.get(output);
+			ins.remove(input);
+			checkDead(output, callback);
+		}
+	};
+	
+	cr.removeInput = function (input, callback) {
+		var outs = inputs.get(input);
+		if (outs) {
+			outs.forEach(function (output) {
+				var ins = outputs.get(output);
+				ins.remove(input);
+				checkDead(output, callback);
+			});
+		}
+		inputs.remove(input);
+	};
+	
+	return cr;
+}
+
+
+
+function qLift(q, f) {
+	var cr = makeCrossReference();
+	return q.spawn(
+		function (input, myOut) {
+			if (!cr.hasInput(input)) {
+				var outputList = f(input);
+				forEach(outputList, function (output) {
+					cr.addLink(input, output, myOut.add);
+				});
+			}
+		},
+		function (input, myOut) {
+			cr.removeInput(input, myOut.remove);
+		});
+}
+
+
+// not tested yet...
+function qUnion(q) {
+	var cr = makeCrossReference();
+	var inputs = makeObjectHash();
+	
+	return q.spawn(
+		function (input, myOut) {
+			inputs.getOrMake(input, function () {
+				return input.spawn(
+					function (innerInput) {
+						cr.addLink(input, innerInput, myOut.add);
+					},
+					function (innerInput) {
+						cr.removeLink(input, innerInput, myOut.remove);
+					});
+			});
+		},
+		function (input, myOut) {
+			var qInner = inputs.get(input);
+			qInner.remove();
+			inputs.remove(input);
+			cr.removeInput(input, myOut.remove);
+		});
+}
+
+
+
+/*
+
+function makeQ(inbound) {
+	var q = {};
+	
+	var id = qIds.get();
+	q.getId = function () {
+		return id;
+	};
+	
+	var outbound = makeObjectHash();
+	
+	var output = makeObjectHash();
+	
+	
+	var qOut = {};
+	qOut.add = function (o) {
+		output.set(o, o);
+		outbound.forEach(function (next) {
+			next.add(o);
+		});
+	};
+	qOut.remove = function (o) {
+		output.remove(o);
+		outbound.forEach(function (next) {
+			next.remove(o);
+		});
+	};
+	
+	
+	q.spawn = function (inAdd, inRemove) {
+		var spawned = makeQ(q);
+		
+		outbound.set(spawned, spawned);
+	};
+}
+
+
+
 
 function makeQ() {
 	var q = {};
@@ -78,54 +279,7 @@ function connectQs(inQ, outQ) {
 }
 
 
-function makeCrossReference() {
-	var cr = {};
-	
-	var inputs = makeObjectHash();
-	var outputs = makeObjectHash();
-	
-	cr.hasInput = function (input) {
-		return inputs.get(input);
-	};
-	
-	cr.addLink = function (input, output, callback) {
-		inputs.getOrMake(input, makeObjectHash).set(output, output);
-		outputs.getOrMake(output, makeObjectHash).set(input, input);
-		callback(output);
-	};
-	
-	function checkDead(output, callback) {
-		var ins = outputs.get(output);
-		if (ins.isEmpty()) {
-			outputs.remove(output);
-			callback(output);
-		}
-	}
-	
-	cr.removeLink = function (input, output, callback) {
-		var outs = inputs.get(input);
-		if (outs) {
-			outs.remove(output);
-			var ins = outputs.get(output);
-			ins.remove(input);
-			checkDead(output, callback);
-		}
-	};
-	
-	cr.removeInput = function (input, callback) {
-		var outs = inputs.get(input);
-		if (outs) {
-			outs.forEach(function (output) {
-				var ins = outputs.get(output);
-				ins.remove(input);
-				checkDead(output, callback);
-			});
-		}
-		inputs.remove(input);
-	};
-	
-	return cr;
-}
+
 
 
 
@@ -180,7 +334,7 @@ function qUnion() {
 }
 
 // (Object -> Q) -> Q
-/*function qSelect(f) {
+function qSelect(f) {
 	var q = makeQ();
 	
 	var cr = makeCrossReference();
@@ -190,4 +344,7 @@ function qUnion() {
 			var
 		}
 	};
-}*/
+}
+
+
+*/

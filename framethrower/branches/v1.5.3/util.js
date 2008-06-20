@@ -65,7 +65,7 @@ function all(o, f) {
 	});
 }
 function isEmpty(o) {
-	return any(o, function () {
+	return !any(o, function () {
 		return true;
 	});
 }
