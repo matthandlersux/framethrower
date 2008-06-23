@@ -629,7 +629,11 @@ function makeOhash(stringify) {
 // This makes it possible to reuse stringification functions while keeping uniqueness
 
 function stringifyObject(o) {
-	return o.getId();
+	if (o.getId) {
+		return o.getId();
+	} else {
+		return o;
+	}
 }
 function makeObjectHash() {
 	return makeOhash(stringifyObject);

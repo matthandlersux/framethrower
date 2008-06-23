@@ -1,71 +1,375 @@
 
-function makeIdGenerator() {
-	var gen = {};
-	var count = 0;
-	gen.get = function () {
-		count += 1;
-		return count;
+
+
+function makeQ(instantiate, parent) {
+	var q = makeIded();
+	
+	var active = false;
+	var outputCache;
+	var processor;
+	
+	function activate() {
+		// initialize
+		outputCache = makeObjectHash();
+		processor = instantiate();
+		// add inform from parent
+		if (parent) {
+			parent.addInform(q);
+		}
+		active = true;
+	}
+	function deactivate() {
+		parent.removeInform(q);
+		active = false;
+		if (processor.deactivate) {
+			processor.deactivate();
+		}
+		// garbage collect
+		outputCache = null;
+		processor = null;
 	};
-	return gen;
+	q.activate = activate;
+	q.deactivate = deactivate;
+	
+	
+	var informs = makeObjectHash();
+	
+	q.addInform = function (inform) {
+		informs.set(inform, inform);
+		if (!active) {
+			activate();
+		} else {
+			// catch it up
+			outputCache.forEach(function (o) {
+				inform.input.add(o);
+			});
+		}
+	};
+	q.removeInform = function (inform) {
+		informs.remove(inform);
+		if (parent && informs.isEmpty()) {
+			deactivate();
+		}
+	};
+	
+	q.input = {};
+	q.input.add = function (o) {
+		processor.add(o, output);
+	};
+	q.input.remove = function (o) {
+		processor.remove(o, output);
+	};
+	
+	var output = {};
+	output.add = function (o) {
+		informs.forEach(function (inform) {
+			inform.input.add(o);
+		});
+		outputCache.set(o, o);
+	};
+	output.remove = function (o) {
+		informs.forEach(function (inform) {
+			inform.input.remove(o);
+		});
+		outputCache.remove(o);
+	};
+	
+	return q;
+}
+
+function makeQStart() {
+	var q = makeQ(function () {
+		return {
+			add: function (o, output) {
+				output.add(o);
+			},
+			remove: function (o, output) {
+				output.remove(o);
+			}
+		};
+	});
+	q.activate();
+	delete q.activate;
+	delete q.deactivate;
+	return q;
+}
+
+function makeQEnd(processor, parent) {
+	var q = makeQ(function () {
+		return processor;
+	}, parent);
+	delete q.addInform;
+	delete q.removeInform;
+	return q;
 }
 
 
-var qIds = makeIdGenerator();
+
+function makeQComponent(instantiate) {
+	var component = makeIded();
+	
+	var applications = makeObjectHash();
+	
+	component.makeApply = function (input) {
+		return applications.getOrMake(input, function () {
+			var q = makeQ(instantiate, input);
+			delete q.activate;
+			delete q.deactivate;
+			return q;
+		});
+	};
+	
+	return component;
+}
+
+
+
+
+
+function makeCrossReference() {
+	var cr = {};
+	
+	var inputs = makeObjectHash();
+	var outputs = makeObjectHash();
+	
+	cr.hasInput = function (input) {
+		return inputs.get(input);
+	};
+	
+	cr.addLink = function (input, output, callback) {
+		if (!outputs.get(output)) {
+			callback(output);
+		}
+		inputs.getOrMake(input, makeObjectHash).set(output, output);
+		outputs.getOrMake(output, makeObjectHash).set(input, input);
+	};
+	
+	function checkDead(output, callback) {
+		var ins = outputs.get(output);
+		if (ins.isEmpty()) {
+			outputs.remove(output);
+			callback(output);
+		}
+	}
+	
+	cr.removeLink = function (input, output, callback) {
+		var outs = inputs.get(input);
+		if (outs) {
+			outs.remove(output);
+			var ins = outputs.get(output);
+			ins.remove(input);
+			checkDead(output, callback);
+		}
+	};
+	
+	cr.removeInput = function (input, callback) {
+		var outs = inputs.get(input);
+		if (outs) {
+			outs.forEach(function (output) {
+				var ins = outputs.get(output);
+				ins.remove(input);
+				checkDead(output, callback);
+			});
+		}
+		inputs.remove(input);
+	};
+	
+	return cr;
+}
+
+
+
+function qLift(f) {
+	return makeQComponent(function () {
+		var cr = makeCrossReference();
+		return {
+			add: function (input, myOut) {
+				if (!cr.hasInput(input)) {
+					var outputList = f(input);
+					forEach(outputList, function (output) {
+						cr.addLink(input, output, myOut.add);
+					});
+				}
+			},
+			remove: function (input, myOut) {
+				cr.removeInput(input, myOut.remove);
+			}
+		};
+	});
+}
+
+
+var qUnion = makeQComponent(function () {
+	var cr = makeCrossReference();
+	var inputs = makeObjectHash();
+	return {
+		add: function (input, myOut) {
+			inputs.getOrMake(input, function () {
+				var aggregator = makeQEnd({
+					add: function (innerInput) {
+						cr.addLink(input, innerInput, myOut.add);
+					},
+					remove: function (innerInput) {
+						cr.removeLink(input, innerInput, myOut.remove);
+					}
+				}, input);
+				aggregator.activate();
+				return aggregator;
+			});
+		},
+		remove: function (input, myOut) {
+			var qInner = inputs.get(input);
+			qInner.deactivate();
+			inputs.remove(input);
+			cr.removeInput(input, myOut.remove);
+		},
+		deactivate: function () {
+			inputs.forEach(function (qInner) {
+				qInner.deactivate();
+			});
+		}
+	};
+});
+
+
+
+/*
+
+function makeQSoul(removeFromParent) {
+	var soul = {};
+	
+	var bodies = makeObjectHash();
+	
+	soul.addBody = function (body) {
+		bodies.set(body, body);
+	};
+	soul.removeBody = function (body) {
+		bodies.remove(body);
+		if (bodies.isEmpty() && removeFromParent) {
+			removeFromParent();
+		}
+	};
+	
+	var components = makeObjectHash();
+	
+	var output = makeObjectHash();
+	
+	soul.qAdd = function (o) {
+		output.set(o, o);
+		components.forEach(function (c) {
+			c.instance.qAdd(o, c.soul);
+		});
+	};
+	
+	soul.qRemove = function (o) {
+		output.remove(o);
+		components.forEach(function (c) {
+			c.instance.qRemove(o, c.soul);
+		});
+	};
+	
+	soul.spawn = function (component) {
+		components.getOrMake(component, function () {
+			var instance = component.instantiate();
+			var spawnedSoul = makeQSoul(function () {
+				components.remove(component);
+			});
+			
+			forEach(output, function (o) {
+				instance.qAdd(o, spawnedSoul);
+			});
+			
+			return {
+				instance: instance,
+				soul: spawnedSoul
+			};
+		});
+	};
+}
+
+
+function makeQ(soul) {
+	
+}
+
+
+
+
+
+
+
+
+
 
 
 function makeQ(qOut, removeParentConnection) {
-	var q = {};
+	var q = makeIded();
 	
-	var id = qIds.get();
-	q.getId = function () {
-		return id;
-	};
+	
+	
 	
 	var children = makeObjectHash();
+	var injectors = makeObjectHash();
+	
 	var output = makeObjectHash();
 	
-	qOut.add = function (o) {
+	
+	qOut.qAdd = function (o) {
 		output.set(o, o);
-		children.forEach(function (childIn) {
-			childIn.add(o);
+		injectors.forEach(function (injector) {
+			injector.qAdd(o);
 		});
 	};
-	qOut.remove = function (o) {
+	qOut.qRemove = function (o) {
 		output.remove(o);
-		children.forEach(function (childIn) {
-			childIn.remove(o);
+		injectors.forEach(function (injector) {
+			injector.qRemove(o);
 		});
 	};
 	
+	function removeChild(component) {
+		children.remove(component);
+		injectors.remove(component);
+		if (children.isEmpty()) {
+			q.remove();
+		}
+	}
 	
-	q.spawn = function (inAdd, inRemove) {
-		var spawnedOut = {};
-		var spawned = makeQ(spawnedOut, function () {
-			children.remove(spawned);
+	q.spawn = function (component) {
+		return children.getOrMake(component, function () {
+			var instance = component.instantiate();
+			
+			var spawnedOut = {};
+			var spawned = makeQ(spawnedOut, function () {
+				removeChild(component);
+			});
+			
+			var qIn = {
+				qAdd: function (o) {
+					instance.qAdd(o, spawnedOut);
+				},
+				qRemove: function (o) {
+					instance.qRemove(o, spawnedOut);
+				}
+			};
+			
+			injectors.set(component, qIn);
+			
+			// get it caught up
+			output.forEach(function (o) {
+				qIn.qAdd(o);
+			});
+			
+			return spawned;
 		});
-		
-		var qIn = {
-			add: function (o) {
-				inAdd(o, spawnedOut);
-			},
-			remove: function (o) {
-				inRemove(o, spawnedOut);
-			}
-		};
-		children.set(spawned, qIn);
-		// get it caught up
-		output.forEach(function (o) {
-			qIn.add(o);
-		});
-		return spawned;
 	};
 	
 	
 	q.remove = function () {
 		// remove children
-		children.forEach(function (childIn, child) {
-			child.remove();
-		});
+		//children.forEach(function (childIn, child) {
+		//	child.remove();
+		//});
 		
 		// remove parent connection
 		if (removeParentConnection) {
@@ -73,7 +377,20 @@ function makeQ(qOut, removeParentConnection) {
 		}
 	};
 	
+	q.getOutput = function () {
+		return output.toArray();
+	};
+	
 	return q;
+}
+
+
+
+
+function makeComponent(instantiate) {
+	var com = makeIded();
+	com.instantiate = instantiate;
+	return com;
 }
 
 
@@ -131,220 +448,62 @@ function makeCrossReference() {
 
 
 
-function qLift(q, f) {
-	var cr = makeCrossReference();
-	return q.spawn(
-		function (input, myOut) {
-			if (!cr.hasInput(input)) {
-				var outputList = f(input);
-				forEach(outputList, function (output) {
-					cr.addLink(input, output, myOut.add);
-				});
+function qLift(f) {
+	return makeComponent(function () {
+		var cr = makeCrossReference();
+		return {
+			qAdd: function (input, myOut) {
+				if (!cr.hasInput(input)) {
+					var outputList = f(input);
+					forEach(outputList, function (output) {
+						cr.addLink(input, output, myOut.qAdd);
+					});
+				}
+			},
+			qRemove: function (input, myOut) {
+				cr.removeInput(input, myOut.qRemove);
 			}
-		},
-		function (input, myOut) {
-			cr.removeInput(input, myOut.remove);
-		});
+		};
+	});
 }
 
 
-// not tested yet...
-function qUnion(q) {
+var qUnion = makeComponent(function () {
 	var cr = makeCrossReference();
 	var inputs = makeObjectHash();
-	
-	return q.spawn(
-		function (input, myOut) {
+	return {
+		qAdd: function (input, myOut) {
 			inputs.getOrMake(input, function () {
-				return input.spawn(
-					function (innerInput) {
-						cr.addLink(input, innerInput, myOut.add);
-					},
-					function (innerInput) {
-						cr.removeLink(input, innerInput, myOut.remove);
-					});
+				var aggregator = makeComponent(function () {
+					return {
+						qAdd: function (innerInput) {
+							cr.addLink(input, innerInput, myOut.qAdd);
+						},
+						qRemove: function (innerInput) {
+							cr.removeLink(input, innerInput, myOut.qRemove);
+						}
+					};
+				});
+				return input.spawn(aggregator);
 			});
 		},
-		function (input, myOut) {
+		qRemove: function (input, myOut) {
 			var qInner = inputs.get(input);
 			qInner.remove();
 			inputs.remove(input);
-			cr.removeInput(input, myOut.remove);
-		});
-}
-
-
-
-/*
-
-function makeQ(inbound) {
-	var q = {};
-	
-	var id = qIds.get();
-	q.getId = function () {
-		return id;
-	};
-	
-	var outbound = makeObjectHash();
-	
-	var output = makeObjectHash();
-	
-	
-	var qOut = {};
-	qOut.add = function (o) {
-		output.set(o, o);
-		outbound.forEach(function (next) {
-			next.add(o);
-		});
-	};
-	qOut.remove = function (o) {
-		output.remove(o);
-		outbound.forEach(function (next) {
-			next.remove(o);
-		});
-	};
-	
-	
-	q.spawn = function (inAdd, inRemove) {
-		var spawned = makeQ(q);
-		
-		outbound.set(spawned, spawned);
-	};
-}
-
-
-
-
-function makeQ() {
-	var q = {};
-	
-	var id = qIds.get();
-	q.getId = function () {
-		return id;
-	};
-	
-	var inbound = makeObjectHash();
-	var outbound = makeObjectHash();
-	
-	var output = makeObjectHash();
-	
-	q.addConnectIn = function (otherQ) {
-		inbound.set(otherQ, otherQ);
-		// catch the other Q up...
-		output.forEach(function (o) {
-			otherQ.inAdd(o);
-		});
-	};
-	q.removeConnectIn = function (otherQ) {
-		inbound.remove(otherQ);
-	};
-	
-	q.addConnectOut = function (otherQ) {
-		outbound.set(otherQ, otherQ);
-	};
-	q.removeConnectOut = function (otherQ) {
-		outbound.remove(otherQ);
-	};
-	
-	q.remove = function () {
-		inbound.forEach(function (otherQ) {
-			otherQ.removeConnectOut(q);
-		});
-		outbound.forEach(function (otherQ) {
-			otherQ.removeConnectIn(q);
-		});
-		// remove from object cache?
-	};
-	
-	q.outAdd = function (o) {
-		output.set(o, o);
-		outbound.forEach(function (otherQ) {
-			otherQ.add(o);
-		});
-	};
-	q.outRemove = function (o) {
-		output.remove(o);
-		outbound.forEach(function (otherQ) {
-			otherQ.remove(o);
-		});
-	};
-	
-	return q;
-}
-
-
-function connectQs(inQ, outQ) {
-	inQ.addConnectOut(outQ);
-	outQ.addConnectIn(inQ);
-}
-
-
-
-
-
-
-// (Object -> [Object]) -> Q
-function qLift(f) {
-	var q = makeQ();
-	
-	var cr = makeCrossReference();
-	
-	q.inAdd = function (input) {
-		if (!cr.hasInput(input)) {
-			var outputList = f(input);
-			forEach(outputList, function (output) {
-				cr.link(input, output, q.outAdd);
-			});
+			cr.removeInput(input, myOut.qRemove);
 		}
 	};
-	
-	q.inRemove = function (input) {
-		cr.removeInput(input, q.outRemove);
-	};
-	
-	return q;
-}
-
-function qUnion() {
-	var q = makeQ();
-	
-	var cr = makeCrossReference();
-	var inputs = makeObjectHash();
-	
-	q.inAdd = function (input) {
-		inputs.getOrMake(input, function () {
-			var qInner = makeQ();
-			qInner.inAdd = function (innerInput) {
-				cr.link(input, innerInput, q.outAdd);
-			};
-			qInner.inRemove = function (innerInput) {
-				cr.removeLink(input, innerInput, q.outRemove);
-			};
-			return qInner;
-		});
-	};
-	
-	q.inRemove = function (input) {
-		var qInner = inputs.get(input);
-		qInner.remove();
-		cr.removeInput(input, q.outRemove);
-	};
-	
-	return q;
-}
-
-// (Object -> Q) -> Q
-function qSelect(f) {
-	var q = makeQ();
-	
-	var cr = makeCrossReference();
-	
-	q.inAdd = function (input) {
-		if (!cr.inputs.get(input)) {
-			var
-		}
-	};
-}
+});
 
 
 */
+
+
+
+/*function memoize(stringify, f) {
+	var oHash = makeOhash(stringify);
+	return function (i) {
+		oHash.getOrMake(i, f);
+	};
+}*/
