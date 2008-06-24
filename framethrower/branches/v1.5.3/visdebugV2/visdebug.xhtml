@@ -1,0 +1,140 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:svg="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink">
+<head>
+  <title>FT Vis Debug</title>
+	<script src="dojoPackage/dojo/dojo.js" djConfig="parseOnLoad:true, isDebug:true"/>
+	<script src="../util.js"/>
+	<script src="../kernel.js"/>
+	<script src="tests.js"/>	
+	<script src="objects2xml.js"/>
+	<script src="visdebug.js"/>
+
+	<script type="text/javascript">
+		dojo.require("dijit.form.Button");
+		dojo.require("dijit.TitlePane");
+		
+		
+		dojo.addOnLoad(function(){
+			visDebug.init(randomCorrespondence);
+			setInterval('visDebug.run();', 64);
+		});
+	</script>
+
+
+  <style>
+    stop.yellow { stop-color:yellow; }
+    stop.green { stop-color:green; }
+	stop.red { stop-color:red;}
+	stop.blue {stop-color:blue;}
+	stop.gray {stop-color:gray;}
+	stop.black {stop-color:black;}
+	
+	body {
+		margin: 0px;
+		position:absolute;
+		z-index:0;
+		left:0px;
+		top:0px;
+		width:100%;
+		height:100%;
+	}
+	
+	#svgelements {
+		width:70%;
+		height:100%;
+		position:absolute;
+		top:0;
+		left:0;
+		z-index:-1;
+	}
+	
+	#info {
+		background:white;
+		position:absolute;
+		left:70%;
+		top:0px;
+		bottom:190px;
+		border-bottom:1px solid black;
+		width:30%;
+		overflow:auto;
+	}
+	
+	#svgkey {
+		width:150px;
+		height:135px;
+		position:absolute;
+		bottom:35px;
+		left:72%;
+		z-index:1;
+	}
+	
+	#key {
+		position:absolute;
+		left:72%;
+		bottom:35px;
+	}
+	
+	#inputdiv {
+		position:absolute;
+		left:72%;
+		bottom:10px;
+	}
+	
+	#inputdiv input {
+		width:300px;
+	}
+	
+  </style>
+</head>
+<body id="body" onload="">
+		<svg:svg version="1.1"
+		    id="svgelements"
+		    preserveAspectRatio="xMidYMid slice" viewBox="0 0 1400 900">
+			<svg:linearGradient id="gradient">
+				<svg:stop class="yellow" offset="0%"/>
+				<svg:stop class="green" offset="100%"/>
+	    	</svg:linearGradient>
+			<svg:linearGradient id="bluegradient">
+				<svg:stop class="red" offset="0%"/>
+				<svg:stop class="blue" offset="100%"/>
+	    	</svg:linearGradient>
+			<svg:linearGradient id="relationgradient">
+				<svg:stop class="red" offset="0%"/>
+				<svg:stop class="yellow" offset="100%"/>
+	    	</svg:linearGradient>
+			<svg:linearGradient id="graygradient">
+				<svg:stop class="black" offset="0%"/>
+				<svg:stop class="gray" offset="15%"/>
+				<svg:stop class="gray" offset="85%"/>
+				<svg:stop class="black" offset="100%"/>
+	    	</svg:linearGradient>
+		    <svg:rect x="0" y="0" width="100%" height="100%" fill="url(#graygradient)" />		
+			<div id="sepdiv" />
+		</svg:svg>
+		<svg:svg version="1.1" id="svgkey"
+		    preserveAspectRatio="xMidYMid slice">
+			<svg:rect x="80" y="63" width="40" height="12" fill="url(#gradient)" />
+			<svg:rect x="80" y="81" width="40" height="12" fill="url(#bluegradient)" />
+			<svg:rect x="80" y="99" width="40" height="12" fill="url(#relationgradient)" />
+			<svg:rect x="80" y="117" width="40" height="12" fill="url(#bluegradient)" opacity=".3"/>			
+		</svg:svg>
+		
+		<div id="info" />
+			
+		<div id="key">
+			Hints: <br/>Hold "r" to resize, "z" to zoom <br/>
+			Key: <br/>
+			Situations: <br/>
+			Individuals: <br/>
+			Rel/Rol/Inf: <br/>
+			Ghosts: <br/>
+		</div>
+		<div id="inputdiv">
+			<input />
+		</div>
+</body>
+</html>
