@@ -123,6 +123,23 @@ function makeQComponent(instantiate) {
 }
 
 
+function qCompose(/* components */) {
+	var component = makeIded();
+	
+	var components = arguments;
+	
+	component.makeApply = function (input) {
+		var q = input;
+		forEach(components, function (component) {
+			q = component.makeApply(q);
+		});
+		return q;
+	};
+	
+	return component;
+}
+
+
 
 
 
@@ -178,7 +195,7 @@ function makeCrossReference() {
 }
 
 
-
+// f : Object -> [Object]
 function qLift(f) {
 	return makeQComponent(function () {
 		var cr = makeCrossReference();
@@ -197,6 +214,17 @@ function qLift(f) {
 		};
 	});
 }
+
+
+// f : Object -> Q Object
+function qSelect(f) {
+	return qCompose(
+		qLift(function (o) {
+			return [f(o)];
+		}),
+		qUnion);
+}
+
 
 
 var qUnion = makeQComponent(function () {
@@ -230,6 +258,12 @@ var qUnion = makeQComponent(function () {
 		}
 	};
 });
+
+
+
+
+
+
 
 
 
