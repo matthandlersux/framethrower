@@ -108,7 +108,8 @@ var initUserInput = function() {
 
 
 var visDebug = function(){
-	var O = {}; //objects being displayed on screen	
+	var O = {}; //objects being displayed on screen
+	var L = {}; //links (being displayed if both ends are on screen)
 	var object2svg = compileXSL(loadXMLNow("object2svg.xsl"));
 	var object2html = compileXSL(loadXMLNow("object2html.xsl"));
 	var objectCache = {};
@@ -138,7 +139,10 @@ var visDebug = function(){
 	
 	var makeScreenObject = function(id){
 		var SO = {};
-		SO.linkssvg = {};
+		if(!L[id]){
+			L[id] = {};
+			L[id].tolinks = {};			
+		}
 		
 		SO.objId = id;
 		
@@ -151,141 +155,231 @@ var visDebug = function(){
 		SO.z = 0;
 
 		
-		
+		SO.removeObject = function(){
+			//remove from-links from "to" parameter of links
+			for (var key in L[id].links) {
+				if(L[id].links.hasOwnProperty(key)){
+					var toindex = L[id].links[key].xmlNode.getAttribute('to');
+					if(L[toindex].tolinks[key]){
+						L[toindex].tolinks[key] = undefined;						
+					}
+				}
+			}
+			
+			var svgdiv = document.getElementById('svgelements');
+			//remove from-links and to-links svg
+			var removeLinks = function(links){
+				forEach(links, function(link){
+					if(link.svg && link.svg.node && svgdiv === link.svg.node.parentNode){
+						svgdiv.removeChild(link.svg.node);
+					}
+				});
+			};
+			removeLinks(L[id].links);
+			removeLinks(L[id].tolinks);
+			
+			//clear from-links svg
+			L[id].links = undefined;
+			
+			//remove object svg
+			if(svgdiv === SO.objectsvg.parentNode){
+				svgdiv.removeChild(SO.objectsvg);
+			}
+			//clear object svg
+			SO.objectsvg = undefined;
+		};
 		
 		SO.setObject = function(obj){
+			if(L[id].links){
+				SO.removeObject();
+			}
+			
 			var xmlresult = objectToXML(obj, obj.getType(), "link");
 			SO.xmlNodes = {};
 			SO.xmlNodes.obj = xmlresult.obj;
-			SO.links = xmlresult.links;
 
-			//create svg and html for the objects
+			L[id].links = xmlresult.links;
 			
+			//create svg for the objects			
 			var svgresult = object2svg(SO.xmlNodes.obj, {fromx:'0',fromy:'0',r:'20',objid:id});
 							
 			if (svgresult) {
 				SO.objectsvg = svgresult;
 			}
 			
-			//create svg for the links
-
-			forEach(SO.links, function(link) {
-				var node = link.xmlNode;
-				if(!node.getAttribute('type').match(/Situation/) && !node.getAttribute('type').match(/Objects/)){
-					svgresult = object2svg(node, {fromx:'0',fromy:'0',midx1:'0',midy1:'0',midx2:'0',midy2:'0',tox:'0',toy:'0'});
-					if (svgresult) {
-						link.svg = {};
-						link.svg.node = svgresult;
+			//create svg for the links if they don't already exist
+			var links2svg = function(links){
+				forEach(links, function(link) {
+					var node = link.xmlNode;
+					if(!node.getAttribute('type').match(/Situation/) && !node.getAttribute('type').match(/Objects/)){
+						if(!link.svg){
+							svgresult = object2svg(node, {fromx:'0',fromy:'0',midx1:'0',midy1:'0',midx2:'0',midy2:'0',tox:'0',toy:'0'});
+							if (svgresult) {
+								link.svg = {};
+								link.svg.node = svgresult;
+							}
+						}
+					}
+				});
+			};
+			links2svg(L[id].links);
+			links2svg(L[id].tolinks);
+			
+			//add link xml objects and svg objects to the "to" parameter of the link
+			var links = L[id].links;
+			for (var key in links) {
+				if(links.hasOwnProperty(key)){
+					var node = links[key].xmlNode;
+					var toindex = node.getAttribute('to');
+					if(!L[toindex]){
+						L[toindex] = {};
+						L[toindex].tolinks = {};
+					}
+					if(!L[toindex].tolinks[key]){
+						L[toindex].tolinks[key] = {};
+					}
+					L[toindex].tolinks[key].xmlNode = node;
+					if(L[id].links[key].svg){
+						L[toindex].tolinks[key].svg = L[id].links[key].svg;
 					}
 				}
-			});			
+			}
+			
+			//need to add the svg to the page! then do the z update.
+			var svgdiv = document.getElementById('svgelements');			
+			if(svgdiv !== O[id].objectsvg.parentNode){
+				svgdiv.appendChild(O[id].objectsvg);
+			}
+			
+			var addLinks = function(links){
+				forEach(links, function(link){
+					if(link.svg && link.svg.node && svgdiv !== link.svg.node.parentNode){
+						var toindex = link.xmlNode.getAttribute('to');
+						//only add links with both objects on screen
+						if(O[toindex]){
+							svgdiv.appendChild(link.svg.node);
+						}
+					}
+				});
+			};
+			addLinks(L[id].links);
+			addLinks(L[id].tolinks);
+			
+			zUpdate();
+			
+
+			O[id].updatePosition('init');
+			
 		};
 		
 		SO.updatePosition = function (direction){
-			var svgelement = this.objectsvg;
-
+			var svgelement = SO.objectsvg;
 			//check x,y and r against containing situations and contained situations...
 			var key;
-			for (key in this.links) {
-				if(this.links.hasOwnProperty(key)){
-					if(this.links[key].xmlNode.getAttribute('type').match(/Situation/)){
-						if (O[this.links[key].xmlNode.getAttribute('from')] === this) {
+			for (key in L[id].links) {
+				if(L[id].links.hasOwnProperty(key)){
+					if(L[id].links[key].xmlNode.getAttribute('type').match(/Situation/)){
+						if (O[L[id].links[key].xmlNode.getAttribute('from')] === SO) {
 
-							var toObj = O[this.links[key].xmlNode.getAttribute('to')];
+							var toObj = O[L[id].links[key].xmlNode.getAttribute('to')];
 
 							if(direction === 'init'){
-								if(this.r > toObj.r*3/5){
-									this.r = toObj.r/4;
-									if(this.r < 40){
-										this.r = 40;
-										toObj.r = this.r * 5/3 + 1;
+								if(SO.r > toObj.r*3/5){
+									SO.r = toObj.r/4;
+									if(SO.r < 40){
+										SO.r = 40;
+										toObj.r = SO.r * 5/3 + 1;
 										toObj.updatePosition('up');
 									}
 								}
 							} else if(direction === 'up'){
-								if(this.r > toObj.r*3/5){
-									toObj.r = this.r * 5/3 + 1;
+								if(SO.r > toObj.r*3/5){
+									toObj.r = SO.r * 5/3 + 1;
 									toObj.updatePosition('up');
 								}
 							} else{
 
-								if(this.r > toObj.r*9/10){
-									this.r = toObj.r*9/10;
-									if(this.r < 40){
-										this.r = 40;
-										toObj.r = this.r * 5/3 + 1;
+								if(SO.r > toObj.r*9/10){
+									SO.r = toObj.r*9/10;
+									if(SO.r < 40){
+										SO.r = 40;
+										toObj.r = SO.r * 5/3 + 1;
 										toObj.updatePosition('up');
 									}
 								}
 
 							}
 
-							var x = this.x - toObj.x;
-							var y = this.y - toObj.y;
-							var r = toObj.r-this.r;
+							var x = SO.x - toObj.x;
+							var y = SO.y - toObj.y;
+							var r = toObj.r-SO.r;
 
 							if(Math.pow(x,2) + Math.pow(y,2) > Math.pow(r,2)){						
 								var atan = Math.atan2(y,x);
-								this.x = toObj.x + Math.cos(atan) * Math.abs(r);
-								this.y = toObj.y + Math.sin(atan) * Math.abs(r);
+								SO.x = toObj.x + Math.cos(atan) * Math.abs(r);
+								SO.y = toObj.y + Math.sin(atan) * Math.abs(r);
 							}
 						}
 					}
 				}
 			}
 
-			for (key in this.links) {
-				if(this.links.hasOwnProperty(key)){
-					if(this.links[key].xmlNode.getAttribute('type').match(/Situation/)){
-						if (O[this.links[key].xmlNode.getAttribute('to')] === this) {
-							var fromObj = O[this.links[key].xmlNode.getAttribute('from')];
-							fromObj.x += this.x-this.prevX;
-							fromObj.y += this.y-this.prevY;
-							if(direction === 'init'){
-								fromObj.updatePosition(direction);
-							} else {
-								fromObj.updatePosition();							
-							}
+			forEach(L[id].tolinks, function(link) {
+				if(link.xmlNode.getAttribute('type').match(/Situation/)){
+					if (O[link.xmlNode.getAttribute('to')] === SO) {
+						var fromObj = O[link.xmlNode.getAttribute('from')];
+						fromObj.x += SO.x-SO.prevX;
+						fromObj.y += SO.y-SO.prevY;
+						if(direction === 'init'){
+							fromObj.updatePosition(direction);
+						} else {
+							fromObj.updatePosition();							
 						}
-					}
-				}
-			}
-
-			this.prevX = this.x;
-			this.prevY = this.y;
-
-			var svgresult = object2svg(this.xmlNodes.obj, {fromx:this.x,fromy:this.y,r:this.r,objid:this.objId});
-
-			if (svgresult) {
-				var parentNode = this.objectsvg.parentNode;
-				parentNode.replaceChild(svgresult,this.objectsvg);
-
-				this.objectsvg = svgresult;
-			}
-
-
-			forEach(this.links, function(link){
-				if(link.svg){
-					var fromindex = link.xmlNode.getAttribute('from');
-					var toindex = link.xmlNode.getAttribute('to');
-					var fromx = O[fromindex].x;
-					var fromy = O[fromindex].y;
-					var tox = O[toindex].x;
-					var toy = O[toindex].y;
-
-					var midx1 = (tox - fromx) * 3 / 8 + fromx * 1;
-					var midy1 = (toy - fromy) * 1 / 8 + fromy * 1;
-					var midx2 = (tox - fromx) * 1 / 2 + fromx * 1;
-					var midy2 = (toy - fromy) * 1 / 2 + fromy * 1;
-
-					svgresult = object2svg(link.xmlNode, {fromx:fromx,fromy:fromy,midx1:midx1,midy1:midy1,midx2:midx2,midy2:midy2,tox:tox,toy:toy});
-					if (svgresult) {						
-						parentNode = link.svg.node.parentNode;
-						parentNode.replaceChild(svgresult,link.svg.node);
-						link.svg.node = svgresult;
 					}
 				}
 			});
+
+			SO.prevX = SO.x;
+			SO.prevY = SO.y;
+
+			var svgresult = object2svg(SO.xmlNodes.obj, {fromx:SO.x,fromy:SO.y,r:SO.r,objid:id});
+
+			if (svgresult) {
+				var parentNode = SO.objectsvg.parentNode;
+				parentNode.replaceChild(svgresult,SO.objectsvg);
+
+				SO.objectsvg = svgresult;
+			}
+
+			var updateLinkPositions = function(links){
+				forEach(links, function(link){
+					if(link.svg){
+						var fromindex = link.xmlNode.getAttribute('from');
+						var toindex = link.xmlNode.getAttribute('to');
+						if(O[toindex]){
+							var fromx = O[fromindex].x;
+							var fromy = O[fromindex].y;
+							var tox = O[toindex].x;
+							var toy = O[toindex].y;
+
+							var midx1 = (tox - fromx) * 3 / 8 + fromx * 1;
+							var midy1 = (toy - fromy) * 1 / 8 + fromy * 1;
+							var midx2 = (tox - fromx) * 1 / 2 + fromx * 1;
+							var midy2 = (toy - fromy) * 1 / 2 + fromy * 1;
+
+							svgresult = object2svg(link.xmlNode, {fromx:fromx,fromy:fromy,midx1:midx1,midy1:midy1,midx2:midx2,midy2:midy2,tox:tox,toy:toy});
+							if (svgresult) {						
+								parentNode = link.svg.node.parentNode;
+								parentNode.replaceChild(svgresult,link.svg.node);
+								link.svg.node = svgresult;
+							}
+						}
+					}
+				});
+			};
+			
+			updateLinkPositions(L[id].links);
+			updateLinkPositions(L[id].tolinks);
 		};
 
 		return SO;
@@ -296,7 +390,7 @@ var visDebug = function(){
 	var zUpdate = function(){
 		//first get z-indices for all of the screenObjects
 		forEach(O, function(SO){
-			forEach(SO.links, function(link){
+			forEach(L[SO.objId].links, function(link){
 				if(link.xmlNode.getAttribute('type').match(/Situation/)){
 					if (link.xmlNode.getAttribute('to') === SO.objId) {
 						var fromObj = O[link.xmlNode.getAttribute('from')];
@@ -315,7 +409,7 @@ var visDebug = function(){
 		while(change){
 			change = false;
 			forEach(O, function(SO){
-				forEach(SO.links, function(link){
+				forEach(L[SO.objId].links, function(link){
 					if(link.xmlNode.getAttribute('type').match(/Situation/)){
 						if (link.xmlNode.getAttribute('to') === SO.objId) {
 							var fromObj = O[link.xmlNode.getAttribute('from')];
@@ -357,7 +451,13 @@ var visDebug = function(){
 		
 	};
 	
-	
+	var xmlUpdate = function(id){
+			//make a screenObject for each primitive object stemming from the root situation
+			if(!O[id]){
+				O[id] = makeScreenObject(id);
+			}
+			O[id].setObject(objectCache[id]);
+	};
 	
 	
 	
@@ -419,7 +519,7 @@ var visDebug = function(){
 				}
 				dragO.updatePosition();
 			}
-			if (ui.drawnOid !== ui.selectOid || (isNewChange && selectOid && O[selectOid].xmlNodes)){
+			if (ui.drawnOid !== ui.selectOid || (isNewChange && ui.selectOid && O[ui.selectOid].xmlNodes)){
 				ui.drawnOid = ui.selectOid;
 				isNewChange = false;
 				var infoDiv = document.getElementById("info");
@@ -465,66 +565,13 @@ var visDebug = function(){
 			
 			recurseTree(rootSit);		
 			
-			var newids = [];
 			for (var id in objectCache) {
 				if(objectCache.hasOwnProperty(id)){
-					//if (!O[id]){
-						newids.push(id);
-					//}
+					xmlUpdate(id);
 				}
 			}
-			
-			//make a screenObject for each primitive object stemming from the root situation
-			forEach(newids, function(id){
-				if(!O[id]){
-					O[id] = makeScreenObject(id);
-				}
-				var obj = objectCache[id];
-				O[id].setObject(obj);
-			});
-			
-						
-			
-			//add link xml objects and svg objects to the "to" parameter of the link
-			forEach(newids, function(id){
-				var links = O[id].links;
-				for (var key in links) {
-					if(links.hasOwnProperty(key)){
-						var node = links[key].xmlNode;
-						var toindex = node.getAttribute('to');
-						if(!O[toindex].links[key]){
-							O[toindex].links[key] = {};
-						}
-						O[toindex].links[key].xmlNode = node;
-						if(O[id].links[key].svg){
-							O[toindex].links[key].svg = O[id].links[key].svg;
-						}
-					}
-				}
-			});
-			
-
-			//need to add the svg to the page! then do the z update.
-			//add svg and html to page
-			var svgdiv = document.getElementById('svgelements');			
-			
-			forEach(O, function(SO){
-				svgdiv.appendChild(SO.objectsvg);
-				forEach(SO.links, function(link){
-					//svgdiv.insertBefore(svgnode.node,sepdiv);
-					if(link.svg && link.svg.node){
-						svgdiv.appendChild(link.svg.node);
-					}
-				});
-			});
-			
-			zUpdate();
-			
 
 
-			forEach(newids, function(id){
-				O[id].updatePosition('init');
-			});
 		},
 
 		init: function(testFunc){
