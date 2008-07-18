@@ -5,6 +5,7 @@
 
 var screenObjects = {};
 
+//creates userInput object which keeps track of userinput information
 var initUserInput = function() {
 	var ui = {};
 	ui.drag = false;
@@ -111,6 +112,10 @@ var initUserInput = function() {
 };
 
 
+//creates visDebug object. This is used as follows:
+//run "init"
+//run "run" every few milliseconds
+//run "submitenter" to execute a command
 
 var visDebug = function(){
 	var O = {}; //objects being displayed on screen
@@ -572,155 +577,157 @@ var visDebug = function(){
 		O[id].setObject(objectCache[id]);
 	};
 
+	var submitenter = function(myfield,e){
+		var keycode;
+		if (window.event){
+			keycode = window.event.keyCode;
+		} else if (e) {
+			keycode = e.which;
+		} else {
+			return true;
+		}
 
+		if (keycode == 13) {
+			console.log(myfield.value);
+			var command = myfield.value;
+			myfield.value = "";
+			/*
+			var regexp = /(\w*\.)?make(\w*)\(.*\)/;
 
+			var subcommand = command.match(regexp);
 
-	return {
-		submitenter: function(myfield,e){
-			var keycode;
-			if (window.event){
-				keycode = window.event.keyCode;
-			} else if (e) {
-				keycode = e.which;
-			} else {
-				return true;
+			if(subcommand){
+				if(subcommand[0]){
+					subcommand = subcommand[0];
+				}
+				subcommand = 'temp = ' + subcommand + ';';
+				var temp = eval(subcommand,initContext);
+				command = command.replace(regexp,'temp');
+				objectCache[temp.getId()] = temp;
 			}
+			*/
+			eval(command,initContext);
+			isNewChange = true;
+			this.rootSit2Screen();				
 
-			if (keycode == 13) {
-				console.log(myfield.value);
-				var command = myfield.value;
-				myfield.value = "";
-				/*
-				var regexp = /(\w*\.)?make(\w*)\(.*\)/;
-
-				var subcommand = command.match(regexp);
-
-				if(subcommand){
-					if(subcommand[0]){
-						subcommand = subcommand[0];
-					}
-					subcommand = 'temp = ' + subcommand + ';';
-					var temp = eval(subcommand,initContext);
-					command = command.replace(regexp,'temp');
-					objectCache[temp.getId()] = temp;
-				}
-				*/
-				eval(command,initContext);
-				isNewChange = true;
-				this.rootSit2Screen();				
-
-				return false;
-			} else {
-				return true;
-			}
-		},
-
-		run: function(){
-			if(runcheck){
-				//alert('runcheck problem');
-				return;
-			}
-			runcheck = true;
-			var dragO = O[ui.dragOid];
-			if (ui.drag && dragO){
-				var point = ui.calcCoord(ui.xm,ui.ym,ui.svgelements);
-				if(ui.rPressed){
-					dragO.setR(1.5*Math.sqrt(Math.pow(point.x-dragO.x,2) + Math.pow(point.y- dragO.y,2)));
-				} else {
-					dragO.x = point.x - ui.initx + ui.offsetx;
-					dragO.targetX = dragO.x;
-					dragO.y = point.y - ui.inity + ui.offsety;
-					dragO.targetY = dragO.y;
-				}
-				dragO.updatePosition();
-			}
-			if (ui.drawnOid !== ui.selectOid || (isNewChange && ui.selectOid && O[ui.selectOid].xmlNodes)){
-				ui.drawnOid = ui.selectOid;
-				isNewChange = false;
-				var infoDiv = document.getElementById("info");
-				var selectO = O[ui.selectOid];
-				var htmlresult = object2html(selectO.xmlNodes.obj, {params:'all'});
-				if (infoDiv.firstChild) {
-					infoDiv.replaceChild(htmlresult, infoDiv.firstChild);
-				}
-				else {
-					infoDiv.appendChild(htmlresult);
-				}
-			} else if (ui.zPressed){
-				ui.zoomfactor = ui.basezoom+(ui.xm-ui.initx)/200;
-				if(ui.zoomfactor <= 0.1){
-					ui.zoomfactor = 0.1;
-				}
-				var width = ui.orig_width*ui.zoomfactor;
-				var height = ui.orig_height*ui.zoomfactor;
-
-				ui.curorig_x = ui.midx - (width/2);
-				ui.curorig_y = ui.midy - (height/2);
-				ui.svgelements.setAttribute("viewBox",ui.curorig_x+" "+ui.curorig_y+" "+width+" "+height);
-			} else if (ui.lPressed){
-				forEach(O, function(SO){
-					SO.updateTargets();
-				});
-				ui.lPressed = false;
-			}
-			forEach(O, function(SO){
-				SO.moveOnPath();
-			});
-			runcheck = false;
-		},
-
-		rootSit2Screen: function(){
-			//remove all screen objects from the current objectCache
-			for (id in objectCache) {
-				if(objectCache.hasOwnProperty(id)){
-					O[id].removeObject();
-				}
-			}
-
-			//populate the objectCache by traversing the situation tree structure
-			objectCache = {};
-
-			var recurseTree = function(obj){
-				objectCache[obj.getId()] = obj;
-				if(obj.getObjects){
-					forEach(obj.getObjects(), function(childObj){
-						recurseTree(childObj);
-					});
-				}
-			};
-
-
-			recurseTree(rootSit);		
-
-			for (id in objectCache) {
-				if(objectCache.hasOwnProperty(id)){
-					xmlUpdate(id);
-				}
-			}
-
-
-		},
-
-		init: function(testFunc){
-
-			ui = initUserInput();
-
-			//create some objects to populate the object cache
-
-			var rootId = 'rootId';
-			var s = makeSituation(null, rootId);
-			rootSit = s;
-
-			var myF = function(x){alert(x);};
-
-			var G = {};
-			testFunc(s,G);
-			//JB.queryContent(myF, 'queryparam2');
-
-			initContext = function(){};
-
-			this.rootSit2Screen();
+			return false;
+		} else {
+			return true;
 		}
 	};
-	}();
+	
+	var run = function(){
+		if(runcheck){
+			//alert('runcheck problem');
+			return;
+		}
+		runcheck = true;
+		var dragO = O[ui.dragOid];
+		if (ui.drag && dragO){
+			var point = ui.calcCoord(ui.xm,ui.ym,ui.svgelements);
+			if(ui.rPressed){
+				dragO.setR(1.5*Math.sqrt(Math.pow(point.x-dragO.x,2) + Math.pow(point.y- dragO.y,2)));
+			} else {
+				dragO.x = point.x - ui.initx + ui.offsetx;
+				dragO.targetX = dragO.x;
+				dragO.y = point.y - ui.inity + ui.offsety;
+				dragO.targetY = dragO.y;
+			}
+			dragO.updatePosition();
+		}
+		if (ui.drawnOid !== ui.selectOid || (isNewChange && ui.selectOid && O[ui.selectOid].xmlNodes)){
+			ui.drawnOid = ui.selectOid;
+			isNewChange = false;
+			var infoDiv = document.getElementById("info");
+			var selectO = O[ui.selectOid];
+			var htmlresult = object2html(selectO.xmlNodes.obj, {params:'all'});
+			if (infoDiv.firstChild) {
+				infoDiv.replaceChild(htmlresult, infoDiv.firstChild);
+			}
+			else {
+				infoDiv.appendChild(htmlresult);
+			}
+		} else if (ui.zPressed){
+			ui.zoomfactor = ui.basezoom+(ui.xm-ui.initx)/200;
+			if(ui.zoomfactor <= 0.1){
+				ui.zoomfactor = 0.1;
+			}
+			var width = ui.orig_width*ui.zoomfactor;
+			var height = ui.orig_height*ui.zoomfactor;
+
+			ui.curorig_x = ui.midx - (width/2);
+			ui.curorig_y = ui.midy - (height/2);
+			ui.svgelements.setAttribute("viewBox",ui.curorig_x+" "+ui.curorig_y+" "+width+" "+height);
+		} else if (ui.lPressed){
+			forEach(O, function(SO){
+				SO.updateTargets();
+			});
+			ui.lPressed = false;
+		}
+		forEach(O, function(SO){
+			SO.moveOnPath();
+		});
+		runcheck = false;
+	};
+	
+	var rootSit2Screen = function(){
+		//remove all screen objects from the current objectCache
+		for (id in objectCache) {
+			if(objectCache.hasOwnProperty(id)){
+				O[id].removeObject();
+			}
+		}
+
+		//populate the objectCache by traversing the situation tree structure
+		objectCache = {};
+
+		var recurseTree = function(obj){
+			objectCache[obj.getId()] = obj;
+			if(obj.getObjects){
+				forEach(obj.getObjects(), function(childObj){
+					recurseTree(childObj);
+				});
+			}
+		};
+
+
+		recurseTree(rootSit);		
+
+		for (id in objectCache) {
+			if(objectCache.hasOwnProperty(id)){
+				xmlUpdate(id);
+			}
+		}
+
+
+	};
+
+	var init = function(testFunc){
+
+		ui = initUserInput();
+
+		//create some objects to populate the object cache
+
+		var rootId = 'rootId';
+		var s = makeSituation(null, rootId);
+		rootSit = s;
+
+		var myF = function(x){alert(x);};
+
+		var G = {};
+		testFunc(s,G);
+		//JB.queryContent(myF, 'queryparam2');
+
+		initContext = function(){};
+
+		rootSit2Screen();
+	};
+
+	//specify the public functions
+	return {
+		submitenter:submitenter,
+		run:run,
+		init:init
+	};
+}();
 
