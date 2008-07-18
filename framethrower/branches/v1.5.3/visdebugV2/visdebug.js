@@ -122,7 +122,7 @@ var visDebug = function(){
 	var object2svg = compileXSL(loadXMLNow("object2svg.xsl"));
 	var object2html = compileXSL(loadXMLNow("object2html.xsl"));
 	var objectCache = {};
-	var rootSit = {};
+	var rootObj = {};
 	var runcheck = false;
 	var isNewChange = false;
 	var initContext = null;
@@ -591,24 +591,10 @@ var visDebug = function(){
 			console.log(myfield.value);
 			var command = myfield.value;
 			myfield.value = "";
-			/*
-			var regexp = /(\w*\.)?make(\w*)\(.*\)/;
 
-			var subcommand = command.match(regexp);
-
-			if(subcommand){
-				if(subcommand[0]){
-					subcommand = subcommand[0];
-				}
-				subcommand = 'temp = ' + subcommand + ';';
-				var temp = eval(subcommand,initContext);
-				command = command.replace(regexp,'temp');
-				objectCache[temp.getId()] = temp;
-			}
-			*/
 			eval(command,initContext);
 			isNewChange = true;
-			this.rootSit2Screen();				
+			rootObj2Screen(rootObj);				
 
 			return false;
 		} else {
@@ -670,7 +656,7 @@ var visDebug = function(){
 		runcheck = false;
 	};
 	
-	var rootSit2Screen = function(){
+	var rootObj2Screen = function(rootObj, recurseFuncName){
 		//remove all screen objects from the current objectCache
 		for (id in objectCache) {
 			if(objectCache.hasOwnProperty(id)){
@@ -683,15 +669,14 @@ var visDebug = function(){
 
 		var recurseTree = function(obj){
 			objectCache[obj.getId()] = obj;
-			if(obj.getObjects){
-				forEach(obj.getObjects(), function(childObj){
+			if(obj[recurseFuncName]){
+				forEach(obj[recurseFuncName](), function(childObj){
 					recurseTree(childObj);
 				});
 			}
 		};
 
-
-		recurseTree(rootSit);		
+		recurseTree(rootObj);		
 
 		for (id in objectCache) {
 			if(objectCache.hasOwnProperty(id)){
@@ -703,24 +688,22 @@ var visDebug = function(){
 	};
 
 	var init = function(testFunc){
-
+		//create userinput object to track user input
 		ui = initUserInput();
 
 		//create some objects to populate the object cache
 
-		var rootId = 'rootId';
-		var s = makeSituation(null, rootId);
-		rootSit = s;
 
-		var myF = function(x){alert(x);};
 
+		//G is an object that we can use to make objects created in testFunc available to the interactive debugger
+		//we execute our test commands to set up an environment
+		//then we can execute further commands interactively using submitenter
 		var G = {};
-		testFunc(s,G);
-		//JB.queryContent(myF, 'queryparam2');
+		rootObj = testFunc(G);
 
 		initContext = function(){};
 
-		rootSit2Screen();
+		rootObj2Screen(rootObj, "getObjects");
 	};
 
 	//specify the public functions

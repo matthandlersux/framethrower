@@ -1,4 +1,7 @@
-function infonTest(s, G){
+function infonTest(G){
+	var rootId = 'rootId';
+	var s = makeSituation(null, rootId);
+	
 	var relation = s.makeRelation();
 	var role = s.makeRole();
 
@@ -18,6 +21,8 @@ function infonTest(s, G){
 	var arcs = [arc,arc2,arc3];
 	
 	var infon = relation.makeInfon(undefined,arcs);
+	
+	return s;
 }
 
 
@@ -26,7 +31,10 @@ function infonTest(s, G){
 
 
 //function to run tests, takes the root situation s as input and an object G available in the debug context (to share objects)
-function randomCorrespondence(s, G){
+function randomCorrespondence(G){
+	var rootId = 'rootId';
+	var s = makeSituation(null, rootId);
+	
 	var s1 = s.makeSituation();
 	var s2 = s.makeSituation();
 	var s11 = s1.makeSituation();
@@ -64,7 +72,7 @@ function randomCorrespondence(s, G){
 	
 	var randomNum = function(a,b){
 		return Math.random()*2-1;
-	}
+	};
 	
 	pairs.sort(randomNum);
 
@@ -73,6 +81,6 @@ function randomCorrespondence(s, G){
 		makeCorrespondence(ind[pairs[i][1]],ind[pairs[i][2]]);
 	}
 
-
+	return s;
 	
 }

@@ -76,7 +76,7 @@ function makeSituation(parentSituation, id) {
 
 		var o = makeIded(id, my);
 		
-		o.getSituation = function () {
+		o.getParentSituation = function () {
 			return parentSituation;
 		};
 
@@ -436,8 +436,8 @@ function makeSituation(parentSituation, id) {
 
 function makeCorrespondence(a, b) {
 	// find the lowest situation that contains both a and b
-	var aSit = a.getSituation();
-	var bSit = b.getSituation();
+	var aSit = a.getParentSituation();
+	var bSit = b.getParentSituation();
 	var aSits = [aSit];
 	var bSits = [bSit];
 	function checkMatch() {
@@ -455,11 +455,11 @@ function makeCorrespondence(a, b) {
 	}
 	while (!checkMatch()) {
 		if (aSit) {
-			aSit = aSit.getSituation();
+			aSit = aSit.getParentSituation();
 			aSits.push(aSit);
 		}
 		if (bSit) {
-			bSit = bSit.getSituation();
+			bSit = bSit.getParentSituation();
 			bSits.push(bSit);
 		}
 		if (!aSit && !bSit) {
@@ -472,7 +472,7 @@ function makeCorrespondence(a, b) {
 	
 	// checks if o is in any of sits
 	function isIn(o, sits) {
-		var sit = o.getSituation();
+		var sit = o.getParentSituation();
 		return any(sits, function (s) {
 			return s === sit;
 		});
@@ -491,8 +491,8 @@ function makeCorrespondence(a, b) {
 	var aHighest = getHighest(a, aSits);
 	var bHighest = getHighest(b, bSits);
 	
-	var aHighestSit = aHighest.getSituation();
-	var bHighestSit = bHighest.getSituation();
+	var aHighestSit = aHighest.getParentSituation();
+	var bHighestSit = bHighest.getParentSituation();
 	
 	// go down corresponds in while staying within sits
 	function getLowest(start, sits) {
