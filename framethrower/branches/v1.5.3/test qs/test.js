@@ -4,7 +4,7 @@
 var root = makeQStart();
 
 
-var listenerDeconstructor = {
+var listenerEndcap = {
 	add: function (o) {
 		console.log("added", o);
 	},
@@ -34,14 +34,14 @@ unionStart.input.add(times24);
 var union = qUnion.makeApply(unionStart);
 
 
-var listener = makeQEnd(listenerDeconstructor, union);*/
+var listener = makeQEnd(listenerEndcap, union);*/
 
-/*var composedcom = qCompose(add123com, times24com);
+var composedcom = qCompose(add123com, times24com);
 
 var comp = composedcom.makeApply(root);
-var listener = makeQEnd(listenerDeconstructor, comp);*/
+var listener = makeQEnd(listenerEndcap, comp);
 
-function makeQTest(x) {
+/*function makeQTest(x) {
 	var q = makeQStart();
 	q.input.add(x+1);
 	q.input.add(x+2);
@@ -56,62 +56,10 @@ var selcom = qSelect(makeQTest);
 
 var sel = selcom.makeApply(root);
 
-var listener = makeQEnd(listenerDeconstructor, sel);
+var listener = makeQEnd(listenerEndcap, sel);*/
 
 
 
 
 listener.activate();
 
-
-/*
-
-var root = {};
-var rootQ = makeQ(root);
-
-var qListener = makeComponent(function () {
-	var all = makeObjectHash();
-	return {
-		qAdd: function (o) {
-			all.set(o, o);
-			console.log("added", o, all.toArray());
-		},
-		qRemove: function (o) {
-			all.remove(o);
-			console.log("removed", o, all.toArray());
-		}
-	};
-});
-
-
-//rootQ.spawn(qListener);
-
-
-
-var add123 = rootQ.spawn(qLift(function (x) {
-	return [x+1, x+2, x+3];
-}));
-
-var times24 = rootQ.spawn(qLift(function (x) {
-	return [x*2, x*4];
-}));
-
-//add123.spawn(qListener);
-
-
-var u = {};
-var u2 = makeQ(u);
-
-var union = u2.spawn(qUnion);
-
-//u2.spawn(qListener);
-
-
-u.qAdd(add123);
-u.qAdd(times24);
-
-
-union.spawn(qListener);
-
-
-*/

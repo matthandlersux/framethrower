@@ -351,7 +351,7 @@ function makeSituation(parentSituation, id) {
 		return relation;
 	};
 	
-	situation.makeFunction = function (id, xml) {
+	/*situation.makeFunction = function (id, xml) {
 		var func = makeChildObject(id);
 		func.getType = function () {
 			return "function";
@@ -412,7 +412,7 @@ function makeSituation(parentSituation, id) {
 		
 		situation.addObject(func);
 		return func;
-	};
+	};*/
 	
 	situation.makeSituation = function (id) {
 		var s = makeSituation(situation, id);
