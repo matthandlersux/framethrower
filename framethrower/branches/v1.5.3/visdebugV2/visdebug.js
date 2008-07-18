@@ -6,7 +6,7 @@
 var screenObjects = {};
 
 //creates userInput object which keeps track of userinput information
-var initUserInput = function() {
+var initUserInput = function(svgelementsName) {
 	var ui = {};
 	ui.drag = false;
 	ui.dragOid = null; //id of object currently being dragged
@@ -21,7 +21,7 @@ var initUserInput = function() {
 	ui.drawnOid = ui.selectOid;
 
 	//setup some display variables
-	ui.svgelements = document.getElementById('svgelements');
+	ui.svgelements = document.getElementById(svgelementsName);
 	ui.svgPoint = ui.svgelements.createSVGPoint();
 
 	ui.actual_width = ui.svgelements.width;
@@ -49,11 +49,13 @@ var initUserInput = function() {
 	};
 
 
+	var hashSvgElements = dojo.query('#' + svgelementsName);
 
-
-	dojo.query('#svgelements').connect('onmousemove', function(e) {
+	hashSvgElements.connect('onmousemove', function(e) {
 		ui.xm = e.layerX;
 		ui.ym = e.layerY;
+		ui.px = e.pageX;
+		ui.py = e.pageY;
 	});
 
 	/*
@@ -64,8 +66,27 @@ var initUserInput = function() {
 	});
 	*/
 
-	dojo.connect(document, 'onmouseup', function(e) {
+	hashSvgElements.connect('onmouseup', function(e) {
 		ui.drag = false;
+	});
+
+	hashSvgElements.connect('mousedown', function(e) {
+		var targ = e.target;
+		if(targ.id){
+			ui.drag = true;
+			ui.dragOid = targ.id;
+			ui.selectOid = targ.id;
+			if(targ.cx){
+				ui.offsetx = targ.cx.baseVal.value;
+				ui.offsety = targ.cy.baseVal.value;
+			}else if(targ.x){
+				ui.offsetx = targ.x.baseVal.value;
+				ui.offsety = targ.y.baseVal.value;
+			}
+			var point = ui.calcCoord(ui.px,ui.py,ui.svgelements);
+			ui.initx = point.x;
+			ui.inity = point.y;
+		}
 	});
 
 	dojo.connect(document, 'onkeydown', function(e) {
@@ -93,19 +114,6 @@ var initUserInput = function() {
 		}
 	});
 
-	dojo.connect(document, 'mousedown', function(e) {
-		var targ = e.target;
-		if(targ.id){
-			ui.drag = true;
-			ui.dragOid = targ.id;
-			ui.selectOid = targ.id;
-			ui.offsetx = targ.cx.baseVal.value;
-			ui.offsety = targ.cy.baseVal.value;
-			var point = ui.calcCoord(ui.xm,ui.ym,ui.svgelements);
-			ui.initx = point.x;
-			ui.inity = point.y;
-		}
-	});
 
 
 	return ui;
@@ -176,7 +184,7 @@ var visDebug = function(){
 		SO.prevX = SO.x;
 		SO.setY(Math.random()*400);
 		SO.prevY = SO.y;
-		SO.setR(300 + Math.random()*8);
+		SO.setR(100 + Math.random()*8);
 		SO.z = 0;
 
 		SO.removeObject = function(){
@@ -193,7 +201,7 @@ var visDebug = function(){
 				}
 			}
 
-			var svgdiv = document.getElementById('svgelements');
+			var svgdiv = ui.svgelements;
 			//remove from-links and to-links svg
 			console.log('removing: ' + id);
 			var removeLinks = function(links){
@@ -266,7 +274,7 @@ var visDebug = function(){
 			}
 
 			//need to add the svg to the page! then do the z update.
-			var svgdiv = document.getElementById('svgelements');			
+			var svgdiv = ui.svgelements;			
 			if(svgdiv !== SO.objectsvg.parentNode){
 				svgdiv.appendChild(SO.objectsvg);
 			}
@@ -541,7 +549,7 @@ var visDebug = function(){
 			});
 		}
 
-		var svgdiv = document.getElementById('svgelements');
+		var svgdiv = ui.svgelements;
 
 		//get the current ordering from the svg
 		var svgObjects = svgdiv.childNodes;
@@ -610,11 +618,12 @@ var visDebug = function(){
 		runcheck = true;
 		var dragO = O[ui.dragOid];
 		if (ui.drag && dragO){
-			var point = ui.calcCoord(ui.xm,ui.ym,ui.svgelements);
+			var point = ui.calcCoord(ui.px,ui.py,ui.svgelements);
 			if(ui.rPressed){
-				dragO.setR(1.5*Math.sqrt(Math.pow(point.x-dragO.x,2) + Math.pow(point.y- dragO.y,2)));
+				dragO.setR(1.5*Math.sqrt(Math.pow(point.x - (dragO.x),2) + Math.pow(point.y - (dragO.y),2)));
 			} else {
 				dragO.x = point.x - ui.initx + ui.offsetx;
+				
 				dragO.targetX = dragO.x;
 				dragO.y = point.y - ui.inity + ui.offsety;
 				dragO.targetY = dragO.y;
@@ -687,9 +696,9 @@ var visDebug = function(){
 
 	};
 
-	var init = function(testFunc){
+	var init = function(testFunc, recurseFuncName, svgelementsName){
 		//create userinput object to track user input
-		ui = initUserInput();
+		ui = initUserInput(svgelementsName);
 
 		//create some objects to populate the object cache
 
@@ -703,7 +712,7 @@ var visDebug = function(){
 
 		initContext = function(){};
 
-		rootObj2Screen(rootObj, "getObjects");
+		rootObj2Screen(rootObj, recurseFuncName);
 	};
 
 	//specify the public functions
@@ -712,5 +721,5 @@ var visDebug = function(){
 		run:run,
 		init:init
 	};
-}();
+};
 

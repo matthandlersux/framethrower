@@ -9,7 +9,11 @@
 	<script src="dojoPackage/dojo/dojo.js" djConfig="parseOnLoad:true, isDebug:true"/>
 	<script src="../util.js"/>
 	<script src="../kernel.js"/>
-	<script src="tests.js"/>	
+	<script src="../queries.js"/>
+	<script src="../test qs/test.js"/>
+
+	<script src="tests.js"/>
+		
 	<script src="objects2xml.js"/>
 	<script src="visdebug.js"/>
 
@@ -17,10 +21,19 @@
 		dojo.require("dijit.form.Button");
 		dojo.require("dijit.TitlePane");
 		
+		var qTestFunc = function(){
+			root.input.add(5);
+			return root;
+		}
+		
 		
 		dojo.addOnLoad(function(){
-			visDebug.init(randomCorrespondence);
-			setInterval('visDebug.run();', 64);
+			vd1 = visDebug();
+			vd2 = visDebug();
+			vd1.init(randomCorrespondence, "getObjects", "svgelements");
+			vd2.init(qTestFunc, "getInforms", "svgelements3");
+			setInterval('vd1.run();', 64);
+			setInterval('vd2.run();', 64);
 		});
 	</script>
 
@@ -44,22 +57,50 @@
 	}
 	
 	#svgelements {
-		width:70%;
-		height:100%;
+		width:40%;
+		height:70%;
 		position:absolute;
 		top:0;
 		left:0;
 		z-index:-1;
+		border: solid black 1px;
+	}
+	
+	#svgelements2 {
+		width:40%;
+		height:70%;
+		position:absolute;
+		top:0;
+		left:40%;
+		z-index:-1;
+		border: solid black 1px;
+	}
+	
+	#svgelements3 {
+		width:80%;
+		height:30%;
+		position:absolute;
+		top:70%;
+		left:0;
+		z-index:-1;
+		border: solid black 1px;
+	}
+	
+	#gradients {
+		left:0px;
+		top:0px;
+		width:0px;
+		height:0px;
 	}
 	
 	#info {
 		background:white;
 		position:absolute;
-		left:70%;
+		left:80%;
 		top:0px;
 		bottom:190px;
 		border-bottom:1px solid black;
-		width:30%;
+		width:20%;
 		overflow:auto;
 	}
 	
@@ -68,32 +109,30 @@
 		height:135px;
 		position:absolute;
 		bottom:35px;
-		left:72%;
+		left:82%;
 		z-index:1;
 	}
 	
 	#key {
 		position:absolute;
-		left:72%;
+		left:82%;
 		bottom:35px;
 	}
 	
 	#inputdiv {
 		position:absolute;
-		left:72%;
+		left:82%;
 		bottom:10px;
 	}
 	
 	#inputdiv input {
-		width:300px;
+		width:200px;
 	}
 	
   </style>
 </head>
 <body id="body" onload="">
-		<svg:svg version="1.1"
-		    id="svgelements"
-		    preserveAspectRatio="xMidYMid slice" viewBox="0 0 1400 900">
+		<svg:svg version="1.1" id="gradients">
 			<svg:linearGradient id="gradient">
 				<svg:stop class="yellow" offset="0%"/>
 				<svg:stop class="green" offset="100%"/>
@@ -112,9 +151,29 @@
 				<svg:stop class="gray" offset="85%"/>
 				<svg:stop class="black" offset="100%"/>
 	    	</svg:linearGradient>
-		    <svg:rect x="0" y="0" width="1400" height="900" fill="url(#graygradient)" />		
+		</svg:svg>
+	
+		<svg:svg version="1.1"
+		    id="svgelements"
+		    preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 700">
+		    <svg:rect x="0" y="0" width="1000" height="700" fill="url(#graygradient)" />		
 			<div id="sepdiv" />
 		</svg:svg>
+		
+		<svg:svg version="1.1"
+		    id="svgelements2"
+		    preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 700">
+		    <svg:rect x="0" y="0" width="1000" height="700" fill="url(#graygradient)" />		
+			<div id="sepdiv2" />
+		</svg:svg>
+		
+		<svg:svg version="1.1"
+		    id="svgelements3"
+		    preserveAspectRatio="xMidYMid slice" viewBox="0 0 2500 600">
+		    <svg:rect x="0" y="0" width="2500" height="600" fill="url(#graygradient)" />		
+			<div id="sepdiv3" />
+		</svg:svg>
+		
 		<svg:svg version="1.1" id="svgkey"
 		    preserveAspectRatio="xMidYMid slice">
 			<svg:rect x="80" y="63" width="40" height="12" fill="url(#gradient)" />

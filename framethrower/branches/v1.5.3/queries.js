@@ -4,6 +4,10 @@
 function makeQ(instantiate, parent) {
 	var q = makeIded();
 	
+	q.getType = function(){
+		return "q";
+	};
+	
 	var active = false;
 	var outputCache;
 	var processor;

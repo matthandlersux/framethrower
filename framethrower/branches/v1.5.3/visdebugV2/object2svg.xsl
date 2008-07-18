@@ -52,6 +52,16 @@
 			<xsl:call-template name="text" />
 		</svg:g>
 	</xsl:template>
+	
+	<xsl:template match="q">
+		<svg:g>
+			<svg:rect fill="url(#bluegradient)">
+				<xsl:call-template name="rectatts" />				
+			</svg:rect>
+			<xsl:call-template name="text" />
+		</svg:g>
+	</xsl:template>
+
 
 	<xsl:template name="circleatts">
 		<xsl:attribute name="r">
@@ -61,6 +71,25 @@
 			<xsl:value-of select="$fromx" />
 		</xsl:attribute>
 		<xsl:attribute name="cy">
+			<xsl:value-of select="$fromy" />
+		</xsl:attribute>
+		<xsl:attribute name="id">
+			<xsl:value-of select="$objid" />
+		</xsl:attribute>
+	</xsl:template>
+
+
+	<xsl:template name="rectatts">
+		<xsl:attribute name="width">
+			<xsl:value-of select="$r" />
+		</xsl:attribute>
+		<xsl:attribute name="height">
+			<xsl:value-of select="$r" />
+		</xsl:attribute>
+		<xsl:attribute name="x">
+			<xsl:value-of select="$fromx" />
+		</xsl:attribute>
+		<xsl:attribute name="y">
 			<xsl:value-of select="$fromy" />
 		</xsl:attribute>
 		<xsl:attribute name="id">
