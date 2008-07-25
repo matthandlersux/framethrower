@@ -19,7 +19,7 @@
 
 	<xsl:template match="situation">
 		<svg:g>
-			<svg:circle fill="url(#gradient)">
+			<svg:circle stroke-width="3px" stroke="#A9E951" fill="white" opacity=".45">
 				<xsl:call-template name="circleatts" />				
 			</svg:circle>
 			<xsl:call-template name="text" />
@@ -28,7 +28,7 @@
 
 	<xsl:template match="object|individual">
 		<svg:g>
-			<svg:circle fill="url(#bluegradient)">
+			<svg:circle stroke-width="3px" stroke="#10ADED" fill="#ABCDEF">
 				<xsl:call-template name="circleatts" />				
 			</svg:circle>
 			<xsl:call-template name="text" />
@@ -37,7 +37,7 @@
 
 	<xsl:template match="ghost">
 		<svg:g>
-			<svg:circle fill="url(#bluegradient)" opacity=".3">
+			<svg:circle stroke-width="3px" stroke="#10ADED" opacity=".3" fill="#ABCDEF">
 				<xsl:call-template name="circleatts" />				
 			</svg:circle>
 			<xsl:call-template name="text" />
@@ -46,7 +46,7 @@
 
 	<xsl:template match="relation|role|infon">
 		<svg:g>
-			<svg:circle fill="url(#relationgradient)">
+			<svg:circle stroke-width="3px" stroke="black" fill="purple">
 				<xsl:call-template name="circleatts" />				
 			</svg:circle>
 			<xsl:call-template name="text" />
@@ -55,7 +55,7 @@
 	
 	<xsl:template match="q">
 		<svg:g>
-			<svg:rect fill="url(#bluegradient)">
+			<svg:rect stroke-width="3px" stroke="#B00B1E" fill="#F00D1E">
 				<xsl:call-template name="rectatts" />				
 			</svg:rect>
 			<xsl:call-template name="text" />
@@ -114,7 +114,7 @@
 	<xsl:template match="link">
 		<svg:g>
 			<svg:path id="{@from}{@type}{@to}" d="M{$fromx},{$fromy} Q{$midx1},{$midy1} {$midx2},{$midy2} T{$tox},{$toy}"
-				fill="none" stroke="red" stroke-width="5"  />
+				fill="none" stroke="#FFC426" stroke-width="5"  />
 				<svg:text>
 					<svg:textPath xlink:href="#{@from}{@type}{@to}" startOffset="30%">
 						<svg:tspan dy="-5">
