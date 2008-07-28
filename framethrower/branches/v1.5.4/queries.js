@@ -37,7 +37,28 @@ var interfaces = {
 		}
 	},
 	list: {
-		actions: ["insert", "update", "remove"]
+		actions: ["insert", "update", "remove"],
+		instantiate: function () {
+			var cache = [];
+			return {
+				actions: {
+					insert: function (o, index) {
+						cache.splice(index, 0, o);
+					},
+					update: function (o, index) {
+						cache[index] = o;
+					},
+					remove: function (index) {
+						cache.splice(index, 1);
+					}
+				},
+				addInform: function (pin) {
+					cache.forEach(function (o) {
+						pin.add(o);
+					});					
+				}
+			};
+		}
 	},
 	xml: {
 		
