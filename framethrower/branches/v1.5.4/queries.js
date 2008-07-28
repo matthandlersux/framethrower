@@ -92,13 +92,13 @@ function makeInputPin(sendFun) {
 	return inputPin;
 }
 
-function makeOutputPin(informSet) {
+function makeOutputPin(informs, pinName) {
 	var outputPin = makeIded();
 	outputPin.addInform = function (inputPin) {
-		informSet.add(inputPin, inputPin);
+		informs.add(pinName, inputPin);
 	};
 	outputPin.removeInform = function (inputPin) {
-		informSet.remove(inputPin);
+		informs.remove(pinName, inputPin);
 	};
 	return outputPin;
 }
@@ -108,145 +108,83 @@ function makeBox(inputInterfaces, outputInterfaces, instantiateProcessor, inputs
 	
 	var active = false;
 	
-	var input, output;
+	var input, output, outputInterfaceInstances;
 	
 	box.outputPins = {};
 	
 	
 	
 	var informs = {};
+	var informsCache = {};
 	informs.add = function (outputPinName, childInputPin) {
-		
-	};
-	informs.remove = function (outputPinName, childInputPin) {
-		
-	};
-	
-	forEach(outputInterfaces, function (outputInterface, name) {
-		informs[name] = makeObjectHash();
-		box.outputPins[name] = makeOutputPin(informs[name]);
-	});
-	
-	
-	
-	
-	box.addInform = function (outputPin, childBox, childInputPin) {
-		informs[outputPin].getOrMake(childBox, childInputPin);
+		informsCache[outputPinName].add(childInputPin, childInputPin);
+		// activate
 		if (!active) {
 			activate();
 		} else {
 			// catch the new child up
-			outputInterfaceInstance.addInform(childInputPin);
+			outputInterfaceInstances[outputPinName].addInform(childInputPin.send);
 		}
 	};
-	
-	box.removeInform = function (outputPin, childBox) {
+	informs.remove = function (outputPinName, childInputPin) {
+		informsCache[outputPinName].remove(childInputPin);
+		// deactivate if nothing left
 		
 	};
 	
-	
-	function activate() {
-		output = {};
-		forEach(outputInterfaces, function (outputInterface, outputName) {
-			var out = output[outputName] = {};
-			outputInterfaceInstance = outputInterface.instantiate();
-			forEach(outputInterfaceInstance.actions, function (actionFunction, actionName) {
-				out[actionName] = pCompose(actionFunction, passToInforms(outputName, actionName));
-			});
-		});
-		
-		processor = instantiateProcessor(output);
-		
-		// make input pins
-		forEach(inputInterfaces, function (inputInterface, inputName) {
-			var pin = makeInputPin(processor[inputName]);
-			
-		});
-	}
+	forEach(outputInterfaces, function (outputInterface, name) {
+		informsCache[name] = makeObjectHash();
+		box.outputPins[name] = makeOutputPin(informs);
+	});
 	
 	
-	
-	
-	
-	q.input = null;
-	var outInterfaceInstance, output;
-	
-	function activate() {
-		// initialize
-		output = {};
-		if (outInterface) {
-			outInterfaceInstance = outInterface();
-
-			forEach(outInterfaceInstance.actions, function (fun, name) {
-				output[name] = pCompose(fun, callOnInforms(name));
-			});
-		}
-		
-		if (instantiate) {
-			q.input = instantiate(output);
-		} else {
-			q.input = output;
-		}
-		
-		// add inform from parent
-		if (parent) {
-			parent.addInform(q);
-		}
-		
-		active = true;
-	}
-	function deactivate() {
-		parent.removeInform(q);
-		active = false;
-		if (q.input.deactivate) {
-			q.input.deactivate();
-		}
-		// garbage collect
-		q.input = null;
-		outInterfaceInstance = null;
-		output = null;
-	};
-	q.activate = activate;
-	q.deactivate = deactivate;
-	
-	
-	var informs = makeObjectHash();
-	
-	q.addInform = function (inform) {
-		informs.set(inform, inform);
-		if (!active) {
-			activate();
-		}
-		outInterfaceInstance.addInform(inform);
-	};
-	q.removeInform = function (inform) {
-		informs.remove(inform);
-		if (parent && informs.isEmpty()) {
-			deactivate();
-		}
-	};
-	
-	function callOnInforms(name) {
+	function passToInforms(outputPinName, actionName) {
 		return function () {
 			var args = arguments;
-			informs.forEach(function (inform) {
-				inform.input[name].apply(null, args);
+			informsCache[outputPinName].forEach(function (childInputPin) {
+				childInputPin.send.apply(null, args);
 			});
 		};
 	}
 	
 	
+	
+	
+	
+	function activate() {
+		output = {};
+		forEach(outputInterfaces, function (outputInterface, outputName) {
+			output[outputName] = {};
+			var out = output[outputName];
+			
+			outputInterfaceInstances[outputName] = outputInterface.instantiate();
+			var outputInterfaceInstance = outputInterfaceInstances[outputName];
+			
+			forEach(outputInterfaceInstance.actions, function (actionFunction, actionName) {
+				out[actionName] = pCompose(actionFunction, passToInforms(outputName, actionName));
+			});
+		});
+		
+		var processor = instantiateProcessor(output);
+		
+		// make input pins
+		forEach(inputs, function (parentPin, inputName) {
+			var pin = makeInputPin(processor[inputName]);
+			parentPin.addInform(pin);
+		});
+		
+		active = true;
+	}
+	
+	function deactivate() {
+		
+	}
+	
+	
+	
+	
+	return box;
 }
-
-
-
-
-
-
-
-
-
-
 
 // inputs : {role: Object}
 function stringifyInputs(inputs) {
@@ -259,6 +197,17 @@ function stringifyInputs(inputs) {
 }
 
 
+
+
+
+
+
+
+
+
+// OLD ========================
+
+/*
 
 
 function setQInterface() {
@@ -412,7 +361,7 @@ function makeQComponent(qInterface, instantiate) {
 }
 
 
-function qCompose(/* components */) {
+function qCompose() {
 	var component = makeIded();
 	
 	var components = arguments;
@@ -551,7 +500,7 @@ var qUnion = makeQComponent(setQInterface, function (myOut) {
 
 
 
-
+*/
 
 
 
