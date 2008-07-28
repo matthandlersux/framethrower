@@ -1,3 +1,245 @@
+var interfaces = {
+	unit: {
+		actions: ["set"],
+		instantiate: function () {
+			var cache;
+			return {
+				actions: {
+					set: function (o) {
+						cache = o;
+					}
+				},
+				addInform: function (pin) {
+					pin.set(cache);
+				}
+			};
+		}
+	},
+	set: {
+		actions: ["add", "remove"],
+		instantiate: function () {
+			var cache = makeObjectHash();
+			return {
+				actions: {
+					add: function (o) {
+						cache.set(o, o);
+					},
+					remove: function (o) {
+						cache.remove(o);
+					}
+				},
+				addInform: function (pin) {
+					cache.forEach(function (o) {
+						pin.add(o);
+					});
+				}
+			};
+		}
+	},
+	list: {
+		actions: ["insert", "update", "remove"]
+	},
+	xml: {
+		
+	}
+};
+
+
+// being rewritten.....
+
+
+function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) {
+	var component = makeIded();
+	
+	var applications = makeOhash(stringifyInputs);
+	
+	component.makeApply = function (inputs) {
+		return applications.getOrMake(input, function () {
+			var box = makeBox(inputInterfaces, outputInterfaces, instantiateProcessor, inputs);
+			delete box.activate;
+			delete box.deactivate;
+			return box;
+		});
+	};
+	
+	return component;
+}
+
+function makeInputPin(sendFun) {
+	var inputPin = makeIded();
+	inputPin.send = sendFun;
+	return inputPin;
+}
+
+function makeOutputPin(informSet) {
+	var outputPin = makeIded();
+	outputPin.addInform = function (inputPin) {
+		informSet.add(inputPin, inputPin);
+	};
+	outputPin.removeInform = function (inputPin) {
+		informSet.remove(inputPin);
+	};
+	return outputPin;
+}
+
+function makeBox(inputInterfaces, outputInterfaces, instantiateProcessor, inputs) {
+	var box = makeIded();
+	
+	var active = false;
+	
+	var input, output;
+	
+	box.outputPins = {};
+	
+	
+	
+	var informs = {};
+	informs.add = function (outputPinName, childInputPin) {
+		
+	};
+	informs.remove = function (outputPinName, childInputPin) {
+		
+	};
+	
+	forEach(outputInterfaces, function (outputInterface, name) {
+		informs[name] = makeObjectHash();
+		box.outputPins[name] = makeOutputPin(informs[name]);
+	});
+	
+	
+	
+	
+	box.addInform = function (outputPin, childBox, childInputPin) {
+		informs[outputPin].getOrMake(childBox, childInputPin);
+		if (!active) {
+			activate();
+		} else {
+			// catch the new child up
+			outputInterfaceInstance.addInform(childInputPin);
+		}
+	};
+	
+	box.removeInform = function (outputPin, childBox) {
+		
+	};
+	
+	
+	function activate() {
+		output = {};
+		forEach(outputInterfaces, function (outputInterface, outputName) {
+			var out = output[outputName] = {};
+			outputInterfaceInstance = outputInterface.instantiate();
+			forEach(outputInterfaceInstance.actions, function (actionFunction, actionName) {
+				out[actionName] = pCompose(actionFunction, passToInforms(outputName, actionName));
+			});
+		});
+		
+		processor = instantiateProcessor(output);
+		
+		// make input pins
+		forEach(inputInterfaces, function (inputInterface, inputName) {
+			var pin = makeInputPin(processor[inputName]);
+			
+		});
+	}
+	
+	
+	
+	
+	
+	q.input = null;
+	var outInterfaceInstance, output;
+	
+	function activate() {
+		// initialize
+		output = {};
+		if (outInterface) {
+			outInterfaceInstance = outInterface();
+
+			forEach(outInterfaceInstance.actions, function (fun, name) {
+				output[name] = pCompose(fun, callOnInforms(name));
+			});
+		}
+		
+		if (instantiate) {
+			q.input = instantiate(output);
+		} else {
+			q.input = output;
+		}
+		
+		// add inform from parent
+		if (parent) {
+			parent.addInform(q);
+		}
+		
+		active = true;
+	}
+	function deactivate() {
+		parent.removeInform(q);
+		active = false;
+		if (q.input.deactivate) {
+			q.input.deactivate();
+		}
+		// garbage collect
+		q.input = null;
+		outInterfaceInstance = null;
+		output = null;
+	};
+	q.activate = activate;
+	q.deactivate = deactivate;
+	
+	
+	var informs = makeObjectHash();
+	
+	q.addInform = function (inform) {
+		informs.set(inform, inform);
+		if (!active) {
+			activate();
+		}
+		outInterfaceInstance.addInform(inform);
+	};
+	q.removeInform = function (inform) {
+		informs.remove(inform);
+		if (parent && informs.isEmpty()) {
+			deactivate();
+		}
+	};
+	
+	function callOnInforms(name) {
+		return function () {
+			var args = arguments;
+			informs.forEach(function (inform) {
+				inform.input[name].apply(null, args);
+			});
+		};
+	}
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+// inputs : {role: Object}
+function stringifyInputs(inputs) {
+	var strings = [];
+	forEach(inputs, function (name, input) {
+		strings.push("((" + name + ")(" + stringifyObject(input) + "))");
+	});
+	strings.sort();
+	return strings.join("");
+}
+
+
+
+
 function setQInterface() {
 	var outputCache = makeObjectHash();
 	return {
@@ -18,34 +260,36 @@ function setQInterface() {
 }
 
 
-function makeQ(qInterface, instantiate, parent) {
-	var qInterfaceInstance;
-	
+function makeQ(outInterface, instantiate, parent) {
 	var q = makeIded();
 	
 	var active = false;
-	q.input = null;
 	
-	var output = {};
+	q.input = null;
+	var outInterfaceInstance, output;
 	
 	function activate() {
 		// initialize
+		output = {};
+		if (outInterface) {
+			outInterfaceInstance = outInterface();
+
+			forEach(outInterfaceInstance.actions, function (fun, name) {
+				output[name] = pCompose(fun, callOnInforms(name));
+			});
+		}
+		
 		if (instantiate) {
 			q.input = instantiate(output);
 		} else {
 			q.input = output;
 		}
 		
-		qInterfaceInstance = qInterface();
-		
-		forEach(qInterfaceInstance.actions, function (fun, name) {
-			output[name] = pCompose(fun, callOnInforms(name));
-		});
-		
 		// add inform from parent
 		if (parent) {
 			parent.addInform(q);
 		}
+		
 		active = true;
 	}
 	function deactivate() {
@@ -56,7 +300,8 @@ function makeQ(qInterface, instantiate, parent) {
 		}
 		// garbage collect
 		q.input = null;
-		qInterfaceInstance = null;
+		outInterfaceInstance = null;
+		output = null;
 	};
 	q.activate = activate;
 	q.deactivate = deactivate;
@@ -69,7 +314,7 @@ function makeQ(qInterface, instantiate, parent) {
 		if (!active) {
 			activate();
 		}
-		qInterfaceInstance.addInform(inform);
+		outInterfaceInstance.addInform(inform);
 	};
 	q.removeInform = function (inform) {
 		informs.remove(inform);
@@ -117,8 +362,8 @@ function makeQStart(qInterface) {
 	return q;
 }
 
-function makeQEnd(qInterface, processor, parent) {
-	var q = makeQ(qInterface, function (myOut) {
+function makeQEnd(processor, parent) {
+	var q = makeQ(null, function (myOut) {
 		return processor;
 	}, parent);
 	delete q.addInform;

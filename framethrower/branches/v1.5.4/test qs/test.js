@@ -42,7 +42,7 @@ var comp = composedcom.makeApply(root);
 
 
 
-var listener = makeQEnd(setQInterface, listenerEndcap, comp);
+var listener = makeQEnd(listenerEndcap, comp);
 
 /*function makeQTest(x) {
 	var q = makeQStart();
