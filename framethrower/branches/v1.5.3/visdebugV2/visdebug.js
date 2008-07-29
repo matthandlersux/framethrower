@@ -134,6 +134,8 @@ var visDebug = function(){
 	var runcheck = false;
 	var isNewChange = false;
 	var initContext = null;
+	var containWords = [];
+	var noLinkWords = [];
 
 	var ui;
 
@@ -203,7 +205,6 @@ var visDebug = function(){
 
 			var svgdiv = ui.svgelements;
 			//remove from-links and to-links svg
-			console.log('removing: ' + id);
 			var removeLinks = function(links){
 				forEach(links, function(link){
 					if(link.svg && link.svg.node && svgdiv === link.svg.node.parentNode){
@@ -236,7 +237,6 @@ var visDebug = function(){
 
 			//create svg for the objects			
 			var svgresult = object2svg(SO.xmlNodes.obj, {fromx:'0',fromy:'0',r:'20',objid:id});
-
 			if (svgresult) {
 				SO.objectsvg = svgresult;
 			}
@@ -245,7 +245,14 @@ var visDebug = function(){
 			var links2svg = function(links){
 				forEach(links, function(link) {
 					var node = link.xmlNode;
-					if(!node.getAttribute('type').match(/Situation/) && !node.getAttribute('type').match(/Objects/)){
+					var matched = false;
+					forEach(noLinkWords, function(word){
+						var re = new RegExp(word);
+						if(node.getAttribute('type').match(re)){
+							matched = true;
+						}
+					});
+					if(!matched){
 						if(!link.svg){
 							svgresult = object2svg(node, {fromx:'0',fromy:'0',midx1:'0',midy1:'0',midx2:'0',midy2:'0',tox:'0',toy:'0'});
 							if (svgresult) {
@@ -258,6 +265,7 @@ var visDebug = function(){
 			};
 			links2svg(SO.links);
 			links2svg(SO.tolinks);
+
 
 			//add link xml objects and svg objects to the "to" parameter of the link
 			var links = SO.links;
@@ -295,7 +303,6 @@ var visDebug = function(){
 
 			zUpdate();
 
-
 			SO.updatePosition('init');
 
 		};
@@ -308,53 +315,65 @@ var visDebug = function(){
 			if(fromSO.links[key].svg){
 				SO.tolinks[key].svg = fromSO.links[key].svg;
 			}
+			forEach(containWords, function(word){
+				var re = new RegExp(word);
+				if(fromSO.links[key].xmlNode.getAttribute('type').match(re)){
 
-			if(fromSO.links[key].xmlNode.getAttribute('type').match(/Situation/)){
+					SO.containedObjects[fromSO.objId] = fromSO;
+					//change to contained objects, so update the targetX and targetY of all contained objects
+					var total = 0;
+					forEach(SO.containedObjects, function(){
+						total++;
+					});
+					var count = 0;
+					forEach(SO.containedObjects, function(CO){
+						CO.angle = count/total * 2 * Math.PI;
+						CO.updateTargets();
+						count++;
+					});
+				}	
+			});
 
-				SO.containedObjects[fromSO.objId] = fromSO;
-				//change to contained objects, so update the targetX and targetY of all contained objects
-				var total = 0;
-				forEach(SO.containedObjects, function(){
-					total++;
-				});
-				var count = 0;
-				forEach(SO.containedObjects, function(CO){
-					CO.angle = count/total * 2 * Math.PI;
-					CO.updateTargets();
-					count++;
-				});
-			}
 		};
 		
 		SO.unregisterToLink = function(key, fromSO) {
-			if(fromSO.links[key].xmlNode.getAttribute('type').match(/Situation/)){
+			forEach(containWords, function(word){
+				var re = new RegExp(word);
+				if(fromSO.links[key].xmlNode.getAttribute('type').match(re)){
 
-				delete SO.containedObjects[fromSO.objId];
-				//change to contained objects, so update the targetX and targetY of all contained objects
-				var total = 0;
-				forEach(SO.containedObjects, function(){
-					total++;
-				});
-				var count = 0;
-				forEach(SO.containedObjects, function(CO){
-					CO.angle = count/total * 2 * Math.PI;
-					//CO.updateTargets();
-					count++;
-				});
-			}
+					delete SO.containedObjects[fromSO.objId];
+					//change to contained objects, so update the targetX and targetY of all contained objects
+					var total = 0;
+					forEach(SO.containedObjects, function(){
+						total++;
+					});
+					var count = 0;
+					forEach(SO.containedObjects, function(CO){
+						CO.angle = count/total * 2 * Math.PI;
+						//CO.updateTargets();
+						count++;
+					});
+				}
+			});
 		};
 		
 
 		SO.registerFromLink = function(key, toSO) {
-			if(SO.links[key].xmlNode.getAttribute('type').match(/Situation/)){
-				SO.containingObject = toSO;
-			}
+			forEach(containWords, function(word){
+				var re = new RegExp(word);
+				if(SO.links[key].xmlNode.getAttribute('type').match(re)){
+					SO.containingObject = toSO;
+				}
+			});
 		};
 		
 		SO.unregisterFromLink = function(key, toSO) {
-			if(SO.links[key].xmlNode.getAttribute('type').match(/Situation/)){
-				delete SO.containingObject;
-			}
+			forEach(containWords, function(word){
+				var re = new RegExp(word);
+				if(SO.links[key].xmlNode.getAttribute('type').match(re)){
+					delete SO.containingObject;
+				}
+			});
 		};
 
 		SO.updateTargets = function () {
@@ -363,11 +382,14 @@ var visDebug = function(){
 				SO.targetX = SO.containingObject.x + SO.containingObject.r * 3/4 * Math.cos(SO.angle);				
 				SO.targetY = SO.containingObject.y + SO.containingObject.r * 3/4 * Math.sin(SO.angle);
 			}
-			//console.log('angle: ' + angle);
-			//console.log('cos(angle): ' + Math.cos(angle));
 		};
 
 		SO.updatePosition = function (direction) {
+			//don't update if we haven't gotten xmlNodes for this object yet
+			if(!SO.xmlNodes){
+				return;
+			}
+			
 			//check x,y and r against containing situations
 			if(SO.containingObject){
 				var toObj = SO.containingObject;
@@ -418,7 +440,6 @@ var visDebug = function(){
 				if(direction === 'layout'){
 					fromObj.updateTargets();
 				}
-				
 				if(direction === 'init' || direction === 'layout'){
 					fromObj.updatePosition(direction);
 				} else {
@@ -429,7 +450,7 @@ var visDebug = function(){
 
 			SO.prevX = SO.x;
 			SO.prevY = SO.y;
-
+						
 			var svgresult = object2svg(SO.xmlNodes.obj, {fromx:SO.x,fromy:SO.y,r:SO.r,objid:id});
 
 			if (svgresult) {
@@ -516,16 +537,19 @@ var visDebug = function(){
 	var zUpdate = function(){
 		//first get z-indices for all of the screenObjects
 		forEach(O, function(SO){
-			forEach(O[SO.objId].links, function(link){
-				if(link.xmlNode.getAttribute('type').match(/Situation/)){
-					if (link.xmlNode.getAttribute('to') === SO.objId) {
-						var fromObj = O[link.xmlNode.getAttribute('from')];
-						if(SO.z <= fromObj.z){
-							SO.z = fromObj.z+1;
-							SO.insertBeforeId = link.xmlNode.getAttribute('from');
+			forEach(O[SO.objId].tolinks, function(link){
+				forEach(containWords, function(word){
+					var re = new RegExp(word);
+					if(link.xmlNode.getAttribute('type').match(re)){
+						if (link.xmlNode.getAttribute('to') === SO.objId) {
+							var fromObj = O[link.xmlNode.getAttribute('from')];
+							if(SO.z <= fromObj.z){
+								SO.z = fromObj.z+1;
+								SO.insertBeforeId = link.xmlNode.getAttribute('from');
+							}
 						}
 					}
-				}
+				});
 			});
 
 		});
@@ -535,16 +559,19 @@ var visDebug = function(){
 		while(change){
 			change = false;
 			forEach(O, function(SO){
-				forEach(O[SO.objId].links, function(link){
-					if(link.xmlNode.getAttribute('type').match(/Situation/)){
-						if (link.xmlNode.getAttribute('to') === SO.objId) {
-							var fromObj = O[link.xmlNode.getAttribute('from')];
-							if(SO.z <= fromObj.z){
-								SO.z = fromObj.z+1;
-								change = true;
+				forEach(O[SO.objId].tolinks, function(link){
+					forEach(containWords, function(word){
+						var re = new RegExp(word);
+						if(link.xmlNode.getAttribute('type').match(re)){
+							if (link.xmlNode.getAttribute('to') === SO.objId) {
+								var fromObj = O[link.xmlNode.getAttribute('from')];
+								if(SO.z <= fromObj.z){
+									SO.z = fromObj.z+1;
+									change = true;
+								}
 							}
 						}
-					}
+					});
 				});
 			});
 		}
@@ -553,23 +580,22 @@ var visDebug = function(){
 
 		//get the current ordering from the svg
 		var svgObjects = svgdiv.childNodes;
-		var order = [];
 		var orderhash = {};
 		var i = 0;
 		forEach(svgObjects, function(svgObject){
 			if(svgObject.firstChild){
-				order[i] = svgObject.firstChild.id;
 				orderhash[svgObject.firstChild.id] = i;
+				i++;
 			}
 		});
-
+		
 		//check each object for consistency with whats on screen, fix it if there is a problem
 		forEach(O, function(SO){
 			if(SO.insertBeforeId){
-				if(orderhash[SO.insertBeforeId] < order[SO.objId]){
+				if(orderhash[SO.insertBeforeId] < orderhash[SO.objId]){
 					//these objects are out of order, insert current object before insertBefore
 					var insertBefore = O[SO.insertBeforeId].objectsvg;
-					svgdiv.remove(SO.objectsvg);
+					svgdiv.removeChild(SO.objectsvg);
 					svgdiv.insertBefore(SO.objectsvg,insertBefore);
 				}
 			}
@@ -630,7 +656,7 @@ var visDebug = function(){
 			}
 			dragO.updatePosition();
 		}
-		if (ui.drawnOid !== ui.selectOid || (isNewChange && ui.selectOid && O[ui.selectOid].xmlNodes)){
+		if ((ui.drawnOid !== ui.selectOid || isNewChange) && ui.selectOid && O[ui.selectOid] && O[ui.selectOid].xmlNodes){
 			ui.drawnOid = ui.selectOid;
 			isNewChange = false;
 			var infoDiv = document.getElementById("info");
@@ -692,28 +718,60 @@ var visDebug = function(){
 				xmlUpdate(id);
 			}
 		}
-
-
 	};
 
-	var init = function(testFunc, recurseFuncName, svgelementsName){
+
+	var objArray2Screen = function(objArray){
+		//remove all screen objects from the current objectCache
+		for (id in objectCache) {
+			if(objectCache.hasOwnProperty(id)){
+				O[id].removeObject();
+			}
+		}
+
+		//populate the objectCache by traversing the situation tree structure
+		objectCache = {};
+
+		forEach(objArray, function(obj){
+			objectCache[obj.getId()] = obj;
+		});
+	
+
+		for (id in objectCache) {
+			if(objectCache.hasOwnProperty(id)){
+				xmlUpdate(id);
+			}
+		}
+	};
+
+
+	var init = function(params){
 		//create userinput object to track user input
-		ui = initUserInput(svgelementsName);
-
+		ui = initUserInput(params.svgDiv);
+		if(params.containWords){
+			containWords = params.containWords;
+		}
+		if(params.noLinkWords){
+			noLinkWords = params.noLinkWords;
+		}
 		//create some objects to populate the object cache
-
 
 
 		//G is an object that we can use to make objects created in testFunc available to the interactive debugger
 		//we execute our test commands to set up an environment
 		//then we can execute further commands interactively using submitenter
 		var G = {};
-		rootObj = testFunc(G);
+		rootObj = params.testFunc(G);
 
 		initContext = function(){};
 
-		rootObj2Screen(rootObj, recurseFuncName);
+		if(params.initStyle === "recursive"){
+			rootObj2Screen(rootObj, params.recurseFuncName);
+		}else{
+			objArray2Screen(rootObj);
+		}
 	};
+	
 
 	//specify the public functions
 	return {
@@ -722,4 +780,3 @@ var visDebug = function(){
 		init:init
 	};
 };
-

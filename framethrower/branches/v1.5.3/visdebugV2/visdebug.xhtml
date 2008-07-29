@@ -16,6 +16,7 @@
 		
 	<script src="objects2xml.js"/>
 	<script src="visdebug.js"/>
+	<script src="scratchwork.js"/>
 
 	<script type="text/javascript">
 		dojo.require("dijit.form.Button");
@@ -28,12 +29,47 @@
 		
 		
 		dojo.addOnLoad(function(){
+			/*
+			var params = {};
+			params.initStyle = "recursive";
+			params.testFunc = randomCorrespondence;
+			params.svgDiv = "svgelements";
+			params.recurseFuncName = "getObjects";
+			params.containWords = ["Situation"];
+			params.noLinkWords = ["Situation", "Objects"];
+			
+			var params2 = {};
+			params2.initStyle = "recursive";
+			params2.testFunc = qTestFunc;
+			params2.svgDiv = "svgelements3";
+			params2.recurseFuncName = "getInforms";
+			params2.containWords = ["Situation"];
+			params2.noLinkWords = ["Situation", "Objects"];
+			
+			
 			vd1 = visDebug();
 			vd2 = visDebug();
-			vd1.init(randomCorrespondence, "getObjects", "svgelements");
-			vd2.init(qTestFunc, "getInforms", "svgelements3");
+			vd1.init(params);
+			vd2.init(params2);
 			setInterval('vd1.run();', 64);
 			setInterval('vd2.run();', 64);
+			*/
+			
+			
+			vd3 = visDebug();
+
+			var params3 = {};
+			params3.initStyle = "array";
+			params3.testFunc = scratchTest;
+			params3.svgDiv = "svgelements";
+			params3.containWords = ["Inof","Outof"];
+			params3.noLinkWords = ["Inof", "Outof", "Outputs", "Inputs"];
+			
+			
+
+			vd3.init(params3);
+			setInterval('vd3.run();', 64);
+			
 		});
 	</script>
 

@@ -61,7 +61,7 @@ var interfaces = {
 		}
 	},
 	xml: {
-		
+		actions: []
 	}
 };
 
