@@ -230,6 +230,7 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
 	var controllers = {};
 	var output = {};
 	var inputPins = {};
+	var ambient;
 	
 	function activate() {
 		// activate output pins
@@ -239,7 +240,8 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
 		});
 		
 		// instantiate processor
-		var processor = instantiateProcessor(output);
+		ambient = makeAmbient();
+		var processor = instantiateProcessor(output, ambient);
 
 		// make input pins
 		forEach(inputs, function (parentPin, inputName) {
@@ -257,7 +259,8 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
 			controller.deactivate();
 		});
 		
-		// deactivate processor
+		// deactivate ambient
+		ambient.deactivate();
 		
 		// remove input pins inform
 		forEach(inputs, function (parentPin, inputName) {
