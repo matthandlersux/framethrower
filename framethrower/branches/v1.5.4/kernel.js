@@ -57,6 +57,10 @@ function makeIded(id, my) {
 		return id;
 	};
 	
+	o.getType = function () {
+		return "ided";
+	};
+	
 	o.remove = function () {
 		// remove from object cache
 		objectCache.remove(id);

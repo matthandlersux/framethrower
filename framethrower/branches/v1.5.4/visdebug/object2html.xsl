@@ -7,7 +7,7 @@
 
 	<xsl:param name="params" />
 
-	<xsl:template match="object|situation|individual|ghost|relation|role|infon|q">
+	<xsl:template match="object|situation|individual|ghost|relation|role|infon|q|ided">
 		<html:div style="overflow:auto;">
 			<xsl:call-template name="position">
 				<xsl:with-param name="xvar" select="x - 10" />

@@ -17,7 +17,7 @@
 	<xsl:param name="r" />
 	<xsl:param name="objid" />
 
-	<xsl:template match="situation">
+	<xsl:template match="situation|box">
 		<svg:g>
 			<svg:circle stroke-width="3px" stroke="#A9E951" fill="white" opacity=".45">
 				<xsl:call-template name="circleatts" />				
@@ -26,7 +26,7 @@
 		</svg:g>
 	</xsl:template>
 
-	<xsl:template match="object|individual">
+	<xsl:template match="object|individual|ided|outputPin">
 		<svg:g>
 			<svg:circle stroke-width="3px" stroke="#10ADED" fill="#ABCDEF">
 				<xsl:call-template name="circleatts" />				
@@ -35,7 +35,7 @@
 		</svg:g>
 	</xsl:template>
 
-	<xsl:template match="ghost">
+	<xsl:template match="ghost|component">
 		<svg:g>
 			<svg:circle stroke-width="3px" stroke="#10ADED" opacity=".3" fill="#ABCDEF">
 				<xsl:call-template name="circleatts" />				
@@ -44,7 +44,7 @@
 		</svg:g>
 	</xsl:template>
 
-	<xsl:template match="relation|role|infon">
+	<xsl:template match="relation|role|infon|inputPin|startCap|endCap">
 		<svg:g>
 			<svg:circle stroke-width="3px" stroke="black" fill="purple">
 				<xsl:call-template name="circleatts" />				
@@ -53,7 +53,7 @@
 		</svg:g>
 	</xsl:template>
 	
-	<xsl:template match="q">
+	<xsl:template match="q|box">
 		<svg:g>
 			<svg:rect stroke-width="3px" stroke="#B00B1E" fill="#F00D1E">
 				<xsl:call-template name="rectatts" />				
