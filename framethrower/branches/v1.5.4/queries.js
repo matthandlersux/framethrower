@@ -74,12 +74,19 @@ var interfaces = {
 	}
 };
 
-
+//global array for debugging
+var globalQArray = [];
 
 
 function makeInputPin(sendFun) {
 	var inputPin = makeIded();
 	inputPin.send = sendFun;
+
+	globalQArray.push(inputPin);
+	inputPin.getType = function(){
+		return "inputPin";
+	};
+
 	return inputPin;
 }
 
@@ -137,7 +144,10 @@ function makeOutputPin(outputInterface, controller, activator) {
 		return outputInterfaceInstance.getState();
 	};
 	
-	
+	globalQArray.push(outputPin);
+	outputPin.getType = function(){
+		return "outputPin";
+	};
 	return outputPin;
 }
 
@@ -161,12 +171,22 @@ function makeStartCap(outputInterfaces, controller) {
 		controller[pinName] = c.send;
 	});
 	
+	globalQArray.push(startCap);	
+	startCap.getType = function(){
+		return "startCap";
+	};
 	return startCap;
 }
 
 function makeEndCap(instantiateProcessor, inputs) {
 	var endCap = makeGenericBox({}, instantiateProcessor, inputs);
 	delete endCap.outputPins;
+	
+	globalQArray.push(endCap);	
+	endCap.getType = function(){
+		return "endCap";
+	};
+	
 	return endCap;
 }
 
@@ -244,6 +264,13 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
 		box.outputPins[pinName] = makeOutputPin(outputInterface, controllers[pinName], activator);
 	});
 	
+	//for debug
+	box.inputPins = inputPins;
+	
+	globalQArray.push(box);	
+	box.getType = function(){
+		return "box";
+	};
 	return box;
 }
 
@@ -260,6 +287,10 @@ function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) 
 		});
 	};
 	
+	globalQArray.push(component);
+	component.getType = function(){
+		return "component";
+	};
 	return component;
 }
 
