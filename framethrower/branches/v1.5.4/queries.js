@@ -11,6 +11,9 @@ var interfaces = {
 				},
 				addInform: function (pin) {
 					pin.set(cache);
+				},
+				getState: function () {
+					return cache;
 				}
 			};
 		}
@@ -32,6 +35,9 @@ var interfaces = {
 					cache.forEach(function (o) {
 						pin.add(o);
 					});
+				},
+				getState: function () {
+					return cache.toArray();
 				}
 			};
 		}
@@ -53,20 +59,194 @@ var interfaces = {
 					}
 				},
 				addInform: function (pin) {
-					cache.forEach(function (o) {
-						pin.add(o);
+					cache.forEach(function (o, index) {
+						pin.insert(o, index);
 					});					
+				},
+				getState: function () {
+					return cache;
 				}
 			};
 		}
 	},
 	xml: {
-		actions: []
+		
 	}
 };
 
 
-// being rewritten.....
+
+
+function makeInputPin(sendFun) {
+	var inputPin = makeIded();
+	inputPin.send = sendFun;
+	return inputPin;
+}
+
+
+function makeOutputPin(outputInterface, controller, activator) {
+	var outputPin = makeIded();
+	
+	var active = false;
+	var outputInterfaceInstance;
+	
+	var informs = makeObjectHash();
+	
+	outputPin.addInform = function (inputPin) {
+		informs.set(inputPin, inputPin);
+		if (active) {
+			outputInterfaceInstance.addInform(inputPin.send);
+		} else {
+			activator.activate();
+		}
+	};
+	outputPin.removeInform = function (inputPin) {
+		informs.remove(inputPin);
+		activator.checkDeactivate();
+	};
+	outputPin.hasNoInforms = function () {
+		return informs.isEmpty();
+	};
+	
+	controller.activate = function () {
+		outputInterfaceInstance = outputInterface.instantiate();
+		
+		controller.send = {};
+		forEach(outputInterfaceInstance.actions, function (action, actionName) {
+			controller.send[actionName] = function () {
+				var args = arguments;
+				action.apply(null, args);
+				informs.forEach(function (inform) {
+					inform.send[actionName].apply(null, args);
+				});
+			};
+		});
+		
+		active = true;
+	};
+	controller.deactivate = function () {
+		// garbage collect
+		outputInterfaceInstance = {};
+		controller.send = {};
+
+		active = false;
+	};
+	
+	
+	outputPin.getState = function () {
+		return outputInterfaceInstance.getState();
+	};
+	
+	
+	return outputPin;
+}
+
+
+
+function makeStartCap(outputInterfaces, controller) {
+	var startCap = makeIded();
+	
+	var outputInterfaceInstances = {};
+	
+	var activator = {
+		activate: function () {},
+		checkDeactivate: function () {}
+	};
+	
+	startCap.outputPins = {};
+	forEach(outputInterfaces, function (outputInterface, pinName) {
+		var c = {};
+		startCap.outputPins[pinName] = makeOutputPin(outputInterface, c, activator);
+		c.activate();
+		controller[pinName] = c.send;
+	});
+	
+	return startCap;
+}
+
+function makeEndCap(instantiateProcessor, inputs) {
+	var endCap = makeGenericBox({}, instantiateProcessor, inputs);
+	delete endCap.outputPins;
+	return endCap;
+}
+
+function makeBox(outputInterfaces, instantiateProcessor, inputs) {
+	var box = makeGenericBox(outputInterfaces, instantiateProcessor, inputs);
+	delete box.activate;
+	delete box.deactivate;
+	return box;
+}
+
+// used to make boxes and endcaps
+function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
+	var box = makeIded();
+	
+	var active = false;
+	
+	var controllers = {};
+	var output = {};
+	var inputPins = {};
+	
+	function activate() {
+		// activate output pins
+		forEach(controllers, function (controller, pinName) {
+			controller.activate();
+			output[pinName] = controllers[pinName].send;
+		});
+		
+		// instantiate processor
+		var processor = instantiateProcessor(output);
+
+		// make input pins
+		forEach(inputs, function (parentPin, inputName) {
+			var pin = makeInputPin(processor[inputName]);
+			parentPin.addInform(pin);
+			inputPins[inputName] = pin;
+		});
+		
+		active = true;
+	}
+	
+	function deactivate() {
+		// deactivate output pins
+		forEach(controllers, function (controller) {
+			controller.deactivate();
+		});
+		
+		// deactivate processor
+		
+		// remove input pins inform
+		forEach(inputs, function (parentPin, inputName) {
+			parentPin.removeInform(inputPins[inputName]);
+		});
+		
+		active = false;
+	}
+	
+	box.activate = activate;
+	box.deactivate = deactivate;
+	
+	var activator = {
+		activate: activate,
+		checkDeactivate: function () {
+			if (all(box.outputPins, function (outputPin) {
+				return outputPin.hasNoInforms();
+			})) {
+				deactivate();
+			}
+		}
+	};
+	
+	box.outputPins = {};
+	
+	forEach(outputInterfaces, function (outputInterface, pinName) {
+		controllers[pinName] = {};
+		box.outputPins[pinName] = makeOutputPin(outputInterface, controllers[pinName], activator);
+	});
+	
+	return box;
+}
+
 
 
 function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) {
@@ -75,115 +255,12 @@ function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) 
 	var applications = makeOhash(stringifyInputs);
 	
 	component.makeApply = function (inputs) {
-		return applications.getOrMake(input, function () {
-			var box = makeBox(inputInterfaces, outputInterfaces, instantiateProcessor, inputs);
-			delete box.activate;
-			delete box.deactivate;
-			return box;
+		return applications.getOrMake(inputs, function () {
+			return makeBox(outputInterfaces, instantiateProcessor, inputs);
 		});
 	};
 	
 	return component;
-}
-
-function makeInputPin(sendFun) {
-	var inputPin = makeIded();
-	inputPin.send = sendFun;
-	return inputPin;
-}
-
-function makeOutputPin(informs, pinName) {
-	var outputPin = makeIded();
-	outputPin.addInform = function (inputPin) {
-		informs.add(pinName, inputPin);
-	};
-	outputPin.removeInform = function (inputPin) {
-		informs.remove(pinName, inputPin);
-	};
-	return outputPin;
-}
-
-function makeBox(inputInterfaces, outputInterfaces, instantiateProcessor, inputs) {
-	var box = makeIded();
-	
-	var active = false;
-	
-	var input, output, outputInterfaceInstances;
-	
-	box.outputPins = {};
-	
-	
-	
-	var informs = {};
-	var informsCache = {};
-	informs.add = function (outputPinName, childInputPin) {
-		informsCache[outputPinName].add(childInputPin, childInputPin);
-		// activate
-		if (!active) {
-			activate();
-		} else {
-			// catch the new child up
-			outputInterfaceInstances[outputPinName].addInform(childInputPin.send);
-		}
-	};
-	informs.remove = function (outputPinName, childInputPin) {
-		informsCache[outputPinName].remove(childInputPin);
-		// deactivate if nothing left
-		
-	};
-	
-	forEach(outputInterfaces, function (outputInterface, name) {
-		informsCache[name] = makeObjectHash();
-		box.outputPins[name] = makeOutputPin(informs);
-	});
-	
-	
-	function passToInforms(outputPinName, actionName) {
-		return function () {
-			var args = arguments;
-			informsCache[outputPinName].forEach(function (childInputPin) {
-				childInputPin.send.apply(null, args);
-			});
-		};
-	}
-	
-	
-	
-	
-	
-	function activate() {
-		output = {};
-		forEach(outputInterfaces, function (outputInterface, outputName) {
-			output[outputName] = {};
-			var out = output[outputName];
-			
-			outputInterfaceInstances[outputName] = outputInterface.instantiate();
-			var outputInterfaceInstance = outputInterfaceInstances[outputName];
-			
-			forEach(outputInterfaceInstance.actions, function (actionFunction, actionName) {
-				out[actionName] = pCompose(actionFunction, passToInforms(outputName, actionName));
-			});
-		});
-		
-		var processor = instantiateProcessor(output);
-		
-		// make input pins
-		forEach(inputs, function (parentPin, inputName) {
-			var pin = makeInputPin(processor[inputName]);
-			parentPin.addInform(pin);
-		});
-		
-		active = true;
-	}
-	
-	function deactivate() {
-		
-	}
-	
-	
-	
-	
-	return box;
 }
 
 // inputs : {role: Object}
@@ -198,7 +275,82 @@ function stringifyInputs(inputs) {
 
 
 
+// Component Makers
 
+function makeCrossReference() {
+	var cr = {};
+	
+	var inputs = makeObjectHash();
+	var outputs = makeObjectHash();
+	
+	cr.hasInput = function (input) {
+		return inputs.get(input);
+	};
+	
+	cr.addLink = function (input, output, callback) {
+		if (!outputs.get(output)) {
+			callback(output);
+		}
+		inputs.getOrMake(input, makeObjectHash).set(output, output);
+		outputs.getOrMake(output, makeObjectHash).set(input, input);
+	};
+	
+	function checkDead(output, callback) {
+		var ins = outputs.get(output);
+		if (ins.isEmpty()) {
+			outputs.remove(output);
+			callback(output);
+		}
+	}
+	
+	cr.removeLink = function (input, output, callback) {
+		var outs = inputs.get(input);
+		if (outs) {
+			outs.remove(output);
+			var ins = outputs.get(output);
+			ins.remove(input);
+			checkDead(output, callback);
+		}
+	};
+	
+	cr.removeInput = function (input, callback) {
+		var outs = inputs.get(input);
+		if (outs) {
+			outs.forEach(function (output) {
+				var ins = outputs.get(output);
+				ins.remove(input);
+				checkDead(output, callback);
+			});
+		}
+		inputs.remove(input);
+	};
+	
+	return cr;
+}
+
+
+// f : Object -> [Object]
+function liftSet(f) {
+	return makeComponent({input: interfaces.set}, {output: interfaces.set}, function (myOut) {
+		myOut = myOut.output;
+		var cr = makeCrossReference();
+		return {
+			input: {
+				add: function (input) {
+					if (!cr.hasInput(input)) {
+						var outputList = f(input);
+						forEach(outputList, function (output) {
+							cr.addLink(input, output, myOut.add);
+						});
+					}
+				},
+				remove: function (input) {
+					cr.removeInput(input, myOut.remove);
+				}
+			}
+		};
+	});
+}
 
 
 
@@ -381,56 +533,7 @@ function qCompose() {
 
 
 
-function makeCrossReference() {
-	var cr = {};
-	
-	var inputs = makeObjectHash();
-	var outputs = makeObjectHash();
-	
-	cr.hasInput = function (input) {
-		return inputs.get(input);
-	};
-	
-	cr.addLink = function (input, output, callback) {
-		if (!outputs.get(output)) {
-			callback(output);
-		}
-		inputs.getOrMake(input, makeObjectHash).set(output, output);
-		outputs.getOrMake(output, makeObjectHash).set(input, input);
-	};
-	
-	function checkDead(output, callback) {
-		var ins = outputs.get(output);
-		if (ins.isEmpty()) {
-			outputs.remove(output);
-			callback(output);
-		}
-	}
-	
-	cr.removeLink = function (input, output, callback) {
-		var outs = inputs.get(input);
-		if (outs) {
-			outs.remove(output);
-			var ins = outputs.get(output);
-			ins.remove(input);
-			checkDead(output, callback);
-		}
-	};
-	
-	cr.removeInput = function (input, callback) {
-		var outs = inputs.get(input);
-		if (outs) {
-			outs.forEach(function (output) {
-				var ins = outputs.get(output);
-				ins.remove(input);
-				checkDead(output, callback);
-			});
-		}
-		inputs.remove(input);
-	};
-	
-	return cr;
-}
+
 
 
 // f : Object -> [Object]
