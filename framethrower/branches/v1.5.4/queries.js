@@ -316,6 +316,11 @@ function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) 
 		});
 	};
 	
+	// ==================== For Debug
+	box.getApplications = function () {
+		return applications.toArray();
+	};
+	
 	globalQArray.push(component);
 	component.getType = function(){
 		return "component";
