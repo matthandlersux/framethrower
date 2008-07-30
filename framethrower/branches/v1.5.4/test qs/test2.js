@@ -22,7 +22,9 @@ function setLogger () {
 	};
 }
 
-var ec = makeEndCap(setLogger, {input: add123.outputPins.output});
+var mainAmbient = makeAmbient();
+
+var ec = mainAmbient.makeEndCap(setLogger, {input: add123.outputPins.output});
 
 ec.activate();
 

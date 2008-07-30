@@ -152,6 +152,39 @@ function makeOutputPin(outputInterface, controller, activator) {
 }
 
 
+function makeAmbient() {
+	var ambient = {};
+	
+	var endCaps = [];
+	
+	ambient.makeEndCap = function (instantiateProcessor, inputs) {
+		var endCap = makeGenericBox({}, instantiateProcessor, inputs);
+		delete endCap.outputPins;
+
+		globalQArray.push(endCap);	
+		endCap.getType = function(){
+			return "endCap";
+		};
+		
+		endCaps.push(endCap);
+
+		return endCap;
+	};
+	
+	ambient.deactivate = function () {
+		forEach(endCaps, function (endCap) {
+			endCap.deactivate();
+		});
+	};
+	
+	ambient.getEndCaps = function () {
+		return endCaps;
+	};
+	
+	return ambient;
+}
+
+
 
 function makeStartCap(outputInterfaces, controller) {
 	var startCap = makeIded();
@@ -176,18 +209,6 @@ function makeStartCap(outputInterfaces, controller) {
 		return "startCap";
 	};
 	return startCap;
-}
-
-function makeEndCap(instantiateProcessor, inputs) {
-	var endCap = makeGenericBox({}, instantiateProcessor, inputs);
-	delete endCap.outputPins;
-	
-	globalQArray.push(endCap);	
-	endCap.getType = function(){
-		return "endCap";
-	};
-	
-	return endCap;
 }
 
 function makeBox(outputInterfaces, instantiateProcessor, inputs) {
