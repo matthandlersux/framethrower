@@ -317,7 +317,7 @@ function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) 
 	};
 	
 	// ==================== For Debug
-	box.getApplications = function () {
+	component.getApplications = function () {
 		return applications.toArray();
 	};
 	

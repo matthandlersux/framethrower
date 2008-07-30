@@ -563,14 +563,16 @@ var visDebug = function(){
 						}
 					}
 				});
-				
+			});
+			forEach(O[SO.objId].links, function(link){
 				forEach(containWords, function(word){
 					var re = new RegExp(word);
 					if(link.xmlNode.getAttribute('type').match(re)){
-						var fromObj = O[link.xmlNode.getAttribute('from')];
-						if(fromObj.z <= SO.z){
-							fromObj.z = SO.z+1;
-							fromObj.insertBeforeId = link.xmlNode.getAttribute('to');
+						var toObj = O[link.xmlNode.getAttribute('to')];
+						if(SO.z <= toObj.z){
+							SO.z = toObj.z+1;
+							SO.insertBeforeId = link.xmlNode.getAttribute('to');
+							console.log(SO.objId + " insert before: " + SO.insertBeforeId);
 						}
 					}
 				});				

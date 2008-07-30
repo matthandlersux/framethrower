@@ -44,7 +44,7 @@
 		</svg:g>
 	</xsl:template>
 
-	<xsl:template match="relation|role|infon|inputPin|startCap|endCap|box">
+	<xsl:template match="relation|role|infon|inputPin|startCap|endCap">
 		<svg:g>
 			<svg:circle stroke-width="3px" stroke="black" fill="purple">
 				<xsl:call-template name="circleatts" />				
