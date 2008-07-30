@@ -11,6 +11,8 @@
 	<script src="../kernel.js"/>
 	<script src="../queries.js"/>
 	<script src="visqtest.js"/>
+	<script src="scratchwork.js"/>
+
 
 	<script src="objects2xml.js"/>
 	<script src="visdebug.js"/>
@@ -59,7 +61,7 @@
 			params3.initStyle = "array";
 			params3.testFunc = scratchTest;
 			params3.svgDiv = "svgelements";
-			params3.containWords = ["Inof","Outof"];
+			params3.containWords = ["Inputs","Outputs"];
 			params3.noLinkWords = ["Inof", "Outof", "Outputs", "Inputs"];
 			
 			vd3.init(params3);
@@ -72,12 +74,12 @@
 			params4.initStyle = "array";
 			params4.testFunc = visqtest;
 			params4.svgDiv = "svgelements";
-			//params4.containWords = ["Inof","Outof"];
+			params4.containWords = ["inputPins","outputPins"];
+			//params4.containedWords = ["inputPins","outputPins"];
 			//params4.noLinkWords = ["Inof", "Outof", "Outputs", "Inputs"];
 			
 			vd4.init(params4);
 			setInterval('vd4.run();', 64);
-			
 		});
 	</script>
 

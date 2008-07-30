@@ -135,6 +135,7 @@ var visDebug = function(){
 	var isNewChange = false;
 	var initContext = null;
 	var containWords = [];
+	var containedWords = [];
 	var noLinkWords = [];
 
 	var ui;
@@ -315,10 +316,9 @@ var visDebug = function(){
 			if(fromSO.links[key].svg){
 				SO.tolinks[key].svg = fromSO.links[key].svg;
 			}
-			forEach(containWords, function(word){
+			forEach(containedWords, function(word){
 				var re = new RegExp(word);
 				if(fromSO.links[key].xmlNode.getAttribute('type').match(re)){
-
 					SO.containedObjects[fromSO.objId] = fromSO;
 					//change to contained objects, so update the targetX and targetY of all contained objects
 					var total = 0;
@@ -333,15 +333,37 @@ var visDebug = function(){
 					});
 				}	
 			});
-
+			forEach(containWords, function(word){
+				var re = new RegExp(word);
+				if(SO.tolinks[key].xmlNode.getAttribute('type').match(re)){
+					SO.containingObject = fromSO;
+				}
+			});
 		};
 		
 		SO.unregisterToLink = function(key, fromSO) {
+			if(SO.containedObjects[fromSO.objId]){
+				delete SO.containedObjects[fromSO.objId];
+				//change to contained objects, so update the targetX and targetY of all contained objects
+				var total = 0;
+				forEach(SO.containedObjects, function(){
+					total++;
+				});
+				var count = 0;
+				forEach(SO.containedObjects, function(CO){
+					CO.angle = count/total * 2 * Math.PI;
+					//CO.updateTargets();
+					count++;
+				});
+			}
+		};
+		
+
+		SO.registerFromLink = function(key, toSO) {
 			forEach(containWords, function(word){
 				var re = new RegExp(word);
-				if(fromSO.links[key].xmlNode.getAttribute('type').match(re)){
-
-					delete SO.containedObjects[fromSO.objId];
+				if(toSO.tolinks[key].xmlNode.getAttribute('type').match(re)){
+					SO.containedObjects[toSO.objId] = toSO;
 					//change to contained objects, so update the targetX and targetY of all contained objects
 					var total = 0;
 					forEach(SO.containedObjects, function(){
@@ -350,16 +372,12 @@ var visDebug = function(){
 					var count = 0;
 					forEach(SO.containedObjects, function(CO){
 						CO.angle = count/total * 2 * Math.PI;
-						//CO.updateTargets();
+						CO.updateTargets();
 						count++;
 					});
-				}
-			});
-		};
-		
-
-		SO.registerFromLink = function(key, toSO) {
-			forEach(containWords, function(word){
+				}	
+			});			
+			forEach(containedWords, function(word){
 				var re = new RegExp(word);
 				if(SO.links[key].xmlNode.getAttribute('type').match(re)){
 					SO.containingObject = toSO;
@@ -368,12 +386,9 @@ var visDebug = function(){
 		};
 		
 		SO.unregisterFromLink = function(key, toSO) {
-			forEach(containWords, function(word){
-				var re = new RegExp(word);
-				if(SO.links[key].xmlNode.getAttribute('type').match(re)){
-					delete SO.containingObject;
-				}
-			});
+			if(SO.containingObject){
+				delete SO.containingObject;
+			}
 		};
 
 		SO.updateTargets = function () {
@@ -538,18 +553,28 @@ var visDebug = function(){
 		//first get z-indices for all of the screenObjects
 		forEach(O, function(SO){
 			forEach(O[SO.objId].tolinks, function(link){
-				forEach(containWords, function(word){
+				forEach(containedWords, function(word){
 					var re = new RegExp(word);
 					if(link.xmlNode.getAttribute('type').match(re)){
-						if (link.xmlNode.getAttribute('to') === SO.objId) {
-							var fromObj = O[link.xmlNode.getAttribute('from')];
-							if(SO.z <= fromObj.z){
-								SO.z = fromObj.z+1;
-								SO.insertBeforeId = link.xmlNode.getAttribute('from');
-							}
+						var fromObj = O[link.xmlNode.getAttribute('from')];
+						if(SO.z <= fromObj.z){
+							SO.z = fromObj.z+1;
+							SO.insertBeforeId = link.xmlNode.getAttribute('from');
 						}
 					}
 				});
+				
+				forEach(containWords, function(word){
+					var re = new RegExp(word);
+					if(link.xmlNode.getAttribute('type').match(re)){
+						var fromObj = O[link.xmlNode.getAttribute('from')];
+						if(fromObj.z <= SO.z){
+							fromObj.z = SO.z+1;
+							fromObj.insertBeforeId = link.xmlNode.getAttribute('to');
+						}
+					}
+				});				
+				
 			});
 
 		});
@@ -560,15 +585,23 @@ var visDebug = function(){
 			change = false;
 			forEach(O, function(SO){
 				forEach(O[SO.objId].tolinks, function(link){
+					forEach(containedWords, function(word){
+						var re = new RegExp(word);
+						if(link.xmlNode.getAttribute('type').match(re)){
+							var fromObj = O[link.xmlNode.getAttribute('from')];
+							if(SO.z <= fromObj.z){
+								SO.z = fromObj.z+1;
+								change = true;
+							}
+						}
+					});
 					forEach(containWords, function(word){
 						var re = new RegExp(word);
 						if(link.xmlNode.getAttribute('type').match(re)){
-							if (link.xmlNode.getAttribute('to') === SO.objId) {
-								var fromObj = O[link.xmlNode.getAttribute('from')];
-								if(SO.z <= fromObj.z){
-									SO.z = fromObj.z+1;
-									change = true;
-								}
+							var fromObj = O[link.xmlNode.getAttribute('from')];
+							if(fromObj.z <= SO.z){
+								fromObj.z = SO.z+1;
+								change = true;
 							}
 						}
 					});
@@ -750,6 +783,9 @@ var visDebug = function(){
 		ui = initUserInput(params.svgDiv);
 		if(params.containWords){
 			containWords = params.containWords;
+		}
+		if(params.containedWords){
+			containedWords = params.containedWords;
 		}
 		if(params.noLinkWords){
 			noLinkWords = params.noLinkWords;
