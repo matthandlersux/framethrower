@@ -139,9 +139,12 @@ function makeOutputPin(outputInterface, controller, activator) {
 		active = false;
 	};
 	
-	
+	// ==================== For Debug
 	outputPin.getState = function () {
 		return outputInterfaceInstance.getState();
+	};
+	outputPin.getInforms = function () {
+		return informs.toArray();
 	};
 	
 	globalQArray.push(outputPin);
@@ -285,8 +288,13 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
 		box.outputPins[pinName] = makeOutputPin(outputInterface, controllers[pinName], activator);
 	});
 	
-	//for debug
-	box.inputPins = inputPins;
+	// ==================== For Debug
+	box.getInputPins = function () {
+		return inputPins;
+	};
+	box.getInputs = function () {
+		return inputs;
+	};
 	
 	globalQArray.push(box);	
 	box.getType = function(){
