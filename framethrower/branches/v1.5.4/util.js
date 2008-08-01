@@ -187,6 +187,15 @@ function compileXSL(xsl){
     };
 }
 
+//useful DOM function
+function insertAfter (parent, newnode, insertafter) {
+	if(insertAfter.nextSibling){
+		parent.insertBefore(newnode, insertAfter.nextSibling);
+	}else{
+		parent.appendChild(newnode);
+	}
+}
+
 
 Object.prototype.method = function(name, func) {
 	this.prototype[name] = func;

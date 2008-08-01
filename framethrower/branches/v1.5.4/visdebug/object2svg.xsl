@@ -16,46 +16,41 @@
 	<xsl:param name="toy" />
 	<xsl:param name="r" />
 	<xsl:param name="objid" />
+	<xsl:param name="shape" />
+	<xsl:param name="cssclass" />
 
-	<xsl:template match="situation|box">
+	<xsl:template match="object">
+		<xsl:choose>
+			<xsl:when test="$shape = 'circle'">
+				<xsl:call-template name="circle" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="rectangle" />
+			</xsl:otherwise>
+		</xsl:choose>
+		
+
+	</xsl:template>
+
+	<xsl:template name="circle">
 		<svg:g>
-			<svg:circle stroke-width="3px" stroke="#A9E951" fill="white" opacity=".45">
+			<svg:circle>
+				<xsl:attribute name="class">
+					<xsl:value-of select="$cssclass" />
+				</xsl:attribute>
 				<xsl:call-template name="circleatts" />				
 			</svg:circle>
 			<xsl:call-template name="text" />
 		</svg:g>
 	</xsl:template>
 
-	<xsl:template match="object|individual|ided|outputPin">
-		<svg:g>
-			<svg:circle stroke-width="3px" stroke="#10ADED" fill="#ABCDEF">
-				<xsl:call-template name="circleatts" />				
-			</svg:circle>
-			<xsl:call-template name="text" />
-		</svg:g>
-	</xsl:template>
 
-	<xsl:template match="ghost|component">
+	<xsl:template name="rectangle">
 		<svg:g>
-			<svg:circle stroke-width="3px" stroke="#10ADED" opacity=".3" fill="#ABCDEF">
-				<xsl:call-template name="circleatts" />				
-			</svg:circle>
-			<xsl:call-template name="text" />
-		</svg:g>
-	</xsl:template>
-
-	<xsl:template match="relation|role|infon|inputPin|startCap|endCap">
-		<svg:g>
-			<svg:circle stroke-width="3px" stroke="black" fill="purple">
-				<xsl:call-template name="circleatts" />				
-			</svg:circle>
-			<xsl:call-template name="text" />
-		</svg:g>
-	</xsl:template>
-	
-	<xsl:template match="q">
-		<svg:g>
-			<svg:rect stroke-width="3px" stroke="#B00B1E" fill="#F00D1E">
+			<svg:rect>
+				<xsl:attribute name="class">
+					<xsl:value-of select="$cssclass" />
+				</xsl:attribute>
 				<xsl:call-template name="rectatts" />				
 			</svg:rect>
 			<xsl:call-template name="text" />
@@ -81,16 +76,16 @@
 
 	<xsl:template name="rectatts">
 		<xsl:attribute name="width">
-			<xsl:value-of select="$r" />
+			<xsl:value-of select="2*$r" />
 		</xsl:attribute>
 		<xsl:attribute name="height">
-			<xsl:value-of select="$r" />
+			<xsl:value-of select="2*$r" />
 		</xsl:attribute>
 		<xsl:attribute name="x">
-			<xsl:value-of select="$fromx" />
+			<xsl:value-of select="$fromx - $r" />
 		</xsl:attribute>
 		<xsl:attribute name="y">
-			<xsl:value-of select="$fromy" />
+			<xsl:value-of select="$fromy - $r" />
 		</xsl:attribute>
 		<xsl:attribute name="id">
 			<xsl:value-of select="$objid" />
@@ -106,15 +101,14 @@
 			<xsl:attribute name="y">
 				<xsl:value-of select="$fromy" />
 			</xsl:attribute>
-			<xsl:value-of select="id"/>
+			<xsl:value-of select="@type"/>
 		</svg:text>
 	</xsl:template>
 
 
 	<xsl:template match="link">
 		<svg:g>
-			<svg:path id="{@from}{@type}{@to}" d="M{$fromx},{$fromy} Q{$midx1},{$midy1} {$midx2},{$midy2} T{$tox},{$toy}"
-				fill="none" stroke="#FFC426" stroke-width="5"  />
+			<svg:path id="{@from}{@type}{@to}" d="M{$fromx},{$fromy} Q{$midx1},{$midy1} {$midx2},{$midy2} T{$tox},{$toy}" class="link"/>
 				<svg:text>
 					<svg:textPath xlink:href="#{@from}{@type}{@to}" startOffset="30%">
 						<svg:tspan dy="-5">

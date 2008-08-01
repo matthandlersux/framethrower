@@ -62,7 +62,8 @@ function makeObjectToXML(testFunc){
 	
 	return function makeXMLObjectTop(obj, objectName, linkName){
 		links = {};
-		var objectNode = document.createElementNS("", objectName);
+		var objectNode = document.createElementNS("", "object");
+		objectNode.setAttribute("type", objectName);
 		for (name in obj) {
 			if(obj.hasOwnProperty(name)){
 				var childNode;

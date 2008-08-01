@@ -18,7 +18,7 @@
 
 	<xsl:template match="situation">
 		<svg:g>
-			<svg:circle r="{$r}" fill="url(#gradient)">
+			<svg:circle r="{$r}" fill="url(#gradient)" stroke="black">
 				<xsl:attribute name="cx">
 					<xsl:value-of select="$fromx" />
 				</xsl:attribute>

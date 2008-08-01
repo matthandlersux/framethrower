@@ -295,9 +295,6 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
 	box.getInputPins = function () {
 		return inputPins;
 	};
-	box.getInputs = function () {
-		return inputs;
-	};
 	
 	globalQArray.push(box);	
 	box.getType = function(){
