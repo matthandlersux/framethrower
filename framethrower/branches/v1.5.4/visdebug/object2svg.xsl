@@ -24,9 +24,15 @@
 			<xsl:when test="$shape = 'circle'">
 				<xsl:call-template name="circle" />
 			</xsl:when>
-			<xsl:otherwise>
+			<xsl:when test="$shape = 'rectangle'">
 				<xsl:call-template name="rectangle" />
-			</xsl:otherwise>
+			</xsl:when>
+			<xsl:when test="$shape = 'uptriangle'">
+				<xsl:call-template name="uptriangle" />
+			</xsl:when>
+			<xsl:when test="$shape = 'downtriangle'">
+				<xsl:call-template name="downtriangle" />
+			</xsl:when>
 		</xsl:choose>
 		
 
@@ -57,6 +63,29 @@
 		</svg:g>
 	</xsl:template>
 
+	<xsl:template name="uptriangle">
+		<svg:g>
+			<svg:polygon>
+				<xsl:attribute name="class">
+					<xsl:value-of select="$cssclass" />
+				</xsl:attribute>
+				<xsl:call-template name="uptriatts" />
+			</svg:polygon>
+			<xsl:call-template name="text" />
+		</svg:g>
+	</xsl:template>
+
+	<xsl:template name="downtriangle">
+		<svg:g>
+			<svg:polygon>
+				<xsl:attribute name="class">
+					<xsl:value-of select="$cssclass" />
+				</xsl:attribute>
+				<xsl:call-template name="downtriatts" />
+			</svg:polygon>
+			<xsl:call-template name="text" />
+		</svg:g>
+	</xsl:template>
 
 	<xsl:template name="circleatts">
 		<xsl:attribute name="r">
@@ -85,6 +114,34 @@
 			<xsl:value-of select="$fromx - $r" />
 		</xsl:attribute>
 		<xsl:attribute name="y">
+			<xsl:value-of select="$fromy - $r" />
+		</xsl:attribute>
+		<xsl:attribute name="id">
+			<xsl:value-of select="$objid" />
+		</xsl:attribute>
+	</xsl:template>
+
+	<xsl:template name="uptriatts">
+		<xsl:attribute name="points">
+			<xsl:value-of select="$fromx - $r*2.155" />,
+			<xsl:value-of select="$fromy + $r" />,
+			<xsl:value-of select="$fromx" />,
+			<xsl:value-of select="$fromy - $r*2.732" />,
+			<xsl:value-of select="$fromx + $r*2.155" />,
+			<xsl:value-of select="$fromy + $r" />
+		</xsl:attribute>
+		<xsl:attribute name="id">
+			<xsl:value-of select="$objid" />
+		</xsl:attribute>
+	</xsl:template>
+
+	<xsl:template name="downtriatts">
+		<xsl:attribute name="points">
+			<xsl:value-of select="$fromx - $r*2.155" />,
+			<xsl:value-of select="$fromy - $r" />,
+			<xsl:value-of select="$fromx" />,
+			<xsl:value-of select="$fromy + $r*2.732" />,
+			<xsl:value-of select="$fromx + $r*2.155" />,
 			<xsl:value-of select="$fromy - $r" />
 		</xsl:attribute>
 		<xsl:attribute name="id">

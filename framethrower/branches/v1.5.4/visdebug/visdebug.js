@@ -6,7 +6,8 @@
 var screenObjects = {};
 
 //creates userInput object which keeps track of userinput information
-var initUserInput = function(svgelementsName) {
+//needs access to O to get x and y info for objects
+var initUserInput = function(svgelementsName, O) {
 	var ui = {};
 	ui.drag = false;
 	ui.dragOid = null; //id of object currently being dragged
@@ -76,13 +77,12 @@ var initUserInput = function(svgelementsName) {
 			ui.drag = true;
 			ui.dragOid = targ.id;
 			ui.selectOid = targ.id;
-			if (targ.cx) {
-				ui.offsetx = targ.cx.baseVal.value;
-				ui.offsety = targ.cy.baseVal.value;
-			}else if (targ.x) {
-				ui.offsetx = targ.x.baseVal.value + targ.width.baseVal.value/2;
-				ui.offsety = targ.y.baseVal.value + targ.height.baseVal.value/2;
+			var SO = O[targ.id];
+			if(SO){
+				ui.offsetx = SO.x;
+				ui.offsety = SO.y;
 			}
+
 			var point = ui.calcCoord(ui.px,ui.py,ui.svgelements);
 			ui.initx = point.x;
 			ui.inity = point.y;
@@ -455,7 +455,7 @@ var visDebug = function() {
 							SO.setX(toObj.x + Math.cos(atan) * Math.abs(r));
 							SO.setY(toObj.y + Math.sin(atan) * Math.abs(r));
 						}
-					} else if (SO.shape == "rectangle") {
+					} else if (SO.shape == "rectangle" || SO.shape == "uptriangle" || SO.shape == "downtriangle") {
 						//containing square inside circle. this is ugly, should be revisited
 						var dist = Math.sqrt(Math.pow(y,2) + Math.pow(x,2));
 						var ynorm = y/dist*toObj.r;
@@ -504,7 +504,7 @@ var visDebug = function() {
 							SO.setX(toObj.x);
 						}
 					}
-				} else if (toObj.shape == "rectangle") {
+				} else if (toObj.shape == "rectangle" || toObj.shape == "uptriangle" || toObj.shape == "downtriangle") {
 					if(x > r){
 						SO.setX(toObj.x + r);
 					} else if (-x > r){
@@ -881,7 +881,7 @@ var visDebug = function() {
 
 	var init = function(params) {
 		//create userinput object to track user input
-		ui = initUserInput(params.svgDiv);
+		ui = initUserInput(params.svgDiv, O);
 		if (params.containWords) {
 			containWords = params.containWords;
 		}
