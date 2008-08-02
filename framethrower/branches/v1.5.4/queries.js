@@ -237,41 +237,45 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
 	var ambient;
 	
 	function activate() {
-		// activate output pins
-		forEach(controllers, function (controller, pinName) {
-			controller.activate();
-			output[pinName] = controllers[pinName].send;
-		});
-		
-		// instantiate processor
-		ambient = makeAmbient();
-		var processor = instantiateProcessor(output, ambient);
+		if (!active) {
+			// activate output pins
+			forEach(controllers, function (controller, pinName) {
+				controller.activate();
+				output[pinName] = controllers[pinName].send;
+			});
 
-		// make input pins
-		forEach(inputs, function (parentPin, inputName) {
-			var pin = makeInputPin(processor[inputName]);
-			parentPin.addInform(pin);
-			inputPins[inputName] = pin;
-		});
-		
-		active = true;
+			// instantiate processor
+			ambient = makeAmbient();
+			var processor = instantiateProcessor(output, ambient);
+
+			// make input pins
+			forEach(inputs, function (parentPin, inputName) {
+				var pin = makeInputPin(processor[inputName]);
+				parentPin.addInform(pin);
+				inputPins[inputName] = pin;
+			});
+
+			active = true;
+		}
 	}
 	
 	function deactivate() {
-		// deactivate output pins
-		forEach(controllers, function (controller) {
-			controller.deactivate();
-		});
-		
-		// deactivate ambient
-		ambient.deactivate();
-		
-		// remove input pins inform
-		forEach(inputs, function (parentPin, inputName) {
-			parentPin.removeInform(inputPins[inputName]);
-		});
-		
-		active = false;
+		if (active) {
+			// deactivate output pins
+			forEach(controllers, function (controller) {
+				controller.deactivate();
+			});
+
+			// deactivate ambient
+			ambient.deactivate();
+
+			// remove input pins inform
+			forEach(inputs, function (parentPin, inputName) {
+				parentPin.removeInform(inputPins[inputName]);
+			});
+
+			active = false;
+		}
 	}
 	
 	box.activate = activate;

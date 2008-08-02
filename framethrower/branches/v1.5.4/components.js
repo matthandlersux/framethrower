@@ -204,6 +204,11 @@ components.set.union = makeSimpleComponent(interfaces.set, interfaces.set, funct
 	};
 });
 
+// (Ord a, Ord b) => f :: a -> OutputPin(Set(b))
+components.set.bind = function (f) {
+	return simpleCompose(f, components.set.union);
+};
+
 
 
 
