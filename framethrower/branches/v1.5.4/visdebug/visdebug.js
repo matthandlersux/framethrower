@@ -405,6 +405,9 @@ var visDebug = function() {
 			if (SO.containingObject) {
 				SO.targetX = SO.containingObject.x + SO.containingObject.r * 3/4 * Math.cos(SO.angle);				
 				SO.targetY = SO.containingObject.y + SO.containingObject.r * 3/4 * Math.sin(SO.angle);
+			}else{
+				SO.targetX = 500 + 300*Math.cos(SO.angle);				
+				SO.targetY = 350 + 250*Math.sin(SO.angle);
 			}
 		};
 
@@ -814,6 +817,20 @@ var visDebug = function() {
 			ui.svgelements.setAttribute("viewBox",ui.curorig_x+" "+ui.curorig_y+" "+width+" "+height);
 		} else if (ui.lPressed) {
 			//do layout
+			var totalUncontained = 0;
+			forEach(O, function(SO) {
+				if(!SO.containingObject){
+					totalUncontained++;
+				}
+			});
+			var i = 0;
+			forEach(O, function(SO) {
+				if(!SO.containingObject){
+					SO.angle = i/totalUncontained*2*Math.PI;
+					i++;
+				}
+			});
+			
 			forEach(O, function(SO) {
 				SO.updateTargets();
 			});

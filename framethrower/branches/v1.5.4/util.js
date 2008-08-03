@@ -195,24 +195,3 @@ function insertAfter (parent, newnode, insertafter) {
 		parent.appendChild(newnode);
 	}
 }
-
-
-Object.prototype.method = function(name, func) {
-	this.prototype[name] = func;
-	return this;
-};
-
-Function.prototype.method = function(name, func) {
-	this.prototype[name] = func;
-	return this;
-};
-
-//from Crockford's Javascript: The Good Parts, page 54
-Object.method('superior', function(name) {
-	var that = this;
-	var method = that[name];
-	return function () {
-		return method.apply(that, arguments);
-	};
-});
-
