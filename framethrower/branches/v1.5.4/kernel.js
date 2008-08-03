@@ -15,41 +15,15 @@ var idGenerator = (function (prefix) {
 
 var objectCache = makeOhash();
 
-// ========================================================================
-// Reactive Queries
-// ========================================================================
-
-function makeQuery(getter) {
-	var ohash = makeOhash();
-	return {
-		register: function (callback, func) {
-			callback(getter());
-			var entry = ohash.getOrMake(func, function () {
-				return [];
-			});
-			entry.push(callback);
-		},
-		trigger: function () {
-			ohash.forEach(function (callbacks) {
-				forEach(callbacks, function (callback) {
-					callback(getter());
-				});
-			});
-		}
-	};
-}
-
 
 // ========================================================================
 // Identifiables
 // ========================================================================
 
-function makeIded(id, my) {
-	my = my || {};
-	if (id === undefined || id === null || id === false) {
-		id = idGenerator.get();
-	}
+function makeIded(type) {
 	var o = {};
+	
+	var id = idGenerator.get();
 	
 	objectCache.set(id, o);
 
@@ -58,7 +32,7 @@ function makeIded(id, my) {
 	};
 	
 	o.getType = function () {
-		return "ided";
+		return type;
 	};
 	
 	o.remove = function () {
@@ -74,202 +48,80 @@ function makeIded(id, my) {
 // Objects, Situations, Relations, Infons
 // ========================================================================
 
-function makeSituation(parentSituation, id) {
-	function makeObject(parentSituation, id, my) {
-		my = my || {};
-
-		var o = makeIded(id, my);
+function makeSituation(parentSituation) {
+	function makeObject(parentSituation, type) {
+		var o = makeIded(type);
 		
 		o.getParentSituation = function () {
 			return parentSituation;
 		};
-
-		var superRemove = o.remove;
+		
 		o.remove = function () {
-			// remove all infons that i'm involved in
-			involves.forEach(function (infons) {
-				infons.forEach(function (infon) {
-					infon.remove();
-				});
-			});
-			
-			// bridge any correspondences
-			var newOut = null;
-			if (correspondOut) {
-				correspondOut.removeCorrespondIn(this);
-				newOut = correspondOut;
-			} else if (correspondsIn.count()>1) {
-				newOut = parentSituation.makeGhost();
-			}			
-			correspondsIn.forEach(function (corresponderIn){
-				if (newOut) {
-					newOut.addCorrespondIn(corresponderIn);
-				}
-				corresponderIn.setCorrespondOut(newOut);
-			});
-			
-			// remove any functions that have queried me
-			// TODO ?
-						
-			// remove from parent situation
-			if (parentSituation) {
-				parentSituation.removeObject(o);
-			}
-			
-			superRemove();
+			// TODO
 		};
-
-		// =============================
-		// content
-		// =============================
-
-		var content = null;
-
-		o.getContent = function () {
-			return content;
-		};
-
-		var queryContent = makeQuery(o.getContent);
-
-		o.setContent = function (newContent) {
-			content = newContent;
-			queryContent.trigger(newContent);
-		};
-
-		o.queryContent = queryContent.register;
-
-		// =============================
-		// involvements with infons
-		// =============================
 		
-		var involves = makeQStart();
+		var contentController = {};
+		o.queryContent = makeSimpleStartCap(interfaces.unit, contentController);
+		o.setContent = contentController.set;
 		
-		o.addInvolve = involves.input.add;
-		o.removeInvolve = involves.input.remove;
+		var involvesController = {};
+		o.queryInvolves = makeSimpleStartCap(interfaces.set, involvesController);
+		o.addInvolve = involvesController.add;
+		o.removeInvolve = involvesController.remove;
 		
-		// =============================
-		// correspondences
-		// =============================
-
-		var correspondsIn = makeOhash(stringifyObject);
-		my.correspondsIn = correspondsIn;
-		var correspondOut = null;
-		my.correspondOut = correspondOut;
-
-		o.getCorrespondsIn = function () {
-			return correspondsIn.toArray();
-		};
-
-		o.getCorrespondOut = function () {
-			return correspondOut;
-		};
-
-		var queryCorrespondsIn = makeQuery(o.getCorrespondsIn);
-		var queryCorrespondOut = makeQuery(o.getCorrespondOut);
-
-		o.addCorrespondIn = function (obj) {
-			correspondsIn.set(obj, obj);
-			queryCorrespondsIn.trigger();
-		};
-		o.removeCorrespondIn = function (obj) {
-			correspondsIn.remove(obj);
-			queryCorrespondsIn.trigger();
-		};
-
-		o.setCorrespondOut = function (obj) {
-			correspondOut = obj;
-			queryCorrespondOut.trigger();
-		};
-
-		o.queryCorrespondsIn = queryCorrespondsIn.register;
-		o.queryCorrespondOut = queryCorrespondOut.register;
-
+		var correspondOutController = {};
+		o.queryCorrespondOut = makeSimpleStartCap(interfaces.unit, correspondOutController);
+		o.setCorrespondOut = correspondOutController.set;
+		
+		var correspondsInController = {};
+		o.queryCorrespondsIn = makeSimpleStartCap(interfaces.set, correspondsInController);
+		o.addCorrespondIn = correspondsInController.add;
+		o.removeCorrespondIn = correspondsInController.remove;
+		
 		return o;
 	}
 	
+	var situation = makeObject(parentSituation, "situation");
 	
-	var situation = makeObject(parentSituation, id);
-	situation.getType = function () {
-		return "situation";
-	};
+	var childObjectsController = {};
+	situation.queryChildObjects = makeSimpleStartCap(interfaces.set, childObjectsController);
 	
-	// =============================
-	// objects within the situation
-	// =============================
-	
-	var objects = makeQStart();
-	
-	situation.getObjects = function () {
-		return objects.getOutput();
-	};
-	
-	function makeChildObject(id, my) {
-		var o = makeObject(situation, id, my);		
-		return o;
+	function makeChildObject(type) {
+		var child = makeObject(situation, type);
+		childObjectsController.add(child);
+		return child;
 	}
 	
-	situation.addObject = objects.input.add;
-	
-	situation.removeObject = objects.input.remove;
-	
-	// =============================
-	// constructors
-	// =============================
-	
-	situation.makeGhost = function (id, my) {
-		my = my || {};
-		var ghost = makeChildObject(id, my);
-		ghost.getType = function () {
-			return "ghost";
-		};
-		situation.addObject(ghost);
-
-		//override the object.removeCorrespondIn method to remove useless ghosts
-		var super_removeCorrespondIn = ghost.superior('removeCorrespondIn');		
-		ghost.removeCorrespondIn = function (obj) {
-			super_removeCorrespondIn(obj);
-			//remove this ghost if it has less than 2 correspondsIn
-			if (my.correspondsIn.count() < 2) {
-				ghost.remove();
-			}
-		};
-		
-		return ghost;
+	situation.makeIndividual = function () {
+		return makeChildObject("individual");
 	};
 	
-	situation.makeIndividual = function (id) {
-		var individual = makeChildObject(id);
-		individual.getType = function () {
-			return "individual";
-		};
-		situation.addObject(individual);
-		return individual;
+	situation.makeGhost = function () {
+		return makeChildObject("ghost");
 	};
 	
-	situation.makeRelation = function (id) {
-		var relation = makeChildObject(id);
-		relation.getType = function () {
-			return "relation";
-		};
+	situation.makeRelation = function () {
+		var relation = makeChildObject("relation");
 		
-		var infons = makeOhash(stringifyArcs);
+		var infons = makeOhash(stringifyInputs);
 		
-		relation.makeInfon = function (id, arcs) {
+		relation.makeInfon = function (arcs) {
 			return infons.getOrMake(arcs, function () {
-				var infon = makeChildObject(id);
+				var infon = makeChildObject("infon");
 				infon.getType = function () {
 					return "infon";
 				};
 				
 				// register involvement with args
-				forEach(arcs, function (arc) {
-					arc.arg.addInvolve(arc.role, infon);
+				forEach(arcs, function (arg) {
+					arg.addInvolve(infon);
 				});
 				
+				// TODO
 				var superRemove = infon.remove;
 				infon.remove = function () {
-					forEach(arcs, function (arc) {
-						arc.arg.removeInvolve(arc.role, infon);
+					forEach(arcs, function (arg) {
+						arg.removeInvolve(infon);
 					});
 					infons.remove(arcs);
 					
@@ -284,101 +136,17 @@ function makeSituation(parentSituation, id) {
 					return relation;
 				};
 				
-				situation.addObject(infon);
-				
 				return infon;
 			});
 		};
 		
-		var superRemove = relation.remove;
-		relation.remove = function () {
-			infons.forEach(function (infon) {
-				infon.remove();
-			});
-			superRemove();
-		};
-		
-		situation.addObject(relation);
-		
 		return relation;
 	};
 	
-	/*situation.makeFunction = function (id, xml) {
-		var func = makeChildObject(id);
-		func.getType = function () {
-			return "function";
-		};
-		
-		var applies = makeOhash(stringifyParams);
-		
-		var compiled = compileCustom(xml);
-		
-		func.makeApply = function (id, params) {
-			return applies.getOrMake(params, function () {
-				var apply = makeChildObject(id);
-				apply.getType = function () {
-					return "apply";
-				};
-				
-				var output = null;
-				apply.getOutput = function () {
-					return output;
-				};
-				var queryOutput = makeQuery(apply.getOutput);
-				apply.queryOutput = queryOutput.register;
-				
-				getDerivements(xml, params, apply.getId(), function (ps) {
-					output = compiled(ps);
-					queryOutput.trigger();
-				});
-				
-				apply.getParams = function () {
-					return params;
-				};
-				apply.getFunction = function () {
-					return func;
-				};
-				
-				var superRemove = apply.remove;
-				apply.remove = function () {
-					applies.remove(params);
-					superRemove();
-				};
-				
-				situation.addObject(apply);
-				return apply;
-			});
-		};
-		
-		func.getXML = function () {
-			return xml;
-		};
-		
-		var superRemove = func.remove;
-		func.remove = function () {
-			applies.forEach(function (apply) {
-				apply.remove();
-			});
-			superRemove();
-		};
-		
-		situation.addObject(func);
-		return func;
-	};*/
-	
-	situation.makeSituation = function (id) {
-		var s = makeSituation(situation, id);
-		situation.addObject(s);
-		return s;
-	};
-	
-	var superRemove = situation.remove;
-	situation.remove = function () {
-		//remove any contained objects
-		objects.forEach(function(subObject){
-			subObject.remove();
-		});
-		superRemove();
+	situation.makeSituation = function () {
+		var child = makeSituation(situation);
+		childObjectsController.add(child);
+		return child;
 	};
 	
 	return situation;
@@ -386,6 +154,7 @@ function makeSituation(parentSituation, id) {
 
 
 
+// This for sure needs to be updated...
 function makeCorrespondence(a, b) {
 	// find the lowest situation that contains both a and b
 	var aSit = a.getParentSituation();
@@ -591,6 +360,7 @@ function makeObjectHash() {
 	return makeOhash(stringifyObject);
 }
 
+/*
 // arcs : [{role: Role, arg: Object}]
 function stringifyArcs(arcs) {
 	function stringifyArc(arc) {
@@ -613,3 +383,4 @@ function stringifyParams(params) {
 	strings.sort();
 	return strings.join("");
 }
+*/

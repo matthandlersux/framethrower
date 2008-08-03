@@ -33,7 +33,7 @@ function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) 
 	return component;
 }
 
-// inputs : {role: Object}
+// inputs :: {role: Object}
 function stringifyInputs(inputs) {
 	var strings = [];
 	forEach(inputs, function (name, input) {
@@ -54,6 +54,17 @@ function makeSimpleComponent(inputInterface, outputInterface, instantiateProcess
 			input: instantiateProcessor(myOut.output, ambient)
 		};
 	});
+}
+
+function makeSimpleStartCap(outputInterface, controller) {
+	var controller2 = {};
+	var sc = makeStartCap({output: outputInterface}, controller2);
+	
+	forEach(controller2.output, function (action, name) {
+		controller[name] = action;
+	});
+	
+	return sc.outputPins.output;
 }
 
 function makeSimpleEndCap(ambient, processor, input) {
@@ -210,6 +221,36 @@ components.set.bind = function (f) {
 };
 
 
+components.unit = {};
+
+components.unit.tensor = function () { // arguments
+	var inputInterfaces = {};
+	forEach(arguments, function (name) {
+		inputInterfaces[name] = interfaces.unit;
+	});
+	return makeComponent(inputInterfaces, {output: interfaces.unit}, function (myOut) {
+		var inputs = {};
+		var done = {};
+		var processor = {};
+		forEach(inputInterfaces, function (intf, name) {
+			processor[name] = {
+				set: function (value) {
+					inputs[name] = value;
+					done[name] = true;
+					checkDone();
+				}
+			};
+		});
+		function checkDone() {
+			if (all(inputInterfaces, function (intf, name) {
+				return done[name];
+			})) {
+				myOut.output.set(inputs);
+			}
+		}
+		return processor;
+	});
+};
 
 
 
@@ -218,10 +259,6 @@ components.set.bind = function (f) {
 
 
 
-
-
-union
-select
 
 xml thunk guys
 
@@ -229,54 +266,6 @@ xml thunk guys
 
 
 
-
-
-/*
-
-// f : Object -> Q Object
-function qSelect(f) {
-	return qCompose(
-		qLift(function (o) {
-			return [f(o)];
-		}),
-		qUnion);
-}
-
-
-
-var qUnion = makeQComponent(setQInterface, function (myOut) {
-	var cr = makeCrossReference();
-	var inputs = makeObjectHash();
-	return {
-		add: function (input) {
-			inputs.getOrMake(input, function () {
-				var aggregator = makeQEnd({
-					add: function (innerInput) {
-						cr.addLink(input, innerInput, myOut.add);
-					},
-					remove: function (innerInput) {
-						cr.removeLink(input, innerInput, myOut.remove);
-					}
-				}, input);
-				aggregator.activate();
-				return aggregator;
-			});
-		},
-		remove: function (input) {
-			var qInner = inputs.get(input);
-			qInner.deactivate();
-			inputs.remove(input);
-			cr.removeInput(input, myOut.remove);
-		},
-		deactivate: function () {
-			inputs.forEach(function (qInner) {
-				qInner.deactivate();
-			});
-		}
-	};
-});
-
-*/
 
 /*function memoize(stringify, f) {
 	var oHash = makeOhash(stringify);
