@@ -36,34 +36,32 @@ unionTest.output.add(times24);
 
 var u = simpleApply(components.set.union, unionTestSc.outputPins.output);
 
-
-function setLogger () {
-	return {
-		input: {
-			add: function (o) {
-				console.log("adding", o);
-			},
-			remove: function (o) {
-				console.log("removing", o);
-			}
-		}
-	};
-}
-
 var mainAmbient = makeAmbient();
 
 //var ec = mainAmbient.makeEndCap(setLogger, {input: c});
 
-var ec = makeSimpleEndCap(mainAmbient, {
+var setLogger = {
 	add: function (o) {
 		console.log("adding", o);
 	},
 	remove: function (o) {
 		console.log("removing", o);
 	}
-}, u);
+};
+var unitLogger = {
+	set: function (o) {
+		console.log("set as", o);
+	}
+};
+
+var ec = makeSimpleEndCap(mainAmbient, setLogger, u);
 
 ec.activate();
+
+
+var convert = simpleApply(components.convert.setToUnit, u);
+var unitec2 = makeSimpleEndCap(mainAmbient, unitLogger, convert);
+unitec2.activate();
 
 
 
@@ -77,11 +75,7 @@ com.tensor = components.unit.tensor("first", "second");
 
 var t = com.tensor.makeApply({first: unitsc1, second: unitsc2});
 
-var unitec = makeSimpleEndCap(mainAmbient, {
-	set: function (o) {
-		console.log("set as", o);
-	}
-}, t);
+var unitec = makeSimpleEndCap(mainAmbient, unitLogger, t.output);
 
 unitec.activate();
 

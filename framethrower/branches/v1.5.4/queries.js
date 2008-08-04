@@ -10,7 +10,9 @@ var interfaces = {
 					}
 				},
 				addInform: function (pin) {
-					pin.set(cache);
+					if (cache !== undefined) {
+						pin.set(cache);
+					}
 				},
 				getState: function () {
 					return cache;

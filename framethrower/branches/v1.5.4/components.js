@@ -91,6 +91,12 @@ function simpleCompose() {
 		});
 		return {output: pin};
 	};
+	component.getInputInterfaces = function () {
+		return args[0].getInputInterfaces();
+	};
+	component.getOutputInterfaces = function () {
+		return args[args.length - 1].getOutputInterfaces();
+	};
 	
 	return component;
 }
@@ -154,7 +160,36 @@ function makeCrossReference() {
 
 
 // ============================================================================
-// Component Instances
+// StartCaps
+// ============================================================================
+
+var startCaps = {};
+
+startCaps.set = memoize(function () {
+	var controller = {};
+	var sc = makeSimpleStartCap(interfaces.set, controller);
+	forEach(arguments, function (arg) {
+		controller.add(arg);
+	});
+	return sc;
+});
+
+var endCaps = {};
+
+endCaps.log = {};
+
+endCaps.log.set = {
+	add: function (o) {
+		console.log("adding", o);
+	},
+	remove: function (o) {
+		console.log("removing", o);
+	}
+};
+
+
+// ============================================================================
+// Set Components
 // ============================================================================
 
 var components = {};
@@ -162,7 +197,7 @@ var components = {};
 components.set = {};
 
 // (Ord a, Ord b) => f :: a -> b
-components.set.lift = function (f) {
+components.set.map = function (f) {
 	return components.set.liftG(function (x) {
 		return [f(x)];
 	});
@@ -217,9 +252,12 @@ components.set.union = makeSimpleComponent(interfaces.set, interfaces.set, funct
 
 // (Ord a, Ord b) => f :: a -> OutputPin(Set(b))
 components.set.bind = function (f) {
-	return simpleCompose(f, components.set.union);
+	return simpleCompose(components.set.map(f), components.set.union);
 };
 
+// ============================================================================
+// Unit Components
+// ============================================================================
 
 components.unit = {};
 
@@ -228,7 +266,8 @@ components.unit.tensor = function () { // arguments
 	forEach(arguments, function (name) {
 		inputInterfaces[name] = interfaces.unit;
 	});
-	return makeComponent(inputInterfaces, {output: interfaces.unit}, function (myOut) {
+	console.log(inputInterfaces);
+	return makeComponent(inputInterfaces, {output: interfaces.unit}, function (myOut, ambient) {
 		var inputs = {};
 		var done = {};
 		var processor = {};
@@ -253,6 +292,25 @@ components.unit.tensor = function () { // arguments
 };
 
 
+// ============================================================================
+// Convert Components
+// ============================================================================
+
+components.convert = {};
+
+components.convert.setToUnit = makeSimpleComponent(interfaces.set, interfaces.unit, function (myOut, ambient) {
+	var cache = makeObjectHash();
+	return {
+		add: function (o) {
+			cache.set(o, o);
+			myOut.set(cache.toArray());
+		},
+		remove: function (o) {
+			cache.remove(o);
+			myOut.set(cache.toArray());
+		}
+	};
+});
 
 
 /*
@@ -261,15 +319,11 @@ components.unit.tensor = function () { // arguments
 
 
 xml thunk guys
+	query
+		takes an xml representation of a query and returns a component that performs it
 
 */
 
 
 
 
-/*function memoize(stringify, f) {
-	var oHash = makeOhash(stringify);
-	return function (i) {
-		oHash.getOrMake(i, f);
-	};
-}*/

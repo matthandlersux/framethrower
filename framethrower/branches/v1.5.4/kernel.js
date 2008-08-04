@@ -31,6 +31,10 @@ function makeIded(type) {
 		return id;
 	};
 	
+	o.toJSON = function () {
+		return "object:" + id;
+	};
+	
 	o.getType = function () {
 		return type;
 	};
@@ -56,9 +60,9 @@ function makeSituation(parentSituation) {
 			return parentSituation;
 		};
 		
-		o.remove = function () {
+		o.remove = pCompose(function () {
 			// TODO
-		};
+		}, o.remove);
 		
 		var contentController = {};
 		o.queryContent = makeSimpleStartCap(interfaces.unit, contentController);
@@ -108,28 +112,24 @@ function makeSituation(parentSituation) {
 		relation.makeInfon = function (arcs) {
 			return infons.getOrMake(arcs, function () {
 				var infon = makeChildObject("infon");
-				infon.getType = function () {
-					return "infon";
-				};
 				
 				// register involvement with args
 				forEach(arcs, function (arg) {
 					arg.addInvolve(infon);
 				});
 				
-				// TODO
-				var superRemove = infon.remove;
-				infon.remove = function () {
+				infon.remove = pCompose(function () {
 					forEach(arcs, function (arg) {
 						arg.removeInvolve(infon);
 					});
 					infons.remove(arcs);
-					
-					superRemove();
-				};
+				}, infon.remove);
 				
 				infon.getArcs = function () {
 					return arcs;
+				};
+				infon.getArc = function (role) {
+					return arcs[role];
 				};
 				
 				infon.getRelation = function () {

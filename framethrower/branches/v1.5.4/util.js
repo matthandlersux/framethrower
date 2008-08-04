@@ -107,7 +107,17 @@ function pCompose() {
 	};
 }
 
-
+function memoize(f) {
+	var oHash = makeOhash(function (o) {
+		return JSON.stringify(o);
+	});
+	return function () {
+		var args = arguments;
+		return oHash.getOrMake(args, function () {
+			return f.apply(null, args);
+		});
+	};
+}
 
 
 
