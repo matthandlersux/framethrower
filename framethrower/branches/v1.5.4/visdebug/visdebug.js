@@ -167,7 +167,6 @@ var visDebug = function() {
 		SO.tolinks = {};
 		SO.objectsvg = {};
 		SO.containedObjects = {};
-		SO.angle = 0;
 
 		SO.setX = function(inX) {
 			SO.x = inX;
@@ -329,17 +328,6 @@ var visDebug = function() {
 				var re = new RegExp(word);
 				if (fromSO.links[key].xmlNode.getAttribute('type').match(re)) {
 					SO.containedObjects[fromSO.objId] = fromSO;
-					//change to contained objects, so update the targetX and targetY of all contained objects
-					var total = 0;
-					forEach(SO.containedObjects, function() {
-						total++;
-					});
-					var count = 0;
-					forEach(SO.containedObjects, function(CO) {
-						CO.angle = count/total * 2 * Math.PI;
-						CO.updateTargets();
-						count++;
-					});
 				}	
 			});
 			forEach(containWords, function(word) {
@@ -353,17 +341,6 @@ var visDebug = function() {
 		SO.unregisterToLink = function(key, fromSO) {
 			if (SO.containedObjects[fromSO.objId]) {
 				delete SO.containedObjects[fromSO.objId];
-				//change to contained objects, so update the targetX and targetY of all contained objects
-				var total = 0;
-				forEach(SO.containedObjects, function() {
-					total++;
-				});
-				var count = 0;
-				forEach(SO.containedObjects, function(CO) {
-					CO.angle = count/total * 2 * Math.PI;
-					//CO.updateTargets();
-					count++;
-				});
 			}
 		};
 		
@@ -373,17 +350,6 @@ var visDebug = function() {
 				var re = new RegExp(word);
 				if (toSO.tolinks[key].xmlNode.getAttribute('type').match(re)) {
 					SO.containedObjects[toSO.objId] = toSO;
-					//change to contained objects, so update the targetX and targetY of all contained objects
-					var total = 0;
-					forEach(SO.containedObjects, function() {
-						total++;
-					});
-					var count = 0;
-					forEach(SO.containedObjects, function(CO) {
-						CO.angle = count/total * 2 * Math.PI;
-						CO.updateTargets();
-						count++;
-					});
 				}	
 			});			
 			forEach(containedWords, function(word) {
@@ -397,17 +363,6 @@ var visDebug = function() {
 		SO.unregisterFromLink = function(key, toSO) {
 			if (SO.containingObject) {
 				delete SO.containingObject;
-			}
-		};
-
-		SO.updateTargets = function () {
-			//move each targetX and targetY to angle
-			if (SO.containingObject) {
-				SO.targetX = SO.containingObject.x + SO.containingObject.r * 3/4 * Math.cos(SO.angle);				
-				SO.targetY = SO.containingObject.y + SO.containingObject.r * 3/4 * Math.sin(SO.angle);
-			}else{
-				SO.targetX = 500 + 300*Math.cos(SO.angle);				
-				SO.targetY = 350 + 250*Math.sin(SO.angle);
 			}
 		};
 
@@ -507,17 +462,55 @@ var visDebug = function() {
 							SO.setX(toObj.x);
 						}
 					}
-				} else if (toObj.shape == "rectangle" || toObj.shape == "uptriangle" || toObj.shape == "downtriangle") {
-					if(x > r){
-						SO.setX(toObj.x + r);
-					} else if (-x > r){
-						SO.setX(toObj.x - r);
+				} else if (toObj.shape == "rectangle") {
+					if(SO.shape == "circle" || SO.shape == "rectangle"){
+						if(x > r){
+							SO.setX(toObj.x + r);
+						} else if (-x > r){
+							SO.setX(toObj.x - r);
+						}
+						if(y > r){
+							SO.setY(toObj.y + r);
+						}
+						if(-y > r){
+							SO.setY(toObj.y - r);
+						}
+					} else if (SO.shape == "downtriangle") {
+						if(x > r){
+							SO.setX(toObj.x + r);
+						} else if (-x > r){
+							SO.setX(toObj.x - r);
+						}
+						if(y > r){
+							SO.setY(toObj.y + r);
+						}
+						if(-y > r + SO.r*(1-.577)){
+							SO.setY(toObj.y - r - SO.r*(1-.577));
+						}
+					} else if (SO.shape == "uptriangle") {
+						if(x > r){
+							SO.setX(toObj.x + r);
+						} else if (-x > r){
+							SO.setX(toObj.x - r);
+						}
+						if(y > r + SO.r*(1-.577)){
+							SO.setY(toObj.y + r + SO.r*(1-.577));
+						}
+						if(-y > r){
+							SO.setY(toObj.y - r);
+						}
 					}
-					if(y > r){
-						SO.setY(toObj.y + r);
+				} else if(toObj.shape == "uptriangle" || toObj.shape == "downtriangle"){
+					if(x > r/2){
+						SO.setX(toObj.x + r/2);
+					} else if (-x > r/2){
+						SO.setX(toObj.x - r/2);
 					}
-					if(-y > r){
-						SO.setY(toObj.y - r);
+					if(y > r/2){
+						SO.setY(toObj.y + r/2);
+					}
+					if(-y > r/2){
+						SO.setY(toObj.y - r/2);
 					}
 				}
 			}
@@ -529,9 +522,6 @@ var visDebug = function() {
 				fromObj.targetX = fromObj.x;
 				fromObj.y += SO.y-SO.prevY;
 				fromObj.targetY = fromObj.y;
-				if (direction === 'layout') {
-					fromObj.updateTargets();
-				}
 				if (direction === 'init' || direction === 'layout') {
 					fromObj.updatePosition(direction);
 				} else {
@@ -769,6 +759,39 @@ var visDebug = function() {
 		}
 	};
 	
+	var circleLayout = function() {
+		//layout all of the objects in circles within each containingObject
+		
+		//make a circle for objects with no containingObject
+		var totalUncontained = 0;
+		forEach(O, function(SO) {
+			if(!SO.containingObject){
+				totalUncontained++;
+			}
+		});
+		
+		var i = 0;
+		forEach(O, function(SO) {
+			if(!SO.containingObject){
+				var angle = i/totalUncontained*2*Math.PI;
+				SO.targetX = 500 + 300*Math.cos(angle);
+				SO.targetY = 350 + 250*Math.sin(angle);
+				i++;
+			}
+		});
+		
+		//make a circle for the contained objects in each object
+		forEach(O, function(SO) {
+			var j = 0;
+			var total = SO.containedObjects.length;
+			forEach(SO.containedObjects, function(contO){
+				var angle = j/total*2*Math.PI;
+				contO.targetX = SO.x + SO.r * 3/4 * Math.cos(angle);				
+				contO.targetY = SO.y + SO.r * 3/4 * Math.sin(angle);
+			});
+		});
+	};
+	
 	var run = function() {
 		if (runcheck) {
 			//alert('runcheck problem');
@@ -816,24 +839,7 @@ var visDebug = function() {
 			ui.curorig_y = ui.midy - (height/2);
 			ui.svgelements.setAttribute("viewBox",ui.curorig_x+" "+ui.curorig_y+" "+width+" "+height);
 		} else if (ui.lPressed) {
-			//do layout
-			var totalUncontained = 0;
-			forEach(O, function(SO) {
-				if(!SO.containingObject){
-					totalUncontained++;
-				}
-			});
-			var i = 0;
-			forEach(O, function(SO) {
-				if(!SO.containingObject){
-					SO.angle = i/totalUncontained*2*Math.PI;
-					i++;
-				}
-			});
-			
-			forEach(O, function(SO) {
-				SO.updateTargets();
-			});
+			circleLayout();
 			ui.lPressed = false;
 		}
 		forEach(O, function(SO) {

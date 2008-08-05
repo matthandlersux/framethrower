@@ -123,12 +123,12 @@
 
 	<xsl:template name="uptriatts">
 		<xsl:attribute name="points">
-			<xsl:value-of select="$fromx - $r*2.155" />,
-			<xsl:value-of select="$fromy + $r" />,
+			<xsl:value-of select="$fromx - $r" />,
+			<xsl:value-of select="$fromy + $r*.577" />,
 			<xsl:value-of select="$fromx" />,
-			<xsl:value-of select="$fromy - $r*2.732" />,
-			<xsl:value-of select="$fromx + $r*2.155" />,
-			<xsl:value-of select="$fromy + $r" />
+			<xsl:value-of select="$fromy - $r" />,
+			<xsl:value-of select="$fromx + $r" />,
+			<xsl:value-of select="$fromy + $r*.577" />
 		</xsl:attribute>
 		<xsl:attribute name="id">
 			<xsl:value-of select="$objid" />
@@ -137,12 +137,12 @@
 
 	<xsl:template name="downtriatts">
 		<xsl:attribute name="points">
-			<xsl:value-of select="$fromx - $r*2.155" />,
-			<xsl:value-of select="$fromy - $r" />,
+			<xsl:value-of select="$fromx - $r" />,
+			<xsl:value-of select="$fromy - $r*.577" />,
 			<xsl:value-of select="$fromx" />,
-			<xsl:value-of select="$fromy + $r*2.732" />,
-			<xsl:value-of select="$fromx + $r*2.155" />,
-			<xsl:value-of select="$fromy - $r" />
+			<xsl:value-of select="$fromy + $r" />,
+			<xsl:value-of select="$fromx + $r" />,
+			<xsl:value-of select="$fromy - $r*.577" />
 		</xsl:attribute>
 		<xsl:attribute name="id">
 			<xsl:value-of select="$objid" />

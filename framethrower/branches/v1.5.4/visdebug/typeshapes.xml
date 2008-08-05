@@ -7,8 +7,8 @@
 	<typeinfo type="infon" class="infon" shape="circle"/>
 	<typeinfo type="q" class="q" shape="circle"/>
 	<typeinfo type="ided" class="ided" shape="circle"/>
-	<typeinfo type="outputPin" class="outputPin" shape="rectangle"/>
-	<typeinfo type="inputPin" class="inputPin" shape="rectangle"/>
+	<typeinfo type="outputPin" class="outputPin" shape="uptriangle"/>
+	<typeinfo type="inputPin" class="inputPin" shape="downtriangle"/>
 	<typeinfo type="startCap" class="startCap" shape="uptriangle"/>
 	<typeinfo type="endCap" class="endCap" shape="downtriangle"/>
 	<typeinfo type="box" class="box" shape="rectangle"/>
