@@ -111,6 +111,7 @@ function makeSituation(parentSituation) {
 		
 		relation.makeInfon = function (arcs) {
 			return infons.getOrMake(arcs, function () {
+				
 				var infon = makeChildObject("infon");
 				
 				// register involvement with args

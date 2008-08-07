@@ -1,0 +1,15 @@
+<xsl:stylesheet version="1.0"
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<xsl:param name="p" />
+
+	<xsl:template match="*">
+		<html:div>
+			<xsl:value-of select="$p" />
+		</html:div>
+	</xsl:template>
+
+</xsl:stylesheet>

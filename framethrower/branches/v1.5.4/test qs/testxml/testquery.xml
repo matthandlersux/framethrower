@@ -1,0 +1,16 @@
+<derive from="start">
+	<get what="involves" />
+	<filter>
+		<get what="relation" />
+		<equal>
+			<start from="rel" />
+		</equal>
+	</filter>
+</derive>
+
+<!--><derive from="start">
+	<get what="relation" />
+	<equal>
+		<start from="rel" />
+	</equal>
+</derive>-->

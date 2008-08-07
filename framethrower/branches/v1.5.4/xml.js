@@ -32,10 +32,10 @@ function xpath(expression, parentElement){
 
 
 // useful for testing...
-function loadXMLNow(url){
+function loadXMLNow(url) {
     var req = new XMLHttpRequest();
-    req.open("GET", url, false);
-    req.send(null);
+	req.open("GET", url, false);
+	req.send(null);
     return req.responseXML.firstChild;
 }
 

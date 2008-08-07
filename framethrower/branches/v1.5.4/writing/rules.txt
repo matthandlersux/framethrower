@@ -1,0 +1,25 @@
+<get what="content">Unit Object -> Unit XML</get>
+<get what="involves">Unit Object -> Set Object</get>
+<get what="childObjects">Unit Situation -> Set Object</get>
+<get what="arc" role="*">Unit Infon -> Unit Object</get>
+
+
+
+<rules>
+	<get what="content">
+		<start><unit /><object /></start>
+		<end><unit /><xml /></end>
+	</get>
+	<get what="involves">
+		<start><unit /><object /></start>
+		<end><set /><object /></end>
+	</get>
+	<get what="childObjects">
+		<start><unit /><situation /></start>
+		<end><set /><object /></end>
+	</get>
+	<get what="involves">
+		<start><unit /><infon /></start>
+		<end><unit /><object /></end>
+	</get>
+	

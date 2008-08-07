@@ -1,5 +1,6 @@
 var interfaces = {
 	unit: {
+		name: "unit",
 		actions: ["set"],
 		instantiate: function () {
 			var cache;
@@ -21,6 +22,7 @@ var interfaces = {
 		}
 	},
 	set: {
+		name: "set",
 		actions: ["add", "remove"],
 		instantiate: function () {
 			var cache = makeObjectHash();
@@ -45,6 +47,7 @@ var interfaces = {
 		}
 	},
 	list: {
+		name: "list",
 		actions: ["insert", "update", "remove"],
 		instantiate: function () {
 			var cache = [];
@@ -173,7 +176,7 @@ function makeAmbient() {
 		
 		// ==================== For Debug
 		globalQArray.push(endCap);	
-		endCap.getType = function(){
+		endCap.getType = function () {
 			return "endCap";
 		};
 		
@@ -214,7 +217,7 @@ function makeStartCap(outputInterfaces, controller) {
 	});
 	
 	globalQArray.push(startCap);	
-	startCap.getType = function(){
+	startCap.getType = function () {
 		return "startCap";
 	};
 	return startCap;
@@ -307,6 +310,9 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
 	};
 	box.getInputs = function () {
 		return inputs;
+	};
+	box.getActive = function () {
+		return active;
 	};
 	
 	globalQArray.push(box);	

@@ -1,4 +1,9 @@
 
+//debug mode
+var DEBUG = true;
+
+
+
 // ============================================================================
 // Component Definition
 // ============================================================================
@@ -9,6 +14,14 @@ function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) 
 	var applications = makeOhash(stringifyInputs);
 	
 	component.makeApply = function (inputs) {
+		if (DEBUG) {
+			forEach(inputs, function (input, inputName) {
+				if (input.getOutputInterface() !== inputInterfaces[inputName]) {
+					console.error("Wrong interface on: " + inputName + ". Got: " + input.getOutputInterface().name + ", expected: " + inputInterfaces[inputName].name);
+					console.trace();
+				}
+			});
+		}
 		return applications.getOrMake(inputs, function () {
 			var box = makeBox(outputInterfaces, instantiateProcessor, inputs);
 			return box.outputPins;
@@ -36,7 +49,7 @@ function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) 
 // inputs :: {role: Object}
 function stringifyInputs(inputs) {
 	var strings = [];
-	forEach(inputs, function (name, input) {
+	forEach(inputs, function (input, name) {
 		strings.push("((" + name + ")(" + stringifyObject(input) + "))");
 	});
 	strings.sort();
@@ -174,18 +187,37 @@ startCaps.set = memoize(function () {
 	return sc;
 });
 
+startCaps.unit = memoize(function (o) {
+	var controller = {};
+	var sc = makeSimpleStartCap(interfaces.unit, controller);
+	controller.set(o);
+	return sc;
+});
+
 var endCaps = {};
 
 endCaps.log = {};
 
-endCaps.log.set = {
-	add: function (o) {
-		console.log("adding", o);
-	},
-	remove: function (o) {
-		console.log("removing", o);
-	}
+endCaps.log.set = function (name) {
+	return {
+		add: function (o) {
+			console.log(name, "=added=", o);
+		},
+		remove: function (o) {
+			console.log(name, "=removed=", o);
+		}
+	};
 };
+
+endCaps.log.unit = function (name) {
+	return {
+		set: function (o) {
+			console.log(name, "=set to=", o);
+		}
+	};
+};
+
+
 
 
 // ============================================================================
@@ -255,11 +287,50 @@ components.set.bind = function (f) {
 	return simpleCompose(components.set.map(f), components.set.union);
 };
 
+// f :: a -> OutputPin(Unit(Boolean))
+components.set.filter = function (f) {
+	
+};
+
+/*components.set.isEmpty = makeSimpleComponent(interfaces.set, interfaces.unit, function (myOut, ambient) {
+	var cache = makeObjectHash();
+	return {
+		add: function (input) {
+			cache.set(input, input);
+			check();
+		},
+		remove: function (input) {
+			cache.remove(input);
+			check();
+		}
+	}
+});*/
+
 // ============================================================================
 // Unit Components
 // ============================================================================
 
 components.unit = {};
+
+/*components.unit.mapTo = function (outputInterface, f) {
+	return makeSimpleComponent(interfaces.unit, outputInterface, function (myOut, ambient) {
+		return {
+			set: function (input) {
+				
+			}
+		}
+	});
+}*/
+
+components.unit.map = function (f) {
+	return makeSimpleComponent(interfaces.unit, interfaces.unit, function (myOut, ambient) {
+		return {
+			set: function (input) {
+				myOut.set(f(input));
+			}
+		};
+	});
+};
 
 components.unit.tensor = function () { // arguments
 	var inputInterfaces = {};
@@ -290,6 +361,60 @@ components.unit.tensor = function () { // arguments
 		return processor;
 	});
 };
+
+
+// ============================================================================
+// Collapse Components
+// ============================================================================
+
+components.collapse = {};
+
+components.collapse.setSet = components.set.union;
+
+components.collapse.unitUnit = makeSimpleComponent(interfaces.unit, interfaces.unit, function (myOut, ambient) {
+	var ec;
+	return {
+		set: function (embeddedUnit) {
+			if (ec) {
+				myOut.set(undefined);
+				ec.deactivate();
+			}
+			ec = makeSimpleEndCap(ambient, {
+				set: function (o) {
+					myOut.set(o);
+				}
+			}, embeddedUnit);
+			ec.activate();
+		}
+	};
+});
+
+components.collapse.unitSet = makeSimpleComponent(interfaces.unit, interfaces.set, function (myOut, ambient) {
+	var ec;
+	var setCache = makeObjectHash();
+	return {
+		set: function (embeddedSet) {
+			if (ec) {
+				setCache.forEach(function (o) {
+					myOut.remove(o);
+				});
+				setCache = makeObjectHash();
+				ec.deactivate();
+			}
+			ec = makeSimpleEndCap(ambient, {
+				add: function (o) {
+					setCache.set(o, o);
+					myOut.add(o);
+				},
+				remove: function (o) {
+					setCache.remove(o);
+					myOut.remove(o);
+				}
+			}, embeddedSet);
+			ec.activate();
+		}
+	};
+});
 
 
 // ============================================================================
