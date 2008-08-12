@@ -89,4 +89,6 @@ function createDocument() {
         
         return result.firstChild;
     };
-}*/
+<<<<<<< .mine
+}
+*/

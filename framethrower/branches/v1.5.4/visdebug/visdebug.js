@@ -260,6 +260,7 @@ var visDebug = function() {
 			SO.links = xmlresult.links;
 
 			//get shape for the objects
+
 			var shape = object2shape(SO.xmlNodes.obj, {typeShapes:typeShapeXML});
 			if (shape) {
 				SO.shape = shape.getAttribute("shape");
