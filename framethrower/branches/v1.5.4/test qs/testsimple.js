@@ -1,3 +1,6 @@
+
+var mainAmbient = makeAmbient();
+
 var sc = startCaps.unit(22);
 
 var com = components.unit.map(function (x) {return x+2;});
