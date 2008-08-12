@@ -197,6 +197,28 @@ function compileXSL(xsl){
     };
 }
 
+//recursive deep clone. don't use on self-referencing objects
+function clone(myObj)
+{
+	if(!objectLike(myObj)) return myObj;
+	if(myObj == null) return null;
+
+	var myNewObj;
+	if(arrayLike(myObj)){
+		myNewObj = [];
+		for(var i=0;i<myObj.length;i++){
+			myNewObj[i] = clone(myObj[i]);
+		}
+	} else {
+		myNewObj = {};
+		for(var i in myObj)
+			myNewObj[i] = clone(myObj[i]);
+	}
+
+	return myNewObj;
+}
+
+
 //useful DOM function
 function insertAfter (parent, newnode, insertafter) {
 	if(insertAfter.nextSibling){

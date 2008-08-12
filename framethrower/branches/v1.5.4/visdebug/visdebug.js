@@ -230,6 +230,28 @@ var visDebug = function() {
 			delete SO.objectsvg;
 		};
 
+		SO.preparePolygon = function() {
+			if(SO.shape){
+				SO.polygon = {};
+				SO.polygon.x = SO.x;
+				SO.polygon.y = SO.y;
+				if(SO.shape == "rectangle"){
+					SO.polygon.points = [[SO.x-SO.r,SO.y-SO.r],[SO.x-SO.r,SO.y+SO.r],[SO.x+SO.r,SO.y+SO.r],[SO.x+SO.r,SO.y-SO.r]];
+				} else if (SO.shape == "circle") {
+					SO.polygon.points = [];
+					for(var i=0;i<40;i++){
+						var angle = -i/40*2*Math.PI;
+						SO.polygon.points[i] = [SO.x + SO.r*Math.cos(angle), SO.y + SO.r*Math.sin(angle)];
+					}
+				} else if (SO.shape == "uptriangle"){
+					SO.polygon.points = [[SO.x,SO.y-SO.r],[SO.x-SO.r, SO.y+SO.r/2],[SO.x+SO.r, SO.y+SO.r/2]];
+				} else if (SO.shape == "downtriangle"){
+					SO.polygon.points = [[SO.x,SO.y+SO.r],[SO.x-SO.r, SO.y-SO.r/2],[SO.x+SO.r, SO.y-SO.r/2]];
+				}
+			}
+		};
+
+
 		SO.setObject = function(obj) {
 			var xmlresult = objectToXML(obj, obj.getType(), "link");
 			SO.xmlNodes = {};
@@ -402,116 +424,13 @@ var visDebug = function() {
 				}
 
 				//check x and y against containing situations
-				var x = SO.x - toObj.x;
-				var y = SO.y - toObj.y;
-				var r = toObj.r-SO.r;
-
-				if (toObj.shape == "circle") {
-					if (SO.shape == "circle") {
-						if (Math.pow(x,2) + Math.pow(y,2) > Math.pow(r,2)) {						
-							var atan = Math.atan2(y,x);
-							SO.setX(toObj.x + Math.cos(atan) * Math.abs(r));
-							SO.setY(toObj.y + Math.sin(atan) * Math.abs(r));
-						}
-					} else if (SO.shape == "rectangle" || SO.shape == "uptriangle" || SO.shape == "downtriangle") {
-						//containing square inside circle. this is ugly, should be revisited
-						var dist = Math.sqrt(Math.pow(y,2) + Math.pow(x,2));
-						var ynorm = y/dist*toObj.r;
-						var xnorm = x/dist*toObj.r;
-						//check each quadrant
-						if(xnorm+SO.r > 0 && ynorm+SO.r > 0 && Math.pow(x + SO.r, 2) + Math.pow(y + SO.r, 2) > Math.pow(toObj.r,2)){
-							var atan = Math.atan2(y,x);
-							SO.setX(toObj.x + Math.cos(atan) * Math.abs(toObj.r) - SO.r);
-							SO.setY(toObj.y + Math.sin(atan) * Math.abs(toObj.r) - SO.r);
-						}
-						if(xnorm+SO.r > 0 && ynorm-SO.r < 0 && Math.pow(x + SO.r, 2) + Math.pow(y - SO.r, 2) > Math.pow(toObj.r,2)){
-							var atan = Math.atan2(y,x);
-							SO.setX(toObj.x + Math.cos(atan) * Math.abs(toObj.r) - SO.r);
-							SO.setY(toObj.y + Math.sin(atan) * Math.abs(toObj.r) + SO.r);
-						}
-						if(xnorm-SO.r < 0 && ynorm+SO.r > 0 && Math.pow(x - SO.r, 2) + Math.pow(y + SO.r, 2) > Math.pow(toObj.r,2)){
-							var atan = Math.atan2(y,x);
-							SO.setX(toObj.x + Math.cos(atan) * Math.abs(toObj.r) + SO.r);
-							SO.setY(toObj.y + Math.sin(atan) * Math.abs(toObj.r) - SO.r);
-						}
-						if(xnorm-SO.r < 0 && ynorm-SO.r < 0 && Math.pow(x - SO.r, 2) + Math.pow(y - SO.r, 2) > Math.pow(toObj.r,2)){
-							var atan = Math.atan2(y,x);
-							SO.setX(toObj.x + Math.cos(atan) * Math.abs(toObj.r) + SO.r);
-							SO.setY(toObj.y + Math.sin(atan) * Math.abs(toObj.r) + SO.r);
-						}
-						
-						//check areas where quadrants overlap
-						if(xnorm+SO.r > 0 && Math.abs(ynorm) <= SO.r && Math.pow(x + SO.r, 2) + Math.pow(y + SO.r, 2) > Math.pow(toObj.r,2)){
-							var atan = Math.atan2(y,x);
-							SO.setX(toObj.x + Math.sqrt(Math.pow(toObj.r,2) - Math.pow(SO.r,2))-SO.r);
-							SO.setY(toObj.y);
-						}
-						if(xnorm-SO.r < 0 && Math.abs(ynorm) <= SO.r && Math.pow(x - SO.r, 2) + Math.pow(y + SO.r, 2) > Math.pow(toObj.r,2)){
-							var atan = Math.atan2(y,x);
-							SO.setX(toObj.x - (Math.sqrt(Math.pow(toObj.r,2) - Math.pow(SO.r,2))-SO.r));
-							SO.setY(toObj.y);
-						}
-						if(ynorm+SO.r > 0 && Math.abs(xnorm) <= SO.r && Math.pow(x + SO.r, 2) + Math.pow(y + SO.r, 2) > Math.pow(toObj.r,2)){
-							var atan = Math.atan2(y,x);
-							SO.setY(toObj.y + Math.sqrt(Math.pow(toObj.r,2) - Math.pow(SO.r,2))-SO.r);
-							SO.setX(toObj.x);
-						}
-						if(ynorm-SO.r < 0 && Math.abs(xnorm) <= SO.r && Math.pow(x + SO.r, 2) + Math.pow(y - SO.r, 2) > Math.pow(toObj.r,2)){
-							var atan = Math.atan2(y,x);
-							SO.setY(toObj.y - (Math.sqrt(Math.pow(toObj.r,2) - Math.pow(SO.r,2))-SO.r));
-							SO.setX(toObj.x);
-						}
-					}
-				} else if (toObj.shape == "rectangle") {
-					if(SO.shape == "circle" || SO.shape == "rectangle"){
-						if(x > r){
-							SO.setX(toObj.x + r);
-						} else if (-x > r){
-							SO.setX(toObj.x - r);
-						}
-						if(y > r){
-							SO.setY(toObj.y + r);
-						}
-						if(-y > r){
-							SO.setY(toObj.y - r);
-						}
-					} else if (SO.shape == "downtriangle") {
-						if(x > r){
-							SO.setX(toObj.x + r);
-						} else if (-x > r){
-							SO.setX(toObj.x - r);
-						}
-						if(y > r){
-							SO.setY(toObj.y + r);
-						}
-						if(-y > r + SO.r*(1-.577)){
-							SO.setY(toObj.y - r - SO.r*(1-.577));
-						}
-					} else if (SO.shape == "uptriangle") {
-						if(x > r){
-							SO.setX(toObj.x + r);
-						} else if (-x > r){
-							SO.setX(toObj.x - r);
-						}
-						if(y > r + SO.r*(1-.577)){
-							SO.setY(toObj.y + r + SO.r*(1-.577));
-						}
-						if(-y > r){
-							SO.setY(toObj.y - r);
-						}
-					}
-				} else if(toObj.shape == "uptriangle" || toObj.shape == "downtriangle"){
-					if(x > r/2){
-						SO.setX(toObj.x + r/2);
-					} else if (-x > r/2){
-						SO.setX(toObj.x - r/2);
-					}
-					if(y > r/2){
-						SO.setY(toObj.y + r/2);
-					}
-					if(-y > r/2){
-						SO.setY(toObj.y - r/2);
-					}
+				//do collision detection here!
+				toObj.preparePolygon();
+				SO.preparePolygon();
+				var containsResult = PolygonContainment(toObj.polygon, SO.polygon);
+				if(containsResult.intersect){
+					SO.setX(SO.x + containsResult.transformVect[0]);
+					SO.setY(SO.y + containsResult.transformVect[1]);
 				}
 			}
 
@@ -782,12 +701,16 @@ var visDebug = function() {
 		
 		//make a circle for the contained objects in each object
 		forEach(O, function(SO) {
+			var total = 0;
+			forEach(SO.containedObjects, function(contO) {
+				total++;
+			});
 			var j = 0;
-			var total = SO.containedObjects.length;
 			forEach(SO.containedObjects, function(contO){
 				var angle = j/total*2*Math.PI;
 				contO.targetX = SO.x + SO.r * 3/4 * Math.cos(angle);				
 				contO.targetY = SO.y + SO.r * 3/4 * Math.sin(angle);
+				j++;
 			});
 		});
 	};

@@ -12,12 +12,13 @@
 	<script src="../queries.js"/>
 	<script src="../kernel.js"/>
 	<script src="../components.js"/>		
-	<script src="../kernelcomponents.js"/>
+<!-->	<script src="../kernelcomponents.js"/></!-->
+	<script src="tests.js"/>
 	
 	<script src="visqtest.js"/>
 	<script src="scratchwork.js"/>
 
-
+	<script src="containment.js"/>
 	<script src="objects2xml.js"/>
 	<script src="visdebug.js"/>
 
@@ -28,7 +29,7 @@
 		var qTestFunc = function(){
 			root.input.add(5);
 			return root;
-		}
+		};
 		
 		
 		dojo.addOnLoad(function(){
@@ -40,7 +41,13 @@
 			params.recurseFuncName = "getObjects";
 			params.containWords = ["Situation"];
 			params.noLinkWords = ["Situation", "Objects"];
+			params.typeShapesFile = "typeshapes.xml";
+			vd1 = visDebug();
+			vd1.init(params);
+			setInterval('vd1.run();', 64);
+			*/
 			
+			/*
 			var params2 = {};
 			params2.initStyle = "recursive";
 			params2.testFunc = qTestFunc;
@@ -48,13 +55,10 @@
 			params2.recurseFuncName = "getInforms";
 			params2.containWords = ["Situation"];
 			params2.noLinkWords = ["Situation", "Objects"];
+			params2.typeShapesFile = "typeshapes.xml";
 			
-			
-			vd1 = visDebug();
 			vd2 = visDebug();
-			vd1.init(params);
 			vd2.init(params2);
-			setInterval('vd1.run();', 64);
 			setInterval('vd2.run();', 64);
 			*/
 			
@@ -67,10 +71,11 @@
 			params3.svgDiv = "svgelements";
 			params3.containWords = ["Inputs","Outputs"];
 			params3.noLinkWords = ["Inof", "Outof", "Outputs", "Inputs"];
-			
+			params3.typeShapesFile = "typeshapes.xml";
 			vd3.init(params3);
 			setInterval('vd3.run();', 64);
 			*/
+			
 			
 			vd4 = visDebug();
 

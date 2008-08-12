@@ -3,7 +3,7 @@ var objs = [];
 var makeInput = function(){
 	var obj = makeIded();
 	obj.getType = function(){
-		return "individual";
+		return "inputPin";
 	};
 	return obj;
 };
@@ -11,7 +11,7 @@ var makeInput = function(){
 var makeOutput = function(){
 	var obj = makeIded();
 	obj.getType = function(){
-		return "relation";
+		return "outputPin";
 	};
 	return obj;
 };
@@ -20,7 +20,7 @@ var makeOutput = function(){
 var makeBox = function(){
 	var obj = makeIded();
 	obj.getType = function(){
-		return "situation";
+		return "box";
 	};
 	return obj;
 };
@@ -29,7 +29,7 @@ var makeBox = function(){
 function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) {
 	var component = makeIded();
 	component.getType = function(){
-		return "ghost";
+		return "component";
 	};
 	
 	component.inputInterfaces = inputInterfaces;
