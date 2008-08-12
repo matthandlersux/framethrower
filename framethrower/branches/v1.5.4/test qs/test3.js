@@ -78,7 +78,7 @@ ec.activate();*/
 
 
 
-var testcustom = loadXMLNow(ROOTDIR + "test qs/testxml/testcustom.xml");
+var testcustom = loadXMLNow("xml/testcustom.xml");
 
 var out = applyCustom(testcustom, {start: startCaps.unit(jb), rel: startCaps.unit(kills)});
 

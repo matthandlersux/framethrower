@@ -1,0 +1,27 @@
+<xsl:stylesheet version="1.0"
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="start" />
+	<f:param name="rel" />
+	<f:derived name="involvedUsing" from="start">
+		<get what="involves" />
+		<filter>
+			<get what="relation" />
+			<equal>
+				<start from="rel" />
+			</equal>
+		</filter>
+	</f:derived>
+	
+	<xsl:template>
+		<html:div>
+			<html:span><xsl:value-of select="$rel" /></html:span>
+			<xsl:for-each select="$involvedUsing">
+				<html:p><xsl:value-of select="." /></html:p>
+			</xsl:for-each>
+		</html:div>
+	</xsl:template>
+</xsl:stylesheet>
