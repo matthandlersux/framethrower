@@ -73,6 +73,7 @@ function stringifyInputs(inputs) {
 
 // ============================================================================
 // Simplified component making/composing
+// NOTE: endcaps still need some type checking... look out for errors there..
 // ============================================================================
 
 function makeSimpleStartCap(outputInterface, controller) {
@@ -334,13 +335,24 @@ components.unit.map = function (f) {
 	});
 };
 
-/*components.unit.tensor = function () { // arguments
+/*components.unit.tensor = makeSimpleComponent(interfaces.unit, interfaces.unit, function (myOut, ambient) {
+	var inputs = {};
+	return {
+		set: function (o) {
+			forEach(o, function (outputPin, name) {
+				
+			});
+		}
+	};
+});*/
+
+components.unit.tensor = function () { // arguments
 	var inputInterfaces = {};
 	forEach(arguments, function (name) {
 		inputInterfaces[name] = interfaces.unit;
 	});
-	console.log(inputInterfaces);
-	return makeComponent(inputInterfaces, {output: interfaces.unit}, function (myOut, ambient) {
+	console.dir(inputInterfaces);
+	return makeGenericComponent(inputInterfaces, {output: interfaces.unit}, function (myOut, ambient) {
 		var inputs = {};
 		var done = {};
 		var processor = {};
@@ -362,7 +374,7 @@ components.unit.map = function (f) {
 		}
 		return processor;
 	});
-};*/
+};
 
 
 // ============================================================================
@@ -425,7 +437,7 @@ components.collapse.unitSet = makeSimpleComponent(interfaces.unit, interfaces.se
 
 components.convert = {};
 
-/*components.convert.setToUnit = makeSimpleComponent(interfaces.set, interfaces.unit, function (myOut, ambient) {
+components.convert.setToUnit = makeSimpleComponent(interfaces.set, interfaces.unit, function (myOut, ambient) {
 	var cache = makeObjectHash();
 	return {
 		add: function (o) {
@@ -437,5 +449,5 @@ components.convert = {};
 			myOut.set(cache.toArray());
 		}
 	};
-});*/
+});
 

@@ -69,9 +69,21 @@ var ec2 = makeSimpleEndCap(mainAmbient, endCaps.log.unit("test processing"), pro
 ec2.activate();*/
 
 
-var testquery = loadXMLNow("testxml/testquery.xml");
+/*var testquery = loadXMLNow("testxml/testquery.xml");
 
 var out = derive(testquery, {start: startCaps.unit(jb), rel: startCaps.unit(kills)});
 
 var ec = makeSimpleEndCap(mainAmbient, endCaps.log.set("test query"), out);
+ec.activate();*/
+
+
+
+var testcustom = loadXMLNow("testxml/testcustom.xml");
+
+var out = applyCustom(testcustom, {start: startCaps.unit(jb), rel: startCaps.unit(kills)});
+
+var ec = makeSimpleEndCap(mainAmbient, endCaps.log.unit("test custom"), out.output);
 ec.activate();
+
+var ec2 = makeSimpleEndCap(mainAmbient, endCaps.log.unit("test custom ids"), out.ids);
+ec2.activate();

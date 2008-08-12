@@ -77,11 +77,11 @@ var equal = makeGenericComponent({in1: interfaces.unit, in2: interfaces.unit}, {
 // derive puts together a chain of components and returns an output pin for the derived variable
 function derive(xml, context, focus) {
 	var next;
-	var name = xml.nodeName;
+	var name = xml.localName;
 	
 	//console.log("hooking up", name);
 	
-	if (name === "derive") {
+	if (name === "derived") {
 		focus = context[xml.getAttributeNS("", "from")];
 		next = xml.firstChild;
 	} else if (name === "start") {
@@ -116,17 +116,147 @@ var jsvalue = memoize(function (val) {
 
 
 
+function appendCopy(parent, child) {
+	var c = child.cloneNode(true);
+	parent.ownerDocument.adoptNode(c);
+	parent.appendChild(c);
+	return c;
+}
 
+var blankXML = createDocument();
+blankXML.appendChild(blankXML.createElementNS("", "nothing"));
+
+function extractXSLFromCustomXML(xml) {
+	var xslDoc = createDocument();
+	var ss = xslDoc.createElementNS(xmlns["xsl"], "stylesheet");
+	ss.setAttributeNS("", "version", "1.0");
+
+	var paramNodes = xpath("f:param | f:derived", xml);
+	forEach(paramNodes, function (n) {
+		var p = xslDoc.createElementNS(xmlns["xsl"], "param");
+		p.setAttributeNS("", "name", n.getAttributeNS("", "name"));
+		ss.appendChild(p);
+	});
+
+	var xslNodes = xpath("xsl:*", xml);
+	forEach(xslNodes, function (n) {
+		var c = appendCopy(ss, n);
+
+		if (!n.hasAttribute("name") && !n.hasAttribute("match")) {
+			c.setAttributeNS("", "match", "*");
+		}
+	});
+
+	return ss;
+}
 
 
 function applyCustom(xml, context) {
 	var derivedNodes = xpath("f:derived", xml);
+	console.log("derived nodes", derivedNodes);
 	forEach(derivedNodes, function (n) {
 		var name = n.getAttributeNS("", "name");
 		context[name] = derive(n, context);
 	});
 	
+	console.log("finished deriving", context);
 	
+	var compiled = compileXSL(extractXSLFromCustomXML(xml));
+	
+	console.dirxml(extractXSLFromCustomXML(xml));
+	
+	//console.log("test", compiled(blankXML, {}));
+	
+	/*var names = [];
+	forEach(context, function (pin, name) {
+		names.push(name);
+		// convert if necessary
+		if (pin.getOutputInterface() === interfaces.set) {
+			context[name] = simpleApply(components.convert.setToUnit, context[name]);
+		}
+	});
+	
+	var com = components.unit.tensor.apply(null, names);
+	
+	var tensored = com.makeApply(context).output;*/
+	
+	var tensored = combineContext(context);
+
+	var com = components.unit.map(function (params) {
+		console.log("xsl getting called with", params);
+		var res = compiled(blankXML, params);
+		
+		console.log("got here");
+		return res;
+	});
+	
+	var transformed = simpleApply(com, tensored.output);
+	
+	return {output: transformed, ids: tensored.ids};
+}
+
+function combineContext(context) {
+	var inputInterfaces = {};
+	var pins = {};
+	forEach(context, function (pin, name) {
+		inputInterfaces[name] = interfaces.unit;
+		var outInt = pin.getOutputInterface();
+		if (outInt === interfaces.unit) {
+			pins[name] = pin;
+		} else if (outInt === interfaces.set) {
+			pins[name] = simpleApply(components.convert.setToUnit, pin);
+		}
+	});
+	
+	console.log("pins", pins);
+	
+	var com = makeGenericComponent(inputInterfaces, {output: interfaces.unit, ids: interfaces.unit}, function (myOut, ambient) {
+		var inputs = {};
+		var done = {};
+		var processor = {};
+		var ids = {};
+		
+		forEach(inputInterfaces, function (intf, name) {
+			var outInt = context[name].getOutputInterface();
+			processor[name] = {
+				set: function (value) {
+					if (outInt === interfaces.unit) {
+						if (value.getId) {
+							var id = value.getId();
+							inputs[name] = id;
+							ids[id] = value;
+						} else {
+							inputs[name] = value;
+						}
+					} else if (outInt === interfaces.set) {
+						inputs[name] = [];
+						forEach(value, function (val, key) {
+							if (val.getId) {
+								var id = val.getId();
+								inputs[name][key] = document.createTextNode(id);
+								ids[id] = val;
+							} else {
+								inputs[name][key] = val;
+							}
+						});
+					}
+					done[name] = true;
+					checkDone();
+				}
+			};
+		});
+		function checkDone() {
+			if (all(inputInterfaces, function (intf, name) {
+				return done[name];
+			})) {
+				myOut.output.set(inputs);
+				myOut.ids.set(ids);
+			}
+		}
+		return processor;
+	});
+	
+	return com.makeApply(pins);
 }
 
 
@@ -184,32 +314,9 @@ var queryComponent = memoize(function (what, role) {
 
 
 var customCom = (function () {
-	var blankXML = createDocument();
-	blankXML.appendChild(blankXML.createElementNS("", "nothing"));
+
 	
-	function extractXSLFromCustomXML(xml) {
-		var xslDoc = createDocument();
-		var ss = xslDoc.createElementNS(xmlns["xsl"], "stylesheet");
-		ss.setAttributeNS("", "version", "1.0");
 
-		var paramNodes = xpath("f:param | f:derived", xml);
-		forEach(paramNodes, function (n) {
-			var p = xslDoc.createElementNS(xmlns["xsl"], "param");
-			p.setAttributeNS("", "name", n.getAttributeNS("", "name"));
-			ss.appendChild(p);
-		});
-
-		var xslNodes = xpath("xsl:*", xml);
-		forEach(xslNodes, function (n) {
-			var c = appendCopy(ss, n);
-
-			if (!n.hasAttribute("name") && !n.hasAttribute("match")) {
-				c.setAttributeNS("", "match", "*");
-			}
-		});
-
-		return ss;
-	}
 	
 	return {
 		xsl: function (xsl) {
