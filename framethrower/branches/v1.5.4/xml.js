@@ -46,7 +46,7 @@ function createDocument() {
 
 
 // Node -> (Node, {Node | String | Number} -> Node)
-function compileXSL(xsl){
+/*function compileXSL(xsl){
     if (xsl.nodeType === 9) 
         xsl = xsl.firstChild;
     
@@ -89,4 +89,4 @@ function compileXSL(xsl){
         
         return result.firstChild;
     };
-}
+}*/

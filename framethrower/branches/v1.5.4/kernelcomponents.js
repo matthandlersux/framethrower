@@ -124,7 +124,9 @@ function appendCopy(parent, child) {
 }
 
 var blankXML = createDocument();
-blankXML.appendChild(blankXML.createElementNS("", "nothing"));
+var bleh = blankXML.createElementNS("", "nothing");
+var bleh2 = blankXML.appendChild(bleh);
+blankXML = bleh2;
 
 function extractXSLFromCustomXML(xml) {
 	var xslDoc = createDocument();
