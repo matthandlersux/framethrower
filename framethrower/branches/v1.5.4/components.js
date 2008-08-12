@@ -8,7 +8,7 @@ var DEBUG = true;
 // Component Definition
 // ============================================================================
 
-function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) {
+function makeComponent(inputInterfaces, outputInterfaces, apply, name) {
 	var component = makeIded();
 	
 	var applications = makeOhash(stringifyInputs);
@@ -23,8 +23,7 @@ function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) 
 			});
 		}
 		return applications.getOrMake(inputs, function () {
-			var box = makeBox(outputInterfaces, instantiateProcessor, inputs);
-			return box.outputPins;
+			return apply(inputs);
 		});
 	};
 	
@@ -43,7 +42,22 @@ function makeComponent(inputInterfaces, outputInterfaces, instantiateProcessor) 
 	component.getType = function(){
 		return "component";
 	};
+	
 	return component;
+}
+
+function makeGenericComponent(inputInterfaces, outputInterfaces, instantiateProcessor, name) {
+	return makeComponent(inputInterfaces, outputInterfaces, function (inputs) {
+		var box = makeBox(outputInterfaces, instantiateProcessor, inputs);
+		return box.outputPins;
+	}, name);
+}
+function makeSimpleComponent(inputInterface, outputInterface, instantiateProcessor, name) {
+	return makeGenericComponent({input: inputInterface}, {output: outputInterface}, function (myOut, ambient) {
+		return {
+			input: instantiateProcessor(myOut.output, ambient)
+		};
+	}, name);
 }
 
 // inputs :: {role: Object}
@@ -60,14 +74,6 @@ function stringifyInputs(inputs) {
 // ============================================================================
 // Simplified component making/composing
 // ============================================================================
-
-function makeSimpleComponent(inputInterface, outputInterface, instantiateProcessor) {
-	return makeComponent({input: inputInterface}, {output: outputInterface}, function (myOut, ambient) {
-		return {
-			input: instantiateProcessor(myOut.output, ambient)
-		};
-	});
-}
 
 function makeSimpleStartCap(outputInterface, controller) {
 	var controller2 = {};
@@ -95,23 +101,14 @@ function simpleApply(component, input) {
 
 function simpleCompose() {
 	var args = arguments;
-	var component = {};
 	
-	component.makeApply = function (inputs) {
+	return makeComponent(args[0].getInputInterfaces(), args[args.length - 1].getOutputInterfaces(), function (inputs) {
 		var pin = inputs.input;
 		forEach(args, function (arg) {
 			pin = simpleApply(arg, pin);
 		});
 		return {output: pin};
-	};
-	component.getInputInterfaces = function () {
-		return args[0].getInputInterfaces();
-	};
-	component.getOutputInterfaces = function () {
-		return args[args.length - 1].getOutputInterfaces();
-	};
-	
-	return component;
+	}, "composed component");
 }
 
 
@@ -173,7 +170,7 @@ function makeCrossReference() {
 
 
 // ============================================================================
-// StartCaps
+// Start Caps
 // ============================================================================
 
 var startCaps = {};
@@ -193,6 +190,11 @@ startCaps.unit = memoize(function (o) {
 	controller.set(o);
 	return sc;
 });
+
+
+// ============================================================================
+// End Caps
+// ============================================================================
 
 var endCaps = {};
 
@@ -288,9 +290,9 @@ components.set.bind = function (f) {
 };
 
 // f :: a -> OutputPin(Unit(Boolean))
-components.set.filter = function (f) {
+/*components.set.filter = function (f) {
 	
-};
+};*/
 
 /*components.set.isEmpty = makeSimpleComponent(interfaces.set, interfaces.unit, function (myOut, ambient) {
 	var cache = makeObjectHash();
@@ -332,7 +334,7 @@ components.unit.map = function (f) {
 	});
 };
 
-components.unit.tensor = function () { // arguments
+/*components.unit.tensor = function () { // arguments
 	var inputInterfaces = {};
 	forEach(arguments, function (name) {
 		inputInterfaces[name] = interfaces.unit;
@@ -360,7 +362,7 @@ components.unit.tensor = function () { // arguments
 		}
 		return processor;
 	});
-};
+};*/
 
 
 // ============================================================================
@@ -423,7 +425,7 @@ components.collapse.unitSet = makeSimpleComponent(interfaces.unit, interfaces.se
 
 components.convert = {};
 
-components.convert.setToUnit = makeSimpleComponent(interfaces.set, interfaces.unit, function (myOut, ambient) {
+/*components.convert.setToUnit = makeSimpleComponent(interfaces.set, interfaces.unit, function (myOut, ambient) {
 	var cache = makeObjectHash();
 	return {
 		add: function (o) {
@@ -435,20 +437,5 @@ components.convert.setToUnit = makeSimpleComponent(interfaces.set, interfaces.un
 			myOut.set(cache.toArray());
 		}
 	};
-});
-
-
-/*
-
-
-
-
-xml thunk guys
-	query
-		takes an xml representation of a query and returns a component that performs it
-
-*/
-
-
-
+});*/
 

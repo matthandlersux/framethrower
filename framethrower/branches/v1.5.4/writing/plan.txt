@@ -53,3 +53,8 @@ figure out xml updating, thunk system
 
 exercise:
 	XML function rep -> component that takes in the parameters and spits out the XML (with unevaluated thunks)
+
+
+
+make components supply their own makeApply, name
+finish compile xml component

@@ -46,7 +46,7 @@ var passthru = memoize(function (o) {
 });
 
 
-var equal = makeComponent({in1: interfaces.unit, in2: interfaces.unit}, {output: interfaces.unit}, function (myOut, ambient) {
+var equal = makeGenericComponent({in1: interfaces.unit, in2: interfaces.unit}, {output: interfaces.unit}, function (myOut, ambient) {
 	var in1, in2;
 	function check() {
 		if (in1 !== undefined && in2 !== undefined && in1 === in2) {
@@ -110,17 +110,26 @@ function derive(xml, context, focus) {
 	}
 }
 
-/*
-// Unit a -> (Unit a => Unit Boolean)
-function equals(u) {
-	return components.unit.map(function (o) {
-		
-	});
-}*/
-
 var jsvalue = memoize(function (val) {
 	return startCaps.unit(eval(val));
 });
+
+
+
+
+
+
+function applyCustom(xml, context) {
+	var derivedNodes = xpath("f:derived", xml);
+	forEach(derivedNodes, function (n) {
+		var name = n.getAttributeNS("", "name");
+		context[name] = derive(n, context);
+	});
+	
+	
+}
+
+
 
 
 
