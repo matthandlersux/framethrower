@@ -7,16 +7,21 @@
 <head>
   <title>FT Vis Debug</title>
 	<script src="dojoPackage/dojo/dojo.js" djConfig="parseOnLoad:true, isDebug:true"/>
-	<script src="../json2.js"/>
-	<script src="../util.js"/>
-	<script src="../queries.js"/>
-	<script src="../kernel.js"/>
-	<script src="../components.js"/>		
-<!-->	<script src="../kernelcomponents.js"/></!-->
-	<script src="tests.js"/>
+
+	<script>
+	var ROOTDIR = "../";
+	</script>
+
+	<script src="../json2.js" />
+	<script src="../util.js" />
 	
-	<script src="visqtest.js"/>
-	<script src="scratchwork.js"/>
+	<script src="../xml.js" />
+	<script src="../kernel.js" />
+	<script src="../queries.js" />
+	<script src="../components.js" />
+	<script src="../kernelcomponents.js" />
+	<script src="../test qs/test3.js" />
+
 
 	<script src="containment.js"/>
 	<script src="objects2xml.js"/>
@@ -76,6 +81,9 @@
 			setInterval('vd3.run();', 64);
 			*/
 			
+			var visqtest = function(){
+				return globalQArray;
+			};
 			
 			vd4 = visDebug();
 
