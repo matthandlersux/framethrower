@@ -72,9 +72,7 @@ var unitec = makeSimpleEndCap(mainAmbient, unitLogger, t.output);
 
 unitec.activate();
 
-var visqtest = function(){
-	return globalQArray;
-};
+
 
 
 // then call
