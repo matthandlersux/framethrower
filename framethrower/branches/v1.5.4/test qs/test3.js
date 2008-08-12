@@ -49,6 +49,9 @@ var mainAmbient = makeAmbient();
 
 var sc = startCaps.unit(jb);
 
+
+
+
 /*
 var jbflat = simpleApply(queryComponent("content"), sc);
 
@@ -78,7 +81,7 @@ ec.activate();*/
 
 
 
-var testcustom = loadXMLNow(ROOTDIR + "test qs/testxml/testcustom.xml");
+/*var testcustom = loadXMLNow(ROOTDIR + "test qs/testxml/testcustom.xml");
 
 var out = applyCustom(testcustom, {start: startCaps.unit(jb), rel: startCaps.unit(kills)});
 
@@ -86,4 +89,6 @@ var ec = makeSimpleEndCap(mainAmbient, endCaps.log.unit("test custom"), out.outp
 ec.activate();
 
 var ec2 = makeSimpleEndCap(mainAmbient, endCaps.log.unit("test custom ids"), out.ids);
-ec2.activate();
+ec2.activate();*/
+
+
