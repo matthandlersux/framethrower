@@ -81,14 +81,18 @@ ec.activate();*/
 
 
 
-/*var testcustom = loadXMLNow(ROOTDIR + "test qs/testxml/testcustom.xml");
+var testcustom = loadXMLNow(ROOTDIR + "test qs/testxml/testcustom.xml");
 
 var out = applyCustom(testcustom, {start: startCaps.unit(jb), rel: startCaps.unit(kills)});
 
-var ec = makeSimpleEndCap(mainAmbient, endCaps.log.unit("test custom"), out.output);
-ec.activate();
+//var ec = makeSimpleEndCap(mainAmbient, endCaps.log.unit("test custom"), out);
+//ec.activate();
 
-var ec2 = makeSimpleEndCap(mainAmbient, endCaps.log.unit("test custom ids"), out.ids);
+window.addEventListener("load", function () {
+	domEndCap(mainAmbient, out, document.getElementById("html_mainscreen"));
+}, false);
+
+/*var ec2 = makeSimpleEndCap(mainAmbient, endCaps.log.unit("test custom ids"), out.ids);
 ec2.activate();*/
 
 

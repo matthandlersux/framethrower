@@ -123,10 +123,12 @@ function appendCopy(parent, child) {
 	return c;
 }
 
+
 var blankXML = createDocument();
-var bleh = blankXML.createElementNS("", "nothing");
-var bleh2 = blankXML.appendChild(bleh);
-blankXML = bleh2;
+blankXML.appendChild(blankXML.createElementNS("", "nothing"));
+blankXML = blankXML.firstChild;
+
+
 
 function extractXSLFromCustomXML(xml) {
 	var xslDoc = createDocument();
@@ -155,46 +157,28 @@ function extractXSLFromCustomXML(xml) {
 
 function applyCustom(xml, context) {
 	var derivedNodes = xpath("f:derived", xml);
-	console.log("derived nodes", derivedNodes);
+	
 	forEach(derivedNodes, function (n) {
 		var name = n.getAttributeNS("", "name");
 		context[name] = derive(n, context);
 	});
 	
-	console.log("finished deriving", context);
-	
 	var compiled = compileXSL(extractXSLFromCustomXML(xml));
 	
-	console.dirxml(extractXSLFromCustomXML(xml));
-	
-	//console.log("test", compiled(blankXML, {}));
-	
-	/*var names = [];
-	forEach(context, function (pin, name) {
-		names.push(name);
-		// convert if necessary
-		if (pin.getOutputInterface() === interfaces.set) {
-			context[name] = simpleApply(components.convert.setToUnit, context[name]);
-		}
-	});
-	
-	var com = components.unit.tensor.apply(null, names);
-	
-	var tensored = com.makeApply(context).output;*/
-	
-	var tensored = combineContext(context);
+	var combinedContext = combineContext(context);
 
 	var com = components.unit.map(function (params) {
 		console.log("xsl getting called with", params);
 		var res = compiled(blankXML, params);
-		
-		console.log("got here");
 		return res;
 	});
 	
-	var transformed = simpleApply(com, tensored.output);
+	var transformed = simpleApply(com, combinedContext.output);
 	
-	return {output: transformed, ids: tensored.ids};
+	var tensoredCom = components.unit.tensor("xml", "ids");
+	var tensored = tensoredCom.makeApply({xml: transformed, ids: combinedContext.ids});
+	
+	return tensored.output;
 }
 
 function combineContext(context) {
@@ -209,8 +193,6 @@ function combineContext(context) {
 			pins[name] = simpleApply(components.convert.setToUnit, pin);
 		}
 	});
-	
-	console.log("pins", pins);
 	
 	var com = makeGenericComponent(inputInterfaces, {output: interfaces.unit, ids: interfaces.unit}, function (myOut, ambient) {
 		var inputs = {};
@@ -262,6 +244,25 @@ function combineContext(context) {
 }
 
 
+
+
+function domEndCap(ambient, input, node) {
+	var ec = ambient.makeEndCap(function (myOut, amb) {
+		return {
+			input: {
+				set: function (o) {
+					console.log("setting dom html", o, node);
+					var c = o.xml.cloneNode(true);
+					node.ownerDocument.adoptNode(c);
+					node.parentNode.replaceChild(c, node);
+					node = c;
+				}
+			}
+		};
+	}, {input: input});
+	ec.activate();
+	return ec;
+}
 
 
 
