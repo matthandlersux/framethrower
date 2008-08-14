@@ -30,6 +30,8 @@ function xpath(expression, parentElement){
     return results;
 }
 
+var emptyXPathResult = document.evaluate("*[1=0]", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+
 
 // useful for testing...
 function loadXMLNow(url) {

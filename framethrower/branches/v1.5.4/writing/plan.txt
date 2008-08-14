@@ -58,3 +58,15 @@ exercise:
 
 make components supply their own makeApply, name
 finish compile xml component
+
+
+
+situation outline
+refactor
+	documents
+	apply as component
+
+
+document
+	url
+	xml

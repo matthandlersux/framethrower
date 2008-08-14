@@ -1,0 +1,54 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="focus" />
+	<f:derived name="situationChildren" from="focus">
+		<get what="childObjects" />
+		<filter>
+			<get what="type" />
+			<equal>
+				<js value="'situation'" />
+			</equal>
+		</filter>
+	</f:derived>
+	<f:derived name="otherChildren" from="focus">
+		<get what="childObjects" />
+		<filter>
+			<get what="type" />
+			<equal>
+				<js value="'situation'" />
+			</equal>
+			<not />
+		</filter>
+	</f:derived>
+	
+	<xsl:template>
+		<html:div>
+			<html:b>
+				<f:thunk>
+					<f:function url="test qs/testxml/printcontent.xml" />
+					<f:with-param name="focus" value="{$focus}" />
+				</f:thunk>
+			</html:b>
+			
+			<html:div style="margin-left:20px;">
+				<xsl:for-each select="$otherChildren">
+					<f:thunk>
+						<f:function url="test qs/testxml/printcontent.xml" />
+						<f:with-param name="focus" value="{.}" />
+					</f:thunk>
+				</xsl:for-each>
+				<xsl:for-each select="$situationChildren">
+					<f:thunk>
+						<f:function url="test qs/testxml/printsituation.xml" />
+						<f:with-param name="focus" value="{.}" />
+					</f:thunk>
+				</xsl:for-each>
+			</html:div>
+			
+		</html:div>
+	</xsl:template>
+</f:function>

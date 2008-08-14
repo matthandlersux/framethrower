@@ -22,6 +22,10 @@
 			<xsl:for-each select="$involvedUsing">
 				<html:p><xsl:value-of select="." /></html:p>
 			</xsl:for-each>
+			<f:thunk>
+				<f:function url="test qs/testxml/printcontent.xml" />
+				<f:with-param name="focus" value="{$start}" />
+			</f:thunk>
 		</html:div>
 	</xsl:template>
 </xsl:stylesheet>

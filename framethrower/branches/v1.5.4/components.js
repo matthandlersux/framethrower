@@ -335,6 +335,10 @@ components.unit.map = function (f) {
 	});
 };
 
+components.unit.not = components.unit.map(function (x) {
+	return !x;
+});
+
 /*components.unit.tensor = makeSimpleComponent(interfaces.unit, interfaces.unit, function (myOut, ambient) {
 	var inputs = {};
 	return {
@@ -351,7 +355,6 @@ components.unit.tensor = function () { // arguments
 	forEach(arguments, function (name) {
 		inputInterfaces[name] = interfaces.unit;
 	});
-	console.dir(inputInterfaces);
 	return makeGenericComponent(inputInterfaces, {output: interfaces.unit}, function (myOut, ambient) {
 		var inputs = {};
 		var done = {};
@@ -439,14 +442,18 @@ components.convert = {};
 
 components.convert.setToUnit = makeSimpleComponent(interfaces.set, interfaces.unit, function (myOut, ambient) {
 	var cache = makeObjectHash();
+	function update() {
+		myOut.set(cache.toArray());
+	}
+	update();
 	return {
 		add: function (o) {
 			cache.set(o, o);
-			myOut.set(cache.toArray());
+			update();
 		},
 		remove: function (o) {
 			cache.remove(o);
-			myOut.set(cache.toArray());
+			update();
 		}
 	};
 });

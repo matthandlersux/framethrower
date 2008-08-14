@@ -47,7 +47,7 @@ infon3.setContent("james bond sleeps with pussy galore");
 
 var mainAmbient = makeAmbient();
 
-var sc = startCaps.unit(jb);
+//var sc = startCaps.unit(jb);
 
 
 
@@ -82,8 +82,13 @@ ec.activate();*/
 
 
 var testcustom = loadXMLNow(ROOTDIR + "test qs/testxml/testcustom.xml");
+var printcontent = loadXMLNow(ROOTDIR + "test qs/testxml/printcontent.xml");
+var printsituation = loadXMLNow(ROOTDIR + "test qs/testxml/printsituation.xml");
 
-var out = applyCustom(testcustom, {start: startCaps.unit(jb), rel: startCaps.unit(kills)});
+//var out = applyCustom(testcustom, {start: startCaps.unit(jb), rel: startCaps.unit(kills)});
+//var out = applyCustom(printcontent, {focus: startCaps.unit(jb)});
+var out = applyCustom(printsituation, {focus: startCaps.unit(rw)});
+
 
 //var ec = makeSimpleEndCap(mainAmbient, endCaps.log.unit("test custom"), out);
 //ec.activate();

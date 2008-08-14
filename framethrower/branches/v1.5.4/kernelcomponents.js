@@ -98,7 +98,9 @@ function derive(xml, context, focus) {
 		});
 		focus = simpleApply(com, focus);
 	} else if (name === "equal") {
-		return equal.makeApply({in1: focus, in2: derive(xml.firstChild, context)}).output;
+		focus = equal.makeApply({in1: focus, in2: derive(xml.firstChild, context)}).output;
+	} else if (name === "not") {
+		focus = simpleApply(components.unit.not, focus);
 	}
 	
 	if (!next) next = xml.nextSibling;
@@ -168,7 +170,6 @@ function applyCustom(xml, context) {
 	var combinedContext = combineContext(context);
 
 	var com = components.unit.map(function (params) {
-		console.log("xsl getting called with", params);
 		var res = compiled(blankXML, params);
 		return res;
 	});
@@ -180,6 +181,48 @@ function applyCustom(xml, context) {
 	
 	return tensored.output;
 }
+
+function makeCustomCom(xml) {
+	var paramNodes = xpath("f:param", xml);
+	var inputInterfaces = {};
+	forEach(paramNodes, function (n) {
+		var name = n.getAttributeNS("", "name");
+		inputInterfaces[name] = interfaces.unit;
+	});
+	
+	var derivedNodes = xpath("f:derived", xml);
+	
+	var compiled = compileXSL(extractXSLFromCustomXML(xml));
+	
+	return makeComponent(inputInterfaces, {output: interfaces.unit},
+		function (inputs) {
+			var context = merge(inputs);
+			
+			forEach(derivedNodes, function (n) {
+				var name = n.getAttributeNS("", "name");
+				context[name] = derive(n, context);
+			});
+
+			var combinedContext = combineContext(context);
+
+			var com = components.unit.map(function (params) {
+				var res = compiled(blankXML, params);
+				return res;
+			});
+
+			var transformed = simpleApply(com, combinedContext.output);
+
+			var tensoredCom = components.unit.tensor("xml", "ids");
+			var tensored = tensoredCom.makeApply({xml: transformed, ids: combinedContext.ids});
+
+			return tensored.output;
+		},
+		"custom component");
+}
+
+
+
+
 
 function combineContext(context) {
 	var inputInterfaces = {};
@@ -223,6 +266,9 @@ function combineContext(context) {
 								inputs[name][key] = val;
 							}
 						});
+						if (inputs[name].length === 0) {
+							inputs[name] = emptyXPathResult;
+						}
 					}
 					done[name] = true;
 					checkDone();
@@ -251,11 +297,19 @@ function domEndCap(ambient, input, node) {
 		return {
 			input: {
 				set: function (o) {
-					console.log("setting dom html", o, node);
+					// This whole thing needs to be optimized, specifically it should use a more nuanced replace xml function so as not to reevaluate thunks
+					
 					var c = o.xml.cloneNode(true);
 					node.ownerDocument.adoptNode(c);
 					node.parentNode.replaceChild(c, node);
 					node = c;
+					
+					// find thunks
+					var thunks = xpath("//f:thunk", node);
+					
+					forEach(thunks, function (thunk) {
+						processThunk(amb, thunk, o.ids);
+					});
 				}
 			}
 		};
@@ -265,8 +319,45 @@ function domEndCap(ambient, input, node) {
 }
 
 
+function processThunk(ambient, node, ids) {
+	var functionURL = xpath("f:function", node)[0].getAttributeNS("", "url");
+	
+	var functionXML = documents.get(functionURL);
+	
+	var paramNodes = xpath("f:with-param", node);
+	var params = {};
+	forEach(paramNodes, function (paramNode) {
+		params[paramNode.getAttributeNS("", "name")] = startCaps.unit(ids[paramNode.getAttributeNS("", "value")]);
+	});
+	
+	var out = applyCustom(functionXML, params);
+	
+	domEndCap(ambient, out, node);
+}
 
 
+
+
+
+
+
+var documents = (function () {
+	var cache = {};
+	
+	return {
+		get: function (url) {
+			if (!cache[url]) {
+				cache[url] = loadXMLNow(ROOTDIR + url);
+			}
+			return cache[url];
+		}
+	};
+})();
+
+
+
+
+/*
 function select(what, role) {
 	return function (o) {
 		if (what === "content") {
@@ -280,12 +371,19 @@ function select(what, role) {
 		}
 	};
 }
+*/
 
 var queryComponent = memoize(function (what, role) {
 	if (what === "content") {
 		return simpleCompose(
 			components.unit.map(function (o) {
 				return o.queryContent;
+			}),
+			components.collapse.unitUnit);
+	} else if (what === "type") {
+		return simpleCompose(
+			components.unit.map(function (o) {
+				return startCaps.unit(o.getType());
 			}),
 			components.collapse.unitUnit);
 	} else if (what === "involves") {
