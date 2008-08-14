@@ -215,7 +215,7 @@ function makeCustomCom(xml) {
 			var tensoredCom = components.unit.tensor("xml", "ids");
 			var tensored = tensoredCom.makeApply({xml: transformed, ids: combinedContext.ids});
 
-			return tensored.output;
+			return {output: tensored.output};
 		},
 		"custom component");
 }
@@ -322,7 +322,7 @@ function domEndCap(ambient, input, node) {
 function processThunk(ambient, node, ids) {
 	var functionURL = xpath("f:function", node)[0].getAttributeNS("", "url");
 	
-	var functionXML = documents.get(functionURL);
+	var functionCom = documents.get(functionURL);
 	
 	var paramNodes = xpath("f:with-param", node);
 	var params = {};
@@ -330,7 +330,9 @@ function processThunk(ambient, node, ids) {
 		params[paramNode.getAttributeNS("", "name")] = startCaps.unit(ids[paramNode.getAttributeNS("", "value")]);
 	});
 	
-	var out = applyCustom(functionXML, params);
+	var out = functionCom.makeApply(params);
+	
+	out = out.output;
 	
 	domEndCap(ambient, out, node);
 }
@@ -347,7 +349,7 @@ var documents = (function () {
 	return {
 		get: function (url) {
 			if (!cache[url]) {
-				cache[url] = loadXMLNow(ROOTDIR + url);
+				cache[url] = makeCustomCom(loadXMLNow(ROOTDIR + url));
 			}
 			return cache[url];
 		}

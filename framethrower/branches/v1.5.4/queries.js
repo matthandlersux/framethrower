@@ -146,6 +146,9 @@ function makeOutputPin(outputInterface, controller, activator) {
 	
 	// ==================== For Debug
 	outputPin.getState = function () {
+		if (!active) {
+			return undefined;
+		}
 		return outputInterfaceInstance.getState();
 	};
 	outputPin.getInforms = function () {
