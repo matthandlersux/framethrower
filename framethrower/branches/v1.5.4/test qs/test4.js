@@ -48,7 +48,7 @@ infon3.setContent("james bond sleeps with pussy galore");
 var mainAmbient = makeAmbient();
 
 window.addEventListener("load", function () {
-	processThunk(mainAmbient, document.body.firstChild, {"predefined.realWorld": rw});
+	processThunk(mainAmbient, document.body.firstChild, {"predefined.realWorld": rw}, "");
 }, false);
 
 

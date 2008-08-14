@@ -24,12 +24,6 @@ function start(from) {
 	return startCaps.unit(from);
 }
 
-// (Unit a => Unit Boolean) -> (Set a => Set a)
-/*function filter(c) {
-	return components.set.bind(function (o) {
-		return simpleCompose(start(o), c);
-	});
-}*/
 
 var passthru = memoize(function (o) {
 	return makeSimpleComponent(interfaces.unit, interfaces.set, function (myOut) {
@@ -182,7 +176,7 @@ function applyCustom(xml, context) {
 	return tensored.output;
 }
 
-function makeCustomCom(xml) {
+function makeCustomCom(xml, url) {
 	var paramNodes = xpath("f:param", xml);
 	var inputInterfaces = {};
 	forEach(paramNodes, function (n) {
@@ -212,8 +206,8 @@ function makeCustomCom(xml) {
 
 			var transformed = simpleApply(com, combinedContext.output);
 
-			var tensoredCom = components.unit.tensor("xml", "ids");
-			var tensored = tensoredCom.makeApply({xml: transformed, ids: combinedContext.ids});
+			var tensoredCom = components.unit.tensor("xml", "ids", "url");
+			var tensored = tensoredCom.makeApply({xml: transformed, ids: combinedContext.ids, url: startCaps.unit(url)});
 
 			return {output: tensored.output};
 		},
@@ -308,7 +302,7 @@ function domEndCap(ambient, input, node) {
 					var thunks = xpath("//f:thunk", node);
 					
 					forEach(thunks, function (thunk) {
-						processThunk(amb, thunk, o.ids);
+						processThunk(amb, thunk, o.ids, o.url);
 					});
 				}
 			}
@@ -319,10 +313,11 @@ function domEndCap(ambient, input, node) {
 }
 
 
-function processThunk(ambient, node, ids) {
+function processThunk(ambient, node, ids, relurl) {
 	var functionURL = xpath("f:function", node)[0].getAttributeNS("", "url");
+	var url = urlRelPath(relurl, functionURL);
 	
-	var functionCom = documents.get(functionURL);
+	var functionCom = documents.get(url);
 	
 	var paramNodes = xpath("f:with-param", node);
 	var params = {};
@@ -338,6 +333,28 @@ function processThunk(ambient, node, ids) {
 }
 
 
+function urlRelPath(start, path) {
+	if (path === ".") {
+		return start;
+	} else {
+		return urlReduce(urlStripLast(start) + path);
+	}
+}
+
+function urlReduce(url) {
+	var index = url.indexOf("/../");
+	if (index === -1) {
+		return url;
+	} else {
+		return urlReduce(urlStripLast(url.substr(0, index)) + url.substr(index + 4));
+	}
+}
+
+function urlStripLast(url) {
+	return url.replace(/(\/|^)[^\/]*$/, "$1");
+}
+
+
 
 
 
@@ -349,7 +366,7 @@ var documents = (function () {
 	return {
 		get: function (url) {
 			if (!cache[url]) {
-				cache[url] = makeCustomCom(loadXMLNow(ROOTDIR + url));
+				cache[url] = makeCustomCom(loadXMLNow(ROOTDIR + url), url);
 			}
 			return cache[url];
 		}

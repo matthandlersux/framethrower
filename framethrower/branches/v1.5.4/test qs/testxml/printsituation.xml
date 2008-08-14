@@ -29,7 +29,7 @@
 		<html:div>
 			<html:b>
 				<f:thunk>
-					<f:function url="test qs/testxml/printcontent.xml" />
+					<f:function url="printcontent.xml" />
 					<f:with-param name="focus" value="{$focus}" />
 				</f:thunk>
 			</html:b>
@@ -37,13 +37,13 @@
 			<html:div style="margin-left:20px;">
 				<xsl:for-each select="$otherChildren">
 					<f:thunk>
-						<f:function url="test qs/testxml/printcontent.xml" />
+						<f:function url="printcontent.xml" />
 						<f:with-param name="focus" value="{.}" />
 					</f:thunk>
 				</xsl:for-each>
 				<xsl:for-each select="$situationChildren">
 					<f:thunk>
-						<f:function url="test qs/testxml/printsituation.xml" />
+						<f:function url="." />
 						<f:with-param name="focus" value="{.}" />
 					</f:thunk>
 				</xsl:for-each>
