@@ -278,9 +278,11 @@ components.set.union = makeSimpleComponent(interfaces.set, interfaces.set, funct
 		},
 		remove: function (input) {
 			var qInner = inputs.get(input);
-			qInner.deactivate();
-			inputs.remove(input);
-			cr.removeInput(input, myOut.remove);
+			if (qInner !== undefined) {
+				qInner.deactivate();
+				inputs.remove(input);
+				cr.removeInput(input, myOut.remove);				
+			}
 		}
 	};
 });
@@ -429,6 +431,35 @@ components.collapse.unitSet = makeSimpleComponent(interfaces.unit, interfaces.se
 				}
 			}, embeddedSet);
 			ec.activate();
+		}
+	};
+});
+
+components.collapse.setUnit = makeSimpleComponent(interfaces.set, interfaces.set, function (myOut, ambient) {
+	var cr = makeCrossReference();
+	var inputs = makeObjectHash();
+	return {
+		add: function (input) {
+			inputs.getOrMake(input, function () {
+				var aggregator = makeSimpleEndCap(ambient, {
+					set: function (innerInput) {
+						cr.removeInput(input, myOut.remove);
+						if (innerInput !== undefined) {
+							cr.addLink(input, innerInput, myOut.add);
+						}
+					}
+				}, input);
+				aggregator.activate();
+				return aggregator;
+			});
+		},
+		remove: function (input) {
+			var qInner = inputs.get(input);
+			if (qInner !== undefined) {
+				qInner.deactivate();
+				inputs.remove(input);
+				cr.removeInput(input, myOut.remove);				
+			}
 		}
 	};
 });

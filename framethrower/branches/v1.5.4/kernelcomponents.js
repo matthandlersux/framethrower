@@ -83,7 +83,8 @@ function derive(xml, context, focus) {
 	} else if (name === "js") {
 		focus = jsvalue(xml.getAttributeNS("", "value"));
 	} else if (name === "get") {
-		var com = queryComponent(xml.getAttributeNS("", "what"), xml.getAttributeNS("", "role"));
+		//var com = queryComponent(xml.getAttributeNS("", "what"), xml.getAttributeNS("", "role"));
+		var com = projectorComponent(xml.getAttributeNS("", "what"), xml.getAttributeNS("", "role"), focus.getOutputInterface());
 		focus = simpleApply(com, focus);
 	} else if (name === "filter") {
 		var com = components.set.bind(function (o) {
@@ -295,11 +296,12 @@ function domEndCap(ambient, input, node) {
 					
 					var c = o.xml.cloneNode(true);
 					node.ownerDocument.adoptNode(c);
+					
 					node.parentNode.replaceChild(c, node);
 					node = c;
 					
 					// find thunks
-					var thunks = xpath("//f:thunk", node);
+					var thunks = xpath(".//f:thunk", node);
 					
 					forEach(thunks, function (thunk) {
 						processThunk(amb, thunk, o.ids, o.url);
@@ -340,7 +342,6 @@ function urlRelPath(start, path) {
 		return urlReduce(urlStripLast(start) + path);
 	}
 }
-
 function urlReduce(url) {
 	var index = url.indexOf("/../");
 	if (index === -1) {
@@ -349,7 +350,6 @@ function urlReduce(url) {
 		return urlReduce(urlStripLast(url.substr(0, index)) + url.substr(index + 4));
 	}
 }
-
 function urlStripLast(url) {
 	return url.replace(/(\/|^)[^\/]*$/, "$1");
 }
@@ -376,8 +376,8 @@ var documents = (function () {
 
 
 
-/*
-function select(what, role) {
+
+/*function select(what, role) {
 	return function (o) {
 		if (what === "content") {
 			return o.queryContent;
@@ -389,8 +389,78 @@ function select(what, role) {
 			return startCaps.unit(o.getArc(role));
 		}
 	};
-}
-*/
+}*/
+
+
+var queryProjectors = {
+	"content": {
+		returns: interfaces.unit,
+		f: function (o) {
+			return o.queryContent;
+		}
+	},
+	"type": {
+		returns: interfaces.unit,
+		f: function (o) {
+			return startCaps.unit(o.getType());
+		}
+	},
+	"involves": {
+		returns: interfaces.set,
+		f: function (o) {
+			return o.queryInvolves;
+		}
+	},
+	"childObjects": {
+		returns: interfaces.set,
+		f: function (o) {
+			return o.queryChildObjects;
+		}
+	},
+	"relation": {
+		returns: interfaces.unit,
+		f: function (o) {
+			return startCaps.unit(o.getRelation());
+		}
+	},
+	"arc": function (role) {
+		return {
+			returns: interfaces.unit,
+			f: function (o) {
+				return startCaps.unit(o.getArc(role));
+			}
+		};
+	}
+};
+
+var projectorComponent = memoize(function(what, role, intf) {
+	var proj;
+	if (what === "arc") {
+		proj = queryProjectors["arc"](role);
+	} else {
+		proj = queryProjectors[what];
+	}
+	
+	var select, collapse;
+	if (intf === interfaces.unit) {
+		select = components.unit.map(proj.f);
+		if (proj.returns === interfaces.unit) {
+			collapse = components.collapse.unitUnit;
+		} else if (proj.returns === interfaces.set) {
+			collapse = components.collapse.unitSet;
+		}
+	} else if (intf === interfaces.set) {
+		select = components.set.map(proj.f);
+		if (proj.returns === interfaces.unit) {
+			collapse = components.collapse.setUnit;
+		} else if (proj.returns === interfaces.set) {
+			collapse = components.collapse.setSet;
+		}
+	}
+	
+	return simpleCompose(select, collapse);
+});
+
 
 var queryComponent = memoize(function (what, role) {
 	if (what === "content") {

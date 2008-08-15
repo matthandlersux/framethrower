@@ -1,83 +1,89 @@
-var interfaces = {
-	unit: {
-		name: "unit",
-		actions: ["set"],
-		instantiate: function () {
-			var cache;
-			return {
-				actions: {
-					set: function (o) {
-						cache = o;
-					}
-				},
-				addInform: function (pin) {
-					if (cache !== undefined) {
-						pin.set(cache);
-					}
-				},
-				getState: function () {
-					return cache;
+var interfaces = {};
+
+interfaces.unit = makeIded();
+setWith(interfaces.unit, {
+	name: "unit",
+	actions: ["set"],
+	instantiate: function () {
+		var cache;
+		return {
+			actions: {
+				set: function (o) {
+					cache = o;
 				}
-			};
-		}
-	},
-	set: {
-		name: "set",
-		actions: ["add", "remove"],
-		instantiate: function () {
-			var cache = makeObjectHash();
-			return {
-				actions: {
-					add: function (o) {
-						cache.set(o, o);
-					},
-					remove: function (o) {
-						cache.remove(o);
-					}
-				},
-				addInform: function (pin) {
-					cache.forEach(function (o) {
-						pin.add(o);
-					});
-				},
-				getState: function () {
-					return cache.toArray();
+			},
+			addInform: function (pin) {
+				if (cache !== undefined) {
+					pin.set(cache);
 				}
-			};
-		}
-	},
-	list: {
-		name: "list",
-		actions: ["insert", "update", "remove"],
-		instantiate: function () {
-			var cache = [];
-			return {
-				actions: {
-					insert: function (o, index) {
-						cache.splice(index, 0, o);
-					},
-					update: function (o, index) {
-						cache[index] = o;
-					},
-					remove: function (index) {
-						cache.splice(index, 1);
-					}
-				},
-				addInform: function (pin) {
-					cache.forEach(function (o, index) {
-						pin.insert(o, index);
-					});					
-				},
-				getState: function () {
-					return cache;
-				}
-			};
-		}
-	},
-	xml: {
-		
+			},
+			getState: function () {
+				return cache;
+			}
+		};
 	}
-};
+});
+
+interfaces.set = makeIded();
+setWith(interfaces.set, {
+	name: "set",
+	actions: ["add", "remove"],
+	instantiate: function () {
+		var cache = makeObjectHash();
+		return {
+			actions: {
+				add: function (o) {
+					cache.set(o, o);
+				},
+				remove: function (o) {
+					cache.remove(o);
+				}
+			},
+			addInform: function (pin) {
+				cache.forEach(function (o) {
+					pin.add(o);
+				});
+			},
+			getState: function () {
+				return cache.toArray();
+			}
+		};
+	}
+});
+
+interfaces.list = makeIded();
+setWith(interfaces.list, {
+	name: "list",
+	actions: ["insert", "update", "remove"],
+	instantiate: function () {
+		var cache = [];
+		return {
+			actions: {
+				insert: function (o, index) {
+					cache.splice(index, 0, o);
+				},
+				update: function (o, index) {
+					cache[index] = o;
+				},
+				remove: function (index) {
+					cache.splice(index, 1);
+				}
+			},
+			addInform: function (pin) {
+				cache.forEach(function (o, index) {
+					pin.insert(o, index);
+				});					
+			},
+			getState: function () {
+				return cache;
+			}
+		};
+	}
+});
+
+interfaces.xml = makeIded();
+
+
 
 //global array for debugging
 var globalQArray = [];

@@ -14,6 +14,7 @@
 			</equal>
 		</filter>
 	</f:derived>
+
 	<f:derived name="otherChildren" from="focus">
 		<get what="childObjects" />
 		<filter>
@@ -24,6 +25,18 @@
 			<not />
 		</filter>
 	</f:derived>
+	
+	<f:derived name="test" from="focus">
+		<get what="childObjects" />
+		<filter>
+			<get what="type" />
+			<equal>
+				<js value="'situation'" />
+			</equal>
+		</filter>
+		<get what="childObjects" />
+	</f:derived>
+	
 	
 	<xsl:template>
 		<html:div>
@@ -47,6 +60,15 @@
 						<f:with-param name="focus" value="{.}" />
 					</f:thunk>
 				</xsl:for-each>
+				
+				<html:h2>Test: children of children</html:h2>
+				<xsl:for-each select="$test">
+					<f:thunk>
+						<f:function url="printcontent.xml" />
+						<f:with-param name="focus" value="{.}" />
+					</f:thunk>
+				</xsl:for-each>
+				
 			</html:div>
 			
 		</html:div>

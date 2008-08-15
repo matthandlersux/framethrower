@@ -119,6 +119,12 @@ function memoize(f) {
 	};
 }
 
+function setWith(o, newO) {
+	forEach(newO, function (value, key) {
+		o[key] = value;
+	});
+}
+
 
 
 
