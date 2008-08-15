@@ -48,7 +48,23 @@ infon3.setContent("james bond sleeps with pussy galore");
 var mainAmbient = makeAmbient();
 
 window.addEventListener("load", function () {
-	processThunk(mainAmbient, document.body.firstChild, {"predefined.realWorld": rw}, "");
+	processThunk(mainAmbient, document.getElementById("html_mainscreen").firstChild, {"predefined.realWorld": rw}, "");
 }, false);
 
 
+
+
+
+
+function countByType() {
+	var count = {};
+	forEach(globalQArray, function (o) {
+		var type = o.getType();
+		if (count[type]) {
+			count[type] += 1;
+		} else {
+			count[type] = 1;
+		}
+	});
+	return count;
+}

@@ -31,10 +31,10 @@
 		<filter>
 			<get what="type" />
 			<equal>
-				<js value="'situation'" />
+				<js value="'infon'" />
 			</equal>
 		</filter>
-		<get what="childObjects" />
+		<get what="relation" />
 	</f:derived>
 	
 	
@@ -61,7 +61,7 @@
 					</f:thunk>
 				</xsl:for-each>
 				
-				<html:h2>Test: children of children</html:h2>
+				<html:h2>Test: infon relations</html:h2>
 				<xsl:for-each select="$test">
 					<f:thunk>
 						<f:function url="printcontent.xml" />
