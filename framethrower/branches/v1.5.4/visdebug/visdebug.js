@@ -7,7 +7,7 @@ var screenObjects = {};
 
 //creates userInput object which keeps track of userinput information
 //needs access to O to get x and y info for objects
-var initUserInput = function(svgelementsName, O) {
+var initUserInput = function(svgelementsName, O, layoutFunc, mouseMoveFunc) {
 	var ui = {};
 	ui.drag = false;
 	ui.dragOid = null; //id of object currently being dragged
@@ -15,7 +15,6 @@ var initUserInput = function(svgelementsName, O) {
 	ui.ym = 0;
 	ui.rPressed = false;
 	ui.zPressed = false;
-	ui.lPressed = false;
 	ui.basezoom=1;
 	ui.zoomfactor=1;
 	ui.selectOid = null;
@@ -57,6 +56,7 @@ var initUserInput = function(svgelementsName, O) {
 		ui.ym = e.layerY;
 		ui.px = e.pageX;
 		ui.py = e.pageY;
+		mouseMoveFunc();
 	});
 
 	/*
@@ -98,8 +98,6 @@ var initUserInput = function(svgelementsName, O) {
 				ui.inity = ui.ym;
 				ui.zPressed = true;
 				ui.basezoom = ui.zoomfactor;
-			} else if (e.keyCode === 76) {
-				ui.lPressed = true;
 			}
 		}
 	});
@@ -110,7 +108,8 @@ var initUserInput = function(svgelementsName, O) {
 		} else if (e.keyCode === 90) {
 			ui.zPressed = false;
 		} else if (e.keyCode === 76) {
-			ui.lPressed = false;
+			//user pressed l, do layout
+			layoutFunc();
 		}
 	});
 
@@ -157,7 +156,26 @@ var visDebug = function() {
 	//function to convert object cache to xml format
 	var objectToXML = makeObjectToXML(testTopLevelObject);
 
-
+	//helper function for moveOnPat
+	var adjust = function(val, target) {
+		var answer = {};
+		if (val != target) {
+			answer.change = true;
+			if (Math.abs(val - target) < 10) {
+				answer.val = target;
+			} else {
+				if (val < target) {
+					answer.val = val + 10;
+				}else {
+					answer.val = val - 10;
+				}
+			}
+		} else {
+			answer.change = false;
+			answer.val = val;
+		}
+		return answer;
+	};
 
 	var makeScreenObject = function(id) {
 		var SO = {};
@@ -188,7 +206,7 @@ var visDebug = function() {
 		SO.prevX = SO.x;
 		SO.setY(Math.random()*400);
 		SO.prevY = SO.y;
-		SO.setR(100 + Math.random()*8);
+		SO.setR(10);
 		SO.z = 0;
 
 		SO.removeObject = function() {
@@ -246,7 +264,7 @@ var visDebug = function() {
 				} else if (SO.shape == "uptriangle"){
 					SO.polygon.points = [[SO.x,SO.y-SO.r],[SO.x-SO.r, SO.y+SO.r/2],[SO.x+SO.r, SO.y+SO.r/2]];
 				} else if (SO.shape == "downtriangle"){
-					SO.polygon.points = [[SO.x,SO.y+SO.r],[SO.x-SO.r, SO.y-SO.r/2],[SO.x+SO.r, SO.y-SO.r/2]];
+					SO.polygon.points = [[SO.x,SO.y+SO.r],[SO.x+SO.r, SO.y-SO.r/2],[SO.x-SO.r, SO.y-SO.r/2]];
 				}
 			}
 		};
@@ -256,8 +274,6 @@ var visDebug = function() {
 			var xmlresult = objectToXML(obj, obj.getType(), "link");
 			SO.xmlNodes = {};
 			SO.xmlNodes.obj = xmlresult.obj;
-
-			SO.links = xmlresult.links;
 
 			//get shape for the objects
 
@@ -272,6 +288,56 @@ var visDebug = function() {
 			if (svgresult) {
 				SO.objectsvg = svgresult;
 			}
+			
+			
+			//filter out links we don't care about
+			var filteredLinks = {};
+			SO.links = {};
+			for (key in xmlresult.links){
+				var node = xmlresult.links[key].xmlNode;
+				var matched1 = false;
+				var matched2 = false;
+				forEach(noLinkWords, function(word) {
+					var re = new RegExp(word);
+					if (node.getAttribute('type').match(re)) {
+						matched1 = true;
+						matched2 = true;
+					}
+				});
+				forEach(containedWords, function(word) {
+					var re = new RegExp(word);
+					if (node.getAttribute('type').match(re)) {
+						matched1 = false;
+					}
+				});
+				forEach(containWords, function(word) {
+					var re = new RegExp(word);
+					if (node.getAttribute('type').match(re)) {
+						matched1 = false;
+					}
+				});
+				if(!matched1){
+					filteredLinks[key] = xmlresult.links[key];
+				}
+				if(!matched2){
+					SO.links[key] = xmlresult.links[key];
+				}
+			}
+			
+			//add link xml objects and svg objects to the "to" parameter of the link
+			var links = filteredLinks;
+			for (var key in links) {
+				if (links.hasOwnProperty(key)) {
+					var link = links[key];
+					var toindex = link.xmlNode.getAttribute('to');
+					if (!O[toindex]) {
+						O[toindex] = makeScreenObject(toindex);
+					}
+					O[toindex].registerToLink(key, link, SO);
+					SO.registerFromLink(key, O[toindex]);
+				}
+			}
+
 			
 			//create svg for the links if they don't already exist
 			var links2svg = function(links) {
@@ -299,19 +365,6 @@ var visDebug = function() {
 			links2svg(SO.tolinks);
 
 
-			//add link xml objects and svg objects to the "to" parameter of the link
-			var links = SO.links;
-			for (var key in links) {
-				if (links.hasOwnProperty(key)) {
-					var node = links[key].xmlNode;
-					var toindex = node.getAttribute('to');
-					if (!O[toindex]) {
-						O[toindex] = makeScreenObject(toindex);
-					}
-					O[toindex].registerToLink(key, SO);
-					SO.registerFromLink(key, O[toindex]);
-				}
-			}
 
 			//need to add the svg to the page! then do the z update.
 			var svgdiv = ui.svgelements;			
@@ -333,23 +386,16 @@ var visDebug = function() {
 			addLinks(SO.links);
 			addLinks(SO.tolinks);
 
-			zUpdate();
-
 			SO.updatePosition('init');
 
 		};
 
-		SO.registerToLink = function(key, fromSO) {
-			if (!SO.tolinks[key]) {
-				SO.tolinks[key] = {};
-			}
-			SO.tolinks[key].xmlNode = fromSO.links[key].xmlNode;
-			if (fromSO.links[key].svg) {
-				SO.tolinks[key].svg = fromSO.links[key].svg;
-			}
+		SO.registerToLink = function(key, link, fromSO) {
+			SO.tolinks[key] = link;
+
 			forEach(containedWords, function(word) {
 				var re = new RegExp(word);
-				if (fromSO.links[key].xmlNode.getAttribute('type').match(re)) {
+				if (link.xmlNode.getAttribute('type').match(re)) {
 					SO.containedObjects[fromSO.objId] = fromSO;
 				}	
 			});
@@ -389,6 +435,34 @@ var visDebug = function() {
 			}
 		};
 
+		//helper function for updatePosition
+		var updateLinkPositions = function(links) {
+			forEach(links, function(link) {
+				if (link.svg) {
+					var fromindex = link.xmlNode.getAttribute('from');
+					var toindex = link.xmlNode.getAttribute('to');
+					if (O[toindex]) {
+						var fromx = O[fromindex].x;
+						var fromy = O[fromindex].y;
+						var tox = O[toindex].x;
+						var toy = O[toindex].y;
+
+						var midx1 = (tox - fromx) * 3 / 8 + fromx * 1;
+						var midy1 = (toy - fromy) * 1 / 8 + fromy * 1;
+						var midx2 = (tox - fromx) * 1 / 2 + fromx * 1;
+						var midy2 = (toy - fromy) * 1 / 2 + fromy * 1;
+
+						svgresult = object2svg(link.xmlNode, {fromx:fromx,fromy:fromy,midx1:midx1,midy1:midy1,midx2:midx2,midy2:midy2,tox:tox,toy:toy});
+						if (svgresult) {						
+							parentNode = link.svg.node.parentNode;
+							parentNode.replaceChild(svgresult,link.svg.node);
+							link.svg.node = svgresult;
+						}
+					}
+				}
+			});
+		};
+
 		SO.updatePosition = function (direction) {
 			//don't update if we haven't gotten xmlNodes for this object yet
 			if (!SO.xmlNodes) {
@@ -402,9 +476,9 @@ var visDebug = function() {
 				if (direction === 'init') {
 					if (SO.r > toObj.r*3/5) {
 						SO.setR(toObj.r/4);
-						if (SO.r < 40) {
-							SO.setR(40);
-							toObj.setR(SO.r * 5/3 + 1);
+						if (SO.r < 10) {
+							SO.setR(10);
+							toObj.setR(SO.r * 4 + 1);
 							toObj.updatePosition('up');
 						}
 					}
@@ -416,9 +490,9 @@ var visDebug = function() {
 				} else {
 					if (SO.r > toObj.r*9/10) {
 						SO.setR(toObj.r*9/10);
-						if (SO.r < 40) {
-							SO.setR(40);
-							toObj.setR(SO.r * 5/3 + 1);
+						if (SO.r < 10) {
+							SO.setR(10);
+							toObj.setR(SO.r * 3 + 1);
 							toObj.updatePosition('up');
 						}
 					}
@@ -462,58 +536,11 @@ var visDebug = function() {
 				SO.objectsvg = svgresult;
 			}
 
-			var updateLinkPositions = function(links) {
-				forEach(links, function(link) {
-					if (link.svg) {
-						var fromindex = link.xmlNode.getAttribute('from');
-						var toindex = link.xmlNode.getAttribute('to');
-						if (O[toindex]) {
-							var fromx = O[fromindex].x;
-							var fromy = O[fromindex].y;
-							var tox = O[toindex].x;
-							var toy = O[toindex].y;
-
-							var midx1 = (tox - fromx) * 3 / 8 + fromx * 1;
-							var midy1 = (toy - fromy) * 1 / 8 + fromy * 1;
-							var midx2 = (tox - fromx) * 1 / 2 + fromx * 1;
-							var midy2 = (toy - fromy) * 1 / 2 + fromy * 1;
-
-							svgresult = object2svg(link.xmlNode, {fromx:fromx,fromy:fromy,midx1:midx1,midy1:midy1,midx2:midx2,midy2:midy2,tox:tox,toy:toy});
-							if (svgresult) {						
-								parentNode = link.svg.node.parentNode;
-								parentNode.replaceChild(svgresult,link.svg.node);
-								link.svg.node = svgresult;
-							}
-						}
-					}
-				});
-			};
-
 			updateLinkPositions(SO.links);
 			updateLinkPositions(SO.tolinks);
 		};
 
 		SO.moveOnPath = function() {
-			var adjust = function(val, target) {
-				var answer = {};
-				if (val != target) {
-					answer.change = true;
-					if (Math.abs(val - target) < 10) {
-						answer.val = target;
-					} else {
-						if (val < target) {
-							answer.val = val + 10;
-						}else {
-							answer.val = val - 10;
-						}
-					}
-				} else {
-					answer.change = false;
-					answer.val = val;
-				}
-				return answer;
-			};
-
 			var change = false;
 			var answer;
 			answer = adjust(SO.x, SO.targetX);
@@ -535,33 +562,14 @@ var visDebug = function() {
 
 	};
 
-
 	var zUpdate = function() {
 		//first get z-indices for all of the screenObjects
 		forEach(O, function(SO) {
-			forEach(O[SO.objId].tolinks, function(link) {
-				forEach(containedWords, function(word) {
-					var re = new RegExp(word);
-					if (link.xmlNode.getAttribute('type').match(re)) {
-						var fromObj = O[link.xmlNode.getAttribute('from')];
-						if (SO.z <= fromObj.z) {
-							SO.z = fromObj.z+1;
-							SO.insertBeforeId = link.xmlNode.getAttribute('from');
-						}
-					}
-				});
-			});
-			forEach(O[SO.objId].links, function(link) {
-				forEach(containWords, function(word) {
-					var re = new RegExp(word);
-					if (link.xmlNode.getAttribute('type').match(re)) {
-						var toObj = O[link.xmlNode.getAttribute('to')];
-						if (SO.z <= toObj.z) {
-							SO.z = toObj.z+1;
-							SO.insertBeforeId = link.xmlNode.getAttribute('to');
-						}
-					}
-				});	
+			forEach(SO.containedObjects, function(contO){
+				if (SO.z <= contO.z) {
+					SO.z = contO.z+1;
+					SO.insertBeforeId = contO.objId;
+				}
 			});
 
 		});
@@ -571,32 +579,18 @@ var visDebug = function() {
 		while(change) {
 			change = false;
 			forEach(O, function(SO) {
-				forEach(O[SO.objId].tolinks, function(link) {
-					forEach(containedWords, function(word) {
-						var re = new RegExp(word);
-						if (link.xmlNode.getAttribute('type').match(re)) {
-							var fromObj = O[link.xmlNode.getAttribute('from')];
-							if (SO.z <= fromObj.z) {
-								SO.z = fromObj.z+1;
-								change = true;
-							}
-						}
-					});
-					forEach(containWords, function(word) {
-						var re = new RegExp(word);
-						if (link.xmlNode.getAttribute('type').match(re)) {
-							var fromObj = O[link.xmlNode.getAttribute('from')];
-							if (fromObj.z <= SO.z) {
-								fromObj.z = SO.z+1;
-								change = true;
-							}
-						}
-					});
+				forEach(SO.containedObjects, function(contO){
+					if (SO.z <= contO.z) {
+						SO.z = contO.z+1;
+						change = true;
+					}
 				});
 			});
 		}
 
 		var svgdiv = ui.svgelements;
+
+
 
 		//get the current ordering from the svg
 		var svgObjects = svgdiv.childNodes;
@@ -715,6 +709,111 @@ var visDebug = function() {
 			});
 		});
 	};
+
+	var treeLayout = function() {
+		
+		//do depth first search from each start cap to build tree
+		
+		var depth = function(SO, leftlim, level){
+			var xave = 0;
+			var totalchildren = 0;
+			var myleftlim = leftlim;
+			var myrightlim = myleftlim;
+			forEach(SO.containedObjects, function(contO){
+				forEach(contO.links, function(link){
+					if(link.xmlNode.getAttribute('type').match(/Informs/)){
+						var newSO = O[link.xmlNode.getAttribute('to')];
+						var answer = depth(newSO.containingObject, myleftlim, level+1);
+						myleftlim = answer.rightlim+100;
+						myrightlim = answer.rightlim;
+						xave += answer.rootX;
+						totalchildren++;
+					}
+				});
+			});
+
+			if (totalchildren == 0) {
+				SO.setX(myleftlim);
+			} else {
+				SO.setX(xave/totalchildren);
+			}
+			SO.setY(level*100);
+			return {rootX: SO.x, rightlim:myrightlim};
+		};
+	
+		var leftlim = 0;
+		forEach(O, function(SO){
+			if (SO.xmlNodes.obj.getAttribute('type') == "startCap") {
+				var answer = depth(SO, leftlim, 1);
+				leftlim = answer.rightlim;
+			}
+		});
+	
+		forEach(O, function(SO){
+			SO.updatePosition();
+		});
+				
+	};
+	
+	var betterLayout = function() {
+		//layout into 3 columns for now
+		var curCol = 0;
+		var curRow = 0;
+		var height = ui.svgelements.viewBox.baseVal.height;
+		var width = ui.svgelements.viewBox.baseVal.width;
+
+		forEach(O, function(SO) {
+			if(!SO.containingObject){
+				curCol++;
+				if(curCol > 4){
+					curCol = 0;
+					curRow++;
+				}
+			}
+		});
+
+		var point = ui.calcCoord(0,0,ui.svgelements);
+		var left = point.x + 80;
+		var top = point.y + 80;
+/*
+		var order = function(SO){
+			forEach(SO.containedObjects, function(contO){
+				forEach(SO.links, function(link){
+					var re = new RegExp();
+					if(link.getAttribute('type').match())
+				}){
+					
+				
+				
+				order(contO);
+			});
+		}
+		*/
+		
+		
+		forEach(O, function(SO){
+			if(!SO.containingObject){
+				
+			}
+		});
+
+		var totalRows = curRow;
+		curCol = 0;
+		curRow = 0;
+		forEach(O, function(SO) {
+			if(!SO.containingObject){
+				SO.targetX = (left + (width-2*left) * curCol/4);
+				SO.targetY = (top + (height-2*top) * curRow/totalRows);
+				curCol++;
+				if(curCol > 4){
+					curCol = 0;
+					curRow++;
+				}
+			}
+		});
+		
+	};
+	
 	
 	var run = function() {
 		if (runcheck) {
@@ -761,14 +860,13 @@ var visDebug = function() {
 
 			ui.curorig_x = ui.midx - (width/2);
 			ui.curorig_y = ui.midy - (height/2);
-			ui.svgelements.setAttribute("viewBox",ui.curorig_x+" "+ui.curorig_y+" "+width+" "+height);
-		} else if (ui.lPressed) {
-			circleLayout();
-			ui.lPressed = false;
+			ui.svgelements.setAttribute("viewBox",0+" "+0+" "+width+" "+height);
 		}
+		/*
 		forEach(O, function(SO) {
 			SO.moveOnPath();
 		});
+		*/
 		runcheck = false;
 	};
 	
@@ -799,6 +897,7 @@ var visDebug = function() {
 				xmlUpdate(id);
 			}
 		}
+		zUpdate();
 	};
 
 
@@ -810,25 +909,26 @@ var visDebug = function() {
 			}
 		}
 
-		//populate the objectCache by traversing the situation tree structure
+		//populate the objectCache by traversing the object array
 		objectCache = {};
 
+		var count=0;
 		forEach(objArray, function(obj) {
 			objectCache[obj.getId()] = obj;
 		});
-	
 
 		for (id in objectCache) {
 			if (objectCache.hasOwnProperty(id)) {
 				xmlUpdate(id);
 			}
 		}
+		zUpdate();
 	};
 
 
 	var init = function(params) {
 		//create userinput object to track user input
-		ui = initUserInput(params.svgDiv, O);
+		ui = initUserInput(params.svgDiv, O, treeLayout, run);
 		if (params.containWords) {
 			containWords = params.containWords;
 		}

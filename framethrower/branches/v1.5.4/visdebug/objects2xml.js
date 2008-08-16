@@ -14,7 +14,7 @@ function makeObjectToXML(testFunc){
 		if(typeof objectName === 'number'){
 			objectName = 'n' + objectName;
 		}
-				
+		
 		var objectNode = document.createElementNS("", objectName.toLowerCase());
 		var contentTextNode;
 		if (obj !== null) {
@@ -42,7 +42,7 @@ function makeObjectToXML(testFunc){
 							if(obj.hasOwnProperty(name)){
 								var childNode;
 								if (typeof obj[name] === 'function' && name.slice(0, 3) === "get") {
-									childNode = makeXMLObject(obj[name](), name.slice(3), path);
+									childNode = makeXMLObject(obj[name](), name.slice(3), path + '/' + objectName);
 									objectNode.appendChild(childNode);
 								}
 								else {

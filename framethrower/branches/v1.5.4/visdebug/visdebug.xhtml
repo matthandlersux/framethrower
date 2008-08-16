@@ -6,7 +6,6 @@
 	xmlns:xlink="http://www.w3.org/1999/xlink">
 <head>
   <title>FT Vis Debug</title>
-	<script src="dojoPackage/dojo/dojo.js" djConfig="parseOnLoad:true, isDebug:true"/>
 
 	<script>
 	var ROOTDIR = "../";
@@ -20,8 +19,10 @@
 	<script src="../queries.js" />
 	<script src="../components.js" />
 	<script src="../kernelcomponents.js" />
-	<script src="../test qs/test3.js" />
+<!-->	<script src="../test qs/test4.js" /> </!-->
+	<script src="../test qs/testsimple.js" />
 
+	<script src="dojoPackage/dojo/dojo.js" djConfig="parseOnLoad:true, isDebug:true"/>
 
 	<script src="containment.js"/>
 	<script src="objects2xml.js"/>
@@ -37,7 +38,7 @@
 		};
 		
 		
-		dojo.addOnLoad(function(){
+		window.addEventListener("load", function(){
 			/*
 			var params = {};
 			params.initStyle = "recursive";
@@ -49,7 +50,6 @@
 			params.typeShapesFile = "typeshapes.xml";
 			vd1 = visDebug();
 			vd1.init(params);
-			setInterval('vd1.run();', 64);
 			*/
 			
 			/*
@@ -64,7 +64,6 @@
 			
 			vd2 = visDebug();
 			vd2.init(params2);
-			setInterval('vd2.run();', 64);
 			*/
 			
 			/*
@@ -78,7 +77,6 @@
 			params3.noLinkWords = ["Inof", "Outof", "Outputs", "Inputs"];
 			params3.typeShapesFile = "typeshapes.xml";
 			vd3.init(params3);
-			setInterval('vd3.run();', 64);
 			*/
 			
 			var visqtest = function(){
@@ -93,12 +91,11 @@
 			params4.svgDiv = "svgelements";
 			params4.containWords = ["InputPins","OutputPins","inputPins","outputPins"];
 			//params4.containedWords = ["inputPins","outputPins"];
-			params4.noLinkWords = ["InputPins","OutputPins","inputPins","outputPins"];
+			params4.noLinkWords = ["InputPins","OutputPins","inputPins","outputPins","State","Inputs","Applications"];
 			params4.typeShapesFile = "typeshapes.xml";
 			
 			vd4.init(params4);
-			setInterval('vd4.run();', 64);
-		});
+		}, false);
 	</script>
 
 	<link rel="stylesheet" href="visdebug.css" />
@@ -125,16 +122,17 @@
 				<svg:stop class="black" offset="100%"/>
 	    	</svg:linearGradient>
 		</svg:svg>
-	
+
 		<svg:svg version="1.1"
 		    id="svgelements"
-		    preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 700">
+			viewBox="0 0 700 1000">
 			<div id="sepdiv" />
 		</svg:svg>
 		
+<!-->		
 		<svg:svg version="1.1"
 		    id="svgelements2"
-		    preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 700">
+		    preserveAspectRatio="xMidYMid slice" viewBox="0 0 700 700">
 			<div id="sepdiv2" />
 		</svg:svg>
 		
@@ -143,7 +141,12 @@
 		    preserveAspectRatio="xMidYMid slice" viewBox="0 0 2500 600">
 			<div id="sepdiv3" />
 		</svg:svg>
-		
+</!-->		
+<html:div style="display:none;" id="html_mainscreen"><f:thunk>
+	<f:function url="test qs/testxml/printsituation.xml" />
+	<f:with-param name="focus" value="predefined.realWorld" />
+</f:thunk></html:div>
+
 		<svg:svg version="1.1" id="svgkey"
 		    preserveAspectRatio="xMidYMid slice">
 			<svg:rect x="80" y="63" width="40" height="12" fill="url(#gradient)" />

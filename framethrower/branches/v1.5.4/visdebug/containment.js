@@ -92,8 +92,8 @@ updatePoints = function(polygon, centerChange){
 	var xdif = centerChange[0];
 	var ydif = centerChange[1];
 
-	polygon.x = xdif;
-	polygon.y = ydif;
+	polygon.x += xdif;
+	polygon.y += ydif;
 	for(var i=0; i<polygon.points.length;i++){
 		polygon.points[i][0] += xdif;
 		polygon.points[i][1] += ydif;
@@ -119,6 +119,7 @@ function PolygonContainment(polygonAin, polygonBin){
 			} else {
 				dotProduct = result.minIntervalDistance;
 			}
+			dotProduct = Math.abs(dotProduct);
 			if (dotProduct > minIntervalDistance) {
 				minIntervalDistance = dotProduct;
 				var transformVector = result.MinimumTranslationVector;
@@ -130,7 +131,10 @@ function PolygonContainment(polygonAin, polygonBin){
 
 	function collideAndMoveRecursive(prevVect, depth){
 		if(!depth) depth = 0;
-		if(depth > 4) return; //prevent runaway recursion
+		if(depth > 4){
+			console.log("runaway");
+			return; //prevent runaway recursion	
+		} 
 		
 		var finalResult = {Intersect:false, minIntervalDistance:-65555};
 
@@ -171,8 +175,8 @@ function PolygonContainment(polygonAin, polygonBin){
 			finalVect[1] += firstVect[1];
 			
 			updatePoints(polygonB, firstVect);
-			//polygonB.draw();
-			//setTimeout(function(){collideAndMoveRecursive(finalResult.transformVector);}, 4000);
+//			polygonB.draw();
+//			setTimeout(function(){collideAndMoveRecursive(finalResult.transformVector);}, 3000);
 			collideAndMoveRecursive(finalResult.transformVector, depth+1);
 			return true;
 		}		
