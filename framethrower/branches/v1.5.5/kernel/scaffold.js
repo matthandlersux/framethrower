@@ -1,7 +1,7 @@
-function scaffold(skeleton) {
+function scaffold(skeleton, topName) {
 	var ret = {};
 	function add(name, o, parent) {
-		var type = makeType();
+		var type = makeType(topName + "." + name);
 		
 		type.parent = parent;
 		type.prop = {};
@@ -45,7 +45,19 @@ function scaffold(skeleton) {
 	return ret;
 }
 
+/*
+A scaffold firstly consists of a heirarchical structure (skeleton) that is the object inheritance hierarchy.
+Calling scaffold(skeleton, topName) then creates a type for each entry in the skeleton.
 
+Next, properties (prop.XXX) are defined in terms of their types.
+Each type made by the scaffold has a make(inst) method which creates an instance of that type.
+	The instance has get.XXX for each property,
+		where get.XXX is an output pin if the property's type is an interface
+		get.XXX is a getter function if the property's type is just an ordinary type
+			these are set initially based on the inst object passed into make
+	The instance has control.XXX for each property if the property's type is an interface
+		this is for controlling the get.XXX outputPin
+*/
 
 
 var kernel = scaffold({
@@ -55,7 +67,7 @@ var kernel = scaffold({
 		relation: {},
 		infon: {}
 	}
-});
+}, "kernel");
 
 kernel.ob.prop = {
 	parentSituation: kernel.situation,
@@ -88,4 +100,4 @@ var layout = scaffold({
 		paneSet: {},
 		viewer: {}
 	}
-});
+}, "layout");

@@ -1,17 +1,13 @@
 
 /*
 Every type is of type typeType. Every type has at least these two methods: match and assign.
-Match takes an instanceType (a type to compare against) and if the types do not match, returns false.
+Match takes an instanceType (a type to compare against) and if the types do not match, throws an error ("Type mismatch").
 	If the types do match, it returns an object where the keys are type variables and the values are the types that those type variables must be for the instanceType to match the original type.
 Assign takes an object (the result of a match), and returns a type where type variables of those names are assigned with the appropriate type.
 */
 
-function errorTypeMismatch(type, instanceType) {
-	throw "error: type mismatch";
-}
-
 var typeType;
-function makeType(isRootType) {
+function makeType(name, isRootType) {
 	var type;
 	if (isRootType) {
 		type = makeIded();
@@ -33,11 +29,19 @@ function makeType(isRootType) {
 		return type;
 	};
 	
+	type.getName = getter(name);
+	
 	return type;
 }
-typeType = makeType(true); // a little bit of circularity hacking...
+typeType = makeType("typeType", true); // a little bit of circularity hacking...
 
 
+
+// type error functions
+
+function errorTypeMismatch(type, instanceType) {
+	console.error("Type mismatch", type.getName(), instanceType.getName());
+}
 
 function typeCheck(type, instance) {
 	if (DEBUG) {
@@ -45,7 +49,7 @@ function typeCheck(type, instance) {
 			type.match(instance.getType());
 		} else {
 			if (type !== basic.js) {
-				errorTypeMismatch(type, instance);
+				console.error("Type mismatch with instance", type.getName(), instance);
 			}
 		}
 	}
@@ -54,19 +58,19 @@ function typeCheck(type, instance) {
 
 
 var basic = {};
-basic.js = makeType();
+basic.js = makeType("basic.js");
 
-basic.string = makeType();
-basic.bool = makeType();
-basic.xml = makeType();
+basic.string = makeType("basic.string");
+basic.bool = makeType("basic.bool");
+basic.xml = makeType("basic.xml");
 
-basic.assoc = memoize(function (keyType, valueType) {
+/*basic.assoc = memoize(function (keyType, valueType) {
 	
-});
+});*/
 
 
 basic.poly = memoize(function (s) {
-	var type = makeType();
+	var type = makeType('"' + s + '"');
 	
 	type.match = function (instanceType) {
 		var ret = {};

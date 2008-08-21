@@ -9,9 +9,7 @@ var interfaceInstantiators = {
 				}
 			},
 			addInform: function (pin) {
-				if (cache !== undefined) {
-					pin.set(cache);
-				}
+				pin.set(cache);
 			},
 			getState: function () {
 				return cache;
@@ -69,18 +67,30 @@ var interfaceInstantiators = {
 	}
 };
 
+
+/*
+interfaces are functions that take type(s) as arguments and return a new type
+for example: interfaces.set(kernel.individual) is a type
+interface types are special in that they have an instantiate method which is used by outputPins
+*/
+
 var interfaces = {};
 forEach(interfaceInstantiators, function (interfaceInstantiate, name) {
 	interfaces[name] = memoize(function () {
 		var args = arguments;
 		
-		var intf = makeType();
+		// makes the name = "interfaces.NAME(ARG1, ARG2, ...)"
+		var intf = makeType("interface." + name + "(" + map(args, function (a) {return a.getName();}).join(", ") + ")");
+		
 		intf.instantiate = function () {
 			return interfaceInstantiate.apply(null, args);
 		};
+		
+		// these are just used for matching against
 		intf.getConstructor = getter(interfaceInstantiate);
 		intf.getArguments = getter(args);
 		
+		// checks that interfaceInstantiate (ie: the same type of interface) matches, and then matches the arguments
 		intf.match = function (instanceType) {
 			if (instanceType.getConstructor && instanceType.getConstructor() === intf.getConstructor()) {
 				var instanceArgs = instanceType.getArguments();
@@ -99,6 +109,8 @@ forEach(interfaceInstantiators, function (interfaceInstantiate, name) {
 				errorTypeMismatch();
 			}
 		};
+		
+		// calls on the argument types
 		intf.assign = function (o) {
 			var newArgs = [];
 			forEach(args, function (arg, i) {

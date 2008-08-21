@@ -248,7 +248,6 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
 
 // ============================================================================
 // Simple (one input named "input" or one output named "output") start caps and end caps
-// NOTE: endcaps still need some type checking... look out for errors there..
 // ============================================================================
 
 function makeSimpleStartCap(outputInterface, controller) {
