@@ -20,24 +20,18 @@ var objectCache = makeOhash();
 // Identifiables
 // ========================================================================
 
-function makeIded(type) {
-	var o = {};
+function makeIded(type, o) {
+	if (o === undefined) {
+		o = {};
+	}
 	
 	var id = idGenerator.get();
 	
 	objectCache.set(id, o);
 
-	o.getId = function () {
-		return id;
-	};
-	
-	o.toJSON = function () {
-		return "object:" + id;
-	};
-	
-	o.getType = function () {
-		return type;
-	};
+	o.getId = getter(id);
+	o.toJSON = getter("object:" + id);
+	o.getType = getter(type);
 	
 	o.remove = function () {
 		// remove from object cache

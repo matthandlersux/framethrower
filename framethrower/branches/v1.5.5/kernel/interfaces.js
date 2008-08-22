@@ -87,7 +87,7 @@ forEach(interfaceInstantiators, function (interfaceInstantiate, name) {
 		};
 		
 		// these are just used for matching against
-		intf.getConstructor = getter(interfaceInstantiate);
+		intf.getConstructor = getter(interfaces[name]);
 		intf.getArguments = getter(args);
 		
 		// checks that interfaceInstantiate (ie: the same type of interface) matches, and then matches the arguments
@@ -121,4 +121,6 @@ forEach(interfaceInstantiators, function (interfaceInstantiate, name) {
 		
 		return intf;
 	});
+	
+	makeIded("interface", interfaces[name]);
 });

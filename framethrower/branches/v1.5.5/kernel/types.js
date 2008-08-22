@@ -69,6 +69,23 @@ basic.xml = makeType("basic.xml");
 });*/
 
 
+basic.fun = memoize(function () {
+	var result = arguments[arguments.length - 1]; // last element of arguments
+	var args = Array.prototype.splice.call(arguments, 0);
+	args.splice(-1, 1); // args is all of arguments except the last element
+	
+	var type = makeType("(" + map(args, function (a) {return a.getName();}).join(", ") + " -> " + result.getName() + ")");
+	
+	type.getArguments = getter(args);
+	type.getResult = getter(result);
+	
+	return type;
+});
+
+
+
+
+
 basic.poly = memoize(function (s) {
 	var type = makeType('"' + s + '"');
 	

@@ -6,6 +6,28 @@ function scaffold(skeleton, topName) {
 		type.parent = parent;
 		type.prop = {};
 		
+		type.match = function (instanceType) {
+			var t = instanceType;
+			while (t) {
+				if (type === t) {
+					return {};
+				}
+				t = t.parent;
+			}
+			errorTypeMismatch(type, instanceType);
+		};
+		
+		type.getProp = function (propName) {
+			var t = type;
+			while (t) {
+				if (t.prop[propName]) {
+					return t.prop[propName];
+				}
+				t = t.parent;
+			}
+			return undefined;
+		};
+		
 		type.make = function (inst) {
 			var instance = makeIded(type);
 			
@@ -16,7 +38,7 @@ function scaffold(skeleton, topName) {
 				forEach(t.prop, function (propType, name) {
 					if (propType.instantiate) {
 						instance.control[name] = {};
-						instance.get[name] = makeSimpleStartCap(propType, instance.control[name]);
+						instance.get[name] = getter(makeSimpleStartCap(propType, instance.control[name]));
 					} else {
 						instance.get[name] = getter(inst[name]);
 					}
