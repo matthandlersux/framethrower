@@ -379,10 +379,6 @@ components.set = {};
 
 components.set.filterType = memoize(function (inputType, filterType) {
 	return components.filter(interfaces.set, inputType, function (o) {
-		try {
-			return filterType.match(o.getType());
-		} catch (e) {
-			return false;
-		}
+		return filterType.match(o.getType());
 	}, filterType);
 });

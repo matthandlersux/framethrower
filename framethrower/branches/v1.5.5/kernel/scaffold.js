@@ -10,11 +10,11 @@ function scaffold(skeleton, topName) {
 			var t = instanceType;
 			while (t) {
 				if (type === t) {
-					return {};
+					return true;
 				}
 				t = t.parent;
 			}
-			errorTypeMismatch(type, instanceType);
+			return false;
 		};
 		
 		type.getProp = function (propName) {

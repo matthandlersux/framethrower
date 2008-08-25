@@ -96,27 +96,12 @@ forEach(interfaceInstantiators, function (interfaceInstantiate, name) {
 				var instanceArgs = instanceType.getArguments();
 				var myArgs = intf.getArguments();
 				
-				var ret = {};
-				
-				forEach(myArgs, function (arg, i) {
-					var o = arg.match(instanceArgs[i]);
-					ret = merge(ret, o);
+				return all(myArgs, function (arg, i) {
+					return arg.match(instanceArgs[i]);
 				});
-				
-				return ret;
-
 			} else {
-				errorTypeMismatch();
+				return false;
 			}
-		};
-		
-		// calls on the argument types
-		intf.assign = function (o) {
-			var newArgs = [];
-			forEach(args, function (arg, i) {
-				newArgs[i] = arg.assign(o);
-			});
-			return interfaces[name].apply(null, newArgs);
 		};
 		
 		return intf;

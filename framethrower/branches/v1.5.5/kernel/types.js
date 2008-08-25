@@ -1,9 +1,8 @@
 
 /*
-Every type is of type typeType. Every type has at least these two methods: match and assign.
-Match takes an instanceType (a type to compare against) and if the types do not match, throws an error ("Type mismatch").
-	If the types do match, it returns an object where the keys are type variables and the values are the types that those type variables must be for the instanceType to match the original type.
-Assign takes an object (the result of a match), and returns a type where type variables of those names are assigned with the appropriate type.
+Every type is of type typeType. Every type has a method match(instanceType)
+match returns true if instanceType is a subtype of type,
+	so kernel.ob.match(kernel.individual) but kernel.individual.match(kernel.ob)
 */
 
 var typeType;
@@ -18,15 +17,9 @@ function makeType(name, isRootType) {
 		type = makeIded(typeType);
 	}
 	
+	// default match method
 	type.match = function (instanceType) {
-		if (type === instanceType) {
-			return {};
-		} else {
-			errorTypeMismatch(type, instanceType);
-		};
-	};
-	type.assign = function (o) {
-		return type;
+		return type === instanceType;
 	};
 	
 	type.getName = getter(name);
@@ -46,7 +39,9 @@ function errorTypeMismatch(type, instanceType) {
 function typeCheck(type, instance) {
 	if (DEBUG) {
 		if (instance.getType) {
-			type.match(instance.getType());
+			if (!type.match(instance.getType())) {
+				console.error("Type mismatch. Expected: " + type.getName() + " got: " + instance.getType().getName());
+			}
 		} else {
 			if (type !== basic.js) {
 				console.error("Type mismatch with instance", type.getName(), instance);
@@ -81,28 +76,4 @@ basic.fun = memoize(function () {
 	
 	return type;
 });
-
-
-
-
-
-basic.poly = memoize(function (s) {
-	var type = makeType('"' + s + '"');
-	
-	type.match = function (instanceType) {
-		var ret = {};
-		ret[s] = instanceType;
-		return ret;
-	};
-	type.assign = function (o) {
-		if (o[s]) {
-			return o[s];
-		} else {
-			return type;
-		}
-	};
-	
-	return type;
-});
-
 
