@@ -80,7 +80,15 @@
 			*/
 			
 			var visqtest = function(){
-				return globalQArray;
+				var returnArray = [];
+				forEach(globalQArray, function(qelement){
+					if(qelement.getType() != "component"){
+						returnArray.push(qelement);
+					}
+				});
+				
+				
+				return returnArray;
 			};
 			
 			vd4 = visDebug();

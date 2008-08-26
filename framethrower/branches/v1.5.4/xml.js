@@ -35,9 +35,11 @@ var emptyXPathResult = document.evaluate("*[1=0]", document, null, XPathResult.O
 
 // useful for testing...
 function loadXMLNow(url) {
+	console.log("loading xml");
     var req = new XMLHttpRequest();
 	req.open("GET", url, false);
 	req.send(null);
+	console.log("done loading");
     return req.responseXML.firstChild;
 }
 

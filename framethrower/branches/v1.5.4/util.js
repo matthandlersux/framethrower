@@ -188,15 +188,17 @@ function compileXSL(xsl){
 				var parent = document.createElementNS("","parent");
 				parent.appendChild(source);
 			}
-            var result = p.transformToDocument(source);
-        } 
+            //var result = p.transformToDocument(source);
+			result = p.transformToDocument(source);
+        }
         catch (e) {
             console.log("Execution Error", xsl, source, params, e);
         }
         
         // Clear parameters
         forEach(params, function(value, param){
-            p.removeParameter(null, param);
+            //p.removeParameter(null, param);
+			p.clearParameters();
         });
         
         return result.firstChild;
