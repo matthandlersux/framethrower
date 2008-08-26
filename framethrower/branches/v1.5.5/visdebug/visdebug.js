@@ -271,19 +271,30 @@ var visDebug = function() {
 
 
 		SO.setObject = function(obj) {
-			var xmlresult = objectToXML(obj, obj.getType(), "link");
+			var type;
+			if(obj.getType().getName){
+				type = obj.getType().getName();
+			} else {
+				type = obj.getType();
+			}
+			
+			var xmlresult = objectToXML(obj, type, "link");
+			
 			SO.xmlNodes = {};
 			SO.xmlNodes.obj = xmlresult.obj;
 
 			//get shape for the objects
-
 			var shape = object2shape(SO.xmlNodes.obj, {typeShapes:typeShapeXML});
 			if (shape) {
 				SO.shape = shape.getAttribute("shape");
 				SO.cssclass = shape.getAttribute("cssclass");
+				if(!SO.shape){
+					SO.shape = "circle";
+					SO.cssclass = "default";
+				}
 			}
 
-			//create svg for the objects			
+			//create svg for the objects
 			var svgresult = object2svg(SO.xmlNodes.obj, {fromx:'0',fromy:'0',r:'20',objid:id,shape:SO.shape,cssclass:SO.cssclass});
 			if (svgresult) {
 				SO.objectsvg = svgresult;
@@ -734,6 +745,7 @@ var visDebug = function() {
 
 			if (totalchildren == 0) {
 				SO.setX(myleftlim);
+				myrightlim += 100;
 			} else {
 				SO.setX(xave/totalchildren);
 			}
@@ -743,7 +755,7 @@ var visDebug = function() {
 	
 		var leftlim = 0;
 		forEach(O, function(SO){
-			if (SO.xmlNodes.obj.getAttribute('type') == "startCap") {
+			if (SO.xmlNodes && SO.xmlNodes.obj.getAttribute('type') == "startCap") {
 				var answer = depth(SO, leftlim, 1);
 				leftlim = answer.rightlim;
 			}
