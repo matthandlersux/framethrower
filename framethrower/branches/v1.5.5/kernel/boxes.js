@@ -13,7 +13,7 @@ function makeInputPin(sendFun) {
 }
 
 function makeOutputPin(outputInterface, controller, activator) {
-	var outputPin = makeIded("outputPin");
+	var outputPin = makeIded(outputInterface);
 	
 	var active = false;
 	var outputInterfaceInstance;
@@ -70,6 +70,8 @@ function makeOutputPin(outputInterface, controller, activator) {
 	outputPin.getInforms = function () {
 		return informs.toArray();
 	};
+	
+	// this is now redundant since getType is the outputInterface
 	outputPin.getOutputInterface = function () {
 		return outputInterface;
 	};

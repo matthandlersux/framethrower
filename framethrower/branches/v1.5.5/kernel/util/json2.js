@@ -219,7 +219,11 @@ if (!this.JSON) {
 
 // If the value has a toJSON method, call it to obtain a replacement value.
 
-            if (value && typeof value === 'object' &&
+// ======================================================================================================
+// MADE A CHANGE HERE! -Toby
+// ======================================================================================================
+
+            if (value && (typeof value === 'object' || typeof value === 'function') &&
                     typeof value.toJSON === 'function') {
                 value = value.toJSON(key);
             }

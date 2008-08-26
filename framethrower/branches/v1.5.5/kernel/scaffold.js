@@ -1,7 +1,12 @@
+
+var typeNames = {};
+
 function scaffold(skeleton, topName) {
 	var ret = {};
 	function add(name, o, parent) {
-		var type = makeType(topName + "." + name);
+		var fullName = topName + "." + name;
+		var type = makeType(fullName);
+		typeNames[fullName] = type;
 		
 		type.parent = parent;
 		type.prop = {};

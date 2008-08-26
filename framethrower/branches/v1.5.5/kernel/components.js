@@ -110,7 +110,7 @@ startCaps.set = memoize(function () {
 
 startCaps.unit = memoize(function (o) {
 	var controller = {};
-	var sc = makeSimpleStartCap(interfaces.unit, controller);
+	var sc = makeSimpleStartCap(interfaces.unit(o.getType()), controller);
 	controller.set(o);
 	return sc;
 });
@@ -127,10 +127,18 @@ endCaps.log = {};
 endCaps.log.set = function (name) {
 	return {
 		add: function (o) {
-			console.log(name, "=added=", o);
+			var p;
+			if (o && o.get && o.get.content) {
+				p = o.get.content().getState();
+			}
+			console.log(name, "=added=", o, p);
 		},
 		remove: function (o) {
-			console.log(name, "=removed=", o);
+			var p;
+			if (o && o.get && o.get.content) {
+				p = o.get.content().getState();
+			}
+			console.log(name, "=removed=", o, p);
 		}
 	};
 };
@@ -138,7 +146,11 @@ endCaps.log.set = function (name) {
 endCaps.log.unit = function (name) {
 	return {
 		set: function (o) {
-			console.log(name, "=set to=", o);
+			var p;
+			if (o && o.get && o.get.content) {
+				p = o.get.content().getState();
+			}
+			console.log(name, "=set to=", o, p);
 		}
 	};
 };
@@ -266,6 +278,51 @@ components.filter = function (liftInterface, inputType, pred, outputType) {
 	
 	return makeSimpleComponent(liftInterface(inputType), liftInterface(outputType), instProc);
 };
+
+
+components.filterC = function (liftInterface, inputType, predC, outputType) {
+	if (outputType === undefined) {
+		outputType = inputType;
+	}
+	
+	var instProc;
+	if (liftInterface === interfaces.set) {
+		instProc = function (myOut, ambient) {
+			var cr = makeCrossReference();
+			var inputs = makeObjectHash();
+			return {
+				add: function (input) {
+					inputs.getOrMake(input, function () {
+						//var predOut = simpleApply(predC, startCaps.unit(input));
+						var predOut = predC(input);
+						var passthru = makeSimpleEndCap(ambient, {
+							set: function (innerInput) {
+								if (innerInput) {
+									cr.addLink(input, input, myOut.add);
+								} else {
+									cr.removeLink(input, input, myOut.remove);
+								}
+							}
+						}, predOut);
+						passthru.activate();
+						return passthru;
+					});
+				},
+				remove: function (input) {
+					var qInner = inputs.get(input);
+					if (qInner !== undefined) {
+						qInner.deactivate();
+						inputs.remove(input);
+						cr.removeInput(input, myOut.remove);				
+					}
+				}
+			};
+		};
+	}
+	
+	return makeSimpleComponent(liftInterface(inputType), liftInterface(outputType), instProc);
+};
+
 
 components.collapse = memoize(function (intf1, intf2, type) {
 	if (intf1 === interfaces.unit && intf2 === interfaces.unit) {

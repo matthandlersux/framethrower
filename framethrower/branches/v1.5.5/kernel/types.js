@@ -2,7 +2,7 @@
 /*
 Every type is of type typeType. Every type has a method match(instanceType)
 match returns true if instanceType is a subtype of type,
-	so kernel.ob.match(kernel.individual) but kernel.individual.match(kernel.ob)
+	so kernel.ob.match(kernel.individual) is true but kernel.individual.match(kernel.ob) is false
 */
 
 var typeType;
@@ -43,7 +43,7 @@ function typeCheck(type, instance) {
 				console.error("Type mismatch. Expected: " + type.getName() + " got: " + instance.getType().getName());
 			}
 		} else {
-			if (type !== basic.js) {
+			if (type !== basic.js && type !== basic.bool && type !== basic.string) {
 				console.error("Type mismatch with instance", type.getName(), instance);
 			}
 		}
