@@ -70,6 +70,9 @@ function makeOutputPin(outputInterface, controller, activator) {
 	outputPin.getInforms = function () {
 		return informs.toArray();
 	};
+	outputPin.isActive = function () {
+		return active;
+	};
 	
 	// this is now redundant since getType is the outputInterface
 	outputPin.getOutputInterface = function () {
@@ -104,6 +107,9 @@ function makeAmbient() {
 		delete endCap.outputPins;
 		
 		endCaps.push(endCap);
+		
+		// NEW: automatically activate endcaps on creation
+		endCap.activate();
 		
 		// ==================== For Debug
 		globalQArray.push(endCap);	

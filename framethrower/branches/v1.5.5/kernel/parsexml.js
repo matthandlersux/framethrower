@@ -36,7 +36,7 @@ function derive(xml, context, focus) {
 	var next;
 	var name = xml.localName;
 	
-	//console.log("hooking up", name);
+	if (name) console.log("hooking up", name);
 	
 	if (name === "derived") {
 		focus = context[xml.getAttributeNS("", "from")];
@@ -46,11 +46,17 @@ function derive(xml, context, focus) {
 	} else if (name === "get") {
 		focus = applyGet(focus, xml.getAttributeNS("", "what"));
 	} else if (name === "filter") {
+		// need to test still..
 		var com = components.filterC(focus.getType().getConstructor(), focus.getType().getArguments()[0], function (o) {
 			return derive(xml.firstChild, context, startCaps.unit(o));
 		});
 		focus = simpleApply(com, focus);
+	} else if (name === "filtertype") {
+		var com = components.set.filterType(focus.getType().getArguments()[0], typeNames[xml.getAttributeNS("", "type")]);
+		focus = simpleApply(com, focus);
 	}
+	// missing: equals
+	
 	
 	if (!next) next = xml.nextSibling;
 	
@@ -60,3 +66,286 @@ function derive(xml, context, focus) {
 		return focus;
 	}
 }
+
+
+
+
+var combiner = memoize(function (inputTypes) {
+	return makeGenericComponent(inputTypes, {output: interfaces.unit(basic.js), ids: interfaces.unit(basic.js)}, function (myOut, ambient) {
+		//var done = {}; // boolean for each input saying whether done or not
+		var xmlrep = {}; // xml representation for each input
+		var ids = {}; // (id => object) pairs
+		
+		function getxmlrep(o) {
+			if (!o) {
+				return emptyXPathResult;
+			} else if (o.getId) {
+				var id = o.getId();
+				ids[id] = o;
+				return document.createTextNode(id);
+			} else {
+				return o;
+			}
+		}
+		
+		var processor = {};
+		
+		forEach(inputTypes, function (t, name) {
+			var intf = t.getConstructor();
+			var intfargs = t.getArguments();
+			
+			var intype = intfargs[0];
+			
+			if (intf === interfaces.unit) {
+				processor[name] = {
+					set: function (o) {
+						xmlrep[name] = getxmlrep(o);
+						checkDone();
+					}
+				};
+			} else if (intf === interfaces.set) {
+				var cache = makeObjectHash();
+				function update() {
+					var sorted = cache.toArray().sort(function (a, b) {
+						return (stringifyObject(a) > stringifyObject(b)) ? 1 : -1;
+					});
+					
+					var container = document.createElementNS("", "container");
+					var xr = [];
+					forEach(sorted, function (o, i) {
+						xr[i] = getxmlrep(o);
+						container.appendChild(xr[i]);
+					});
+					if (xr.length === 0) {
+						xr = emptyXPathResult;
+					}
+					
+					xmlrep[name] = xr;
+					checkDone();
+				}
+				update();
+				processor[name] = {
+					add: function (o) {
+						cache.set(o, o);
+						update();
+					},
+					remove: function (o) {
+						cache.remove(o);
+						update();
+					}
+				};
+			}
+		});
+		
+		function checkDone() {
+			if (all(inputTypes, function (intf, name) {
+				return xmlrep[name];
+			})) {
+				myOut.output.set(xmlrep);
+				myOut.ids.set(ids);
+			}
+		}
+		
+		return processor;
+	});
+});
+
+var tensor = memoize(function () { // arguments
+	var inputInterfaces = {};
+	forEach(arguments, function (name) {
+		inputInterfaces[name] = interfaces.unit(basic.js);
+	});
+	return makeGenericComponent(inputInterfaces, {output: interfaces.unit(basic.js)}, function (myOut, ambient) {
+		var inputs = {};
+		var done = {};
+		var processor = {};
+		forEach(inputInterfaces, function (intf, name) {
+			processor[name] = {
+				set: function (value) {
+					inputs[name] = value;
+					done[name] = true;
+					checkDone();
+				}
+			};
+		});
+		function checkDone() {
+			if (all(inputInterfaces, function (intf, name) {
+				return done[name];
+			})) {
+				myOut.output.set(inputs);
+			}
+		}
+		return processor;
+	});
+});
+
+
+
+
+
+function appendCopy(parent, child) {
+	var c = child.cloneNode(true);
+	parent.ownerDocument.adoptNode(c);
+	parent.appendChild(c);
+	return c;
+}
+
+var blankXML = createDocument();
+blankXML.appendChild(blankXML.createElementNS("", "nothing"));
+blankXML = blankXML.firstChild;
+
+function extractXSLFromCustomXML(xml) {
+	var xslDoc = createDocument();
+	var ss = xslDoc.createElementNS(xmlns["xsl"], "stylesheet");
+	ss.setAttributeNS("", "version", "1.0");
+
+	var paramNodes = xpath("f:param | f:derived", xml);
+	forEach(paramNodes, function (n) {
+		var p = xslDoc.createElementNS(xmlns["xsl"], "param");
+		p.setAttributeNS("", "name", n.getAttributeNS("", "name"));
+		ss.appendChild(p);
+	});
+
+	var xslNodes = xpath("xsl:*", xml);
+	forEach(xslNodes, function (n) {
+		var c = appendCopy(ss, n);
+
+		if (!n.hasAttribute("name") && !n.hasAttribute("match")) {
+			c.setAttributeNS("", "match", "*");
+		}
+	});
+
+	return ss;
+}
+
+
+
+
+
+
+function makeCustomCom(xml) {
+	var paramNodes = xpath("f:param", xml);
+	
+	var derivedNodes = xpath("f:derived", xml);
+	
+	var compiled = compileXSL(extractXSLFromCustomXML(xml));
+	
+	return function (inputs) {
+		var context = merge(inputs);
+		
+		forEach(derivedNodes, function (n) {
+			var name = n.getAttributeNS("", "name");
+			context[name] = derive(n, context);
+		});
+		
+		
+		// to be replaced (pre-compiled)
+		var inputTypes = {};
+		forEach(context, function (val, name) {
+			inputTypes[name] = val.getType();
+		});
+		var myCombiner = combiner(inputTypes);
+		
+		
+		var combinedContext = myCombiner.makeApply(context);
+		
+		var xslCom = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (params) {
+			var res = compiled(blankXML, params);
+			return res;
+		});
+		
+		var transformed = simpleApply(xslCom, combinedContext.output);
+		
+		return tensor("xml", "ids").makeApply({xml: transformed, ids: combinedContext.ids});
+	};
+}
+
+
+/*
+integrate typeNames
+makeCustomCom into component
+*/
+
+function domEndCap(ambient, input, node, relurl) {
+	var ec = ambient.makeEndCap(function (myOut, amb) {
+		return {
+			input: {
+				set: function (o) {
+					// This whole thing needs to be optimized, specifically it should use a more nuanced replace xml function so as not to reevaluate thunks
+					
+					var c = o.xml.cloneNode(true);
+					node.ownerDocument.adoptNode(c);
+					
+					node.parentNode.replaceChild(c, node);
+					node = c;
+					
+					// find thunks
+					var thunks = xpath(".//f:thunk", node);
+					
+					forEach(thunks, function (thunk) {
+						processThunk(amb, thunk, o.ids, relurl);
+					});
+				}
+			}
+		};
+	}, {input: input});
+	return ec;
+}
+
+function processThunk(ambient, node, ids, relurl) {
+	var functionURL = xpath("f:function", node)[0].getAttributeNS("", "url");
+	var url = urlRelPath(relurl, functionURL);
+	
+	var functionCom = documents.get(url);
+	
+	var paramNodes = xpath("f:with-param", node);
+	var params = {};
+	forEach(paramNodes, function (paramNode) {
+		params[paramNode.getAttributeNS("", "name")] = startCaps.unit(ids[paramNode.getAttributeNS("", "value")]);
+	});
+	
+	// will be a makeApply once makeCustomCom returns a component...
+	var out = functionCom(params);
+	
+	out = out.output;
+	
+	return domEndCap(ambient, out, node, url);
+}
+
+
+
+function urlRelPath(start, path) {
+	if (path === ".") {
+		return start;
+	} else {
+		return urlReduce(urlStripLast(start) + path);
+	}
+}
+function urlReduce(url) {
+	var index = url.indexOf("/../");
+	if (index === -1) {
+		return url;
+	} else {
+		return urlReduce(urlStripLast(url.substr(0, index)) + url.substr(index + 4));
+	}
+}
+function urlStripLast(url) {
+	return url.replace(/(\/|^)[^\/]*$/, "$1");
+}
+
+
+
+
+
+var documents = (function () {
+	var cache = {};
+	
+	return {
+		get: function (url) {
+			if (!cache[url]) {
+				cache[url] = makeCustomCom(loadXMLNow(ROOTDIR + url), url);
+			}
+			return cache[url];
+		}
+	};
+})();
