@@ -3,21 +3,29 @@
 function makeObjectToXML(testFunc){
 	//array to keep track of pointers to other objects in the object cache
 	var links = {};
+	var doneObjs = {};
 	
 	//makes object into an xml object with root node name objectName
 	//will check for "top level" objects in the object cache, and will
 	//create links in the links object as a side effect
 	function makeXMLObject(obj, objectName, path){
-		if(!path){
-			path = '';
-		}
-		if(typeof objectName === 'number'){
-			objectName = 'n' + objectName;
-		}
-		
 		var objectNode = document.createElementNS("", objectName.toLowerCase());
-		var contentTextNode;
-		if (obj !== null) {
+		
+		if (obj) {
+			if(obj.getId) {
+				if(doneObjs[obj.getId()]){
+					return objectNode;
+				} else {
+					doneObjs[obj.getId()] = true;
+				}
+			}
+			if(!path){
+				path = '';
+			}
+			if(typeof objectName === 'number'){
+				objectName = 'n' + objectName;
+			}
+			var contentTextNode;
 			if (typeof obj !== 'object' && typeof obj !== 'function') {
 				contentTextNode = document.createTextNode(obj);
 				objectNode.appendChild(contentTextNode);
@@ -62,6 +70,10 @@ function makeObjectToXML(testFunc){
 	
 	return function makeXMLObjectTop(obj, objectName, linkName){
 		links = {};
+		doneObjs = {};
+		if(obj.getId){
+			doneObjs[obj.getId()] = true;
+		}
 		var objectNode = document.createElementNS("", "object");
 		objectNode.setAttribute("type", objectName);
 		for (name in obj) {

@@ -7,7 +7,7 @@ var screenObjects = {};
 
 //creates userInput object which keeps track of userinput information
 //needs access to O to get x and y info for objects
-var initUserInput = function(svgelementsName, O, layoutFunc, mouseMoveFunc) {
+var initUserInput = function(svgelementsName, O, layoutFunc, zoomFunc, mouseMoveFunc, updateSelection) {
 	var ui = {};
 	ui.drag = false;
 	ui.dragOid = null; //id of object currently being dragged
@@ -34,6 +34,8 @@ var initUserInput = function(svgelementsName, O, layoutFunc, mouseMoveFunc) {
 		ui.curorig_y = Number(vba[1]);
 		ui.orig_height = Number(vba[3]);
 		ui.orig_width = Number(vba[2]);
+		ui.width = ui.orig_width;
+		ui.height = ui.orig_height;
 		ui.midx = ui.curorig_x+(ui.orig_width/2);
 		ui.midy = ui.curorig_y+(ui.orig_height/2);
 	}
@@ -67,26 +69,32 @@ var initUserInput = function(svgelementsName, O, layoutFunc, mouseMoveFunc) {
 	});
 	*/
 
+	hashSvgElements.connect('DOMMouseScroll', function(e) {
+		e.preventDefault();
+		ui.zoomfactor += e.detail/4;
+		zoomFunc();
+	});
+
 	hashSvgElements.connect('onmouseup', function(e) {
 		ui.drag = false;
 	});
 
-	hashSvgElements.connect('mousedown', function(e) {
-		var targ = e.target;
-		if (targ.id) {
-			ui.drag = true;
-			ui.dragOid = targ.id;
-			ui.selectOid = targ.id;
-			var SO = O[targ.id];
-			if(SO){
-				ui.offsetx = SO.x;
-				ui.offsety = SO.y;
-			}
 
-			var point = ui.calcCoord(ui.px,ui.py,ui.svgelements);
-			ui.initx = point.x;
-			ui.inity = point.y;
+
+	hashSvgElements.connect('mousedown', function(e) {
+		var point = ui.calcCoord(ui.px,ui.py,ui.svgelements);
+		ui.initx = point.x;
+		ui.inity = point.y;
+		var targ = e.target;
+		ui.drag = true;
+		ui.dragOid = targ.parentNode.id;
+		ui.selectOid = ui.dragOid;
+		var SO = O[ui.selectOid];
+		if(SO){
+			ui.offsetx = SO.x;
+			ui.offsety = SO.y;
 		}
+		updateSelection();
 	});
 
 	dojo.connect(document, 'onkeydown', function(e) {
@@ -121,7 +129,6 @@ var initUserInput = function(svgelementsName, O, layoutFunc, mouseMoveFunc) {
 
 //creates visDebug object. This is used as follows:
 //run "init"
-//run "run" every few milliseconds
 //run "submitenter" to execute a command
 
 var visDebug = function() {
@@ -277,13 +284,14 @@ var visDebug = function() {
 			} else {
 				type = obj.getType();
 			}
-			
+				
 			var xmlresult = objectToXML(obj, type, "link");
-			
+		
 			SO.xmlNodes = {};
 			SO.xmlNodes.obj = xmlresult.obj;
 
 			//get shape for the objects
+
 			var shape = object2shape(SO.xmlNodes.obj, {typeShapes:typeShapeXML});
 			if (shape) {
 				SO.shape = shape.getAttribute("shape");
@@ -294,7 +302,7 @@ var visDebug = function() {
 				}
 			}
 
-			//create svg for the objects
+			//create svg for the objects			
 			var svgresult = object2svg(SO.xmlNodes.obj, {fromx:'0',fromy:'0',r:'20',objid:id,shape:SO.shape,cssclass:SO.cssclass});
 			if (svgresult) {
 				SO.objectsvg = svgresult;
@@ -304,30 +312,46 @@ var visDebug = function() {
 			//filter out links we don't care about
 			var filteredLinks = {};
 			SO.links = {};
+			
+			//make regular expressions ahead of time for efficiency
+			var noLinkREs = [];
+			forEach(noLinkWords, function(word) {
+				noLinkREs.push(new RegExp(word));
+			});
+			var containedREs = [];
+			forEach(containedWords, function(word) {
+				containedREs.push(new RegExp(word));
+			});
+			var containREs = [];
+			forEach(containWords, function(word) {
+				containREs.push(new RegExp(word));
+			});
+			
 			for (key in xmlresult.links){
 				var node = xmlresult.links[key].xmlNode;
 				var matched1 = false;
 				var matched2 = false;
-				forEach(noLinkWords, function(word) {
-					var re = new RegExp(word);
+				matched2 = any(noLinkREs, function(re) {
 					if (node.getAttribute('type').match(re)) {
-						matched1 = true;
-						matched2 = true;
+						return true;
 					}
+					return false;
 				});
-				forEach(containedWords, function(word) {
-					var re = new RegExp(word);
+				matched1 = any(containedREs, function(re) {
 					if (node.getAttribute('type').match(re)) {
-						matched1 = false;
+						return true;
 					}
-				});
-				forEach(containWords, function(word) {
-					var re = new RegExp(word);
-					if (node.getAttribute('type').match(re)) {
-						matched1 = false;
-					}
+					return false;
 				});
 				if(!matched1){
+					matched1 = any(containREs, function(re) {
+						if (node.getAttribute('type').match(re)) {
+							return true;
+						}
+						return false;
+					});
+				}
+				if(matched1){
 					filteredLinks[key] = xmlresult.links[key];
 				}
 				if(!matched2){
@@ -335,7 +359,7 @@ var visDebug = function() {
 				}
 			}
 			
-			//add link xml objects and svg objects to the "to" parameter of the link
+			//add link xml objects and svg objects to container and containee
 			var links = filteredLinks;
 			for (var key in links) {
 				if (links.hasOwnProperty(key)) {
@@ -344,30 +368,32 @@ var visDebug = function() {
 					if (!O[toindex]) {
 						O[toindex] = makeScreenObject(toindex);
 					}
-					O[toindex].registerToLink(key, link, SO);
-					SO.registerFromLink(key, O[toindex]);
+					O[toindex].registerToLink(link, SO);
+					SO.registerFromLink(link, O[toindex]);
 				}
 			}
 
+			//set toLinks
+			for (var key in SO.links) {
+				if (SO.links.hasOwnProperty(key)) {
+					var link = SO.links[key];
+					var toindex = link.xmlNode.getAttribute('to');
+					if (!O[toindex]) {
+						O[toindex] = makeScreenObject(toindex);
+					}
+					O[toindex].tolinks[key] = link;
+				}
+			}
 			
 			//create svg for the links if they don't already exist
 			var links2svg = function(links) {
 				forEach(links, function(link) {
 					var node = link.xmlNode;
-					var matched = false;
-					forEach(noLinkWords, function(word) {
-						var re = new RegExp(word);
-						if (node.getAttribute('type').match(re)) {
-							matched = true;
-						}
-					});
-					if (!matched) {
-						if (!link.svg) {
-							svgresult = object2svg(node, {fromx:'0',fromy:'0',midx1:'0',midy1:'0',midx2:'0',midy2:'0',tox:'0',toy:'0',shape:SO.shape,cssclass:SO.cssclass});
-							if (svgresult) {
-								link.svg = {};
-								link.svg.node = svgresult;
-							}
+					if (!link.svg) {
+						svgresult = object2svg(node, {fromx:'0',fromy:'0',tox:'0',toy:'0',shape:SO.shape,cssclass:SO.cssclass});
+						if (svgresult) {
+							link.svg = {};
+							link.svg.node = svgresult;
 						}
 					}
 				});
@@ -388,7 +414,7 @@ var visDebug = function() {
 					if (link.svg && link.svg.node && svgdiv !== link.svg.node.parentNode) {
 						var toindex = link.xmlNode.getAttribute('to');
 						//only add links with both objects on screen
-						if (O[toindex]) {
+						if (O[toindex].xmlNodes) {
 							svgdiv.appendChild(link.svg.node);
 						}
 					}
@@ -401,9 +427,7 @@ var visDebug = function() {
 
 		};
 
-		SO.registerToLink = function(key, link, fromSO) {
-			SO.tolinks[key] = link;
-
+		SO.registerToLink = function(link, fromSO) {
 			forEach(containedWords, function(word) {
 				var re = new RegExp(word);
 				if (link.xmlNode.getAttribute('type').match(re)) {
@@ -412,7 +436,7 @@ var visDebug = function() {
 			});
 			forEach(containWords, function(word) {
 				var re = new RegExp(word);
-				if (SO.tolinks[key].xmlNode.getAttribute('type').match(re)) {
+				if (link.xmlNode.getAttribute('type').match(re)) {
 					SO.containingObject = fromSO;
 				}
 			});
@@ -425,16 +449,16 @@ var visDebug = function() {
 		};
 		
 
-		SO.registerFromLink = function(key, toSO) {
+		SO.registerFromLink = function(link, toSO) {
 			forEach(containWords, function(word) {
 				var re = new RegExp(word);
-				if (toSO.tolinks[key].xmlNode.getAttribute('type').match(re)) {
+				if (link.xmlNode.getAttribute('type').match(re)) {
 					SO.containedObjects[toSO.objId] = toSO;
 				}	
-			});			
+			});
 			forEach(containedWords, function(word) {
 				var re = new RegExp(word);
-				if (SO.links[key].xmlNode.getAttribute('type').match(re)) {
+				if (link.xmlNode.getAttribute('type').match(re)) {
 					SO.containingObject = toSO;
 				}
 			});
@@ -453,18 +477,10 @@ var visDebug = function() {
 					var fromindex = link.xmlNode.getAttribute('from');
 					var toindex = link.xmlNode.getAttribute('to');
 					if (O[toindex]) {
-						var fromx = O[fromindex].x;
-						var fromy = O[fromindex].y;
-						var tox = O[toindex].x;
-						var toy = O[toindex].y;
-
-						var midx1 = (tox - fromx) * 3 / 8 + fromx * 1;
-						var midy1 = (toy - fromy) * 1 / 8 + fromy * 1;
-						var midx2 = (tox - fromx) * 1 / 2 + fromx * 1;
-						var midy2 = (toy - fromy) * 1 / 2 + fromy * 1;
-
-						svgresult = object2svg(link.xmlNode, {fromx:fromx,fromy:fromy,midx1:midx1,midy1:midy1,midx2:midx2,midy2:midy2,tox:tox,toy:toy});
-						if (svgresult) {						
+						var from = O[fromindex];
+						var to = O[toindex];
+						svgresult = object2svg(link.xmlNode, {fromx:from.x,fromy:from.y,tox:to.x,toy:to.y});
+						if (svgresult) {
 							parentNode = link.svg.node.parentNode;
 							parentNode.replaceChild(svgresult,link.svg.node);
 							link.svg.node = svgresult;
@@ -537,7 +553,7 @@ var visDebug = function() {
 
 			SO.prevX = SO.x;
 			SO.prevY = SO.y;
-						
+
 			var svgresult = object2svg(SO.xmlNodes.obj, {fromx:SO.x,fromy:SO.y,r:SO.r,objid:id,shape:SO.shape,cssclass:SO.cssclass});
 
 			if (svgresult) {
@@ -608,13 +624,12 @@ var visDebug = function() {
 		var orderhash = {};
 		var i = 0;
 		forEach(svgObjects, function(svgObject) {
-			if (svgObject.firstChild) {
-				orderhash[svgObject.firstChild.id] = i;
-				i++;
-			}else {
+			if(svgObject.id){
 				orderhash[svgObject.id] = i;
-				i++;
+			} else if (svgObject.firstChild) {
+				orderhash[svgObject.firstChild.id] = i;
 			}
+			i++;
 		});
 		
 		
@@ -724,8 +739,26 @@ var visDebug = function() {
 	var treeLayout = function() {
 		
 		//do depth first search from each start cap to build tree
+		var visited = {};
+		
+		var lower = function(SO, level){
+			if(SO.y < level*100){
+				SO.setY(level*100);
+				SO.updatePosition();
+				forEach(SO.containedObjects, function(contO){
+					forEach(contO.links, function(link){
+						if(link.xmlNode.getAttribute('type').match(/Informs/)){
+							var newSO = O[link.xmlNode.getAttribute('to')];
+							lower(newSO.containingObject, level+1);
+						}
+					});
+				});
+			}
+		};
+		
 		
 		var depth = function(SO, leftlim, level){
+			visited[SO.objId] = true;
 			var xave = 0;
 			var totalchildren = 0;
 			var myleftlim = leftlim;
@@ -734,37 +767,70 @@ var visDebug = function() {
 				forEach(contO.links, function(link){
 					if(link.xmlNode.getAttribute('type').match(/Informs/)){
 						var newSO = O[link.xmlNode.getAttribute('to')];
-						var answer = depth(newSO.containingObject, myleftlim, level+1);
-						myleftlim = answer.rightlim+100;
-						myrightlim = answer.rightlim;
-						xave += answer.rootX;
-						totalchildren++;
+						if(!visited[newSO.containingObject.objId]){
+							var answer = depth(newSO.containingObject, myleftlim, level+1);
+							myleftlim = answer.rightlim+100;
+							myrightlim = answer.rightlim;
+							xave += answer.rootX;
+							totalchildren++;
+						} else {
+							lower(newSO.containingObject, level+1);
+						}
 					}
 				});
 			});
 
 			if (totalchildren == 0) {
 				SO.setX(myleftlim);
-				myrightlim += 100;
 			} else {
 				SO.setX(xave/totalchildren);
 			}
 			SO.setY(level*100);
+			SO.updatePosition();
+			
+			//put start caps and end caps where they belong
+			var opincount = 0;
+			var ipincount = 0;
+			forEach(SO.containedObjects, function(contO){
+				if(contO.xmlNodes.obj.getAttribute('type') == "outputPin"){
+					opincount++;
+				} else if(contO.xmlNodes.obj.getAttribute('type') == "inputPin"){
+					ipincount++;
+				}
+			});
+			
+			var opintotal = opincount+1;
+			var ipintotal = ipincount+1;
+			var width = SO.r*2;
+			var startX = SO.x - SO.r;
+			var topY = SO.y - SO.r;
+			var botY = SO.y + SO.r;
+			opincount = 1;
+			ipincount = 1;
+			forEach(SO.containedObjects, function(contO){
+				if(contO.xmlNodes.obj.getAttribute('type') == "outputPin"){
+					contO.setX(startX + width*(opincount/opintotal));
+					contO.setY(botY);
+					opincount++;
+				} else if(contO.xmlNodes.obj.getAttribute('type') == "inputPin"){
+					contO.setX(startX + width*(ipincount/ipintotal));
+					contO.setY(topY);
+					ipincount++;
+				}
+				contO.updatePosition();
+			});
+			
 			return {rootX: SO.x, rightlim:myrightlim};
 		};
 	
 		var leftlim = 0;
 		forEach(O, function(SO){
-			if (SO.xmlNodes && SO.xmlNodes.obj.getAttribute('type') == "startCap") {
+			if (SO.xmlNodes.obj.getAttribute('type') == "startCap") {
 				var answer = depth(SO, leftlim, 1);
-				leftlim = answer.rightlim;
+				leftlim = answer.rightlim+100;
 			}
 		});
 	
-		forEach(O, function(SO){
-			SO.updatePosition();
-		});
-				
 	};
 	
 	var betterLayout = function() {
@@ -826,6 +892,25 @@ var visDebug = function() {
 		
 	};
 	
+	var zoom = function(){
+		if (ui.zoomfactor <= 0.1) {
+			ui.zoomfactor = 0.1;
+		}
+		
+		var newwidth = ui.orig_width*ui.zoomfactor;
+		var newheight = ui.orig_height*ui.zoomfactor;
+		
+		var deltaW = newwidth - ui.width;
+		var deltaH = newheight - ui.height;
+		
+		ui.width = newwidth;
+		ui.height = newheight;
+
+		ui.curorig_x -= (deltaW/2);
+		ui.curorig_y -= (deltaH/2);
+
+		ui.svgelements.setAttribute("viewBox",ui.curorig_x+" "+ui.curorig_y+" "+ui.width+" "+ui.height);		
+	};
 	
 	var run = function() {
 		if (runcheck) {
@@ -834,21 +919,44 @@ var visDebug = function() {
 		}
 		runcheck = true;
 		var dragO = O[ui.dragOid];
-		if (ui.drag && dragO) {
+		if (ui.drag) {
 			var point = ui.calcCoord(ui.px,ui.py,ui.svgelements);
-			if (ui.rPressed) {
-				//resizing an object
-				dragO.setR(1.5*Math.sqrt(Math.pow(point.x - (dragO.x),2) + Math.pow(point.y - (dragO.y),2)));
-			} else {
-				//dragging an object
-				dragO.x = point.x - ui.initx + ui.offsetx;
+			if(dragO){
+				if (ui.rPressed) {
+					//resizing an object
+					dragO.setR(1.5*Math.sqrt(Math.pow(point.x - (dragO.x),2) + Math.pow(point.y - (dragO.y),2)));
+				} else {
+					//dragging an object
+					dragO.x = point.x - ui.initx + ui.offsetx;
 				
-				dragO.targetX = dragO.x;
-				dragO.y = point.y - ui.inity + ui.offsety;
-				dragO.targetY = dragO.y;
+					dragO.targetX = dragO.x;
+					dragO.y = point.y - ui.inity + ui.offsety;
+					dragO.targetY = dragO.y;
+				}
+				dragO.updatePosition();
+			} else {
+				//moving the screen
+				ui.curorig_x -= point.x - ui.initx;
+				ui.curorig_y -= point.y - ui.inity;
+				ui.svgelements.setAttribute("viewBox",ui.curorig_x+" "+ui.curorig_y+" "+ui.width+" "+ui.height);
+				point = ui.calcCoord(ui.px,ui.py,ui.svgelements);
+				ui.initx = point.x;
+				ui.inity = point.y;
 			}
-			dragO.updatePosition();
+		} else if (ui.zPressed) {
+			//zooming
+			ui.zoomfactor = ui.basezoom+(ui.xm-ui.initx)/200;
+			zoom();
 		}
+		/*
+		forEach(O, function(SO) {
+			SO.moveOnPath();
+		});
+		*/
+		runcheck = false;
+	};
+	
+	var updateSelection = function(){
 		if ((ui.drawnOid !== ui.selectOid || isNewChange) && ui.selectOid && O[ui.selectOid] && O[ui.selectOid].xmlNodes) {
 			ui.drawnOid = ui.selectOid;
 			isNewChange = false;
@@ -861,25 +969,7 @@ var visDebug = function() {
 			else {
 				infoDiv.appendChild(htmlresult);
 			}
-		} else if (ui.zPressed) {
-			//zooming
-			ui.zoomfactor = ui.basezoom+(ui.xm-ui.initx)/200;
-			if (ui.zoomfactor <= 0.1) {
-				ui.zoomfactor = 0.1;
-			}
-			var width = ui.orig_width*ui.zoomfactor;
-			var height = ui.orig_height*ui.zoomfactor;
-
-			ui.curorig_x = ui.midx - (width/2);
-			ui.curorig_y = ui.midy - (height/2);
-			ui.svgelements.setAttribute("viewBox",0+" "+0+" "+width+" "+height);
 		}
-		/*
-		forEach(O, function(SO) {
-			SO.moveOnPath();
-		});
-		*/
-		runcheck = false;
 	};
 	
 	var rootObj2Screen = function(rootObj, recurseFuncName) {
@@ -940,7 +1030,7 @@ var visDebug = function() {
 
 	var init = function(params) {
 		//create userinput object to track user input
-		ui = initUserInput(params.svgDiv, O, treeLayout, run);
+		ui = initUserInput(params.svgDiv, O, treeLayout, zoom, run, updateSelection);
 		if (params.containWords) {
 			containWords = params.containWords;
 		}

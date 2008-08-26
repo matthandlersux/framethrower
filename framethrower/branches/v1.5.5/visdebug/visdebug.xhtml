@@ -7,20 +7,30 @@
 <head>
   <title>FT Vis Debug</title>
 
-	<script>
-	var ROOTDIR = "../";
-	</script>
 
-	<script src="../json2.js" />
-	<script src="../util.js" />
-	
-	<script src="../xml.js" />
-	<script src="../kernel.js" />
-	<script src="../queries.js" />
-	<script src="../components.js" />
-	<script src="../kernelcomponents.js" />
-<!-->	<script src="../test qs/test4.js" /> </!-->
-	<script src="../test qs/testsimple.js" />
+<script>
+var ROOTDIR = "../";
+var DEBUG = true;
+</script>
+
+	<script src="../kernel/util/json2.js"></script>
+	<script src="../kernel/util/util.js"></script>
+	<script src="../kernel/util/xml.js"></script>
+
+	<script src="../kernel/hash.js"></script>
+	<script src="../kernel/types.js"></script>
+	<script src="../kernel/interfaces.js"></script>
+	<script src="../kernel/boxes.js"></script>
+	<script src="../kernel/scaffold.js"></script>
+
+	<script src="../kernel/components.js"></script>
+
+	<script src="../kernel/parsexml.js"></script>
+
+	<script src="../kernel/actions.js"></script>
+
+
+	<script src="../testing/test1.js"></script>
 
 	<script src="dojoPackage/dojo/dojo.js" djConfig="parseOnLoad:true, isDebug:true"/>
 
@@ -32,54 +42,10 @@
 		dojo.require("dijit.form.Button");
 		dojo.require("dijit.TitlePane");
 		
-		var qTestFunc = function(){
-			root.input.add(5);
-			return root;
-		};
-		
 		
 		window.addEventListener("load", function(){
-			/*
-			var params = {};
-			params.initStyle = "recursive";
-			params.testFunc = randomCorrespondence;
-			params.svgDiv = "svgelements";
-			params.recurseFuncName = "getObjects";
-			params.containWords = ["Situation"];
-			params.noLinkWords = ["Situation", "Objects"];
-			params.typeShapesFile = "typeshapes.xml";
-			vd1 = visDebug();
-			vd1.init(params);
-			*/
-			
-			/*
-			var params2 = {};
-			params2.initStyle = "recursive";
-			params2.testFunc = qTestFunc;
-			params2.svgDiv = "svgelements3";
-			params2.recurseFuncName = "getInforms";
-			params2.containWords = ["Situation"];
-			params2.noLinkWords = ["Situation", "Objects"];
-			params2.typeShapesFile = "typeshapes.xml";
-			
-			vd2 = visDebug();
-			vd2.init(params2);
-			*/
-			
-			/*
-			vd3 = visDebug();
-
-			var params3 = {};
-			params3.initStyle = "array";
-			params3.testFunc = scratchTest;
-			params3.svgDiv = "svgelements";
-			params3.containWords = ["Inputs","Outputs"];
-			params3.noLinkWords = ["Inof", "Outof", "Outputs", "Inputs"];
-			params3.typeShapesFile = "typeshapes.xml";
-			vd3.init(params3);
-			*/
-			
 			var visqtest = function(){
+				console.log(globalQArray);
 				return globalQArray;
 			};
 			
@@ -129,23 +95,7 @@
 			<div id="sepdiv" />
 		</svg:svg>
 		
-<!-->		
-		<svg:svg version="1.1"
-		    id="svgelements2"
-		    preserveAspectRatio="xMidYMid slice" viewBox="0 0 700 700">
-			<div id="sepdiv2" />
-		</svg:svg>
-		
-		<svg:svg version="1.1"
-		    id="svgelements3"
-		    preserveAspectRatio="xMidYMid slice" viewBox="0 0 2500 600">
-			<div id="sepdiv3" />
-		</svg:svg>
-</!-->		
-<html:div style="display:none;" id="html_mainscreen"><f:thunk>
-	<f:function url="test qs/testxml/printsituation.xml" />
-	<f:with-param name="focus" value="predefined.realWorld" />
-</f:thunk></html:div>
+<div id="html_mainscreen" style="display:none;"></div>
 
 		<svg:svg version="1.1" id="svgkey"
 		    preserveAspectRatio="xMidYMid slice">

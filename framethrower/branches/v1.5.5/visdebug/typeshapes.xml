@@ -1,4 +1,5 @@
 <xml>
+	<typeinfo type="object" class="object" shape="circle"/>
 	<typeinfo type="situation" class="situation" shape="circle"/>
 	<typeinfo type="individual" class="individual" shape="circle"/>
 	<typeinfo type="ghost" class="ghost" shape="circle"/>
