@@ -29,11 +29,13 @@ var transactions = (function() {
 	var makeInfonTransaction = function (parentSituation, relation, arcs) {
 		var t = makeObjectTransaction(kernel.infon, parentSituation);
 		t.push(intAction('$newObject', 'control.relation', 'set', [relation]));
-		forEach(arcs, function(arc){
-			t.push(intAction('$newObject', 'control.arcs', 'add', [arc]));
-			t.push(intAction(arc.value, 'control.involves', 'add', ['$newInfon']));
-		});
-		t.push(intAction(relation, 'control.infons', 'add', ['$newInfon']));
+		for (key in arcs) {
+			if (arcs.hasOwnProperty(key)) {
+				t.push(intAction('$newObject', 'control.arcs', 'set', [key, arcs[key]]));
+				t.push(intAction(arcs[key], 'control.involves', 'add', ['$newObject']));
+			}
+		}
+		t.push(intAction(relation, 'control.infons', 'add', ['$newObject']));
 		return t;
 	};
 	
@@ -105,6 +107,10 @@ var transactions = (function() {
 		},
 		makeRelation: function (parentSituation) {
 			return makeObject(parentSituation, kernel.relation);
+		},
+		makeInfon: function (parentSituation, relation, arcs) {
+			var t = makeInfonTransaction(parentSituation, relation, arcs);
+			executeTransaction(t);
 		},
 		modifyContent: function (object, newContent) {
 			var t = modifyContentTransaction(object, newContent);
