@@ -85,7 +85,7 @@ var interfaceInstantiators = {
 				});
 			},
 			getState: function () {
-				return cache.toArray();
+				return cache.toObject();
 			}
 		};
 	}

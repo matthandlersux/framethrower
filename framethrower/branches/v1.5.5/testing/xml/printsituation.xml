@@ -24,21 +24,25 @@
 				</f:thunk>
 			</html:b>
 			
-			<html:div style="margin-left:20px;">
-				<xsl:for-each select="$individualChildren">
-					<f:thunk>
-						<f:function url="printcontent.xml" />
-						<f:with-param name="focus" value="{.}" />
-					</f:thunk>
-				</xsl:for-each>
-				<xsl:for-each select="$situationChildren">
-					<f:thunk>
-						<f:function url="printsituation.xml" />
-						<f:with-param name="focus" value="{.}" />
-					</f:thunk>
-				</xsl:for-each>
-				
-			</html:div>
+			<xsl:call-template name="test" />
+			
+		</html:div>
+	</xsl:template>
+	
+	<xsl:template name="test">
+		<html:div style="margin-left:20px;">
+			<xsl:for-each select="$individualChildren">
+				<f:thunk>
+					<f:function url="printcontent.xml" />
+					<f:with-param name="focus" value="{.}" />
+				</f:thunk>
+			</xsl:for-each>
+			<xsl:for-each select="$situationChildren">
+				<f:thunk>
+					<f:function url="printsituation.xml" />
+					<f:with-param name="focus" value="{.}" />
+				</f:thunk>
+			</xsl:for-each>
 			
 		</html:div>
 	</xsl:template>

@@ -26,6 +26,7 @@ var actions = (function () {
 				infon.control.arcs.set(role, arg);
 				arg.control.involves.add(infon);
 			});
+			return infon;
 		}
 	};
 })();
