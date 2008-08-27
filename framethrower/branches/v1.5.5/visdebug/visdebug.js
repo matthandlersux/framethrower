@@ -133,9 +133,9 @@ var initUserInput = function(svgelementsName, O, layoutFunc, zoomFunc, mouseMove
 
 var visDebug = function() {
 	var O = {}; //objects being displayed on screen
-	var object2svg = compileXSL(loadXMLNow("object2svg.xsl"));
-	var object2html = compileXSL(loadXMLNow("object2html.xsl"));
-	var object2shape = compileXSL(loadXMLNow("object2shape.xsl"));
+	var object2svg = compileXSL(loadXMLNow(ROOTDIR + "visdebug/object2svg.xsl"));
+	var object2html = compileXSL(loadXMLNow(ROOTDIR + "visdebug/object2html.xsl"));
+	var object2shape = compileXSL(loadXMLNow(ROOTDIR + "visdebug/object2shape.xsl"));
 	var objectCache = {};
 	var rootObj = {};
 	var runcheck = false;
