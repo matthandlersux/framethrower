@@ -109,6 +109,13 @@ function makeOhash(stringify) {
 		});
 		return ret;
 	};
+	ohash.toObject = function () {
+		var ret = {};
+		ohash.forEach(function (value, key) {
+			ret[key] = value;
+		});
+		return ret;
+	};
 	
 	ohash.isEmpty = function () {
 		return isEmpty(hash);

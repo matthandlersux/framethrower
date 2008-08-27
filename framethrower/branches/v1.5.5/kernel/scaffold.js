@@ -97,7 +97,7 @@ var kernel = scaffold({
 }, "kernel");
 
 kernel.ob.prop = {
-	parentSituation: kernel.situation,
+	parentSituation: interfaces.unit(kernel.situation),
 	content: interfaces.unit(basic.js),
 	involves: interfaces.set(kernel.infon),
 	correspondsIn: interfaces.set(kernel.ob),
@@ -116,7 +116,8 @@ kernel.relation.prop = {
 };
 
 kernel.infon.prop = {
-	relation: kernel.relation
+	relation: interfaces.unit(kernel.relation),
+	arcs: interfaces.assoc(basic.string, kernel.ob)
 };
 
 

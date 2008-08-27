@@ -64,6 +64,30 @@ var interfaceInstantiators = {
 				return cache;
 			}
 		};
+	},
+	assoc: function (a, b) {
+		var cache = makeObjectHash();
+		return {
+			actions: {
+				set: function (key, value) {
+					typeCheck(a, key);
+					typeCheck(b, value);
+					cache.set(key, value);
+				},
+				remove: function (key) {
+					typeCheck(a, key);
+					cache.remove(key);
+				}
+			},
+			addInform: function (pin) {
+				cache.forEach(function (value, key) {
+					pin.set(key, value);
+				});
+			},
+			getState: function () {
+				return cache.toArray();
+			}
+		};
 	}
 };
 
