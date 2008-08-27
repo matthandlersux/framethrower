@@ -110,7 +110,8 @@ var transactions = (function() {
 		},
 		makeInfon: function (parentSituation, relation, arcs) {
 			var t = makeInfonTransaction(parentSituation, relation, arcs);
-			executeTransaction(t);
+			var result = executeTransaction(t);
+			return result.variables['$newObject'];
 		},
 		modifyContent: function (object, newContent) {
 			var t = modifyContentTransaction(object, newContent);
