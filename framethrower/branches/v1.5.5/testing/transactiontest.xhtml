@@ -1,0 +1,120 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:svg="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink">
+<head>
+  <title>Test 1</title>
+
+<script>
+var ROOTDIR = "../";
+var DEBUG = true;
+</script>
+
+	<script src="../kernel/util/json2.js"></script>
+	<script src="../kernel/util/util.js"></script>
+	<script src="../kernel/util/xml.js"></script>
+	
+	<script src="../kernel/hash.js"></script>
+	<script src="../kernel/types.js"></script>
+	<script src="../kernel/interfaces.js"></script>
+	<script src="../kernel/boxes.js"></script>
+	<script src="../kernel/scaffold.js"></script>
+	
+	<script src="../kernel/components.js"></script>
+	
+	<script src="../kernel/parsexml.js"></script>
+	
+	<script src="../kernel/actions.js"></script>
+	<script src="../kernel/transactions.js"></script>
+	
+	<script src="transactiontest.js"></script>
+	
+	<script src="../visdebug/dojoPackage/dojo/dojo.js" djConfig="parseOnLoad:true, isDebug:true"/>
+
+	<script src="../visdebug/containment.js"/>
+	<script src="../visdebug/objects2xml.js"/>
+	<script src="../visdebug/visdebug.js"/>
+	
+		<script type="text/javascript">
+			dojo.require("dijit.form.Button");
+			dojo.require("dijit.TitlePane");
+
+
+			window.addEventListener("load", function(){
+				var visqtest = function(){
+					return globalQArray;
+				};
+
+				vd4 = visDebug();
+
+				var params4 = {};
+				params4.initStyle = "array";
+				params4.testFunc = visqtest;
+				params4.svgDiv = "svgelements";
+				params4.containWords = ["InputPins","OutputPins","inputPins","outputPins"];
+				//params4.containedWords = ["inputPins","outputPins"];
+				params4.noLinkWords = ["InputPins","OutputPins","inputPins","outputPins","State","Inputs","Applications"];
+				params4.typeShapesFile = "../visdebug/typeshapes.xml";
+
+				vd4.init(params4);
+			}, false);
+		</script>
+
+		<link rel="stylesheet" href="../visdebug/visdebug.css" />
+
+	</head>
+	<body id="body" onload="">
+			<svg:svg version="1.1" id="gradients">
+				<svg:linearGradient id="gradient">
+					<svg:stop class="yellow" offset="0%"/>
+					<svg:stop class="green" offset="100%"/>
+		    	</svg:linearGradient>
+				<svg:linearGradient id="bluegradient">
+					<svg:stop class="red" offset="0%"/>
+					<svg:stop class="blue" offset="100%"/>
+		    	</svg:linearGradient>
+				<svg:linearGradient id="relationgradient">
+					<svg:stop class="red" offset="0%"/>
+					<svg:stop class="yellow" offset="100%"/>
+		    	</svg:linearGradient>
+				<svg:linearGradient id="graygradient">
+					<svg:stop class="black" offset="0%"/>
+					<svg:stop class="gray" offset="15%"/>
+					<svg:stop class="gray" offset="85%"/>
+					<svg:stop class="black" offset="100%"/>
+		    	</svg:linearGradient>
+			</svg:svg>
+
+			<svg:svg version="1.1"
+			    id="svgelements"
+				viewBox="0 0 700 1000">
+				<div id="sepdiv" />
+			</svg:svg>
+
+	<div id="html_mainscreen" style="display:none;"></div>
+
+			<svg:svg version="1.1" id="svgkey"
+			    preserveAspectRatio="xMidYMid slice">
+				<svg:rect x="80" y="63" width="40" height="12" fill="url(#gradient)" />
+				<svg:rect x="80" y="81" width="40" height="12" fill="url(#bluegradient)" />
+				<svg:rect x="80" y="99" width="40" height="12" fill="url(#relationgradient)" />
+				<svg:rect x="80" y="117" width="40" height="12" fill="url(#bluegradient)" opacity=".3"/>			
+			</svg:svg>
+
+			<div id="info" />
+
+			<div id="key">
+				Hints: <br/>Hold "r" to resize, "z" to zoom <br/>
+				Key: <br/>
+				Situations: <br/>
+				Individuals: <br/>
+				Rel/Rol/Inf: <br/>
+				Ghosts: <br/>
+			</div>
+			<div id="inputdiv">
+				<input onkeypress="return visDebug.submitenter(this,event);"/>
+			</div>
+	</body>
+	</html>
