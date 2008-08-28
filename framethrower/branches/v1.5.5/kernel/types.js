@@ -38,7 +38,7 @@ function errorTypeMismatch(type, instanceType) {
 
 function typeCheck(type, instance) {
 	if (DEBUG) {
-		if (instance.getType) {
+		if (instance && instance.getType) {
 			if (!type.match(instance.getType())) {
 				console.error("Type mismatch. Expected: " + type.getName() + " got: " + instance.getType().getName());
 			}
