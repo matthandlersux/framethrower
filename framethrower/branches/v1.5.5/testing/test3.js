@@ -13,15 +13,17 @@ var jb = actions.makeIndividual(gfmov);
 jb.control.content.set("James Bond");
 
 var performs = actions.makeRelation(rw);
-performs.control.content.set("Performs");
+performs.control.content.set(parseXML('<pseudo><role role="performer" /> performs <role role="performee" /></pseudo>'));
 
 
 var tmov = actions.makeSituation(rw);
 tmov.control.content.set("Titanic");
 
 var rose = actions.makeIndividual(tmov);
-rose.control.content.set("Rose");
+rose.control.content.set(parseXML("<html:i>Rose</html:i>"));
 
+//var inftest = actions.makeInfon(rw, performs, {performer: sc, performee: jb});
+//var inftest = actions.makeInfon(rw, performs, {});
 
 // some tests
 
@@ -42,3 +44,9 @@ domEndCap(mainAmbient, custComTestOut.output, document.getElementById("html_main
 // infon test
 
 var inftest = actions.makeInfon(rw, performs, {performer: sc, performee: jb});
+
+
+//var com = components.assoc.getKey(basic.string, kernel.ob);
+//var out = com.makeApply({input: inftest.get.arcs(), key: startCaps.unit("performer")});
+
+//var ec = makeSimpleEndCap(mainAmbient, endCaps.log.unit("assoc getkey test"), out.output);

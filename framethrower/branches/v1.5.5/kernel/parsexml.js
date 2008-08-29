@@ -21,13 +21,22 @@ var applyGet = memoize(function (input, what) {
 	var intermediate = simpleApply(com, input);
 	
 	if (outType.getConstructor) {
-		var colcom = components.collapse(intf, outType.getConstructor(), outType.getArguments()[0]);
+		var colcom = components.collapse(intf, outType.getConstructor(), outType.getArguments());
 		return simpleApply(colcom, intermediate);
 	} else {
 		return intermediate;
 	}
 });
 
+
+function getFromContext(context, s) {
+	var firstLetter = s.charAt(0);
+	if (firstLetter === '"' || firstLetter === "'") {
+		return startCaps.unit(s.substring(1, s.length - 1));
+	} else {
+		return context[s];
+	}
+}
 
 // context is an object whose keys are param names and values are output pins
 // focus is an optional variable
@@ -36,9 +45,11 @@ function derive(xml, context, focus) {
 	var next;
 	var name = xml.localName;
 	
-	if (name) console.log("hooking up", name);
+	//if (name) console.log("hooking up", name);
 	
-	if (name === "derived") {
+	if (!name) {
+		
+	} else if (name === "derived") {
 		focus = context[xml.getAttributeNS("", "from")];
 		next = xml.firstChild;
 	} else if (name === "start") {
@@ -54,6 +65,12 @@ function derive(xml, context, focus) {
 	} else if (name === "filtertype") {
 		var com = components.set.filterType(focus.getType().getArguments()[0], typeNames[xml.getAttributeNS("", "type")]);
 		focus = simpleApply(com, focus);
+	} else if (name === "getkey") {
+		var com = components.assoc.getKey(focus.getType().getArguments()[0], focus.getType().getArguments()[1]);
+		var key = getFromContext(context, xml.getAttributeNS("", "key"));
+		focus = com.makeApply({input: focus, key: key}).output;
+	} else {
+		console.error("Unknown xml element in derive: " + name);
 	}
 	// missing: equals
 	
@@ -145,6 +162,7 @@ var combiner = memoize(function (inputTypes) {
 				myOut.ids.set(ids);
 			}
 		}
+		checkDone();
 		
 		return processor;
 	});
@@ -246,10 +264,10 @@ function makeCustomCom(xml) {
 		});
 		var myCombiner = combiner(inputTypes);
 		
-		
 		var combinedContext = myCombiner.makeApply(context);
 		
 		var xslCom = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (params) {
+			if (!params) return undefined;
 			var res = compiled(blankXML, params);
 			return res;
 		});
@@ -271,20 +289,22 @@ function domEndCap(ambient, input, node, relurl) {
 		return {
 			input: {
 				set: function (o) {
-					// This whole thing needs to be optimized, specifically it should use a more nuanced replace xml function so as not to reevaluate thunks
-					
-					var c = o.xml.cloneNode(true);
-					node.ownerDocument.adoptNode(c);
-					
-					node.parentNode.replaceChild(c, node);
-					node = c;
-					
-					// find thunks
-					var thunks = xpath(".//f:thunk", node);
-					
-					forEach(thunks, function (thunk) {
-						processThunk(amb, thunk, o.ids, relurl);
-					});
+					if (o.xml && o.ids) {
+						// This whole thing needs to be optimized, specifically it should use a more nuanced replace xml function so as not to reevaluate thunks
+
+						var c = o.xml.cloneNode(true);
+						node.ownerDocument.adoptNode(c);
+
+						node.parentNode.replaceChild(c, node);
+						node = c;
+
+						// find thunks
+						var thunks = xpath(".//f:thunk", node);
+
+						forEach(thunks, function (thunk) {
+							processThunk(amb, thunk, o.ids, relurl);
+						});
+					}
 				}
 			}
 		};
@@ -293,15 +313,29 @@ function domEndCap(ambient, input, node, relurl) {
 }
 
 function processThunk(ambient, node, ids, relurl) {
-	var functionURL = xpath("f:function", node)[0].getAttributeNS("", "url");
-	var url = urlRelPath(relurl, functionURL);
+	var funcEl = xpath("f:function", node)[0];
+	var functionURL = funcEl.getAttributeNS("", "url");
+	
+	var url;
+	if (functionURL) {
+		url = urlRelPath(relurl, functionURL);
+	} else {
+		url = urlStripHash(relurl) + "#" + funcEl.getAttributeNS("", "name");
+		console.log("using name", url);
+	}
 	
 	var functionCom = documents.get(url);
 	
 	var paramNodes = xpath("f:with-param", node);
 	var params = {};
 	forEach(paramNodes, function (paramNode) {
-		params[paramNode.getAttributeNS("", "name")] = startCaps.unit(ids[paramNode.getAttributeNS("", "value")]);
+		var value = paramNode.getAttributeNS("", "value");
+		if (value) {
+			params[paramNode.getAttributeNS("", "name")] = startCaps.unit(ids[value]);
+		} else {
+			params[paramNode.getAttributeNS("", "name")] = startCaps.unit(extractFromXML(paramNode));
+		}
+		
 	});
 	
 	// will be a makeApply once makeCustomCom returns a component...
@@ -310,6 +344,27 @@ function processThunk(ambient, node, ids, relurl) {
 	out = out.output;
 	
 	return domEndCap(ambient, out, node, url);
+}
+
+function extractFromXML(node) {
+	var els = xpath("*", node);
+	if (els.length > 0) {
+		return els[0];
+	} else {
+		var s = node.firstChild.nodeValue;
+		s = replace(/^\s+|\s+$/g, '');
+		return s;
+	}
+}
+
+function trim(array) {
+	function t(i) {
+		if(array[i].nodeType==Node.TEXT_NODE && array[i].nodeValue.match(/^\s*$/)) {
+			array.splice(i,1);
+		}
+	}
+	t(0);
+	t(array.length-1);
 }
 
 
@@ -332,6 +387,9 @@ function urlReduce(url) {
 function urlStripLast(url) {
 	return url.replace(/(\/|^)[^\/]*$/, "$1");
 }
+function urlStripHash(url) {
+	return url.replace(/#.*/, "");
+}
 
 
 
@@ -343,9 +401,28 @@ var documents = (function () {
 	return {
 		get: function (url) {
 			if (!cache[url]) {
-				cache[url] = makeCustomCom(loadXMLNow(ROOTDIR + url), url);
+				var sharp = url.lastIndexOf("#");
+				if (sharp === -1) {
+					cache[url] = makeCustomCom(loadXMLNow(ROOTDIR + url), url);
+				} else {
+					var realurl = url.substring(0, sharp);
+					var name = url.substring(sharp + 1);
+					var xml = loadXMLNow(ROOTDIR + url);
+					var funcxml = xpath("f:function[@name='" + name + "']", xml)[0];
+					cache[url] = makeCustomCom(funcxml, url);
+				}
+				
 			}
 			return cache[url];
 		}
 	};
 })();
+
+
+/*
+use getFromContext in processThunk
+add a way to import utility xsl templates
+
+put in ui bindings
+including an onload binding (to initialize variables/structures)
+*/

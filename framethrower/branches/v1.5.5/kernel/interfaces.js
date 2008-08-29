@@ -4,7 +4,7 @@ var interfaceInstantiators = {
 		return {
 			actions: {
 				set: function (o) {
-					typeCheck(a, o);
+					if (o !== undefined) typeCheck(a, o);
 					cache = o;
 				}
 			},

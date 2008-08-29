@@ -111,6 +111,16 @@ function insertAfter (parent, newnode, insertafter) {
 	}
 }
 
+function parseXML(s) {
+	var firstTag = s.indexOf(">");
+	var nsString = "";
+	forEach(xmlns, function (ns, prefix) {
+		nsString += ' xmlns:' + prefix + '="' + ns + '"';
+	});
+	s = s.substring(0, firstTag) + nsString + s.substring(firstTag);
+	var parser = new DOMParser();
+	return parser.parseFromString(s, "text/xml").firstChild;
+}
 
 
 

@@ -10,10 +10,10 @@
 	</f:derived>
 	
 	<xsl:template>
-		<html:div>
-			<xsl:value-of select="$content" />
+		<html:span>
+			<xsl:copy-of select="$content" />
 			<xsl:text> </xsl:text>
 			<html:i>(id: <xsl:value-of select="$focus" />)</html:i>
-		</html:div>
+		</html:span>
 	</xsl:template>
 </f:function>

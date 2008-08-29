@@ -13,6 +13,10 @@
 		<get what="childObjects" />
 		<filtertype type="kernel.individual" />
 	</f:derived>
+	<f:derived name="infonChildren" from="focus">
+		<get what="childObjects" />
+		<filtertype type="kernel.infon" />
+	</f:derived>
 	
 	
 	<xsl:template>
@@ -23,27 +27,35 @@
 					<f:with-param name="focus" value="{$focus}" />
 				</f:thunk>
 			</html:b>
-			
-			<xsl:call-template name="test" />
-			
-		</html:div>
-	</xsl:template>
-	
-	<xsl:template name="test">
-		<html:div style="margin-left:20px;">
-			<xsl:for-each select="$individualChildren">
-				<f:thunk>
-					<f:function url="printcontent.xml" />
-					<f:with-param name="focus" value="{.}" />
-				</f:thunk>
-			</xsl:for-each>
-			<xsl:for-each select="$situationChildren">
-				<f:thunk>
-					<f:function url="printsituation.xml" />
-					<f:with-param name="focus" value="{.}" />
-				</f:thunk>
-			</xsl:for-each>
-			
+			<html:div style="margin-left:20px;">
+				<xsl:for-each select="$individualChildren">
+					<html:div>
+						<f:thunk>
+							<f:function url="printcontent.xml" />
+							<f:with-param name="focus" value="{.}" />
+						</f:thunk>
+					</html:div>
+				</xsl:for-each>
+				
+				<xsl:for-each select="$infonChildren">
+					<html:div>
+						<f:thunk>
+							<f:function url="printinfon.xml" />
+							<f:with-param name="focus" value="{.}" />
+						</f:thunk>
+					</html:div>
+				</xsl:for-each>
+				
+				<xsl:for-each select="$situationChildren">
+					<html:div>
+						<f:thunk>
+							<f:function url="printsituation.xml" />
+							<f:with-param name="focus" value="{.}" />
+						</f:thunk>
+					</html:div>
+				</xsl:for-each>
+				
+			</html:div>
 		</html:div>
 	</xsl:template>
 </f:function>

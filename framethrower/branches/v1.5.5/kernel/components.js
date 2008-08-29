@@ -110,7 +110,13 @@ startCaps.set = memoize(function () {
 
 startCaps.unit = memoize(function (o) {
 	var controller = {};
-	var sc = makeSimpleStartCap(interfaces.unit(o.getType()), controller);
+	var sc;
+	if (o.getType) {
+		sc = makeSimpleStartCap(interfaces.unit(o.getType()), controller);
+	} else {
+		sc = makeSimpleStartCap(interfaces.unit(basic.string), controller);
+	}
+	
 	controller.set(o);
 	return sc;
 });
@@ -324,9 +330,9 @@ components.filterC = function (liftInterface, inputType, predC, outputType) {
 };
 
 
-components.collapse = memoize(function (intf1, intf2, type) {
+components.collapse = memoize(function (intf1, intf2, typeArgs) {
 	if (intf1 === interfaces.unit && intf2 === interfaces.unit) {
-		return makeSimpleComponent(intf1(intf2(type)), interfaces.unit(type), function (myOut, ambient) {
+		return makeSimpleComponent(intf1(intf2.apply(null, typeArgs)), interfaces.unit.apply(null, typeArgs), function (myOut, ambient) {
 			var ec;
 			return {
 				set: function (embeddedUnit) {
@@ -344,7 +350,7 @@ components.collapse = memoize(function (intf1, intf2, type) {
 			};
 		});
 	} else if (intf1 === interfaces.unit && intf2 === interfaces.set) {
-		return makeSimpleComponent(intf1(intf2(type)), interfaces.set(type), function (myOut, ambient) {
+		return makeSimpleComponent(intf1(intf2.apply(null, typeArgs)), interfaces.set.apply(null, typeArgs), function (myOut, ambient) {
 			var ec;
 			var setCache = makeObjectHash();
 			return {
@@ -370,8 +376,34 @@ components.collapse = memoize(function (intf1, intf2, type) {
 				}
 			};
 		});
+	} else if (intf1 === interfaces.unit && intf2 === interfaces.assoc) {
+		return makeSimpleComponent(intf1(intf2.apply(null, typeArgs)), interfaces.assoc.apply(null, typeArgs), function (myOut, ambient) {
+			var ec;
+			var assocCache = makeObjectHash();
+			return {
+				set: function (embeddedAssoc) {
+					if (ec) {
+						assocCache.forEach(function (v, k) {
+							myOut.remove(k);
+						});
+						assocCache = makeObjectHash();
+						ec.deactivate();
+					}
+					ec = makeSimpleEndCap(ambient, {
+						set: function (k, v) {
+							assocCache.set(k, v);
+							myOut.set(k, v);
+						},
+						remove: function (k) {
+							assocCache.remove(k);
+							myOut.remove(k);
+						}
+					}, embeddedAssoc);
+				}
+			};
+		});
 	} else if (intf1 === interfaces.set && intf2 === interfaces.unit) {
-		return makeSimpleComponent(intf1(intf2(type)), interfaces.set(type), function (myOut, ambient) {
+		return makeSimpleComponent(intf1(intf2.apply(null, typeArgs)), interfaces.set.apply(null, typeArgs), function (myOut, ambient) {
 			var cr = makeCrossReference();
 			var inputs = makeObjectHash();
 			return {
@@ -400,7 +432,7 @@ components.collapse = memoize(function (intf1, intf2, type) {
 			};
 		});
 	} else if (intf1 === interfaces.set && intf2 === interfaces.set) {
-		return makeSimpleComponent(intf1(intf2(type)), interfaces.set(type), function (myOut, ambient) {
+		return makeSimpleComponent(intf1(intf2.apply(null, typeArgs)), interfaces.set.apply(null, typeArgs), function (myOut, ambient) {
 			var cr = makeCrossReference();
 			var inputs = makeObjectHash();
 			return {
@@ -438,4 +470,46 @@ components.set.filterType = memoize(function (inputType, filterType) {
 	return components.filter(interfaces.set, inputType, function (o) {
 		return filterType.match(o.getType());
 	}, filterType);
+});
+
+
+components.assoc = {};
+
+components.assoc.getKey = memoize(function (keyType, valueType) {
+	return makeGenericComponent({
+			input: interfaces.assoc(keyType, valueType),
+			key: interfaces.unit(keyType)
+		}, {output: interfaces.unit(valueType)},
+		function (myOut, ambient) {
+			var key;
+			var input = makeObjectHash();
+			var cache;
+			function update() {
+				if (key) {
+					var out = input.get(key);
+					if (cache !== out) {
+						cache = out;
+						myOut.output.set(out);
+					}
+				}
+			}
+			return {
+				input: {
+					set: function (k, v) {
+						input.set(k, v);
+						update();
+					},
+					remove: function (k) {
+						input.remove(k);
+						update();
+					}
+				},
+				key: {
+					set: function (o) {
+						key = o;
+						update();
+					}
+				}
+			};
+		});
 });
