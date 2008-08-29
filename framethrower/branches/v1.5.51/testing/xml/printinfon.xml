@@ -1,0 +1,38 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="focus" />
+	<f:derived name="test" from="focus">
+		<get what="arcs" />
+		<getkey key="'performer'" />
+	</f:derived>
+	
+	<xsl:template>
+		<html:div>
+			performer:
+			<f:thunk>
+				<f:function url="printcontent.xml" />
+				<f:with-param name="focus" value="{$test}" />
+			</f:thunk>
+			<html:div>
+				Should print here:
+				<f:thunk>
+					<f:function name="printrole" />
+					<!--><f:with-param name="infon" value="{$test}" />-->
+				</f:thunk>
+			</html:div>
+		</html:div>
+	</xsl:template>
+	
+	<f:function name="printrole">
+		<!--><f:param name="infon" />-->
+		<!--><f:param name="role" />-->
+		
+		<xsl:template>
+			<html:span>Printing Role Here</html:span>
+		</xsl:template>
+	</f:function>
+</f:function>
