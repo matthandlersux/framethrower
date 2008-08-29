@@ -101,7 +101,7 @@ var startCaps = {};
 
 startCaps.set = memoize(function () {
 	var controller = {};
-	var sc = makeSimpleStartCap(interfaces.set, controller);
+	var sc = makeSimpleStartCap(interfaces.set(arguments[0].getType()), controller);
 	forEach(arguments, function (arg) {
 		controller.add(arg);
 	});
