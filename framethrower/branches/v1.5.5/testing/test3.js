@@ -15,7 +15,6 @@ jb.control.content.set("James Bond");
 var performs = actions.makeRelation(rw);
 performs.control.content.set(parseXML('<pseudo><role role="performer" /> performs <role role="performee" /></pseudo>'));
 
-
 var tmov = actions.makeSituation(rw);
 tmov.control.content.set("Titanic");
 
@@ -23,7 +22,6 @@ var rose = actions.makeIndividual(tmov);
 rose.control.content.set(parseXML("<html:i>Rose</html:i>"));
 
 //var inftest = actions.makeInfon(rw, performs, {performer: sc, performee: jb});
-//var inftest = actions.makeInfon(rw, performs, {});
 
 // some tests
 

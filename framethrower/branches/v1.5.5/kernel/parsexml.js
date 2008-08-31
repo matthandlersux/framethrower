@@ -1,5 +1,9 @@
 
 
+var typeZero = memoize(function (type) {
+	return makeSimpleStartCap(type, {});
+});
+
 
 var applyGet = memoize(function (input, what) {
 	var t = input.getType();
@@ -14,6 +18,8 @@ var applyGet = memoize(function (input, what) {
 	function getf(x) {
 		if (x && x.get[what]) {
 			return x.get[what].apply(null, []);
+		} else {
+			return typeZero(outType);
 		}
 	}
 	
@@ -45,7 +51,7 @@ function derive(xml, context, focus) {
 	var next;
 	var name = xml.localName;
 	
-	//if (name) console.log("hooking up", name);
+	//if (name) console.log("hooking up", name, xml, focus);
 	
 	if (!name) {
 		
@@ -80,6 +86,7 @@ function derive(xml, context, focus) {
 	if (next) {
 		return derive(next, context, focus);
 	} else {
+		//console.log("derive done", focus.getOutputInterface().getName());
 		return focus;
 	}
 }
@@ -321,7 +328,6 @@ function processThunk(ambient, node, ids, relurl) {
 		url = urlRelPath(relurl, functionURL);
 	} else {
 		url = urlStripHash(relurl) + "#" + funcEl.getAttributeNS("", "name");
-		console.log("using name", url);
 	}
 	
 	var functionCom = documents.get(url);
@@ -352,19 +358,9 @@ function extractFromXML(node) {
 		return els[0];
 	} else {
 		var s = node.firstChild.nodeValue;
-		s = replace(/^\s+|\s+$/g, '');
+		s = s.replace(/^\s+|\s+$/g, '');
 		return s;
 	}
-}
-
-function trim(array) {
-	function t(i) {
-		if(array[i].nodeType==Node.TEXT_NODE && array[i].nodeValue.match(/^\s*$/)) {
-			array.splice(i,1);
-		}
-	}
-	t(0);
-	t(array.length-1);
 }
 
 
@@ -420,7 +416,6 @@ var documents = (function () {
 
 
 /*
-use getFromContext in processThunk
 add a way to import utility xsl templates
 
 put in ui bindings
