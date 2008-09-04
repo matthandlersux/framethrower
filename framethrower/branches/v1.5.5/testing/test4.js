@@ -32,3 +32,6 @@ var inftest = actions.makeInfon(rw, performs, {performer: sc, performee: jb});
 
 var rose = actions.makeIndividual(tmov);
 rose.control.content.set(parseXML("<html:i>Rose</html:i>"));
+
+
+
