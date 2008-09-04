@@ -1,131 +1,121 @@
+var transactions = (function() {
 
-var typeNames = {};
+	// ============================================================================
+	// Basic Actions
+	// ============================================================================
 
-function scaffold(skeleton, topName) {
-	var ret = {};
-	function add(name, o, parent) {
-		var fullName = topName + "." + name;
-		var type = makeType(fullName);
-		typeNames[fullName] = type;
-		
-		type.parent = parent;
-		type.prop = {};
-		
-		type.match = function (instanceType) {
-			var t = instanceType;
-			while (t) {
-				if (type === t) {
-					return true;
-				}
-				t = t.parent;
+	var make = function (type, params, resultName) {
+		return {actionType:'make', type:type, params:params, resultName:resultName};
+	};
+
+	var intAction = function (subjectprefix, subjectsuffix, action, params) {
+		return {actionType:'intAction', subjectprefix:subjectprefix, subjectsuffix:subjectsuffix, action:action, params:params};
+	};
+
+	// ============================================================================
+	// Transactions
+	// ============================================================================
+
+	var makeObjectTransaction = function (type, parentSituation) {
+		var t = [];
+		t.push(make(type, [{parentSituation:parentSituation}], '$newObject'));
+		if(parentSituation){
+			t.push(intAction(parentSituation, 'control.childObjects', 'add', ['$newObject']));
+		}
+		return t;
+	};
+	
+	//TODO: fix pending infon completion in the scaffolding for arc syntax
+	var makeInfonTransaction = function (parentSituation, relation, arcs) {
+		var t = makeObjectTransaction(kernel.infon, parentSituation);
+		t.push(intAction('$newObject', 'control.relation', 'set', [relation]));
+		for (key in arcs) {
+			if (arcs.hasOwnProperty(key)) {
+				t.push(intAction('$newObject', 'control.arcs', 'set', [key, arcs[key]]));
+				t.push(intAction(arcs[key], 'control.involves', 'add', ['$newObject']));
 			}
-			return false;
-		};
-		
-		type.getProp = function (propName) {
-			var t = type;
-			while (t) {
-				if (t.prop[propName]) {
-					return t.prop[propName];
+		}
+		t.push(intAction(relation, 'control.infons', 'add', ['$newObject']));
+		return t;
+	};
+	
+	var modifyContentTransaction = function (object, newContent) {
+		var t = [];
+		t.push(intAction(object, 'control.content', 'set', [newContent]));
+		return t;
+	};
+	
+
+	// ============================================================================
+	// Executing Transactions
+	// ============================================================================
+	
+	var executeTransaction = function (transaction) {
+		var variables = {};
+		forEach(transaction, function(basicAction){
+			if (basicAction.actionType == 'make') {
+				var result = basicAction.type.make.apply(null, basicAction.params);
+				if(basicAction.resultName) {
+					variables[basicAction.resultName] = result;
 				}
-				t = t.parent;
-			}
-			return undefined;
-		};
-		
-		type.make = function (inst) {
-			var instance = makeIded(type);
-			
-			instance.get = {};
-			instance.control = {};
-						
-			function addProperties(t) {
-				forEach(t.prop, function (propType, name) {
-					if (propType.instantiate) {
-						instance.control[name] = {};
-						instance.get[name] = getter(makeSimpleStartCap(propType, instance.control[name]));
-					} else {
-						instance.get[name] = getter(inst[name]);
-					}
+			} else if (basicAction.actionType == 'intAction') {
+				var prefix = basicAction.subjectprefix;
+				if(typeof(prefix) == 'string'){
+					prefix = variables[prefix];
+				}
+				var suffixArray = basicAction.subjectsuffix.split('.');
+				forEach(suffixArray, function(suffixPart){
+					prefix = prefix[suffixPart];
 				});
+				
+				for (var i=0; i<basicAction.params.length; i++) {
+					var param = basicAction.params[i];
+					if(typeof(param) == 'string' && param[0] == '$') {
+						basicAction.params[i] = variables[param];
+					}
+				}
+				prefix[basicAction.action].apply(null, basicAction.params);
 			}
-			
-			var t = type;
-			while (t) {
-				addProperties(t);
-				t = t.parent;
-			}
-			
-			return instance;
-		};
-		ret[name] = type;
-		
-		forEach(o, function (child, childName) {
-			add(childName, child, type);
 		});
-	}
+		return {success:true, variables:variables}; //add more nuanced return values
+	};
 	
-	forEach(skeleton, function (child, childName) {
-		add(childName, child, null);
-	});
 	
-	return ret;
-}
-
-/*
-A scaffold firstly consists of a heirarchical structure (skeleton) that is the object inheritance hierarchy.
-Calling scaffold(skeleton, topName) then creates a type for each entry in the skeleton.
-
-Next, properties (prop.XXX) are defined in terms of their types.
-Each type made by the scaffold has a make(inst) method which creates an instance of that type.
-	The instance has get.XXX for each property,
-		where get.XXX is an output pin if the property's type is an interface
-		get.XXX is a getter function if the property's type is just an ordinary type
-			these are set initially based on the inst object passed into make
-	The instance has control.XXX for each property if the property's type is an interface
-		this is for controlling the get.XXX outputPin
-*/
-
-
-var kernel = scaffold({
-	ob: {
-		situation: {},
-		individual: {},
-		relation: {},
-		infon: {}
-	}
-}, "kernel");
-
-kernel.ob.prop = {
-	parentSituation: interfaces.unit(kernel.situation),
-	content: interfaces.unit(basic.js),
-	involves: interfaces.set(kernel.infon),
-	correspondsIn: interfaces.set(kernel.ob),
-	correspondOut: interfaces.unit(kernel.ob)
-};
-
-kernel.situation.prop = {
-	childObjects: interfaces.set(kernel.ob)
-};
-
-kernel.individual.prop = {
-};
-
-kernel.relation.prop = {
-	infons: interfaces.set(kernel.infon)
-};
-
-kernel.infon.prop = {
-	relation: interfaces.unit(kernel.relation),
-	arcs: interfaces.assoc(basic.string, kernel.ob)
-};
-
-
-
-
-var layout = scaffold({
-	pane: {
-		paneSet: {},
-		viewer: {}
-	}
-}, "layout");
+	// ============================================================================
+	// API Actions (some private, some public)
+	// ============================================================================
+	
+	//private helper functions
+	
+	var makeObject = function (parentSituation, type) {
+		var t = makeObjectTransaction(type, parentSituation);
+		var result = executeTransaction(t);
+		if(result.success){
+			return result.variables['$newObject'];
+		} else {
+			// show the user an error or something
+		}
+	};
+	
+	//public
+	return {
+		makeSituation: function (parentSituation) {
+			return makeObject(parentSituation, kernel.situation);
+		},
+		makeIndividual: function (parentSituation) {
+			return makeObject(parentSituation, kernel.individual);
+		},
+		makeRelation: function (parentSituation) {
+			return makeObject(parentSituation, kernel.relation);
+		},
+		makeInfon: function (parentSituation, relation, arcs) {
+			var t = makeInfonTransaction(parentSituation, relation, arcs);
+			var result = executeTransaction(t);
+			return result.variables['$newObject'];
+		},
+		modifyContent: function (object, newContent) {
+			var t = modifyContentTransaction(object, newContent);
+			executeTransaction(t);
+		}
+	};
+})();

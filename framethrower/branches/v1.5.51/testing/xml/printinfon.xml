@@ -5,34 +5,47 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 
 	<f:param name="focus" />
-	<f:derived name="test" from="focus">
-		<get what="arcs" />
-		<getkey key="'performer'" />
+	<f:derived name="relationContent" from="focus">
+		<get what="relation" />
+		<get what="content" />
 	</f:derived>
 	
 	<xsl:template>
 		<html:div>
-			performer:
-			<f:thunk>
-				<f:function url="printcontent.xml" />
-				<f:with-param name="focus" value="{$test}" />
-			</f:thunk>
-			<html:div>
-				Should print here:
-				<f:thunk>
-					<f:function name="printrole" />
-					<!--><f:with-param name="infon" value="{$test}" />-->
-				</f:thunk>
-			</html:div>
+			<xsl:for-each select="$relationContent/node()">
+				<xsl:choose>
+					<xsl:when test="self::role">
+						<html:span style="color:purple">
+							<f:thunk name="printrole">
+								<f:with-param name="infon" value="{$focus}" />
+								<f:with-param name="role"><xsl:value-of select="@role" /></f:with-param>
+							</f:thunk>
+						</html:span>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="." />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:for-each>
 		</html:div>
 	</xsl:template>
 	
 	<f:function name="printrole">
-		<!--><f:param name="infon" />-->
-		<!--><f:param name="role" />-->
+		<f:param name="infon" />
+		<f:param name="role" />
+		<f:derived name="arg" from="infon">
+			<get what="arcs" />
+			<getkey key="role" />
+		</f:derived>
 		
 		<xsl:template>
-			<html:span>Printing Role Here</html:span>
+			<html:span>
+				<xsl:if test="$arg">
+					<f:thunk url="printcontent.xml">
+						<f:with-param name="focus" value="{$arg}" />
+					</f:thunk>
+				</xsl:if>
+			</html:span>
 		</xsl:template>
 	</f:function>
 </f:function>

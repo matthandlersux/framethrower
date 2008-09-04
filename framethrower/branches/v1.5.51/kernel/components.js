@@ -493,6 +493,7 @@ components.assoc.getKey = memoize(function (keyType, valueType) {
 					}
 				}
 			}
+			myOut.output.set(undefined);
 			return {
 				input: {
 					set: function (k, v) {
