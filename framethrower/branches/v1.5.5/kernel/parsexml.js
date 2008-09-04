@@ -372,10 +372,108 @@ function processAllThunks(ambient, node, ids, relurl) {
 
 
 
+function processPerforms(ambient, node, ids, vars, relurl) {
+	var url = getUrlFromXML(node, relurl);
+	
+	var functionCom = qtDocs.get(url);
+	
+	var paramNodes = xpath("f:with-param", node);
+	var params = {};
+	forEach(paramNodes, function (paramNode) {
+		var value = paramNode.getAttributeNS("", "value-id");
+		if (value) {
+			params[paramNode.getAttributeNS("", "name")] = startCaps.unit(ids[value]);
+		} else {
+			value = paramNode.getAttributeNS("", "value-var");
+			if (value) {
+				params[paramNode.getAttributeNS("", "name")] = startCaps.unit(vars[value]);
+			} else {
+				params[paramNode.getAttributeNS("", "name")] = startCaps.unit(extractFromXML(paramNode));
+			}
+		}
+	});
+	
+	// will be a makeApply once makeCustomCom returns a component.. (this probably won't ever happen..)
+	var out = functionCom(params);
+	
+	// hack... make an end cap to evaluate the transaction, then remove the end cap right away
+	var transaction;
+	var storeResultProc = {
+		set: function (val) {
+			transaction = val;
+		}
+	};
+	
+	var EC = makeSimpleEndCap(ambient, storeResultProc, out);
+	EC.deactivate();
+	
+	//execute transaction
+	var executeTransaction = function (transaction) {
+		console.dirxml(transaction.xml);
+		
+		var newvars = {};
+		var ids = transaction.ids;
+
+		forEach(transaction.xml.childNodes, function(actionNode){
+			var actionName = actionNode.localName;
+			var type = actionNode.getAttributeNS("", "type");
+			if (actionName == 'make') {
+				var result = typeNames[type].make();
+				var resultName = actionNode.getAttributeNS("", "name");
+				if(resultName) {
+					newvars[resultName] = result;
+				}
+			} else if (actionName == 'intact') {
+				var prefix = actionNode.getAttributeNS("", "with-var");
+				if (prefix) { 
+					prefix = newvars[prefix];
+				} else {
+					prefix = actionNode.getAttributeNS("", "with-id");
+					if (prefix) {
+						prefix = ids[prefix];
+					}
+				}
+				var prop = actionNode.getAttributeNS("", "prop");
+				var action = actionNode.getAttributeNS("", "action");
+
+				var params = [];
+				//with-param nodes (put in xpath here?)
+				forEach (actionNode.childNodes, function(paramNode){
+					var value = paramNode.getAttributeNS("", "value-id");
+					if (value) {
+						params.push(ids[value]);
+					} else {
+						value = paramNode.getAttributeNS("", "value-var");
+						if (value) {
+							params.push(newvars[value]);
+						} else {
+							params.push(extractFromXML(paramNode));
+						}
+					}
+				});
+				prefix.control[prop][action].apply(null, params);
+			} else if (actionName == 'perform') {
+				var newvarprefix = actionNode.getAttributeNS("", "prefix");
+				var result = processPerforms(ambient, actionNode, transaction.ids, newvars, relurl);
+				forEach(result.newvars, function(addvar, key){
+					newvars[newvarprefix + "." + key] = addvar;
+				});
+			}
+		});
+		return {success:true, newvars:newvars}; //add more nuanced return values
+	};
+	
+	return executeTransaction(transaction);
+}
 
 
 
-
+function processAllPerforms(ambient, node, ids, vars, relurl) {
+	var performs = xpath(".//f:perform", node);
+	forEach(performs, function (perform) {
+		var answer = processPerforms(ambient, perform, ids, vars, relurl);
+	});
+}
 
 
 

@@ -4,40 +4,39 @@
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns:svg="http://www.w3.org/2000/svg"
 	xmlns:xlink="http://www.w3.org/1999/xlink">
+<head>
+  <title>Test 3</title>
 
-	<head>
-		<title>Test 1</title>
+<script>
+var ROOTDIR = "../";
+var DEBUG = true;
+</script>
 
-		<script>
-		var ROOTDIR = "../";
-		var DEBUG = true;
-		</script>
-
-		<script src="../kernel/util/json2.js"></script>
-		<script src="../kernel/util/util.js"></script>
-		<script src="../kernel/util/xml.js"></script>
+	<script src="../kernel/util/json2.js"></script>
+	<script src="../kernel/util/util.js"></script>
+	<script src="../kernel/util/xml.js"></script>
 	
-		<script src="../kernel/hash.js"></script>
-		<script src="../kernel/types.js"></script>
-		<script src="../kernel/interfaces.js"></script>
-		<script src="../kernel/boxes.js"></script>
-		<script src="../kernel/scaffold.js"></script>
+	<script src="../kernel/hash.js"></script>
+	<script src="../kernel/types.js"></script>
+	<script src="../kernel/interfaces.js"></script>
+	<script src="../kernel/boxes.js"></script>
+	<script src="../kernel/scaffold.js"></script>
 	
-		<script src="../kernel/components.js"></script>
+	<script src="../kernel/components.js"></script>
 	
-		<script src="../kernel/parsexml.js"></script>
+	<script src="../kernel/parsexml.js"></script>
 	
-		<script src="../kernel/actions.js"></script>
-		<script src="../kernel/transactions.js"></script>
-	
-		<link rel="stylesheet" href="../visdebug/visdebug.css" />
-	</head>
+	<script src="../kernel/actions.js"></script>
+</head>
+<body>
 
-	<body id="body" onload="">
-		<div id="html_mainscreen" style="display:none;"></div>
-	</body>
+<div id="html_mainscreen">
+	<f:thunk url="testing/xml/printsituation.xml">
+		<f:with-param name="focus" value="rw" />
+	</f:thunk>
+</div>
 
 
-	<script src="transactiontest.js"></script>
-
+<script src="transactiontest.js"></script>
+</body>
 </html>
