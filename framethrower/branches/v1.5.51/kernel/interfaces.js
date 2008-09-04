@@ -88,6 +88,25 @@ var interfaceInstantiators = {
 				return cache.toObject();
 			}
 		};
+	},
+	xml: function () { //no type for xml for now... we'll assume it's always strings
+		var cache = makeObjectHash();
+		var doc = createDocument();
+		return {
+			action: {
+				setRoot: function (id, value) {
+					var root = doc.createElementNS("", value);
+					doc.appendChild(root);
+					cache.set(id, root);
+				},
+				appendChild: function (appendToId, id, value) {
+					var node = doc.createElementNS("", value);
+					cache.set(id, node);
+					cache.get(appendToId).appendChild(node);
+				}
+				//more to come certainly
+			}
+		}
 	}
 };
 

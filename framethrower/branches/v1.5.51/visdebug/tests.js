@@ -1,3 +1,5 @@
+//this comment is making a test change to subversion
+
 function infonTest(G){
 	var rootId = 'rootId';
 	var s = makeSituation(null, rootId);

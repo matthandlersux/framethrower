@@ -274,7 +274,8 @@ function makeCustomCom(xml) {
 		
 		var transformed = simpleApply(xslCom, combinedContext.output);
 		
-		return tensor("xml", "ids").makeApply({xml: transformed, ids: combinedContext.ids});
+		var result = tensor("xml", "ids").makeApply({xml: transformed, ids: combinedContext.ids});
+		return result;
 	};
 }
 
