@@ -91,6 +91,19 @@ function derive(xml, context, focus) {
 	}
 }
 
+// returns an XML representation of o
+// adds to the ids hash if o has an id
+function getXMLRep(o, ids) {
+	if (!o) {
+		return emptyXPathResult;
+	} else if (o.getId) {
+		var id = o.getId();
+		ids[id] = o;
+		return document.createTextNode(id);
+	} else {
+		return o;
+	}
+}
 
 
 
@@ -99,18 +112,6 @@ var combiner = memoize(function (inputTypes) {
 		//var done = {}; // boolean for each input saying whether done or not
 		var xmlrep = {}; // xml representation for each input
 		var ids = {}; // (id => object) pairs
-		
-		function getxmlrep(o) {
-			if (!o) {
-				return emptyXPathResult;
-			} else if (o.getId) {
-				var id = o.getId();
-				ids[id] = o;
-				return document.createTextNode(id);
-			} else {
-				return o;
-			}
-		}
 		
 		var processor = {};
 		
@@ -123,7 +124,7 @@ var combiner = memoize(function (inputTypes) {
 			if (intf === interfaces.unit) {
 				processor[name] = {
 					set: function (o) {
-						xmlrep[name] = getxmlrep(o);
+						xmlrep[name] = getXMLRep(o, ids);
 						checkDone();
 					}
 				};
@@ -137,7 +138,7 @@ var combiner = memoize(function (inputTypes) {
 					var container = document.createElementNS("", "container");
 					var xr = [];
 					forEach(sorted, function (o, i) {
-						xr[i] = getxmlrep(o);
+						xr[i] = getXMLRep(o, ids);
 						container.appendChild(xr[i]);
 					});
 					if (xr.length === 0) {
@@ -244,46 +245,64 @@ function extractXSLFromCustomXML(xml) {
 }
 
 
-
-
-
-
-function makeCustomCom(xml) {
-	var paramNodes = xpath("f:param", xml);
-	
-	var derivedNodes = xpath("f:derived", xml);
-	
-	var compiled = compileXSL(extractXSLFromCustomXML(xml));
-	
-	return function (inputs) {
-		var context = merge(inputs);
-		
-		forEach(derivedNodes, function (n) {
-			var name = n.getAttributeNS("", "name");
-			context[name] = derive(n, context);
-		});
-		
-		
-		// to be replaced (pre-compiled)
-		var inputTypes = {};
-		forEach(context, function (val, name) {
-			inputTypes[name] = val.getType();
-		});
-		var myCombiner = combiner(inputTypes);
-		
-		var combinedContext = myCombiner.makeApply(context);
-		
-		var xslCom = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (params) {
-			if (!params) return undefined;
-			var res = compiled(blankXML, params);
-			return res;
-		});
-		
-		var transformed = simpleApply(xslCom, combinedContext.output);
-		
-		return tensor("xml", "ids").makeApply({xml: transformed, ids: combinedContext.ids});
-	};
+// for getting the content from a with-param node
+function extractFromXML(node) {
+	var els = xpath("*", node);
+	if (els.length > 0) {
+		return els[0];
+	} else {
+		var s = node.firstChild.nodeValue;
+		s = s.replace(/^\s+|\s+$/g, '');
+		return s;
+	}
 }
+
+// finds either @url, @absurl, or @name and returns an absolute url appropriately
+function getUrlFromXML(node, relurl) {
+	function urlRelPath(start, path) {
+		if (path === ".") {
+			return start;
+		} else {
+			return urlReduce(urlStripLast(start) + path);
+		}
+	}
+	function urlReduce(url) {
+		var index = url.indexOf("/../");
+		if (index === -1) {
+			return url;
+		} else {
+			return urlReduce(urlStripLast(url.substr(0, index)) + url.substr(index + 4));
+		}
+	}
+	function urlStripLast(url) {
+		return url.replace(/(\/|^)[^\/]*$/, "$1");
+	}
+	function urlStripHash(url) {
+		return url.replace(/#.*/, "");
+	}
+	
+	var atAbsurl = node.getAttributeNS("", "absurl");
+	if (atAbsurl) {
+		return atAbsurl;
+	}
+	
+	var atUrl = node.getAttributeNS("", "url");
+	if (atUrl) {
+		return urlRelPath(relurl, atUrl);
+	}
+	
+	var atName = node.getAttributeNS("", "name");
+	if (atName) {
+		return urlStripHash(relurl) + "#" + atName;
+	}
+	
+	throw "No url specified on node";
+}
+
+
+
+
+
 
 
 /*
@@ -320,17 +339,9 @@ function domEndCap(ambient, input, node, relurl) {
 }
 
 function processThunk(ambient, node, ids, relurl) {
-	var funcEl = xpath("f:function", node)[0];
-	var functionURL = funcEl.getAttributeNS("", "url");
+	var url = getUrlFromXML(node, relurl);
 	
-	var url;
-	if (functionURL) {
-		url = urlRelPath(relurl, functionURL);
-	} else {
-		url = urlStripHash(relurl) + "#" + funcEl.getAttributeNS("", "name");
-	}
-	
-	var functionCom = documents.get(url);
+	var functionCom = qtDocs.get(url);
 	
 	var paramNodes = xpath("f:with-param", node);
 	var params = {};
@@ -344,48 +355,27 @@ function processThunk(ambient, node, ids, relurl) {
 		
 	});
 	
-	// will be a makeApply once makeCustomCom returns a component...
+	// will be a makeApply once makeCustomCom returns a component.. (this probably won't ever happen..)
 	var out = functionCom(params);
-	
-	out = out.output;
 	
 	return domEndCap(ambient, out, node, url);
 }
 
-function extractFromXML(node) {
-	var els = xpath("*", node);
-	if (els.length > 0) {
-		return els[0];
-	} else {
-		var s = node.firstChild.nodeValue;
-		s = s.replace(/^\s+|\s+$/g, '');
-		return s;
-	}
+// this is just to get the engine started
+function processAllThunks(ambient, node, ids, relurl) {
+	var thunks = xpath(".//f:thunk", node);
+	forEach(thunks, function (thunk) {
+		processThunk(ambient, thunk, ids, relurl);
+	});
 }
 
 
 
-function urlRelPath(start, path) {
-	if (path === ".") {
-		return start;
-	} else {
-		return urlReduce(urlStripLast(start) + path);
-	}
-}
-function urlReduce(url) {
-	var index = url.indexOf("/../");
-	if (index === -1) {
-		return url;
-	} else {
-		return urlReduce(urlStripLast(url.substr(0, index)) + url.substr(index + 4));
-	}
-}
-function urlStripLast(url) {
-	return url.replace(/(\/|^)[^\/]*$/, "$1");
-}
-function urlStripHash(url) {
-	return url.replace(/#.*/, "");
-}
+
+
+
+
+
 
 
 
@@ -399,20 +389,106 @@ var documents = (function () {
 			if (!cache[url]) {
 				var sharp = url.lastIndexOf("#");
 				if (sharp === -1) {
-					cache[url] = makeCustomCom(loadXMLNow(ROOTDIR + url), url);
+					cache[url] = loadXMLNow(ROOTDIR + url);
 				} else {
 					var realurl = url.substring(0, sharp);
 					var name = url.substring(sharp + 1);
-					var xml = loadXMLNow(ROOTDIR + url);
+					var xml = documents.get(realurl);
 					var funcxml = xpath("f:function[@name='" + name + "']", xml)[0];
-					cache[url] = makeCustomCom(funcxml, url);
+					cache[url] = funcxml;
 				}
 				
+			}
+			return cache[url];
+		},
+		debug: function () {
+			return cache;
+		}
+	};
+})();
+
+
+// qt stands for Query Transform
+var qtDocs = (function () {
+	var cache = {};
+	
+	function makeCustomCom(xml) {
+		var paramNodes = xpath("f:param", xml);
+
+		var derivedNodes = xpath("f:derived", xml);
+
+		var compiled = compileXSL(extractXSLFromCustomXML(xml));
+		
+		// takes in a hash of outputPins
+		return function (inputs) {
+			var context = merge(inputs);
+
+			forEach(derivedNodes, function (n) {
+				var name = n.getAttributeNS("", "name");
+				context[name] = derive(n, context);
+			});
+
+
+			// to be replaced (pre-compiled)
+			var inputTypes = {};
+			forEach(context, function (val, name) {
+				inputTypes[name] = val.getType();
+			});
+			var myCombiner = combiner(inputTypes);
+
+			var combinedContext = myCombiner.makeApply(context);
+
+			var xslCom = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (params) {
+				if (!params) return undefined;
+				var res = compiled(blankXML, params);
+				return res;
+			});
+
+			var transformed = simpleApply(xslCom, combinedContext.output);
+
+			return tensor("xml", "ids").makeApply({xml: transformed, ids: combinedContext.ids}).output;
+		};
+	}
+	
+	return {
+		get: function (url) {
+			if (!cache[url]) {
+				cache[url] = makeCustomCom(documents.get(url), url);
 			}
 			return cache[url];
 		}
 	};
 })();
+
+
+/*
+var transactionDocs = (function () {
+	var cache = {};
+	
+	function makeTransaction(xml, url) {
+		var compiled = compileXSL(extractXSLFromCustomXML(xml));
+		
+		// takes in a hash of objects/strings/nulls
+		return function (inputs) {
+			var ids = {};
+			var params = {};
+			forEach(inputs, function (input, name) {
+				params[name] = getXMLRep(input, ids);
+			});
+			
+			var result = compiled(params);
+		};
+	}
+	
+	return {
+		get: function (url) {
+			if (!cache[url]) {
+				cache[url] = makeTransaction(documents.get(url), url);
+			}
+			return cache[url];
+		}
+	};
+})();*/
 
 
 /*

@@ -30,7 +30,7 @@ var mainAmbient = makeAmbient();
 
 
 
-var custComTest = documents.get("testing/xml/printsituation.xml");
+var custComTest = qtDocs.get("testing/xml/printsituation.xml");
 var custComTestOut = custComTest({focus: startCaps.unit(rw)});
 
 domEndCap(mainAmbient, custComTestOut.output, document.getElementById("html_mainscreen"), "testing/xml/printsituation.xml");

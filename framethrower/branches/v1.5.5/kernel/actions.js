@@ -31,3 +31,43 @@ var actions = (function () {
 	};
 })();
 
+
+
+/*
+
+<f:transaction name="makeObject">
+	<f:param name="type" />
+	<f:param name="parentSituation" />
+	<xsl:template>
+		<make type="{$type}" name="o" />
+		<xsl:if test="$parentSituation">
+			<int with="$o" prop="parentSituation" action="set">
+				<param value="{$parentSituation}" />
+			</int>
+			<int with="{$parentSituation}" prop="childObjects" action="add">
+				<param value="$o" />
+			</int>
+		</xsl:if>
+		<return name="o" />
+	</xsl:template>
+</f:transaction>
+
+<f:transaction name="makeSituation">
+	<f:param name="parentSituation" />
+	<xsl:template>
+		<perform name="makeObject">
+			<
+		<
+
+
+
+Transaction system
+	Syntax for actions
+	Syntax for data types and variables
+		XML rep for sets, lists, etc?
+	Calling other transactions
+		Passing input and output
+
+
+
+*/
