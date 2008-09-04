@@ -1,0 +1,19 @@
+<f:transaction name="makeSituationWithIndividual"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<f:param name="parentSituation" />
+	<xsl:template>
+		<transaction>
+			<f:perform url="testing/xml/makeobject.xml" prefix="sit1">
+				<f:with-param name="type">kernel.situation</f:with-param>
+				<f:with-param name="parentSituation" value-id="{$parentSituation}" />
+			</f:perform>
+			<f:perform url="testing/xml/makeobject.xml">
+				<f:with-param name="type">kernel.individual</f:with-param>
+				<f:with-param name="parentSituation" value-var="sit1.o" />
+			</f:perform>
+		</transaction>
+	</xsl:template>
+</f:transaction>
