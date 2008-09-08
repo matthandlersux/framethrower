@@ -36,16 +36,42 @@ function errorTypeMismatch(type, instanceType) {
 	console.error("Type mismatch", type.getName(), instanceType.getName());
 }
 
+function getType(instance) {
+	if (!instance || instance === true) {
+		return basic.bool;
+	} else if (instance.getType) {
+		return instance.getType();
+	} else if (typeof instance === "string") {
+		return basic.string;
+	} else if (typeof instance === "number") {
+		return basic.number;
+	} else if (instance.nodeType) { // should use a better test here
+		return basic.xml;
+	} else {
+		return basic.js;
+	}
+}
+
+function getSuperType(instances) {
+	var type = getType(instances[0]);
+	forEach(instances, function (instance) {
+		var instanceType = getType(instance);
+		while (!type.match(instanceType)) {
+			if (type.parent) {
+				type = type.parent;
+			} else {
+				type = basic.js;
+			}
+		}
+	});
+	return type;
+}
+
 function typeCheck(type, instance) {
 	if (DEBUG) {
-		if (instance && instance.getType) {
-			if (!type.match(instance.getType())) {
-				console.error("Type mismatch. Expected: " + type.getName() + " got: " + instance.getType().getName());
-			}
-		} else {
-			if (type !== basic.js && type !== basic.bool && type !== basic.string) {
-				console.error("Type mismatch with instance", type.getName(), instance);
-			}
+		var instanceType = getType(instance);
+		if (!type.match(instanceType)) {
+			console.error("Type mismatch. Expected: " + type.getName() + " got: " + instanceType.getName());
 		}
 	}
 }
@@ -54,10 +80,14 @@ function typeCheck(type, instance) {
 
 var basic = {};
 basic.js = makeType("basic.js");
-
 basic.string = makeType("basic.string");
 basic.bool = makeType("basic.bool");
+basic.number = makeType("basic.number");
 basic.xml = makeType("basic.xml");
+
+basic.js.match = function (instanceType) {
+	return instanceType === basic.js || instanceType === basic.string || instanceType === basic.bool || instanceType === basic.number || instanceType === basic.xml;
+};
 
 /*basic.assoc = memoize(function (keyType, valueType) {
 	
@@ -77,3 +107,17 @@ basic.fun = memoize(function () {
 	return type;
 });
 
+basic.alt = memoize(function () {
+	var args = arguments;
+	
+	var type = makeType("basic.alt(" + map(args, function (a) {return a.getName();}).join(", ") + ")");
+	
+	type.match = function (instanceType) {
+		// this needs to be more nuanced
+		return type === instanceType || any(args, function (arg) {
+			return arg.match(instanceType);
+		});
+	};
+	
+	return type;
+});

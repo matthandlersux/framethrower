@@ -3,7 +3,7 @@
 	xmlns:f="http://www.filmsfolded.com/xsl/ui"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-	<f:perform url="testing/xml/makeSituationWithIndividual.xml">
+	<f:perform url="makeSituationWithIndividual.xml">
 		<f:with-param name="parentSituation" value-id="rw" />
 	</f:perform>
 

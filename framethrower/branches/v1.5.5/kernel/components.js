@@ -99,11 +99,25 @@ function simpleCompose() {
 
 var startCaps = {};
 
-startCaps.set = memoize(function () {
+// perhaps startCaps.set and startCaps.assoc should not be memoized, so that they can be garbage collected
+
+startCaps.set = memoize(function (set) {
 	var controller = {};
-	var sc = makeSimpleStartCap(interfaces.set(arguments[0].getType()), controller);
-	forEach(arguments, function (arg) {
+	var type = getSuperType(set);
+	var sc = makeSimpleStartCap(interfaces.set(type), controller);
+	forEach(set, function (arg) {
 		controller.add(arg);
+	});
+	return sc;
+});
+
+startCaps.assoc = memoize(function (pairs) {
+	var controller = {};
+	var keyType = getSuperType(map(pairs, function (pair) {return pair.key;}));
+	var valueType = getSuperType(map(pairs, function (pair) {return pair.value;}));
+	var sc = makeSimpleStartCap(interfaces.assoc(keyType, valueType), controller);
+	forEach(pairs, function (pair) {
+		controller.set(pair.key, pair.value);
 	});
 	return sc;
 });
@@ -111,11 +125,7 @@ startCaps.set = memoize(function () {
 startCaps.unit = memoize(function (o) {
 	var controller = {};
 	var sc;
-	if (o.getType) {
-		sc = makeSimpleStartCap(interfaces.unit(o.getType()), controller);
-	} else {
-		sc = makeSimpleStartCap(interfaces.unit(basic.string), controller);
-	}
+	sc = makeSimpleStartCap(interfaces.unit(getType(o)), controller);
 	
 	controller.set(o);
 	return sc;

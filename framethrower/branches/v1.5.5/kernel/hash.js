@@ -109,6 +109,13 @@ function makeOhash(stringify) {
 		});
 		return ret;
 	};
+	ohash.keysToArray = function () {
+		var ret = [];
+		ohash.forEach(function (val, key) {
+			ret.push(key);
+		});
+		return ret;
+	};
 	ohash.toObject = function () {
 		var ret = {};
 		ohash.forEach(function (value, key) {

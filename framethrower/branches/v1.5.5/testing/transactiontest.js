@@ -29,7 +29,7 @@ var transPerforms = loadXMLNow(ROOTDIR + 'testing/xml/toplevelperforms.xml');
 
 console.dirxml(transPerforms);
 
-processAllPerforms(mainAmbient, transPerforms, {rw:rw}, {}, "");
+processAllPerforms(mainAmbient, transPerforms, {rw:rw}, {}, "testing/xml/toplevelperforms.xml");
 
 
 

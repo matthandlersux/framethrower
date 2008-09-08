@@ -117,7 +117,7 @@ kernel.relation.prop = {
 
 kernel.infon.prop = {
 	relation: interfaces.unit(kernel.relation),
-	arcs: interfaces.assoc(basic.string, kernel.ob)
+	arcs: interfaces.assoc(basic.string, basic.alt(kernel.ob, basic.number, basic.string))
 };
 
 

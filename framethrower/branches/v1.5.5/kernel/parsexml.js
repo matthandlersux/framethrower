@@ -245,6 +245,8 @@ function extractXSLFromCustomXML(xml) {
 }
 
 
+
+// =================================== move to pinToXML
 // for getting the content from a with-param node
 function extractFromXML(node) {
 	var els = xpath("*", node);
@@ -255,6 +257,10 @@ function extractFromXML(node) {
 		s = s.replace(/^\s+|\s+$/g, '');
 		return s;
 	}
+}
+
+function extractFromParam(node, ids, vars) {
+	
 }
 
 // finds either @url, @absurl, or @name and returns an absolute url appropriately
@@ -453,8 +459,9 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 				});
 				prefix.control[prop][action].apply(null, params);
 			} else if (actionName == 'perform') {
+				console.log("doing perform", url);
 				var newvarprefix = actionNode.getAttributeNS("", "prefix");
-				var result = processPerforms(ambient, actionNode, transaction.ids, newvars, relurl);
+				var result = processPerforms(ambient, actionNode, transaction.ids, newvars, url);
 				forEach(result.newvars, function(addvar, key){
 					newvars[newvarprefix + "." + key] = addvar;
 				});
@@ -559,34 +566,6 @@ var qtDocs = (function () {
 })();
 
 
-/*
-var transactionDocs = (function () {
-	var cache = {};
-	
-	function makeTransaction(xml, url) {
-		var compiled = compileXSL(extractXSLFromCustomXML(xml));
-		
-		// takes in a hash of objects/strings/nulls
-		return function (inputs) {
-			var ids = {};
-			var params = {};
-			forEach(inputs, function (input, name) {
-				params[name] = getXMLRep(input, ids);
-			});
-			
-			var result = compiled(params);
-		};
-	}
-	
-	return {
-		get: function (url) {
-			if (!cache[url]) {
-				cache[url] = makeTransaction(documents.get(url), url);
-			}
-			return cache[url];
-		}
-	};
-})();*/
 
 
 /*

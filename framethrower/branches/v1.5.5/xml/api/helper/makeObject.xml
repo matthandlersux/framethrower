@@ -1,0 +1,20 @@
+<f:transaction
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<f:param name="type" />
+	<f:param name="parentSituation" />
+	<xsl:template>
+		<transaction>
+			<make type="{$type}" name="o" />
+			<xsl:if test="$parentSituation">
+				<intact with-var="o" prop="parentSituation" action="set">
+					<with-param value-id="{$parentSituation}" />
+				</intact>
+				<intact with-id="{$parentSituation}" prop="childObjects" action="add">
+					<with-param value-var="o" />
+				</intact>
+			</xsl:if>
+		</transaction>
+	</xsl:template>
+</f:transaction>
