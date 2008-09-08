@@ -21,7 +21,7 @@ function convertToXML(o) {
 	}
 }
 
-function convertFromXML(xml) {
+function convertFromXML(xml, ids, vars) {
 	var name = xml.localName;
 	var namespace = xml.namespaceURI;
 	if (name === "ob" && namespace === xmlns["f"]) {
@@ -162,14 +162,16 @@ function convertXMLToPin(node, ids, vars) {
 		var name = xml.localName;
 		var namespace = xml.namespaceURI;
 		if (name === "set" && namespace === xmlns["f"]) {
-			return startCaps.set(map(xpath("*", xml), convertFromXML));
+			return startCaps.set(map(xpath("*", xml), function (xml) {
+				return convertFromXML(xml, ids, vars);
+			}));
 		} else if (name === "assoc" && namespace === xmlns["f"]) {
 			pairs = map(xpath("f:pair", xml), function (pair) {
-				return {key: convertFromXML(xpath("f:key/*", pair)[0]), value: convertFromXML(xpath("f:value/*", pair)[0])};
+				return {key: convertFromXML(xpath("f:key/*", pair)[0], ids, vars), value: convertFromXML(xpath("f:value/*", pair)[0], ids, vars)};
 			});
 			return startCaps.assoc(pairs);
 		} else {
-			return startCaps.unit(convertFromXML(xml));
+			return startCaps.unit(convertFromXML(xml, ids, vars));
 		}
 	}
 	

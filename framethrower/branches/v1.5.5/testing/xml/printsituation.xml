@@ -23,30 +23,30 @@
 		<html:div>
 			<html:b>
 				<f:thunk url="printcontent.xml">
-					<f:with-param name="focus" value-id="{$focus}" />
+					<f:with-param name="focus" value-id="{$focus/@id}" />
 				</f:thunk>
 			</html:b>
 			<html:div style="margin-left:20px;">
-				<xsl:for-each select="$individualChildren">
+				<xsl:for-each select="$individualChildren/*">
 					<html:div>
 						<f:thunk url="printcontent.xml">
-							<f:with-param name="focus" value-id="{.}" />
+							<f:with-param name="focus" value-id="{./@id}" />
 						</f:thunk>
 					</html:div>
 				</xsl:for-each>
 				
-				<xsl:for-each select="$infonChildren">
+				<xsl:for-each select="$infonChildren/*">
 					<html:div>
 						<f:thunk url="printinfon.xml">
-							<f:with-param name="focus" value-id="{.}" />
+							<f:with-param name="focus" value-id="{./@id}" />
 						</f:thunk>
 					</html:div>
 				</xsl:for-each>
 				
-				<xsl:for-each select="$situationChildren">
+				<xsl:for-each select="$situationChildren/*">
 					<html:div>
 						<f:thunk url="printsituation.xml">
-							<f:with-param name="focus" value-id="{.}" />
+							<f:with-param name="focus" value-id="{./@id}" />
 						</f:thunk>
 					</html:div>
 				</xsl:for-each>

@@ -13,6 +13,9 @@ var applyGet = memoize(function (input, what) {
 	
 	
 	var inType = intfargs[0];
+	if (!inType.getProp) {
+		console.warn("inType doesn't have a prop", inType.getName(), input);
+	}
 	var outType = inType.getProp(what);
 
 	function getf(x) {
@@ -250,23 +253,6 @@ function extractXSLFromCustomXML(xml) {
 
 
 
-// =================================== move to pinToXML
-// for getting the content from a with-param node
-function extractFromXML(node) {
-	var els = xpath("*", node);
-	if (els.length > 0) {
-		return els[0];
-	} else {
-		var s = node.firstChild.nodeValue;
-		s = s.replace(/^\s+|\s+$/g, '');
-		return s;
-	}
-}
-
-function extractFromParam(node, ids, vars) {
-	
-}
-
 // finds either @url, @absurl, or @name and returns an absolute url appropriately
 function getUrlFromXML(node, relurl) {
 	function urlRelPath(start, path) {
@@ -326,6 +312,10 @@ function domEndCap(ambient, input, node, relurl) {
 			input: {
 				set: function (o) {
 					if (o.xml && o.ids) {
+						//console.log("re/printing DOM XML");
+						//console.dirxml(o.xml);
+						//console.dir(o.ids);
+						
 						// This whole thing needs to be optimized, specifically it should use a more nuanced replace xml function so as not to reevaluate thunks
 
 						var c = o.xml.cloneNode(true);
@@ -349,6 +339,10 @@ function domEndCap(ambient, input, node, relurl) {
 }
 
 function processThunk(ambient, node, ids, relurl) {
+	//console.log("processing thunk");
+	//console.dirxml(node);
+	//console.dir(ids);
+	
 	var url = getUrlFromXML(node, relurl);
 	
 	var functionCom = qtDocs.get(url);
@@ -501,6 +495,57 @@ var documents = (function () {
 })();
 
 
+// takes in context as a hash of name:outputPin
+// runs convertPinToXML on each outputPin,
+// returns an object {xml: interfaces.unit(basic.js), ids: interfaces.unit(basic.js)}
+// which is the combined result of the convertPinToXML's
+function combineContext(context) {
+	var convertedContext = {};
+	forEach(context, function (pin, name) {
+		convertedContext[name] = convertPinToXML(pin);
+	});
+	
+	var box = makeBox({output: interfaces.unit(basic.js), ids: interfaces.unit(basic.js)}, function (myOut, ambient) {
+		var xml = {};
+		var ids = {};
+		function update() {
+			if (all(context, function (pin, name) {
+				return xml[name];
+			})) {
+				
+				var mergedIds = {};
+				forEach(ids, function (someIds) {
+					mergedIds = merge(mergedIds, someIds);
+				});
+				myOut.ids.set(mergedIds);
+				
+				myOut.output.set(xml);
+			}
+		}
+		update();
+		
+		var processor = {};
+		
+		forEach(convertedContext, function (pin, name) {
+			processor[name] = {
+				set: function (o) {
+					xml[name] = o.xml;
+					ids[name] = o.ids;
+					update();
+				}
+			};
+		});
+		
+		return processor;
+	}, convertedContext);
+	
+	debugBox = box;
+	return box.outputPins;
+}
+
+var debugBox;
+
+
 // qt stands for Query Transform
 var qtDocs = (function () {
 	var cache = {};
@@ -523,13 +568,15 @@ var qtDocs = (function () {
 
 
 			// to be replaced (pre-compiled)
-			var inputTypes = {};
+			/*var inputTypes = {};
 			forEach(context, function (val, name) {
 				inputTypes[name] = val.getType();
 			});
 			var myCombiner = combiner(inputTypes);
 
-			var combinedContext = myCombiner.makeApply(context);
+			var combinedContext = myCombiner.makeApply(context);*/
+			
+			var combinedContext = combineContext(context);
 
 			var xslCom = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (params) {
 				if (!params) return undefined;

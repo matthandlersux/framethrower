@@ -11,9 +11,17 @@
 	
 	<xsl:template>
 		<html:span>
-			<xsl:copy-of select="$content" />
+			<xsl:choose>
+				<xsl:when test="$content/self::f:string">
+					<xsl:value-of select="$content/@value" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:copy-of select="$content" />
+				</xsl:otherwise>
+			</xsl:choose>
+			
 			<xsl:text> </xsl:text>
-			<html:i>(id: <xsl:value-of select="$focus" />)</html:i>
+			<html:i>(id: <xsl:value-of select="$focus/@id" />)</html:i>
 		</html:span>
 	</xsl:template>
 </f:function>

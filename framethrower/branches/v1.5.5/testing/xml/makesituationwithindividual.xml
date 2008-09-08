@@ -8,7 +8,7 @@
 		<transaction>
 			<f:perform url="makeobject.xml" prefix="sit1">
 				<f:with-param name="type"><f:string value="kernel.situation" /></f:with-param>
-				<f:with-param name="parentSituation" value-id="{$parentSituation}" />
+				<f:with-param name="parentSituation" value-id="{$parentSituation/@id}" />
 			</f:perform>
 			<f:perform url="makeobject.xml">
 				<f:with-param name="type"><f:string value="kernel.individual" /></f:with-param>

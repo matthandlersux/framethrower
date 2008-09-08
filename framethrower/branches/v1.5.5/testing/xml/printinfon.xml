@@ -17,7 +17,7 @@
 					<xsl:when test="self::role">
 						<html:span style="color:purple">
 							<f:thunk name="printrole">
-								<f:with-param name="infon" value-id="{$focus}" />
+								<f:with-param name="infon" value-id="{$focus/@id}" />
 								<f:with-param name="role"><f:string value="{@role}" /></f:with-param>
 							</f:thunk>
 						</html:span>
@@ -42,7 +42,7 @@
 			<html:span>
 				<xsl:if test="$arg">
 					<f:thunk url="printcontent.xml">
-						<f:with-param name="focus" value-id="{$arg}" />
+						<f:with-param name="focus" value-id="{$arg/@id}" />
 					</f:thunk>
 				</xsl:if>
 			</html:span>
