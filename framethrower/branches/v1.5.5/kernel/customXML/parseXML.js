@@ -176,6 +176,10 @@ var combiner = memoize(function (inputTypes) {
 	});
 });
 
+
+
+// takes arguments of names and returns a component that takes:
+// outputPins of type interfaces.unit(basic.js) and returns an outputPin with all of them together in one object
 var tensor = memoize(function () { // arguments
 	var inputInterfaces = {};
 	forEach(arguments, function (name) {
@@ -352,13 +356,7 @@ function processThunk(ambient, node, ids, relurl) {
 	var paramNodes = xpath("f:with-param", node);
 	var params = {};
 	forEach(paramNodes, function (paramNode) {
-		var value = paramNode.getAttributeNS("", "value");
-		if (value) {
-			params[paramNode.getAttributeNS("", "name")] = startCaps.unit(ids[value]);
-		} else {
-			params[paramNode.getAttributeNS("", "name")] = startCaps.unit(extractFromXML(paramNode));
-		}
-		
+		params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, ids, {});
 	});
 	
 	// will be a makeApply once makeCustomCom returns a component.. (this probably won't ever happen..)
@@ -386,17 +384,7 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 	var paramNodes = xpath("f:with-param", node);
 	var params = {};
 	forEach(paramNodes, function (paramNode) {
-		var value = paramNode.getAttributeNS("", "value-id");
-		if (value) {
-			params[paramNode.getAttributeNS("", "name")] = startCaps.unit(ids[value]);
-		} else {
-			value = paramNode.getAttributeNS("", "value-var");
-			if (value) {
-				params[paramNode.getAttributeNS("", "name")] = startCaps.unit(vars[value]);
-			} else {
-				params[paramNode.getAttributeNS("", "name")] = startCaps.unit(extractFromXML(paramNode));
-			}
-		}
+		params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, ids, vars);
 	});
 	
 	// will be a makeApply once makeCustomCom returns a component.. (this probably won't ever happen..)
@@ -453,7 +441,7 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 						if (value) {
 							params.push(newvars[value]);
 						} else {
-							params.push(extractFromXML(paramNode));
+							params.push(convertFromXML(paramNode));
 						}
 					}
 				});

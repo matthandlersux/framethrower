@@ -21,6 +21,29 @@ function convertToXML(o) {
 	}
 }
 
+function convertFromXML(xml) {
+	var name = xml.localName;
+	var namespace = xml.namespaceURI;
+	if (name === "ob" && namespace === xmlns["f"]) {
+		var valueId = xml.getAttributeNS("", "id");
+		if (valueId) {
+			return ids[valueId];
+		}
+		var valueVar = xml.getAttributeNS("", "var");
+		if (valueVar) {
+			return vars[valueVar];
+		}
+	} else if (name === "string" && namespace === xmlns["f"]) {
+		return xml.getAttributeNS("", "value");
+	} else if (name === "number" && namespace === xmlns["f"]) {
+		return +xml.getAttributeNS("", "value");
+	} else {
+		return xml;
+	}
+}
+
+
+
 function makeSimpleBox(outputInterface, instantiateProcessor, input) {
 	var box = makeBox({output: outputInterface}, function (myOut, ambient) {
 		return {
@@ -133,46 +156,26 @@ function convertXMLToPin(node, ids, vars) {
 		return startCaps.unit(vars[valueVar]);
 	}
 	
-	function getFromXML(xml) {
-		var name = xml.localName;
-		var namespace = xml.namespaceURI;
-		if (name === "ob" && namespace === xmlns["f"]) {
-			var valueId = xml.getAttributeNS("", "id");
-			if (valueId) {
-				return ids[valueId];
-			}
-			var valueVar = xml.getAttributeNS("", "var");
-			if (valueVar) {
-				return vars[valueVar];
-			}
-		} else if (name === "string" && namespace === xmlns["f"]) {
-			return xml.getAttributeNS("", "value");
-		} else if (name === "number" && namespace === xmlns["f"]) {
-			return +xml.getAttributeNS("", "value");
-		} else {
-			return xml;
-		}
-	}
-	
 	var els = xpath("*[1]", node);
 	if (els.length > 0) {
 		var xml = els[0];
 		var name = xml.localName;
 		var namespace = xml.namespaceURI;
-		console.log("trying", xml, name, namespace);
 		if (name === "set" && namespace === xmlns["f"]) {
-			return startCaps.set(map(xpath("*", xml), getFromXML));
+			return startCaps.set(map(xpath("*", xml), convertFromXML));
 		} else if (name === "assoc" && namespace === xmlns["f"]) {
 			pairs = map(xpath("f:pair", xml), function (pair) {
-				return {key: getFromXML(xpath("f:key/*", pair)[0]), value: getFromXML(xpath("f:value/*", pair)[0])};
+				return {key: convertFromXML(xpath("f:key/*", pair)[0]), value: convertFromXML(xpath("f:value/*", pair)[0])};
 			});
 			return startCaps.assoc(pairs);
 		} else {
-			return startCaps.unit(getFromXML(xml));
+			return startCaps.unit(convertFromXML(xml));
 		}
 	}
 	
 	// should probably get rid of this one... if all else fails make it a string
+	
+	console.warn("Got too far in convertXMLToPin", node);
 	
 	var s = node.firstChild.nodeValue;
 	s = s.replace(/^\s+|\s+$/g, '');

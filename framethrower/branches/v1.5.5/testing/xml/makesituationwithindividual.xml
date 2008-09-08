@@ -7,11 +7,11 @@
 	<xsl:template>
 		<transaction>
 			<f:perform url="makeobject.xml" prefix="sit1">
-				<f:with-param name="type">kernel.situation</f:with-param>
+				<f:with-param name="type"><f:string value="kernel.situation" /></f:with-param>
 				<f:with-param name="parentSituation" value-id="{$parentSituation}" />
 			</f:perform>
 			<f:perform url="makeobject.xml">
-				<f:with-param name="type">kernel.individual</f:with-param>
+				<f:with-param name="type"><f:string value="kernel.individual" /></f:with-param>
 				<f:with-param name="parentSituation" value-var="sit1.o" />
 			</f:perform>
 		</transaction>
