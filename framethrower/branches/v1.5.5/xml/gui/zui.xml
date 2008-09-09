@@ -1,0 +1,30 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="zui" />
+	<f:derived name="focus" from="zui">
+		<get what="focus" />
+	</f:derived>
+	<f:derived name="situationChildren" from="focus">
+		<get what="childObjects" />
+		<filtertype type="kernel.situation" />
+	</f:derived>
+	
+	
+	<xsl:template>
+		<html:div class="zui">
+			<html:div class="zuiTitle">
+				<f:thunk url="printContent.xml">
+					<f:with-param name="focus" value-id="{$focus/@id}" />
+				</f:thunk>
+			</html:div>
+			
+			<xsl:for-each select="$situationChildren/*">
+				
+			</xsl:for-each>
+		</html:div>
+	</xsl:template>
+</f:function>

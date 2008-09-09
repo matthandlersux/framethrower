@@ -119,13 +119,3 @@ kernel.infon.prop = {
 	relation: interfaces.unit(kernel.relation),
 	arcs: interfaces.assoc(basic.string, basic.alt(kernel.ob, basic.number, basic.string))
 };
-
-
-
-
-var layout = scaffold({
-	pane: {
-		paneSet: {},
-		viewer: {}
-	}
-}, "layout");

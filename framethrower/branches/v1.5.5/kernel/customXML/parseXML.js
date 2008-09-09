@@ -255,7 +255,7 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 						if (value) {
 							params.push(newvars[value]);
 						} else {
-							params.push(convertFromXML(paramNode));
+							params.push(convertFromXML(paramNode, ids, newvars));
 						}
 					}
 				});
