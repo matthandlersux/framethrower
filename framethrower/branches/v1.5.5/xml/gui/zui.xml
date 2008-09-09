@@ -22,9 +22,17 @@
 				</f:thunk>
 			</html:div>
 			
-			<xsl:for-each select="$situationChildren/*">
-				
-			</xsl:for-each>
+			<html:div class="zuiChildren">
+				<xsl:for-each select="$situationChildren/*">
+					<xsl:value-of select="@id" />
+				</xsl:for-each>
+			</html:div>
 		</html:div>
 	</xsl:template>
+	
+	<f:function name="printChild">
+		<f:param name="zui" />
+		<f:param name="child" />
+		
+	</f:function>
 </f:function>

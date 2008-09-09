@@ -145,6 +145,17 @@ var convertPinToXML = memoize(function (pin) {
 	}
 });
 
+
+function getTrimmedFirstChild(node) {
+	var els = xpath("*[1]", node);
+	if (els.length > 0) {
+		return els[0];
+	} else {
+		return false;
+	}
+}
+
+
 function convertXMLToPin(node, ids, vars) {
 	var valueId = node.getAttributeNS("", "value-id");
 	if (valueId) {
@@ -156,9 +167,9 @@ function convertXMLToPin(node, ids, vars) {
 		return startCaps.unit(vars[valueVar]);
 	}
 	
-	var els = xpath("*[1]", node);
-	if (els.length > 0) {
-		var xml = els[0];
+	var xml = getTrimmedFirstChild(node);
+	
+	if (xml) {
 		var name = xml.localName;
 		var namespace = xml.namespaceURI;
 		if (name === "set" && namespace === xmlns["f"]) {
