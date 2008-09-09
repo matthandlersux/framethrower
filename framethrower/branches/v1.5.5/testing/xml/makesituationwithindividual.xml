@@ -4,16 +4,15 @@
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 	<f:param name="parentSituation" />
+	
 	<xsl:template>
 		<transaction>
-			<f:perform url="makeobject.xml" prefix="sit1">
-				<f:with-param name="type"><f:string value="kernel.situation" /></f:with-param>
+			<f:perform absurl="xml/api/makeSituation.xml" prefix="sit1">
 				<f:with-param name="parentSituation" value-id="{$parentSituation/@id}" />
 			</f:perform>
-			<f:perform url="makeobject.xml">
-				<f:with-param name="type"><f:string value="kernel.individual" /></f:with-param>
-				<f:with-param name="parentSituation" value-var="sit1.o" />
-			</f:perform>
+			<intact with-var="sit1.obj.o" prop="content" action="set">
+				<f:with-param><f:string value="Test Situation" /></f:with-param>
+			</intact>
 		</transaction>
 	</xsl:template>
 </f:transaction>

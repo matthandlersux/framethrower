@@ -215,10 +215,10 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 	var EC = makeSimpleEndCap(ambient, storeResultProc, out);
 	EC.deactivate();
 	
+	console.dirxml(transaction.xml);
+	
 	//execute transaction
 	var executeTransaction = function (transaction) {
-		console.dirxml(transaction.xml);
-		
 		var newvars = {};
 		var ids = transaction.ids;
 
@@ -246,6 +246,7 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 
 				var params = [];
 				//with-param nodes (put in xpath here?)
+				//change code to accept params like this: <f:string value="kernel.individual" />
 				forEach (actionNode.childNodes, function(paramNode){
 					var value = paramNode.getAttributeNS("", "value-id");
 					if (value) {
@@ -261,7 +262,6 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 				});
 				prefix.control[prop][action].apply(null, params);
 			} else if (actionName == 'perform') {
-				console.log("doing perform", url);
 				var newvarprefix = actionNode.getAttributeNS("", "prefix");
 				var result = processPerforms(ambient, actionNode, transaction.ids, newvars, url);
 				forEach(result.newvars, function(addvar, key){

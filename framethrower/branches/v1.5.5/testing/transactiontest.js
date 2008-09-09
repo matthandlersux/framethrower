@@ -27,7 +27,6 @@ processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {rw: r
 //load a transaction thunk xml
 var transPerforms = loadXMLNow(ROOTDIR + 'testing/xml/toplevelperforms.xml');
 
-console.dirxml(transPerforms);
 
 processAllPerforms(mainAmbient, transPerforms, {rw:rw}, {}, "testing/xml/toplevelperforms.xml");
 
