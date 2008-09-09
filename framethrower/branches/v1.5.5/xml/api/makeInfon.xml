@@ -1,0 +1,35 @@
+<f:transaction
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<f:param name="parentSituation" />
+	<f:param name="relation" />
+	<f:param name="arcs" />
+	<xsl:template>
+		<transaction>
+			<f:perform url="helper/makeobject.xml" prefix="obj">
+				<f:with-param name="type"><f:string value="kernel.infon" /></f:with-param>
+				<f:with-param name="parentSituation" value-id="{$parentSituation/@id}" />
+			</f:perform>
+			<intact with-var="obj.o" prop="content" action="set">
+				<f:with-param><f:string value="Test Infon" /></f:with-param>
+			</intact>
+			<intact with-var="obj.o" prop="relation" action="set">
+				<with-param value-id="{$relation/@id}" />
+			</intact>
+			<intact with-id="{$relation/@id}" prop="infons" action="add">
+				<with-param value-var="obj.o" />
+			</intact>
+			<xsl:for-each select="$arcs/*">
+				<intact with-var="obj.o" prop="arcs" action="set">
+					<with-param><xsl:copy-of select="f:key/*" /></with-param>
+					<with-param><xsl:copy-of select="f:value/*" /></with-param>
+				</intact>
+				<intact with-id="{f:value/f:ob/@id}" prop="involves" action="add">
+					<f:with-param value-var="obj.o" />
+				</intact>
+			</xsl:for-each>
+			<f:return as="o" value="obj.o" />
+		</transaction>
+	</xsl:template>
+</f:transaction>

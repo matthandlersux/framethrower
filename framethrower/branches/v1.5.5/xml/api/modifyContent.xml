@@ -1,0 +1,14 @@
+<f:transaction
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<f:param name="object" />
+	<f:param name="content" />
+	<xsl:template>
+		<transaction>
+			<intact with-id="{$object/@id}" prop="content" action="set">
+				<f:with-param><xsl:copy-of select="$content" /></f:with-param>
+			</intact>
+		</transaction>
+	</xsl:template>
+</f:transaction>

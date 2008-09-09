@@ -1,5 +1,4 @@
 <f:transaction name="transtest"
-	xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:f="http://www.filmsfolded.com/xsl/ui"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
@@ -10,15 +9,56 @@
 			<f:perform absurl="xml/api/makeSituation.xml" prefix="sit1">
 				<f:with-param name="parentSituation" value-id="{$parentSituation/@id}" />
 			</f:perform>
-			<intact with-var="sit1.o" prop="content" action="set">
-				<f:with-param><f:string value="Test Situation" /></f:with-param>
-			</intact>
+			<f:perform absurl="xml/api/modifyContent.xml">
+				<f:with-param name="object" value-var="sit1.o" />
+				<f:with-param name="content"><f:string value="Test Situation" /></f:with-param>
+			</f:perform>
+			
 			<f:perform absurl="xml/api/makeIndividual.xml" prefix="ind1">
 				<f:with-param name="parentSituation" value-var="sit1.o" />
 			</f:perform>
-			<intact with-var="ind1.o" prop="content" action="set">
-				<f:with-param><f:string value="Test Individual" /></f:with-param>
-			</intact>
+			<f:perform absurl="xml/api/modifyContent.xml">
+				<f:with-param name="object" value-var="ind1.o" />
+				<f:with-param name="content"><f:string value="Test Individual" /></f:with-param>
+			</f:perform>
+			
+			<f:perform absurl="xml/api/makeIndividual.xml" prefix="ind2">
+				<f:with-param name="parentSituation" value-var="sit1.o" />
+			</f:perform>
+			<f:perform absurl="xml/api/modifyContent.xml">
+				<f:with-param name="object" value-var="ind2.o" />
+				<f:with-param name="content"><f:string value="Test Individual 2" /></f:with-param>
+			</f:perform>
+			
+			<f:perform absurl="xml/api/makeRelation.xml" prefix="rel1">
+				<f:with-param name="parentSituation" value-var="sit1.o" />
+			</f:perform>			
+			<f:perform absurl="xml/api/modifyContent.xml">
+				<f:with-param name="object" value-var="rel1.o" />
+				<f:with-param name="content">
+					<pseudo><role role="performer" /> performs <role role="performee" /></pseudo>
+				</f:with-param>
+			</f:perform>
+			
+			
+			<f:perform absurl="xml/api/makeInfon.xml" prefix="inf1">
+				<f:with-param name="parentSituation" value-var="sit1.o" />
+				<f:with-param name="relation" value-var="rel1.o" />
+				<f:with-param name="arcs">
+					<f:assoc>
+						<f:pair>
+							<f:key><f:string value="performee" /></f:key>
+							<f:value><f:ob var="ind1.o"/></f:value>
+						</f:pair>
+						<f:pair>
+							<f:key><f:string value="performer" /></f:key>
+							<f:value><f:ob var="ind2.o"/></f:value>
+						</f:pair>
+					</f:assoc>
+				</f:with-param>
+			</f:perform>
+			
+			
 		</transaction>
 	</xsl:template>
 </f:transaction>

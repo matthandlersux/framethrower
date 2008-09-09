@@ -126,6 +126,7 @@ var convertPinToXML = memoize(function (pin) {
 					xml.appendChild(pair);
 					ids = merge(ids, convertedKey.ids, convertedValue.ids);
 				});
+				console.dirxml(xml);
 				myOut.set({xml: xml, ids: ids});
 			}
 			update();
