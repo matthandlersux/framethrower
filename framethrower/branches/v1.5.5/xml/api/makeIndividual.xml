@@ -9,7 +9,7 @@
 				<f:with-param name="type"><f:string value="kernel.individual" /></f:with-param>
 				<f:with-param name="parentSituation" value-id="{$parentSituation/@id}" />
 			</f:perform>
-			<f:return name="o" value="obj.o" />
+			<f:return as="o" value="obj.o" />
 		</transaction>
 	</xsl:template>
 </f:transaction>

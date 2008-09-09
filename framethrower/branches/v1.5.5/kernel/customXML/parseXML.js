@@ -268,13 +268,11 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 				forEach(result.returnVars, function(addvar, key){
 					if(newvarprefix){
 						newvars[newvarprefix + "." + key] = addvar;
-					} else {
-						newvars[key] = addvar;
 					}
 				});
 			} else if (actionName == 'return') {
 				//store variable names to return
-				returnVars[actionNode.getAttributeNS("", "name")] = actionNode.getAttributeNS("", "value");
+				returnVars[actionNode.getAttributeNS("", "as")] = actionNode.getAttributeNS("", "value");
 			}
 		});
 		//take only the returnVars from the newvars
