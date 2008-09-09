@@ -220,6 +220,7 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 	//execute transaction
 	var executeTransaction = function (transaction) {
 		var newvars = {};
+		var returnVars = {};
 		var ids = transaction.ids;
 
 		forEach(transaction.xml.childNodes, function(actionNode){
@@ -233,7 +234,7 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 				}
 			} else if (actionName == 'intact') {
 				var prefix = actionNode.getAttributeNS("", "with-var");
-				if (prefix) { 
+				if (prefix) {
 					prefix = newvars[prefix];
 				} else {
 					prefix = actionNode.getAttributeNS("", "with-id");
@@ -256,7 +257,7 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 						if (value) {
 							params.push(newvars[value]);
 						} else {
-							params.push(convertFromXML(paramNode, ids, newvars));
+							params.push(convertFromXML(getTrimmedFirstChild(paramNode), ids, newvars));
 						}
 					}
 				});
@@ -264,12 +265,23 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 			} else if (actionName == 'perform') {
 				var newvarprefix = actionNode.getAttributeNS("", "prefix");
 				var result = processPerforms(ambient, actionNode, transaction.ids, newvars, url);
-				forEach(result.newvars, function(addvar, key){
-					newvars[newvarprefix + "." + key] = addvar;
+				forEach(result.returnVars, function(addvar, key){
+					if(newvarprefix){
+						newvars[newvarprefix + "." + key] = addvar;
+					} else {
+						newvars[key] = addvar;
+					}
 				});
+			} else if (actionName == 'return') {
+				//store variable names to return
+				returnVars[actionNode.getAttributeNS("", "name")] = actionNode.getAttributeNS("", "value");
 			}
 		});
-		return {success:true, newvars:newvars}; //add more nuanced return values
+		//take only the returnVars from the newvars
+		forEach(returnVars, function(value, name){
+			returnVars[name] = newvars[value];
+		});
+		return {success:true, returnVars:returnVars}; //add more nuanced return values
 	};
 	
 	return executeTransaction(transaction);
