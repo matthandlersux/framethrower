@@ -71,6 +71,14 @@ function derive(xml, context, focus) {
 			return derive(xml.firstChild, context, startCaps.unit(o));
 		});
 		focus = simpleApply(com, focus);
+	} else if (name === "equals") {
+		var input2 = derive(xml.firstChild, context);
+		console.log("doing equals", focus.getType().getName(), input2.getType().getName());
+		var type = getSuperTypeFromTypes(focus.getType().getArguments()[0], input2.getType().getArguments()[0]);
+		console.log(type.getName());
+		var com = components.equals(type);
+		var out = com.makeApply({input1: focus, input2: input2});
+		focus = out.output;
 	} else if (name === "filtertype") {
 		var com = components.set.filterType(focus.getType().getArguments()[0], typeNames[xml.getAttributeNS("", "type")]);
 		focus = simpleApply(com, focus);

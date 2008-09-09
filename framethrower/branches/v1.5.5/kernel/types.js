@@ -67,6 +67,21 @@ function getSuperType(instances) {
 	return type;
 }
 
+// this is just used for equals......
+function getSuperTypeFromTypes() { //arguments
+	var superType = arguments[0];
+	forEach(arguments, function (type) {
+		while (!superType.match(type)) {
+			if (superType.parent) {
+				superType = superType.parent;
+			} else {
+				superType = basic.js;
+			}
+		}
+	});
+	return superType;
+}
+
 function typeCheck(type, instance) {
 	if (DEBUG) {
 		var instanceType = getType(instance);

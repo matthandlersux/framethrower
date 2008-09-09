@@ -335,7 +335,8 @@ function combineContext(context) {
 		convertedContext[name] = convertPinToXML(pin);
 	});
 	
-	var box = makeBox({output: interfaces.unit(basic.js), ids: interfaces.unit(basic.js)}, function (myOut, ambient) {
+	//var box = makeBox({output: interfaces.unit(basic.js), ids: interfaces.unit(basic.js)}, function (myOut, ambient) {
+	var box = makeBox({output: interfaces.unit(basic.js)}, function (myOut, ambient) {
 		var xml = {};
 		var ids = {};
 		function update() {
@@ -347,9 +348,10 @@ function combineContext(context) {
 				forEach(ids, function (someIds) {
 					mergedIds = merge(mergedIds, someIds);
 				});
-				myOut.ids.set(mergedIds);
+				//myOut.ids.set(mergedIds);
 				
-				myOut.output.set(xml);
+				//myOut.output.set(xml);
+				myOut.output.set({xml: xml, ids: mergedIds});
 			}
 		}
 		update();
@@ -370,7 +372,8 @@ function combineContext(context) {
 	}, convertedContext);
 	
 	debugBox = box;
-	return box.outputPins;
+	//return box.outputPins;
+	return box.outputPins.output;
 }
 
 var debugBox;
@@ -398,15 +401,22 @@ var qtDocs = (function () {
 			
 			var combinedContext = combineContext(context);
 
-			var xslCom = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (params) {
+			/*var xslCom = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (params) {
 				if (!params) return undefined;
 				var res = compiled(blankXML, params);
 				return res;
+			});*/
+			var xslCom = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (o) {
+				if (!o) return undefined;
+				var res = compiled(blankXML, o.xml);
+				return {xml: res, ids: o.ids};
 			});
 
-			var transformed = simpleApply(xslCom, combinedContext.output);
+			//var transformed = simpleApply(xslCom, combinedContext.output);
+			var transformed = simpleApply(xslCom, combinedContext);
 
-			return tensor("xml", "ids").makeApply({xml: transformed, ids: combinedContext.ids}).output;
+			//return tensor("xml", "ids").makeApply({xml: transformed, ids: combinedContext.ids}).output;
+			return transformed;
 		};
 	}
 	

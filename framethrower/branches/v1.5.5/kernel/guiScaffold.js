@@ -8,5 +8,5 @@ var layout = scaffold({
 
 layout.zui.prop = {
 	focus: interfaces.unit(kernel.situation),
-	expandedChildren: interfaces.set(kernel.situation)
+	expandedChildren: interfaces.set(layout.zui)
 };

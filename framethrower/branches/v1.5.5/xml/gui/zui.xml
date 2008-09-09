@@ -5,12 +5,14 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 
 	<f:param name="zui" />
-	<f:derived name="focus" from="zui">
-		<get what="focus" />
-	</f:derived>
+	<f:param name="focus" />
 	<f:derived name="situationChildren" from="focus">
 		<get what="childObjects" />
 		<filtertype type="kernel.situation" />
+	</f:derived>
+	<f:derived name="individualChildren" from="focus">
+		<get what="childObjects" />
+		<filtertype type="kernel.individual" />
 	</f:derived>
 	
 	
@@ -18,21 +20,64 @@
 		<html:div class="zui">
 			<html:div class="zuiTitle">
 				<f:thunk url="printContent.xml">
-					<f:with-param name="focus" value-id="{$focus/@id}" />
+					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 				</f:thunk>
+			</html:div>
+			
+			<html:div class="individualChildren">
+				<xsl:for-each select="$individualChildren/*">
+					<html:div>
+						<f:thunk url="printContent.xml">
+							<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+						</f:thunk>
+					</html:div>
+				</xsl:for-each>
+				<html:div style="color:purple">+ Add Entity</html:div>
 			</html:div>
 			
 			<html:div class="zuiChildren">
 				<xsl:for-each select="$situationChildren/*">
-					<xsl:value-of select="@id" />
+					<f:thunk name="printChild">
+						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+						<f:with-param name="child"><xsl:copy-of select="." /></f:with-param>
+					</f:thunk>
 				</xsl:for-each>
+				<html:div style="color:green">+ Add Situation</html:div>
 			</html:div>
+			<html:div style="clear:both" />
 		</html:div>
 	</xsl:template>
 	
 	<f:function name="printChild">
 		<f:param name="zui" />
 		<f:param name="child" />
+		<f:derived name="childZui" from="zui">
+			<get what="expandedChildren" />
+			<filter>
+				<get what="focus" />
+				<equals>
+					<start from="child" />
+				</equals>
+			</filter>
+		</f:derived>
 		
+		<xsl:template>
+			<xsl:variable name="expanded" select="$childZui/*" />
+			<html:div>
+				<xsl:choose>
+					<xsl:when test="$expanded">
+						<f:thunk url="zui.xml">
+							<f:with-param name="zui"><xsl:copy-of select="$expanded" /></f:with-param>
+							<f:with-param name="focus"><xsl:copy-of select="$child" /></f:with-param>
+						</f:thunk>
+					</xsl:when>
+					<xsl:otherwise>
+						<html:div class="zui" expanded="false">
+							
+						</html:div>
+					</xsl:otherwise>
+				</xsl:choose>
+			</html:div>
+		</xsl:template>
 	</f:function>
 </f:function>

@@ -20,11 +20,18 @@ tmov.control.content.set("Titanic");
 
 var inftest = actions.makeInfon(rw, performs, {performer: sc, performee: jb});
 
+var rose = actions.makeIndividual(tmov);
+rose.control.content.set(parseXML("<html:i>Rose</html:i>"));
+
 
 var zui = layout.zui.make();
 zui.control.focus.set(rw);
 
+var zui2 = layout.zui.make();
+zui2.control.focus.set(tmov);
+zui.control.expandedChildren.add(zui2);
+
 
 var mainAmbient = makeAmbient();
 
-processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {zui: zui}, "");
+processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {rw: rw, zui: zui}, "");

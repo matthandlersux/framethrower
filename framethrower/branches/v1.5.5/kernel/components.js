@@ -339,6 +339,31 @@ components.filterC = function (liftInterface, inputType, predC, outputType) {
 	return makeSimpleComponent(liftInterface(inputType), liftInterface(outputType), instProc);
 };
 
+components.equals = memoize(function (type) {
+	return makeGenericComponent({input1: interfaces.unit(type), input2: interfaces.unit(type)}, {output: interfaces.unit(basic.bool)}, function (myOut, ambient) {
+		var input1, input2;
+		function update() {
+			if (input1 !== undefined && input2 !== undefined) {
+				myOut.output.set(input1 === input2);
+			}
+		}
+		return {
+			input1: {
+				set: function (o) {
+					input1 = o;
+					update();
+				}
+			},
+			input2: {
+				set: function (o) {
+					input2 = o;
+					update();
+				}
+			}
+		};
+	});
+});
+
 
 components.collapse = memoize(function (intf1, intf2, typeArgs) {
 	if (intf1 === interfaces.unit && intf2 === interfaces.unit) {

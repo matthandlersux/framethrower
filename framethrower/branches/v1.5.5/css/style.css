@@ -1,0 +1,18 @@
+.zui {
+	border: 1px solid #ccc;
+}
+
+.zuiTitle {
+	font-weight: bold;
+	background-color:#fc6;
+}
+
+.individualChildren {
+	float:left;
+	width:33%;
+}
+
+.zuiChildren {
+	margin-left:33%;
+	width:67%;
+}
