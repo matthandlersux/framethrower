@@ -14,6 +14,16 @@
 				<f:with-param name="content"><f:string value="Test Situation" /></f:with-param>
 			</f:perform>
 			
+			<f:perform absurl="xml/api/makeSituation.xml" prefix="sit2">
+				<f:with-param name="parentSituation" value-id="{$parentSituation/@id}" />
+			</f:perform>
+			<f:perform absurl="xml/api/modifyContent.xml">
+				<f:with-param name="object" value-var="sit2.o" />
+				<f:with-param name="content"><f:string value="Test Situation 2" /></f:with-param>
+			</f:perform>
+				
+			
+			
 			<f:perform absurl="xml/api/makeIndividual.xml" prefix="ind1">
 				<f:with-param name="parentSituation" value-var="sit1.o" />
 			</f:perform>
@@ -58,6 +68,18 @@
 				</f:with-param>
 			</f:perform>
 			
+			
+			<f:perform absurl="xml/api/makeIndividual.xml" prefix="ind3">
+				<f:with-param name="parentSituation" value-var="sit1.o" />
+			</f:perform>
+			<f:perform absurl="xml/api/modifyContent.xml">
+				<f:with-param name="object" value-var="ind3.o" />
+				<f:with-param name="content"><f:string value="Moving Individual" /></f:with-param>
+			</f:perform>
+			<f:perform absurl="xml/api/moveObject.xml">
+				<f:with-param name="object" value-var="ind3.o" />
+				<f:with-param name="destination" value-var="sit2.o" />
+			</f:perform>
 			
 		</transaction>
 	</xsl:template>

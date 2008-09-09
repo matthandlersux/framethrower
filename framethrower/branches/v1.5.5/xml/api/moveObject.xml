@@ -1,0 +1,35 @@
+<f:transaction
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<f:param name="object" />
+	<f:param name="destination" />
+
+	<f:derived name="oldParent" from="object">
+		<get what="parentSituation" />
+	</f:derived>
+
+	<xsl:template>
+		<transaction>
+					
+			
+			<intact with-id="{$object/@id}" prop="parentSituation" action="set">
+				<f:with-param value-id="{$destination/@id}" />
+			</intact>
+			
+			<comment>
+				<xsl:copy-of select="$oldParent" />
+			</comment>
+			
+
+			<intact with-id="{$oldParent/@id}" prop="childObjects" action="remove">
+				<f:with-param value-id="{$object/@id}" />
+			</intact>
+
+			<intact with-id="{$destination/@id}" prop="childObjects" action="add">
+				<f:with-param value-id="{$object/@id}" />
+			</intact>
+			
+		</transaction>
+	</xsl:template>
+</f:transaction>
