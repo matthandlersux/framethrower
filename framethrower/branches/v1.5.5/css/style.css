@@ -4,7 +4,12 @@
 
 .zuiTitle {
 	font-weight: bold;
+}
+.zui[expanded="true"] .zuiTitle {
 	background-color:#fc6;
+}
+.zui[expanded="false"] .zuiTitle {
+	background-color:#9cf;
 }
 
 .individualChildren {

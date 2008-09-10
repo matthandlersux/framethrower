@@ -1,41 +1,4 @@
 
-
-
-// takes arguments of names and returns a component that takes:
-// outputPins of type interfaces.unit(basic.js) and returns an outputPin with all of them together in one object
-var tensor = memoize(function () { // arguments
-	var inputInterfaces = {};
-	forEach(arguments, function (name) {
-		inputInterfaces[name] = interfaces.unit(basic.js);
-	});
-	return makeGenericComponent(inputInterfaces, {output: interfaces.unit(basic.js)}, function (myOut, ambient) {
-		var inputs = {};
-		var done = {};
-		var processor = {};
-		forEach(inputInterfaces, function (intf, name) {
-			processor[name] = {
-				set: function (value) {
-					inputs[name] = value;
-					done[name] = true;
-					checkDone();
-				}
-			};
-		});
-		function checkDone() {
-			if (all(inputInterfaces, function (intf, name) {
-				return done[name];
-			})) {
-				myOut.output.set(inputs);
-			}
-		}
-		return processor;
-	});
-});
-
-
-
-
-
 function appendCopy(parent, child) {
 	var c = child.cloneNode(true);
 	parent.ownerDocument.adoptNode(c);
@@ -249,17 +212,7 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 				//with-param nodes (put in xpath here?)
 				//change code to accept params like this: <f:string value="kernel.individual" />
 				forEach (actionNode.childNodes, function(paramNode){
-					var value = paramNode.getAttributeNS("", "value-id");
-					if (value) {
-						params.push(ids[value]);
-					} else {
-						value = paramNode.getAttributeNS("", "value-var");
-						if (value) {
-							params.push(newvars[value]);
-						} else {
-							params.push(convertFromXML(getTrimmedFirstChild(paramNode), ids, newvars));
-						}
-					}
+					params.push(getObjectFromParam(paramNode, ids, newvars));
 				});
 				prefix.control[prop][action].apply(null, params);
 			} else if (actionName == 'perform') {
@@ -311,7 +264,7 @@ var documents = (function () {
 					var realurl = url.substring(0, sharp);
 					var name = url.substring(sharp + 1);
 					var xml = documents.get(realurl);
-					var funcxml = xpath("f:function[@name='" + name + "']", xml)[0];
+					var funcxml = xpath("f:*[local-name()='function' or local-name()='transaction'][@name='" + name + "']", xml)[0];
 					cache[url] = funcxml;
 				}
 				
@@ -335,7 +288,6 @@ function combineContext(context) {
 		convertedContext[name] = convertPinToXML(pin);
 	});
 	
-	//var box = makeBox({output: interfaces.unit(basic.js), ids: interfaces.unit(basic.js)}, function (myOut, ambient) {
 	var box = makeBox({output: interfaces.unit(basic.js)}, function (myOut, ambient) {
 		var xml = {};
 		var ids = {};
@@ -348,9 +300,7 @@ function combineContext(context) {
 				forEach(ids, function (someIds) {
 					mergedIds = merge(mergedIds, someIds);
 				});
-				//myOut.ids.set(mergedIds);
 				
-				//myOut.output.set(xml);
 				myOut.output.set({xml: xml, ids: mergedIds});
 			}
 		}
@@ -371,12 +321,8 @@ function combineContext(context) {
 		return processor;
 	}, convertedContext);
 	
-	debugBox = box;
-	//return box.outputPins;
 	return box.outputPins.output;
 }
-
-var debugBox;
 
 
 // qt stands for Query Transform
@@ -400,22 +346,15 @@ var qtDocs = (function () {
 			});
 			
 			var combinedContext = combineContext(context);
-
-			/*var xslCom = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (params) {
-				if (!params) return undefined;
-				var res = compiled(blankXML, params);
-				return res;
-			});*/
+			
 			var xslCom = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (o) {
 				if (!o) return undefined;
 				var res = compiled(blankXML, o.xml);
 				return {xml: res, ids: o.ids};
 			});
 
-			//var transformed = simpleApply(xslCom, combinedContext.output);
 			var transformed = simpleApply(xslCom, combinedContext);
 
-			//return tensor("xml", "ids").makeApply({xml: transformed, ids: combinedContext.ids}).output;
 			return transformed;
 		};
 	}

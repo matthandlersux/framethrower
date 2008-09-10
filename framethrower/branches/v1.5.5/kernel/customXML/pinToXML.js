@@ -42,6 +42,33 @@ function convertFromXML(xml, ids, vars) {
 	}
 }
 
+function getTrimmedFirstChild(node) {
+	var els = xpath("*[1]", node);
+	if (els.length > 0) {
+		return els[0];
+	} else {
+		return false;
+	}
+}
+
+// This is like convertXMLToPin but instead of returning a pin, returns the object itself
+// used for intact's in transaction's
+// Note: this function can't extract sets, assocs, etc.
+// do we need that functionality?
+function getObjectFromParam(paramNode, ids, vars) {
+	var value = paramNode.getAttributeNS("", "value-id");
+	if (value) {
+		return ids[value];
+	}
+	
+	value = paramNode.getAttributeNS("", "value-var");
+	if (value) {
+		return vars[value];
+	}
+	
+	return convertFromXML(getTrimmedFirstChild(paramNode), ids, vars);
+}
+
 
 
 function makeSimpleBox(outputInterface, instantiateProcessor, input) {
@@ -145,16 +172,6 @@ var convertPinToXML = memoize(function (pin) {
 		
 	}
 });
-
-
-function getTrimmedFirstChild(node) {
-	var els = xpath("*[1]", node);
-	if (els.length > 0) {
-		return els[0];
-	} else {
-		return false;
-	}
-}
 
 
 function convertXMLToPin(node, ids, vars) {

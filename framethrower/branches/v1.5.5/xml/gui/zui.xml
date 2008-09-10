@@ -6,49 +6,79 @@
 
 	<f:param name="zui" />
 	<f:param name="focus" />
-	<f:derived name="situationChildren" from="focus">
-		<get what="childObjects" />
-		<filtertype type="kernel.situation" />
-	</f:derived>
-	<f:derived name="individualChildren" from="focus">
-		<get what="childObjects" />
-		<filtertype type="kernel.individual" />
-	</f:derived>
-	
 	
 	<xsl:template>
-		<html:div class="zui">
+		<xsl:variable name="expandedTF">
+			<xsl:choose>
+				<xsl:when test="$zui">true</xsl:when>
+				<xsl:otherwise>false</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
+		<html:div class="zui" expanded="{$expandedTF}">
+			<f:binding>
+				<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+				<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+			</f:binding>
+			
 			<html:div class="zuiTitle">
+				<f:button name="titleBar" />
 				<f:thunk url="printContent.xml">
 					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 				</f:thunk>
 			</html:div>
 			
-			<html:div class="individualChildren">
-				<xsl:for-each select="$individualChildren/*">
-					<html:div>
-						<f:thunk url="printContent.xml">
-							<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
-						</f:thunk>
-					</html:div>
-				</xsl:for-each>
-				<html:div style="color:purple">+ Add Entity</html:div>
-			</html:div>
-			
-			<html:div class="zuiChildren">
-				<xsl:for-each select="$situationChildren/*">
-					<f:thunk name="printChild">
-						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-						<f:with-param name="child"><xsl:copy-of select="." /></f:with-param>
-					</f:thunk>
-				</xsl:for-each>
-				<html:div style="color:green">+ Add Situation</html:div>
-			</html:div>
-			<html:div style="clear:both" />
+			<xsl:if test="$zui">
+				<f:thunk name="printChildren">
+					<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+				</f:thunk>
+			</xsl:if>
 		</html:div>
 	</xsl:template>
 	
-	<f:function name="printChild">
+	
+	<f:function name="printChildren">
+		<f:param name="zui" />
+		<f:param name="focus" />
+		<f:derived name="situationChildren" from="focus">
+			<get what="childObjects" />
+			<filtertype type="kernel.situation" />
+		</f:derived>
+		<f:derived name="individualChildren" from="focus">
+			<get what="childObjects" />
+			<filtertype type="kernel.individual" />
+		</f:derived>
+		
+		<xsl:template>
+			<html:div>
+				<html:div class="individualChildren">
+					<xsl:for-each select="$individualChildren/*">
+						<html:div>
+							<f:thunk url="printContent.xml">
+								<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+							</f:thunk>
+						</html:div>
+					</xsl:for-each>
+					<html:div style="color:purple">+ Add Entity</html:div>
+				</html:div>
+		
+				<html:div class="zuiChildren">
+					<xsl:for-each select="$situationChildren/*">
+						<f:thunk name="printChildZui">
+							<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+							<f:with-param name="child"><xsl:copy-of select="." /></f:with-param>
+						</f:thunk>
+					</xsl:for-each>
+					<html:div style="color:green">+ Add Situation</html:div>
+				</html:div>
+				<html:div style="clear:both" />
+			</html:div>
+		</xsl:template>
+	</f:function>
+	
+	
+	<f:function name="printChildZui">
 		<f:param name="zui" />
 		<f:param name="child" />
 		<f:derived name="childZui" from="zui">
@@ -72,12 +102,14 @@
 						</f:thunk>
 					</xsl:when>
 					<xsl:otherwise>
-						<html:div class="zui" expanded="false">
-							
-						</html:div>
+						<f:thunk url="zui.xml">
+							<f:with-param name="focus"><xsl:copy-of select="$child" /></f:with-param>
+						</f:thunk>
 					</xsl:otherwise>
 				</xsl:choose>
 			</html:div>
 		</xsl:template>
 	</f:function>
+	
+	
 </f:function>
