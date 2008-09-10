@@ -1,0 +1,26 @@
+<f:transaction name="correspond"
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<f:param name="object1" />
+	<f:param name="object2" />
+
+	<xsl:template>
+		<transaction>
+			<f:perform name="helper">
+			</f:perform>
+		</transaction>
+	</xsl:template>
+	
+	
+	<f:transaction name="helper">
+
+		<xsl:template>
+			<transaction>
+				<comment>
+					Hello
+				</comment>			
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+</f:transaction>

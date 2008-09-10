@@ -30,6 +30,10 @@
 				<f:with-param value-id="{$object/@id}" />
 			</intact>
 			
+			<!-->
+				TODO: add code for adjusting the corresponds chain
+			</!-->
+			
 		</transaction>
 	</xsl:template>
 </f:transaction>
