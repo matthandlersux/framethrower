@@ -106,6 +106,20 @@ function domEndCap(ambient, input, node, relurl) {
 
 						node.parentNode.replaceChild(c, node);
 						node = c;
+						
+						// find bindings
+						var bindings = xpath(".//f:binding", node);
+						forEach(bindings, function (binding) {
+							var parent = binding.parentNode;
+							parent.bindingURL = getUrlFromXML(binding, relurl);
+							
+							var params = {};
+							var paramNodes = xpath("f:with-param", binding);
+							forEach(paramNodes, function (paramNode) {
+								params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, o.ids, {});
+							});
+							parent.bindingParams = params;
+						});
 
 						// find thunks
 						var thunks = xpath(".//f:thunk", node);
@@ -325,6 +339,8 @@ function combineContext(context) {
 }
 
 
+
+
 // qt stands for Query Transform
 var qtDocs = (function () {
 	var cache = {};
@@ -363,6 +379,7 @@ var qtDocs = (function () {
 		get: function (url) {
 			if (!cache[url]) {
 				cache[url] = makeCustomCom(documents.get(url), url);
+				cache[url] = makeIded(qtType, cache[url]);
 			}
 			return cache[url];
 		}

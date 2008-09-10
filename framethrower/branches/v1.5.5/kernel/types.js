@@ -136,3 +136,7 @@ basic.alt = memoize(function () {
 	
 	return type;
 });
+
+
+// this is for qt's (see parseXML.js qtDocs)
+qtType = makeType("qt");

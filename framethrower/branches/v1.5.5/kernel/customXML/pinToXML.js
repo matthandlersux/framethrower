@@ -140,7 +140,7 @@ var convertPinToXML = memoize(function (pin) {
 					var convertedKey = convertToXML(key);
 					var convertedValue = convertToXML(cache.get(key));
 					
-					console.log("converted key, value", convertedKey, convertedValue);
+					//console.log("converted key, value", convertedKey, convertedValue);
 					
 					var pair = document.createElementNS(xmlns["f"], "pair");
 					var key = document.createElementNS(xmlns["f"], "key");
@@ -153,7 +153,7 @@ var convertPinToXML = memoize(function (pin) {
 					xml.appendChild(pair);
 					ids = merge(ids, convertedKey.ids, convertedValue.ids);
 				});
-				console.dirxml(xml);
+				//console.dirxml(xml);
 				myOut.set({xml: xml, ids: ids});
 			}
 			update();
@@ -169,7 +169,34 @@ var convertPinToXML = memoize(function (pin) {
 			};
 		}, pin);
 	} else if (constructor === interfaces.list) {
-		
+		return makeSimpleBox(interfaces.unit(basic.js), function (myOut, ambient) {
+			var cache = [];
+			function update() {
+				var xml = document.createElementNS(xmlns["f"], "list");
+				var ids = {};
+				forEach(cache, function (item) {
+					var converted = convertToXML(item);
+					xml.appendChild(converted.xml);
+					ids = merge(ids, converted.ids);
+				});
+				myOut.set({xml: xml, ids: ids});
+			}
+			update();
+			return {
+				insert: function (o, index) {
+					cache.splice(index, 0, o);
+					update();
+				},
+				update: function (o, index) {
+					cache[index] = o;
+					update();
+				},
+				remove: function (index) {
+					cache.splice(index, 1);
+					update();
+				}
+			};
+		}, pin);
 	}
 });
 
@@ -202,6 +229,10 @@ function convertXMLToPin(node, ids, vars) {
 		} else {
 			return startCaps.unit(convertFromXML(xml, ids, vars));
 		}
+	}
+	
+	if (!node.firstChild) {
+		return startCaps.unit(false);
 	}
 	
 	// should probably get rid of this one... if all else fails make it a string

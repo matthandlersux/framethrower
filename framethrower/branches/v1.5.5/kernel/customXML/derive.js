@@ -86,6 +86,13 @@ function derive(xml, context, focus) {
 		var com = components.assoc.getKey(focus.getType().getArguments()[0], focus.getType().getArguments()[1]);
 		var key = getFromContext(context, xml.getAttributeNS("", "key"));
 		focus = com.makeApply({input: focus, key: key}).output;
+	} else if (name === "trace") {
+		var t = focus.getType();
+		var what = xml.getAttributeNS("", "what");
+		var outType = t.getArguments()[0].getProp(what).getArguments()[0];
+		focus = deriveTrace(focus, function (o) {
+			return o.get[what]();
+		}, outType);
 	} else {
 		console.error("Unknown xml element in derive: " + name);
 	}
@@ -100,4 +107,39 @@ function derive(xml, context, focus) {
 		//console.log("derive done", focus.getOutputInterface().getName());
 		return focus;
 	}
+}
+
+
+function deriveTrace(focus, f, outType) {
+	return box = makeSimpleBox(interfaces.list(outType), function (myOut, ambient) {
+		var endCaps = [];
+		function makeEndCaps(i, o) {
+			if (endCaps[i]) {
+				endCaps[i].deacivate();
+			}
+			endCaps[i] = makeSimpleEndCap(ambient, {
+				set: function (o) {
+					if (o === undefined) {
+						removeEndCaps(i+1);
+					} else {
+						myOut.update(o, i);
+						makeEndCaps(i+1, o);
+					}
+				}
+			}, f(o));
+		}
+		function removeEndCaps(i) {
+			if (endCaps[i]) {
+				endCaps[i].deactivate();
+				endCaps[i] = false;
+				myOut.remove(i);
+				removeEndCaps(i+1);
+			}
+		}
+		return {
+			set: function (o) {
+				makeEndCaps(0, o);
+			}
+		};
+	}, focus);
 }

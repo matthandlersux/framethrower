@@ -1,0 +1,22 @@
+<f:binding
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	
+	<f:transaction name="Expand">
+		<f:param name="zui" />
+		<f:param name="focus" />
+		<xsl:template>
+			<xsl:choose>
+				<xsl:when test="$zui">
+					
+				</xsl:when>
+				<xsl:otherwise>
+					<make type="layout.zui" name="zui" />
+					<intact with-var="zui" prop="focus" action="set">
+						<with-param><xsl:copy-of select="$focus" /></with-param>
+					</intact>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:template>
+	</f:transaction>
+</f:binding>

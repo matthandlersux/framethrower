@@ -16,7 +16,7 @@
 		</xsl:variable>
 		
 		<html:div class="zui" expanded="{$expandedTF}">
-			<f:binding>
+			<f:binding url="bindings/zui.xml">
 				<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 				<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 			</f:binding>

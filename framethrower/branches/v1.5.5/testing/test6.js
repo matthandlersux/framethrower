@@ -35,3 +35,13 @@ zui.control.expandedChildren.add(zui2);
 var mainAmbient = makeAmbient();
 
 processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {rw: rw, zui: zui}, "");
+
+
+var test = deriveTrace(startCaps.unit(rose), function (o) {
+	return o.get.parentSituation();
+}, kernel.situation);
+
+var testXML = convertPinToXML(test);
+
+var ec = makeSimpleEndCap(mainAmbient, endCaps.log.unit("list xml"), testXML);
+//var ec = makeSimpleEndCap(mainAmbient, endCaps.log.list("list"), test);

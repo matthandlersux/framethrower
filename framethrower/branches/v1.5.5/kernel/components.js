@@ -138,23 +138,23 @@ startCaps.unit = memoize(function (o) {
 
 var endCaps = {};
 
+function maybeGetContent(o) {
+	if (o && o.get && o.get.content) {
+		return o.get.content().getState();
+	} else {
+		return false;
+	}
+}
+
 endCaps.log = {};
 
 endCaps.log.set = function (name) {
 	return {
 		add: function (o) {
-			var p;
-			if (o && o.get && o.get.content) {
-				p = o.get.content().getState();
-			}
-			console.log(name, "=added=", o, p);
+			console.log(name, "=added=", o, maybeGetContent(o));
 		},
 		remove: function (o) {
-			var p;
-			if (o && o.get && o.get.content) {
-				p = o.get.content().getState();
-			}
-			console.log(name, "=removed=", o, p);
+			console.log(name, "=removed=", o, maybeGetContent(o));
 		}
 	};
 };
@@ -162,11 +162,21 @@ endCaps.log.set = function (name) {
 endCaps.log.unit = function (name) {
 	return {
 		set: function (o) {
-			var p;
-			if (o && o.get && o.get.content) {
-				p = o.get.content().getState();
-			}
-			console.log(name, "=set to=", o, p);
+			console.log(name, "=set to=", o, maybeGetContent(o));
+		}
+	};
+};
+
+endCaps.log.list = function (name) {
+	return {
+		update: function (o, i) {
+			console.log(name, "=updated=", o, i, maybeGetContent(o));
+		},
+		insert: function (o, i) {
+			console.log(name, "=inserted=", o, i, maybeGetContent(o));
+		},
+		remove: function (i) {
+			console.log(name, "=removed=", i);
 		}
 	};
 };

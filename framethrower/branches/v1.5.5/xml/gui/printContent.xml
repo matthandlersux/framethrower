@@ -8,6 +8,9 @@
 	<f:derived name="content" from="focus">
 		<get what="content" />
 	</f:derived>
+	<f:derived name="trace" from="focus">
+		<trace what="parentSituation" />
+	</f:derived>
 	
 	<xsl:template>
 		<html:span>
@@ -22,6 +25,11 @@
 			
 			<xsl:text> </xsl:text>
 			<html:i>(id: <xsl:value-of select="$focus/@id" />)</html:i>
+			<html:u>(Trace: 
+				<xsl:for-each select="$trace/*">
+					<xsl:value-of select="@id" />
+				</xsl:for-each>
+			)</html:u>
 		</html:span>
 	</xsl:template>
 </f:function>
