@@ -113,6 +113,9 @@ function insertAfter (parent, newnode, insertafter) {
 
 function parseXML(s) {
 	var firstTag = s.indexOf(">");
+	if (s.charAt(firstTag - 1) === "/") {
+		firstTag = firstTag - 1;
+	}
 	var nsString = "";
 	forEach(xmlns, function (ns, prefix) {
 		nsString += ' xmlns:' + prefix + '="' + ns + '"';

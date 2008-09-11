@@ -100,9 +100,16 @@ function domEndCap(ambient, input, node, relurl) {
 						//console.dir(o.ids);
 						
 						// This whole thing needs to be optimized, specifically it should use a more nuanced replace xml function so as not to reevaluate thunks
-
+						
+						amb.deactivate();
+						
 						var c = o.xml.cloneNode(true);
 						node.ownerDocument.adoptNode(c);
+						
+						/*if (!node.parentNode) {
+							console.log("NO PARENT NODE");
+							console.dirxml(node);
+						}*/
 
 						node.parentNode.replaceChild(c, node);
 						node = c;
@@ -119,6 +126,10 @@ function domEndCap(ambient, input, node, relurl) {
 								params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, o.ids, {});
 							});
 							parent.bindingParams = params;
+						});
+						var buttons = xpath(".//f:button", node);
+						forEach(buttons, function (button) {
+							button.parentNode.bindingButtonName = button.getAttributeNS("", "name");
 						});
 
 						// find thunks
@@ -166,21 +177,9 @@ function processAllThunks(ambient, node, ids, relurl) {
 
 
 
-
-function processPerforms(ambient, node, ids, vars, relurl) {
-	var url = getUrlFromXML(node, relurl);
-	
-	var functionCom = qtDocs.get(url);
-	
-	var paramNodes = xpath("f:with-param", node);
-	var params = {};
-	forEach(paramNodes, function (paramNode) {
-		params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, ids, vars);
-	});
-	
-	// will be a makeApply once makeCustomCom returns a component.. (this probably won't ever happen..)
-	var out = functionCom(params);
-	
+// takes in a qtDoc (qtDocs.get(<f:transaction>)) and params (hash of outputPins)
+// returns an object {xml: <...>, ids: {}}
+function evaluateTransaction(qtDoc, params) {
 	// hack... make an end cap to evaluate the transaction, then remove the end cap right away
 	var transaction;
 	var storeResultProc = {
@@ -189,8 +188,32 @@ function processPerforms(ambient, node, ids, vars, relurl) {
 		}
 	};
 	
-	var EC = makeSimpleEndCap(ambient, storeResultProc, out);
+	var EC = makeSimpleEndCap(makeAmbient(), storeResultProc, qtDoc(params));
 	EC.deactivate();
+	
+	return transaction;
+}
+
+
+function processPerforms(ambient, node, ids, vars, relurl, url, params) {
+	if (!url) {
+		url = getUrlFromXML(node, relurl);
+	}
+	
+	var functionCom = qtDocs.get(url);
+	
+	if (!params) {
+		var paramNodes = xpath("f:with-param", node);
+		params = {};
+		forEach(paramNodes, function (paramNode) {
+			params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, ids, vars);
+		});
+	}
+
+	
+	var transaction = evaluateTransaction(functionCom, params);
+	
+
 	
 	console.dirxml(transaction.xml);
 	

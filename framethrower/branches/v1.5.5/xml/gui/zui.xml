@@ -6,17 +6,23 @@
 
 	<f:param name="zui" />
 	<f:param name="focus" />
+	<f:param name="parentZui" />
+	<f:derived name="properties" from="zui">
+		<get what="properties" />
+	</f:derived>
 	
 	<xsl:template>
+		<xsl:variable name="expanded" select="$zui and $properties/@expanded='1'" />
 		<xsl:variable name="expandedTF">
 			<xsl:choose>
-				<xsl:when test="$zui">true</xsl:when>
+				<xsl:when test="$expanded">true</xsl:when>
 				<xsl:otherwise>false</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
 		
 		<html:div class="zui" expanded="{$expandedTF}">
 			<f:binding url="bindings/zui.xml">
+				<f:with-param name="parentZui"><xsl:copy-of select="$parentZui" /></f:with-param>
 				<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 				<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 			</f:binding>
@@ -28,7 +34,7 @@
 				</f:thunk>
 			</html:div>
 			
-			<xsl:if test="$zui">
+			<xsl:if test="$expanded">
 				<f:thunk name="printChildren">
 					<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
@@ -97,12 +103,14 @@
 				<xsl:choose>
 					<xsl:when test="$expanded">
 						<f:thunk url="zui.xml">
+							<f:with-param name="parentZui"><xsl:copy-of select="$zui" /></f:with-param>
 							<f:with-param name="zui"><xsl:copy-of select="$expanded" /></f:with-param>
 							<f:with-param name="focus"><xsl:copy-of select="$child" /></f:with-param>
 						</f:thunk>
 					</xsl:when>
 					<xsl:otherwise>
 						<f:thunk url="zui.xml">
+							<f:with-param name="parentZui"><xsl:copy-of select="$zui" /></f:with-param>
 							<f:with-param name="focus"><xsl:copy-of select="$child" /></f:with-param>
 						</f:thunk>
 					</xsl:otherwise>

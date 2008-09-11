@@ -26,10 +26,11 @@ rose.control.content.set(parseXML("<html:i>Rose</html:i>"));
 
 var zui = layout.zui.make();
 zui.control.focus.set(rw);
+zui.control.properties.set(parseXML("<zui expanded='1' />"));
 
-var zui2 = layout.zui.make();
+/*var zui2 = layout.zui.make();
 zui2.control.focus.set(tmov);
-zui.control.expandedChildren.add(zui2);
+zui.control.expandedChildren.add(zui2);*/
 
 
 var mainAmbient = makeAmbient();
@@ -37,6 +38,8 @@ var mainAmbient = makeAmbient();
 processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {rw: rw, zui: zui}, "");
 
 
+/*
+// testing trace
 var test = deriveTrace(startCaps.unit(rose), function (o) {
 	return o.get.parentSituation();
 }, kernel.situation);
@@ -45,3 +48,5 @@ var testXML = convertPinToXML(test);
 
 var ec = makeSimpleEndCap(mainAmbient, endCaps.log.unit("list xml"), testXML);
 //var ec = makeSimpleEndCap(mainAmbient, endCaps.log.list("list"), test);
+*/
+

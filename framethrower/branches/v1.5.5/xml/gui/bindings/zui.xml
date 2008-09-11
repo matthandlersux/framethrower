@@ -5,18 +5,29 @@
 	<f:transaction name="Expand">
 		<f:param name="zui" />
 		<f:param name="focus" />
+		<f:param name="parentZui" />
 		<xsl:template>
-			<xsl:choose>
-				<xsl:when test="$zui">
+			<transaction>
+				<xsl:choose>
+					<xsl:when test="$zui">
 					
-				</xsl:when>
-				<xsl:otherwise>
-					<make type="layout.zui" name="zui" />
-					<intact with-var="zui" prop="focus" action="set">
-						<with-param><xsl:copy-of select="$focus" /></with-param>
-					</intact>
-				</xsl:otherwise>
-			</xsl:choose>
+					</xsl:when>
+					<xsl:otherwise>
+						<make type="layout.zui" name="zui" />
+						<intact with-var="zui" prop="focus" action="set">
+							<with-param><xsl:copy-of select="$focus" /></with-param>
+						</intact>
+						<intact with-var="zui" prop="properties" action="set">
+							<with-param>
+								<zui expanded="1" />
+							</with-param>
+						</intact>
+						<intact with-id="{$parentZui/@id}" prop="expandedChildren" action="add">
+							<with-param value-var="zui" />
+						</intact>
+					</xsl:otherwise>
+				</xsl:choose>
+			</transaction>
 		</xsl:template>
 	</f:transaction>
 </f:binding>

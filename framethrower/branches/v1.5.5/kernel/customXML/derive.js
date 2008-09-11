@@ -63,39 +63,40 @@ function derive(xml, context, focus) {
 		next = xml.firstChild;
 	} else if (name === "start") {
 		focus = context[xml.getAttributeNS("", "from")];
-	} else if (name === "get") {
-		focus = applyGet(focus, xml.getAttributeNS("", "what"));
-	} else if (name === "filter") {
-		// need to test still..
-		var com = components.filterC(focus.getType().getConstructor(), focus.getType().getArguments()[0], function (o) {
-			return derive(xml.firstChild, context, startCaps.unit(o));
-		});
-		focus = simpleApply(com, focus);
-	} else if (name === "equals") {
-		var input2 = derive(xml.firstChild, context);
-		console.log("doing equals", focus.getType().getName(), input2.getType().getName());
-		var type = getSuperTypeFromTypes(focus.getType().getArguments()[0], input2.getType().getArguments()[0]);
-		console.log(type.getName());
-		var com = components.equals(type);
-		var out = com.makeApply({input1: focus, input2: input2});
-		focus = out.output;
-	} else if (name === "filtertype") {
-		var com = components.set.filterType(focus.getType().getArguments()[0], typeNames[xml.getAttributeNS("", "type")]);
-		focus = simpleApply(com, focus);
-	} else if (name === "getkey") {
-		var com = components.assoc.getKey(focus.getType().getArguments()[0], focus.getType().getArguments()[1]);
-		var key = getFromContext(context, xml.getAttributeNS("", "key"));
-		focus = com.makeApply({input: focus, key: key}).output;
-	} else if (name === "trace") {
-		var t = focus.getType();
-		var what = xml.getAttributeNS("", "what");
-		var outType = t.getArguments()[0].getProp(what).getArguments()[0];
-		focus = deriveTrace(focus, function (o) {
-			return o.get[what]();
-		}, outType);
-	} else {
-		console.error("Unknown xml element in derive: " + name);
+	} else if (focus) {
+		if (name === "get") {
+			focus = applyGet(focus, xml.getAttributeNS("", "what"));
+		} else if (name === "filter") {
+			// need to test still..
+			var com = components.filterC(focus.getType().getConstructor(), focus.getType().getArguments()[0], function (o) {
+				return derive(xml.firstChild, context, startCaps.unit(o));
+			});
+			focus = simpleApply(com, focus);
+		} else if (name === "equals") {
+			var input2 = derive(xml.firstChild, context);
+			var type = getSuperTypeFromTypes(focus.getType().getArguments()[0], input2.getType().getArguments()[0]);
+			var com = components.equals(type);
+			var out = com.makeApply({input1: focus, input2: input2});
+			focus = out.output;
+		} else if (name === "filtertype") {
+			var com = components.set.filterType(focus.getType().getArguments()[0], typeNames[xml.getAttributeNS("", "type")]);
+			focus = simpleApply(com, focus);
+		} else if (name === "getkey") {
+			var com = components.assoc.getKey(focus.getType().getArguments()[0], focus.getType().getArguments()[1]);
+			var key = getFromContext(context, xml.getAttributeNS("", "key"));
+			focus = com.makeApply({input: focus, key: key}).output;
+		} else if (name === "trace") {
+			var t = focus.getType();
+			var what = xml.getAttributeNS("", "what");
+			var outType = t.getArguments()[0].getProp(what).getArguments()[0];
+			focus = deriveTrace(focus, function (o) {
+				return o.get[what]();
+			}, outType);
+		} else {
+			console.error("Unknown xml element in derive: " + name);
+		}
 	}
+
 	// missing: equals
 	
 	
@@ -103,9 +104,11 @@ function derive(xml, context, focus) {
 	
 	if (next) {
 		return derive(next, context, focus);
-	} else {
+	} else if (focus) {
 		//console.log("derive done", focus.getOutputInterface().getName());
 		return focus;
+	} else {
+		return typeZero(interfaces.unit(basic.js));
 	}
 }
 
