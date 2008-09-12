@@ -11,6 +11,13 @@ blankXML.appendChild(blankXML.createElementNS("", "nothing"));
 blankXML = blankXML.firstChild;
 
 function extractXSLFromCustomXML(xml) {
+	var xslNodes = xpath("xsl:*", xml);
+	
+	if(xslNodes.length == 0) { //no xsl nodes... return undefined
+		return undefined;
+	}
+
+
 	var xslDoc = createDocument();
 	var ss = xslDoc.createElementNS(xmlns["xsl"], "stylesheet");
 	ss.setAttributeNS("", "version", "1.0");
@@ -22,7 +29,7 @@ function extractXSLFromCustomXML(xml) {
 		ss.appendChild(p);
 	});
 
-	var xslNodes = xpath("xsl:*", xml);
+	
 	forEach(xslNodes, function (n) {
 		var c = appendCopy(ss, n);
 
@@ -32,6 +39,22 @@ function extractXSLFromCustomXML(xml) {
 	});
 
 	return ss;
+}
+
+
+function extractJSFromCustomXML(xml) {
+	var jsNode = xpath("f:jsfunc", xml)[0];
+
+	if(!jsNode) { //no xsl nodes... return undefined
+		return undefined;
+	}
+
+	var funcName = jsNode.getAttributeNS("", "name");
+	var func = JSTRANSFUNCS[funcName];
+	
+	return function(blankxml, args){
+		return func(args);
+	};
 }
 
 
@@ -164,7 +187,13 @@ var qtDocs = (function () {
 
 		var derivedNodes = xpath("f:derived", xml);
 
-		var compiled = compileXSL(extractXSLFromCustomXML(xml));
+		var xsl = extractXSLFromCustomXML(xml);
+		var compiled;
+		if (xsl) {
+			compiled = compileXSL(xsl);
+		} else {
+			compiled = extractJSFromCustomXML(xml);
+		}
 		
 		// takes in a hash of outputPins
 		return function (inputs) {

@@ -13,14 +13,7 @@
 	</f:derived>
 
 
-	<xsl:template>
-		<transaction>
-			<f:perform url="helper/makeobject.xml" prefix="obj">
-				<f:with-param name="type"><f:string value="kernel.individual" /></f:with-param>
-				<f:with-param name="parentSituation" value-id="{$trace1/child::*/@id}" />
-			</f:perform>
-		</transaction>
-	</xsl:template>
+	<f:jsfunc name="test" />
 	
 	
 </f:transaction>

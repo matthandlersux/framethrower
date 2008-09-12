@@ -27,6 +27,9 @@ loadjscssfile("../kernel/guiScaffold.js", "js");
 
 loadjscssfile("../kernel/components.js", "js");
 
+
+loadjscssfile("../xml/apijs.js", "js");
+
 loadjscssfile("../kernel/customXML/parseThunks.js", "js");
 loadjscssfile("../kernel/customXML/parsePerforms.js", "js");
 loadjscssfile("../kernel/customXML/parseXML.js", "js");
