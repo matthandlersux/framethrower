@@ -15,76 +15,12 @@
 
 	<xsl:template>
 		<transaction>
-			
-			<xsl:call-template name="checkmatch">
-				<xsl:with-param name="aSit" select="$object1"/>
-				<xsl:with-param name="bSit" select="$object2"/>
-				<xsl:with-param name="aSits" select="$trace1" />
-				<xsl:with-param name="bSits" select="$trace2" />
-			</xsl:call-template>
+			<f:perform url="helper/makeobject.xml" prefix="obj">
+				<f:with-param name="type"><f:string value="kernel.individual" /></f:with-param>
+				<f:with-param name="parentSituation" value-id="{$trace1/child::*/@id}" />
+			</f:perform>
 		</transaction>
 	</xsl:template>
 	
-
-	<xsl:template name="check">
-		<xsl:param name="sit" />
-		<xsl:param name="sits" />
-
-		<xsl:call-template name="contains">
-			<xsl:with-param name="sit" select="$sit" />
-			<xsl:with-param name="sits" select="$sits/child::*" />
-		</xsl:call-template>
-
-	</xsl:template>
-	
-	
-	<xsl:template name="contains">
-		<xsl:param name="sit" />
-		<xsl:param name="sits" />
-		<xsl:choose>
-			<xsl:when test="not(boolean($sits))">
-				0
-			</xsl:when>
-			<xsl:when test="$sit/@id = $sits/@id">
-				<!-->Splice?</!-->
-				1
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:call-template name="contains">
-					<xsl:with-param name="sits" select="$sits/following-sibling::*" />
-					<xsl:with-param name="sit" select="$sit" />
-				</xsl:call-template>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:template>
-	
-	
-	<xsl:template name="checkmatch">
-		<xsl:param name="aSit" />
-		<xsl:param name="bSit" />
-		<xsl:param name="aSits" />
-		<xsl:param name="bSits" />
-
-		
-		<xsl:variable name="checkresult">
-			<xsl:call-template name="check">
-				<xsl:with-param name="sit" select="$aSit" />
-				<xsl:with-param name="sits" select="$bSits" />
-			</xsl:call-template>
-		</xsl:variable>
-
-		<comment>
-			<xsl:copy-of select="$checkresult" />
-		</comment>
-
-		<xsl:if test="$checkresult = 0">
-			<xsl:variable name="checkresult">
-				<xsl:call-template name="check">
-					<xsl:with-param name="sit" select="$bSit" />
-					<xsl:with-param name="sits" select="$aSits" />
-				</xsl:call-template>
-			</xsl:variable>
-		</xsl:if>
-	</xsl:template>
 	
 </f:transaction>
