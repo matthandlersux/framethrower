@@ -1,15 +1,17 @@
+body {
+	overflow: hidden;
+	font-family: Trebuchet MS;
+}
+
 .zui {
-	border: 1px solid #ccc;
 }
 
 .zuiTitle {
 	font-weight: bold;
+	background-image: url(../images/titleBarBG.png);
 }
-.zui[expanded="true"] .zuiTitle {
-	background-color:#fc6;
-}
-.zui[expanded="false"] .zuiTitle {
-	background-color:#9cf;
+.zuiTitleBG {
+	
 }
 
 .individualChildren {
@@ -17,7 +19,11 @@
 	width:33%;
 }
 
-.zuiChildren {
-	margin-left:33%;
-	width:67%;
+.zuiChildrenSidebar {
+	background-color:#ddd;
+	width:240px;
+	float:left;
+}
+
+.zuiOpening {
 }

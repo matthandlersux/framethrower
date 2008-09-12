@@ -7,7 +7,7 @@ var layout = scaffold({
 }, "layout");
 
 layout.zui.prop = {
-	focus: interfaces.unit(kernel.situation),
+	focus: interfaces.unit(kernel.ob),
 	properties: interfaces.unit(basic.xml),
-	expandedChildren: interfaces.set(layout.zui)
+	childZuis: interfaces.set(layout.zui)
 };

@@ -5,6 +5,21 @@ integrate typeNames
 makeCustomCom into component
 */
 
+function sizeNode(node) {
+	node.style.position = "absolute";
+	function setAttr(name) {
+		var att = node.getAttributeNS("", name);
+		if (att) {
+			node.style[name] = att + "px";
+		}
+	}
+	var attrs = ["width", "height", "left", "top"];
+	forEach(attrs, function (name) {
+		setAttr(name);
+	});
+}
+
+
 function domEndCap(ambient, input, node, relurl) {
 	var ec = ambient.makeEndCap(function (myOut, amb) {
 		return {
@@ -29,6 +44,12 @@ function domEndCap(ambient, input, node, relurl) {
 
 						node.parentNode.replaceChild(c, node);
 						node = c;
+						
+						// find sizings
+						var sizings = xpath(".//html:div[@left]", node);
+						forEach(sizings, function (sizing) {
+							sizeNode(sizing);
+						});
 						
 						// find bindings
 						var bindings = xpath(".//f:binding", node);

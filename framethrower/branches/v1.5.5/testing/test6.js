@@ -26,16 +26,17 @@ rose.control.content.set(parseXML("<html:i>Rose</html:i>"));
 
 var zui = layout.zui.make();
 zui.control.focus.set(rw);
-zui.control.properties.set(parseXML("<zui expanded='1' />"));
-
-/*var zui2 = layout.zui.make();
-zui2.control.focus.set(tmov);
-zui.control.expandedChildren.add(zui2);*/
+zui.control.properties.set(parseXML("<zui view='situation' />"));
 
 
 var mainAmbient = makeAmbient();
 
-processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {rw: rw, zui: zui}, "");
+processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {
+	rw: rw,
+	zui: zui,
+	"uiStartCaps.windowSizeWidth": uiStartCaps.windowSizeWidth,
+	"uiStartCaps.windowSizeHeight": uiStartCaps.windowSizeHeight
+}, "");
 
 
 /*

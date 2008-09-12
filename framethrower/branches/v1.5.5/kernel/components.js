@@ -122,6 +122,16 @@ startCaps.assoc = memoize(function (pairs) {
 	return sc;
 });
 
+startCaps.list = memoize(function (list) {
+	var controller = {};
+	var type = getSuperType(list);
+	var sc = makeSimpleStartCap(interfaces.list(type), controller);
+	forEach(list, function (arg, i) {
+		controller.update(arg, i);
+	});
+	return sc;
+});
+
 startCaps.unit = memoize(function (o) {
 	var controller = {};
 	var sc;

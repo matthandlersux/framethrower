@@ -1,0 +1,25 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="focus" />
+	
+	<f:derived name="involves" from="focus">
+		<get what="involves" />
+	</f:derived>
+	
+	<xsl:template>		
+		<html:div>
+			<xsl:for-each select="$involves/*">
+				<f:thunk url="printInfon.xml">
+					<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+				</f:thunk>
+			</xsl:for-each>
+		</html:div>
+	</xsl:template>
+	
+	
+	
+</f:function>

@@ -1,0 +1,57 @@
+<f:binding
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	
+	<f:transaction name="Open" event="click">
+		<f:param name="zui" />
+		<f:param name="focus" />
+		<f:derived name="type" from="focus">
+			<gettype />
+		</f:derived>
+		
+		<xsl:template>
+			<transaction>
+				<make type="layout.zui" name="newZui" />
+				<intact with-var="newZui" prop="focus" action="set">
+					<with-param><xsl:copy-of select="$focus" /></with-param>
+				</intact>
+				<intact with-var="newZui" prop="properties" action="set">
+					<with-param>
+						<xsl:choose>
+							<xsl:when test="$type/@value = 'kernel.situation'">
+								<zui view="situation" />
+							</xsl:when>
+							<xsl:otherwise>
+								<zui view="object" />
+							</xsl:otherwise>
+						</xsl:choose>
+					</with-param>
+				</intact>
+				
+				<intact with-id="{$zui/@id}" prop="childZuis" action="add">
+					<with-param value-var="newZui" />
+				</intact>
+				
+				<!--><xsl:choose>
+					<xsl:when test="$zui">
+					
+					</xsl:when>
+					<xsl:otherwise>
+						<make type="layout.zui" name="zui" />
+						<intact with-var="zui" prop="focus" action="set">
+							<with-param><xsl:copy-of select="$focus" /></with-param>
+						</intact>
+						<intact with-var="zui" prop="properties" action="set">
+							<with-param>
+								<zui expanded="1" />
+							</with-param>
+						</intact>
+						<intact with-id="{$parentZui/@id}" prop="expandedChildren" action="add">
+							<with-param value-var="zui" />
+						</intact>
+					</xsl:otherwise>
+				</xsl:choose>-->
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+</f:binding>

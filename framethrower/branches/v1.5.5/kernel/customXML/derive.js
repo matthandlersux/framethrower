@@ -81,6 +81,11 @@ function derive(xml, context, focus) {
 		} else if (name === "filtertype") {
 			var com = components.set.filterType(focus.getType().getArguments()[0], typeNames[xml.getAttributeNS("", "type")]);
 			focus = simpleApply(com, focus);
+		} else if (name === "gettype") {
+			var com = components.lift(focus.getType().getConstructor(), basic.fun(focus.getType().getArguments()[0], basic.string), function (o) {
+				return o.getType().getName();
+			});
+			focus = simpleApply(com, focus);
 		} else if (name === "getkey") {
 			var com = components.assoc.getKey(focus.getType().getArguments()[0], focus.getType().getArguments()[1]);
 			var key = getFromContext(context, xml.getAttributeNS("", "key"));

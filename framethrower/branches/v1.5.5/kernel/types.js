@@ -87,6 +87,7 @@ function typeCheck(type, instance) {
 		var instanceType = getType(instance);
 		if (!type.match(instanceType)) {
 			console.error("Type mismatch. Expected: " + type.getName() + " got: " + instanceType.getName());
+			console.log(instance.get.content().getState());
 		}
 	}
 }

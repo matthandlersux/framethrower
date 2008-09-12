@@ -18,6 +18,11 @@
 			button: "titleBar",
 			event: "click",
 			transaction: "Expand"
+		},
+		{
+			binding: "xml/gui/bindings/child.xml",
+			event: "click",
+			transaction: "Open"
 		}
 	];
 
@@ -35,15 +40,21 @@
 			}
 			if (at.bindingURL) {
 				console.log(at.bindingURL, button);
-				forEach(defaultMappings, function (mapping) {
-					if (mapping.binding === at.bindingURL && mapping.button === button && mapping.event === eventName) {
+				var bindingXML = documents.get(at.bindingURL);
+				var trans = xpath("f:transaction[@event='" + eventName + "']", bindingXML);
+				if (trans.length > 0) {
+					var transName = trans[0].getAttributeNS("", "name");
+					processPerforms(makeAmbient(), null, null, null, null, at.bindingURL + "#" + transName, at.bindingParams);
+				}
+				/*forEach(defaultMappings, function (mapping) {
+					if (mapping.binding === at.bindingURL && (!mapping.button || mapping.button === button) && mapping.event === eventName) {
 						console.log("doing transaction", mapping.transaction);
 						
 						//var transaction = evaluateTransaction(qtDocs.get(at.bindingURL + "#" + mapping.transaction), at.bindingParams);
 						//console.dirxml(transaction.xml);
 						processPerforms(makeAmbient(), null, null, null, null, at.bindingURL + "#" + mapping.transaction, at.bindingParams);
 					}
-				});
+				});*/
 				return;
 			}
 			at = at.parentNode;

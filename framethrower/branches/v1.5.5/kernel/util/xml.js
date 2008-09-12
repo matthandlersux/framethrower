@@ -90,6 +90,7 @@ function compileXSL(xsl){
         } 
         catch (e) {
             console.log("Execution Error", xsl, source, params, e);
+			console.dirxml(xsl);
         }
         
         // Clear parameters
