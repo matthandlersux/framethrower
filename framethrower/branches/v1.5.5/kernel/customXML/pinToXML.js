@@ -245,3 +245,81 @@ function convertXMLToPin(node, ids, vars) {
 	
 }
 
+
+
+// this function is used only to convert params from xml to js for transactions written in js
+function convertJSFromXML(xml) {
+	var name = xml.localName;
+	var namespace = xml.namespaceURI;
+	if (name === "ob" && namespace === xmlns["f"]) {
+		var valueId = xml.getAttributeNS("", "id");
+		if (valueId) {
+			return valueId;
+		}
+		var valueVar = xml.getAttributeNS("", "var");
+		if (valueVar) {
+			//this shouldn't happen
+			return valueVar;
+		}
+	} else if (name === "string" && namespace === xmlns["f"]) {
+		return xml.getAttributeNS("", "value");
+	} else if (name === "number" && namespace === xmlns["f"]) {
+		return +xml.getAttributeNS("", "value");
+	} else {
+		return xml;
+	}
+}
+
+
+// this function is used only to convert params from xml to js for transactions written in js
+function convertXMLToJS(node) {
+	console.log(node);
+	
+	var valueId = node.getAttributeNS("", "id");
+	if (valueId) {
+		return valueId;
+	}
+	
+	//Shouldn't encounter value-var here
+	/*
+	var valueVar = node.getAttributeNS("", "value-var");
+	if (valueVar) {
+		return startCaps.unit(vars[valueVar]);
+	}
+	*/
+	
+	var xml = getTrimmedFirstChild(node);
+	
+	if (xml) {
+		var name = xml.localName;
+		var namespace = xml.namespaceURI;
+		if (name === "set" && namespace === xmlns["f"]) {
+			var ret = {};
+			forEach(xml.childNodes, function(node){
+				var id = convertJSFromXML(node);
+				ret[id] = id;
+			});
+			return ret;
+		} else if (name === "assoc" && namespace === xmlns["f"]) {
+			var ret = {};
+			forEach(xml.childNodes, function(pair){ //forEach pair
+				ret[convertJSFromXML(xpath("f:key/*", pair)[0])] = convertJSFromXML(xpath("f:value/*", pair)[0]);
+			});
+			return ret;
+		} else {
+			return convertJSFromXML(xml);
+		}
+	}
+	
+	if (!node.firstChild) {
+		return false;
+	}
+	
+	// should probably get rid of this one... if all else fails make it a string
+	
+	console.warn("Got too far in convertXMLToPin", node);
+	
+	var s = node.firstChild.nodeValue;
+	s = s.replace(/^\s+|\s+$/g, '');
+	return s;
+}
