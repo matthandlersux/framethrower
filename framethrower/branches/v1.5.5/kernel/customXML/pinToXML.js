@@ -284,27 +284,16 @@ function convertJSFromXML(xml) {
 
 
 // this function is used only to convert params from xml to js for transactions written in js
-function convertXMLToJS(node) {
-	console.log(node);
-	
-	var valueId = node.getAttributeNS("", "id");
+function convertXMLToJS(xml) {
+	var valueId = xml.getAttributeNS("", "id");
 	if (valueId) {
 		return valueId;
 	}
 	
-	//Shouldn't encounter value-var here
-	/*
-	var valueVar = node.getAttributeNS("", "value-var");
-	if (valueVar) {
-		return startCaps.unit(vars[valueVar]);
-	}
-	*/
-	
-	var xml = getTrimmedFirstChild(node);
-	
 	if (xml) {
 		var name = xml.localName;
 		var namespace = xml.namespaceURI;
+		console.log("name: " + name);
 		if (name === "set" && namespace === xmlns["f"]) {
 			var ret = {};
 			forEach(xml.childNodes, function(node){
@@ -316,6 +305,12 @@ function convertXMLToJS(node) {
 			var ret = {};
 			forEach(xml.childNodes, function(pair){ //forEach pair
 				ret[convertJSFromXML(xpath("f:key/*", pair)[0])] = convertJSFromXML(xpath("f:value/*", pair)[0]);
+			});
+			return ret;
+		} else if (name === "list" && namespace === xmlns["f"]) {
+			var ret = [];
+			forEach(xml.childNodes, function(node){
+				ret.push(convertJSFromXML(node));
 			});
 			return ret;
 		} else {

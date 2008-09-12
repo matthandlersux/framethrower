@@ -52,13 +52,14 @@ function extractJSFromCustomXML(xml) {
 	var funcName = jsNode.getAttributeNS("", "name");
 	var func = JSTRANSFUNCS[funcName];
 	
+	
 	return function(blankxml, args){
-		//maybe we should convert args from xml to js?
+		var jsargs = {};
 		forEach(args, function(node, key){
-			args[key] = convertXMLToJS(node);	
+			jsargs[key] = convertXMLToJS(node);	
 		});
 		
-		return func(args);
+		return func(jsargs);
 	};
 }
 
