@@ -46,7 +46,7 @@ function domEndCap(ambient, input, node, relurl) {
 						node = c;
 						
 						// find sizings
-						var sizings = xpath(".//html:div[@left]", node);
+						var sizings = xpath("descendant-or-self::html:div[@left]", node);
 						forEach(sizings, function (sizing) {
 							sizeNode(sizing);
 						});

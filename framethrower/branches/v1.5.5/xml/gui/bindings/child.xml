@@ -19,7 +19,7 @@
 					<with-param>
 						<xsl:choose>
 							<xsl:when test="$type/@value = 'kernel.situation'">
-								<zui view="situation" />
+								<zui view="situation" childrenSidebar="1" />
 							</xsl:when>
 							<xsl:otherwise>
 								<zui view="object" />

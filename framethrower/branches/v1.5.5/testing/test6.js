@@ -26,7 +26,7 @@ rose.control.content.set(parseXML("<html:i>Rose</html:i>"));
 
 var zui = layout.zui.make();
 zui.control.focus.set(rw);
-zui.control.properties.set(parseXML("<zui view='situation' />"));
+zui.control.properties.set(parseXML("<zui view='situation' childrenSidebar='1' />"));
 
 
 var mainAmbient = makeAmbient();

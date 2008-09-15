@@ -1,5 +1,5 @@
 function convertToXML(o) {
-	if (!o) {
+	if (o === undefined) {
 		return {xml: emptyXPathResult, ids: {}};
 	} else if (o.getId) {
 		var id = o.getId();
@@ -244,7 +244,7 @@ function convertXMLToPin(node, ids, vars) {
 	}
 	
 	if (!node.firstChild) {
-		return startCaps.unit(false);
+		return startCaps.unit(undefined);
 	}
 	
 	// should probably get rid of this one... if all else fails make it a string

@@ -1,14 +1,20 @@
 body {
 	overflow: hidden;
 	font-family: Trebuchet MS;
+	font-size: 11pt;
 }
 
 .zui {
+	background-color:#fff;
+	/*border: 1px solid #000;
+	border-width: 0px 1px 1px 1px;*/
 }
 
 .zuiTitle {
 	font-weight: bold;
-	background-image: url(../images/titleBarBG.png);
+	padding: 4px;
+/*	background-image: url(../images/titleBarBG.png);
+	background-color:#aaa;*/
 }
 .zuiTitleBG {
 	
@@ -20,10 +26,16 @@ body {
 }
 
 .zuiChildrenSidebar {
-	background-color:#ddd;
+	background-color:#dde;
 	width:240px;
 	float:left;
 }
 
+/*.zuiOpeningBG {
+	background-image: url(../images/openingBG.png);
+}*/
+
 .zuiOpening {
+	overflow: hidden;
+	background-color:#666;
 }
