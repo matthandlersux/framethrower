@@ -1,21 +1,28 @@
 JSTRANSFUNCS = {};
 
+function makePerform(absurl, params) {
+	var perform = document.createElementNS("f", "perform");
+	perform.setAttributeNS("", "absurl", absurl);
+	forEach(params, function(param){
+		var withparam = document.createElementNS(xmlns.f, "with-param");
+		withparam.setAttributeNS("", "name", param.name);
+		withparam.setAttributeNS("", "value-id", param.value);
+		perform.appendChild(withparam);
+	});
+	return perform;
+}
 
-function test(args) {
-	//console.dirxml(args.trace1);
-	var comment = document.createElementNS("","comment");
 
-	console.dir(args);
-	/*
+function correspond(args) {
+	var transaction = document.createElementNS("","transaction");
+
 	// find the lowest situation that contains both a and b
-	var aSit = args.trace1;
-	var aSitId = aSit.getAttributeNS("", "id");
-	var bSit = args.trace2;
-	var bSitId = bSit.getAttributeNS("", "id");
+	var aSit = args.trace1[0];
+	var bSit = args.trace2[0];
+
+	var aSits = [aSit];
+	var bSits = [bSit];
 	
-	
-	var aSits = [aSitId];
-	var bSits = [bSitId];
 	function checkMatch() {
 		function check(sit, sits) {
 			if (sit) {
@@ -27,27 +34,40 @@ function test(args) {
 				}
 			}
 		}
-		return check(aSitId, bSits) || check(bSitId, aSits);
+		return check(aSit, bSits) || check(bSit, aSits);
 	}
-	var i=0;
+	var i=1;
 	while (!checkMatch()) {
 		if (aSit) {
-			aSit = aSit.nextSibling;
-			aSits.push(aSit.getAttributeNS("", "id"));
+			aSit = args.trace1[i];
+			aSits.push(aSit);
 		}
 		if (bSit) {
-			bSit = bSit.nextSibling;
-			bSits.push(bSit.getAttributeNS("", "id"));
+			bSit = args.trace2[i];
+			bSits.push(bSit);
 		}
 		if (!aSit && !bSit) {
-			throw "Objects not part of the same root situation";
+			//throw "Objects not part of the same root situation";
+			return;
 		}
+		i++;
 	}
 	// okay, now aSits contains a's parent situations up to the lowest common situation, likewise for bSits
 	var common = aSits[aSits.length - 1];
-	*/
-	/*
-	// checks if o is in any of sits
+	
+	var perform = makePerform('xml/api/correspond2.xml', [{name:'object3', value:args.object1}, {name:'object4', value:args.object2}]);
+	transaction.appendChild(perform);
+
+	return transaction;
+}
+
+
+
+function correspond2 (args) {
+
+	var comment = document.createElementNS("","comment");
+	
+		// checks if o is in any of sits
 	function isIn(o, sits) {
 		var sit = o.getParentSituation();
 		return any(sits, function (s) {
@@ -117,14 +137,10 @@ function test(args) {
 		makeC(ghost, aHighest);
 		makeC(ghost, bHighest);
 	}
-	*/
 	
 	return comment;
 }
 
 
-
-
-
-
-JSTRANSFUNCS.test = test;
+JSTRANSFUNCS.correspond = correspond;
+JSTRANSFUNCS.correspond2 = correspond2;

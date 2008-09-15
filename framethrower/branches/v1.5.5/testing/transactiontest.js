@@ -61,7 +61,7 @@ processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {rw: r
 var transPerforms = loadXMLNow(ROOTDIR + 'testing/xml/toplevelperforms.xml');
 
 
-processAllPerforms(mainAmbient, transPerforms, {rw:rw, ind0:ind[3], ind1:ind[1], ind2:ind[2], ind3:ind[3], ind4:ind[4]}, {}, "testing/xml/toplevelperforms.xml");
+processAllPerforms(mainAmbient, transPerforms, {rw:rw, ind0:ind[0], ind1:ind[1], ind2:ind[2], ind3:ind[3], ind4:ind[4]}, {}, "testing/xml/toplevelperforms.xml");
 
 
 

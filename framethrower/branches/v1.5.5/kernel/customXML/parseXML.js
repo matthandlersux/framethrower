@@ -54,6 +54,10 @@ function extractJSFromCustomXML(xml) {
 	
 	
 	return function(blankxml, args){
+		
+		console.log("xml args: ");
+		console.log(args);
+		
 		var jsargs = {};
 		forEach(args, function(node, key){
 			jsargs[key] = convertXMLToJS(node);	

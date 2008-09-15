@@ -29,6 +29,8 @@ function processPerforms(ambient, node, ids, vars, relurl, url, params) {
 	
 	if (!params) {
 		var paramNodes = xpath("f:with-param", node);
+		console.log("looking for paramNodes: ");
+		console.log(paramNodes);
 		params = {};
 		forEach(paramNodes, function (paramNode) {
 			params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, ids, vars);

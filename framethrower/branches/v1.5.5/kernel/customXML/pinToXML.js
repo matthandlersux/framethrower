@@ -293,7 +293,6 @@ function convertXMLToJS(xml) {
 	if (xml) {
 		var name = xml.localName;
 		var namespace = xml.namespaceURI;
-		console.log("name: " + name);
 		if (name === "set" && namespace === xmlns["f"]) {
 			var ret = {};
 			forEach(xml.childNodes, function(node){

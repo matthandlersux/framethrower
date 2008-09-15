@@ -88,6 +88,57 @@ var interfaceInstantiators = {
 				return cache.toObject();
 			}
 		};
+	},
+	tree: function (a) { //for now this can only have one copy of an object at a point in the tree. if an object is added twice, it is removed from it's original position
+		var cache = makeObjectHash();
+		var roots = makeObjectHash();
+		
+		var recurseAddInfom = function(o, pin){
+			cache.get(o).children.forEach(function(child){
+				pin.addChild(o, child);
+				recurseAddInfom(child, pin);
+			});
+		};
+		return {
+			actions: {
+				addRoot: function (o) {
+					typeCheck(a, o);
+					this.remove(o);
+					roots.set(o, o);
+					cache.set(o, {obj:o, children:makeObjectHash(), parent:null});
+				},
+				addChild: function (parent, o) {
+					typeCheck(a, o);
+					this.remove(o);
+					cache.get(parent).children.set(o, o);
+					cache.set(o, {obj:o, children:makeObjectHash(), parent:parent});
+				},
+				remove: function (o) {
+					var oprev = cache.get(o);
+					if(oprev){
+						if(oprev.parent){
+							cache.get(oprev.parent).children.remove(o);
+						} else {
+							roots.remove(o);
+						}
+						cache.remove(o);
+					}
+				}
+			},
+			addInform: function (pin) {
+				roots.forEach(function (o){
+					pin.addRoot(o);
+					recurseAddInfom(o, pin);
+				});
+			},
+			getState: function () {
+				var retcache = cache.toArray();
+				forEach(retcache, function(o) {
+					o.children = o.children.toArray();
+				});
+				return {roots:roots.toArray(), cache:retcache};
+			}
+		};
 	}
 };
 

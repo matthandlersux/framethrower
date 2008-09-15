@@ -1,0 +1,19 @@
+<f:transaction name="correspond2"
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<f:param name="object3" />
+	<f:param name="object4" />
+
+	<f:derived name="outtrace1" from="object3">
+		<trace what="correspondOut" />
+	</f:derived>
+	<f:derived name="outtrace2" from="object4">
+		<trace what="correspondOut" />
+	</f:derived>
+
+
+	<f:jsfunc name="correspond2" />
+	
+	
+</f:transaction>
