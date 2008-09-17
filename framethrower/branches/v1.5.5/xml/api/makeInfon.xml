@@ -9,11 +9,11 @@
 		<transaction>
 			<f:perform url="helper/makeobject.xml" prefix="obj">
 				<f:with-param name="type"><f:string value="kernel.infon" /></f:with-param>
-				<f:with-param name="parentSituation" value-id="{$parentSituation/@id}" />
+				<f:with-param name="parentSituation"><xsl:copy-of select="$parentSituation" /></f:with-param>
 			</f:perform>
-			<intact with-var="obj.o" prop="content" action="set">
+			<!--<intact with-var="obj.o" prop="content" action="set">
 				<f:with-param><f:string value="Test Infon" /></f:with-param>
-			</intact>
+			</intact>-->
 			<intact with-var="obj.o" prop="relation" action="set">
 				<with-param value-id="{$relation/@id}" />
 			</intact>

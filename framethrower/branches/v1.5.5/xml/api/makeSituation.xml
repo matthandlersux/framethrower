@@ -7,7 +7,7 @@
 		<transaction>
 			<f:perform url="helper/makeobject.xml" prefix="obj">
 				<f:with-param name="type"><f:string value="kernel.situation" /></f:with-param>
-				<f:with-param name="parentSituation" value-id="{$parentSituation/@id}" />
+				<f:with-param name="parentSituation"><xsl:copy-of select="$parentSituation" /></f:with-param>
 			</f:perform>
 			<f:return as="o" value="obj.o" />
 		</transaction>

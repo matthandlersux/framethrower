@@ -105,6 +105,8 @@ var convertPinToXML = memoize(function (pin) {
 					return (stringifyObject(a) > stringifyObject(b)) ? 1 : -1;
 				});
 				
+				console.log("set update being called", sorted.length);
+				
 				var xml = document.createElementNS(xmlns["f"], "set");
 				var ids = {};
 				forEach(sorted, function (o) {

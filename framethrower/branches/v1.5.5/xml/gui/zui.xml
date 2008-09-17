@@ -23,7 +23,7 @@
 		<xsl:variable name="titleBarHeight" select="23" />
 		<xsl:variable name="childrenSidebarExpandedWidth" select="240" />
 		
-		<xsl:variable name="padding" select="5" />
+		<xsl:variable name="padding" select="4" />
 		
 		<html:div class="zui" left="0" top="0" width="{$width/@value}" height="{$height/@value}">
 			<f:binding url="bindings/zui.xml">
@@ -81,13 +81,13 @@
 					<xsl:variable name="openingHeight" select="$height/@value - $titleBarHeight - $padding" />
 					
 					<html:div class="zuiOpening" left="{$childrenSidebarWidth + $padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$openingHeight}">
-						<f:thunk url="graphics/innerShadow.xml">
+						<!--><f:thunk url="graphics/innerShadow.xml">
 							<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
 							<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
-							<f:with-param name="offsetX"><f:number value="5" /></f:with-param>
+							<f:with-param name="offsetX"><f:number value="0" /></f:with-param>
 							<f:with-param name="offsetY"><f:number value="5" /></f:with-param>
 							<f:with-param name="blurAmount"><f:number value="10" /></f:with-param>
-						</f:thunk>
+						</f:thunk>-->
 						<f:thunk name="printOpenings">
 							<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 							<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
@@ -153,17 +153,17 @@
 			
 			<html:div>
 				
-				<xsl:for-each select="$openZuis/*">
+				<!--><xsl:for-each select="$openZuis/*">
 					<html:div left="{$padding + count(preceding-sibling::*) * ($childWidth + $spacing)}" top="{$padding}">
 						<f:thunk url="graphics/dropShadow.xml">
 							<f:with-param name="width"><f:number value="{$childWidth}" /></f:with-param>
 							<f:with-param name="height"><f:number value="{$h}" /></f:with-param>
-							<f:with-param name="offsetX"><f:number value="2" /></f:with-param>
+							<f:with-param name="offsetX"><f:number value="0" /></f:with-param>
 							<f:with-param name="offsetY"><f:number value="2" /></f:with-param>
 							<f:with-param name="blurAmount"><f:number value="5" /></f:with-param>
 						</f:thunk>
 					</html:div>
-				</xsl:for-each>
+				</xsl:for-each>-->
 				
 				<xsl:for-each select="$openZuis/*">
 					<html:div left="{$padding + count(preceding-sibling::*) * ($childWidth + $spacing)}" top="{$padding}">

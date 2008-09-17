@@ -17,6 +17,59 @@ function evaluateTransaction(qtDoc, params) {
 }
 
 
+function executeTransaction(transaction, url) {
+	var newvars = {};
+	var returnVars = {};
+	var ids = transaction.ids;
+
+	forEach(transaction.xml.childNodes, function (actionNode) {
+		var actionName = actionNode.localName;
+		if (actionName == 'make') {
+			var type = actionNode.getAttributeNS("", "type");
+			var result = typeNames[type].make();
+			var resultName = actionNode.getAttributeNS("", "name");
+			if(resultName) {
+				newvars[resultName] = result;
+			}
+		} else if (actionName == 'intact') {
+			var prefix = actionNode.getAttributeNS("", "with-var");
+			if (prefix) {
+				prefix = newvars[prefix];
+			} else {
+				prefix = actionNode.getAttributeNS("", "with-id");
+				if (prefix) {
+					prefix = ids[prefix];
+				}
+			}
+			var prop = actionNode.getAttributeNS("", "prop");
+			var action = actionNode.getAttributeNS("", "action");
+
+			var params = [];
+			//with-param nodes (put in xpath here?)
+			//change code to accept params like this: <f:string value="kernel.individual" />
+			forEach (actionNode.childNodes, function(paramNode){
+				params.push(getObjectFromParam(paramNode, ids, newvars));
+			});
+			prefix.control[prop][action].apply(null, params);
+		} else if (actionName == 'perform') {
+			var newvarprefix = actionNode.getAttributeNS("", "prefix");
+			var result = processPerforms(null, actionNode, transaction.ids, newvars, url);
+			forEach(result.returnVars, function(addvar, key){
+				if(newvarprefix){
+					newvars[newvarprefix + "." + key] = addvar;
+				}
+			});
+		} else if (actionName == 'return') {
+			//store variable names to return
+			returnVars[actionNode.getAttributeNS("", "as")] = actionNode.getAttributeNS("", "value");
+		}
+	});
+	//take only the returnVars from the newvars
+	forEach(returnVars, function(value, name){
+		returnVars[name] = newvars[value];
+	});
+	return {success:true, returnVars:returnVars}; //add more nuanced return values
+}
 
 
 
@@ -29,8 +82,6 @@ function processPerforms(ambient, node, ids, vars, relurl, url, params) {
 	
 	if (!params) {
 		var paramNodes = xpath("f:with-param", node);
-		console.log("looking for paramNodes: ");
-		console.log(paramNodes);
 		params = {};
 		forEach(paramNodes, function (paramNode) {
 			params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, ids, vars);
@@ -81,7 +132,7 @@ function processPerforms(ambient, node, ids, vars, relurl, url, params) {
 				prefix.control[prop][action].apply(null, params);
 			} else if (actionName == 'perform') {
 				var newvarprefix = actionNode.getAttributeNS("", "prefix");
-				var result = processPerforms(ambient, actionNode, transaction.ids, newvars, url);
+				var result = processPerforms(null, actionNode, transaction.ids, newvars, url);
 				forEach(result.returnVars, function(addvar, key){
 					if(newvarprefix){
 						newvars[newvarprefix + "." + key] = addvar;

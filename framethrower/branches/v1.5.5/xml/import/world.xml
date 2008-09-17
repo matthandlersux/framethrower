@@ -1,0 +1,38 @@
+<situation name="ont" returnas="ont">
+	<content>Ontological Layer</content>
+	<relation name="ofType" returnas="ofType" />
+	<individual name="typeType" returnas="typeType" type="typeType" />
+	<situation name="rw" returnas="rw">
+		<content>The World</content>
+		
+		<individual name="personType" type="typeType">
+			<content>Person</content>
+		</individual>
+		<individual name="movieType" type="typeType">
+			<content>Movie</content>
+		</individual>
+		
+		<individual name="sc" type="personType">
+			<content>Sean Connery</content>
+		</individual>
+		<relation name="performs">
+			<content><pseudo><role role="performer" /> performs <role role="performee" /></pseudo></content>
+		</relation>
+		<situation name="gfmov" type="movieType">
+			<content>Goldfinger</content>
+			<individual name="jb" type="personType">
+				<content>James Bond</content>
+			</individual>
+		</situation>
+		<infon relation="performs">
+			<arc role="performer" arg="jb" />
+			<arc role="performee" arg="sc" />
+		</infon>
+		<situation name="tmov" type="movieType">
+			<content>Titanic</content>
+			<individual name="rose" type="personType">
+				<content>Rose</content>
+			</individual>
+		</situation>
+	</situation>
+</situation>
