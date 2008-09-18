@@ -5,7 +5,7 @@
 
 	<f:perform url="transtest.xml">
 		<f:with-param name="parentSituation" value-id="rw" />
-		<f:with-param name="ind0" value-id="ind0" />
-		<f:with-param name="ind1" value-id="ind1" />
+		<f:with-param name="object" value-id="sc" />
+		<f:with-param name="destination" value-id="gfmov" />
 	</f:perform>
 </xml>

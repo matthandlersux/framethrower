@@ -1,5 +1,5 @@
 // create a little test world
-/*
+
 var rw = actions.makeSituation();
 rw.control.content.set("Real World");
 
@@ -19,53 +19,51 @@ tmov.control.content.set("Titanic");
 var rose = actions.makeIndividual(tmov);
 rose.control.content.set("Rose");
 
+
+startCaps.controllableSet = memoize(function (set) {
+	var controller = {};
+	var type = getSuperType(set);
+	var sc = makeSimpleStartCap(interfaces.set(type), controller);
+	forEach(set, function (arg) {
+		controller.add(arg);
+	});
+	return {sc:sc, controller:controller};
+});
+
+
+
+var controlSet = startCaps.controllableSet([rw, jb, sc, gfmov, rose]);
+var customset = controlSet.sc;
+
+var controller = controlSet.controller;
+
+
+// this is all we need to get started
+var mainAmbient = makeAmbient();
+processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {rw: rw, customset: customset}, "");
+
+
+//load a transaction thunk xml
+var transPerforms = loadXMLNow(ROOTDIR + 'testing/xml/toplevelperforms.xml');
+
+processAllPerforms(mainAmbient, transPerforms, {rw:rw, rose:rose, gfmov:gfmov, sc:sc}, {}, "testing/xml/toplevelperforms.xml");
+
+
+
+
 // run some tests
 
+/*
 var mainAmbient = makeAmbient();
-*/
 
-/*
-var hasLetter = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (x) {return x.indexOf(" ") >= 0;});
-var getContent = components.lift(interfaces.unit, basic.fun(kernel.ob, interfaces.unit(basic.js)), function (x) {return x.get.content();});
-var myPredCom = simpleCompose(getContent, components.collapse(interfaces.unit, interfaces.unit, basic.js), hasLetter);
-var myPred = function (x) {
-	return simpleApply(myPredCom, startCaps.unit(x));
-}
-var filterc = components.filterC(interfaces.set, kernel.ob, myPred);
-*/
-
-//var liftf = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (x) {return x + " asdf";});
-
-//var filtert = components.set.filterType(kernel.ob, kernel.individual);
+var treecom = components.treeify(basic.fun(interfaces.set(kernel.ob), interfaces.tree(kernel.ob)), "parentSituation");
 
 
-//var out = simpleApply(filterc, rw.get.childObjects());
+var customSet = startCaps.set([rw, jb, sc, gfmov, rose]);
 
+var sa2 = simpleApply(treecom, customSet);
 
-
-//var out2 = simpleApply(myPred, startCaps.unit(rw));
-
-/*
-var applyGetTest1 = applyGet(startCaps.unit(rw), "content");
-var applyGetTest2 = applyGet(startCaps.unit(rw), "childObjects");
-
-var filterCom = components.set.filterType(kernel.ob, kernel.situation);
-var filtered = simpleApply(filterCom, applyGetTest2);
-var applyGetTest3 = applyGet(filtered, "childObjects");
-
-//var applyGetTest3 = applyGet(applyGetTest2, "childObjects");
-
-
-var ec = makeSimpleEndCap(mainAmbient, endCaps.log.unit("test query"), applyGetTest1);
+var ec = makeSimpleEndCap(mainAmbient, endCaps.log.tree("testTree"), sa2);
 ec.activate();
+
 */
-
-var root="root";
-var child1="child1";
-var child2="child2";
-var a = interfaces.tree(basic.js).instantiate();
-a.actions.addRoot(root);
-a.actions.addChild(root, child1);
-a.actions.addChild(root, child2);
-
-var b = interfaces.tree(basic.js).instantiate();

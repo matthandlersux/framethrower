@@ -199,6 +199,82 @@ var convertPinToXML = memoize(function (pin) {
 				}
 			};
 		}, pin);
+	} else if (constructor === interfaces.tree) {
+		return makeSimpleBox(interfaces.unit(basic.js), function (myOut, ambient) {
+			var cache = makeObjectHash();
+			var roots = makeObjectHash();
+
+			function recurseChildren(obj, xmlParent) {
+				var childXML = document.createElementNS(xmlns["f"], "child");
+				var ids = {};
+
+				xmlParent.appendChild(childXML);
+				var valueXML = document.createElementNS(xmlns["f"], "value");
+				childXML.appendChild(valueXML);
+				var converted = convertToXML(obj);
+				valueXML.appendChild(converted.xml);
+				
+				ids = converted.ids;
+				
+				cache.get(obj).children.forEach(function(child){
+					var newids = recurseChildren(child, childXML);
+					ids = merge(ids, newids);
+				});
+				return ids;
+			}
+
+			function update() {
+				var xml = document.createElementNS(xmlns["f"], "tree");
+				var ids = {};
+				roots.forEach(function (item) {
+					var newids = recurseChildren(item, xml);
+					ids = merge(ids, newids);
+				});
+				myOut.set({xml: xml, ids: ids});
+			}
+			update();
+
+			var remove = function (o) {
+				var oprev = cache.get(o);
+				if(oprev){
+					if(oprev.parent){
+						cache.get(oprev.parent).children.remove(o);
+					} else {
+						roots.remove(o);
+					}
+					cache.remove(o);
+				}
+				update();
+			};
+
+			return {
+				addRoot: function (o) {
+					var oprev = cache.get(o);
+					if(oprev) {
+						remove(o);
+						roots.set(o, o);
+						cache.set(o, oprev);
+					} else {
+						roots.set(o, o);
+						cache.set(o, {obj:o, children:makeObjectHash(), parent:null});	
+					}
+					update();
+				},
+				addChild: function (parent, o) {
+					var oprev = cache.get(o);
+					if(oprev) {
+						remove(o);
+						cache.get(parent).children.set(o, o);
+						cache.set(o, {obj:o, children:oprev.children, parent:parent});	
+					} else {
+						cache.get(parent).children.set(o, o);
+						cache.set(o, {obj:o, children:makeObjectHash(), parent:parent});
+					}
+					update();
+				},
+				remove: remove
+			};
+		}, pin);
 	}
 });
 

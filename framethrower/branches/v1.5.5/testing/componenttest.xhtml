@@ -5,7 +5,7 @@
     xmlns:svg="http://www.w3.org/2000/svg"
 	xmlns:xlink="http://www.w3.org/1999/xlink">
 <head>
-  <title>Component Test</title>
+  <title>Test 4</title>
 
 	<script>
 		var ROOTDIR = "../";
@@ -15,10 +15,19 @@
 </head>
 <body>
 
-<div id="html_mainscreen"></div>
+<div id="html_mainscreen">
+	<f:thunk url="testing/xml/printsituation.xml">
+		<f:with-param name="focus" value-id="rw" />
+	</f:thunk>
+	
+	<br />
+	
+	<f:thunk url="testing/xml/printtree.xml">
+		<f:with-param name="focus" value-id="customset" />
+	</f:thunk>
+</div>
 
+
+<script src="componenttest.js"></script>
 </body>
-
-	<script src="componenttest.js"></script>
-
 </html>

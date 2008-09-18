@@ -191,6 +191,19 @@ endCaps.log.list = function (name) {
 	};
 };
 
+endCaps.log.tree = function (name) {
+	return {
+		addRoot: function (value) {
+			console.log(name, "=added root=", value, ": ", maybeGetContent(value));
+		},
+		addChild: function (parent, value) {
+			console.log(name, "=added child=", value, ": ", maybeGetContent(value), "=to=", parent, ":", maybeGetContent(parent));
+		},
+		remove: function (o) {
+			console.log(name, "=removed=", o, maybeGetContent(o));
+		}
+	};
+};
 
 // ============================================================================
 // Utility
@@ -254,6 +267,148 @@ function makeCrossReference() {
 // ============================================================================
 
 var components = {};
+
+
+components.trace = function (fType, property) {
+	var inputType = fType.getArguments()[0]; //input type must be interface.unit(something)
+	var outputType = fType.getResult(); //can be interface.set(something) or interface.list(something)
+	
+	var treeifyAmbient = makeAmbient();
+	
+	var recursiveProc = function (depth, output) {
+		return {
+			set: function (input) {
+				//make a SC to get 'input's parent, and add input to the list
+				if (input) {
+					if (outputType.getConstructor() === interfaces.list){
+						output.update(input, depth);
+					} else if (outputType.getConstructor() === interfaces.list){
+						output.add(input);
+					}					
+					var getParent = applyGet(startCaps.unit(input), property);
+					var nextProc = recursiveProc(depth+1, output);
+					var recurseEC = makeSimpleEndCap(treeifyAmbient, nextProc, getParent);
+				} else {
+					// maybe do output.remove(depth);
+				}
+			}
+		};
+	};
+	
+	
+	var instProc = function (myOut) {
+		return {
+			set: function (input) {
+				var recurseEC = makeSimpleEndCap(treeifyAmbient, recursiveProc(0, myOut), applyGet(startCaps.unit(input), "parentSituation"));
+			}
+		};
+	};
+	
+	return makeSimpleComponent(inputType, outputType, instProc);
+};
+
+components.treeify = function (fType, property) {
+	var inputType = fType.getArguments()[0];
+	var outputType = fType.getResult();
+	
+	var treeifyAmbient = makeAmbient();
+	
+	var tree = {};
+	
+	var addChild = function (id, parentId, parentIndex, output) {
+		var node = tree[id];
+		node.parent = parentId;
+		node.parentIndex = parentIndex;
+		tree[parentId].children.set(id, id);
+		output.addChild(tree[parentId].value, node.value);
+	};
+
+	var treeProc = function (output, id) {
+		return {
+			update: function (value, index) {
+				
+				// if this node is a root node, add value to it's list, and check value against other root nodes
+				// if it matches a root node, check all of that nodes children to see if this node should be their parent
+				var node = tree[id];
+				var newId = value.getId();
+				if(node.parent === null) {
+					node.parentList[index] = newId;
+					forEach(tree, function(rootNode, rootId){
+						//may want to keep a seperate datastructure to keep track of the root nodes, instead of forEach the whole tree
+						if(rootNode.parent === null) {
+							if(rootId === newId) {
+								addChild(id, rootId, index, output);
+								rootNode.children.forEach(function(childId){
+									forEach(tree[childId].parentList, function(parent, pindex){
+										if(parent === id) {
+											rootNode.children.remove(childId);
+											addChild(childId, id, pindex, output);
+										}
+									});
+								});
+							}
+						}
+					});
+				}
+				// if it's a non-root node, check if index comes before or at it's current parent index
+				// if it does, check if it matches any of the current parent's children, and update accordingly 
+				else {
+					if(index <= node.parentIndex) {
+						node.parentList[index] = newId;
+						tree[node.parent].children.forEach(function(childId){
+							if(newId === childId) {
+								tree[node.parent].children.remove(id);
+								addChild(id, newId, index, output);
+							}
+						});
+					}
+				}
+			},
+			insert: function (value, index) {
+				// this should never happen
+			},
+			remove: function (index) {
+				// check if this index was the current parent, if so make this a root node
+				// TODO: write this function
+			}
+		};
+	};
+	
+	
+	
+	var instProc = function (myOut) {
+		return {
+			add: function (input) {
+				//add input to tree data structure
+				tree[input.getId()] = {parent:null, parentIndex:null, parentList:[], children:makeObjectHash(), value:input};
+				
+				myOut.addRoot(input);
+				
+				//check if input is the parent of any of the root nodes (should consolidate this into a function...)
+				var newid = input.getId();
+				forEach(tree, function(rootNode, rootId){
+					if(rootNode.parent === null) {
+						forEach(rootNode.parentList, function(parent, pindex){
+							if(parent === newid) {
+								addChild(rootId, newid, pindex, myOut);
+							}
+						});
+					}
+				});
+				
+				var com = components.trace(basic.fun(interfaces.unit(kernel.ob), interfaces.list(kernel.ob)), property);
+				var sa = simpleApply(com, startCaps.unit(input));
+				var treeEC = makeSimpleEndCap(treeifyAmbient, treeProc(myOut, input.getId()), sa);
+			},
+			remove: function (input) {
+			}
+		};
+	};
+	
+	return makeSimpleComponent(inputType, outputType, instProc);
+};
+
+
 
 components.lift = function (liftInterface, fType, f) {
 	var inputType = fType.getArguments()[0];

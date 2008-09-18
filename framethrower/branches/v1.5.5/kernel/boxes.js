@@ -165,6 +165,7 @@ function makeBox(outputInterfaces, instantiateProcessor, inputs) {
 
 // used to make boxes and endcaps
 function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
+	
 	var box = makeIded("box");
 	
 	var active = false;

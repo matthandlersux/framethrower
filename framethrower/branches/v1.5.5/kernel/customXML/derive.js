@@ -97,6 +97,10 @@ function derive(xml, context, focus) {
 			focus = deriveTrace(focus, function (o) {
 				return o.get[what]();
 			}, outType);
+		} else if (name === "treeify") {
+			var t = focus.getType();
+			var property = xml.getAttributeNS("", "property");
+			focus = deriveTreeify(focus, property);
 		} else {
 			console.error("Unknown xml element in derive: " + name);
 		}
@@ -117,7 +121,9 @@ function derive(xml, context, focus) {
 	}
 }
 
-
+// f: a -> unit(a)
+// example: parentSituation
+// TODO: make this use the trace component
 function deriveTrace(focus, f, outType) {
 	return box = makeSimpleBox(interfaces.list(outType), function (myOut, ambient) {
 		var endCaps = [];
@@ -151,3 +157,24 @@ function deriveTrace(focus, f, outType) {
 		};
 	}, focus);
 }
+
+
+
+
+var deriveTreeify = memoize(function (input, goUpProperty) {
+	// input must be interfaces.set()
+	var t = input.getType();
+	
+	var intf = t.getConstructor();
+	var intfargs = t.getArguments();
+	
+	
+	var inType = intfargs[0];
+	if (!inType.getProp) {
+		console.warn("inType doesn't have a prop", inType.getName(), input);
+	}
+	var outType = inType.getProp(goUpProperty);
+	
+	var treecom = components.treeify(basic.fun(interfaces.set(inType), interfaces.tree(inType)), goUpProperty);
+	return simpleApply(treecom, input);
+});

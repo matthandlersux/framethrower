@@ -93,42 +93,58 @@ var interfaceInstantiators = {
 		var cache = makeObjectHash();
 		var roots = makeObjectHash();
 		
-		var recurseAddInfom = function(o, pin){
+		var recurseAddInform = function(o, pin){
 			cache.get(o).children.forEach(function(child){
 				pin.addChild(o, child);
-				recurseAddInfom(child, pin);
+				recurseAddInform(child, pin);
 			});
 		};
+		
+		var remove = function (o) {
+			var oprev = cache.get(o);
+			if(oprev){
+				if(oprev.parent){
+					cache.get(oprev.parent).children.remove(o);
+				} else {
+					roots.remove(o);
+				}
+				cache.remove(o);
+			}
+		};
+		
 		return {
+			//fix this so remove doesn't lose the children!!!!
 			actions: {
 				addRoot: function (o) {
 					typeCheck(a, o);
-					this.remove(o);
-					roots.set(o, o);
-					cache.set(o, {obj:o, children:makeObjectHash(), parent:null});
+					var oprev = cache.get(o);
+					if(oprev) {
+						remove(o);
+						roots.set(o, o);
+						cache.set(o, oprev);
+					} else {
+						roots.set(o, o);
+						cache.set(o, {obj:o, children:makeObjectHash(), parent:null});	
+					}
 				},
 				addChild: function (parent, o) {
 					typeCheck(a, o);
-					this.remove(o);
-					cache.get(parent).children.set(o, o);
-					cache.set(o, {obj:o, children:makeObjectHash(), parent:parent});
-				},
-				remove: function (o) {
 					var oprev = cache.get(o);
-					if(oprev){
-						if(oprev.parent){
-							cache.get(oprev.parent).children.remove(o);
-						} else {
-							roots.remove(o);
-						}
-						cache.remove(o);
+					if(oprev) {
+						remove(o);
+						cache.get(parent).children.set(o, o);
+						cache.set(o, {obj:o, children:oprev.children, parent:parent});	
+					} else {
+						cache.get(parent).children.set(o, o);
+						cache.set(o, {obj:o, children:makeObjectHash(), parent:parent});
 					}
-				}
+				},
+				remove: remove
 			},
 			addInform: function (pin) {
 				roots.forEach(function (o){
 					pin.addRoot(o);
-					recurseAddInfom(o, pin);
+					recurseAddInform(o, pin);
 				});
 			},
 			getState: function () {
