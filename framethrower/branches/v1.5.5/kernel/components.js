@@ -289,7 +289,8 @@ components.trace = function (fType, property) {
 					var nextProc = recursiveProc(depth+1, output);
 					var recurseEC = makeSimpleEndCap(treeifyAmbient, nextProc, getParent);
 				} else {
-					// maybe do output.remove(depth);
+					//not sure if this is right
+					output.remove(depth);
 				}
 			}
 		};
@@ -366,7 +367,13 @@ components.treeify = function (fType, property) {
 			},
 			remove: function (index) {
 				// check if this index was the current parent, if so make this a root node
-				// TODO: write this function
+				// may need to rethink this
+				var node = tree.get(id);
+				if(index == node.parentIndex) {
+					node.parentIndex = null;
+					node.parent = null;
+					output.addRoot(node.value);
+				}
 			}
 		};
 	};
