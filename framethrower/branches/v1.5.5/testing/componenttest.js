@@ -32,7 +32,7 @@ startCaps.controllableSet = memoize(function (set) {
 
 
 
-var controlSet = startCaps.controllableSet([rw, jb, sc, gfmov, rose]);
+var controlSet = startCaps.controllableSet([sc, gfmov, rose]);
 var customset = controlSet.sc;
 
 var controller = controlSet.controller;

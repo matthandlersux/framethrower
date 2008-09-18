@@ -15,8 +15,6 @@
 				Corresponds Tree
 			</html:b>
 			
-			<xsl:copy-of select="$correspondsTree" />
-			
 			<xsl:call-template name="recurse">
 				<xsl:with-param name="focus" select="$correspondsTree" />
 			</xsl:call-template>

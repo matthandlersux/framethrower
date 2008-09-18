@@ -231,6 +231,7 @@ var convertPinToXML = memoize(function (pin) {
 					var newids = recurseChildren(child, childXML);
 					ids = merge(ids, newids);
 				});
+				
 				return ids;
 			}
 
@@ -255,7 +256,6 @@ var convertPinToXML = memoize(function (pin) {
 					}
 					cache.remove(o);
 				}
-				update();
 			};
 
 			return {
@@ -264,7 +264,7 @@ var convertPinToXML = memoize(function (pin) {
 					if(oprev) {
 						remove(o);
 						roots.set(o, o);
-						cache.set(o, oprev);
+						cache.set(o, {obj:o, children:oprev.children, parent:null});
 					} else {
 						roots.set(o, o);
 						cache.set(o, {obj:o, children:makeObjectHash(), parent:null});	
@@ -283,7 +283,10 @@ var convertPinToXML = memoize(function (pin) {
 					}
 					update();
 				},
-				remove: remove
+				remove: function (o) {
+					remove(o);
+					update();
+				}
 			};
 		}, pin);
 	}

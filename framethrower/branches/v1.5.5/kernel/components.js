@@ -313,40 +313,37 @@ components.treeify = function (fType, property) {
 	
 	var treeifyAmbient = makeAmbient();
 	
-	var tree = {};
+	var tree = makeObjectHash();
 	
 	var addChild = function (id, parentId, parentIndex, output) {
-		var node = tree[id];
+		var node = tree.get(id);
 		node.parent = parentId;
 		node.parentIndex = parentIndex;
-		tree[parentId].children.set(id, id);
-		output.addChild(tree[parentId].value, node.value);
+		tree.get(parentId).children.set(id, id);
+		output.addChild(tree.get(parentId).value, node.value);
 	};
 
 	var treeProc = function (output, id) {
 		return {
 			update: function (value, index) {
 				
-				// if this node is a root node, add value to it's list, and check value against other root nodes
-				// if it matches a root node, check all of that nodes children to see if this node should be their parent
-				var node = tree[id];
+				// if this node is a root node, add value to it's list, and check value against other nodes
+				// if it matches a node, check all of that nodes children to see if this node should be their parent
+				var node = tree.get(id);
 				var newId = value.getId();
 				if(node.parent === null) {
 					node.parentList[index] = newId;
-					forEach(tree, function(rootNode, rootId){
-						//may want to keep a seperate datastructure to keep track of the root nodes, instead of forEach the whole tree
-						if(rootNode.parent === null) {
-							if(rootId === newId) {
-								addChild(id, rootId, index, output);
-								rootNode.children.forEach(function(childId){
-									forEach(tree[childId].parentList, function(parent, pindex){
-										if(parent === id) {
-											rootNode.children.remove(childId);
-											addChild(childId, id, pindex, output);
-										}
-									});
+					tree.forEach(function (treeNode, treeId) {
+						if(treeId === newId) {
+							addChild(id, treeId, index, output);
+							treeNode.children.forEach(function(childId){
+								forEach(tree.get(childId).parentList, function(parent, pindex){
+									if(parent === id) {
+										treeNode.children.remove(childId);
+										addChild(childId, id, pindex, output);
+									}
 								});
-							}
+							});
 						}
 					});
 				}
@@ -355,9 +352,9 @@ components.treeify = function (fType, property) {
 				else {
 					if(index <= node.parentIndex) {
 						node.parentList[index] = newId;
-						tree[node.parent].children.forEach(function(childId){
+						tree.get(node.parent).children.forEach(function(childId){
 							if(newId === childId) {
-								tree[node.parent].children.remove(id);
+								tree.get(node.parent).children.remove(id);
 								addChild(id, newId, index, output);
 							}
 						});
@@ -380,27 +377,52 @@ components.treeify = function (fType, property) {
 		return {
 			add: function (input) {
 				//add input to tree data structure
-				tree[input.getId()] = {parent:null, parentIndex:null, parentList:[], children:makeObjectHash(), value:input};
+				if (!tree.get(input.getId())) {
+					tree.set(input.getId(), {parent:null, parentIndex:null, parentList:[], children:makeObjectHash(), value:input});
 				
-				myOut.addRoot(input);
+					myOut.addRoot(input);
 				
-				//check if input is the parent of any of the root nodes (should consolidate this into a function...)
-				var newid = input.getId();
-				forEach(tree, function(rootNode, rootId){
-					if(rootNode.parent === null) {
-						forEach(rootNode.parentList, function(parent, pindex){
-							if(parent === newid) {
-								addChild(rootId, newid, pindex, myOut);
-							}
-						});
-					}
-				});
+					//check if input is the parent of any of the root nodes (should consolidate this into a function...)
+					var newid = input.getId();
+					tree.forEach(function (rootNode, rootId) {
+						if(rootNode.parent === null) {
+							forEach(rootNode.parentList, function(parent, pindex){
+								if(parent === newid) {
+									console.log("should be in here");
+									addChild(rootId, newid, pindex, myOut);
+								}
+							});
+						}
+					});
 				
-				var com = components.trace(basic.fun(interfaces.unit(kernel.ob), interfaces.list(kernel.ob)), property);
-				var sa = simpleApply(com, startCaps.unit(input));
-				var treeEC = makeSimpleEndCap(treeifyAmbient, treeProc(myOut, input.getId()), sa);
+					var com = components.trace(basic.fun(interfaces.unit(kernel.ob), interfaces.list(kernel.ob)), property);
+					var sa = simpleApply(com, startCaps.unit(input));
+					var treeEC = makeSimpleEndCap(treeifyAmbient, treeProc(myOut, input.getId()), sa);
+				}
 			},
 			remove: function (input) {
+				var node = tree.get(input);
+				if(node) {
+					var parentId = node.parent;
+					if(parentId) {
+						var parent = tree.get(parentId);
+						parent.children.remove(input.getId());
+						node.children.forEach(function(childId){
+							var childNode = tree.get(childId);
+							var pindex = childNode.parentIndex + node.parentIndex + 1;
+							addChild(childId, parentId, pindex, myOut);
+						});
+					} else {
+						node.children.forEach(function(childId){
+							var childNode = tree.get(childId);
+							childNode.parent = null;
+							childNode.parentIndex = null;
+							myOut.addRoot(childNode.value);
+						});
+					}
+				}
+				tree.remove(input.getId());
+				myOut.remove(input);
 			}
 		};
 	};
