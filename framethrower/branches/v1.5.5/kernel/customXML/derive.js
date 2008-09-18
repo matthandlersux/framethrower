@@ -56,26 +56,41 @@ function derive(xml, context, focus) {
 	
 	//if (name) console.log("hooking up", name, xml, focus);
 	
+	function startFrom(xml) {
+		var from = xml.getAttributeNS("", "from");
+		if (from) {
+			return context[from];
+		}
+		
+		var predef = xml.getAttributeNS("", "predef");
+		if (predef) {
+			return startCaps.unit(PREDEF[predef]);
+		}
+	}
+	
 	if (!name) {
 		
 	} else if (name === "derived") {
-		focus = context[xml.getAttributeNS("", "from")];
+		focus = startFrom(xml);
 		next = xml.firstChild;
 	} else if (name === "start") {
-		focus = context[xml.getAttributeNS("", "from")];
+		focus = startFrom(xml);
 	} else if (focus) {
 		if (name === "get") {
 			focus = applyGet(focus, xml.getAttributeNS("", "what"));
 		} else if (name === "filter") {
-			// need to test still..
 			var com = components.filterC(focus.getType().getConstructor(), focus.getType().getArguments()[0], function (o) {
-				return derive(xml.firstChild, context, startCaps.unit(o));
+				//console.log("deriving predicate", o.getId());
+				var res = derive(xml.firstChild, context, startCaps.unit(o));
+				//console.log("done deriving pred", o.getId());
+				return res;
 			});
 			focus = simpleApply(com, focus);
 		} else if (name === "equals") {
 			var input2 = derive(xml.firstChild, context);
 			var type = getSuperTypeFromTypes(focus.getType().getArguments()[0], input2.getType().getArguments()[0]);
 			var com = components.equals(type);
+			//console.log("deciding equals", focus.getType().getName(), input2.getType().getName(), type.getName());
 			var out = com.makeApply({input1: focus, input2: input2});
 			focus = out.output;
 		} else if (name === "filtertype") {
@@ -97,6 +112,11 @@ function derive(xml, context, focus) {
 			focus = deriveTrace(focus, function (o) {
 				return o.get[what]();
 			}, outType);
+		} else if (name === "foreach") {
+			var type = typeNames[xml.getAttributeNS("", "type")];
+			focus = deriveForEach(focus, function (o) {
+				return derive(xml.firstChild, context, startCaps.unit(o));
+			}, type);
 		} else if (name === "treeify") {
 			var t = focus.getType();
 			var property = xml.getAttributeNS("", "property");
@@ -153,6 +173,35 @@ function deriveTrace(focus, f, outType) {
 		return {
 			set: function (o) {
 				makeEndCaps(0, o);
+			}
+		};
+	}, focus);
+}
+
+function deriveForEach(focus, f, outType) {
+	return box = makeSimpleBox(interfaces.set(outType), function (myOut, ambient) {
+		var cr = makeCrossReference();
+		var inputs = makeObjectHash();
+		return {
+			add: function (input) {
+				inputs.getOrMake(input, function () {
+					var fOut = f(input);
+					return makeSimpleEndCap(ambient, {
+						set: function (o) {
+							if (o) {
+								cr.addLink(input, o, myOut.add);
+							}
+						}
+					}, fOut);
+				});
+			},
+			remove: function (input) {
+				var qInner = inputs.get(input);
+				if (qInner !== undefined) {
+					qInner.deactivate();
+					inputs.remove(input);
+					cr.removeInput(input, myOut.remove);				
+				}
 			}
 		};
 	}, focus);

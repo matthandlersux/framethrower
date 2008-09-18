@@ -102,7 +102,8 @@ basic.number = makeType("basic.number");
 basic.xml = makeType("basic.xml");
 
 basic.js.match = function (instanceType) {
-	return instanceType === basic.js || instanceType === basic.string || instanceType === basic.bool || instanceType === basic.number || instanceType === basic.xml;
+	return true;
+	//return instanceType === basic.js || instanceType === basic.string || instanceType === basic.bool || instanceType === basic.number || instanceType === basic.xml;
 };
 
 /*basic.assoc = memoize(function (keyType, valueType) {

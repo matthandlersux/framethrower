@@ -1,15 +1,17 @@
 <situation name="ont" returnas="ont">
 	<content>Ontological Layer</content>
 	<relation name="ofType" returnas="ofType" />
-	<individual name="typeType" returnas="typeType" type="typeType" />
+	<individual name="typeType" returnas="typeType" type="typeType">
+		<content>Types</content>
+	</individual>
 	<situation name="rw" returnas="rw">
 		<content>The World</content>
 		
 		<individual name="personType" type="typeType">
-			<content>Person</content>
+			<content>People</content>
 		</individual>
 		<individual name="movieType" type="typeType">
-			<content>Movie</content>
+			<content>Movies</content>
 		</individual>
 		
 		<individual name="sc" type="personType">

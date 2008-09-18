@@ -100,12 +100,15 @@ var convertPinToXML = memoize(function (pin) {
 	} else if (constructor === interfaces.set) {
 		return makeSimpleBox(interfaces.unit(basic.js), function (myOut, ambient) {
 			var cache = makeObjectHash();
+			var needsUpdate = true;
 			function update() {
-				var sorted = cache.toArray().sort(function (a, b) {
+				function sortfunc(a, b) {
 					return (stringifyObject(a) > stringifyObject(b)) ? 1 : -1;
-				});
+				}
+				var sorted = cache.toArray().sort(sortfunc);
+				//var sorted = cache.toArray();
 				
-				console.log("set update being called", sorted.length);
+				//console.log("set update being called", sorted.length);
 				
 				var xml = document.createElementNS(xmlns["f"], "set");
 				var ids = {};
@@ -115,16 +118,24 @@ var convertPinToXML = memoize(function (pin) {
 					ids = merge(ids, converted.ids);
 				});
 				myOut.set({xml: xml, ids: ids});
+				needsUpdate = false;
 			}
-			update();
+			//update();
 			return {
 				add: function (o) {
 					cache.set(o, o);
-					update();
+					needsUpdate = true;
+					//update();
 				},
 				remove: function (o) {
 					cache.remove(o);
-					update();
+					needsUpdate = true;
+					//update();
+				},
+				PACKETCLOSE: function () {
+					//console.log("PACKET CLOSE Called");
+					if (needsUpdate) update();
+					//console.log("PACKETCLOSE", cache.toArray().length);
 				}
 			};
 		}, pin);
@@ -296,6 +307,11 @@ function convertXMLToPin(node, ids, vars) {
 	var valueVar = node.getAttributeNS("", "value-var");
 	if (valueVar) {
 		return maybeUnit(vars[valueVar]);
+	}
+	
+	var valuePredef = node.getAttributeNS("", "value-predef");
+	if (valuePredef) {
+		return maybeUnit(PREDEF[valuePredef]);
 	}
 	
 	var xml = getTrimmedFirstChild(node);

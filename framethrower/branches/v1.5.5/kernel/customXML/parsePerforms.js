@@ -130,6 +130,7 @@ function processPerforms(ambient, node, ids, vars, relurl, url, params) {
 					params.push(getObjectFromParam(paramNode, ids, newvars));
 				});
 				prefix.control[prop][action].apply(null, params);
+				prefix.control[prop].PACKETCLOSE();
 			} else if (actionName == 'perform') {
 				var newvarprefix = actionNode.getAttributeNS("", "prefix");
 				var result = processPerforms(null, actionNode, transaction.ids, newvars, url);

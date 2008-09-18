@@ -2,6 +2,8 @@ console.log("iw", importWorld);
 
 var world = importWorld.importWorld(loadXMLNow(ROOTDIR + "xml/import/world.xml"));
 
+var PREDEF = world;
+
 var rw = world.rw;
 
 var zui = layout.zui.make();
@@ -17,3 +19,10 @@ processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {
 	"uiStartCaps.windowSizeWidth": uiStartCaps.windowSizeWidth,
 	"uiStartCaps.windowSizeHeight": uiStartCaps.windowSizeHeight
 }, "");
+
+
+var test = deriveForEach(rw.get.childObjects(), function (o) {
+	return o.get.parentSituation();
+}, kernel.situation);
+
+var ec = makeSimpleEndCap(mainAmbient, endCaps.log.set("test output"), test);

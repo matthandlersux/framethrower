@@ -223,6 +223,24 @@ var qtDocs = (function () {
 			});
 
 			var transformed = simpleApply(xslCom, combinedContext);
+			
+			// doesn't work for some reason...
+			/*var transformed = makeSimpleBox(interfaces.unit(basic.js), function (myOut, ambient) {
+				var cache;
+				function update() {
+					if (!cache) return undefined;
+					var res = compiled(blankXML, cache.xml);
+					myOut.set({xml: res, ids: cache.ids});
+				}
+				return {
+					set: function (o) {
+						cache = o;
+					},
+					PACKETCLOSE: function () {
+						update();
+					}
+				};
+			}, combinedContext);*/
 
 			return transformed;
 		};

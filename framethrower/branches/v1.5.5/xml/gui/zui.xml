@@ -115,6 +115,19 @@
 		<f:param name="focus" />
 		<f:derived name="children" from="focus">
 			<get what="childObjects" />
+			<get what="involves" />
+			<filter>
+				<get what="relation" />
+				<equals>
+					<start predef="ofType" />
+				</equals>
+			</filter>
+			<foreach type="kernel.ob">
+				<get what="arcs" />
+				<getkey key="'type'" />
+				<!--><get what="parentSituation" />-->
+			</foreach>
+			
 		</f:derived>
 		
 		<xsl:template>

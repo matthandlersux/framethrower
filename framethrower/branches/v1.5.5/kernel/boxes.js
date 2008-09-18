@@ -2,12 +2,14 @@
 var globalQArray = [];
 
 
-function makeInputPin(sendFun) {
+function makeInputPin(sendFun, ownerBox) {
 	var inputPin = makeIded("inputPin");
 	inputPin.send = sendFun;
 	
 	// ==================== For Debug
 	globalQArray.push(inputPin);
+	
+	inputPin.getOwnerBox = getter(ownerBox);
 
 	return inputPin;
 }
@@ -24,6 +26,7 @@ function makeOutputPin(outputInterface, controller, activator) {
 		informs.set(inputPin, inputPin);
 		if (active) {
 			outputInterfaceInstance.addInform(inputPin.send);
+			inputPin.send.PACKETCLOSE();
 		} else {
 			activator.activate();
 		}
@@ -49,6 +52,13 @@ function makeOutputPin(outputInterface, controller, activator) {
 				});
 			};
 		});
+		
+		// propagate PACKETCLOSE
+		controller.send.PACKETCLOSE = function () {
+			informs.forEach(function (inform) {
+				inform.send.PACKETCLOSE();
+			});
+		};
 		
 		active = true;
 	};
@@ -103,7 +113,7 @@ function makeAmbient() {
 		}
 		
 		
-		var endCap = makeGenericBox({}, instantiateProcessor, inputs);
+		var endCap = makeGenericBox({}, instantiateProcessor, inputs, ambient);
 		delete endCap.outputPins;
 		
 		endCaps.push(endCap);
@@ -164,7 +174,7 @@ function makeBox(outputInterfaces, instantiateProcessor, inputs) {
 }
 
 // used to make boxes and endcaps
-function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
+function makeGenericBox(outputInterfaces, instantiateProcessor, inputs, parentAmbient) {
 	
 	var box = makeIded("box");
 	
@@ -186,10 +196,31 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs) {
 			// instantiate processor
 			ambient = makeAmbient();
 			var processor = instantiateProcessor(output, ambient);
+			
+			
+			// Propagate PACKETCLOSE actions
+			function propagatePacketClose () {
+				forEach(output, function (pin) {
+					pin.PACKETCLOSE();
+				});
+				if (parentAmbient && parentAmbient.propagatePacketClose) {
+					parentAmbient.propagatePacketClose();
+				}
+			}
+			forEach(processor, function (inproc) {
+				if (inproc.PACKETCLOSE) {
+					inproc.PACKETCLOSE = pCompose(inproc.PACKETCLOSE, propagatePacketClose);
+				} else {
+					inproc.PACKETCLOSE = propagatePacketClose;
+				}
+			});
+			
+			ambient.propagatePacketClose = propagatePacketClose;
+
 
 			// make input pins
 			forEach(inputs, function (parentPin, inputName) {
-				var pin = makeInputPin(processor[inputName]);
+				var pin = makeInputPin(processor[inputName], box);
 				parentPin.addInform(pin);
 				inputPins[inputName] = pin;
 			});
