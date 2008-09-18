@@ -388,7 +388,6 @@ components.treeify = function (fType, property) {
 						if(rootNode.parent === null) {
 							forEach(rootNode.parentList, function(parent, pindex){
 								if(parent === newid) {
-									console.log("should be in here");
 									addChild(rootId, newid, pindex, myOut);
 								}
 							});
