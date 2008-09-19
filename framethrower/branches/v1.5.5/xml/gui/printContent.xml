@@ -16,6 +16,25 @@
 				<xsl:when test="$content/self::f:string">
 					<xsl:value-of select="$content/@value" />
 				</xsl:when>
+				<xsl:when test="$content/self::information">
+					<!--><html:img src="{$content/@thumbnail}" />-->
+					<xsl:choose>
+						<xsl:when test="$style/@value = 'inline'">
+							<html:span style="height:13px; background-image: url({$content/@thumbnail}); background-repeat: no-repeat; padding-left:100px;">
+								<xsl:value-of select="$content/@name" />
+							</html:span>
+						</xsl:when>
+						<xsl:when test="$style/@value = 'listentry'">
+							<html:div style="float:left; width:30px; height:30px; background-image: url({$content/@thumbnail});" />
+							<xsl:value-of select="$content/@name" />
+							<html:br style="clear:both" />
+						</xsl:when>
+						<xsl:otherwise>
+							
+						</xsl:otherwise>
+					</xsl:choose>
+
+				</xsl:when>
 				<xsl:otherwise>
 					<xsl:copy-of select="$content" />
 				</xsl:otherwise>

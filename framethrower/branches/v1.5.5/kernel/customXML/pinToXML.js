@@ -1,7 +1,7 @@
 function convertToXML(o) {
 	if (o === undefined) {
 		return {xml: emptyXPathResult, ids: {}};
-	} else if (o.getId) {
+	} else if (o.getId && o.getType() !== basic.xml) {
 		var id = o.getId();
 		var xml = document.createElementNS(xmlns["f"], "ob");
 		xml.setAttributeNS("", "id", id);

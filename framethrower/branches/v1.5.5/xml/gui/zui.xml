@@ -53,6 +53,7 @@
 			<html:div class="zuiTitle" left="0" top="0" width="{$width/@value}" height="{$titleBarHeight}">
 				<f:thunk url="printContent.xml">
 					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+					<f:with-param name="style"><f:string value="inline" /></f:with-param>
 				</f:thunk>
 				
 				<xsl:if test="$focusType/@value='kernel.situation'">

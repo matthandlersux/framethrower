@@ -3,8 +3,32 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:svg="http://www.w3.org/2000/svg">
-
+	
 	<f:param name="zui" />
+	<f:param name="focus" />
+	<f:derived name="children" from="focus">
+		<get what="childObjects" />
+		<!--><filtertype type="kernel.individual" />-->
+	</f:derived>
+	
+	<xsl:template>
+		<html:div>
+			<xsl:for-each select="$children/*">
+				<html:div>
+					<f:binding url="bindings/child.xml">
+						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+						<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+					</f:binding>
+					<f:thunk url="printContent.xml">
+						<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+						<f:with-param name="style"><f:string value="listentry" /></f:with-param>
+					</f:thunk>
+				</html:div>
+			</xsl:for-each>
+		</html:div>
+	</xsl:template>
+
+	<!--<f:param name="zui" />
 	<f:param name="focus" />
 	<f:derived name="types" from="focus">
 		<get what="childObjects" />
@@ -90,7 +114,6 @@
 					</equals>
 				</filter>
 			</filter>
-			<!--><sort />-->
 		</f:derived>
 		
 		<xsl:template>
@@ -108,7 +131,7 @@
 				</xsl:for-each>
 			</html:div>
 		</xsl:template>
-	</f:function>
+	</f:function>-->
 	
 	
 	

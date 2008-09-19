@@ -80,6 +80,8 @@ function processPerforms(ambient, node, ids, vars, relurl, url, params) {
 	
 	var functionCom = qtDocs.get(url);
 	
+
+	
 	if (!params) {
 		var paramNodes = xpath("f:with-param", node);
 		params = {};

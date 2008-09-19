@@ -7,7 +7,10 @@ var importWorld = (function () {
 			importer1 = compileXSL(loadXMLNow(ROOTDIR + "xml/import/import.xsl"));
 
 			importer2 = compileXSL(loadXMLNow(ROOTDIR + "xml/import/importType.xsl"));
+			
 			var transXML = importer1(importer2(xml, {}), {});
+			
+			//console.dirxml(transXML);
 			
 			var transaction = {xml: transXML, ids: {}};
 			

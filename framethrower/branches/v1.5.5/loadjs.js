@@ -13,6 +13,8 @@ function loadjscssfile (filename, filetype) {
 	document.getElementsByTagName("head")[0].appendChild(fileref);
 }
 
+loadjscssfile("../kernel/util/firebugx.js", "js");
+
 loadjscssfile("../kernel/util/json2.js", "js");
 loadjscssfile("../kernel/util/util.js", "js");
 loadjscssfile("../kernel/util/xml.js", "js");

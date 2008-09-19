@@ -41,6 +41,11 @@ function makeIded(type, o) {
 	return o;
 }
 
+Node.prototype.toJSON = function () {
+	makeIded(basic.xml, this);
+	return this.toJSON();
+};
+
 
 // ========================================================================
 // Ohash
