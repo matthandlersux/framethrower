@@ -1,0 +1,30 @@
+<f:binding
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	
+	<f:transaction name="Expand Collapse" event="click">
+		<f:param name="zui" />
+		<f:param name="type" />
+		<f:derived name="expandedTypes" from="zui">
+			<get what="expandedTypes" />
+		</f:derived>
+		
+		<xsl:template>
+			<transaction>
+				<xsl:variable name="typeId" select="$type/@id" />
+				<xsl:choose>
+					<xsl:when test="$expandedTypes/*[@id = $typeId]">
+						<intact with-id="{$zui/@id}" prop="expandedTypes" action="remove">
+							<with-param><xsl:copy-of select="$type" /></with-param>
+						</intact>
+					</xsl:when>
+					<xsl:otherwise>
+						<intact with-id="{$zui/@id}" prop="expandedTypes" action="add">
+							<with-param><xsl:copy-of select="$type" /></with-param>
+						</intact>
+					</xsl:otherwise>
+				</xsl:choose>
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+</f:binding>

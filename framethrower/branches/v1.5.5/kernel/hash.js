@@ -27,7 +27,7 @@ function makeIded(type, o) {
 	
 	var id = idGenerator.get();
 	
-	objectCache.set(id, o);
+	//objectCache.set(id, o);
 
 	o.getId = getter(id);
 	o.toJSON = getter("object:" + id);
@@ -35,7 +35,7 @@ function makeIded(type, o) {
 	
 	o.remove = function () {
 		// remove from object cache
-		objectCache.remove(id);
+		//objectCache.remove(id);
 	};
 	
 	return o;

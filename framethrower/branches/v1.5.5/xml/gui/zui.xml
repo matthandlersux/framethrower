@@ -12,6 +12,9 @@
 	<f:derived name="focus" from="zui">
 		<get what="focus" />
 	</f:derived>
+	<f:derived name="focusType" from="focus">
+		<gettype />
+	</f:derived>
 	<f:derived name="properties" from="zui">
 		<get what="properties" />
 	</f:derived>
@@ -21,7 +24,7 @@
 		<xsl:variable name="h" select="$height/@value" />
 		
 		<xsl:variable name="titleBarHeight" select="23" />
-		<xsl:variable name="childrenSidebarExpandedWidth" select="240" />
+		<xsl:variable name="childrenSidebarExpandedWidth" select="200" />
 		
 		<xsl:variable name="padding" select="4" />
 		
@@ -31,33 +34,44 @@
 				<f:with-param name="parentZui"><xsl:copy-of select="$parentZui" /></f:with-param>
 			</f:binding>
 			
-			<f:thunk url="graphics/zuiPane.xml">
-				<f:with-param name="width"><f:number value="{$w}" /></f:with-param>
-				<f:with-param name="height"><f:number value="{$h}" /></f:with-param>
-				<f:with-param name="border"><f:number value="{$padding}" /></f:with-param>
-				<f:with-param name="titleBarHeight"><f:number value="{$titleBarHeight}" /></f:with-param>
-			</f:thunk>
+			<html:div style="position:absolute">
+				<f:thunk url="graphics/zuiPane.xml">
+					<f:with-param name="width"><f:number value="{$w}" /></f:with-param>
+					<f:with-param name="height"><f:number value="{$h}" /></f:with-param>
+					<f:with-param name="border"><f:number value="{$padding}" /></f:with-param>
+					<f:with-param name="titleBarHeight"><f:number value="{$titleBarHeight}" /></f:with-param>
+					<xsl:variable name="paneColor">
+						<xsl:choose>
+							<xsl:when test="$focusType/@value='kernel.situation'">#eee</xsl:when>
+							<xsl:otherwise>yellow</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					<f:with-param name="color"><f:string value="{$paneColor}" /></f:with-param>
+				</f:thunk>
+			</html:div>
 			
 			<html:div class="zuiTitle" left="0" top="0" width="{$width/@value}" height="{$titleBarHeight}">
 				<f:thunk url="printContent.xml">
 					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 				</f:thunk>
 				
-				<html:span style="margin-left:15px;">
-					<f:button name="childrenSidebar" />
-					Ch
-				</html:span>
-				|
-				<html:span>
-					<f:button name="situationView" />
-					SV
-				</html:span>
-				|
-				<html:span>
-					<f:button name="objectView" />
-					OV
-				</html:span>
-				|
+				<xsl:if test="$focusType/@value='kernel.situation'">
+					<html:span style="margin-left:15px;">
+						<f:button name="childrenSidebar" />
+						Ch
+					</html:span>
+					|
+					<html:span>
+						<f:button name="situationView" />
+						SV
+					</html:span>
+					|
+					<html:span>
+						<f:button name="objectView" />
+						OV
+					</html:span>
+					|
+				</xsl:if>
 				<html:span>
 					<f:button name="close" />
 					X
@@ -65,11 +79,11 @@
 			</html:div>
 			
 			<xsl:choose>
-				<xsl:when test="$properties/@view='situation'">
+				<xsl:when test="$properties/@view='situation' and $focusType/@value='kernel.situation'">
 					<xsl:variable name="childrenSidebarWidth" select="$properties/@childrenSidebar * $childrenSidebarExpandedWidth" />
 					<xsl:if test="$properties/@childrenSidebar='1'">
 						<html:div class="zuiChildrenSidebar" left="{$padding}" top="{$titleBarHeight}" width="{$childrenSidebarWidth}" height="{$height/@value - $titleBarHeight - $padding}">
-							<f:thunk name="printChildren">
+							<f:thunk url="childrenSidebar.xml">
 								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 							</f:thunk>
@@ -109,43 +123,6 @@
 		</html:div>
 	</xsl:template>
 	
-	
-	<f:function name="printChildren">
-		<f:param name="zui" />
-		<f:param name="focus" />
-		<f:derived name="children" from="focus">
-			<get what="childObjects" />
-			<get what="involves" />
-			<filter>
-				<get what="relation" />
-				<equals>
-					<start predef="ofType" />
-				</equals>
-			</filter>
-			<foreach type="kernel.ob">
-				<get what="arcs" />
-				<getkey key="'type'" />
-				<!--><get what="parentSituation" />-->
-			</foreach>
-			
-		</f:derived>
-		
-		<xsl:template>
-			<html:div>
-				<xsl:for-each select="$children/*">
-					<html:div>
-						<f:binding url="bindings/child.xml">
-							<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-							<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
-						</f:binding>
-						<f:thunk url="printContent.xml">
-							<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
-						</f:thunk>
-					</html:div>
-				</xsl:for-each>
-			</html:div>
-		</xsl:template>
-	</f:function>
 	
 	<f:function name="printOpenings">
 		<f:param name="zui" />

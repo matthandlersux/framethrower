@@ -1,0 +1,456 @@
+<situation name="ont" returnas="ont">
+	<content>
+		Ontological Layer
+	</content>
+	<relation name="ofType" returnas="ofType"/>
+	<individual name="typeType" returnas="typeType" type="typeType">
+		<content>
+			Types
+		</content>
+		
+	</individual>
+	<situation name="rw" returnas="rw">
+		<content>
+			The World
+		</content>
+		<individual name="personType" type="typeType">
+			<content>
+				People
+			</content>
+			
+		</individual>
+		<individual name="movieType" type="typeType">
+			<content>
+				Movies
+			</content>
+			
+		</individual>
+		<relation name="performs">
+			<content>
+				<pseudo>
+					<role role="performer"/>
+					 performs <role role="performee"/>
+					
+				</pseudo>
+				
+			</content>
+			
+		</relation>
+		<individual name="people.0000843" type="personType">
+			<content>
+				Anne Bancroft
+			</content>
+			
+		</individual>
+		<individual name="people.0000163" type="personType">
+			<content>
+				Dustin Hoffman
+			</content>
+			
+		</individual>
+		<individual name="people.0001684" type="personType">
+			<content>
+				Katharine Ross
+			</content>
+			
+		</individual>
+		<individual name="people.0200122" type="personType">
+			<content>
+				William Daniels
+			</content>
+			
+		</individual>
+		<individual name="people.0358069" type="personType">
+			<content>
+				Murray Hamilton
+			</content>
+			
+		</individual>
+		<individual name="people.0933361" type="personType">
+			<content>
+				Elizabeth Wilson
+			</content>
+			
+		</individual>
+		<individual name="people.0377750" type="personType">
+			<content>
+				Buck Henry
+			</content>
+			
+		</individual>
+		<individual name="people.0043011" type="personType">
+			<content>
+				Brian Avery
+			</content>
+			
+		</individual>
+		<individual name="people.0111754" type="personType">
+			<content>
+				Walter Brooke
+			</content>
+			
+		</individual>
+		<individual name="people.0001205" type="personType">
+			<content>
+				Norman Fell
+			</content>
+			
+		</individual>
+		<individual name="people.0315933" type="personType">
+			<content>
+				Alice Ghostley
+			</content>
+			
+		</individual>
+		<individual name="people.0521079" type="personType">
+			<content>
+				Marion Lorne
+			</content>
+			
+		</individual>
+		<individual name="people.0301841" type="personType">
+			<content>
+				Eddra Gale
+			</content>
+			
+		</individual>
+		<individual name="people.0234975" type="personType">
+			<content>
+				Buddy Douglas
+			</content>
+			
+		</individual>
+		<individual name="people.0000377" type="personType">
+			<content>
+				Richard Dreyfuss
+			</content>
+			
+		</individual>
+		<individual name="people.0268286" type="personType">
+			<content>
+				Mike Farrell
+			</content>
+			
+		</individual>
+		<individual name="people.0292116" type="personType">
+			<content>
+				Elisabeth Fraser
+			</content>
+			
+		</individual>
+		<individual name="people.0323304" type="personType">
+			<content>
+				Donald F. Glut
+			</content>
+			
+		</individual>
+		<individual name="people.0390118" type="personType">
+			<content>
+				Harry Holcombe
+			</content>
+			
+		</individual>
+		<individual name="people.0390418" type="personType">
+			<content>
+				Jonathan Hole
+			</content>
+			
+		</individual>
+		<individual name="people.0588771" type="personType">
+			<content>
+				Lainie Miller
+			</content>
+			
+		</individual>
+		<individual name="people.0614101" type="personType">
+			<content>
+				Ben Murphy
+			</content>
+			
+		</individual>
+		<individual name="people.0685736" type="personType">
+			<content>
+				Noam Pitlik
+			</content>
+			
+		</individual>
+		<individual name="people.0001798" type="personType">
+			<content>
+				Kevin Tighe
+			</content>
+			
+		</individual>
+		<situation name="movies.0061722" type="movieType">
+			<content>
+				The Graduate
+			</content>
+			<individual name="characters.Mrs. Robinson" type="personType">
+				<content>
+					Mrs. Robinson
+				</content>
+				
+			</individual>
+			<individual name="characters.Ben Braddock" type="personType">
+				<content>
+					Ben Braddock
+				</content>
+				
+			</individual>
+			<individual name="characters.Elaine Robinson" type="personType">
+				<content>
+					Elaine Robinson
+				</content>
+				
+			</individual>
+			<individual name="characters.Mr. Braddock" type="personType">
+				<content>
+					Mr. Braddock
+				</content>
+				
+			</individual>
+			<individual name="characters.Mr. Robinson" type="personType">
+				<content>
+					Mr. Robinson
+				</content>
+				
+			</individual>
+			<individual name="characters.Mrs. Braddock" type="personType">
+				<content>
+					Mrs. Braddock
+				</content>
+				
+			</individual>
+			<individual name="characters.Room Clerk" type="personType">
+				<content>
+					Room Clerk
+				</content>
+				
+			</individual>
+			<individual name="characters.Carl Smith" type="personType">
+				<content>
+					Carl Smith
+				</content>
+				
+			</individual>
+			<individual name="characters.Mr. McGuire" type="personType">
+				<content>
+					Mr. McGuire
+				</content>
+				
+			</individual>
+			<individual name="characters.Mr. McCleery" type="personType">
+				<content>
+					Mr. McCleery
+				</content>
+				
+			</individual>
+			<individual name="characters.Mrs. Singleman" type="personType">
+				<content>
+					Mrs. Singleman
+				</content>
+				
+			</individual>
+			<individual name="characters.Miss DeWitte" type="personType">
+				<content>
+					Miss DeWitte
+				</content>
+				
+			</individual>
+			<individual name="characters.Woman on Bus" type="personType">
+				<content>
+					Woman on Bus
+				</content>
+				
+			</individual>
+			<individual name="characters.Bellhop in Hotel Lobby (uncredited)" type="personType">
+				<content>
+					Bellhop in Hotel Lobby (uncredited)
+				</content>
+				
+			</individual>
+			<individual name="characters.Boarding House Resident (uncredited)" type="personType">
+				<content>
+					Boarding House Resident (uncredited)
+				</content>
+				
+			</individual>
+			<individual name="characters.Bellhop in Hotel Lobby (uncredited)" type="personType">
+				<content>
+					Bellhop in Hotel Lobby (uncredited)
+				</content>
+				
+			</individual>
+			<individual name="characters.Second Lady (uncredited)" type="personType">
+				<content>
+					Second Lady (uncredited)
+				</content>
+				
+			</individual>
+			<individual name="characters.College student (uncredited)" type="personType">
+				<content>
+					College student (uncredited)
+				</content>
+				
+			</individual>
+			<individual name="characters.The Minister (uncredited)" type="personType">
+				<content>
+					The Minister (uncredited)
+				</content>
+				
+			</individual>
+			<individual name="characters.Mr. Singleman (uncredited)" type="personType">
+				<content>
+					Mr. Singleman (uncredited)
+				</content>
+				
+			</individual>
+			<individual name="characters.Night Club Stripper (uncredited)" type="personType">
+				<content>
+					Night Club Stripper (uncredited)
+				</content>
+				
+			</individual>
+			<individual name="characters.Shaving Student (uncredited)" type="personType">
+				<content>
+					Shaving Student (uncredited)
+				</content>
+				
+			</individual>
+			<individual name="characters.Gas Station Attendant (uncredited)" type="personType">
+				<content>
+					Gas Station Attendant (uncredited)
+				</content>
+				
+			</individual>
+			<individual name="characters.Extra (uncredited)" type="personType">
+				<content>
+					Extra (uncredited)
+				</content>
+				
+			</individual>
+			
+		</situation>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0000843"/>
+			<arc role="performee" arg="characters.Mrs. Robinson"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0000163"/>
+			<arc role="performee" arg="characters.Ben Braddock"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0001684"/>
+			<arc role="performee" arg="characters.Elaine Robinson"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0200122"/>
+			<arc role="performee" arg="characters.Mr. Braddock"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0358069"/>
+			<arc role="performee" arg="characters.Mr. Robinson"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0933361"/>
+			<arc role="performee" arg="characters.Mrs. Braddock"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0377750"/>
+			<arc role="performee" arg="characters.Room Clerk"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0043011"/>
+			<arc role="performee" arg="characters.Carl Smith"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0111754"/>
+			<arc role="performee" arg="characters.Mr. McGuire"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0001205"/>
+			<arc role="performee" arg="characters.Mr. McCleery"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0315933"/>
+			<arc role="performee" arg="characters.Mrs. Singleman"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0521079"/>
+			<arc role="performee" arg="characters.Miss DeWitte"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0301841"/>
+			<arc role="performee" arg="characters.Woman on Bus"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0234975"/>
+			<arc role="performee" arg="characters.Bellhop in Hotel Lobby (uncredited)"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0000377"/>
+			<arc role="performee" arg="characters.Boarding House Resident (uncredited)"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0268286"/>
+			<arc role="performee" arg="characters.Bellhop in Hotel Lobby (uncredited)"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0292116"/>
+			<arc role="performee" arg="characters.Second Lady (uncredited)"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0323304"/>
+			<arc role="performee" arg="characters.College student (uncredited)"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0390118"/>
+			<arc role="performee" arg="characters.The Minister (uncredited)"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0390418"/>
+			<arc role="performee" arg="characters.Mr. Singleman (uncredited)"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0588771"/>
+			<arc role="performee" arg="characters.Night Club Stripper (uncredited)"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0614101"/>
+			<arc role="performee" arg="characters.Shaving Student (uncredited)"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0685736"/>
+			<arc role="performee" arg="characters.Gas Station Attendant (uncredited)"/>
+			
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="people.0001798"/>
+			<arc role="performee" arg="characters.Extra (uncredited)"/>
+			
+		</infon>
+		
+	</situation>
+	
+</situation>

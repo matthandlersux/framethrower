@@ -1,6 +1,6 @@
 console.log("iw", importWorld);
 
-var world = importWorld.importWorld(loadXMLNow(ROOTDIR + "xml/import/world.xml"));
+var world = importWorld.importWorld(loadXMLNow(ROOTDIR + "xml/import/world2.xml"));
 
 var PREDEF = world;
 
@@ -21,8 +21,13 @@ processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {
 }, "");
 
 
-var test = deriveForEach(rw.get.childObjects(), function (o) {
+/*var test = deriveForEach(rw.get.childObjects(), function (o) {
 	return o.get.parentSituation();
-}, kernel.situation);
+}, kernel.situation);*/
 
-var ec = makeSimpleEndCap(mainAmbient, endCaps.log.set("test output"), test);
+//var test = deriveNonEmpty(rw.get.childObjects());
+
+//var test = deriveSort(rw.get.childObjects());
+//var test2 = deriveLimit(test);
+
+//var ec = makeSimpleEndCap(mainAmbient, endCaps.log.list("test output"), test2);

@@ -105,7 +105,12 @@ var convertPinToXML = memoize(function (pin) {
 				function sortfunc(a, b) {
 					return (stringifyObject(a) > stringifyObject(b)) ? 1 : -1;
 				}
-				var sorted = cache.toArray().sort(sortfunc);
+				
+				var c = cache.toArray();
+				
+				//c.splice(20, c.length-20);
+				
+				var sorted = c.sort(sortfunc);
 				//var sorted = cache.toArray();
 				
 				//console.log("set update being called", sorted.length);
@@ -115,7 +120,10 @@ var convertPinToXML = memoize(function (pin) {
 				forEach(sorted, function (o) {
 					var converted = convertToXML(o);
 					xml.appendChild(converted.xml);
-					ids = merge(ids, converted.ids);
+					//ids = merge(ids, converted.ids);
+					forEach(converted.ids, function (o, id) {
+						ids[id] = o;
+					});
 				});
 				myOut.set({xml: xml, ids: ids});
 				needsUpdate = false;
@@ -190,7 +198,10 @@ var convertPinToXML = memoize(function (pin) {
 				forEach(cache, function (item) {
 					var converted = convertToXML(item);
 					xml.appendChild(converted.xml);
-					ids = merge(ids, converted.ids);
+					//ids = merge(ids, converted.ids);
+					forEach(converted.ids, function (o, id) {
+						ids[id] = o;
+					});
 				});
 				myOut.set({xml: xml, ids: ids});
 			}

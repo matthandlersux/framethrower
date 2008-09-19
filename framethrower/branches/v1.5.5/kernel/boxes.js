@@ -1,5 +1,6 @@
 //global array for debugging
 var globalQArray = [];
+var GLOBALQARRAYON = false;
 
 
 function makeInputPin(sendFun, ownerBox) {
@@ -7,7 +8,7 @@ function makeInputPin(sendFun, ownerBox) {
 	inputPin.send = sendFun;
 	
 	// ==================== For Debug
-	globalQArray.push(inputPin);
+	if (GLOBALQARRAYON) globalQArray.push(inputPin);
 	
 	inputPin.getOwnerBox = getter(ownerBox);
 
@@ -89,7 +90,7 @@ function makeOutputPin(outputInterface, controller, activator) {
 		return outputInterface;
 	};
 	
-	globalQArray.push(outputPin);
+	if (GLOBALQARRAYON) globalQArray.push(outputPin);
 	
 	return outputPin;
 }
@@ -118,11 +119,13 @@ function makeAmbient() {
 		
 		endCaps.push(endCap);
 		
+		closedEndCaps.set(endCap, false);
+		
 		// NEW: automatically activate endcaps on creation
 		endCap.activate();
 		
 		// ==================== For Debug
-		globalQArray.push(endCap);	
+		if (GLOBALQARRAYON) globalQArray.push(endCap);	
 		endCap.getType = function () {
 			return "endCap";
 		};
@@ -134,6 +137,20 @@ function makeAmbient() {
 		forEach(endCaps, function (endCap) {
 			endCap.deactivate();
 		});
+	};
+	
+	var closedEndCaps = makeObjectHash();
+	ambient.endCapPacketClose = function(endCap) {
+		closedEndCaps.set(endCap, true);
+		var go = true;
+		closedEndCaps.forEach(function (on, ec) {
+			if (!on && ec.getActive()) {
+				go = false;
+			}
+		});
+		if (go) {
+			ambient.propagatePacketClose();
+		}
 	};
 	
 	ambient.getEndCaps = function () {
@@ -162,7 +179,7 @@ function makeStartCap(outputInterfaces, controller) {
 		controller[pinName] = c.send;
 	});
 	
-	globalQArray.push(startCap);
+	if (GLOBALQARRAYON) globalQArray.push(startCap);
 	return startCap;
 }
 
@@ -203,8 +220,10 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs, parentAm
 				forEach(output, function (pin) {
 					pin.PACKETCLOSE();
 				});
+				ambient.propagatePacketClose = propagatePacketClose;
 				if (parentAmbient && parentAmbient.propagatePacketClose) {
 					parentAmbient.propagatePacketClose();
+					//parentAmbient.endCapPacketClose(box);
 				}
 			}
 			forEach(processor, function (inproc) {
@@ -215,7 +234,7 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs, parentAm
 				}
 			});
 			
-			ambient.propagatePacketClose = propagatePacketClose;
+			//ambient.propagatePacketClose = propagatePacketClose;
 
 
 			// make input pins
@@ -280,7 +299,7 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs, parentAm
 		return active;
 	};
 	
-	globalQArray.push(box);
+	if (GLOBALQARRAYON) globalQArray.push(box);
 	
 	return box;
 }

@@ -1,0 +1,115 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="zui" />
+	<f:param name="focus" />
+	<f:derived name="types" from="focus">
+		<get what="childObjects" />
+		<get what="involves" />
+		<filter>
+			<get what="relation" />
+			<equals>
+				<start predef="ofType" />
+			</equals>
+		</filter>
+		<foreach type="kernel.ob">
+			<get what="arcs" />
+			<getkey key="'type'" />
+		</foreach>
+	</f:derived>
+	<f:derived name="expandedTypes" from="zui">
+		<get what="expandedTypes" />
+	</f:derived>
+	
+	<xsl:template>
+		<html:div>
+			<xsl:for-each select="$types/*">
+				<html:div>
+					<f:binding url="bindings/type.xml">
+						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+						<f:with-param name="type"><xsl:copy-of select="." /></f:with-param>
+					</f:binding>
+					<xsl:variable name="typeId" select="@id" />
+					<xsl:variable name="expanded" select="$expandedTypes/*[@id = $typeId]" />
+					
+					<xsl:choose>
+						<xsl:when test="$expanded">
+							<html:div class="expanded" />
+						</xsl:when>
+						<xsl:otherwise>
+							<html:div class="collapsed" />
+						</xsl:otherwise>
+					</xsl:choose>
+					
+					<f:thunk url="printContent.xml">
+						<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+					</f:thunk>
+					<xsl:if test="$expanded">
+						<html:div style="margin-left:20px">
+							<f:thunk name="printChildren">
+								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+								<f:with-param name="type"><xsl:copy-of select="." /></f:with-param>
+							</f:thunk>
+						</html:div>							
+					</xsl:if>
+				</html:div>
+			</xsl:for-each>
+		</html:div>
+	</xsl:template>
+	
+	<f:function name="printChildren">
+		<f:param name="zui" />
+		<f:param name="focus" />
+		<f:param name="type" />
+		<f:derived name="children" from="focus">
+			<get what="childObjects" />
+			<filter ascontext="child">
+				<get what="involves" />
+				<filter>
+					<get what="relation" />
+					<equals>
+						<start predef="ofType" />
+					</equals>
+				</filter>
+				<filter>
+					<get what="arcs" />
+					<getkey key="'type'" />
+					<equals>
+						<start from="type" />
+					</equals>
+				</filter>
+				<filter>
+					<get what="arcs" />
+					<getkey key="'instance'" />
+					<equals>
+						<start from="child" />
+					</equals>
+				</filter>
+			</filter>
+			<!--><sort />-->
+		</f:derived>
+		
+		<xsl:template>
+			<html:div>
+				<xsl:for-each select="$children/*">
+					<html:div>
+						<f:binding url="bindings/child.xml">
+							<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+							<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+						</f:binding>
+						<f:thunk url="printContent.xml">
+							<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+						</f:thunk>
+					</html:div>
+				</xsl:for-each>
+			</html:div>
+		</xsl:template>
+	</f:function>
+	
+	
+	
+</f:function>

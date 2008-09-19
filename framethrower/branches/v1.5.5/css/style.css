@@ -1,6 +1,6 @@
 body {
 	overflow: hidden;
-	font-family: Trebuchet MS;
+	font-family: Calibri, Trebuchet MS;
 	font-size: 11pt;
 }
 
@@ -27,8 +27,14 @@ body {
 
 .zuiChildrenSidebar {
 	background-color:#dde;
-	width:240px;
-	float:left;
+	overflow-y: auto;
+}
+
+.expanded {
+	float:left; width:13px; height:13px; background-image: url(../images/expanded.png);
+}
+.collapsed {
+	float:left; width:13px; height:13px; background-image: url(../images/collapsed.png);
 }
 
 /*.zuiOpeningBG {
@@ -37,6 +43,6 @@ body {
 
 .zuiOpening {
 	overflow: hidden;
-	/*background: #444 url(http://www.eversplosion.com/resources/gradient.php?height=100&start=000000&end=444444) repeat-x;*/
-	background: #6af url(http://www.eversplosion.com/resources/gradient.php?height=80&start=0066ee&end=66aaff) repeat-x scroll 0 0;
+	background: #444 url(http://www.eversplosion.com/resources/gradient.php?height=100&start=000000&end=444444) repeat-x;
+	/*background: #6af url(http://www.eversplosion.com/resources/gradient.php?height=80&start=0066ee&end=66aaff) repeat-x scroll 0 0;*/
 }

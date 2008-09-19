@@ -8,6 +8,7 @@
 	<f:param name="height" />
 	<f:param name="border" />
 	<f:param name="titleBarHeight" />
+	<f:param name="color" />
 	
 	<xsl:template>
 		<xsl:variable name="w" select="$width/@value" />
@@ -16,7 +17,7 @@
 		<xsl:variable name="tbh" select="$titleBarHeight/@value" />
 		
 		<svg:svg width="{$w}" height="{$h}">
-			<svg:rect x="0" y="0" width="{$w}" height="{$h}" fill="#eee" stroke="#333" stroke-width="1" />
+			<svg:rect x="0" y="0" width="{$w}" height="{$h}" fill="{$color/@value}" stroke="#333" stroke-width="1" />
 			<svg:rect x="{$b}" y="{$tbh}" width="{$w - $b * 2}" height="{$h - $tbh - $b}" fill="#fff" stroke="#333" stroke-width="1" />
 		</svg:svg>
 	</xsl:template>

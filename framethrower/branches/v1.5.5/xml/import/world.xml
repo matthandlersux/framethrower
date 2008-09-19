@@ -14,12 +14,14 @@
 			<content>Movies</content>
 		</individual>
 		
-		<individual name="sc" type="personType">
-			<content>Sean Connery</content>
-		</individual>
 		<relation name="performs">
 			<content><pseudo><role role="performer" /> performs <role role="performee" /></pseudo></content>
 		</relation>
+
+		<individual name="sc" type="personType">
+			<content>Sean Connery</content>
+		</individual>
+
 		<situation name="gfmov" type="movieType">
 			<content>Goldfinger</content>
 			<individual name="jb" type="personType">
@@ -27,9 +29,10 @@
 			</individual>
 		</situation>
 		<infon relation="performs">
-			<arc role="performer" arg="jb" />
-			<arc role="performee" arg="sc" />
+			<arc role="performer" arg="sc" />
+			<arc role="performee" arg="jb" />
 		</infon>
+		
 		<situation name="tmov" type="movieType">
 			<content>Titanic</content>
 			<individual name="rose" type="personType">

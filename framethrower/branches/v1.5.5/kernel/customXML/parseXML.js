@@ -161,7 +161,9 @@ function combineContext(context) {
 				
 				var mergedIds = {};
 				forEach(ids, function (someIds) {
-					mergedIds = merge(mergedIds, someIds);
+					forEach(someIds, function (o, id) {
+						mergedIds[id] = o;
+					});
 				});
 				
 				myOut.output.set({xml: xml, ids: mergedIds});
@@ -206,7 +208,7 @@ var qtDocs = (function () {
 		}
 		
 		// takes in a hash of outputPins
-		return function (inputs) {
+		return function (inputs, delay) {
 			var context = merge(inputs);
 
 			forEach(derivedNodes, function (n) {
@@ -215,6 +217,10 @@ var qtDocs = (function () {
 			});
 			
 			var combinedContext = combineContext(context);
+			
+			if (delay) {
+				combinedContext = simpleApply(delayComponent, combinedContext);
+			}
 			
 			var xslCom = components.lift(interfaces.unit, basic.fun(basic.js, basic.js), function (o) {
 				if (!o) return undefined;

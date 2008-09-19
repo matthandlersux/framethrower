@@ -101,6 +101,8 @@ function processThunk(ambient, node, ids, relurl) {
 	// will be a makeApply once makeCustomCom returns a component.. (this probably won't ever happen..)
 	var out = functionCom(params);
 	
+	//out = simpleApply(delayComponent, out);
+	
 	return domEndCap(ambient, out, node, url);
 }
 
@@ -113,3 +115,21 @@ function processAllThunks(ambient, node, ids, relurl) {
 }
 
 
+
+
+var delayComponent = makeSimpleComponent(interfaces.unit(basic.js), interfaces.unit(basic.js), function (myOut, ambient) {
+	var cache;
+	var timer;
+	function pulse() {
+		myOut.set(cache);
+		timer = false;
+	}
+	return {
+		set: function (o) {
+			cache = o;
+			if (!timer) {
+				timer = setTimeout(pulse, 0);
+			}
+		}
+	};
+});

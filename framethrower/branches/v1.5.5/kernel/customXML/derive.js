@@ -79,10 +79,21 @@ function derive(xml, context, focus) {
 		if (name === "get") {
 			focus = applyGet(focus, xml.getAttributeNS("", "what"));
 		} else if (name === "filter") {
+			var newcontext = merge(context);
+			var ascontext = xml.getAttributeNS("", "ascontext");
 			var com = components.filterC(focus.getType().getConstructor(), focus.getType().getArguments()[0], function (o) {
+				var start = startCaps.unit(o);
+				if (ascontext) {
+					newcontext[ascontext] = start;
+				}
 				//console.log("deriving predicate", o.getId());
-				var res = derive(xml.firstChild, context, startCaps.unit(o));
+				var res = derive(xml.firstChild, newcontext, start);
 				//console.log("done deriving pred", o.getId());
+				if (res.getType().getConstructor() === interfaces.set) {
+					//console.log("filtering from a set, derive non empty");
+					res = deriveNonEmpty(res);
+					//console.log(res.getType().getName());
+				}
 				return res;
 			});
 			focus = simpleApply(com, focus);
@@ -117,6 +128,8 @@ function derive(xml, context, focus) {
 			focus = deriveForEach(focus, function (o) {
 				return derive(xml.firstChild, context, startCaps.unit(o));
 			}, type);
+		} else if (name === "sort") {
+			focus = deriveSort(focus);
 		} else if (name === "treeify") {
 			var t = focus.getType();
 			var property = xml.getAttributeNS("", "property");
@@ -201,6 +214,96 @@ function deriveForEach(focus, f, outType) {
 					qInner.deactivate();
 					inputs.remove(input);
 					cr.removeInput(input, myOut.remove);				
+				}
+			}
+		};
+	}, focus);
+}
+
+function deriveNonEmpty(focus) {
+	return makeSimpleBox(interfaces.unit(basic.js), function (myOut, ambient) {
+		var cache = makeObjectHash();
+		var res = false;
+		function update() {
+			var newres = !cache.isEmpty();
+			if (res !== newres) {
+				res = newres;
+				myOut.set(res);
+			}
+		}
+		myOut.set(res);
+		return {
+			add: function (o) {
+				cache.set(o, o);
+				update();
+			},
+			remove: function (o) {
+				cache.remove(o);
+				update();
+			}
+		};
+	}, focus);
+}
+
+// sorts a set to a list
+function deriveSort(focus) {
+	return makeSimpleBox(interfaces.list(focus.getType().getArguments()[0]), function (myOut, ambient) {
+		var cache = [];
+		return {
+			add: function (o) {
+				var stringified = stringifyObject(o);
+				for (var i = 0; i < cache.length; i++) {
+					if (stringified === cache[i]) {
+						return;
+					} else if (stringified < cache[i]) {
+						cache.splice(i, 0, stringified);
+						myOut.insert(o, i);
+						return;
+					}
+				}
+				cache[i] = stringified;
+				myOut.update(o, i);
+			},
+			remove: function (o) {
+				var stringified = stringifyObject(o);
+				for (var i = 0; i< cache.length; i++) {
+					if (stringified === cache[i]) {
+						cache.splice(i, 1);
+						myOut.remove(i);
+						return;
+					}
+				}
+			}
+		};
+	}, focus);
+}
+
+function deriveLimit(focus) {
+	return makeSimpleBox(focus.getType(), function (myOut, ambient) {
+		var cache = [];
+		var start = 0;
+		var limit = 4;
+		return {
+			insert: function (o, index) {
+				cache.splice(index, 0, o);
+				if (index >= start && index < start + limit) {
+					myOut.insert(o, index - start);
+				}
+			},
+			update: function (o, index) {
+				cache[index] = o;
+				if (index >= start && index < start + limit) {
+					myOut.update(o, index - start);
+				}
+			},
+			remove: function (index) {
+				cache.splice(index, 1);
+				if (index >= start && index < start + limit) {
+					myOut.remove(index);
+					var last = start + limit - 1;
+					if (cache[last]) {
+						myOut.update(cache[last], last);
+					}
 				}
 			}
 		};

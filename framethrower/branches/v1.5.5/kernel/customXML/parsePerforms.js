@@ -93,7 +93,6 @@ function processPerforms(ambient, node, ids, vars, relurl, url, params) {
 	
 
 	
-	//console.dirxml(transaction.xml);
 	
 	//execute transaction
 	var executeTransaction = function (transaction) {
