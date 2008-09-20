@@ -83,9 +83,149 @@ function makeSimpleBox(outputInterface, instantiateProcessor, input) {
 
 
 
+
+var convertPinToXML2 = memoize(function (pin) {
+	
+	function xmlize(pin) {
+		if (isPin(pin)) {
+			var constructor = pin.getType().getConstructor();
+			if (constructor === interfaces.unit) {
+				return xmlize(pin.getState());
+			} else if (constructor === interfaces.set) {
+				function sortfunc(a, b) {
+					return (stringifyObject(a) > stringifyObject(b)) ? 1 : -1;
+				}
+				
+				var c = pin.getState();
+				var sorted = c.sort(sortfunc);
+				
+				var xml = document.createElementNS(xmlns["f"], "set");
+				var ids = {};
+				forEach(sorted, function (o) {
+					var converted = xmlize(o);
+					xml.appendChild(converted.xml);
+					//ids = merge(ids, converted.ids);
+					forEach(converted.ids, function (o, id) {
+						ids[id] = o;
+					});
+				});
+				return {xml: xml, ids: ids};
+			}
+		} else {
+			return convertToXML(pin);
+		}
+	}
+	
+	function isPin(o) {
+		return (o && o.getType && o.getType().getConstructor);
+	}
+	
+	function trivialEndCap(pin, ambient, packetCloseFunc) {
+		var type = pin.getType();
+		var constructor = type.getConstructor();
+		var args = type.getArguments();
+		
+		if (constructor === interfaces.unit) {
+			return ambient.makeEndCap(function (myOut, amb) {
+				var ec;
+				return {
+					input: {
+						set: function (o) {
+							console.log("unit being set", o);
+							if (isPin(o)) {
+								if (ec) ec.deactivate();
+								ec = trivialEndCap(o, amb);
+							}
+						},
+						PACKETCLOSE: packetCloseFunc
+					}
+				};
+			}, {input: pin});
+		} else if (constructor === interfaces.set) {
+			return ambient.makeEndCap(function (myOut, amb) {
+				var ecs = makeObjectHash();
+				return {
+					input: {
+						add: function (o) {
+							if (isPin(o)) {
+								ecs.getOrMake(o, function () {
+									trivialEndCap(o, amb);
+								});
+							}
+						},
+						remove: function (o) {
+							if (isPin(o)) {
+								var ec = inputs.get(o);
+								if (ec) {
+									ec.deactivate();
+									ecs.remove(o);
+								}
+							}
+						},
+						PACKETCLOSE: packetCloseFunc
+					}
+				};
+			}, {input: pin});
+		} else if (constructor === interfaces.list) {
+			// in progress...
+			return ambient.makeEndCap(function (myOut, amb) {
+				var cache = [];
+				function maybeEC(o) {
+					if (isPin(o)) {
+						return trivialEndCap(o, amb);
+					} else {
+						return false;
+					}
+				}
+				return {
+					input: {
+						insert: function (o, index) {
+							cache.splice(index, 0, maybeEC(o));
+						},
+						update: function (o, index) {
+							if (cache[index]) {
+								cache[index].deactivate();
+							}
+							cache[index] = maybeEC(o);
+						},
+						remove: function (index) {
+							if (cache[index]) {
+								cache[index].deactivate();
+							}
+							cache.splice(index, 1);
+						},
+						PACKETCLOSE: packetCloseFunc
+					}
+				};
+			}, {input: pin});
+		}
+	}
+	
+	return makeSimpleBox(interfaces.unit(basic.js), function (myOut, ambient) {
+		trivialEndCap(pin, ambient, function () {
+			console.log("received packet close");
+			myOut.set(xmlize(pin));
+		});
+		var emptyFunc = function () {};
+		var constructor = pin.getType().getConstructor();
+		if (constructor === interfaces.unit) {
+			return {set: emptyFunc};
+		} else if (constructor === interfaces.set) {
+			return {add: emptyFunc, remove: emptyFunc};
+		} else if (constructor === interfaces.list) {
+			return {insert: emptyFunc, update: emptyFunc, remove: emptyFunc};
+		} else if (constructor === interfaces.assoc) {
+			return {set: emptyFunc, remove: emptyFunc};
+		} else if (constructor === interfaces.tree) {
+			return {addRoot: emptyFunc, addChild: emptyFunc, remove: emptyFunc};
+		}
+	}, pin);
+});
+
+
+
 // Note: the following only work for shallow data types, that is sets and assocs that are only "one-deep"
 // we'll need to make them work with arbitrarily deep ones later...
-
 
 // returns an outputPin of type interfaces.unit(basic.js)
 // the outputPin will contain an object {xml: XML, ids: {id: object, ...}}

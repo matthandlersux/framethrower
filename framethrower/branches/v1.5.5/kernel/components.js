@@ -158,6 +158,15 @@ function maybeGetContent(o) {
 
 endCaps.log = {};
 
+endCaps.log.xmlids = function (name) {
+	return {
+		set: function (o) {
+			console.log(name, o.ids);
+			console.dirxml(o.xml);
+		}
+	};
+};
+
 endCaps.log.set = function (name) {
 	return {
 		add: function (o) {

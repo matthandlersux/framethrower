@@ -220,6 +220,21 @@ function deriveForEach(focus, f, outType) {
 	}, focus);
 }
 
+// takes in a set(a), a function a->unit(outType), and returns an assoc(outType, set(a))
+function deriveGroupBy(focus, f, outType) {
+	return makeSimpleBox(interfaces.assoc(outType, focus.getType().getArguments()[0]), function (myOut, ambient) {
+		var inputs;
+		return {
+			add: function (input) {
+				
+			},
+			remove: function (input) {
+				
+			}
+		}
+	}, focus);
+}
+
 function deriveNonEmpty(focus) {
 	return makeSimpleBox(interfaces.unit(basic.js), function (myOut, ambient) {
 		var cache = makeObjectHash();
