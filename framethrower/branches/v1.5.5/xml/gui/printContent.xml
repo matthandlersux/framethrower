@@ -20,12 +20,12 @@
 					<!--><html:img src="{$content/@thumbnail}" />-->
 					<xsl:choose>
 						<xsl:when test="$style/@value = 'inline'">
-							<html:span style="height:13px; background-image: url({$content/@thumbnail}); background-repeat: no-repeat; padding-left:100px;">
+							<html:span style="height:20px; background-image: url(https://private.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=20&amp;height=20); background-repeat: no-repeat; padding-left:22px;">
 								<xsl:value-of select="$content/@name" />
 							</html:span>
 						</xsl:when>
 						<xsl:when test="$style/@value = 'listentry'">
-							<html:div style="float:left; width:30px; height:30px; background-image: url({$content/@thumbnail});" />
+							<html:div style="float:left; width:30px; height:30px; background-image: url(https://private.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=30&amp;height=30);" />
 							<xsl:value-of select="$content/@name" />
 							<html:br style="clear:both" />
 						</xsl:when>
