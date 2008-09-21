@@ -128,6 +128,13 @@ function makeOhash(stringify) {
 		});
 		return ret;
 	};
+	ohash.toFullObject = function () {
+		var ret = {};
+		forEach(hash, function (entry, stringified) {
+			ret[stringified] = entry;
+		});
+		return ret;
+	};
 	
 	ohash.isEmpty = function () {
 		return isEmpty(hash);

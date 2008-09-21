@@ -222,16 +222,56 @@ function deriveForEach(focus, f, outType) {
 
 // takes in a set(a), a function a->unit(outType), and returns an assoc(outType, set(a))
 function deriveGroupBy(focus, f, outType) {
-	return makeSimpleBox(interfaces.assoc(outType, focus.getType().getArguments()[0]), function (myOut, ambient) {
-		var inputs;
-		return {
-			add: function (input) {
-				
-			},
-			remove: function (input) {
-				
+	var setType = focus.getType();
+	return makeSimpleBox(interfaces.assoc(outType, setType), function (myOut, ambient) {
+		var inputs = makeObjectHash();
+		var assoc = makeObjectHash();
+		function addToAssoc(key, value) {
+			var set = assoc.getOrMake(key, function () {
+				var controller = {};
+				var pin = makeSimpleStartCap(setType, controller);
+				myOut.set(key, pin);
+				return {control: controller, get: pin};
+			});
+			set.control.add(value);
+		}
+		function removeFromAssoc(key, value) {
+			var set = assoc.get(key);
+			if (set) {
+				set.control.remove(value);
+				if (set.get.getState().length === 0) {
+					assoc.remove(key);
+					myOut.remove(key);
+				}
 			}
 		}
+		return {
+			add: function (o) {
+				inputs.getOrMake(o, function () {
+					var ret = {ec: undefined, fed: undefined};
+					ret.ec = makeSimpleEndCap(ambient, {
+						set: function (fed) {
+							if (ret.fed) {
+								removeFromAssoc(ret.fed, o);
+							}
+							ret.fed = fed;
+							if (ret.fed !== undefined) {
+								addToAssoc(ret.fed, o);								
+							}
+						}
+					}, f(o));
+					return ret;
+				});
+			},
+			remove: function (o) {
+				var input = inputs.get(o);
+				if (input) {
+					removeFromAssoc(input.fed, o);
+					input.ec.deactivate();
+					inputs.remove(o);
+				}
+			}
+		};
 	}, focus);
 }
 

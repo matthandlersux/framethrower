@@ -5,7 +5,9 @@ var uiStartCaps = (function () {
 	
 	function updateWindowSize() {
 		windowSizeController.width.set(window.innerWidth);
+		windowSizeController.width.PACKETCLOSE();
 		windowSizeController.height.set(window.innerHeight);
+		windowSizeController.height.PACKETCLOSE();
 	}
 	window.addEventListener("resize", updateWindowSize, true);
 	document.addEventListener("load", updateWindowSize, true);

@@ -15,7 +15,7 @@ function makeInputPin(sendFun, ownerBox) {
 	return inputPin;
 }
 
-function makeOutputPin(outputInterface, controller, activator) {
+function makeOutputPin(outputInterface, controller, activator, box) {
 	var outputPin = makeIded(outputInterface);
 	
 	var active = false;
@@ -84,6 +84,9 @@ function makeOutputPin(outputInterface, controller, activator) {
 	outputPin.isActive = function () {
 		return active;
 	};
+	outputPin.getBox = function () {
+		return box;
+	};
 	
 	// this is now redundant since getType is the outputInterface
 	outputPin.getOutputInterface = function () {
@@ -119,7 +122,7 @@ function makeAmbient() {
 		
 		endCaps.push(endCap);
 		
-		closedEndCaps.set(endCap, false);
+		//closedEndCaps.set(endCap, false);
 		
 		// NEW: automatically activate endcaps on creation
 		endCap.activate();
@@ -139,7 +142,7 @@ function makeAmbient() {
 		});
 	};
 	
-	var closedEndCaps = makeObjectHash();
+	/*var closedEndCaps = makeObjectHash();
 	ambient.endCapPacketClose = function(endCap) {
 		closedEndCaps.set(endCap, true);
 		var go = true;
@@ -148,10 +151,11 @@ function makeAmbient() {
 				go = false;
 			}
 		});
+		console.log("end cap may propagate packet close", closedEndCaps.toObject());
 		if (go) {
 			ambient.propagatePacketClose();
 		}
-	};
+	};*/
 	
 	ambient.getEndCaps = function () {
 		return endCaps;
@@ -224,9 +228,23 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs, parentAm
 				if (parentAmbient && parentAmbient.propagatePacketClose) {
 					parentAmbient.propagatePacketClose();
 					//parentAmbient.endCapPacketClose(box);
+					if (parentAmbient && parentAmbient.onPacketClose) {
+						parentAmbient.onPacketClose();
+					}
 				}
+				// if (parentAmbient && parentAmbient.onPacketClose) {
+				// 	parentAmbient.onPacketClose();
+				// }
+			}
+			function clearAmbient() {
+				ambient.propagatePacketClose = undefined;
 			}
 			forEach(processor, function (inproc) {
+				forEach(inproc, function (action, actionName) {
+					if (actionName !== "PACKETCLOSE") {
+						inproc[actionName] = pCompose(clearAmbient, action);
+					}
+				});
 				if (inproc.PACKETCLOSE) {
 					inproc.PACKETCLOSE = pCompose(inproc.PACKETCLOSE, propagatePacketClose);
 				} else {
@@ -285,7 +303,7 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs, parentAm
 	
 	forEach(outputInterfaces, function (outputInterface, pinName) {
 		controllers[pinName] = {};
-		box.outputPins[pinName] = makeOutputPin(outputInterface, controllers[pinName], activator);
+		box.outputPins[pinName] = makeOutputPin(outputInterface, controllers[pinName], activator, box);
 	});
 	
 	// ==================== For Debug
@@ -297,6 +315,9 @@ function makeGenericBox(outputInterfaces, instantiateProcessor, inputs, parentAm
 	};
 	box.getActive = function () {
 		return active;
+	};
+	box.getAmbient = function () {
+		return ambient;
 	};
 	
 	if (GLOBALQARRAYON) globalQArray.push(box);

@@ -84,7 +84,7 @@ function makeSimpleBox(outputInterface, instantiateProcessor, input) {
 
 
 
-var convertPinToXML2 = memoize(function (pin) {
+var convertPinToXML = memoize(function (pin) {
 	
 	function xmlize(pin) {
 		if (isPin(pin)) {
@@ -105,11 +105,47 @@ var convertPinToXML2 = memoize(function (pin) {
 					var converted = xmlize(o);
 					xml.appendChild(converted.xml);
 					//ids = merge(ids, converted.ids);
-					forEach(converted.ids, function (o, id) {
-						ids[id] = o;
-					});
+					mergeInto(ids, converted.ids);
 				});
 				return {xml: xml, ids: ids};
+			} else if (constructor === interfaces.list) {
+				var list = pin.getState();
+				var xml = document.createElementNS(xmlns["f"], "list");
+				var ids = {};
+				forEach(list, function (item) {
+					var converted = convertToXML(item);
+					xml.appendChild(converted.xml);
+					//ids = merge(ids, converted.ids);
+					mergeInto(ids, converted.ids);
+				});
+				return {xml: xml, ids: ids};
+			} else if (constructor === interfaces.assoc) {
+				var assoc = pin.getState();
+				var sorted = keys(assoc).sort();
+				
+				var xml = document.createElementNS(xmlns["f"], "assoc");
+				var ids = {};
+				forEach(sorted, function (key) {
+					var convertedKey = xmlize(assoc[key].key);
+					var convertedValue = xmlize(assoc[key].value);
+					
+					//console.log("converted key, value", convertedKey, convertedValue);
+					
+					var pair = document.createElementNS(xmlns["f"], "pair");
+					var key = document.createElementNS(xmlns["f"], "key");
+					var value = document.createElementNS(xmlns["f"], "value");
+					pair.appendChild(key);
+					pair.appendChild(value);
+					key.appendChild(convertedKey.xml);
+					value.appendChild(convertedValue.xml);
+					
+					xml.appendChild(pair);
+					mergeInto(ids, convertedKey.ids, convertedValue.ids);
+				});
+				//console.dirxml(xml);
+				return {xml: xml, ids: ids};
+			} else if (constructor === interfaces.tree) {
+				// === ANDREW FILL IN HERE ===
 			}
 		} else {
 			return convertToXML(pin);
@@ -119,8 +155,15 @@ var convertPinToXML2 = memoize(function (pin) {
 	function isPin(o) {
 		return (o && o.getType && o.getType().getConstructor);
 	}
+	function maybeEC(o, amb) {
+		if (isPin(o)) {
+			return trivialEndCap(o, amb);
+		} else {
+			return false;
+		}
+	}
 	
-	function trivialEndCap(pin, ambient, packetCloseFunc) {
+	function trivialEndCap(pin, ambient) {
 		var type = pin.getType();
 		var constructor = type.getConstructor();
 		var args = type.getArguments();
@@ -131,13 +174,11 @@ var convertPinToXML2 = memoize(function (pin) {
 				return {
 					input: {
 						set: function (o) {
-							console.log("unit being set", o);
 							if (isPin(o)) {
 								if (ec) ec.deactivate();
 								ec = trivialEndCap(o, amb);
 							}
-						},
-						PACKETCLOSE: packetCloseFunc
+						}
 					}
 				};
 			}, {input: pin});
@@ -161,63 +202,96 @@ var convertPinToXML2 = memoize(function (pin) {
 									ecs.remove(o);
 								}
 							}
-						},
-						PACKETCLOSE: packetCloseFunc
+						}
 					}
 				};
 			}, {input: pin});
 		} else if (constructor === interfaces.list) {
-			// in progress...
 			return ambient.makeEndCap(function (myOut, amb) {
 				var cache = [];
-				function maybeEC(o) {
-					if (isPin(o)) {
-						return trivialEndCap(o, amb);
-					} else {
-						return false;
-					}
-				}
 				return {
 					input: {
 						insert: function (o, index) {
-							cache.splice(index, 0, maybeEC(o));
+							cache.splice(index, 0, maybeEC(o, amb));
 						},
 						update: function (o, index) {
 							if (cache[index]) {
 								cache[index].deactivate();
 							}
-							cache[index] = maybeEC(o);
+							cache[index] = maybeEC(o, amb);
 						},
 						remove: function (index) {
 							if (cache[index]) {
 								cache[index].deactivate();
 							}
 							cache.splice(index, 1);
-						},
-						PACKETCLOSE: packetCloseFunc
+						}
 					}
 				};
 			}, {input: pin});
+		} else if (constructor === interfaces.assoc) {
+			return ambient.makeEndCap(function (myOut, amb) {
+				var cache = makeObjectHash();
+				function deactivateECs(key) {
+					var ecs = cache.get(key);
+					if (ecs) {
+						if (kv.key) {
+							kv.key.deactivate();
+						}
+						if (kv.value) {
+							kv.value.deactivate();
+						}						
+					}
+				}
+				return {
+					input: {
+						set: function (key, value) {
+							deactivateECs(key);
+							cache.set(key, {
+								key: maybeEC(key, amb),
+								value: maybeEC(value, amb)
+							});
+						},
+						remove: function (key) {
+							deactivateECs(key);
+							cache.remove(key);
+						}
+					}
+				};
+			}, {input:pin});
+		} else if (constructor === interfaces.tree) {
+			return ambient.makeEndCap(function (myOut, amb) {
+				// === ANDREW FILL IN HERE ===
+			}, {input:pin});
 		}
 	}
 	
 	return makeSimpleBox(interfaces.unit(basic.js), function (myOut, ambient) {
-		trivialEndCap(pin, ambient, function () {
-			console.log("received packet close");
+		ambient.onPacketClose = function () {
 			myOut.set(xmlize(pin));
-		});
+		};
+		
+		trivialEndCap(pin, ambient);
+		
+		function maybePacketClose() {
+			if (!ambient.propagatePacketClose) {
+				// this should have been called, but due to timing was not, so call it now
+				ambient.onPacketClose();
+			}
+		}
+		
 		var emptyFunc = function () {};
 		var constructor = pin.getType().getConstructor();
 		if (constructor === interfaces.unit) {
-			return {set: emptyFunc};
+			return {set: emptyFunc, PACKETCLOSE: maybePacketClose};
 		} else if (constructor === interfaces.set) {
-			return {add: emptyFunc, remove: emptyFunc};
+			return {add: emptyFunc, remove: emptyFunc, PACKETCLOSE: maybePacketClose};
 		} else if (constructor === interfaces.list) {
-			return {insert: emptyFunc, update: emptyFunc, remove: emptyFunc};
+			return {insert: emptyFunc, update: emptyFunc, remove: emptyFunc, PACKETCLOSE: maybePacketClose};
 		} else if (constructor === interfaces.assoc) {
-			return {set: emptyFunc, remove: emptyFunc};
+			return {set: emptyFunc, remove: emptyFunc, PACKETCLOSE: maybePacketClose};
 		} else if (constructor === interfaces.tree) {
-			return {addRoot: emptyFunc, addChild: emptyFunc, remove: emptyFunc};
+			return {addRoot: emptyFunc, addChild: emptyFunc, remove: emptyFunc, PACKETCLOSE: maybePacketClose};
 		}
 	}, pin);
 });
@@ -229,7 +303,7 @@ var convertPinToXML2 = memoize(function (pin) {
 
 // returns an outputPin of type interfaces.unit(basic.js)
 // the outputPin will contain an object {xml: XML, ids: {id: object, ...}}
-var convertPinToXML = memoize(function (pin) {
+/*var convertPinToXML = memoize(function (pin) {
 	var type = pin.getType();
 	var constructor = type.getConstructor();
 	var args = type.getArguments();
@@ -441,7 +515,7 @@ var convertPinToXML = memoize(function (pin) {
 			};
 		}, pin);
 	}
-});
+});*/
 
 
 function maybeUnit(o) {

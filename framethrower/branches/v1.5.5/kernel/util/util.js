@@ -111,6 +111,18 @@ function merge() {
 	return ret;
 }
 
+// like merge but merges all into the first argument
+function mergeInto() {
+	var firstArg = arguments[0];
+	forEach(arguments, function (arg, i) {
+		if (i > 0) {
+			forEach(arg, function (v, k) {
+				firstArg[k] = v;
+			});			
+		}
+	});
+}
+
 
 function pCompose() {
 	var funs = arguments;
