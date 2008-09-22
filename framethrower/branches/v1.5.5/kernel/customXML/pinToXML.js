@@ -145,7 +145,38 @@ var convertPinToXML = memoize(function (pin) {
 				//console.dirxml(xml);
 				return {xml: xml, ids: ids};
 			} else if (constructor === interfaces.tree) {
-				// === ANDREW FILL IN HERE ===
+				var state = pin.getState();
+				var roots = state.roots;
+				var cache = state.cache;
+
+				function recurseChildren(obj, xmlParent) {
+					var childXML = document.createElementNS(xmlns["f"], "child");
+					var ids = {};
+
+					xmlParent.appendChild(childXML);
+					var valueXML = document.createElementNS(xmlns["f"], "value");
+					childXML.appendChild(valueXML);
+					var converted = xmlize(obj);
+					valueXML.appendChild(converted.xml);
+
+					ids = converted.ids;
+
+					cache.get(obj).children.forEach(function(child){
+						var newids = recurseChildren(child, childXML);
+						ids = merge(ids, newids);
+					});
+
+					return ids;
+				}
+				
+				var xml = document.createElementNS(xmlns["f"], "tree");
+				var ids = {};
+				roots.forEach(function (item) {
+					var newids = recurseChildren(item, xml);
+					ids = merge(ids, newids);
+				});
+				
+				return {xml: xml, ids: ids};
 			}
 		} else {
 			return convertToXML(pin);
@@ -261,7 +292,58 @@ var convertPinToXML = memoize(function (pin) {
 			}, {input:pin});
 		} else if (constructor === interfaces.tree) {
 			return ambient.makeEndCap(function (myOut, amb) {
-				// === ANDREW FILL IN HERE ===
+
+				var cache = makeObjectHash();
+				var roots = makeObjectHash();
+
+				var remove = function (o) {
+					var oprev = cache.get(o);
+					if(oprev){
+						oprev.obj.deactivate();
+						if(oprev.parent){
+							cache.get(oprev.parent).children.remove(o);
+						} else {
+							roots.remove(o);
+						}
+						cache.remove(o);
+					}
+				};
+
+				return {
+					input: {
+						addRoot: function (o) {
+							if (isPin(o)) {
+								var oprev = cache.get(o);
+								if(oprev) {
+									remove(o);
+									roots.set(o, o);
+									cache.set(o, {obj:trivialEndCap(o, amb), children:oprev.children, parent:null});
+								} else {
+									roots.set(o, o);
+									cache.set(o, {obj:trivialEndCap(o, amb), children:makeObjectHash(), parent:null});	
+								}
+							}
+						},
+						addChild: function (parent, o) {
+							if (isPin(o)) {
+								var oprev = cache.get(o);
+								if(oprev) {
+									remove(o);
+									cache.get(parent).children.set(o, o);
+									cache.set(o, {obj:trivialEndCap(o, amb), children:oprev.children, parent:parent});	
+								} else {
+									cache.get(parent).children.set(o, o);
+									cache.set(o, {obj:trivialEndCap(o, amb), children:makeObjectHash(), parent:parent});
+								}
+							}
+						},
+						remove: function (o) {
+							if (isPin(o)) {
+								remove(o);
+							}
+						}
+					}
+				};
 			}, {input:pin});
 		}
 	}

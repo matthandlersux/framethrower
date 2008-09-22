@@ -148,11 +148,7 @@ var interfaceInstantiators = {
 				});
 			},
 			getState: function () {
-				var retcache = cache.toArray();
-				forEach(retcache, function(o) {
-					o.children = o.children.toArray();
-				});
-				return {roots:roots.toArray(), cache:retcache};
+				return {roots:roots, cache:cache};
 			}
 		};
 	}
