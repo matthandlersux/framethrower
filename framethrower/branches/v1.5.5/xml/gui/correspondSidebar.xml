@@ -1,0 +1,50 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="zui" />
+	<f:param name="focus" />
+	<f:derived name="children" from="focus">
+		<get what="involves" />
+		<filter>
+			<get what="relation" />
+			<equals>
+				<start predef="corresponds" />
+			</equals>
+		</filter>
+		<foreach type="kernel.ob">
+			<get what="arcs" />
+			<getkey key="'anchor'" />
+		</foreach>
+		<get what="involves" />
+		<filter>
+			<get what="relation" />
+			<equals>
+				<start predef="corresponds" />
+			</equals>
+		</filter>
+		<foreach type="kernel.ob">
+			<get what="arcs" />
+			<getkey key="'corresponder'" />
+		</foreach>
+	</f:derived>
+	
+	<xsl:template>
+		<html:div style="color:green">
+			<xsl:for-each select="$children/*">
+				<html:div>
+					<f:binding url="bindings/child.xml">
+						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+						<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+					</f:binding>
+					<f:thunk url="printContent.xml">
+						<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+						<f:with-param name="style"><f:string value="listentry" /></f:with-param>
+					</f:thunk>
+				</html:div>
+			</xsl:for-each>
+		</html:div>
+	</xsl:template>
+</f:function>

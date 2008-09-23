@@ -17,10 +17,6 @@
 				<f:with-param value-id="{$destination/@id}" />
 			</intact>
 			
-			<comment>
-				<xsl:copy-of select="$oldParent" />
-			</comment>
-			
 
 			<intact with-id="{$oldParent/@id}" prop="childObjects" action="remove">
 				<f:with-param value-id="{$object/@id}" />

@@ -9,6 +9,17 @@
 		</content>
 		
 	</individual>
+	<relation name="corresponds" returnas="corresponds">
+		<content>
+			<pseudo>
+				<role role="corresponder"/>
+				 corresponds to anchor <role role="anchor"/>
+				
+			</pseudo>
+			
+		</content>
+	</relation>
+		
 	<situation name="rw" returnas="rw">
 		<content>
 			The World
@@ -308,7 +319,19 @@
 				</plot>
 				
 			</content>
-			<individual name="characters.Mrs. Robinson" type="personType">
+			<situation name="subsittest" type="movieType">
+				<content>
+					<title>
+						Imaginary Test Sub-Scene of the Graduate
+					</title>
+				</content>
+				<individual name="characters.Crazy Mrs. Robinson" returnas="crazyMissRob" type="personType">
+					<content>
+						Crazy Mrs. Robinson
+					</content>
+				</individual>				
+			</situation>
+			<individual name="characters.Mrs. Robinson" returnas="missRob" type="personType">
 				<content>
 					Mrs. Robinson
 				</content>

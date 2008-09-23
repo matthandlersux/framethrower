@@ -6,9 +6,22 @@ var PREDEF = world;
 
 var rw = world.rw;
 
+
+//make a corresponds anchor in ONT
+var anchor = actions.makeIndividual(world.rw);
+anchor.control.content.set('Test Anchor');
+
+//make a corresponds infon between missRobinson and the anchor
+var cor1 = actions.makeInfon(world.rw, world.corresponds, {corresponder:world.missRob, anchor:anchor});
+
+//make a corresponds infon between crazyMissRobinson and the anchor
+var cor2 = actions.makeInfon(world.rw, world.corresponds, {corresponder:world.crazyMissRob, anchor:anchor});
+
+
+
 var zui = layout.zui.make();
 zui.control.focus.set(rw);
-zui.control.properties.set(parseXML("<zui view='situation' childrenSidebar='1' />"));
+zui.control.properties.set(parseXML("<zui view='situation' childrenSidebar='1' correspondSidebar='0'/>"));
 
 
 var mainAmbient = makeAmbient();

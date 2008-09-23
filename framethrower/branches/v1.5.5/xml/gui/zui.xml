@@ -55,24 +55,37 @@
 					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 					<f:with-param name="style"><f:string value="inline" /></f:with-param>
 				</f:thunk>
-				
-				<xsl:if test="$focusType/@value='kernel.situation'">
-					<html:span style="margin-left:15px;">
-						<f:button name="childrenSidebar" />
-						Ch
-					</html:span>
-					|
-					<html:span>
-						<f:button name="situationView" />
-						SV
-					</html:span>
-					|
-					<html:span>
-						<f:button name="objectView" />
-						OV
-					</html:span>
-					|
-				</xsl:if>
+				<xsl:choose>
+					<xsl:when test="$focusType/@value='kernel.situation'">
+						<html:span style="margin-left:15px;">
+							<f:button name="childrenSidebar" />
+							Ch
+						</html:span>
+						|
+						<html:span>
+							<f:button name="correspondSidebar" />
+							Co
+						</html:span>
+						|					
+						<html:span>
+							<f:button name="situationView" />
+							SV
+						</html:span>
+						|
+						<html:span>
+							<f:button name="objectView" />
+							OV
+						</html:span>
+						|
+					</xsl:when>
+					<xsl:otherwise>
+						<html:span style="margin-left:15px;">
+							<f:button name="correspondSidebar" />
+							Co
+						</html:span>
+						|
+					</xsl:otherwise>
+				</xsl:choose>
 				<html:span>
 					<f:button name="close" />
 					X
@@ -90,12 +103,21 @@
 							</f:thunk>
 						</html:div>
 					</xsl:if>
+					
+					<xsl:variable name="correspondSidebarWidth" select="$properties/@correspondSidebar * $childrenSidebarExpandedWidth" />
+					<xsl:if test="$properties/@correspondSidebar='1'">
+						<html:div class="zuiChildrenSidebar" left="{$padding + $childrenSidebarWidth}" top="{$titleBarHeight}" width="{$correspondSidebarWidth}" height="{$height/@value - $titleBarHeight - $padding}">
+							<f:thunk url="correspondSidebar.xml">
+								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+							</f:thunk>
+						</html:div>
+					</xsl:if>
 
-
-					<xsl:variable name="openingWidth" select="$width/@value - $childrenSidebarWidth - $padding * 2" />
+					<xsl:variable name="openingWidth" select="$width/@value - $childrenSidebarWidth - $correspondSidebarWidth - $padding * 2" />
 					<xsl:variable name="openingHeight" select="$height/@value - $titleBarHeight - $padding" />
 					
-					<html:div class="zuiOpening" left="{$childrenSidebarWidth + $padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$openingHeight}">
+					<html:div class="zuiOpening" left="{$childrenSidebarWidth + $correspondSidebarWidth + $padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$openingHeight}">
 						<!--><f:thunk url="graphics/innerShadow.xml">
 							<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
 							<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
@@ -113,7 +135,19 @@
 					<html:div style="clear:both" />
 				</xsl:when>
 				<xsl:otherwise>
-					<html:div left="{$padding}" top="{$titleBarHeight}" width="{$width/@value - $padding * 2}" height="{$height/@value - $titleBarHeight - $padding}">
+					<xsl:variable name="correspondSidebarWidth" select="$properties/@correspondSidebar * $childrenSidebarExpandedWidth" />
+					<xsl:if test="$properties/@correspondSidebar='1'">
+						<html:div class="zuiChildrenSidebar" left="{$padding}" top="{$titleBarHeight}" width="{$correspondSidebarWidth}" height="{$height/@value - $titleBarHeight - $padding}">
+							<f:thunk url="correspondSidebar.xml">
+								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+							</f:thunk>
+						</html:div>
+					</xsl:if>					
+					
+					<xsl:variable name="openingWidth" select="$width/@value - $correspondSidebarWidth - $padding * 2" />
+					
+					<html:div left="{$correspondSidebarWidth + $padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$height/@value - $titleBarHeight - $padding}">
 						<f:thunk url="objectView.xml">
 							<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 						</f:thunk>

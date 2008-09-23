@@ -301,6 +301,9 @@ components.trace = function (fType, property) {
 					//not sure if this is right
 					output.remove(depth);
 				}
+			},
+			PACKETCLOSE: function(){
+				output.PACKETCLOSE();
 			}
 		};
 	};
@@ -324,7 +327,6 @@ components.treeify = function (fType, property) {
 	var treeifyAmbient = makeAmbient();
 	
 	var tree = makeObjectHash();
-	var packetClosed = false;
 	
 	var addChild = function (id, parentId, parentIndex, output) {
 		var node = tree.get(id);
@@ -332,16 +334,11 @@ components.treeify = function (fType, property) {
 		node.parentIndex = parentIndex;
 		tree.get(parentId).children.set(id, id);
 		output.addChild(tree.get(parentId).value, node.value);
-		if(packetClosed) {
-			output.PACKETCLOSE();
-		}
-		// need to figure out when to do Packetclose
 	};
 
 	var treeProc = function (output, id) {
 		return {
 			update: function (value, index) {
-				
 				// if this node is a root node, add value to it's list, and check value against other nodes
 				// if it matches a node, check all of that nodes children to see if this node should be their parent
 				var node = tree.get(id);
@@ -387,10 +384,10 @@ components.treeify = function (fType, property) {
 					node.parentIndex = null;
 					node.parent = null;
 					output.addRoot(node.value);
-					if(packetClosed){
-						output.PACKETCLOSE();
-					}
 				}
+			},
+			PACKETCLOSE: function () {
+				output.PACKETCLOSE();
 			}
 		};
 	};
@@ -421,10 +418,6 @@ components.treeify = function (fType, property) {
 					var com = components.trace(basic.fun(interfaces.unit(kernel.ob), interfaces.list(kernel.ob)), property);
 					var sa = simpleApply(com, startCaps.unit(input));
 					var treeEC = makeSimpleEndCap(treeifyAmbient, treeProc(myOut, input.getId()), sa);
-					
-					if(packetClosed){
-						myOut.PACKETCLOSE();
-					}
 				}
 			},
 			remove: function (input) {
@@ -450,13 +443,6 @@ components.treeify = function (fType, property) {
 				}
 				tree.remove(input.getId());
 				myOut.remove(input);
-				if(packetClosed){
-					myOut.PACKETCLOSE();
-				}
-			},
-			PACKETCLOSE: function() {
-				packetClosed = true;
-				myOut.PACKETCLOSE();
 			}
 		};
 	};
