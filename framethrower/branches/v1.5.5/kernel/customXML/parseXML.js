@@ -54,10 +54,6 @@ function extractJSFromCustomXML(xml) {
 	
 	
 	return function(blankxml, args){
-		
-		console.log("xml args: ");
-		console.log(args);
-		
 		var jsargs = {};
 		forEach(args, function(node, key){
 			jsargs[key] = convertXMLToJS(node);	
@@ -194,7 +190,7 @@ function combineContext(context) {
 var qtDocs = (function () {
 	var cache = {};
 	
-	function makeCustomCom(xml) {
+	function makeCustomCom(xml, url) {
 		var paramNodes = xpath("f:param", xml);
 
 		var derivedNodes = xpath("f:derived", xml);
@@ -215,7 +211,7 @@ var qtDocs = (function () {
 				var name = n.getAttributeNS("", "name");
 				context[name] = derive(n, context);
 			});
-			
+						
 			var combinedContext = combineContext(context);
 			
 			if (delay) {
@@ -255,7 +251,7 @@ var qtDocs = (function () {
 	return {
 		get: function (url) {
 			if (!cache[url]) {
-				cache[url] = makeCustomCom(documents.get(url), url);
+				cache[url] = makeCustomCom(documents.get(url));
 				cache[url] = makeIded(qtType, cache[url]);
 			}
 			return cache[url];

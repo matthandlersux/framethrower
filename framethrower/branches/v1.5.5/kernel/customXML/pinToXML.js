@@ -85,7 +85,6 @@ function makeSimpleBox(outputInterface, instantiateProcessor, input) {
 
 
 var convertPinToXML = memoize(function (pin) {
-	
 	function xmlize(pin) {
 		if (isPin(pin)) {
 			var constructor = pin.getType().getConstructor();
@@ -642,6 +641,9 @@ function convertXMLToPin(node, ids, vars) {
 				return {key: convertFromXML(xpath("f:key/*", pair)[0], ids, vars), value: convertFromXML(xpath("f:value/*", pair)[0], ids, vars)};
 			});
 			return startCaps.assoc(pairs);
+		} else if (name === "tree" && namespace === xmlns["f"]) { 
+			console.log('need tree specific code in convertXMLToPin');
+			return startCaps.unit(convertFromXML(xml, ids, vars));
 		} else {
 			return startCaps.unit(convertFromXML(xml, ids, vars));
 		}

@@ -113,7 +113,6 @@ var interfaceInstantiators = {
 		};
 		
 		return {
-			//fix this so remove doesn't lose the children!!!!
 			actions: {
 				addRoot: function (o) {
 					typeCheck(a, o);

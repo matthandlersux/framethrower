@@ -33,18 +33,9 @@
 	
 	<xsl:template>
 		<html:div style="color:green">
-			<xsl:for-each select="$children/*">
-				<html:div>
-					<f:binding url="bindings/child.xml">
-						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-						<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
-					</f:binding>
-					<f:thunk url="printContent.xml">
-						<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
-						<f:with-param name="style"><f:string value="listentry" /></f:with-param>
-					</f:thunk>
-				</html:div>
-			</xsl:for-each>
+			<f:thunk url="printTree.xml">
+				<f:with-param name="focus"><xsl:copy-of select="$children" /></f:with-param>
+			</f:thunk>
 		</html:div>
 	</xsl:template>
 </f:function>

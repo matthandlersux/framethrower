@@ -94,6 +94,7 @@ function processThunk(ambient, node, ids, relurl) {
 	
 	var paramNodes = xpath("f:with-param", node);
 	var params = {};
+
 	forEach(paramNodes, function (paramNode) {
 		params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, ids, {});
 	});

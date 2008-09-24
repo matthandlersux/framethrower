@@ -281,8 +281,7 @@ var components = {};
 components.trace = function (fType, property) {
 	var inputType = fType.getArguments()[0]; //input type must be interface.unit(something)
 	var outputType = fType.getResult(); //can be interface.set(something) or interface.list(something)
-	
-	var treeifyAmbient = makeAmbient();
+	var myAmbient;
 	
 	var recursiveProc = function (depth, output) {
 		return {
@@ -296,23 +295,26 @@ components.trace = function (fType, property) {
 					}					
 					var getParent = applyGet(startCaps.unit(input), property);
 					var nextProc = recursiveProc(depth+1, output);
-					var recurseEC = makeSimpleEndCap(treeifyAmbient, nextProc, getParent);
+					var recurseEC = makeSimpleEndCap(myAmbient, nextProc, getParent);
 				} else {
 					//not sure if this is right
 					output.remove(depth);
 				}
 			},
+			
 			PACKETCLOSE: function(){
 				output.PACKETCLOSE();
 			}
+			
 		};
 	};
 	
 	
-	var instProc = function (myOut) {
+	var instProc = function (myOut, ambient) {
+		myAmbient = ambient;
 		return {
 			set: function (input) {
-				var recurseEC = makeSimpleEndCap(treeifyAmbient, recursiveProc(0, myOut), applyGet(startCaps.unit(input), "parentSituation"));
+				var recurseEC = makeSimpleEndCap(myAmbient, recursiveProc(0, myOut), applyGet(startCaps.unit(input), "parentSituation"));
 			}
 		};
 	};
@@ -324,77 +326,101 @@ components.treeify = function (fType, property) {
 	var inputType = fType.getArguments()[0];
 	var outputType = fType.getResult();
 	
-	var treeifyAmbient = makeAmbient();
-	
-	var tree = makeObjectHash();
-	
-	var addChild = function (id, parentId, parentIndex, output) {
-		var node = tree.get(id);
-		node.parent = parentId;
-		node.parentIndex = parentIndex;
-		tree.get(parentId).children.set(id, id);
-		output.addChild(tree.get(parentId).value, node.value);
-	};
 
-	var treeProc = function (output, id) {
-		return {
-			update: function (value, index) {
-				// if this node is a root node, add value to it's list, and check value against other nodes
-				// if it matches a node, check all of that nodes children to see if this node should be their parent
-				var node = tree.get(id);
-				var newId = value.getId();
-				if(node.parent === null) {
-					node.parentList[index] = newId;
-					tree.forEach(function (treeNode, treeId) {
-						if(treeId === newId) {
-							addChild(id, treeId, index, output);
-							treeNode.children.forEach(function(childId){
-								forEach(tree.get(childId).parentList, function(parent, pindex){
-									if(parent === id) {
-										treeNode.children.remove(childId);
-										addChild(childId, id, pindex, output);
+	var instProc = function (myOut, ambient) {
+		
+		var myAmbient;
+
+		var tree = makeObjectHash();
+
+		var addChild = function (id, parentId, parentIndex, output) {
+			var node = tree.get(id);
+			node.parent = parentId;
+			node.parentIndex = parentIndex;
+			tree.get(parentId).children.set(id, id);
+			output.addChild(tree.get(parentId).value, node.value);
+		};
+
+		var treeProc = function (output, id) {
+			return {
+				update: function (value, index) {
+
+					//check if input is the parent of any of the root nodes (should consolidate this into a function...)
+					var newId = value.getId();
+					if(index == 0){
+						tree.forEach(function (rootNode, rootId) {
+							if(rootNode.parent === null && rootId !== id) {
+								forEach(rootNode.parentList, function(parent, pindex){
+									if(parent === newId) {
+										addChild(rootId, id, index, output);
 									}
 								});
-							});
-						}
-					});
-				}
-				// if it's a non-root node, check if index comes before or at it's current parent index
-				// if it does, check if it matches any of the current parent's children, and update accordingly 
-				else {
-					if(index <= node.parentIndex) {
-						node.parentList[index] = newId;
-						tree.get(node.parent).children.forEach(function(childId){
-							if(newId === childId) {
-								tree.get(node.parent).children.remove(id);
-								addChild(id, newId, index, output);
 							}
 						});
 					}
+
+
+					// if this node is a root node, add value to it's list, and check value against other nodes
+					// if it matches a node, check all of that nodes children to see if this node should be their parent
+					var node = tree.get(id);
+					if(node.parent === null) {
+						node.parentList[index] = newId;
+						tree.forEach(function (treeNode, treeId) {
+							if(treeId !== id){
+								var checkContainer = treeNode.parentList[0];
+								if(!checkContainer) checkContainer = treeId;
+								if(checkContainer === newId) {
+									addChild(id, treeId, index, output);
+									treeNode.children.forEach(function(childId){
+										if(childId !== id) {
+											forEach(tree.get(childId).parentList, function(parent, pindex){
+												var container = node.parentList[0];
+												if(!container) container = id;
+												if(parent === container) {
+													treeNode.children.remove(childId);
+													addChild(childId, id, pindex, output);
+												}
+											});
+										}
+									});
+								}
+							}
+						});
+					}
+					// if it's a non-root node, check if index comes before or at it's current parent index
+					// if it does, check if it matches any of the current parent's children, and update accordingly 
+					else {
+						if(index <= node.parentIndex) {
+							node.parentList[index] = newId;
+							tree.get(node.parent).children.forEach(function(childId){
+								if(newId === childId) {
+									tree.get(node.parent).children.remove(id);
+									addChild(id, newId, index, output);
+								}
+							});
+						}
+					}
+				},
+				insert: function (value, index) {
+					// this should never happen
+				},
+				remove: function (index) {
+					// check if this index was the current parent, if so make this a root node
+					// may need to rethink this
+					var node = tree.get(id);
+					if(index == node.parentIndex) {
+						node.parentIndex = null;
+						node.parent = null;
+						output.addRoot(node.value);
+					}
 				}
-			},
-			insert: function (value, index) {
-				// this should never happen
-			},
-			remove: function (index) {
-				// check if this index was the current parent, if so make this a root node
-				// may need to rethink this
-				var node = tree.get(id);
-				if(index == node.parentIndex) {
-					node.parentIndex = null;
-					node.parent = null;
-					output.addRoot(node.value);
-				}
-			},
-			PACKETCLOSE: function () {
-				output.PACKETCLOSE();
-			}
-		};
-	};
-	
-	
-	
-	var instProc = function (myOut) {
+			};
+		};		
+		
+		
+		
+		
+		
 		return {
 			add: function (input) {
 				//add input to tree data structure
@@ -404,6 +430,7 @@ components.treeify = function (fType, property) {
 					myOut.addRoot(input);
 				
 					//check if input is the parent of any of the root nodes (should consolidate this into a function...)
+					//this is only for the root Situation
 					var newid = input.getId();
 					tree.forEach(function (rootNode, rootId) {
 						if(rootNode.parent === null) {
@@ -417,7 +444,7 @@ components.treeify = function (fType, property) {
 				
 					var com = components.trace(basic.fun(interfaces.unit(kernel.ob), interfaces.list(kernel.ob)), property);
 					var sa = simpleApply(com, startCaps.unit(input));
-					var treeEC = makeSimpleEndCap(treeifyAmbient, treeProc(myOut, input.getId()), sa);
+					var treeEC = makeSimpleEndCap(ambient, treeProc(myOut, input.getId()), sa);
 				}
 			},
 			remove: function (input) {

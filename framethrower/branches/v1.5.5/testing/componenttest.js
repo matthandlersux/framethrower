@@ -32,7 +32,7 @@ startCaps.controllableSet = memoize(function (set) {
 
 
 
-var controlSet = startCaps.controllableSet([sc, jb, gfmov, rose]);
+var controlSet = startCaps.controllableSet([jb, rose, sc]);
 var customset = controlSet.sc;
 
 var controller = controlSet.controller;
@@ -42,13 +42,13 @@ var controller = controlSet.controller;
 var mainAmbient = makeAmbient();
 processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {rw: rw, customset: customset}, "");
 
-
+/*
 //load a transaction thunk xml
 
 var transPerforms = loadXMLNow(ROOTDIR + 'testing/xml/toplevelperforms.xml');
 
 processAllPerforms(mainAmbient, transPerforms, {rw:rw, rose:rose, gfmov:gfmov, sc:sc}, {}, "testing/xml/toplevelperforms.xml");
-
+*/
 
 
 // run some tests
