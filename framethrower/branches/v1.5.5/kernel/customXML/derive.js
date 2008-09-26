@@ -378,9 +378,9 @@ var deriveTreeify = memoize(function (input, goUpProperty) {
 	
 	var inType = intfargs[0];
 	if (!inType.getProp) {
-		console.warn("inType doesn't have a prop", inType.getName(), input);
+		//console.warn("inType doesn't have a prop", inType.getName(), input);
+		inType = basic.bool;
 	}
-	var outType = inType.getProp(goUpProperty);
 	
 	var treecom = components.treeify(basic.fun(interfaces.set(inType), interfaces.tree(inType)), goUpProperty);
 	return simpleApply(treecom, input);

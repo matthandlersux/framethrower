@@ -24,16 +24,19 @@
 	
 	<xsl:template name="recurse">
 		<xsl:param name="focus" />
-		<html:div style="margin-left: 20px">
-			<html:div >
-				<xsl:value-of select="$focus/f:value/f:ob/@id" />
-			</html:div>
-						
-			<xsl:for-each select="$focus/f:child">
-				<xsl:call-template name="recurse">
-					<xsl:with-param name="focus" select="." />
-				</xsl:call-template>
-			</xsl:for-each>
+			<html:div style="margin-left: 10px">
+				<xsl:if test="$focus/f:value/f:ob/@id">			
+					<f:thunk url="printContent.xml">
+						<f:with-param name="focus" value-id="{$focus/f:value/f:ob/@id}" />
+						<f:with-param name="style"><f:string value="listentry" /></f:with-param>
+					</f:thunk>
+				</xsl:if>
+
+				<xsl:for-each select="$focus/f:child">
+					<xsl:call-template name="recurse">
+						<xsl:with-param name="focus" select="." />
+					</xsl:call-template>
+				</xsl:for-each>
 		</html:div>
 	</xsl:template>
 </f:function>
