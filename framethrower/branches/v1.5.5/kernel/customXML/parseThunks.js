@@ -57,7 +57,7 @@ function domEndCap(ambient, input, node, relurl) {
 							var params = {};
 							var paramNodes = xpath("f:with-param", binding);
 							forEach(paramNodes, function (paramNode) {
-								params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, o.ids, {});
+								params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, o.ids, {}, c);
 							});
 							parent.bindingParams = params;
 						});

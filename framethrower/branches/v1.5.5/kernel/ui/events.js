@@ -62,7 +62,9 @@
 	
 	function mousedown(e) {
 		mouseIsDown = copyEvent(e);
-		dont(e);
+		if(e.target.localName != 'input'){
+			dont(e);
+		}
 	}
 	function mouseup(e) {
 		if (mouseIsDragging) {

@@ -607,7 +607,8 @@ function maybeUnit(o) {
 	}
 }
 
-function convertXMLToPin(node, ids, vars) {
+//sourceXML is only for value-nodeid
+function convertXMLToPin(node, ids, vars, sourceXML) {
 	var valueId = node.getAttributeNS("", "value-id");
 	if (valueId) {
 		return maybeUnit(ids[valueId]);
@@ -622,6 +623,19 @@ function convertXMLToPin(node, ids, vars) {
 	if (valuePredef) {
 		return maybeUnit(PREDEF[valuePredef]);
 	}
+	
+	var valueNodeId = node.getAttributeNS("", "value-nodeid");
+	if (valueNodeId) {
+		var inputNode = xpath("//*[@id = '" + valueNodeId + "']", sourceXML);
+
+		var somekindofstartcap = startCaps.unit("");
+		somekindofstartcap.getState = function(){
+			return inputNode[0].value;
+		};
+
+		return somekindofstartcap;
+	}
+	
 	
 	var xml = getTrimmedFirstChild(node);
 	

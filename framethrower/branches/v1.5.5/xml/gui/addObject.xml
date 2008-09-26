@@ -13,25 +13,30 @@
 	</f:derived>
 	
 	<xsl:template>
+		<xsl:variable name="w" select="$width/@value" />
+		<xsl:variable name="h" select="$height/@value" />
+		
+		<xsl:variable name="titleBarHeight" select="30" />
+		<xsl:variable name="padding" select="15" />		
+		
+		
+		
 		<html:div>
-			<f:binding url="bindings/addObject.xml">
-				<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
-			</f:binding>
 			<html:div style="z-index:4; position:absolute; left:0; top:0; width:100%; height:100%;">
 				<svg:svg width="100%" height="100%">
 					<svg:rect x="0" y="0" width="100%" height="100%" opacity=".7" fill="black" stroke="#333" stroke-width="0" />
 				</svg:svg>
 			</html:div>
-			<html:div style="z-index:5; position:absolute;" left="{$width/@value * .25}" top="{$height/@value * .25}" width="{$width/@value * .5}" height="{$height/@value * .5}">
+			<html:div style="z-index:5; position:absolute;" left="{$w * .25}" top="{$h * .25}" width="{$w * .5}" height="{$h * .5}">
 				<f:thunk url="graphics/zuiPane.xml">
-					<f:with-param name="width"><f:number value="{$width/@value * .5}" /></f:with-param>
-					<f:with-param name="height"><f:number value="{$height/@value * .5}" /></f:with-param>
-					<f:with-param name="border"><f:number value="15" /></f:with-param>
-					<f:with-param name="titleBarHeight"><f:number value="30" /></f:with-param>
+					<f:with-param name="width"><f:number value="{$w * .5}" /></f:with-param>
+					<f:with-param name="height"><f:number value="{$h * .5}" /></f:with-param>
+					<f:with-param name="border"><f:number value="{$padding}" /></f:with-param>
+					<f:with-param name="titleBarHeight"><f:number value="{$titleBarHeight}" /></f:with-param>
 					<f:with-param name="color"><f:string value="orange" /></f:with-param>
 				</f:thunk>
 				
-				<html:div class="zuiTitle" left="0" top="0" width="{$width/@value}" height="30">
+				<html:div class="zuiTitle" left="0" top="0" width="{$w}" height="{$titleBarHeight}">
 					Add Object to Situation:
 					<f:thunk url="printContent.xml">
 						<f:with-param name="focus"><xsl:copy-of select="$addFocus" /></f:with-param>
@@ -39,11 +44,29 @@
 					</f:thunk>
 					
 					<html:span style="margin-left:15px;">
+						<f:binding url="bindings/addObject.xml">
+							<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+						</f:binding>
 						<f:button name="close" />
 						X
-					</html:span>				
+					</html:span>
 				</html:div>
 				
+				<xsl:variable name="openingWidth" select="$w *.5 - $padding * 2" />
+				
+				<html:div left="{$padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$h * .5 - $titleBarHeight - $padding}">
+					<html:div left="4" top="4" width="{$openingWidth}" height="{$h * .5 - $titleBarHeight - $padding - 30}">
+						Name: <html:input id="newName" />
+					</html:div>
+					<f:binding url="bindings/addObject.xml">
+						<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+						<f:with-param name="addFocus"><xsl:copy-of select="$addFocus" /></f:with-param>
+						<f:with-param name="input" value-nodeid="newName" />
+					</f:binding>
+					<html:div class="addButton" left="{$openingWidth - 200}" top="{$h * .5 - $titleBarHeight - $padding - 30}" width="200" height="26">
+						<f:button name="add" />
+					</html:div>
+				</html:div>
 			</html:div>
 		</html:div>
 	</xsl:template>
