@@ -42,17 +42,14 @@ function domEndCap(ambient, input, node, relurl) {
 							console.dirxml(node);
 						}*/
 
-						node.parentNode.replaceChild(c, node);
-						node = c;
-						
 						// find sizings
-						var sizings = xpath("descendant-or-self::html:div[@left]", node);
+						var sizings = xpath("descendant-or-self::html:div[@left]", c);
 						forEach(sizings, function (sizing) {
 							sizeNode(sizing);
 						});
 						
 						// find bindings
-						var bindings = xpath(".//f:binding", node);
+						var bindings = xpath(".//f:binding", c);
 						forEach(bindings, function (binding) {
 							var parent = binding.parentNode;
 							parent.bindingURL = getUrlFromXML(binding, relurl);
@@ -64,17 +61,20 @@ function domEndCap(ambient, input, node, relurl) {
 							});
 							parent.bindingParams = params;
 						});
-						var buttons = xpath(".//f:button", node);
+						var buttons = xpath(".//f:button", c);
 						forEach(buttons, function (button) {
 							button.parentNode.bindingButtonName = button.getAttributeNS("", "name");
 						});
 
 						// find thunks
-						var thunks = xpath(".//f:thunk", node);
+						var thunks = xpath(".//f:thunk", c);
 
 						forEach(thunks, function (thunk) {
 							processThunk(amb, thunk, o.ids, relurl);
 						});
+						
+						node.parentNode.replaceChild(c, node);
+						node = c;
 					}
 				}
 			}

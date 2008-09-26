@@ -8,6 +8,7 @@
 	<f:param name="parentZui" />
 	<f:param name="width" />
 	<f:param name="height" />
+	<f:param name="panelLayer" />
 	
 	<f:derived name="focus" from="zui">
 		<get what="focus" />
@@ -32,6 +33,7 @@
 			<f:binding url="bindings/zui.xml">
 				<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 				<f:with-param name="parentZui"><xsl:copy-of select="$parentZui" /></f:with-param>
+				<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
 			</f:binding>
 			
 			<html:div style="position:absolute">
@@ -96,11 +98,14 @@
 				<xsl:when test="$properties/@view='situation' and $focusType/@value='kernel.situation'">
 					<xsl:variable name="childrenSidebarWidth" select="$properties/@childrenSidebar * $childrenSidebarExpandedWidth" />
 					<xsl:if test="$properties/@childrenSidebar='1'">
-						<html:div class="zuiChildrenSidebar" left="{$padding}" top="{$titleBarHeight}" width="{$childrenSidebarWidth}" height="{$height/@value - $titleBarHeight - $padding}">
+						<html:div class="zuiChildrenSidebar" left="{$padding}" top="{$titleBarHeight}" width="{$childrenSidebarWidth}" height="{$height/@value - $titleBarHeight - $padding - 26}">
 							<f:thunk url="childrenSidebar.xml">
 								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 							</f:thunk>
+						</html:div>
+						<html:div class="addButton" left="{$padding}" top="{$height/@value - $padding - 26}" width="{$childrenSidebarWidth}" height="26">
+							<f:button name="addChild" />
 						</html:div>
 					</xsl:if>
 					
@@ -127,6 +132,7 @@
 						</f:thunk>-->
 						<f:thunk name="printOpenings">
 							<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+							<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
 							<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
 							<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
 						</f:thunk>
@@ -161,6 +167,7 @@
 	
 	<f:function name="printOpenings">
 		<f:param name="zui" />
+		<f:param name="panelLayer" />
 		<f:param name="width" />
 		<f:param name="height" />
 		<f:derived name="openZuis" from="zui">
@@ -193,8 +200,9 @@
 				<xsl:for-each select="$openZuis/*">
 					<html:div left="{$padding + count(preceding-sibling::*) * ($childWidth + $spacing)}" top="{$padding}">
 						<f:thunk url="zui.xml">
-							<f:with-param name="zui"><xsl:copy-of select="." /></f:with-param>
-							<f:with-param name="parentZui"><xsl:copy-of select="$zui" /></f:with-param>
+							<f:with-param name="zui" value-id="{./@id}" />
+							<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+							<f:with-param name="parentZui" value-id="{$zui/@id}"><xsl:copy-of select="$zui" /></f:with-param>
 							<f:with-param name="width"><f:number value="{$childWidth}" /></f:with-param>
 							<f:with-param name="height"><f:number value="{$h}" /></f:with-param>
 						</f:thunk>

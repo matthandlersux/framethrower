@@ -18,6 +18,9 @@ var cor1 = actions.makeInfon(world.rw, world.corresponds, {corresponder:world.mi
 var cor2 = actions.makeInfon(world.rw, world.corresponds, {corresponder:world.crazyMissRob, anchor:anchor});
 
 
+var panelLayer = layout.panelLayer.make();
+panelLayer.control.properties.set(parseXML("<panelLayer addObject='0' focusSituation='0'/>"));
+
 
 var zui = layout.zui.make();
 zui.control.focus.set(rw);
@@ -29,6 +32,7 @@ var mainAmbient = makeAmbient();
 processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {
 	rw: rw,
 	zui: zui,
+	panelLayer: panelLayer,
 	"uiStartCaps.windowSizeWidth": uiStartCaps.windowSizeWidth,
 	"uiStartCaps.windowSizeHeight": uiStartCaps.windowSizeHeight
 }, "");

@@ -3,7 +3,8 @@ var layout = scaffold({
 		paneSet: {},
 		viewer: {}
 	},
-	zui: {}
+	zui: {},
+	panelLayer: {}
 }, "layout");
 
 layout.zui.prop = {
@@ -12,4 +13,8 @@ layout.zui.prop = {
 	childZuis: interfaces.set(layout.zui),
 	expandedTypes: interfaces.set(kernel.individual),
 	maximizedChild: interfaces.unit(layout.zui)
+};
+
+layout.panelLayer.prop = {
+	properties: interfaces.unit(basic.xml)
 };

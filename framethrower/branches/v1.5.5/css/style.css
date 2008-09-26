@@ -46,3 +46,7 @@ body {
 	background: #444 url(http://www.eversplosion.com/resources/gradient.php?height=100&start=000000&end=444444) repeat-x;
 	/*background: #6af url(http://www.eversplosion.com/resources/gradient.php?height=80&start=0066ee&end=66aaff) repeat-x scroll 0 0;*/
 }
+
+.addButton {
+	background-image: url(../images/addButton.png);
+}

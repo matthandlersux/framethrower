@@ -1,0 +1,37 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="zui" />
+	<f:param name="width" />
+	<f:param name="height" />
+	<f:param name="panelLayer" />
+	
+	<f:derived name="properties" from="panelLayer">
+		<get what="properties" />
+	</f:derived>
+	
+	
+	<xsl:template>
+		<html:div>
+			<xsl:if test="$properties/@addObject='1'">
+				<f:thunk url="addObject.xml">
+					<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
+					<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
+					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+				</f:thunk>					
+			</xsl:if>
+		
+			<f:thunk url="zui.xml">
+				<f:with-param name="zui" value-id="{$zui/@id}" />
+				<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
+				<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
+				<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+			</f:thunk>
+		</html:div>
+	</xsl:template>
+	
+	
+</f:function>
