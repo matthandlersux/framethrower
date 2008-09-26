@@ -51,9 +51,11 @@ function getFromContext(context, s) {
 // focus is an optional variable
 // derive puts together a chain of components and returns an output pin for the derived variable
 function derive(xml, context, focus) {
+
 	var next;
 	var name = xml.localName;
 	
+
 	//if (name) console.log("hooking up", name, xml, focus);
 	
 	function startFrom(xml) {

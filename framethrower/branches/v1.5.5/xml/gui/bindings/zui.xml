@@ -181,6 +181,10 @@
 		<f:derived name="properties" from="panelLayer">
 			<get what="properties" />
 		</f:derived>
+		<f:derived name="focus" from="zui">
+			<get what="focus" />
+		</f:derived>
+		
 		<xsl:template>
 			<transaction>
 				<intact with-id="{$panelLayer/@id}" prop="properties" action="set">
@@ -192,7 +196,12 @@
 						</xsl:call-template>
 					</with-param>
 				</intact>
-			</transaction>
+				<intact with-id="{$panelLayer/@id}" prop="addFocus" action="set">
+					<with-param>
+						<xsl:copy-of select="$focus" />
+					</with-param>
+				</intact>				
+			</transaction>			
 		</xsl:template>
 		
 		<xsl:template name="changeAttribute">

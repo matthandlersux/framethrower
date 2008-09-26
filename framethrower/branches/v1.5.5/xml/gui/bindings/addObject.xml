@@ -1,0 +1,42 @@
+<f:binding
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	
+	<f:transaction name="Close" event="click" button="close">
+		<f:param name="panelLayer" />
+		<f:derived name="properties" from="panelLayer">
+			<get what="properties" />
+		</f:derived>
+		<xsl:template>
+			<transaction>
+				<intact with-id="{$panelLayer/@id}" prop="properties" action="set">
+					<with-param>
+						<xsl:call-template name="changeAttribute">
+							<xsl:with-param name="xml" select="$properties" />
+							<xsl:with-param name="attributeName" select="'addObject'" />
+							<xsl:with-param name="attributeValue" select="0" />
+						</xsl:call-template>
+					</with-param>
+				</intact>
+			</transaction>
+		</xsl:template>
+		
+		<xsl:template name="changeAttribute">
+			<xsl:param name="xml" />
+			<xsl:param name="attributeName" />
+			<xsl:param name="attributeValue" />
+			
+			<xsl:for-each select="$xml">
+				<xsl:copy>
+					<xsl:copy-of select="$xml/@*[local-name() != $attributeName]" />
+					<xsl:attribute name="{$attributeName}"><xsl:copy-of select="$attributeValue" /></xsl:attribute>
+					<xsl:copy-of select="$xml/node()" />
+				</xsl:copy>
+			</xsl:for-each>
+		</xsl:template>
+	</f:transaction>
+	
+</f:binding>
+
+
+

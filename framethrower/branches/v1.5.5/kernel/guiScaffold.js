@@ -16,5 +16,6 @@ layout.zui.prop = {
 };
 
 layout.panelLayer.prop = {
-	properties: interfaces.unit(basic.xml)
+	properties: interfaces.unit(basic.xml),
+	addFocus: interfaces.unit(kernel.ob)
 };
