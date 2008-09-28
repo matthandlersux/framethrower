@@ -10,13 +10,20 @@
 
 	// http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/XHIGDragDrop/chapter_12_section_5.html
 	var dragRadius=3;
-	
+	var currentFocus=null;
 
 	// =========================================================
 	// Processing Events
 	// =========================================================
 	
-	function processEvent(eventName, e) {
+	function processEvent(eventName, e, eventParams) {
+		var eventXML = document.createElementNS("","eventXML");
+		if(eventParams){
+			forEach(eventParams, function(param, name){
+				eventXML.setAttribute(name, param);
+			});
+		}
+		
 		// go up
 		var button;
 		var at = e.target;
@@ -30,6 +37,8 @@
 				var trans = xpath("f:transaction[@event='" + eventName + "' and (not(@button) or @button = '" + button + "')]", bindingXML);
 				if (trans.length > 0) {
 					var transName = trans[0].getAttributeNS("", "name");
+					var inputParams = at.bindingParams;
+					inputParams.eventXML = startCaps.unit(eventXML);
 					processPerforms(makeAmbient(), null, null, null, null, at.bindingURL + "#" + transName, at.bindingParams);
 				}
 				return;
@@ -62,6 +71,11 @@
 	
 	function mousedown(e) {
 		mouseIsDown = copyEvent(e);
+		if (currentFocus && currentFocus.blur) {
+			var tmp = currentFocus;
+			currentFocus=false;
+			tmp.blur();
+		}		
 		if(e.target.localName != 'input'){
 			dont(e);
 		}
@@ -88,6 +102,14 @@
 	function mousescroll(e) {
 		
 	}
+	function focus(e) {
+		currentFocus=e.target;
+		processEvent("focus", e);
+	}
+	function blur(e) {
+		processEvent("blur", e, {value:e.target.value});
+		if (!currentFocus) processEvent("manualblur", e);
+	}	
 	
 	function dont(e) {
 		e.preventDefault();
@@ -99,4 +121,6 @@
 	document.addEventListener("mouseover", mouseover, true);
 	document.addEventListener("mouseout", mouseout, true);
 	document.addEventListener("DOMMouseScroll", mousescroll, true);
+	document.addEventListener("blur",blur,true);
+	document.addEventListener("focus",focus,true);
 })();

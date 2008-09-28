@@ -7,6 +7,7 @@
 	<f:param name="width" />
 	<f:param name="height" />
 	<f:param name="panelLayer" />
+	<f:param name="addPanel" />
 
 	<f:derived name="addFocus" from="panelLayer">
 		<f:get what="addFocus" />
@@ -28,6 +29,12 @@
 				</svg:svg>
 			</html:div>
 			<html:div style="z-index:5; position:absolute;" left="{$w * .25}" top="{$h * .25}" width="{$w * .5}" height="{$h * .5}">
+				<f:binding url="bindings/addObject.xml">
+					<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+					<f:with-param name="addFocus"><xsl:copy-of select="$addFocus" /></f:with-param>
+					<f:with-param name="addPanel"><xsl:copy-of select="$addPanel" /></f:with-param>
+				</f:binding>
+				
 				<f:thunk url="graphics/zuiPane.xml">
 					<f:with-param name="width"><f:number value="{$w * .5}" /></f:with-param>
 					<f:with-param name="height"><f:number value="{$h * .5}" /></f:with-param>
@@ -44,9 +51,6 @@
 					</f:thunk>
 					
 					<html:span style="margin-left:15px;">
-						<f:binding url="bindings/addObject.xml">
-							<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
-						</f:binding>
 						<f:button name="close" />
 						X
 					</html:span>
@@ -56,13 +60,9 @@
 				
 				<html:div left="{$padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$h * .5 - $titleBarHeight - $padding}">
 					<html:div left="4" top="4" width="{$openingWidth}" height="{$h * .5 - $titleBarHeight - $padding - 30}">
-						Name: <html:input id="newName" />
+						Name: <html:input><f:button name="input" /></html:input>
 					</html:div>
-					<f:binding url="bindings/addObject.xml">
-						<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
-						<f:with-param name="addFocus"><xsl:copy-of select="$addFocus" /></f:with-param>
-						<f:with-param name="input" value-nodeid="newName" />
-					</f:binding>
+
 					<html:div class="addButton" left="{$openingWidth - 200}" top="{$h * .5 - $titleBarHeight - $padding - 30}" width="200" height="26">
 						<f:button name="add" />
 					</html:div>

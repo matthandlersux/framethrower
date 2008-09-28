@@ -22,6 +22,9 @@ var panelLayer = layout.panelLayer.make();
 panelLayer.control.properties.set(parseXML("<panelLayer addObject='0' />"));
 panelLayer.control.addFocus.set(rw);
 
+var addPanel = layout.addPanel.make();
+addPanel.control.properties.set(parseXML("<addPanel newName='' />"));
+
 var zui = layout.zui.make();
 zui.control.focus.set(rw);
 zui.control.properties.set(parseXML("<zui view='situation' childrenSidebar='1' correspondSidebar='0'/>"));
@@ -33,6 +36,7 @@ processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {
 	rw: rw,
 	zui: zui,
 	panelLayer: panelLayer,
+	addPanel: addPanel,
 	"uiStartCaps.windowSizeWidth": uiStartCaps.windowSizeWidth,
 	"uiStartCaps.windowSizeHeight": uiStartCaps.windowSizeHeight
 }, "");

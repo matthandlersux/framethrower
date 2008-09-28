@@ -4,7 +4,8 @@ var layout = scaffold({
 		viewer: {}
 	},
 	zui: {},
-	panelLayer: {}
+	panelLayer: {},
+	addPanel: {}
 }, "layout");
 
 layout.zui.prop = {
@@ -18,4 +19,8 @@ layout.zui.prop = {
 layout.panelLayer.prop = {
 	properties: interfaces.unit(basic.xml),
 	addFocus: interfaces.unit(kernel.ob)
+};
+
+layout.addPanel.prop = {
+	properties: interfaces.unit(basic.xml)
 };

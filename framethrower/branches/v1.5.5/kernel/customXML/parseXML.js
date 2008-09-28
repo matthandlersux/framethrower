@@ -211,7 +211,7 @@ var qtDocs = (function () {
 				var name = n.getAttributeNS("", "name");
 				context[name] = derive(n, context);
 			});
-						
+			
 			var combinedContext = combineContext(context);
 			
 			if (delay) {

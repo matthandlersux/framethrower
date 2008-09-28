@@ -130,6 +130,8 @@ function processPerforms(ambient, node, ids, vars, relurl, url, params) {
 				forEach (actionNode.childNodes, function(paramNode){
 					params.push(getObjectFromParam(paramNode, ids, newvars));
 				});
+				
+				
 				prefix.control[prop][action].apply(null, params);
 				prefix.control[prop].PACKETCLOSE();
 			} else if (actionName == 'perform') {
