@@ -28,6 +28,9 @@ function scaffold(skeleton, topName) {
 				if (t.prop[propName]) {
 					return t.prop[propName];
 				}
+				if (t.auto && t.auto[propName]) {
+					return t.auto[propName].type;
+				}
 				t = t.parent;
 			}
 			return undefined;
@@ -48,6 +51,29 @@ function scaffold(skeleton, topName) {
 						instance.get[name] = getter(inst[name]);
 					}
 				});
+				
+				if (t.auto) {
+					forEach(t.auto, function (autoDerive, name) {
+						instance.get[name] = getter(autoDerive.deriver(instance));
+						/*var pin = instance.get[name]();
+						// keep it alive
+						var emptyFunc = function () {};
+						var constructor = pin.getType().getConstructor();
+						var emptyProc;
+						if (constructor === interfaces.unit) {
+							emptyProc = {set: emptyFunc};
+						} else if (constructor === interfaces.set) {
+							emptyProc = {add: emptyFunc, remove: emptyFunc};
+						} else if (constructor === interfaces.list) {
+							emptyProc = {insert: emptyFunc, update: emptyFunc, remove: emptyFunc};
+						} else if (constructor === interfaces.assoc) {
+							emptyProc = {set: emptyFunc, remove: emptyFunc};
+						} else if (constructor === interfaces.tree) {
+							emptyProc = {addRoot: emptyFunc, addChild: emptyFunc, remove: emptyFunc};
+						}
+						makeSimpleEndCap(makeAmbient(), emptyProc, pin);*/
+					});
+				}
 			}
 			
 			var t = type;
@@ -106,6 +132,16 @@ kernel.ob.prop = {
 
 kernel.situation.prop = {
 	childObjects: interfaces.set(kernel.ob)
+};
+
+var childrenByTypeXML = loadXMLNow(ROOTDIR + "xml/autoderive/childrenByType.xml");
+kernel.situation.auto = {
+	childrenByType: {
+		type: interfaces.assoc(kernel.ob, interfaces.set(kernel.ob)),
+		deriver: function (o) {
+			return derive(childrenByTypeXML, {focus: startCaps.unit(o)});
+		}
+	}
 };
 
 kernel.individual.prop = {

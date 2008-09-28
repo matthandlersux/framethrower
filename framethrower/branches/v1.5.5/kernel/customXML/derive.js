@@ -99,6 +99,17 @@ function derive(xml, context, focus) {
 				return res;
 			});
 			focus = simpleApply(com, focus);
+		} else if (name === "groupby") {
+			var newcontext = merge(context);
+			var ascontext = xml.getAttributeNS("", "ascontext");
+			focus = deriveGroupBy(focus, function (o) {
+				var start = startCaps.unit(o);
+				if (ascontext) {
+					newcontext[ascontext] = start;
+				}
+				var res = derive(xml.firstChild, newcontext, start);
+				return res;
+			}, typeNames[xml.getAttributeNS("", "type")]);
 		} else if (name === "equals") {
 			var input2 = derive(xml.firstChild, context);
 			var type = getSuperTypeFromTypes(focus.getType().getArguments()[0], input2.getType().getArguments()[0]);
@@ -132,6 +143,8 @@ function derive(xml, context, focus) {
 			}, type);
 		} else if (name === "sort") {
 			focus = deriveSort(focus);
+		} else if (name === "takeone") {
+			focus = deriveTakeOne(focus);
 		} else if (name === "treeify") {
 			var t = focus.getType();
 			var property = xml.getAttributeNS("", "property");
@@ -217,6 +230,36 @@ function deriveForEach(focus, f, outType) {
 					inputs.remove(input);
 					cr.removeInput(input, myOut.remove);				
 				}
+			}
+		};
+	}, focus);
+}
+
+// takes in a set {set(a)} and returns one element of the set {unit(a)}
+function deriveTakeOne(focus) {
+	var type = focus.getType().getArguments()[0];
+	return makeSimpleBox(interfaces.unit(type), function (myOut, ambient) {
+		var cache = makeObjectHash();
+		function update() {
+			function sortfunc(a, b) {
+				return (stringifyObject(a) > stringifyObject(b)) ? 1 : -1;
+			}
+			
+			var sorted = cache.toArray().sort(sortfunc);
+			if (sorted.length > 0) {
+				myOut.set(sorted[0]);
+			} else {
+				myOut.set(undefined);
+			}
+		}
+		return {
+			add: function (o) {
+				cache.set(o, o);
+				update();
+			},
+			remove: function (o) {
+				cache.remove(o);
+				update();
 			}
 		};
 	}, focus);

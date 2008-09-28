@@ -6,11 +6,34 @@
 	
 	<f:param name="zui" />
 	<f:param name="focus" />
-	<f:derived name="children" from="focus">
-		<get what="childObjects" />
-		<!--><filtertype type="kernel.individual" />-->
+	<f:derived name="childrenByType" from="focus">
+		<get what="childrenByType" />
+		<!-- <get what="childObjects" />
+		<groupby ascontext="focus" type="kernel.ob">
+			<get what="involves" />
+			<filter>
+				<get what="relation" />
+				<equals>
+					<start predef="ofType" />
+				</equals>
+			</filter>
+			<filter>
+				<get what="arcs" />
+				<getkey key="'instance'" />
+				<equals>
+					<start from="focus" />
+				</equals>
+			</filter>
+			<takeone />
+			<get what="arcs" />
+			<getkey key="'type'" />
+		</groupby> -->
 	</f:derived>
 	
+	<!--
+	<f:derived name="children" from="focus">
+		<get what="childObjects" />
+	</f:derived>	
 	<xsl:template>
 		<html:div>
 			<xsl:for-each select="$children/*">
@@ -26,37 +49,21 @@
 				</html:div>
 			</xsl:for-each>
 		</html:div>
-	</xsl:template>
+	</xsl:template>-->
 
-	<!--<f:param name="zui" />
-	<f:param name="focus" />
-	<f:derived name="types" from="focus">
-		<get what="childObjects" />
-		<get what="involves" />
-		<filter>
-			<get what="relation" />
-			<equals>
-				<start predef="ofType" />
-			</equals>
-		</filter>
-		<foreach type="kernel.ob">
-			<get what="arcs" />
-			<getkey key="'type'" />
-		</foreach>
-	</f:derived>
 	<f:derived name="expandedTypes" from="zui">
 		<get what="expandedTypes" />
 	</f:derived>
 	
 	<xsl:template>
 		<html:div>
-			<xsl:for-each select="$types/*">
+			<xsl:for-each select="$childrenByType/*">
 				<html:div>
 					<f:binding url="bindings/type.xml">
 						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-						<f:with-param name="type"><xsl:copy-of select="." /></f:with-param>
+						<f:with-param name="type"><xsl:copy-of select="f:key/*" /></f:with-param>
 					</f:binding>
-					<xsl:variable name="typeId" select="@id" />
+					<xsl:variable name="typeId" select="f:key/*/@id" />
 					<xsl:variable name="expanded" select="$expandedTypes/*[@id = $typeId]" />
 					
 					<xsl:choose>
@@ -69,15 +76,22 @@
 					</xsl:choose>
 					
 					<f:thunk url="printContent.xml">
-						<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+						<f:with-param name="focus"><xsl:copy-of select="f:key/*" /></f:with-param>
 					</f:thunk>
 					<xsl:if test="$expanded">
 						<html:div style="margin-left:20px">
-							<f:thunk name="printChildren">
-								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
-								<f:with-param name="type"><xsl:copy-of select="." /></f:with-param>
-							</f:thunk>
+							<xsl:for-each select="f:value/f:set/*">
+								<html:div>
+									<f:binding url="bindings/child.xml">
+										<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+										<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+									</f:binding>
+									<f:thunk url="printContent.xml">
+										<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+										<f:with-param name="style"><f:string value="listentry" /></f:with-param>
+									</f:thunk>
+								</html:div>
+							</xsl:for-each>
 						</html:div>							
 					</xsl:if>
 				</html:div>
@@ -85,7 +99,7 @@
 		</html:div>
 	</xsl:template>
 	
-	<f:function name="printChildren">
+	<!-- <f:function name="printChildren">
 		<f:param name="zui" />
 		<f:param name="focus" />
 		<f:param name="type" />
@@ -131,7 +145,7 @@
 				</xsl:for-each>
 			</html:div>
 		</xsl:template>
-	</f:function>-->
+	</f:function> -->
 	
 	
 	
