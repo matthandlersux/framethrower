@@ -42,6 +42,10 @@ function loadXMLNow(url) {
 	} catch (e) {
 		console.log("loadXMLNow failed: " + url);
 	}
+	if(req.responseXML.firstChild.localName == 'parseerror'){
+		console.log("loadXMLNow parseerror: " + url + ", parseerror: ");
+		console.log(req.responseXML.firstChild);
+	}
     return req.responseXML.firstChild;
 }
 

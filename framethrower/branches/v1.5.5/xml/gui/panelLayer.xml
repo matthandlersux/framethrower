@@ -23,7 +23,15 @@
 					<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
 					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
 					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
-				</f:thunk>					
+				</f:thunk>
+			</xsl:if>
+
+			<xsl:if test="$properties/@addCorresponds='1'">
+				<f:thunk url="addCorresponds.xml">
+					<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
+					<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
+					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+				</f:thunk>
 			</xsl:if>
 		
 			<f:thunk url="zui.xml">

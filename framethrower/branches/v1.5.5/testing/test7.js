@@ -21,11 +21,13 @@ var cor2 = actions.makeInfon(world.rw, world.corresponds, {corresponder:world.cr
 
 
 var panelLayer = layout.panelLayer.make();
-panelLayer.control.properties.set(parseXML("<panelLayer addObject='0' />"));
+panelLayer.control.properties.set(parseXML("<panelLayer addObject='0' addCorresponds='0'/>"));
 panelLayer.control.addFocus.set(rw);
+
 
 var addPanel = layout.addPanel.make();
 addPanel.control.properties.set(parseXML("<addPanel newName='' newType=''/>"));
+
 
 var zui = layout.zui.make();
 zui.control.focus.set(rw);

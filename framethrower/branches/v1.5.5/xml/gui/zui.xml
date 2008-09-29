@@ -102,6 +102,7 @@
 							<f:thunk url="childrenSidebar.xml">
 								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+								<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
 							</f:thunk>
 						</html:div>
 						<html:div class="addButton" left="{$padding}" top="{$height/@value - $padding - 26}" width="{$childrenSidebarWidth}" height="26">
@@ -116,6 +117,9 @@
 								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 							</f:thunk>
+						</html:div>
+						<html:div class="addButton" left="{$padding + $childrenSidebarWidth}" top="{$height/@value - $padding - 26}" width="{$correspondSidebarWidth}" height="26">
+							<f:button name="addCorresponds" />
 						</html:div>
 					</xsl:if>
 
@@ -148,6 +152,9 @@
 								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 							</f:thunk>
+						</html:div>
+						<html:div class="addButton" left="{$padding}" top="{$height/@value - $padding - 26}" width="{$correspondSidebarWidth}" height="26">
+							<f:button name="addCorresponds" />
 						</html:div>
 					</xsl:if>					
 					

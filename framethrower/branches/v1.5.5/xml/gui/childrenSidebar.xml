@@ -6,6 +6,11 @@
 	
 	<f:param name="zui" />
 	<f:param name="focus" />
+	<f:param name="panelLayer" />
+	<f:derived name="properties" from="panelLayer">
+		<get what="properties" />
+	</f:derived>
+	
 	<f:derived name="childrenByType" from="focus">
 		<get what="childrenByType" />
 		<!-- <get what="childObjects" />
@@ -82,10 +87,22 @@
 						<html:div style="margin-left:20px">
 							<xsl:for-each select="f:value/f:set/*">
 								<html:div>
-									<f:binding url="bindings/child.xml">
-										<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-										<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
-									</f:binding>
+									<xsl:choose>
+										<xsl:when test="$properties/@addCorresponds = '1'">
+											<f:binding url="bindings/addCorresponds.xml">
+												<f:with-param name="addFocus"><xsl:copy-of select="." /></f:with-param>
+												<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+											</f:binding>
+											<f:button name="secondArg" />
+										</xsl:when>
+										<xsl:otherwise>
+											<f:binding url="bindings/child.xml">
+												<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+												<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+											</f:binding>
+										</xsl:otherwise>
+									</xsl:choose>
+									
 									<f:thunk url="printContent.xml">
 										<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
 										<f:with-param name="style"><f:string value="listentry" /></f:with-param>

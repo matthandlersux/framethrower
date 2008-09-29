@@ -1,0 +1,59 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="width" />
+	<f:param name="height" />
+	<f:param name="panelLayer" />
+
+	<f:derived name="addFocus" from="panelLayer">
+		<f:get what="addFocus" />
+	</f:derived>
+	
+	<xsl:template>
+		<xsl:variable name="w" select="$width/@value" />
+		<xsl:variable name="h" select="$height/@value" />
+		
+		<xsl:variable name="titleBarHeight" select="30" />
+		<xsl:variable name="padding" select="15" />		
+		
+		
+		
+		<html:div>
+			<html:div style="z-index:5; position:absolute;" left="{$w * .25}" top="{$h * .25}" width="{$w * .5}" height="{$h * .5}">
+				<f:binding url="bindings/addCorresponds.xml">
+					<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+					<f:with-param name="addFocus"><xsl:copy-of select="$addFocus" /></f:with-param>
+				</f:binding>
+				
+				<f:thunk url="graphics/zuiPane.xml">
+					<f:with-param name="width"><f:number value="{$w * .5}" /></f:with-param>
+					<f:with-param name="height"><f:number value="{$h * .5}" /></f:with-param>
+					<f:with-param name="border"><f:number value="{$padding}" /></f:with-param>
+					<f:with-param name="titleBarHeight"><f:number value="{$titleBarHeight}" /></f:with-param>
+					<f:with-param name="color"><f:string value="green" /></f:with-param>
+				</f:thunk>
+				
+				<html:div class="zuiTitle" left="0" top="0" width="{$w}" height="{$titleBarHeight}">
+					Select object to correspond to 
+					<!--
+					<f:thunk url="printContent.xml">
+						<f:with-param name="focus"><xsl:copy-of select="$addFocus" /></f:with-param>
+						<f:with-param name="style"><f:string value="inline" /></f:with-param>
+					</f:thunk>
+					-->
+					
+					<html:span style="margin-left:15px;">
+						<f:button name="close" />
+						X
+					</html:span>
+				</html:div>
+				
+			</html:div>
+		</html:div>
+	</xsl:template>
+	
+	
+</f:function>

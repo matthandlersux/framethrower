@@ -9,17 +9,7 @@
 		</content>
 		
 	</individual>
-	<relation name="corresponds" returnas="corresponds">
-		<content>
-			<pseudo>
-				<role role="corresponder"/>
-				 corresponds to anchor <role role="anchor"/>
-				
-			</pseudo>
-			
-		</content>
-	</relation>
-		
+	<relation name="corresponds" returnas="corresponds" />
 	<situation name="rw" returnas="rw">
 		<content>
 			The World
