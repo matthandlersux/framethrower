@@ -198,8 +198,19 @@
 		<f:param name="panelLayer" />
 		<f:param name="width" />
 		<f:param name="height" />
+		<f:derived name="childZuis" from="zui">
+			<get what="childZuis" />
+		</f:derived>
 		<f:derived name="openZuis" from="zui">
 			<get what="childZuis" />
+			<filter>
+				<get what="minimized" />
+				<equals>
+					<start>
+						<f:bool value="false" />
+					</start>
+				</equals>
+			</filter>
 		</f:derived>
 		
 		<xsl:template>
@@ -210,6 +221,8 @@
 			
 			<xsl:variable name="count" select="count($openZuis/*)" />
 			<xsl:variable name="childWidth" select="floor(($w - $spacing * ($count - 1)) div $count)" />
+			
+			<xsl:variable name="taskBarChildWidth" select="150" />
 			
 			<html:div>
 				
@@ -225,21 +238,58 @@
 					</html:div>
 				</xsl:for-each>-->
 				
+				<xsl:variable name="taskBarHeight" select="40" />
+				
 				<xsl:for-each select="$openZuis/*">
 					<html:div left="{$padding + count(preceding-sibling::*) * ($childWidth + $spacing)}" top="{$padding}">
 						<f:thunk url="zui.xml">
 							<f:with-param name="zui" value-id="{./@id}" />
 							<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
 							<f:with-param name="width"><f:number value="{$childWidth}" /></f:with-param>
-							<f:with-param name="height"><f:number value="{$h}" /></f:with-param>
+							<f:with-param name="height"><f:number value="{$h - $taskBarHeight}" /></f:with-param>
 						</f:thunk>
 					</html:div>
 				</xsl:for-each>
 				
+				<html:div left="{$padding}" top="{2 * $padding + $h - $taskBarHeight}">
+					<svg:svg width="{$w}" height="{$taskBarHeight}">
+						<svg:rect x="0" y="0" width="{$w}" height="{$taskBarHeight - $padding}" fill="pink" stroke="#333" stroke-width="1" />
+					</svg:svg>
+					<xsl:for-each select="$childZuis/*">
+						<html:div left="{$padding + count(preceding-sibling::*) * ($taskBarChildWidth + $spacing)}" top="0">
+							<f:binding url="bindings/taskbar.xml">
+								<f:with-param name="zui" value-id="{./@id}" />
+							</f:binding>
+							<f:button name="minimize" />
+							
+							<f:thunk name="printZuiContent">
+								<f:with-param name="zui" value-id="{./@id}" />
+							</f:thunk>
+						</html:div>
+					</xsl:for-each>
+				</html:div>
+				
+			</html:div>
+		</xsl:template>
+		
+
+	</f:function>
+
+	<f:function name="printZuiContent">
+		<f:param name="zui" />
+		<f:derived name="focus" from="zui">
+			<get what="focus" />
+		</f:derived>
+		
+		<xsl:template>
+			<html:div>
+				<f:thunk url="printContent.xml">
+					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+					<f:with-param name="style"><f:string value="inline" /></f:with-param>
+				</f:thunk>
 			</html:div>
 		</xsl:template>
 	</f:function>
-	
 	
 	
 </f:function>

@@ -68,6 +68,10 @@ function derive(xml, context, focus) {
 		if (predef) {
 			return startCaps.unit(PREDEF[predef]);
 		}
+
+		var ret = startCaps.unit(convertFromXML(getTrimmedFirstChild(xml), {}, {}));
+		return ret;
+		
 	}
 	
 	if (!name) {

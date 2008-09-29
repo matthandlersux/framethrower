@@ -16,6 +16,10 @@ function convertToXML(o) {
 		var numberNode = document.createElementNS(xmlns["f"], "number");
 		numberNode.setAttributeNS("", "value", o);
 		return {xml: numberNode, ids: {}};
+	} else if (typeof o === "boolean") {
+		var booleanNode = document.createElementNS(xmlns["f"], "bool");
+		booleanNode.setAttributeNS("", "value", o);
+		return {xml: booleanNode, ids: {}};
 	} else {
 		return {xml: o, ids: {}};
 	}
@@ -111,8 +115,10 @@ var convertPinToXML = memoize(function (pin) {
 				var xml = document.createElementNS(xmlns["f"], "set");
 				var ids = {};
 				forEach(sorted, function (o) {
+
 					var converted = xmlize(o);
 					xml.appendChild(converted.xml);
+
 					//ids = merge(ids, converted.ids);
 					mergeInto(ids, converted.ids);
 				});

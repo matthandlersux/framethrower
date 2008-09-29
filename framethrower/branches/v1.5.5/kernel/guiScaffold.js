@@ -14,7 +14,8 @@ layout.zui.prop = {
 	parentZui: interfaces.unit(layout.zui),
 	childZuis: interfaces.set(layout.zui),
 	expandedTypes: interfaces.set(kernel.individual),
-	maximizedChild: interfaces.unit(layout.zui)
+	maximizedChild: interfaces.unit(layout.zui),
+	minimized: interfaces.unit(basic.bool)
 };
 
 layout.panelLayer.prop = {

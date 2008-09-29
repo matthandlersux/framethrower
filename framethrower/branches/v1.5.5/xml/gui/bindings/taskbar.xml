@@ -1,0 +1,34 @@
+<f:binding
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	
+	<f:transaction name="Minimize" event="click" button="minimize">
+		<f:param name="zui" />
+		
+		<f:derived name="minimized" from="zui">
+			<get what="minimized" />
+		</f:derived>
+
+		<xsl:template>
+			<transaction>
+				
+				<intact with-id="{$zui/@id}" prop="minimized" action="set">
+					<with-param>
+						<xsl:choose>
+							<xsl:when test="$minimized/@value = 'false'">
+								<f:bool value="true" />
+							</xsl:when>
+							<xsl:otherwise>
+								<f:bool value="false" />
+							</xsl:otherwise>
+						</xsl:choose>
+					</with-param>
+				</intact>
+			</transaction>
+		</xsl:template>		
+	</f:transaction>
+	
+</f:binding>
+
+
+

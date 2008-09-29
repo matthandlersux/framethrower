@@ -31,6 +31,12 @@
 					<with-param value-id="{$zui/@id}" />
 				</intact>
 				
+				<intact with-var="newZui" prop="minimized" action="set">
+					<with-param>
+						<f:bool value="false" />
+					</with-param>
+				</intact>
+				
 				<intact with-id="{$zui/@id}" prop="childZuis" action="add">
 					<with-param value-var="newZui" />
 				</intact>
