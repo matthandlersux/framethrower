@@ -91,6 +91,13 @@ function compileXSL(xsl){
 				parent.appendChild(source);
 			}
             var result = p.transformToDocument(source);
+			if(DEBUG){
+				var logs = xpath(".//f:consolelog", result);
+				forEach(logs, function (log) {
+					console.log("debug output from xsl: ");
+					console.dirxml(log);
+				});
+			}
         } 
         catch (e) {
             console.log("Execution Error", xsl, source, params, e);

@@ -60,7 +60,14 @@
 				
 				<html:div left="{$padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$h * .5 - $titleBarHeight - $padding}">
 					<html:div left="4" top="4" width="{$openingWidth}" height="{$h * .5 - $titleBarHeight - $padding - 30}">
-						Name: <html:input><f:button name="input" /></html:input>
+						Type: 
+						<html:select>
+							<f:button name="typeinput" />
+							<html:option>Individual</html:option>
+							<html:option>Situation</html:option>
+						</html:select>
+						
+						Name: <html:input><f:button name="nameinput" /></html:input>
 					</html:div>
 
 					<html:div class="addButton" left="{$openingWidth - 200}" top="{$h * .5 - $titleBarHeight - $padding - 30}" width="200" height="26">

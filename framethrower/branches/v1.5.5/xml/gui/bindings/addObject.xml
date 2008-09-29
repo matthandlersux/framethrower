@@ -37,7 +37,7 @@
 	</f:transaction>
 	
 
-	<f:transaction name="CaptureInput" event="blur" button="input">
+	<f:transaction name="NameInput" event="blur" button="nameinput">
 		<f:param name="addPanel" />
 		<f:param name="eventXML" />
 		
@@ -74,6 +74,62 @@
 		</xsl:template>	
 	</f:transaction>
 
+	<f:transaction name="TypeInput" event="change" button="typeinput">
+		<f:param name="addPanel" />
+		<f:param name="eventXML" />
+
+		<xsl:template>
+			<transaction>
+				<f:perform name="TypeInputHelper">
+					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
+					<f:with-param name="value">
+						<f:string value="{$eventXML/@value}" />
+					</f:with-param>
+				</f:perform>
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+
+
+	<f:transaction name="TypeInputHelper">
+		<f:param name="addPanel" />
+		<f:param name="value" />
+		
+		<f:derived name="properties" from="addPanel">
+			<get what="properties" />
+		</f:derived>
+
+		<xsl:template>
+			<transaction>
+				<intact with-id="{$addPanel/@id}" prop="properties" action="set">
+					<with-param>
+						<xsl:call-template name="changeAttribute">
+							<xsl:with-param name="xml" select="$properties" />
+							<xsl:with-param name="attributeName" select="'newType'" />
+							<xsl:with-param name="attributeValue" select="$value/@value" />
+						</xsl:call-template>
+					</with-param>
+				</intact>
+			</transaction>
+		</xsl:template>
+		
+		<xsl:template name="changeAttribute">
+			<xsl:param name="xml" />
+			<xsl:param name="attributeName" />
+			<xsl:param name="attributeValue" />
+			
+			<xsl:for-each select="$xml">
+				<xsl:copy>
+					<xsl:copy-of select="$xml/@*[local-name() != $attributeName]" />
+					<xsl:attribute name="{$attributeName}"><xsl:value-of select="$attributeValue" /></xsl:attribute>
+					<xsl:copy-of select="$xml/node()" />
+				</xsl:copy>
+			</xsl:for-each>
+		</xsl:template>	
+	</f:transaction>
+
+
+
 	
 	<f:transaction name="Add" event="click" button="add">
 		<f:param name="addFocus" />
@@ -86,13 +142,35 @@
 
 		<xsl:template>
 			<transaction>
-				<f:perform absurl="xml/api/makeIndividual.xml" prefix="ind">
-					<f:with-param name="parentSituation" value-id="{$addFocus/@id}" />
-				</f:perform>
+				<xsl:choose>
+					<xsl:when test="$properties/@newType = 'Individual'">
+						<f:perform absurl="xml/api/makeIndividual.xml" prefix="newob">
+							<f:with-param name="parentSituation" value-id="{$addFocus/@id}" />
+						</f:perform>
+					</xsl:when>
+					<xsl:when test="$properties/@newType = 'Situation'">
+						<f:perform absurl="xml/api/makeSituation.xml" prefix="newob">
+							<f:with-param name="parentSituation" value-id="{$addFocus/@id}" />
+						</f:perform>
+					</xsl:when>
+					<xsl:otherwise>
+						<f:perform absurl="xml/api/makeIndividual.xml" prefix="newob">
+							<f:with-param name="parentSituation" value-id="{$addFocus/@id}" />
+						</f:perform>
+					</xsl:otherwise>
+				</xsl:choose>
+				
 				<f:perform absurl="xml/api/modifyContent.xml" prefix="ind">
-					<f:with-param name="object" value-var="ind.o" />
+					<f:with-param name="object" value-var="newob.o" />
 					<f:with-param name="content">
 						<f:string value='{$properties/@newName}' />
+					</f:with-param>
+				</f:perform>
+
+				<f:perform name="TypeInputHelper">
+					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
+					<f:with-param name="value">
+						<f:string value="Individual" />
 					</f:with-param>
 				</f:perform>
 

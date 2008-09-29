@@ -110,6 +110,10 @@
 		processEvent("blur", e, {value:e.target.value});
 		if (!currentFocus) processEvent("manualblur", e);
 	}	
+	function change(e) {
+		processEvent("change", e, {value:e.target.value});
+	}
+	
 	
 	function dont(e) {
 		e.preventDefault();
@@ -123,4 +127,5 @@
 	document.addEventListener("DOMMouseScroll", mousescroll, true);
 	document.addEventListener("blur",blur,true);
 	document.addEventListener("focus",focus,true);
+	document.addEventListener("change",change,true);
 })();

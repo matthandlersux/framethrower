@@ -608,7 +608,7 @@ function maybeUnit(o) {
 }
 
 //sourceXML is only for value-nodeid
-function convertXMLToPin(node, ids, vars, sourceXML) {
+function convertXMLToPin(node, ids, vars) {
 	var valueId = node.getAttributeNS("", "value-id");
 	if (valueId) {
 		return maybeUnit(ids[valueId]);
