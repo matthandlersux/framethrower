@@ -167,6 +167,41 @@
 					</f:with-param>
 				</f:perform>
 
+				<f:perform absurl="xml/api/makeInfon.xml">
+					<f:with-param name="parentSituation" value-predef="ont" />
+					<f:with-param name="relation" value-predef="ofType" />
+				
+					<f:with-param name="arcs">
+						<f:assoc>
+							<f:pair>
+								<f:key><f:string value="type" /></f:key>
+								<f:value>
+									<xsl:choose>
+										<xsl:when test="$properties/@newType = 'Individual'">
+											<f:ob predef="personType" />
+										</xsl:when>
+										<xsl:when test="$properties/@newType = 'Situation'">
+											<f:ob predef="movieType" />
+										</xsl:when>
+										<xsl:otherwise>
+											<f:ob predef="personType" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</f:value>
+							</f:pair>
+							<f:pair>
+								<f:key><f:string value="instance" /></f:key>
+								<f:value>
+									<f:ob var="newob.o" />
+								</f:value>
+							</f:pair>
+						</f:assoc>
+					</f:with-param>
+				</f:perform>
+
+
+
+
 				<f:perform name="TypeInputHelper">
 					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
 					<f:with-param name="value">

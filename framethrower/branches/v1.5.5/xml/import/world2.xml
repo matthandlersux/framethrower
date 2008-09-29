@@ -24,13 +24,13 @@
 		<content>
 			The World
 		</content>
-		<individual name="personType" type="typeType">
+		<individual name="personType" type="typeType" returnas="personType">
 			<content>
 				People
 			</content>
 			
 		</individual>
-		<individual name="movieType" type="typeType">
+		<individual name="movieType" type="typeType" returnas="movieType">
 			<content>
 				Movies
 			</content>

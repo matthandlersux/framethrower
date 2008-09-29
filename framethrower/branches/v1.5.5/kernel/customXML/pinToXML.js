@@ -33,6 +33,10 @@ function convertFromXML(xml, ids, vars) {
 		if (valueVar) {
 			return vars[valueVar];
 		}
+		var valuePredef = xml.getAttributeNS("", "predef");
+		if (valuePredef) {
+			return PREDEF[valuePredef];
+		}		
 	} else if (name === "string" && namespace === xmlns["f"]) {
 		return xml.getAttributeNS("", "value");
 	} else if (name === "number" && namespace === xmlns["f"]) {
@@ -607,7 +611,6 @@ function maybeUnit(o) {
 	}
 }
 
-//sourceXML is only for value-nodeid
 function convertXMLToPin(node, ids, vars) {
 	var valueId = node.getAttributeNS("", "value-id");
 	if (valueId) {
