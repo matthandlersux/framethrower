@@ -15,7 +15,7 @@
 					<with-param value-var="o" />
 				</intact>
 			</xsl:if>
-			<f:return as="o" value="o" />
+			<f:return as="o" value-var="o" />
 		</transaction>
 	</xsl:template>
 </f:transaction>

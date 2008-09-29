@@ -28,7 +28,7 @@
 		var button;
 		var at = e.target;
 		while (at) {
-			if (at.bindingButtonName) {
+			if (!button && at.bindingButtonName) {
 				button = at.bindingButtonName;
 			}
 			if (at.bindingURL) {

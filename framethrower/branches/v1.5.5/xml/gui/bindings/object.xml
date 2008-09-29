@@ -1,0 +1,104 @@
+<f:binding
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	
+	<f:transaction name="Open" event="click">
+		<f:param name="focus" />
+		<f:derived name="parentSituations" from="focus">
+			<trace what="parentSituation" />
+		</f:derived>
+		<f:derived name="startSituation" predef="rw">
+			
+		</f:derived>
+		<f:derived name="startZui" predef="zui">
+			
+		</f:derived>
+		
+		<xsl:template>
+			<transaction>
+				<xsl:variable name="startSituationId" select="$startSituation/@id" />
+				
+				<!-- <f:consolelog>
+					<xsl:for-each select="$parentSituations/*[following-sibling::*[@id = $startSituationId]]">
+						<xsl:sort select="position()" data-type="number" order="descending"/>
+						<openIn parentSit="{following-sibling::*[1]/@id}" childSit="{@id}" num="{position()}" />
+					</xsl:for-each>
+					<xsl:copy-of select="$parentSituations" />
+					<xsl:copy-of select="$startSituation" />
+					<xsl:copy-of select="$startZui" />
+				</f:consolelog> -->
+				
+				<!-- <f:perform name="open zui">
+						<f:with-param name="zui"><xsl:copy-of select="$startZui" /></f:with-param>
+						<f:with-param name="focus"><xsl:copy-of select="$parentSituations/*[following:sibling::*[@id = $startSituationId]][last()]" /></f:with-param>
+					</f:perform> -->
+				
+				<xsl:variable name="sits" select="$parentSituations/*[following-sibling::*[@id = $startSituationId]]" />
+				
+				<xsl:for-each select="$sits">
+					<xsl:sort select="position()" data-type="number" order="descending"/>
+					<xsl:choose>
+						<xsl:when test="following-sibling::*[1]/@id = $startSituationId">
+							<f:perform name="open zui" prefix="{position()}">
+								<f:with-param name="zui"><xsl:copy-of select="$startZui" /></f:with-param>
+								<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+							</f:perform>
+						</xsl:when>
+						<xsl:otherwise>
+							<f:perform name="open zui" prefix="{position()}">
+								<f:with-param name="zui" value-var="{concat(string(position() - 1), '.newZui')}" />
+								<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+							</f:perform>
+						</xsl:otherwise>
+					</xsl:choose>
+					<xsl:if test="position() = last()">
+						<f:perform name="open zui">
+							<f:with-param name="zui" value-var="{concat(string(position()), '.newZui')}" />
+							<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+						</f:perform>
+					</xsl:if>
+				</xsl:for-each>
+				
+				<xsl:if test="count($sits) = 0">
+					<f:perform name="open zui">
+						<f:with-param name="zui"><xsl:copy-of select="$startZui" /></f:with-param>
+						<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+					</f:perform>
+				</xsl:if>
+				
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+	
+	<f:transaction name="open zui">
+		<f:param name="zui" />
+		<f:param name="focus" />
+		<f:derived name="childZuis" from="zui">
+			<get what="childZuis" />
+			<buildassoc what="focus" />
+		</f:derived>
+		
+		<xsl:template>
+			<transaction>
+				<xsl:variable name="zuiSit" select="$childZuis/f:pair[f:value/*[@id = $focus/@id]]" />
+				<xsl:choose>
+					<xsl:when test="$zuiSit">
+						<!-- demaximize if necessary... -->
+						<f:return as="newZui"><xsl:copy-of select="$zuiSit/f:key/*" /></f:return>
+					</xsl:when>
+					<xsl:otherwise>
+						<f:perform url="child.xml#Open" prefix="new">
+							<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+							<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+						</f:perform>
+						<f:return as="newZui" value-var="new.newZui" />
+					</xsl:otherwise>
+				</xsl:choose>
+				<!-- <f:consolelog>
+					<zui><xsl:copy-of select="$zui" /></zui>
+					<xsl:copy-of select="$childZuis" />
+				</f:consolelog> -->
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+</f:binding>

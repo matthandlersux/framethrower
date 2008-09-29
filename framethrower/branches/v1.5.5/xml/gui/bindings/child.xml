@@ -27,30 +27,15 @@
 						</xsl:choose>
 					</with-param>
 				</intact>
+				<intact with-var="newZui" prop="parentZui" action="set">
+					<with-param value-id="{$zui/@id}" />
+				</intact>
 				
 				<intact with-id="{$zui/@id}" prop="childZuis" action="add">
 					<with-param value-var="newZui" />
 				</intact>
 				
-				<!--><xsl:choose>
-					<xsl:when test="$zui">
-					
-					</xsl:when>
-					<xsl:otherwise>
-						<make type="layout.zui" name="zui" />
-						<intact with-var="zui" prop="focus" action="set">
-							<with-param><xsl:copy-of select="$focus" /></with-param>
-						</intact>
-						<intact with-var="zui" prop="properties" action="set">
-							<with-param>
-								<zui expanded="1" />
-							</with-param>
-						</intact>
-						<intact with-id="{$parentZui/@id}" prop="expandedChildren" action="add">
-							<with-param value-var="zui" />
-						</intact>
-					</xsl:otherwise>
-				</xsl:choose>-->
+				<f:return as="newZui" value-var="newZui" />
 			</transaction>
 		</xsl:template>
 	</f:transaction>

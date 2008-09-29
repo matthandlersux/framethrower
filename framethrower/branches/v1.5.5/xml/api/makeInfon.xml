@@ -29,7 +29,7 @@
 					<f:with-param value-var="obj.o" />
 				</intact>
 			</xsl:for-each>
-			<f:return as="o" value="obj.o" />
+			<f:return as="o" value-var="obj.o" />
 		</transaction>
 	</xsl:template>
 </f:transaction>

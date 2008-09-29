@@ -9,7 +9,7 @@
 				<f:with-param name="type"><f:string value="kernel.situation" /></f:with-param>
 				<f:with-param name="parentSituation"><xsl:copy-of select="$parentSituation" /></f:with-param>
 			</f:perform>
-			<f:return as="o" value="obj.o" />
+			<f:return as="o" value-var="obj.o" />
 		</transaction>
 	</xsl:template>
 </f:transaction>

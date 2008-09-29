@@ -6,12 +6,19 @@
 
 	<f:param name="focus" />
 	<f:param name="style" />
+	<f:param name="clickable" />
 	<f:derived name="content" from="focus">
 		<get what="content" />
 	</f:derived>
 	
 	<xsl:template>
 		<html:span>
+			<xsl:if test="$clickable">
+				<xsl:attribute name="style">cursor:pointer</xsl:attribute>
+				<f:binding url="bindings/object.xml">
+					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+				</f:binding>
+			</xsl:if>
 			<xsl:choose>
 				<xsl:when test="$content/self::f:string">
 					<xsl:value-of select="$content/@value" />

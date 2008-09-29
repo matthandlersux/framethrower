@@ -37,7 +37,9 @@ function errorTypeMismatch(type, instanceType) {
 }
 
 function getType(instance) {
-	if (!instance || instance === true) {
+	if (instance === undefined) {
+		return basic.bottom;
+	} if (instance === false || instance === true) {
 		return basic.bool;
 	} else if (instance.getType) {
 		return instance.getType();
@@ -85,7 +87,7 @@ function getSuperTypeFromTypes() { //arguments
 function typeCheck(type, instance) {
 	if (DEBUG) {
 		var instanceType = getType(instance);
-		if (!type.match(instanceType)) {
+		if (type !== basic.bottom && !type.match(instanceType)) {
 			console.error("Type mismatch. Expected: " + type.getName() + " got: " + instanceType.getName());
 			console.log(instance.get.content().getState());
 		}
@@ -100,6 +102,7 @@ basic.string = makeType("basic.string");
 basic.bool = makeType("basic.bool");
 basic.number = makeType("basic.number");
 basic.xml = makeType("basic.xml");
+basic.bottom = makeType("basic.bottom");
 
 basic.js.match = function (instanceType) {
 	return true;

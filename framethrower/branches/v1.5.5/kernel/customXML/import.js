@@ -14,8 +14,11 @@ var importWorld = (function () {
 			
 			var transaction = {xml: transXML, ids: {}};
 			
-			return executeTransaction(transaction, "xml/api/").returnVars;
+			var res = executeTransaction(transaction, "xml/api/").returnVars;
 			
+			//console.dir(res);
+			
+			return res;
 		}
 	};
 })();

@@ -5,7 +5,6 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 
 	<f:param name="zui" />
-	<f:param name="parentZui" />
 	<f:param name="width" />
 	<f:param name="height" />
 	<f:param name="panelLayer" />
@@ -15,6 +14,9 @@
 	</f:derived>
 	<f:derived name="focusType" from="focus">
 		<gettype />
+	</f:derived>
+	<f:derived name="maximizedChild" from="zui">
+		<get what="maximizedChild" />
 	</f:derived>
 	<f:derived name="properties" from="zui">
 		<get what="properties" />
@@ -32,7 +34,6 @@
 		<html:div class="zui" left="0" top="0" width="{$width/@value}" height="{$height/@value}">
 			<f:binding url="bindings/zui.xml">
 				<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-				<f:with-param name="parentZui"><xsl:copy-of select="$parentZui" /></f:with-param>
 				<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
 			</f:binding>
 			
@@ -53,41 +54,50 @@
 			</html:div>
 			
 			<html:div class="zuiTitle" left="0" top="0" width="{$width/@value}" height="{$titleBarHeight}">
+				<f:button name="titlebar" />
 				<f:thunk url="printContent.xml">
 					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 					<f:with-param name="style"><f:string value="inline" /></f:with-param>
 				</f:thunk>
+				<html:span style="margin-left:15px;" />
 				<xsl:choose>
 					<xsl:when test="$focusType/@value='kernel.situation'">
-						<html:span style="margin-left:15px;">
+						<html:span>
 							<f:button name="childrenSidebar" />
 							Ch
 						</html:span>
 						|
-						<html:span>
-							<f:button name="correspondSidebar" />
-							Co
-						</html:span>
-						|					
-						<html:span>
-							<f:button name="situationView" />
-							SV
-						</html:span>
-						|
-						<html:span>
-							<f:button name="objectView" />
-							OV
-						</html:span>
-						|
+						<xsl:choose>
+							<xsl:when test="$properties/@view='situation'">
+								<html:span>
+									<f:button name="objectView" />
+									OV
+								</html:span>
+								|
+							</xsl:when>
+							<xsl:otherwise>
+								<html:span>
+									<f:button name="situationView" />
+									SV
+								</html:span>
+								|
+							</xsl:otherwise>
+						</xsl:choose>
 					</xsl:when>
 					<xsl:otherwise>
-						<html:span style="margin-left:15px;">
-							<f:button name="correspondSidebar" />
-							Co
-						</html:span>
-						|
+
 					</xsl:otherwise>
 				</xsl:choose>
+				<html:span>
+					<f:button name="correspondSidebar" />
+					Co
+				</html:span>
+				|
+				<html:span>
+					<f:button name="maximize" />
+					Max
+				</html:span>
+				|
 				<html:span>
 					<f:button name="close" />
 					X
@@ -95,6 +105,19 @@
 			</html:div>
 			
 			<xsl:choose>
+				<xsl:when test="$maximizedChild">
+					<xsl:variable name="openingWidth" select="$width/@value - $padding * 2" />
+					<xsl:variable name="openingHeight" select="$height/@value - $titleBarHeight - $padding" />
+					
+					<html:div class="zuiOpening" left="{$padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$openingHeight}">
+						<f:thunk url="zui.xml">
+							<f:with-param name="zui"><xsl:copy-of select="$maximizedChild" /></f:with-param>
+							<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+							<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
+							<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
+						</f:thunk>
+					</html:div>
+				</xsl:when>
 				<xsl:when test="$properties/@view='situation' and $focusType/@value='kernel.situation'">
 					<xsl:variable name="childrenSidebarWidth" select="$properties/@childrenSidebar * $childrenSidebarExpandedWidth" />
 					<xsl:if test="$properties/@childrenSidebar='1'">
@@ -141,8 +164,6 @@
 							<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
 						</f:thunk>
 					</html:div>
-
-					<html:div style="clear:both" />
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:variable name="correspondSidebarWidth" select="$properties/@correspondSidebar * $childrenSidebarExpandedWidth" />
@@ -209,7 +230,6 @@
 						<f:thunk url="zui.xml">
 							<f:with-param name="zui" value-id="{./@id}" />
 							<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
-							<f:with-param name="parentZui" value-id="{$zui/@id}"><xsl:copy-of select="$zui" /></f:with-param>
 							<f:with-param name="width"><f:number value="{$childWidth}" /></f:with-param>
 							<f:with-param name="height"><f:number value="{$h}" /></f:with-param>
 						</f:thunk>

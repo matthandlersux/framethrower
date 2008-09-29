@@ -7,7 +7,7 @@
 			<xsl:apply-templates select="." mode="print" />
 			<xsl:for-each select="//*[@returnas]">
 				<f:return as="{@returnas}">
-					<xsl:attribute name="value">
+					<xsl:attribute name="value-var">
 						<xsl:call-template name="getName" />
 						<xsl:text>.o</xsl:text>
 					</xsl:attribute>

@@ -44,6 +44,7 @@
 					<f:thunk url="printcontent.xml">
 						<f:with-param name="focus" value-id="{$arg/@id}" />
 						<f:with-param name="style"><f:string value="inline" /></f:with-param>
+						<f:with-param name="clickable"><f:bool value="true" /></f:with-param>
 					</f:thunk>
 				</xsl:if>
 			</html:span>

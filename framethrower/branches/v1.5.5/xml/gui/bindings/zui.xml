@@ -4,11 +4,49 @@
 	
 	<f:transaction name="Close" event="click" button="close">
 		<f:param name="zui" />
-		<f:param name="parentZui" />
+		<f:derived name="parentZui" from="zui">
+			<get what="parentZui" />
+		</f:derived>
 		<xsl:template>
 			<transaction>
 				<intact with-id="{$parentZui/@id}" prop="childZuis" action="remove">
 					<with-param><xsl:copy-of select="$zui" /></with-param>
+				</intact>
+				<intact with-id="{$parentZui/@id}" prop="maximizedChild" action="set">
+					<with-param />
+				</intact>
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+	
+	<f:transaction name="Maximize" event="click" button="maximize">
+		<f:param name="zui" />
+		<f:derived name="parentZui" from="zui">
+			<get what="parentZui" />
+		</f:derived>
+		<f:derived name="parentZuis" from="zui">
+			<trace what="parentZui" />
+		</f:derived>
+		<xsl:template>
+			<transaction>
+				<intact with-id="{$parentZuis/*[1]/@id}" prop="maximizedChild" action="set">
+					<with-param><xsl:copy-of select="$zui" /></with-param>
+				</intact>
+				<xsl:for-each select="$parentZuis/*[position() != last()]">
+					<intact with-id="{following-sibling::*/@id}" prop="maximizedChild" action="set">
+						<with-param><xsl:copy-of select="." /></with-param>
+					</intact>
+				</xsl:for-each>
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+	
+	<f:transaction name="Demaximize" event="click" button="titlebar">
+		<f:param name="zui" />
+		<xsl:template>
+			<transaction>
+				<intact with-id="{$zui/@id}" prop="maximizedChild" action="set">
+					<with-param />
 				</intact>
 			</transaction>
 		</xsl:template>

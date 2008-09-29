@@ -110,6 +110,13 @@ function derive(xml, context, focus) {
 				var res = derive(xml.firstChild, newcontext, start);
 				return res;
 			}, typeNames[xml.getAttributeNS("", "type")]);
+		} else if (name === "buildassoc") {
+			var t = focus.getType();
+			var what = xml.getAttributeNS("", "what");
+			var outType = t.getArguments()[0].getProp(what);
+			focus = deriveBuildAssoc(focus, function (o) {
+				return o.get[what]();
+			}, outType);
 		} else if (name === "equals") {
 			var input2 = derive(xml.firstChild, context);
 			var type = getSuperTypeFromTypes(focus.getType().getArguments()[0], input2.getType().getArguments()[0]);
@@ -340,6 +347,20 @@ function deriveNonEmpty(focus) {
 			remove: function (o) {
 				cache.remove(o);
 				update();
+			}
+		};
+	}, focus);
+}
+
+// set(a), (a->b) -> assoc(a, b)
+function deriveBuildAssoc(focus, f, outType) {
+	return makeSimpleBox(interfaces.assoc(focus.getType().getArguments()[0], outType), function (myOut, ambient) {
+		return {
+			add: function (o) {
+				myOut.set(o, f(o));
+			},
+			remove: function (o) {
+				myOut.remove(o);
 			}
 		};
 	}, focus);

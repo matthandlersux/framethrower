@@ -41,6 +41,8 @@ function convertFromXML(xml, ids, vars) {
 		return xml.getAttributeNS("", "value");
 	} else if (name === "number" && namespace === xmlns["f"]) {
 		return +xml.getAttributeNS("", "value");
+	} else if (name === "bool" && namespace === xmlns["f"]) {
+		return xml.getAttributeNS("", "value") === "true";
 	} else {
 		return xml;
 	}
@@ -68,6 +70,10 @@ function getObjectFromParam(paramNode, ids, vars) {
 	value = paramNode.getAttributeNS("", "value-var");
 	if (value) {
 		return vars[value];
+	}
+	
+	if (!paramNode.firstChild) {
+		return undefined;
 	}
 	
 	return convertFromXML(getTrimmedFirstChild(paramNode), ids, vars);
@@ -654,6 +660,7 @@ function convertXMLToPin(node, ids, vars) {
 	}
 	
 	if (!node.firstChild) {
+		//console.log("returning undefined start cap");
 		return startCaps.unit(undefined);
 	}
 	
