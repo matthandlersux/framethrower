@@ -19,7 +19,7 @@ function makeType(name, isRootType) {
 	
 	// default match method
 	type.match = function (instanceType) {
-		return type === instanceType;
+		return instanceType === basic.bottom || type === instanceType;
 	};
 	
 	type.getName = getter(name);
