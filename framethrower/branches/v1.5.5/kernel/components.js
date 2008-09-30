@@ -191,6 +191,9 @@ endCaps.log.list = function (name) {
 		update: function (o, i) {
 			console.log(name, "=updated=", o, i, maybeGetContent(o));
 		},
+		append: function (o) {
+			console.log(name, "=appended=", o, maybeGetContent(o));
+		},
 		insert: function (o, i) {
 			console.log(name, "=inserted=", o, i, maybeGetContent(o));
 		},
@@ -401,6 +404,9 @@ components.treeify = function (fType, property) {
 						}
 					}
 				},
+				append: function (value, index) {
+					// this should never happen
+				},
 				insert: function (value, index) {
 					// this should never happen
 				},
@@ -540,6 +546,81 @@ components.filter = function (liftInterface, inputType, pred, outputType) {
 };
 
 
+
+var makeListReference = function() {
+	var lr = {};
+	
+	var inputs = [];
+	
+	lr.insertInput = function(index){
+		var offset;
+		if(index>0){
+			offset = inputs[index-1].offset + inputs[index-1].outputs.length;
+		} else {
+			offset = 0;
+		}
+		var lrpointer = {index:index, offset:offset, outputs:[]};
+		
+		inputs.splice(index, 0, lrpointer);
+		for(var i = index+1; i<inputs.length; i++){
+			inputs[i].index++;
+		}
+		return lrpointer;
+	};
+	
+	lr.appendInput = function(){
+		return lr.insertInput(inputs.length);
+	};
+	
+	lr.getInput = function(index){
+		return inputs[index];
+	};
+	
+	lr.addOutput = function(index, input, output, callback){
+		var outputs = inputs[index].outputs;
+		outputs.push(output);
+		for(var i = index+1; i<inputs.length; i++){
+			inputs[i].offset++;
+		}
+		
+		callback(output, inputs[index].offset + outputs.length - 1);
+	};
+	
+	lr.removeOutput = function(index, output, callback){
+		var outputs = inputs[index].outputs;
+		var offset = inputs[index].offset;
+		outputs.forEach(function(checkOutput, i){
+			if(checkOutput === output){
+				outputs.splice(i, 1);
+				callback(offset + i);
+				for(var i = index+1; i<inputs.length; i++){
+					inputs[i].offset--;
+				}
+			}
+		});
+	};
+	
+	lr.remove = function (index, callback) {
+		var outputs = inputs[index].outputs;
+		var offset = inputs[index].offset;
+		var length = outputs.length;
+		
+		outputs.forEach(function(checkOutput, i){
+			callback(offset + i);
+		});
+		
+		for(var i = index+1; i<inputs.length; i++){
+			inputs[i].offset -= length;
+			inputs[i].index--;
+		}
+		inputs.splice(index, 1);
+
+	};
+	
+	return lr;
+};
+
+
 components.filterC = function (liftInterface, inputType, predC, outputType) {
 	if (outputType === undefined) {
 		outputType = inputType;
@@ -575,6 +656,60 @@ components.filterC = function (liftInterface, inputType, predC, outputType) {
 						inputs.remove(input);
 						cr.removeInput(input, myOut.remove);				
 					}
+				}
+			};
+		};
+	} else if (liftInterface === interfaces.list) {
+		//TODO: make this work correctly for list
+		//for now, just treat the list as a set as far as cross referencing goes
+		
+		instProc = function (myOut, ambient) {
+			var lr = makeListReference();
+			return {
+				update: function (input, index) {
+					var lrpointer = lr.getInput(index);
+					var predOut = predC(input);
+					var passthru = makeSimpleEndCap(ambient, {
+						set: function (innerInput) {
+							if (innerInput) {
+								lr.addOutput(lrpointer.index, input, input, myOut.insert);
+							} else {
+								lr.removeOutput(lrpointer.index, input, myOut.remove);
+							}
+						}
+					}, predOut);
+					passthru.activate();
+				},
+				insert: function (input, index) {
+					var lrpointer = lr.insertInput(index);
+					var predOut = predC(input);
+					var passthru = makeSimpleEndCap(ambient, {
+						set: function (innerInput) {
+							if (innerInput) {
+								lr.addOutput(lrpointer.index, input, input, myOut.insert);
+							} else {
+								lr.removeOutput(lrpointer.index, input, myOut.remove);
+							}
+						}
+					}, predOut);
+					passthru.activate();
+				},
+				append: function (input) {
+					var lrpointer = lr.appendInput();
+					var predOut = predC(input);
+					var passthru = makeSimpleEndCap(ambient, {
+						set: function (innerInput) {
+							if (innerInput) {
+								lr.addOutput(lrpointer.index, input, input, myOut.insert);
+							} else {
+								lr.removeOutput(lrpointer.index, input, myOut.remove);
+							}
+						}
+					}, predOut);
+					passthru.activate();
+				},
+				remove: function (index) {
+					lr.remove(index, myOut.remove);
 				}
 			};
 		};
@@ -736,6 +871,41 @@ components.collapse = memoize(function (intf1, intf2, typeArgs) {
 						inputs.remove(input);
 						cr.removeInput(input, myOut.remove);				
 					}
+				}
+			};
+		});
+	} else if (intf1 === interfaces.unit && intf2 === interfaces.list) {
+		return makeSimpleComponent(intf1(intf2.apply(null, typeArgs)), interfaces.list.apply(null, typeArgs), function (myOut, ambient) {
+			var ec;
+			var listCache = [];
+			return {
+				set: function (embeddedSet) {
+					if (ec) {
+						listCache.forEach(function (o, index) {
+							myOut.remove(index);
+						});
+						listCache = [];
+						ec.deactivate();
+					}
+					ec = makeSimpleEndCap(ambient, {
+						insert: function (o, index) {
+							listCache.splice(index, 0, o);
+							myOut.insert(o, index);
+						},
+						append: function (o) {
+							listCache.push(o);
+							myOut.append(o);
+						},
+						update: function (o, index) {
+							listCache[index] = o;
+							myOut.update(o, index);
+						},
+						remove: function (index) {
+							listCache.splice(index, 1);
+							myOut.remove(index);
+						}
+					}, embeddedSet);
+					ec.activate();
 				}
 			};
 		});

@@ -291,7 +291,7 @@ function domEndCap(ambient, input, node, relurl, thunkEssence) {
 
 function getThunkEssence(node, ids, relurl) {
 	var url = getUrlFromXML(node, relurl);
-	
+
 	var paramNodes = xpath("f:with-param", node);
 	var params = {};
 

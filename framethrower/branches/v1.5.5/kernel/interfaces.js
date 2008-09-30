@@ -47,6 +47,10 @@ var interfaceInstantiators = {
 					typeCheck(a, o);
 					cache.splice(index, 0, o);
 				},
+				append: function (o) {
+					typeCheck(a, o);
+					cache.push(o);
+				},
 				update: function (o, index) {
 					typeCheck(a, o);
 					cache[index] = o;
@@ -57,7 +61,7 @@ var interfaceInstantiators = {
 			},
 			addInform: function (pin) {
 				cache.forEach(function (o, index) {
-					pin.insert(o, index);
+					pin.append(o);
 				});					
 			},
 			getState: function () {
@@ -164,7 +168,6 @@ var interfaces = {};
 forEach(interfaceInstantiators, function (interfaceInstantiate, name) {
 	interfaces[name] = memoize(function () {
 		var args = arguments;
-		
 		// makes the name = "interfaces.NAME(ARG1, ARG2, ...)"
 		var intf = makeType("interface." + name + "(" + map(args, function (a) {return a.getName();}).join(", ") + ")");
 		

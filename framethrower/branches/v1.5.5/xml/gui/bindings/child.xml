@@ -37,7 +37,7 @@
 					</with-param>
 				</intact>
 				
-				<intact with-id="{$zui/@id}" prop="childZuis" action="add">
+				<intact with-id="{$zui/@id}" prop="childZuis" action="append">
 					<with-param value-var="newZui" />
 				</intact>
 				

@@ -1,0 +1,32 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="list" />
+	<f:derived name="filteredList" from="list">
+		<f:filter>
+			<get what="minimized" />
+			<equals>
+				<start>
+					<f:bool value="true" />
+				</start>
+			</equals>
+		</f:filter>
+	</f:derived>
+	
+	
+	<xsl:template>
+		<html:div>
+			Hello
+			<f:consolelog>
+				<xsl:copy-of select="$list" />
+				<xsl:copy-of select="$filteredList" />
+			</f:consolelog>
+		</html:div>
+	</xsl:template>
+	
+	
+	
+</f:function>

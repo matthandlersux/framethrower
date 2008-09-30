@@ -205,6 +205,7 @@ var qtDocs = (function () {
 		
 		// takes in a hash of outputPins
 		return function (inputs, delay) {
+
 			var context = merge(inputs);
 
 			forEach(derivedNodes, function (n) {

@@ -31,6 +31,7 @@ var applyGet = memoize(function (input, what) {
 	
 	if (outType.getConstructor) {
 		var colcom = components.collapse(intf, outType.getConstructor(), outType.getArguments());
+		
 		return simpleApply(colcom, intermediate);
 	} else {
 		return intermediate;
@@ -357,17 +358,46 @@ function deriveNonEmpty(focus) {
 }
 
 // set(a), (a->b) -> assoc(a, b)
+// list(a), (a->b) -> assoc(a, b)
 function deriveBuildAssoc(focus, f, outType) {
-	return makeSimpleBox(interfaces.assoc(focus.getType().getArguments()[0], outType), function (myOut, ambient) {
-		return {
-			add: function (o) {
-				myOut.set(o, f(o));
-			},
-			remove: function (o) {
-				myOut.remove(o);
-			}
-		};
-	}, focus);
+	var type = focus.getType().getConstructor();
+	if (type === interfaces.set) {
+		return makeSimpleBox(interfaces.assoc(focus.getType().getArguments()[0], outType), function (myOut, ambient) {
+			return {
+				add: function (o) {
+					myOut.set(o, f(o));
+				},
+				remove: function (o) {
+					myOut.remove(o);
+				}
+			};
+		}, focus);
+	} else if (type === interfaces.list) {
+		return makeSimpleBox(interfaces.assoc(focus.getType().getArguments()[0], outType), function (myOut, ambient) {
+			var cache = [];
+			return {
+				insert: function (o, index) {
+					cache.splice(index, 0, o);
+					myOut.set(o, f(o));
+				},
+				update: function (o, index) {
+					if(cache[index]){
+						myOut.remove(cache[index]);
+					}
+					cache[index] = o;
+					myOut.set(o, f(o));
+				},
+				append: function (o) {
+					cache.push(o);
+					myOut.set(o, f(o));
+				},
+				remove: function (o) {
+					cache.splice(index, 1);
+					myOut.remove(o);
+				}
+			};
+		}, focus);
+	}
 }
 
 // sorts a set to a list
@@ -413,6 +443,13 @@ function deriveLimit(focus) {
 				cache.splice(index, 0, o);
 				if (index >= start && index < start + limit) {
 					myOut.insert(o, index - start);
+				}
+			},
+			append: function (o) {
+				cache.push(o);
+				var index = cache.length;
+				if (index >= start && index < start + limit) {
+					myOut.append(o);
 				}
 			},
 			update: function (o, index) {

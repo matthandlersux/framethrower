@@ -10,7 +10,8 @@
 		<xsl:template>
 			<transaction>
 				<intact with-id="{$parentZui/@id}" prop="childZuis" action="remove">
-					<with-param><xsl:copy-of select="$zui" /></with-param>
+					<!--><with-param><xsl:copy-of select="$zui" /></with-param></!-->
+					<with-param><f:number value="0" /></with-param>
 				</intact>
 				<intact with-id="{$parentZui/@id}" prop="maximizedChild" action="set">
 					<with-param />

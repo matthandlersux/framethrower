@@ -219,6 +219,7 @@
 	
 	
 	<f:function name="printOpenings">
+
 		<f:param name="zui" />
 		<f:param name="panelLayer" />
 		<f:param name="width" />
@@ -248,7 +249,6 @@
 			<xsl:variable name="childWidth" select="floor(($w - $spacing * ($count - 1)) div $count)" />
 			
 			<xsl:variable name="taskBarChildWidth" select="150" />
-			
 			<html:div>
 				
 				<!--><xsl:for-each select="$openZuis/*">
@@ -262,7 +262,7 @@
 						</f:thunk>
 					</html:div>
 				</xsl:for-each>-->
-				
+
 				<xsl:variable name="taskBarHeight" select="40" />
 				
 				<!-- <f:consolelog msg="printing open zuis" count="{count($openZuis/*)}" /> -->
@@ -295,7 +295,6 @@
 						</html:div>
 					</xsl:for-each>
 				</html:div>
-				
 			</html:div>
 		</xsl:template>
 		

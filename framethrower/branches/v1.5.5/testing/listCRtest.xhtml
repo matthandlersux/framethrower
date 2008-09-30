@@ -1,0 +1,45 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:svg="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink">
+<head>
+  <title>listCRtest</title>
+
+<script>
+console.log("Hello World");
+</script>
+
+<!--
+
+Note: you must set in Firefox's about:config
+
+security.fileuri.strict_origin_policy
+
+to false to run this locally.
+	
+-->
+
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" title="no title" charset="utf-8" />
+
+	<script>
+	var ROOTDIR = "../";
+	var DEBUG = true;
+	</script>
+	<script src="../loadjs.js"></script>
+</head>
+<body>
+
+<div id="html_mainscreen">
+	<f:thunk url="testing/xml/listtest.xml">
+		<f:with-param name="list" value-id="list" />
+	</f:thunk>
+</div>
+
+
+<script>
+loadjscssfile("listCRtest.js", "js");
+</script>
+</body>
+</html>

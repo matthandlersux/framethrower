@@ -266,6 +266,9 @@ var convertPinToXML = memoize(function (pin) {
 							}
 							cache[index] = maybeEC(o, amb);
 						},
+						append: function (o) {
+							cache.push(maybeEC(o, amb));
+						},
 						remove: function (index) {
 							if (cache[index]) {
 								cache[index].deactivate();
@@ -384,7 +387,7 @@ var convertPinToXML = memoize(function (pin) {
 		} else if (constructor === interfaces.set) {
 			return {add: emptyFunc, remove: emptyFunc, PACKETCLOSE: maybePacketClose};
 		} else if (constructor === interfaces.list) {
-			return {insert: emptyFunc, update: emptyFunc, remove: emptyFunc, PACKETCLOSE: maybePacketClose};
+			return {insert: emptyFunc, update: emptyFunc, remove: emptyFunc, append: emptyFunc, PACKETCLOSE: maybePacketClose};
 		} else if (constructor === interfaces.assoc) {
 			return {set: emptyFunc, remove: emptyFunc, PACKETCLOSE: maybePacketClose};
 		} else if (constructor === interfaces.tree) {
