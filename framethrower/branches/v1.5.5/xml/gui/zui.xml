@@ -219,6 +219,13 @@
 		<f:derived name="childZuis" from="zui">
 			<get what="childZuis" />
 		</f:derived>
+		
+		<f:derived name="childZuisMinimized" from="zui">
+			<get what="childZuis" />
+			<buildassoc what="minimized" />	
+		</f:derived>
+		
+		
 		<f:derived name="openZuis" from="zui">
 			<get what="childZuis" />
 			<filter>
@@ -236,6 +243,11 @@
 		
 		
 		<xsl:template>
+			<f:consolelog>
+				<xsl:copy-of select="$childZuisMinimized" />
+			</f:consolelog>
+			
+			
 			
 			<xsl:variable name="marginRight" select="8" />
 			<xsl:variable name="marginTop" select="6" />
@@ -280,7 +292,7 @@
 					</html:div>
 						
 					<xsl:for-each select="$childZuis/*">
-						<html:div left="{count(preceding-sibling::*) * ($taskBarChildWidth)}" top="0" width="{$taskBarChildWidth}" height="{$taskBarHeight}">
+						<html:div left="{count(preceding-sibling::*) * ($taskBarChildWidth)}" top="2" width="{$taskBarChildWidth}" f:identifier="{@id}">
 							<f:binding url="bindings/taskbar.xml">
 								<f:with-param name="zui" value-id="{./@id}" />
 							</f:binding>
@@ -293,19 +305,19 @@
 					</xsl:for-each>
 				</html:div>
 				
-				<!-- <html:div>
+				<html:div>
 					<f:binding url="bindings/scrollOpening.xml">
 						<f:with-param name="count"><f:number value="{$count}" /></f:with-param>
 						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 						<f:with-param name="leftChildInView"><xsl:copy-of select="$leftChildInView" /></f:with-param>
 					</f:binding>
-					<html:div class="scrollLeft" left="{$padding}" top="{$h div 2 - 15}">
+					<html:div class="pageLeft" left="{$padding}" top="{$h div 2 - 15}">
 						<f:button name="left" />
 					</html:div>
-					<html:div class="scrollRight" left="{$w + $padding - 38}" top="{$h div 2 - 15}">
-						<f:button name="right" />					
+					<html:div class="pageRight" left="{$w + $padding - 38}" top="{$h div 2 - 15}">
+						<f:button name="right" />
 					</html:div>
-				</html:div> -->
+				</html:div>
 				
 			</html:div>
 		</xsl:template>
@@ -318,13 +330,37 @@
 		<f:derived name="focus" from="zui">
 			<get what="focus" />
 		</f:derived>
+		<f:derived name="minimized" from="zui">
+			<get what="minimized" />
+		</f:derived>
 		
 		<xsl:template>
-			<html:div>
-				<f:thunk url="printContent.xml">
-					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
-					<f:with-param name="style"><f:string value="inline" /></f:with-param>
-				</f:thunk>
+			<html:div class="greyButton">
+				<html:div style="color: #fff;">
+					<xsl:choose>
+						<xsl:when test="$minimized/@value = 'false'">
+							<xsl:attribute name="class">greyButtonRight</xsl:attribute>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:attribute name="class">greyButtonMinimizedRight</xsl:attribute>
+						</xsl:otherwise>
+					</xsl:choose>
+					
+					<f:thunk url="printContent.xml">
+						<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+						<f:with-param name="style"><f:string value="inline" /></f:with-param>
+					</f:thunk>
+				</html:div>
+				<html:div>
+					<xsl:choose>
+						<xsl:when test="$minimized/@value = 'false'">
+							<xsl:attribute name="class">greyButtonLeft</xsl:attribute>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:attribute name="class">greyButtonMinimizedLeft</xsl:attribute>
+						</xsl:otherwise>
+					</xsl:choose>
+				</html:div>
 			</html:div>
 		</xsl:template>
 	</f:function>
