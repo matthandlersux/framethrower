@@ -110,12 +110,16 @@
 					<xsl:variable name="openingHeight" select="$height/@value - $titleBarHeight - $padding" />
 					
 					<html:div class="zuiOpening" left="{$padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$openingHeight}">
-						<f:thunk url="zui.xml">
-							<f:with-param name="zui"><xsl:copy-of select="$maximizedChild" /></f:with-param>
-							<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
-							<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
-							<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
-						</f:thunk>
+						<html:div>
+							<html:div left="0" top="0" width="{$openingWidth}" height="{$openingHeight}">
+								<f:thunk url="zui.xml">
+									<f:with-param name="zui"><xsl:copy-of select="$maximizedChild" /></f:with-param>
+									<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+									<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
+									<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
+								</f:thunk>
+							</html:div>
+						</html:div>
 					</html:div>
 				</xsl:when>
 				<xsl:when test="$properties/@view='situation' and $focusType/@value='kernel.situation'">
