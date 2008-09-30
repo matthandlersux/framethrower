@@ -29,17 +29,6 @@ body {
 	position:absolute; width:100%; height: 29px; left:0px; top:0px; -moz-border-radius: 9px 9px 0px 0px;
 }
 
-
-.taskbarBackgroundRight {
-	background-image: url(../images/zui.1/bottomrail.png);
-	position:absolute; width:100%; height:100%; left: 1px; top:0; background-position:right; -moz-border-radius: 18px 0px 0px 18px;
-}
-
-.taskbarBackgroundLeft {
-	background-image: url(../images/zui.1/bottomrail.png);
-	position:absolute; width:10px; height:100%; left:0; top:0; background-position:left;
-}
-
 .zuiTitle {
 	font-weight: bold;
 	padding: 4px;
@@ -111,4 +100,132 @@ body {
 
 .scrollRight:active {
 	background-position: -260px -67px;
+}
+
+/*
+	Taskbar
+*/
+
+.taskbarBackgroundRight {
+	background-image: url(../images/zui.1/bottomrail.png);
+	position:absolute; width:100%; height:100%; left: 1px; top:0; background-position:right; -moz-border-radius: 18px 0px 0px 18px;
+}
+
+.taskbarBackgroundLeft {
+	background-image: url(../images/zui.1/bottomrail.png);
+	position:absolute; width:10px; height:100%; left:0; top:0; background-position:left;
+}
+
+.taskbarItemLeft {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -124px;
+}
+
+.taskbarItemRight {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -124px;
+}
+
+.taskbarItemLeft2 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -146px;
+}
+
+.taskbarItemRight2 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -146px;
+}
+
+.taskbarItemLeft3 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -168px;
+}
+
+.taskbarItemRight3 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -168px;
+}
+
+.taskbarItemLeft4 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -192px;
+}
+
+.taskbarItemRight4 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -192px;
+}
+
+.taskbarItemLeft5 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -215px;
+}
+
+.taskbarItemRight5 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -215px;
+}
+
+/*
+Other Stretch Items
+*/
+
+.stretchItemLeft1 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -0px;
+}
+
+.stretchItemRight1 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -0px;
+}
+
+.stretchItemLeft2 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -20px;
+}
+
+.stretchItemRight2 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -20px;
+}
+
+.stretchItemLeft3 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -40px;
+}
+
+.stretchItemRight3 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -40px;
+}
+
+.stretchItemLeft4 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -61px;
+}
+
+.stretchItemRight4 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -61px;
+}
+
+.stretchItemLeft5 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -82px;
+}
+
+.stretchItemRight5 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -82px;
+}
+
+.stretchItemLeft6 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -103px;
+}
+
+.stretchItemRight6 {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -103px;
 }
