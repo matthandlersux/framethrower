@@ -81,3 +81,33 @@ body {
 .addButton {
 	background-image: url(../images/addButton.png);
 }
+
+.scrollLeft {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -1092px -5px;
+	width: 38px;
+	height: 30px;
+}
+
+.scrollLeft:hover {
+	background-position: -1092px -38px;
+}
+
+.scrollLeft:active {
+	background-position: -1092px -72px;
+}
+
+.scrollRight {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -1143px -5px;
+	width: 38px;
+	height: 30px;
+}
+
+.scrollRight:hover {
+	background-position: -1143px -38px;
+}
+
+.scrollRight:active {
+	background-position: -1143px -72px;
+}

@@ -313,10 +313,10 @@
 						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 						<f:with-param name="leftChildInView"><xsl:copy-of select="$leftChildInView" /></f:with-param>
 					</f:binding>
-					<html:div class="addButton" left="{$padding}" top="{$h div 2 - 12}" width="25" height="25">
+					<html:div class="scrollLeft" left="{$padding}" top="{$h div 2 - 15}">
 						<f:button name="left" />
 					</html:div>
-					<html:div class="addButton" left="{$w - $padding}" top="{$h div 2 - 12}" width="25" height="25">
+					<html:div class="scrollRight" left="{$w + $padding - 38}" top="{$h div 2 - 15}">
 						<f:button name="right" />					
 					</html:div>
 				</html:div>
