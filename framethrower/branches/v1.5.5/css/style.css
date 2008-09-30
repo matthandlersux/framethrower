@@ -470,3 +470,41 @@ buttons
 	width: 15px;
 	height: 32px;
 }
+
+/*
+Solids
+*/
+.solid1 {
+	background-image: url(../images/zui.1/solids.png);
+	background-position: -1px -1px;
+	width: 264px;
+	height: 32px;
+}
+
+.solid2 {
+	background-image: url(../images/zui.1/solids.png);
+	background-position: -1px -36px;
+	width: 96px;
+	height: 23px;
+}
+
+.solid3 {
+	background-image: url(../images/zui.1/solids.png);
+	background-position: -1px -60px;
+	width: 274px;
+	height: 88px;
+}
+
+.solid4 {
+	background-image: url(../images/zui.1/solids.png);
+	background-position: -1px -154px;
+	width: 285px;
+	height: 14px;
+}
+
+.solid5 {
+	background-image: url(../images/zui.1/solids.png);
+	background-position: -1px -171px;
+	width: 21px;
+	height: 6px;
+}
