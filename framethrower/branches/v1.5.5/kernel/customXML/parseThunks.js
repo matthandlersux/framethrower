@@ -31,51 +31,70 @@ function replaceXML(node, replacer, ambient, ids, relurl) {
 		}
 
 		
-		var identifiers = xpath("*[@f:identifier]", replacer);
-		if (identifiers.length > 0) {
-			// var corresponding = xpath("*[@f:identifier = '" + identifier + "']", node);
-			// if (corresponding.length > 0) {
-			// 	var corresponder = corresponding[0];
-			// 	insertBefore(node, corresponder, nNode);
-			// 	replaceXML(corresponder, rNode, ambient, ids, relurl);
-			// } else {
-			// 	var c = copyBefore(node, rNode, nNode);
-			// 	processAll(ambient, c, ids, relurl);
-			// }
-		} else {
-			// set children
-			var rNode = replacer.firstChild;
-			var nNode = node.firstChild;
-			while (rNode) {
-				if (rNode.nodeType === 1) {
-					if (nNode && nNode.nodeType === 1) {
-						var nextNode = nNode.nextSibling;
-						replaceXML(nNode, rNode, ambient, ids, relurl);
-						nNode = nextNode;
+		
+
+		// set children
+		
+		function getNextNonIdentifier(node) {
+			if (node && node.nodeType === 1 && node.hasAttributeNS(xmlns["f"], "identifier")) {
+				return getNextNonIdentifier(node.nextSibling);
+			}
+			return node;
+		}
+		
+		var identifierNodes = xpath("*[@f:identifier]", node);
+		var identifiers = {};
+		forEach(identifierNodes, function (idNode) {
+			identifiers[idNode.getAttributeNS(xmlns["f"], "identifier")] = idNode;
+		});
+		
+		var nNode = getNextNonIdentifier(node.firstChild);
+		var rNode = replacer.firstChild;
+		while (rNode) {
+			if (rNode.nodeType === 1) {
+				var identifier = rNode.getAttributeNS(xmlns["f"], "identifier");
+				if (identifier) {
+					var corresponder = identifiers[identifier];
+					if (corresponder) {
+						var c = replaceXML(corresponder, rNode, ambient, ids, relurl);
+						//insertBefore(node, c, nNode);
+						delete identifiers[identifier];
 					} else {
 						var c = copyBefore(node, rNode, nNode);
 						processAll(ambient, c, ids, relurl);
 					}
+				} else if (nNode && nNode.nodeType === 1) {
+					var nextNode = getNextNonIdentifier(nNode.nextSibling);
+					replaceXML(nNode, rNode, ambient, ids, relurl);
+					nNode = nextNode;
 				} else {
-					if (nNode && nNode.nodeType === rNode.nodeType) {
-						nNode.nodeValue = rNode.nodeValue;
-						nNode = nNode.nextSibling;
-					} else {
-						copyBefore(node, rNode, nNode);
-					}
+					var c = copyBefore(node, rNode, nNode);
+					processAll(ambient, c, ids, relurl);
 				}
-
-				rNode = rNode.nextSibling;
+			} else {
+				if (nNode && nNode.nodeType === rNode.nodeType) {
+					nNode.nodeValue = rNode.nodeValue;
+					nNode = getNextNonIdentifier(nNode.nextSibling);
+				} else {
+					copyBefore(node, rNode, nNode);
+				}
 			}
 
-			// remove remaining children
-			while (nNode) {
-				deactivateEndCaps(nNode);
-				var nextNode = nNode.nextSibling;
-				node.removeChild(nNode);
-				nNode = nextNode;
-			}
+			rNode = rNode.nextSibling;
 		}
+		
+		// remove remaining children
+		forEach(identifiers, function (idNode) {
+			deactivateEndCaps(idNode);
+			node.removeChild(idNode);
+		});
+		while (nNode) {
+			deactivateEndCaps(nNode);
+			var nextNode = nNode.nextSibling;
+			node.removeChild(nNode);
+			nNode = nextNode;
+		}
+		
 		
 		// if it's a binding or button, fix parent
 		if (node.localName === "binding" && node.namespaceURI === xmlns["f"]) {
@@ -92,6 +111,11 @@ function replaceXML(node, replacer, ambient, ids, relurl) {
 			return node;
 		} else {
 			//deacivateEndCaps(node);
+			
+			if (node.endCap) {
+				node.endCap.deactivate();
+			}
+			
 			processThunk(ambient, node, ids, relurl, replacer);
 			// NOTE: because we're not returning anything here, we can't have a thunk that evaluates to another thunk directly (needs to be embedded in a html:div, for example)
 		}

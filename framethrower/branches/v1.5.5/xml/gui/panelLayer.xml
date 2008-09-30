@@ -17,6 +17,13 @@
 	
 	<xsl:template>
 		<html:div>
+			<f:thunk url="zui.xml">
+				<f:with-param name="zui" value-id="{$zui/@id}" />
+				<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
+				<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
+				<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+			</f:thunk>
+			
 			<xsl:if test="$properties/@addObject='1'">
 				<f:thunk url="addObject.xml">
 					<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
@@ -33,13 +40,7 @@
 					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
 				</f:thunk>
 			</xsl:if>
-		
-			<f:thunk url="zui.xml">
-				<f:with-param name="zui" value-id="{$zui/@id}" />
-				<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
-				<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
-				<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
-			</f:thunk>
+			
 		</html:div>
 	</xsl:template>
 	

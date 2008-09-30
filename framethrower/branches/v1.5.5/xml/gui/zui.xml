@@ -244,8 +244,10 @@
 				
 				<xsl:variable name="taskBarHeight" select="40" />
 				
+				<!-- <f:consolelog msg="printing open zuis" count="{count($openZuis/*)}" /> -->
+				
 				<xsl:for-each select="$openZuis/*">
-					<html:div left="{$padding + count(preceding-sibling::*) * ($childWidth + $spacing)}" top="{$padding}">
+					<html:div left="{$padding + count(preceding-sibling::*) * ($childWidth + $spacing)}" top="{$padding}" f:identifier="{@id}">
 						<f:thunk url="zui.xml">
 							<f:with-param name="zui" value-id="{./@id}" />
 							<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
