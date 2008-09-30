@@ -17,7 +17,7 @@ function replaceXML(node, replacer, ambient, ids, relurl) {
 			var nv = att.nodeValue;
 			if (sizingAttNames[ln] && nln === "div") {
 				sizingAtts.push(att);
-			} else if (ln !== "style" && nln !== "div") {
+			} else if (!(ln === "style" && nln === "div")) {
 				node.setAttributeNS(ns, ln, nv);
 			}
 		});
