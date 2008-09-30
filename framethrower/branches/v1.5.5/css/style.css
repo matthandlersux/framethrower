@@ -251,7 +251,7 @@ buttons
 }
 
 
-.viewInfonsAboutInactive {
+.viewInfonsAbout {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -9px -1px;
 	width: 27px;
@@ -272,14 +272,14 @@ buttons
 	height: 21px;
 }
 
-.viewInfonsAbout {
+.viewInfonsAboutSelected {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -9px -71px;
 	width: 27px;
 	height: 21px;
 }
 
-.viewInfonsInactive {
+.viewInfons {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -38px -1px;
 	width: 27px;
@@ -300,14 +300,14 @@ buttons
 	height: 21px;
 }
 
-.viewInfons {
+.viewInfonsSelected {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -38px -72px;
 	width: 27px;
 	height: 21px;
 }
 
-.viewSituationInactive {
+.viewSituation {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -67px -1px;
 	width: 27px;
@@ -328,7 +328,7 @@ buttons
 	height: 21px;
 }
 
-.viewSituation {
+.viewSituationSelected {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -67px -72px;
 	width: 27px;
