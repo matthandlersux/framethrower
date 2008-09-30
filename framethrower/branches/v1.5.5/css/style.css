@@ -94,52 +94,52 @@ Backgrounds
 
 
 
-.taskbarItemLeft {
+.greyButtonLeft {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -124px;
 }
 
-.taskbarItemRight {
+.greyButtonRight {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -124px;
 }
 
-.taskbarItemLeft2 {
+.greyButton:hover .greyButtonLeft {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -146px;
 }
 
-.taskbarItemRight2 {
+.greyButton:hover .greyButtonRight {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -146px;
 }
 
-.taskbarItemLeft3 {
+.greyButton:active .greyButtonLeft {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -168px;
 }
 
-.taskbarItemRight3 {
+.greyButton:active .greyButtonRight {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -168px;
 }
 
-.taskbarItemLeft4Minimized {
+.greyButtonMinimizedLeft {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -192px;
 }
 
-.taskbarItemRight4 {
+.greyButtonMinimizedRight {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -192px;
 }
 
-.taskbarItemLeft5Viewing {
+.greyButtonViewingLeft {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -215px;
 }
 
-.taskbarItemRight5 {
+.greyButtonViewingRight {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -215px;
 }
@@ -148,62 +148,62 @@ Backgrounds
 Other Stretch Items
 */
 
-.whiteButton {
+.whiteButtonLeft {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -0px;
 }
 
-.stretchItemRight1 {
+.whiteButtonRight {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -0px;
 }
 
-.stretchItemLeft2 {
+.whiteButton:hover .whiteButtonLeft {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -20px;
 }
 
-.stretchItemRight2 {
+.whiteButton:hover .whiteButtonRight {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -20px;
 }
 
-.stretchItemLeft3 {
+.whiteButton:active .whiteButtonLeft {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -40px;
 }
 
-.stretchItemRight3 {
+.whiteButton:active .whiteButtonRight {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -40px;
 }
 
-.blackButton {
+.blackButtonLeft {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -61px;
 }
 
-.stretchItemRight4 {
+.blackButtonRight {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -61px;
 }
 
-.stretchItemLeft5 {
+.blackButton:hover .blackButtonLeft {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -82px;
 }
 
-.stretchItemRight5 {
+.blackButton:hover .blackButtonRight {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -82px;
 }
 
-.stretchItemLeft6 {
+.blackButton:active .blackButtonLeft {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -103px;
 }
 
-.stretchItemRight6 {
+.blackButton:active .blackButtonRight {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -103px;
 }
@@ -267,33 +267,33 @@ buttons
 
 .viewInfonsAbout:active {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -9px -48px;
+	background-position: -9px -47px;
 	width: 27px;
 	height: 21px;
 }
 
 .viewInfonsAbout {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -9px -69px;
+	background-position: -9px -71px;
 	width: 27px;
 	height: 21px;
 }
 
-.button2a {
+.viewInfonsInactive {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -38px -1px;
 	width: 27px;
 	height: 21px;
 }
 
-.button2b {
+.viewInfons:hover {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -38px -24px;
+	background-position: -38px -25px;
 	width: 27px;
 	height: 21px;
 }
 
-.button2c {
+.viewInfons:active {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -38px -48px;
 	width: 27px;
@@ -307,21 +307,21 @@ buttons
 	height: 21px;
 }
 
-.button3a {
+.viewSituationInactive {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -67px -1px;
 	width: 27px;
 	height: 21px;
 }
 
-.button3b {
+.viewSituation:hover {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -67px -24px;
+	background-position: -67px -25px;
 	width: 27px;
 	height: 21px;
 }
 
-.button3c {
+.viewSituation:active {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -67px -48px;
 	width: 27px;
@@ -336,56 +336,56 @@ buttons
 }
 
 
-.close {
+.closeInactive {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -101px -1px;
 	width: 19px;
 	height: 18px;
 }
 
-.circlex2 {
+.close:hover {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -101px -21px;
 	width: 19px;
 	height: 18px;
 }
 
-.circlex3 {
+.close:active {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -101px -41px;
 	width: 19px;
 	height: 18px;
 }
 
-.circlex4 {
+.close {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -101px -61px;
 	width: 19px;
 	height: 18px;
 }
 
-.maximize {
+.maximizeInactive {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -121px -1px;
 	width: 19px;
 	height: 18px;
 }
 
-.cross2 {
+.maximize:hover {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -121px -21px;
 	width: 19px;
 	height: 18px;
 }
 
-.cross3 {
+.maximize:active {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -121px -41px;
 	width: 19px;
 	height: 18px;
 }
 
-.cross4 {
+.maximize {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -121px -61px;
 	width: 19px;
@@ -399,16 +399,16 @@ buttons
 	height: 12px;
 }
 
-.ltaskscroll2 {
+.railScrollRight:hover {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -141px -17px;
 	width: 10px;
 	height: 12px;
 }
 
-.ltaskscroll3 {
+.railScrollRight:active {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -141px -33px;
+	background-position: -141px -34px;
 	width: 10px;
 	height: 12px;
 }
@@ -420,16 +420,16 @@ buttons
 	height: 12px;
 }
 
-.rtaskscroll2 {
+.railScrollLeft:hover {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -155px -17px;
 	width: 10px;
 	height: 12px;
 }
 
-.rtaskscroll3 {
+.railScrollLeft:active {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -155px -33px;
+	background-position: -155px -34px;
 	width: 10px;
 	height: 12px;
 }
@@ -441,14 +441,14 @@ buttons
 	height: 32px;
 }
 
-.badgex2 {
+.childViewClose:hover {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -171px -35px;
 	width: 15px;
 	height: 32px;
 }
 
-.badgex3 {
+.childViewClose:active {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -171px -69px;
 	width: 15px;
@@ -462,14 +462,14 @@ buttons
 	height: 32px;
 }
 
-.badgegt2 {
+.childViewOpen:hover {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -189px -35px;
 	width: 15px;
 	height: 32px;
 }
 
-.badgegt3 {
+.childViewOpen:active {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -189px -69px;
 	width: 15px;
