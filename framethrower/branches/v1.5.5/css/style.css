@@ -68,40 +68,6 @@ body {
 	/*background: #6af url(http://www.eversplosion.com/resources/gradient.php?height=80&start=0066ee&end=66aaff) repeat-x scroll 0 0;*/
 }
 
-.addButton {
-	background-image: url(../images/addButton.png);
-}
-
-.scrollLeft {
-	background-image: url(../images/zui.1/buttons.png);
-	background-position: -209px 0px;
-	width: 43px;
-	height: 33px;
-}
-
-.scrollLeft:hover {
-	background-position: -209px -33px;
-}
-
-.scrollLeft:active {
-	background-position: -209px -67px;
-}
-
-.scrollRight {
-	background-image: url(../images/zui.1/buttons.png);
-	background-position: -260px 0px;
-	width: 43px;
-	height: 33px;
-}
-
-.scrollRight:hover {
-	background-position: -260px -33px;
-}
-
-.scrollRight:active {
-	background-position: -260px -67px;
-}
-
 /*
 	Taskbar
 */
@@ -228,4 +194,270 @@ Other Stretch Items
 .stretchItemRight6 {
 	background-image: url(../images/zui.1/stretchbuttons.png);
 	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -103px;
+}
+
+/*
+buttons
+*/
+
+
+
+.addButton {
+	background-image: url(../images/addButton.png);
+}
+
+.scrollLeft {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -209px 0px;
+	width: 43px;
+	height: 33px;
+}
+
+.scrollLeft:hover {
+	background-position: -209px -33px;
+}
+
+.scrollLeft:active {
+	background-position: -209px -67px;
+}
+
+.scrollRight {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -260px 0px;
+	width: 43px;
+	height: 33px;
+}
+
+.scrollRight:hover {
+	background-position: -260px -33px;
+}
+
+.scrollRight:active {
+	background-position: -260px -67px;
+}
+
+
+.button1a {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -9px -1px;
+	width: 27px;
+	height: 21px;
+}
+
+.button1b {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -9px -24px;
+	width: 27px;
+	height: 21px;
+}
+
+.button1c {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -9px -48px;
+	width: 27px;
+	height: 21px;
+}
+
+.button1d {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -9px -69px;
+	width: 27px;
+	height: 21px;
+}
+
+.button2a {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -38px -1px;
+	width: 27px;
+	height: 21px;
+}
+
+.button2b {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -38px -24px;
+	width: 27px;
+	height: 21px;
+}
+
+.button2c {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -38px -48px;
+	width: 27px;
+	height: 21px;
+}
+
+.button2d {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -38px -72px;
+	width: 27px;
+	height: 21px;
+}
+
+.button3a {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -67px -1px;
+	width: 27px;
+	height: 21px;
+}
+
+.button3b {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -67px -24px;
+	width: 27px;
+	height: 21px;
+}
+
+.button3c {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -67px -48px;
+	width: 27px;
+	height: 21px;
+}
+
+.button3d {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -67px -72px;
+	width: 27px;
+	height: 21px;
+}
+
+
+.circlex1 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -101px -1px;
+	width: 19px;
+	height: 18px;
+}
+
+.circlex2 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -101px -21px;
+	width: 19px;
+	height: 18px;
+}
+
+.circlex3 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -101px -41px;
+	width: 19px;
+	height: 18px;
+}
+
+.circlex4 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -101px -61px;
+	width: 19px;
+	height: 18px;
+}
+
+.cross1 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -121px -1px;
+	width: 19px;
+	height: 18px;
+}
+
+.cross2 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -121px -21px;
+	width: 19px;
+	height: 18px;
+}
+
+.cross3 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -121px -41px;
+	width: 19px;
+	height: 18px;
+}
+
+.cross4 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -121px -61px;
+	width: 19px;
+	height: 18px;
+}
+
+.ltaskscroll1 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -141px -1px;
+	width: 10px;
+	height: 12px;
+}
+
+.ltaskscroll2 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -141px -17px;
+	width: 10px;
+	height: 12px;
+}
+
+.ltaskscroll3 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -141px -33px;
+	width: 10px;
+	height: 12px;
+}
+
+.rtaskscroll1 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -155px -1px;
+	width: 10px;
+	height: 12px;
+}
+
+.rtaskscroll2 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -155px -17px;
+	width: 10px;
+	height: 12px;
+}
+
+.rtaskscroll3 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -155px -33px;
+	width: 10px;
+	height: 12px;
+}
+
+.badgex1 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -171px -1px;
+	width: 15px;
+	height: 32px;
+}
+
+.badgex2 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -171px -35px;
+	width: 15px;
+	height: 32px;
+}
+
+.badgex3 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -171px -69px;
+	width: 15px;
+	height: 32px;
+}
+
+.badgegt1 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -189px -1px;
+	width: 15px;
+	height: 32px;
+}
+
+.badgegt2 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -189px -35px;
+	width: 15px;
+	height: 32px;
+}
+
+.badgegt3 {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -189px -69px;
+	width: 15px;
+	height: 32px;
 }
