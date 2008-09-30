@@ -148,9 +148,11 @@ Stretch Buttons
 
 .greyButtonMinimizedLeft {
 	background-position:left -192px;
+	opacity:.2;
 }
 .greyButtonMinimizedRight {
 	background-position:right -192px;
+	opacity:.2;
 }
 .greyButtonViewingLeft {
 	background-position:left -215px;
@@ -331,7 +333,7 @@ buttons
 	height: 21px;
 }
 
-.viewSituationSelected {
+.viewSituationSelecte {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -67px -72px;
 	width: 27px;

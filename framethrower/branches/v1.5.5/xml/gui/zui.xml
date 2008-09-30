@@ -216,9 +216,6 @@
 		<f:param name="panelLayer" />
 		<f:param name="width" />
 		<f:param name="height" />
-		<f:derived name="childZuis" from="zui">
-			<get what="childZuis" />
-		</f:derived>
 		
 		<f:derived name="childZuisMinimized" from="zui">
 			<get what="childZuis" />
@@ -226,29 +223,12 @@
 		</f:derived>
 		
 		
-		<f:derived name="openZuis" from="zui">
-			<get what="childZuis" />
-			<filter>
-				<get what="minimized" />
-				<equals>
-					<start>
-						<f:bool value="false" />
-					</start>
-				</equals>
-			</filter>
-		</f:derived>
 		<f:derived name="leftChildInView" from="zui">
 			<get what="leftChildInView" />
 		</f:derived>
 		
 		
 		<xsl:template>
-			<f:consolelog>
-				<xsl:copy-of select="$childZuisMinimized" />
-			</f:consolelog>
-			
-			
-			
 			<xsl:variable name="marginRight" select="8" />
 			<xsl:variable name="marginTop" select="6" />
 			<xsl:variable name="marginLeft" select="0" />
@@ -265,23 +245,23 @@
 			<xsl:variable name="w" select="$width/@value - $marginLeft - $marginRight - $padding * 2" />
 			<xsl:variable name="h" select="$height/@value - $marginTop - $marginBetween - $taskBarHeight - $marginBottom - $padding * 2" />
 			
-			<xsl:variable name="count" select="count($openZuis/*)" />
+			<xsl:variable name="count" select="count($childZuisMinimized/*)" />
 			<xsl:variable name="childWidth" select="floor(($w - $spacing * (2 - 1)) div 2)" />
 			
 			<html:div>
 				<!-- <f:consolelog msg="printing open zuis" count="{count($openZuis/*)}" /> -->
 				
 				<html:div class="zuiOpening" left="{$marginLeft}" top="{$marginTop}" width="{$w + $padding * 2}" height="{$h + $padding * 2}">
-					<xsl:for-each select="$openZuis/*">
-						<html:div left="{$padding + (count(preceding-sibling::*) - ($leftChildInView/@value)) * ($childWidth + $spacing)}" top="{$padding}" f:identifier="{@id}">
+					<xsl:for-each select="$childZuisMinimized/f:pair[f:value/f:bool/@value = 'false']">
+						<html:div left="{$padding + (position() - 1 - ($leftChildInView/@value)) * ($childWidth + $spacing)}" top="{$padding}" f:identifier="{./f:key/f:ob/@id}">
 							<f:thunk url="zui.xml">
-								<f:with-param name="zui" value-id="{./@id}" />
+								<f:with-param name="zui" value-id="{./f:key/f:ob/@id}" />
 								<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
 								<f:with-param name="width"><f:number value="{$childWidth}" /></f:with-param>
 								<f:with-param name="height"><f:number value="{$h}" /></f:with-param>
 							</f:thunk>
 						</html:div>
-					</xsl:for-each>					
+					</xsl:for-each>
 				</html:div>
 				
 				
@@ -291,15 +271,15 @@
 						<html:div class="taskbarBackgroundLeft" />
 					</html:div>
 						
-					<xsl:for-each select="$childZuis/*">
-						<html:div left="{count(preceding-sibling::*) * ($taskBarChildWidth)}" top="2" width="{$taskBarChildWidth}" f:identifier="{@id}">
+					<xsl:for-each select="$childZuisMinimized/*">
+						<html:div left="{count(preceding-sibling::*) * ($taskBarChildWidth)}" top="2" width="{$taskBarChildWidth}" f:identifier="{./f:key/f:ob/@id}">
 							<f:binding url="bindings/taskbar.xml">
-								<f:with-param name="zui" value-id="{./@id}" />
+								<f:with-param name="zui" value-id="{./f:key/f:ob/@id}" />
 							</f:binding>
 							<f:button name="minimize" />
 
 							<f:thunk name="printZuiContent">
-								<f:with-param name="zui" value-id="{./@id}" />
+								<f:with-param name="zui" value-id="{./f:key/f:ob/@id}" />
 							</f:thunk>
 						</html:div>
 					</xsl:for-each>
