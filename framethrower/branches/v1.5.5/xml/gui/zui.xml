@@ -278,10 +278,10 @@
 						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 						<f:with-param name="leftChildInView"><xsl:copy-of select="$leftChildInView" /></f:with-param>
 					</f:binding>
-					<html:div style="z-index:2" class="addButton" left="{$padding}" top="{$h div 2 - 12}" width="25" height="25">
+					<html:div class="addButton" left="{$padding}" top="{$h div 2 - 12}" width="25" height="25">
 						<f:button name="left" />
 					</html:div>
-					<html:div style="z-index:2" class="addButton" left="{$w - $padding}" top="{$h div 2 - 12}" width="25" height="25">
+					<html:div class="addButton" left="{$w - $padding}" top="{$h div 2 - 12}" width="25" height="25">
 						<f:button name="right" />					
 					</html:div>
 				</html:div>
@@ -300,14 +300,13 @@
 					</html:div>
 				</xsl:for-each>
 				
-				<html:div style="left: {$padding}px; top: {2 * $padding + $h - $taskBarHeight}px">
-
-					<html:div style="z-index:5; position:absolute; top: {2 * $padding + $h - $taskBarHeight}px; left: {$padding}px; width: {$w}px; height: {$taskBarHeight - $padding}px">
-						<html:div class="taskbarBackground" style="position:absolute; width:100%; height:100%; left:0px; top: 0px; background-position: left; -moz-border-radius: 0px 18px 18px 0px;" />
-						<html:div class="taskbarBackground" style="position:absolute; width:10px; height:100%; left: {$w - 8}px; top: 0px; background-position: right;" />
+				<html:div>
+					<html:div top="{2 * $padding + $h - $taskBarHeight}" left="{$padding}" width = "{$w}" height= "{$taskBarHeight - $padding}" >
+						<html:div class="taskbarBackgroundRight"/>
+						<html:div class="taskbarBackgroundLeft" />
 						
 						<xsl:for-each select="$childZuis/*">
-							<html:div left="{$padding + count(preceding-sibling::*) * ($taskBarChildWidth + $spacing)}" top="5px">
+							<html:div style="position:absolute; left: {$padding + count(preceding-sibling::*) * ($taskBarChildWidth + $spacing)}px; top: 5px;">
 								<f:binding url="bindings/taskbar.xml">
 									<f:with-param name="zui" value-id="{./@id}" />
 								</f:binding>

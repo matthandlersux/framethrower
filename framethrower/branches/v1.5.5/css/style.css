@@ -30,8 +30,14 @@ body {
 }
 
 
-.taskbarBackground {
+.taskbarBackgroundRight {
 	background-image: url(../images/zui.1/bottomrail.png);
+	position:absolute; width:100%; height:100%; left:0; top:0; background-position:right; -moz-border-radius: 18px 0px 0px 18px;
+}
+
+.taskbarBackgroundLeft {
+	background-image: url(../images/zui.1/bottomrail.png);
+	position:absolute; width:10px; height:100%; left:0; top:0; background-position:left;
 }
 
 .zuiTitle {
