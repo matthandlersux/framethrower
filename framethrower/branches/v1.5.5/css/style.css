@@ -87,61 +87,76 @@ Backgrounds
 }
 
 
+/*
+===============================================================================
+Stretch Buttons
+===============================================================================
+*/
+
+.greyButton, .greyButtonMinimized, .greyButtonViewing, .whiteButton, .blackButton {
+	overflow: hidden;
+}
+
+.greyButtonLeft, .greyButtonMinimizedLeft, .greyButtonViewingLeft, .whiteButtonLeft, .blackButtonLeft,
+.greyButtonRight, .greyButtonMinimizedRight, .greyButtonViewingRight, .whiteButtonRight, .blackButtonRight {
+	background-image: url(../images/zui.1/stretchbuttons.png);
+	position: absolute;
+	top: 0;
+}
+
+.greyButtonLeft, .greyButtonMinimizedLeft, .greyButtonViewingLeft,
+.greyButtonRight, .greyButtonMinimizedRight, .greyButtonViewingRight {
+	height: 20px;
+}
+.whiteButtonLeft, .blackButtonLeft,
+.whiteButtonRight, .blackButtonRight {
+	height: 18px;
+}
+
+.greyButtonLeft, .greyButtonMinimizedLeft, .greyButtonViewingLeft, .whiteButtonLeft, .blackButtonLeft {
+	width:10px; left:0;
+}
+
+.greyButtonRight, .greyButtonMinimizedRight, .greyButtonViewingRight, .whiteButtonRight, .blackButtonRight {
+	width:100%; left:10px;
+}
+
+
 
 /*
 	Taskbar
 */
 
-
-
 .greyButtonLeft {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -124px;
+	background-position:left -124px;
 }
-
 .greyButtonRight {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -124px;
+	background-position:right -124px;
 }
-
 .greyButton:hover .greyButtonLeft {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -146px;
+	background-position:left -146px;
 }
-
 .greyButton:hover .greyButtonRight {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -146px;
+	background-position:right -146px;
 }
-
 .greyButton:active .greyButtonLeft {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -168px;
+	background-position:left -168px;
 }
-
 .greyButton:active .greyButtonRight {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -168px;
+	background-position:right -168px;
 }
 
 .greyButtonMinimizedLeft {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -192px;
+	background-position:left -192px;
 }
-
 .greyButtonMinimizedRight {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -192px;
+	background-position:right -192px;
 }
-
 .greyButtonViewingLeft {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:10px; height:20px; left:0; top:0; background-position:left -215px;
+	background-position:left -215px;
 }
-
 .greyButtonViewingRight {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:100%; height:20px; left:10px; top:0; background-position:right -215px;
+	background-position:right -215px;
 }
 
 /*
@@ -149,63 +164,51 @@ Other Stretch Items
 */
 
 .whiteButtonLeft {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -0px;
+	background-position:left -0px;
 }
 
 .whiteButtonRight {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -0px;
+	background-position:right -0px;
 }
 
 .whiteButton:hover .whiteButtonLeft {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -20px;
+	background-position:left -20px;
 }
 
 .whiteButton:hover .whiteButtonRight {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -20px;
+	background-position:right -20px;
 }
 
 .whiteButton:active .whiteButtonLeft {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -40px;
+	background-position:left -40px;
 }
 
 .whiteButton:active .whiteButtonRight {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -40px;
+	background-position:right -40px;
 }
 
 .blackButtonLeft {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -61px;
+	background-position:left -61px;
 }
 
 .blackButtonRight {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -61px;
+	background-position:right -61px;
 }
 
 .blackButton:hover .blackButtonLeft {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -82px;
+	background-position:left -82px;
 }
 
 .blackButton:hover .blackButtonRight {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -82px;
+	background-position:right -82px;
 }
 
 .blackButton:active .blackButtonLeft {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:10px; height:18px; left:0; top:0; background-position:left -103px;
+	background-position:left -103px;
 }
 
 .blackButton:active .blackButtonRight {
-	background-image: url(../images/zui.1/stretchbuttons.png);
-	position:absolute; width:100%; height:18px; left:10px; top:0; background-position:right -103px;
+	background-position:right -103px;
 }
 
 /*

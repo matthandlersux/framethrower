@@ -121,7 +121,7 @@
 					<xsl:when test="$properties/@view='situation' and $focusType/@value='kernel.situation'">
 						<xsl:variable name="childrenSidebarWidth" select="$properties/@childrenSidebar * $childrenSidebarExpandedWidth" />
 						<xsl:if test="$properties/@childrenSidebar='1'">
-							<html:div class="zuiChildrenSidebar" left="0" top="0" width="{$childrenSidebarWidth}" height="{$h - $titleBarHeight}">
+							<html:div class="zuiChildrenSidebar" f:identifier="sidebar" left="0" top="0" width="{$childrenSidebarWidth}" height="{$h - $titleBarHeight}">
 								<html:div class="zuiChildrenSidebarSearch" left="0" top="0" width="{$childrenSidebarWidth}" height="{$childrenSidebarSearchHeight}" />
 								
 								<html:div class="zuiChildrenSidebarList" left="0" top="{$childrenSidebarSearchHeight}" width="{$childrenSidebarWidth}" height="{$h - $titleBarHeight - $childrenSidebarSearchHeight - $childrenSidebarAddHeight}">
@@ -133,8 +133,11 @@
 								</html:div>
 								
 								<html:div class="zuiChildrenSidebarAdd" left="0" top="{$h - $titleBarHeight - $childrenSidebarAddHeight}" width="{$childrenSidebarWidth}" height="{$childrenSidebarAddHeight}">
-									<html:div class="addButton" style="width:90%; height:26px; margin: auto auto;">
+									<html:div class="whiteButton" style="position: relative; width: 90%; height: 18px; margin: auto auto; text-align: center;">
 										<f:button name="addChild" />
+										<html:div class="whiteButtonRight" />
+										<html:div class="whiteButtonLeft" />
+										+ Add Item
 									</html:div>
 								</html:div>
 								
@@ -161,7 +164,7 @@
 						<xsl:variable name="childrenWidth" select="$w - $childrenSidebarWidth" />
 						<xsl:variable name="childrenHeight" select="$h - $titleBarHeight" />
 
-						<html:div class="zuiChildren" left="{$childrenSidebarWidth}" top="0" width="{$childrenWidth}" height="{$childrenHeight}">
+						<html:div class="zuiChildren" f:identifier="children" left="{$childrenSidebarWidth}" top="0" width="{$childrenWidth}" height="{$childrenHeight}">
 							<f:thunk name="printChildren">
 								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 								<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
