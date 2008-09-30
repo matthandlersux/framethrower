@@ -75,6 +75,7 @@ body {
 	overflow: hidden;
 	/*background: #444 url(http://www.eversplosion.com/resources/gradient.php?height=100&start=000000&end=444444) repeat-x;*/
 	background-image: url(../images/zui.1/innerbackground.png);
+	border: 1px solid #191919;
 	/*background: #6af url(http://www.eversplosion.com/resources/gradient.php?height=80&start=0066ee&end=66aaff) repeat-x scroll 0 0;*/
 }
 
@@ -84,30 +85,30 @@ body {
 
 .scrollLeft {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -1092px -5px;
-	width: 38px;
-	height: 30px;
+	background-position: -209px 0px;
+	width: 43px;
+	height: 33px;
 }
 
 .scrollLeft:hover {
-	background-position: -1092px -38px;
+	background-position: -209px -33px;
 }
 
 .scrollLeft:active {
-	background-position: -1092px -72px;
+	background-position: -209px -67px;
 }
 
 .scrollRight {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -1143px -5px;
-	width: 38px;
-	height: 30px;
+	background-position: -260px 0px;
+	width: 43px;
+	height: 33px;
 }
 
 .scrollRight:hover {
-	background-position: -1143px -38px;
+	background-position: -260px -33px;
 }
 
 .scrollRight:active {
-	background-position: -1143px -72px;
+	background-position: -260px -67px;
 }
