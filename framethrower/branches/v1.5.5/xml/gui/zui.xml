@@ -272,20 +272,6 @@
 
 				<xsl:variable name="taskBarHeight" select="40" />
 
-				<html:div>
-					<f:binding url="bindings/scrollOpening.xml">
-						<f:with-param name="count"><f:number value="{$count}" /></f:with-param>
-						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-						<f:with-param name="leftChildInView"><xsl:copy-of select="$leftChildInView" /></f:with-param>
-					</f:binding>
-					<html:div class="addButton" left="{$padding}" top="{$h div 2 - 12}" width="25" height="25">
-						<f:button name="left" />
-					</html:div>
-					<html:div class="addButton" left="{$w - $padding}" top="{$h div 2 - 12}" width="25" height="25">
-						<f:button name="right" />					
-					</html:div>
-				</html:div>
-
 				
 				<!-- <f:consolelog msg="printing open zuis" count="{count($openZuis/*)}" /> -->
 				
@@ -320,6 +306,21 @@
 					</html:div>
 
 				</html:div>
+				
+				<html:div>
+					<f:binding url="bindings/scrollOpening.xml">
+						<f:with-param name="count"><f:number value="{$count}" /></f:with-param>
+						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+						<f:with-param name="leftChildInView"><xsl:copy-of select="$leftChildInView" /></f:with-param>
+					</f:binding>
+					<html:div class="addButton" left="{$padding}" top="{$h div 2 - 12}" width="25" height="25">
+						<f:button name="left" />
+					</html:div>
+					<html:div class="addButton" left="{$w - $padding}" top="{$h div 2 - 12}" width="25" height="25">
+						<f:button name="right" />					
+					</html:div>
+				</html:div>
+				
 			</html:div>
 		</xsl:template>
 		

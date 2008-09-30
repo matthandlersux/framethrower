@@ -7,11 +7,24 @@
 		<f:derived name="parentZui" from="zui">
 			<get what="parentZui" />
 		</f:derived>
+		<f:derived name="childZuis" from="parentZui">
+			<get what="childZuis" />
+		</f:derived>
+		
 		<xsl:template>
 			<transaction>
 				<intact with-id="{$parentZui/@id}" prop="childZuis" action="remove">
-					<!--><with-param><xsl:copy-of select="$zui" /></with-param></!-->
-					<with-param><f:number value="0" /></with-param>
+					<with-param>
+						<f:number>
+							<xsl:attribute name="value">
+								<xsl:for-each select="$childZuis/*">
+									<xsl:if test="./@id = $zui/@id">
+										<xsl:value-of select="count(preceding-sibling::*)" />
+									</xsl:if>
+								</xsl:for-each>
+							</xsl:attribute>
+						</f:number>
+					</with-param>
 				</intact>
 				<intact with-id="{$parentZui/@id}" prop="maximizedChild" action="set">
 					<with-param />
