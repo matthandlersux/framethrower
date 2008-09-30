@@ -5,9 +5,12 @@ body {
 }
 
 .zui {
-	background-color:#fff;
 	/*border: 1px solid #000;
 	border-width: 0px 1px 1px 1px;*/
+}
+
+.paneBackground {
+	background-image: url(../images/zui.1/situationbackground.png);
 }
 
 .zuiTitle {
@@ -43,7 +46,8 @@ body {
 
 .zuiOpening {
 	overflow: hidden;
-	background: #444 url(http://www.eversplosion.com/resources/gradient.php?height=100&start=000000&end=444444) repeat-x;
+	/*background: #444 url(http://www.eversplosion.com/resources/gradient.php?height=100&start=000000&end=444444) repeat-x;*/
+	background-image: url(../images/zui.1/innerbackground.png);
 	/*background: #6af url(http://www.eversplosion.com/resources/gradient.php?height=80&start=0066ee&end=66aaff) repeat-x scroll 0 0;*/
 }
 
