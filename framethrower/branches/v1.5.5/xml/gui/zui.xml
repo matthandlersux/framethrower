@@ -27,31 +27,16 @@
 		<xsl:variable name="h" select="$height/@value" />
 		
 		<xsl:variable name="titleBarHeight" select="29" />
+		
 		<xsl:variable name="childrenSidebarExpandedWidth" select="200" />
+		<xsl:variable name="childrenSidebarSearchHeight" select="47" />
+		<xsl:variable name="childrenSidebarAddHeight" select="30" />
 		
-		<xsl:variable name="padding" select="7" />
-		
-		<html:div class="zui" left="0" top="0" width="{$width/@value}" height="{$height/@value}">
+		<html:div class="zui" left="0" top="0" width="{$w}" height="{$h}">
 			<f:binding url="bindings/zui.xml">
 				<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 				<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
 			</f:binding>
-			
-			<!-- <html:div style="position:absolute">
-				<f:thunk url="graphics/zuiPane.xml">
-					<f:with-param name="width"><f:number value="{$w}" /></f:with-param>
-					<f:with-param name="height"><f:number value="{$h}" /></f:with-param>
-					<f:with-param name="border"><f:number value="{$padding}" /></f:with-param>
-					<f:with-param name="titleBarHeight"><f:number value="{$titleBarHeight}" /></f:with-param>
-					<xsl:variable name="paneColor">
-						<xsl:choose>
-							<xsl:when test="$focusType/@value='kernel.situation'">#eee</xsl:when>
-							<xsl:otherwise>yellow</xsl:otherwise>
-						</xsl:choose>
-					</xsl:variable>
-					<f:with-param name="color"><f:string value="{$paneColor}" /></f:with-param>
-				</f:thunk>
-			</html:div> -->
 			
 			<xsl:call-template name="paneBackground">
 				<xsl:with-param name="color">
@@ -62,7 +47,7 @@
 				</xsl:with-param>
 			</xsl:call-template>
 			
-			<html:div class="zuiTitle" left="0" top="0" width="{$width/@value}" height="{$titleBarHeight}">
+			<html:div class="zuiTitle" left="0" top="0" width="{$w}" height="{$titleBarHeight}">
 				<f:button name="titlebar" />
 				<f:thunk url="printContent.xml">
 					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
@@ -113,94 +98,98 @@
 				</html:span>
 			</html:div>
 			
-			<xsl:choose>
-				<xsl:when test="$maximizedChild">
-					<xsl:variable name="openingWidth" select="$width/@value - $padding * 2" />
-					<xsl:variable name="openingHeight" select="$height/@value - $titleBarHeight - $padding" />
-					
-					<html:div class="zuiOpening" left="{$padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$openingHeight}">
-						<html:div>
-							<html:div left="0" top="0" width="{$openingWidth}" height="{$openingHeight}">
-								<f:thunk url="zui.xml">
-									<f:with-param name="zui"><xsl:copy-of select="$maximizedChild" /></f:with-param>
-									<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
-									<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
-									<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
-								</f:thunk>
+			<html:div class="zuiContent" left="0" top="{$titleBarHeight}" width="{$w}" height="{$h - $titleBarHeight}">
+				<xsl:choose>
+					<xsl:when test="$maximizedChild">
+						<!-- This needs to be layed out properly... -->
+						<xsl:variable name="openingWidth" select="$width/@value" />
+						<xsl:variable name="openingHeight" select="$height/@value - $titleBarHeight" />
+
+						<html:div class="zuiOpening" left="0" top="{$titleBarHeight}" width="{$openingWidth}" height="{$openingHeight}">
+							<html:div>
+								<html:div left="0" top="0" width="{$openingWidth}" height="{$openingHeight}">
+									<f:thunk url="zui.xml">
+										<f:with-param name="zui"><xsl:copy-of select="$maximizedChild" /></f:with-param>
+										<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+										<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
+										<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
+									</f:thunk>
+								</html:div>
 							</html:div>
 						</html:div>
-					</html:div>
-				</xsl:when>
-				<xsl:when test="$properties/@view='situation' and $focusType/@value='kernel.situation'">
-					<xsl:variable name="childrenSidebarWidth" select="$properties/@childrenSidebar * $childrenSidebarExpandedWidth" />
-					<xsl:if test="$properties/@childrenSidebar='1'">
-						<html:div class="zuiChildrenSidebar" left="{$padding}" top="{$titleBarHeight}" width="{$childrenSidebarWidth}" height="{$height/@value - $titleBarHeight - $padding - 26}">
-							<f:thunk url="childrenSidebar.xml">
-								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
-								<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
-							</f:thunk>
-						</html:div>
-						<html:div class="addButton" left="{$padding}" top="{$height/@value - $padding - 26}" width="{$childrenSidebarWidth}" height="26">
-							<f:button name="addChild" />
-						</html:div>
-					</xsl:if>
-					
-					<xsl:variable name="correspondSidebarWidth" select="$properties/@correspondSidebar * $childrenSidebarExpandedWidth" />
-					<xsl:if test="$properties/@correspondSidebar='1'">
-						<html:div class="zuiChildrenSidebar" left="{$padding + $childrenSidebarWidth}" top="{$titleBarHeight}" width="{$correspondSidebarWidth}" height="{$height/@value - $titleBarHeight - $padding}">
-							<f:thunk url="correspondSidebar.xml">
-								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
-							</f:thunk>
-						</html:div>
-						<html:div class="addButton" left="{$padding + $childrenSidebarWidth}" top="{$height/@value - $padding - 26}" width="{$correspondSidebarWidth}" height="26">
-							<f:button name="addCorresponds" />
-						</html:div>
-					</xsl:if>
+					</xsl:when>
+					<xsl:when test="$properties/@view='situation' and $focusType/@value='kernel.situation'">
+						<xsl:variable name="childrenSidebarWidth" select="$properties/@childrenSidebar * $childrenSidebarExpandedWidth" />
+						<xsl:if test="$properties/@childrenSidebar='1'">
+							<html:div class="zuiChildrenSidebar" left="0" top="0" width="{$childrenSidebarWidth}" height="{$h - $titleBarHeight}">
+								<html:div class="zuiChildrenSidebarSearch" left="0" top="0" width="{$childrenSidebarWidth}" height="{$childrenSidebarSearchHeight}" />
+								
+								<html:div class="zuiChildrenSidebarList" left="0" top="{$childrenSidebarSearchHeight}" width="{$childrenSidebarWidth}" height="{$h - $titleBarHeight - $childrenSidebarSearchHeight - $childrenSidebarAddHeight}">
+									<f:thunk url="childrenSidebar.xml">
+										<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+										<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+										<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+									</f:thunk>
+								</html:div>
+								
+								<html:div class="zuiChildrenSidebarAdd" left="0" top="{$h - $titleBarHeight - $childrenSidebarAddHeight}" width="{$childrenSidebarWidth}" height="{$childrenSidebarAddHeight}">
+									<html:div class="addButton" style="width:90%; height:26px; margin: auto auto;">
+										<f:button name="addChild" />
+									</html:div>
+								</html:div>
+								
 
-					<xsl:variable name="openingWidth" select="$width/@value - $childrenSidebarWidth - $correspondSidebarWidth - $padding * 2" />
-					<xsl:variable name="openingHeight" select="$height/@value - $titleBarHeight - $padding" />
-					
-					<html:div class="zuiOpening" left="{$childrenSidebarWidth + $correspondSidebarWidth + $padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$openingHeight}">
-						<!--><f:thunk url="graphics/innerShadow.xml">
-							<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
-							<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
-							<f:with-param name="offsetX"><f:number value="0" /></f:with-param>
-							<f:with-param name="offsetY"><f:number value="5" /></f:with-param>
-							<f:with-param name="blurAmount"><f:number value="10" /></f:with-param>
-						</f:thunk>-->
-						<f:thunk name="printOpenings">
-							<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-							<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
-							<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
-							<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
-						</f:thunk>
-					</html:div>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:variable name="correspondSidebarWidth" select="$properties/@correspondSidebar * $childrenSidebarExpandedWidth" />
-					<xsl:if test="$properties/@correspondSidebar='1'">
-						<html:div class="zuiChildrenSidebar" left="{$padding}" top="{$titleBarHeight}" width="{$correspondSidebarWidth}" height="{$height/@value - $titleBarHeight - $padding}">
-							<f:thunk url="correspondSidebar.xml">
+								<!-- <html:div class="addButton" left="{$padding}" top="{$height/@value - $padding - 26}" width="{$childrenSidebarWidth}" height="26">
+																	<f:button name="addChild" />
+																</html:div> -->
+							</html:div>
+						</xsl:if>
+
+						<!-- <xsl:variable name="correspondSidebarWidth" select="$properties/@correspondSidebar * $childrenSidebarExpandedWidth" />
+						<xsl:if test="$properties/@correspondSidebar='1'">
+							<html:div class="zuiChildrenSidebar" left="{$padding + $childrenSidebarWidth}" top="{$titleBarHeight}" width="{$correspondSidebarWidth}" height="{$height/@value - $titleBarHeight - $padding}">
+								<f:thunk url="correspondSidebar.xml">
+									<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+									<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+								</f:thunk>
+							</html:div>
+							<html:div class="addButton" left="{$padding + $childrenSidebarWidth}" top="{$height/@value - $padding - 26}" width="{$correspondSidebarWidth}" height="26">
+								<f:button name="addCorresponds" />
+							</html:div>
+						</xsl:if> -->
+
+						<xsl:variable name="childrenWidth" select="$w - $childrenSidebarWidth" />
+						<xsl:variable name="childrenHeight" select="$h - $titleBarHeight" />
+
+						<html:div class="zuiChildren" left="{$childrenSidebarWidth}" top="0" width="{$childrenWidth}" height="{$childrenHeight}">
+							<f:thunk name="printChildren">
 								<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+								<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+								<f:with-param name="width"><f:number value="{$childrenWidth}" /></f:with-param>
+								<f:with-param name="height"><f:number value="{$childrenHeight}" /></f:with-param>
 							</f:thunk>
 						</html:div>
-						<html:div class="addButton" left="{$padding}" top="{$height/@value - $padding - 26}" width="{$correspondSidebarWidth}" height="26">
-							<f:button name="addCorresponds" />
-						</html:div>
-					</xsl:if>					
-					
-					<xsl:variable name="openingWidth" select="$width/@value - $correspondSidebarWidth - $padding * 2" />
-					
-					<html:div left="{$correspondSidebarWidth + $padding}" top="{$titleBarHeight}" width="{$openingWidth}" height="{$height/@value - $titleBarHeight - $padding}">
+					</xsl:when>
+					<xsl:otherwise>
+						<!-- <xsl:variable name="correspondSidebarWidth" select="$properties/@correspondSidebar * $childrenSidebarExpandedWidth" />
+						<xsl:if test="$properties/@correspondSidebar='1'">
+							<html:div class="zuiChildrenSidebar" left="{$padding}" top="{$titleBarHeight}" width="{$correspondSidebarWidth}" height="{$height/@value - $titleBarHeight - $padding}">
+								<f:thunk url="correspondSidebar.xml">
+									<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+									<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+								</f:thunk>
+							</html:div>
+							<html:div class="addButton" left="{$padding}" top="{$height/@value - $padding - 26}" width="{$correspondSidebarWidth}" height="26">
+								<f:button name="addCorresponds" />
+							</html:div>
+						</xsl:if>	 -->				
+
 						<f:thunk url="objectView.xml">
 							<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 						</f:thunk>
-					</html:div>
-				</xsl:otherwise>
-			</xsl:choose>
+					</xsl:otherwise>
+				</xsl:choose>
+			</html:div>
 
 		</html:div>
 	</xsl:template>
@@ -208,21 +197,16 @@
 	<xsl:template name="paneBackground">
 		<xsl:param name="color" />
 		<html:div style="position:absolute; top:0px; left:0px; width:100%; height:100%;">
-			
-			
 			<html:div class="paneBackgroundBR" />
 			<html:div class="paneBackgroundBL" />
 			<html:div class="paneBackgroundTitle" style="background-color: {$color};" />
 			<html:div class="paneBackgroundTR" />
 			<html:div class="paneBackgroundTL" />
-			
-
 		</html:div>
 	</xsl:template>
 	
 	
-	<f:function name="printOpenings">
-
+	<f:function name="printChildren">
 		<f:param name="zui" />
 		<f:param name="panelLayer" />
 		<f:param name="width" />
@@ -247,67 +231,64 @@
 		
 		
 		<xsl:template>
+			
+			<xsl:variable name="marginRight" select="8" />
+			<xsl:variable name="marginTop" select="6" />
+			<xsl:variable name="marginLeft" select="0" />
+			<xsl:variable name="marginBetween" select="4" />
+			<xsl:variable name="marginBottom" select="4" />
+			
+			<xsl:variable name="taskBarHeight" select="24" />
+			
 			<xsl:variable name="spacing" select="10" />
 			<xsl:variable name="padding" select="14" />
-			<xsl:variable name="w" select="$width/@value - $padding * 2" />
-			<xsl:variable name="h" select="$height/@value - $padding * 2" />
+			
+			<xsl:variable name="taskBarChildWidth" select="150" />
+			
+			<xsl:variable name="w" select="$width/@value - $marginLeft - $marginRight - $padding * 2" />
+			<xsl:variable name="h" select="$height/@value - $marginTop - $marginBetween - $taskBarHeight - $marginBottom - $padding * 2" />
 			
 			<xsl:variable name="count" select="count($openZuis/*)" />
 			<xsl:variable name="childWidth" select="floor(($w - $spacing * (2 - 1)) div 2)" />
 			
-			<xsl:variable name="taskBarChildWidth" select="150" />
 			<html:div>
-				
-				<!--><xsl:for-each select="$openZuis/*">
-					<html:div left="{$padding + count(preceding-sibling::*) * ($childWidth + $spacing)}" top="{$padding}">
-						<f:thunk url="graphics/dropShadow.xml">
-							<f:with-param name="width"><f:number value="{$childWidth}" /></f:with-param>
-							<f:with-param name="height"><f:number value="{$h}" /></f:with-param>
-							<f:with-param name="offsetX"><f:number value="0" /></f:with-param>
-							<f:with-param name="offsetY"><f:number value="2" /></f:with-param>
-							<f:with-param name="blurAmount"><f:number value="5" /></f:with-param>
-						</f:thunk>
-					</html:div>
-				</xsl:for-each>-->
-
-				<xsl:variable name="taskBarHeight" select="40" />
-
-				
 				<!-- <f:consolelog msg="printing open zuis" count="{count($openZuis/*)}" /> -->
 				
-				<xsl:for-each select="$openZuis/*">
-					<html:div left="{$padding + (count(preceding-sibling::*) - ($leftChildInView/@value)) * ($childWidth + $spacing)}" top="{$padding}" f:identifier="{@id}">
-						<f:thunk url="zui.xml">
-							<f:with-param name="zui" value-id="{./@id}" />
-							<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
-							<f:with-param name="width"><f:number value="{$childWidth}" /></f:with-param>
-							<f:with-param name="height"><f:number value="{$h - $taskBarHeight}" /></f:with-param>
-						</f:thunk>
-					</html:div>
-				</xsl:for-each>
-				
-				<html:div>
-					<html:div top="{2 * $padding + $h - $taskBarHeight}" left="{$padding}" width = "{$w}" height= "{$taskBarHeight - $padding}" >
-						<html:div class="taskbarBackgroundRight"/>
-						<html:div class="taskbarBackgroundLeft" />
-						
-						<xsl:for-each select="$childZuis/*">
-							<html:div style="position:absolute; left: {$padding + count(preceding-sibling::*) * ($taskBarChildWidth + $spacing)}px; top: 5px;">
-								<f:binding url="bindings/taskbar.xml">
-									<f:with-param name="zui" value-id="{./@id}" />
-								</f:binding>
-								<f:button name="minimize" />
-
-								<f:thunk name="printZuiContent">
-									<f:with-param name="zui" value-id="{./@id}" />
-								</f:thunk>
-							</html:div>
-						</xsl:for-each>
-					</html:div>
-
+				<html:div class="zuiOpening" left="{$marginLeft}" top="{$marginTop}" width="{$w + $padding * 2}" height="{$h + $padding * 2}">
+					<xsl:for-each select="$openZuis/*">
+						<html:div left="{$padding + (count(preceding-sibling::*) - ($leftChildInView/@value)) * ($childWidth + $spacing)}" top="{$padding}" f:identifier="{@id}">
+							<f:thunk url="zui.xml">
+								<f:with-param name="zui" value-id="{./@id}" />
+								<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+								<f:with-param name="width"><f:number value="{$childWidth}" /></f:with-param>
+								<f:with-param name="height"><f:number value="{$h}" /></f:with-param>
+							</f:thunk>
+						</html:div>
+					</xsl:for-each>					
 				</html:div>
 				
-				<html:div>
+				
+				<html:div class="zuiRail" left="{$marginLeft}" top="{$height/@value - $marginBottom - $taskBarHeight}" width="{$w + $padding * 2}" height="{$taskBarHeight}">
+					<html:div style="position:absolute; top:0px; left:0px; width:100%; height:100%;">
+						<html:div class="taskbarBackgroundRight"/>
+						<html:div class="taskbarBackgroundLeft" />
+					</html:div>
+						
+					<xsl:for-each select="$childZuis/*">
+						<html:div left="{count(preceding-sibling::*) * ($taskBarChildWidth)}" top="0" width="{$taskBarChildWidth}" height="{$taskBarHeight}">
+							<f:binding url="bindings/taskbar.xml">
+								<f:with-param name="zui" value-id="{./@id}" />
+							</f:binding>
+							<f:button name="minimize" />
+
+							<f:thunk name="printZuiContent">
+								<f:with-param name="zui" value-id="{./@id}" />
+							</f:thunk>
+						</html:div>
+					</xsl:for-each>
+				</html:div>
+				
+				<!-- <html:div>
 					<f:binding url="bindings/scrollOpening.xml">
 						<f:with-param name="count"><f:number value="{$count}" /></f:with-param>
 						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
@@ -319,7 +300,7 @@
 					<html:div class="scrollRight" left="{$w + $padding - 38}" top="{$h div 2 - 15}">
 						<f:button name="right" />					
 					</html:div>
-				</html:div>
+				</html:div> -->
 				
 			</html:div>
 		</xsl:template>
