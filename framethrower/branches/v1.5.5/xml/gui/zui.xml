@@ -238,6 +238,10 @@
 				</equals>
 			</filter>
 		</f:derived>
+		<f:derived name="leftChildInView" from="zui">
+			<get what="leftChildInView" />
+		</f:derived>
+		
 		
 		<xsl:template>
 			<xsl:variable name="spacing" select="10" />
@@ -246,7 +250,7 @@
 			<xsl:variable name="h" select="$height/@value - $padding * 2" />
 			
 			<xsl:variable name="count" select="count($openZuis/*)" />
-			<xsl:variable name="childWidth" select="floor(($w - $spacing * ($count - 1)) div $count)" />
+			<xsl:variable name="childWidth" select="floor(($w - $spacing * (2 - 1)) div 2)" />
 			
 			<xsl:variable name="taskBarChildWidth" select="150" />
 			<html:div>
@@ -264,11 +268,26 @@
 				</xsl:for-each>-->
 
 				<xsl:variable name="taskBarHeight" select="40" />
+
+				<html:div>
+					<f:binding url="bindings/scrollOpening.xml">
+						<f:with-param name="count"><f:number value="{$count}" /></f:with-param>
+						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+						<f:with-param name="leftChildInView"><xsl:copy-of select="$leftChildInView" /></f:with-param>
+					</f:binding>
+					<html:div style="z-index:2" class="addButton" left="{$padding}" top="{$h div 2 - 12}" width="25" height="25">
+						<f:button name="left" />
+					</html:div>
+					<html:div style="z-index:2" class="addButton" left="{$w - $padding}" top="{$h div 2 - 12}" width="25" height="25">
+						<f:button name="right" />					
+					</html:div>
+				</html:div>
+
 				
 				<!-- <f:consolelog msg="printing open zuis" count="{count($openZuis/*)}" /> -->
 				
 				<xsl:for-each select="$openZuis/*">
-					<html:div left="{$padding + count(preceding-sibling::*) * ($childWidth + $spacing)}" top="{$padding}" f:identifier="{@id}">
+					<html:div left="{$padding + (count(preceding-sibling::*) - ($leftChildInView/@value)) * ($childWidth + $spacing)}" top="{$padding}" f:identifier="{@id}">
 						<f:thunk url="zui.xml">
 							<f:with-param name="zui" value-id="{./@id}" />
 							<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
@@ -278,22 +297,26 @@
 					</html:div>
 				</xsl:for-each>
 				
-				<html:div left="{$padding}" top="{2 * $padding + $h - $taskBarHeight}">
-					<svg:svg width="{$w}" height="{$taskBarHeight}">
-						<svg:rect x="0" y="0" width="{$w}" height="{$taskBarHeight - $padding}" fill="pink" stroke="#333" stroke-width="1" />
-					</svg:svg>
-					<xsl:for-each select="$childZuis/*">
-						<html:div left="{$padding + count(preceding-sibling::*) * ($taskBarChildWidth + $spacing)}" top="0">
-							<f:binding url="bindings/taskbar.xml">
-								<f:with-param name="zui" value-id="{./@id}" />
-							</f:binding>
-							<f:button name="minimize" />
-							
-							<f:thunk name="printZuiContent">
-								<f:with-param name="zui" value-id="{./@id}" />
-							</f:thunk>
-						</html:div>
-					</xsl:for-each>
+				<html:div style="left: {$padding}px; top: {2 * $padding + $h - $taskBarHeight}px">
+
+					<html:div style="z-index:5; position:absolute; top: {2 * $padding + $h - $taskBarHeight}px; left: {$padding}px; width: {$w}px; height: {$taskBarHeight - $padding}px">
+						<html:div class="taskbarBackground" style="position:absolute; width:100%; height:100%; left:0px; top: 0px; background-position: left; -moz-border-radius: 0px 18px 18px 0px;" />
+						<html:div class="taskbarBackground" style="position:absolute; width:10px; height:100%; left: {$w - 8}px; top: 0px; background-position: right;" />
+						
+						<xsl:for-each select="$childZuis/*">
+							<html:div left="{$padding + count(preceding-sibling::*) * ($taskBarChildWidth + $spacing)}" top="5px">
+								<f:binding url="bindings/taskbar.xml">
+									<f:with-param name="zui" value-id="{./@id}" />
+								</f:binding>
+								<f:button name="minimize" />
+
+								<f:thunk name="printZuiContent">
+									<f:with-param name="zui" value-id="{./@id}" />
+								</f:thunk>
+							</html:div>
+						</xsl:for-each>
+					</html:div>
+
 				</html:div>
 			</html:div>
 		</xsl:template>

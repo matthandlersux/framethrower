@@ -13,6 +13,10 @@ body {
 	background-image: url(../images/zui.1/situationbackground.png);
 }
 
+.taskbarBackground {
+	background-image: url(../images/zui.1/bottomrail.png);
+}
+
 .zuiTitle {
 	font-weight: bold;
 	padding: 4px;
