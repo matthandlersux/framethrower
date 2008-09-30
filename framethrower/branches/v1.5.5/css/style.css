@@ -9,9 +9,26 @@ body {
 	border-width: 0px 1px 1px 1px;*/
 }
 
-.paneBackground {
+.paneBackgroundBR, .paneBackgroundBL, .paneBackgroundTR, .paneBackgroundTL {
 	background-image: url(../images/zui.1/situationbackground.png);
+	position:absolute;
 }
+.paneBackgroundBR {
+	width:100%; height:100%; left:25px; top:31px; background-position: bottom right;
+}
+.paneBackgroundBL {
+	width:42px; height:100%; left:-17px; top:31px; background-position: bottom left;
+}
+.paneBackgroundTR {
+	width:100%; height:47px; left:25px; top:-16px; background-position: top right;
+}
+.paneBackgroundTL {
+	width:42px; height:47px; left:-17px; top:-16px; background-position: top left;
+}
+.paneBackgroundTitle {
+	position:absolute; width:100%; height: 29px; left:0px; top:0px; -moz-border-radius: 9px 9px 0px 0px;
+}
+
 
 .taskbarBackground {
 	background-image: url(../images/zui.1/bottomrail.png);

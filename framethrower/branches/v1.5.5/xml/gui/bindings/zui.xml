@@ -33,11 +33,11 @@
 				<intact with-id="{$parentZuis/*[1]/@id}" prop="maximizedChild" action="set">
 					<with-param><xsl:copy-of select="$zui" /></with-param>
 				</intact>
-				<xsl:for-each select="$parentZuis/*[position() != last()]">
+				<!-- <xsl:for-each select="$parentZuis/*[position() != last()]">
 					<intact with-id="{following-sibling::*/@id}" prop="maximizedChild" action="set">
 						<with-param><xsl:copy-of select="." /></with-param>
 					</intact>
-				</xsl:for-each>
+				</xsl:for-each> -->
 			</transaction>
 		</xsl:template>
 	</f:transaction>

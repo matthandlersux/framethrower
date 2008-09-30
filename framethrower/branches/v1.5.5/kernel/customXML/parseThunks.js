@@ -1,30 +1,68 @@
 function replaceXML(node, replacer, ambient, ids, relurl) {
-	if (node.localName === replacer.localName && node.namespaceURI === replacer.namespaceURI) {
+	var nln = node.localName;
+	var nns = node.namespaceURI;
+	var rln = replacer.localName;
+	var rns = replacer.namespaceURI;
+	
+	var sizingAttNames = {"left": true, "top": true, "width": true, "height": true};
+	
+	if (nln === rln && nns === rns) {
 		//console.log("DOING TRICKY REPLACE");
 		
 		// set attributes
+		var sizingAtts = [];
+		forEach(replacer.attributes, function (att) {
+			var ns = att.namespaceURI;
+			var ln = att.localName;
+			var nv = att.nodeValue;
+			if (sizingAttNames[ln] && nln === "div") {
+				sizingAtts.push(att);
+			} else if (ln !== "style" && nln !== "div") {
+				node.setAttributeNS(ns, ln, nv);
+			}
+		});
+		
+		var hasSizingAtts = sizingAtts.length > 0;
+		
 		var removals = [];
 		forEach(node.attributes, function (att) {
 			var ns = att.namespaceURI;
 			var ln = att.localName;
-			if (!replacer.hasAttributeNS(ns, ln)) {
+			if (!replacer.hasAttributeNS(ns, ln) && !(ln === "style" && hasSizingAtts)) {
 				removals.push(att);
 			}
 		});
 		forEach(removals, function (att) {
 			node.removeAttributeNode(att);
 		});
-		forEach(replacer.attributes, function (att) {
+
+		
+		if (hasSizingAtts) {
+			node.style.position = "absolute";
+		} else {
+			node.setAttributeNS("", "style", replacer.getAttributeNS("", "style"));
+		}
+		
+		forEach(sizingAtts, function (att) {
 			var ns = att.namespaceURI;
 			var ln = att.localName;
 			var nv = att.nodeValue;
+			var old = node.getAttributeNS(ns, ln);
+			if (old === "") {
+				node.style[ln] = nv + "px";
+			} else if (old !== nv) {
+				//node.style[ln] = nv + "px";
+				animation.animateStyle(node, ln, parseInt(old, 10), parseInt(nv, 10));
+			}
 			node.setAttributeNS(ns, ln, nv);
+			
 		});
 		
 		// should get rid of this when animation is implemented..
-		if (node.localName === "div" && node.hasAttributeNS("", "left")) {
-			sizeNode(node);
-		}
+		// if (node.localName === "div" && node.hasAttributeNS("", "left")) {
+		// 		//sizeNode(node);
+		// 		animation.sizeNode(node);
+		// 	}
 		
 		if (node.endCap) {
 			node.endCap.deactivate();
@@ -162,6 +200,11 @@ function insertBefore(parentNode, newNode, node) {
 }
 
 function processAll(ambient, node, ids, relurl) {
+	
+	if (node.localName === "div" && node.hasAttributeNS("", "left")) {
+		node.style.opacity = 0;
+		animation.fadeIn(node);
+	}
 	
 	// find sizings
 	var sizings = xpath("descendant-or-self::html:div[@left]", node);
