@@ -5,7 +5,10 @@ var layout = scaffold({
 	},
 	zui: {},
 	panelLayer: {},
-	addPanel: {}
+	addPanel: {},
+	tooltip: {
+		tooltipSituation: {}
+	}
 }, "layout");
 
 layout.zui.prop = {
@@ -22,7 +25,17 @@ layout.zui.prop = {
 
 layout.panelLayer.prop = {
 	properties: interfaces.unit(basic.xml),
-	addFocus: interfaces.unit(kernel.ob)
+	addFocus: interfaces.unit(kernel.ob),
+	tooltip: interfaces.unit(layout.tooltip)
+};
+
+layout.tooltip.prop = {
+	value: interfaces.unit(basic.string),
+	color: interfaces.unit(basic.string)
+};
+
+layout.tooltipSituation.prop = {
+	situation: interfaces.unit(kernel.situation)
 };
 
 layout.addPanel.prop = {

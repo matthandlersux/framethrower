@@ -32,6 +32,8 @@ zui.control.properties.set(parseXML("<zui view='situation' childrenSidebar='1' c
 zui.control.leftChildInView.set(0);
 
 PREDEF["zui"] = zui;
+PREDEF["panelLayer"] = panelLayer;
+mergeInto(PREDEF, uiStartCaps);
 
 var mainAmbient = makeAmbient();
 
@@ -44,6 +46,9 @@ processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {
 	"uiStartCaps.windowSizeHeight": uiStartCaps.windowSizeHeight
 }, "");
 
+
+//var ec = makeSimpleEndCap(mainAmbient, endCaps.log.unit("mouse x"), uiStartCaps.mousePositionX);
+//var ec = makeSimpleEndCap(mainAmbient, endCaps.log.unit("mouse y"), uiStartCaps.mousePositionY);
 
 /*var test = deriveForEach(rw.get.childObjects(), function (o) {
 	return o.get.parentSituation();

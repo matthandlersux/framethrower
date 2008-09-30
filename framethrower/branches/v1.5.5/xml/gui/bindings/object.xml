@@ -2,6 +2,40 @@
 	xmlns:f="http://www.filmsfolded.com/xsl/ui"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	
+	<f:transaction name="Display Containing Situation" event="mouseover">
+		<f:param name="focus" />
+		<f:derived name="parentSituation" from="focus">
+			<get what="parentSituation" />
+		</f:derived>
+		<f:derived name="panelLayer" predef="panelLayer">
+			
+		</f:derived>
+		<xsl:template>
+			<transaction>
+				<f:make type="layout.tooltipSituation" name="tooltip" />
+				<f:intact with-var="tooltip" prop="situation" action="set">
+					<f:with-param><xsl:copy-of select="$parentSituation" /></f:with-param>
+				</f:intact>
+				<f:intact with-id="{$panelLayer/@id}" prop="tooltip" action="set">
+					<f:with-param><f:ob var="tooltip" /></f:with-param>
+				</f:intact>
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+	
+	<f:transaction name="Undisplay Tooltip" event="mouseout">
+		<f:derived name="panelLayer" predef="panelLayer">
+			
+		</f:derived>
+		<xsl:template>
+			<transaction>
+				<f:intact with-id="{$panelLayer/@id}" prop="tooltip" action="set">
+					<f:with-param />
+				</f:intact>
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+	
 	<f:transaction name="Open" event="click">
 		<f:param name="focus" />
 		<f:derived name="parentSituations" from="focus">

@@ -13,6 +13,9 @@
 	<f:derived name="properties" from="panelLayer">
 		<get what="properties" />
 	</f:derived>
+	<f:derived name="tooltip" from="panelLayer">
+		<get what="tooltip" />
+	</f:derived>
 	
 	
 	<xsl:template>
@@ -38,6 +41,14 @@
 					<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
 					<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
 					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+				</f:thunk>
+			</xsl:if>
+			
+			<xsl:if test="$tooltip">
+				<f:thunk url="tooltip.xml">
+					<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
+					<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
+					<f:with-param name="tooltip"><xsl:copy-of select="$tooltip" /></f:with-param>
 				</f:thunk>
 			</xsl:if>
 			

@@ -17,12 +17,6 @@
 	// =========================================================
 	
 	function processEvent(eventName, e, eventParams) {
-		var eventXML = document.createElementNS("","eventXML");
-		if(eventParams){
-			forEach(eventParams, function(param, name){
-				eventXML.setAttribute(name, param);
-			});
-		}
 		
 		// go up
 		var button;
@@ -36,6 +30,14 @@
 				var bindingXML = documents.get(at.bindingURL);
 				var trans = xpath("f:transaction[@event='" + eventName + "' and (not(@button) or @button = '" + button + "')]", bindingXML);
 				if (trans.length > 0) {
+					
+					var eventXML = document.createElementNS("","eventXML");
+					if (eventParams) {
+						forEach(eventParams, function(param, name) {
+							eventXML.setAttribute(name, param);
+						});
+					}
+					
 					var transName = trans[0].getAttributeNS("", "name");
 					var inputParams = at.bindingParams;
 					inputParams.eventXML = startCaps.unit(eventXML);
@@ -94,10 +96,10 @@
 		
 	}
 	function mouseover(e) {
-		
+		processEvent("mouseover", e);
 	}
 	function mouseout(e) {
-		
+		processEvent("mouseout", e);
 	}
 	function mousescroll(e) {
 		

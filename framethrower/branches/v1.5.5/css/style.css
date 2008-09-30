@@ -2,6 +2,7 @@ body {
 	overflow: hidden;
 	font-family: Calibri, Trebuchet MS;
 	font-size: 11pt;
+	background-image: url(../images/zui.1/innerbackground.png);
 }
 
 .zui {
@@ -45,7 +46,7 @@ body {
 }
 
 .zuiChildrenSidebar {
-	background-color:#dde;
+	/*background-color:#dde;*/
 	overflow-y: auto;
 }
 
@@ -204,6 +205,14 @@ buttons
 
 .addButton {
 	background-image: url(../images/addButton.png);
+}
+
+.tooltip {
+	position:absolute;
+	padding:3px;
+	background-color:#000;
+	color:#fff;
+	opacity: 0.7;
 }
 
 .scrollLeft {

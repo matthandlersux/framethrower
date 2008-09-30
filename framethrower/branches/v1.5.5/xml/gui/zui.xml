@@ -57,7 +57,7 @@
 				<xsl:with-param name="color">
 					<xsl:choose>
 						<xsl:when test="$focusType/@value='kernel.situation'">#eee</xsl:when>
-						<xsl:otherwise>yellow</xsl:otherwise>
+						<xsl:otherwise>#9e2</xsl:otherwise>
 					</xsl:choose>
 				</xsl:with-param>
 			</xsl:call-template>
