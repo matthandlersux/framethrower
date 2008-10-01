@@ -11,7 +11,7 @@
 	</f:derived>
 	
 	<xsl:template>
-		<html:div>
+		<html:div style="padding: 5px;">
 			<xsl:for-each select="$relationContent/node()">
 				<xsl:choose>
 					<xsl:when test="self::role">

@@ -47,7 +47,7 @@
 		
 		<xsl:template>
 			<html:div>
-				from
+				in
 				<f:thunk url="printContent.xml">
 					<f:with-param name="focus"><xsl:copy-of select="$situation" /></f:with-param>
 					<f:with-param name="style"><f:string value="inline" /></f:with-param>

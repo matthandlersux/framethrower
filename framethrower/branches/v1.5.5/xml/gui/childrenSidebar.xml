@@ -20,32 +20,42 @@
 	</f:derived>
 	
 	<xsl:template>
-		<html:div>
+		<html:div style="padding-bottom: 40px;">
 			<xsl:for-each select="$childrenByType/*">
+				<xsl:variable name="typeId" select="f:key/*/@id" />
+				<xsl:variable name="expanded" select="$expandedTypes/*[@id = $typeId]" />
+				
 				<html:div>
-					<f:binding url="bindings/type.xml">
-						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
-						<f:with-param name="type"><xsl:copy-of select="f:key/*" /></f:with-param>
-					</f:binding>
-					<xsl:variable name="typeId" select="f:key/*/@id" />
-					<xsl:variable name="expanded" select="$expandedTypes/*[@id = $typeId]" />
 					
-					<xsl:choose>
-						<xsl:when test="$expanded">
-							<html:div class="expanded" />
-						</xsl:when>
-						<xsl:otherwise>
-							<html:div class="collapsed" />
-						</xsl:otherwise>
-					</xsl:choose>
+					<html:div class="blackButton" style="position: relative; height: 18px; margin: 4px;">
+						<f:binding url="bindings/type.xml">
+							<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+							<f:with-param name="type"><xsl:copy-of select="f:key/*" /></f:with-param>
+						</f:binding>
+						<html:div class="blackButtonRight" />
+						<html:div class="blackButtonLeft" />
+						<html:div class="buttonContent" style="color:#fff; position:relative; top:-2px; left: 6px;">
+							<xsl:choose>
+								<xsl:when test="$expanded">
+									<html:div class="expanded" />
+								</xsl:when>
+								<xsl:otherwise>
+									<html:div class="collapsed" />
+								</xsl:otherwise>
+							</xsl:choose>
+
+							<f:thunk url="printContent.xml">
+								<f:with-param name="focus"><xsl:copy-of select="f:key/*" /></f:with-param>
+							</f:thunk>
+						</html:div>
+					</html:div>
 					
-					<f:thunk url="printContent.xml">
-						<f:with-param name="focus"><xsl:copy-of select="f:key/*" /></f:with-param>
-					</f:thunk>
+
+
 					<xsl:if test="$expanded">
-						<html:div style="margin-left:20px">
+						<html:div class="zuiChildrenSidebarItemList">
 							<xsl:for-each select="f:value/f:set/*">
-								<html:div>
+								<html:div class="zuiChildrenSidebarItem" style="border-color:#9e2">
 									<xsl:choose>
 										<xsl:when test="$properties/@addCorresponds = '1'">
 											<f:binding url="bindings/addCorresponds.xml">
@@ -61,7 +71,7 @@
 											</f:binding>
 										</xsl:otherwise>
 									</xsl:choose>
-									
+								
 									<f:thunk url="printContent.xml">
 										<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
 										<f:with-param name="style"><f:string value="listentry" /></f:with-param>
@@ -70,6 +80,7 @@
 							</xsl:for-each>
 						</html:div>							
 					</xsl:if>
+					
 				</html:div>
 			</xsl:for-each>
 		</html:div>

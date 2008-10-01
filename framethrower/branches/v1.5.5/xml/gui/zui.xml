@@ -41,7 +41,7 @@
 			<xsl:call-template name="paneBackground">
 				<xsl:with-param name="color">
 					<xsl:choose>
-						<xsl:when test="$focusType/@value='kernel.situation'">#eee</xsl:when>
+						<xsl:when test="$focusType/@value='kernel.situation'">#0ae</xsl:when>
 						<xsl:otherwise>#9e2</xsl:otherwise>
 					</xsl:choose>
 				</xsl:with-param>
@@ -102,18 +102,20 @@
 				<xsl:choose>
 					<xsl:when test="$maximizedChild">
 						<!-- This needs to be layed out properly... -->
-						<xsl:variable name="openingWidth" select="$width/@value" />
-						<xsl:variable name="openingHeight" select="$height/@value - $titleBarHeight" />
-
-						<html:div class="zuiOpening" left="0" top="{$titleBarHeight}" width="{$openingWidth}" height="{$openingHeight}">
+						<xsl:variable name="openingWidth" select="$w" />
+						<xsl:variable name="openingHeight" select="$h - $titleBarHeight" />
+						
+						<html:div class="zuiChildren" f:identifier="children" left="0" top="0" width="{$openingWidth}" height="{$openingHeight}">
 							<html:div>
-								<html:div left="0" top="0" width="{$openingWidth}" height="{$openingHeight}">
-									<f:thunk url="zui.xml">
-										<f:with-param name="zui"><xsl:copy-of select="$maximizedChild" /></f:with-param>
-										<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
-										<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
-										<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
-									</f:thunk>
+								<html:div f:identifier="opening" class="zuiOpening" left="0" top="0" width="{$openingWidth}" height="{$openingHeight}">
+									<html:div f:identifier="{$maximizedChild/@id}" left="0" top="0" width="{$openingWidth}" height="{$openingHeight}">
+										<f:thunk url="zui.xml">
+											<f:with-param name="zui"><xsl:copy-of select="$maximizedChild" /></f:with-param>
+											<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+											<f:with-param name="width"><f:number value="{$openingWidth}" /></f:with-param>
+											<f:with-param name="height"><f:number value="{$openingHeight}" /></f:with-param>
+										</f:thunk>
+									</html:div>
 								</html:div>
 							</html:div>
 						</html:div>
@@ -133,11 +135,11 @@
 								</html:div>
 								
 								<html:div class="zuiChildrenSidebarAdd" left="0" top="{$h - $titleBarHeight - $childrenSidebarAddHeight}" width="{$childrenSidebarWidth}" height="{$childrenSidebarAddHeight}">
-									<html:div class="whiteButton" style="position: relative; width: 90%; height: 18px; margin: auto auto; text-align: center;">
+									<html:div class="whiteButton" style="position: relative; width: 90%; height: 18px; top:5px; margin: auto auto; text-align: center;">
 										<f:button name="addChild" />
 										<html:div class="whiteButtonRight" />
 										<html:div class="whiteButtonLeft" />
-										<html:div style="position:absolute; top:0px; left: 0px; width:100%; height:100%; text-align:center; color: #fff;">
+										<html:div class="buttonContent" style="text-align:center; color: #fff;">
 											+ Add Item
 										</html:div>
 									</html:div>
@@ -251,7 +253,7 @@
 			<html:div>
 				<!-- <f:consolelog msg="printing open zuis" count="{count($openZuis/*)}" /> -->
 				
-				<html:div class="zuiOpening" left="{$marginLeft}" top="{$marginTop}" width="{$w + $padding * 2}" height="{$h + $padding * 2}">
+				<html:div class="zuiOpening" f:identifier="opening" left="{$marginLeft}" top="{$marginTop}" width="{$w + $padding * 2}" height="{$h + $padding * 2}">
 					<xsl:for-each select="$childZuisMinimized/f:pair[f:value/f:bool/@value = 'false']">
 						<html:div left="{$padding + (position() - 1 - ($leftChildInView/@value)) * ($childWidth + $spacing)}" top="{$padding}" f:identifier="{./f:key/f:ob/@id}">
 							<f:thunk url="zui.xml">
@@ -265,7 +267,7 @@
 				</html:div>
 				
 				
-				<html:div class="zuiRail" left="{$marginLeft}" top="{$height/@value - $marginBottom - $taskBarHeight}" width="{$w + $padding * 2}" height="{$taskBarHeight}">
+				<html:div class="zuiRail" f:identifier="rail" left="{$marginLeft}" top="{$height/@value - $marginBottom - $taskBarHeight}" width="{$w + $padding * 2}" height="{$taskBarHeight}">
 					<html:div style="position:absolute; top:0px; left:0px; width:100%; height:100%;">
 						<html:div class="taskbarBackgroundRight"/>
 						<html:div class="taskbarBackgroundLeft" />

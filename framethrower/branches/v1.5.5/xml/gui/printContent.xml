@@ -27,14 +27,16 @@
 					<!--><html:img src="{$content/@thumbnail}" />-->
 					<xsl:choose>
 						<xsl:when test="$style/@value = 'inline'">
-							<html:span style="height:20px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=20&amp;height=20); background-repeat: no-repeat; padding-left:22px;">
+							<html:span style="height:21px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=15&amp;height=21); background-repeat: no-repeat; padding-left:17px;">
 								<xsl:value-of select="$content/@name" />
 							</html:span>
 						</xsl:when>
 						<xsl:when test="$style/@value = 'listentry'">
-							<html:div style="float:left; width:30px; height:30px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=30&amp;height=30);" />
-							<xsl:value-of select="$content/@name" />
-							<html:br style="clear:both" />
+							<html:div style="display:table; width:100%;">
+								<html:div style="height:42px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=30&amp;height=42); background-repeat: no-repeat; padding-left: 30px; text-align:center; vertical-align:middle; display: table-cell;">
+									<xsl:value-of select="$content/@name" />
+								</html:div>
+							</html:div>
 						</xsl:when>
 						<xsl:otherwise>
 							
