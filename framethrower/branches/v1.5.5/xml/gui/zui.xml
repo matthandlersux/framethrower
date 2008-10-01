@@ -255,10 +255,6 @@
 			<xsl:variable name="openZuis" select="$childZuisMinimized/f:pair[f:value/f:bool/@value = 'false']" />
 			<xsl:variable name="openZuiCount" select="count($openZuis)" />
 
-			<!-- <f:consolelog>
-				<xsl:value-of select="$openZuiCount" />
-			</f:consolelog> -->
-
 			<xsl:variable name="childWindow">
 				<xsl:choose>
 					<xsl:when test="$openZuiCount = 1 or $openZuiCount = 0">
@@ -297,18 +293,14 @@
 						
 					<xsl:for-each select="$childZuisMinimized/*">
 						<html:div left="{(count(preceding-sibling::*) - $leftRailChild/@value) * ($taskBarChildWidth)}" top="2" width="{$taskBarChildWidth}" f:identifier="{./f:key/f:ob/@id}">
-							<f:binding url="bindings/taskbar.xml">
-								<f:with-param name="zui" value-id="{./f:key/f:ob/@id}" />
-							</f:binding>
-							<f:button name="minimize" />
 
-
-							<f:thunk name="printZuiContent">
+							<f:thunk name="railButton">
 								<f:with-param name="zui" value-id="{./f:key/f:ob/@id}" />
 									<xsl:variable name="scrollOffset" select="count(preceding-sibling::*[f:value/f:bool/@value = 'false']) - $leftChildInView/@value" />
 								<f:with-param name="inView">
 									<f:bool value="{($scrollOffset &gt;= 0) and ($scrollOffset &lt; $childWindow)}" />
 								</f:with-param>
+								<f:with-param name="childWindow"><f:number value="{$childWindow}" /></f:with-param>
 							</f:thunk>
 						</html:div>
 					</xsl:for-each>
@@ -348,7 +340,7 @@
 
 	</f:function>
 
-	<f:function name="printZuiContent">
+	<f:function name="railButton">
 		<f:param name="zui" />
 		<f:derived name="focus" from="zui">
 			<get what="focus" />
@@ -357,39 +349,48 @@
 			<get what="minimized" />
 		</f:derived>
 		<f:param name="inView" />
+		<f:param name="childWindow" />
 		
 		<xsl:template>
 			<html:div class="greyButton">
-				<html:div style="color: #fff;">
-					<xsl:choose>
-						<xsl:when test="$minimized/@value = 'true'">
-							<xsl:attribute name="class">greyButtonMinimizedRight</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="$inView/@value = 'true'">
-							<xsl:attribute name="class">greyButtonViewingRight</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="class">greyButtonRight</xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
-					<f:thunk url="printContent.xml">
-						<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
-						<f:with-param name="style"><f:string value="inline" /></f:with-param>
-					</f:thunk>
-				</html:div>
-				<html:div>
-					<xsl:choose>
-						<xsl:when test="$minimized/@value = 'true'">
-							<xsl:attribute name="class">greyButtonMinimizedLeft</xsl:attribute>
-						</xsl:when>
-						<xsl:when test="$inView/@value = 'true'">
-							<xsl:attribute name="class">greyButtonViewingLeft</xsl:attribute>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:attribute name="class">greyButtonLeft</xsl:attribute>
-						</xsl:otherwise>
-					</xsl:choose>
-				</html:div>
+				<f:binding url="bindings/taskbar.xml">
+					<f:with-param name="zui" value-id="{$zui/@id}" />
+					<f:with-param name="childWindow"><f:number value="{$childWindow/@value}" /></f:with-param>
+				</f:binding>
+				
+				<xsl:choose>
+					<xsl:when test="$minimized/@value = 'true'">
+						<f:button name="minimize" />
+						<html:div class="greyButtonMinimizedRight" style="color: #fff;">
+							<f:thunk url="printContent.xml">
+								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+								<f:with-param name="style"><f:string value="inline" /></f:with-param>
+							</f:thunk>
+						</html:div>
+						<html:div class="greyButtonMinimizedLeft" />
+					</xsl:when>
+					<xsl:when test="$inView/@value = 'true'">
+						<f:button name="minimize" />						
+						<html:div class="greyButtonViewingRight" style="color: #fff;">
+							<f:thunk url="printContent.xml">
+								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+								<f:with-param name="style"><f:string value="inline" /></f:with-param>
+							</f:thunk>
+						</html:div>
+						<html:div class="greyButtonViewingLeft" />
+					</xsl:when>
+					<xsl:otherwise>
+						<f:button name="center" />						
+						<html:div class="greyButtonRight" style="color: #fff;">
+							<f:thunk url="printContent.xml">
+								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+								<f:with-param name="style"><f:string value="inline" /></f:with-param>
+							</f:thunk>
+						</html:div>
+						<html:div class="greyButtonLeft" />
+					</xsl:otherwise>
+				</xsl:choose>
+				
 			</html:div>
 		</xsl:template>
 	</f:function>

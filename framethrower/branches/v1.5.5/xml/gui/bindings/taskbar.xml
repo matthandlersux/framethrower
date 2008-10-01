@@ -11,7 +11,6 @@
 
 		<xsl:template>
 			<transaction>
-				
 				<intact with-id="{$zui/@id}" prop="minimized" action="set">
 					<with-param>
 						<xsl:choose>
@@ -27,5 +26,42 @@
 			</transaction>
 		</xsl:template>		
 	</f:transaction>
+	
+	<f:transaction name="Center" event="click" button="center">
+		<f:param name="zui" />
+		<f:param name="childWindow" />
+		
+		<f:derived name="parentZui" from="zui">
+			<get what="parentZui" />
+		</f:derived>
+		
+		<f:derived name="leftChildInView" from="parentZui">
+			<get what="leftChildInView" />
+		</f:derived>
+		
+		<f:derived name="childZuis" from="parentZui">
+			<get what="childZuis" />
+		</f:derived>
+
+		<xsl:template>
+			<xsl:variable name="index" select="count($childZuis/*[@id = $zui/@id]/preceding-sibling::*)" />
+			<transaction>
+				<intact with-id="{$parentZui/@id}" prop="leftChildInView" action="set">
+					<with-param>
+						<xsl:choose>
+							<xsl:when test="$leftChildInView/@value &gt; $index">
+								<f:number value="{$index}" />
+							</xsl:when>
+							<xsl:otherwise>
+								<f:number value="{$index - $childWindow/@value + 1}" />
+							</xsl:otherwise>
+						</xsl:choose>
+					</with-param>
+				</intact>
+			</transaction>
+		</xsl:template>		
+	</f:transaction>
+	
+	
 	
 </f:binding>
