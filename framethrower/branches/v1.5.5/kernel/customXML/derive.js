@@ -391,9 +391,11 @@ function deriveBuildAssoc(focus, f, outType) {
 					cache.push(o);
 					myOut.set(o, f(o));
 				},
-				remove: function (o) {
+				remove: function (index) {
+					if(cache[index]){
+						myOut.remove(cache[index]);
+					}
 					cache.splice(index, 1);
-					myOut.remove(o);
 				}
 			};
 		}, focus);

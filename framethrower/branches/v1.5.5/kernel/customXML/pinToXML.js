@@ -284,11 +284,11 @@ var convertPinToXML = memoize(function (pin) {
 				function deactivateECs(key) {
 					var ecs = cache.get(key);
 					if (ecs) {
-						if (kv.key) {
-							kv.key.deactivate();
+						if (ecs.key) {
+							ecs.key.deactivate();
 						}
-						if (kv.value) {
-							kv.value.deactivate();
+						if (ecs.value) {
+							ecs.value.deactivate();
 						}						
 					}
 				}
