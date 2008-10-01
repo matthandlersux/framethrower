@@ -229,6 +229,9 @@
 			<get what="leftChildInView" />
 		</f:derived>
 		
+		<f:derived name="leftRailChild" from="zui">
+			<get what="leftRailChild" />
+		</f:derived>
 		
 		<xsl:template>
 			<xsl:variable name="marginRight" select="8" />
@@ -238,22 +241,23 @@
 			<xsl:variable name="marginBottom" select="4" />
 			
 			<xsl:variable name="taskBarHeight" select="24" />
+			<xsl:variable name="railScrollWidth" select="18" />
 			
 			<xsl:variable name="spacing" select="10" />
 			<xsl:variable name="padding" select="14" />
 			
 			<xsl:variable name="taskBarChildWidth" select="150" />
 			
-			<xsl:variable name="w" select="$width/@value - $marginLeft - $marginRight - $padding * 2" />
+			<xsl:variable name="w" select="$width/@value - $marginLeft - $marginRight" />
 			<xsl:variable name="h" select="$height/@value - $marginTop - $marginBetween - $taskBarHeight - $marginBottom - $padding * 2" />
 			
 			<xsl:variable name="count" select="count($childZuisMinimized/*)" />
-			<xsl:variable name="childWidth" select="floor(($w - $spacing * (2 - 1)) div 2)" />
+			<xsl:variable name="childWidth" select="floor(($w - 2 * $padding - $spacing * (2 - 1)) div 2)" />
 			
 			<html:div>
 				<!-- <f:consolelog msg="printing open zuis" count="{count($openZuis/*)}" /> -->
 				
-				<html:div class="zuiOpening" f:identifier="opening" left="{$marginLeft}" top="{$marginTop}" width="{$w + $padding * 2}" height="{$h + $padding * 2}">
+				<html:div class="zuiOpening" f:identifier="opening" left="{$marginLeft}" top="{$marginTop}" width="{$w}" height="{$h + $padding * 2}">
 					<xsl:for-each select="$childZuisMinimized/f:pair[f:value/f:bool/@value = 'false']">
 						<html:div left="{$padding + (position() - 1 - ($leftChildInView/@value)) * ($childWidth + $spacing)}" top="{$padding}" f:identifier="{./f:key/f:ob/@id}">
 							<f:thunk url="zui.xml">
@@ -267,14 +271,14 @@
 				</html:div>
 				
 				
-				<html:div class="zuiRail" f:identifier="rail" left="{$marginLeft}" top="{$height/@value - $marginBottom - $taskBarHeight}" width="{$w + $padding * 2}" height="{$taskBarHeight}">
+				<html:div class="zuiRail" f:identifier="rail" left="{$marginLeft + $railScrollWidth}" top="{$height/@value - $marginBottom - $taskBarHeight}" width="{$w - 2 * $railScrollWidth}" height="{$taskBarHeight}">
 					<html:div style="position:absolute; top:0px; left:0px; width:100%; height:100%;">
 						<html:div class="taskbarBackgroundRight"/>
 						<html:div class="taskbarBackgroundLeft" />
 					</html:div>
 						
 					<xsl:for-each select="$childZuisMinimized/*">
-						<html:div left="{count(preceding-sibling::*) * ($taskBarChildWidth)}" top="2" width="{$taskBarChildWidth}" f:identifier="{./f:key/f:ob/@id}">
+						<html:div left="{(count(preceding-sibling::*) - $leftRailChild/@value) * ($taskBarChildWidth)}" top="2" width="{$taskBarChildWidth}" f:identifier="{./f:key/f:ob/@id}">
 							<f:binding url="bindings/taskbar.xml">
 								<f:with-param name="zui" value-id="{./f:key/f:ob/@id}" />
 							</f:binding>
@@ -282,9 +286,29 @@
 
 							<f:thunk name="printZuiContent">
 								<f:with-param name="zui" value-id="{./f:key/f:ob/@id}" />
+								<!--
+																<xsl:variable name="scrollOffset" select="(count(preceding-sibling::*/[f:pair/f:value/f:bool/@value = 'false']) - $leftChildInView/@value)" />
+								-->
+								<f:with-param name="inView">
+									<f:bool value="false" />
+								</f:with-param>
 							</f:thunk>
 						</html:div>
 					</xsl:for-each>
+				</html:div>
+
+				<html:div left="{$marginLeft}" top="{$height/@value - $marginBottom - $taskBarHeight}" width="{$w}">
+					<f:binding url="bindings/scrollRail.xml">
+						<f:with-param name="count"><f:number value="{$count}" /></f:with-param>
+						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
+						<f:with-param name="leftRailChild"><xsl:copy-of select="$leftRailChild" /></f:with-param>
+					</f:binding>
+					<html:div class="railScrollLeft" left="{4}" top="5">
+						<f:button name="left" />
+					</html:div>
+					<html:div class="railScrollRight" left="{$w - $railScrollWidth + 4}" top="5">
+						<f:button name="right" />
+					</html:div>
 				</html:div>
 				
 				<html:div>
@@ -296,7 +320,7 @@
 					<html:div class="pageLeft" left="{$padding}" top="{$h div 2 - 15}">
 						<f:button name="left" />
 					</html:div>
-					<html:div class="pageRight" left="{$w + $padding - 38}" top="{$h div 2 - 15}">
+					<html:div class="pageRight" left="{$w - 38 - $padding}" top="{$h div 2 - 15}">
 						<f:button name="right" />
 					</html:div>
 				</html:div>
@@ -315,6 +339,7 @@
 		<f:derived name="minimized" from="zui">
 			<get what="minimized" />
 		</f:derived>
+		<f:param name="inView" />
 		
 		<xsl:template>
 			<html:div class="greyButton">

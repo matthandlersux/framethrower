@@ -1,0 +1,41 @@
+<f:binding
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	
+	<f:transaction name="Left" event="click" button="left">
+		<f:param name="zui" />
+		<f:param name="leftRailChild" />
+
+		<xsl:template>
+			<transaction>
+				<xsl:if test="$leftRailChild/@value &gt; 0" >
+					<intact with-id="{$zui/@id}" prop="leftRailChild" action="set">
+						<with-param>
+							<f:number value="{$leftRailChild/@value - 1}" />
+						</with-param>
+					</intact>
+				</xsl:if>
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+	
+	<f:transaction name="Right" event="click" button="right">
+		<f:param name="zui" />
+		<f:param name="leftRailChild" />
+		<f:param name="count" />
+
+		<xsl:template>
+			<transaction>
+				<xsl:if test="$leftRailChild/@value &lt; ($count/@value - 2)" >
+					<intact with-id="{$zui/@id}" prop="leftRailChild" action="set">
+						<with-param>
+							<f:number value="{$leftRailChild/@value + 1}" />
+						</with-param>
+					</intact>
+				</xsl:if>
+			</transaction>
+		</xsl:template>
+	</f:transaction>
+	
+	
+</f:binding>

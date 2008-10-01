@@ -20,7 +20,8 @@ layout.zui.prop = {
 	maximizedChild: interfaces.unit(layout.zui),
 	minimized: interfaces.unit(basic.bool),
 	viewWindow: interfaces.unit(basic.number),
-	leftChildInView: interfaces.unit(basic.number)
+	leftChildInView: interfaces.unit(basic.number),
+	leftRailChild: interfaces.unit(basic.number)
 };
 
 layout.panelLayer.prop = {

@@ -64,6 +64,11 @@ ZUI Structural
 	border: 1px solid #3a3a3a;
 }
 
+.zuiRail {
+	-moz-border-radius: 18px 0px 0px 18px;
+	overflow: hidden;
+}
+
 /*
 ===============================================================================
 Backgrounds
