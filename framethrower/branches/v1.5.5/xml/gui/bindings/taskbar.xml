@@ -39,12 +39,14 @@
 			<get what="leftChildInView" />
 		</f:derived>
 		
-		<f:derived name="childZuis" from="parentZui">
+		<f:derived name="childZuisMinimized" from="parentZui">
 			<get what="childZuis" />
+			<buildassoc what="minimized" />	
 		</f:derived>
 
+
 		<xsl:template>
-			<xsl:variable name="index" select="count($childZuis/*[@id = $zui/@id]/preceding-sibling::*)" />
+			<xsl:variable name="index" select="count($childZuisMinimized/*[f:key/*/@id = $zui/@id]/preceding-sibling::*[f:value/*/@value = 'false'])" />
 			<transaction>
 				<intact with-id="{$parentZui/@id}" prop="leftChildInView" action="set">
 					<with-param>

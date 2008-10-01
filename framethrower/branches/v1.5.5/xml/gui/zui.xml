@@ -322,7 +322,7 @@
 				
 				<html:div f:identifier="scrollOpening">
 					<f:binding url="bindings/scrollOpening.xml">
-						<f:with-param name="count"><f:number value="{$count}" /></f:with-param>
+						<f:with-param name="count"><f:number value="{$openZuiCount}" /></f:with-param>
 						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 						<f:with-param name="leftChildInView"><xsl:copy-of select="$leftChildInView" /></f:with-param>
 					</f:binding>
