@@ -11,6 +11,9 @@
 	<f:derived name="type" from="focus">
 		<gettype />
 	</f:derived>
+	<f:derived name="parentSituation" from="focus">
+		<get what="parentSituation" />
+	</f:derived>
 	
 	<xsl:template>
 		<xsl:variable name="color">
@@ -24,17 +27,24 @@
 			</xsl:choose>
 		</xsl:variable>
 		
-		<html:div class="kernelObject" style="background-color:{$color};">
-			<f:binding url="bindings/object.xml">
-				<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
-			</f:binding>
+		<html:div class="kernelObjectSurround">
+			<html:div class="kernelObjectParentSituation">
+				<f:thunk url="printContent.xml">
+					<f:with-param name="focus"><xsl:copy-of select="$parentSituation" /></f:with-param>
+					<f:with-param name="style"><f:string value="title" /></f:with-param>					
+				</f:thunk>
+			</html:div>
+			<html:div class="kernelObject" style="float: none; background-color:{$color};">
+				<f:binding url="bindings/object.xml">
+					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+				</f:binding>
 			
-			<f:thunk url="printContent.xml">
-				<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
-				<f:with-param name="style"><f:string value="title" /></f:with-param>
-			</f:thunk>
-			
-			
+				<f:thunk url="printContent.xml">
+					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+					<f:with-param name="style"><f:string value="title" /></f:with-param>
+				</f:thunk>
+				
+			</html:div>
 		</html:div>
 	</xsl:template>
 	

@@ -2,7 +2,8 @@
 	xmlns:f="http://www.filmsfolded.com/xsl/ui"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	
-	<f:transaction name="Display Containing Situation" event="mouseover">
+	<!-- <f:transaction name="Display Containing Situation" event="mouseover"> -->
+	<f:transaction name="Display Containing Situation">
 		<f:param name="focus" />
 		<f:derived name="parentSituation" from="focus">
 			<get what="parentSituation" />

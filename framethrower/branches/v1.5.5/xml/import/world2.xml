@@ -12,7 +12,7 @@
 	<relation name="corresponds" returnas="corresponds" />
 	<situation name="rw" returnas="rw">
 		<content>
-			The World
+			Real Life
 		</content>
 		<individual name="personType" type="typeType" returnas="personType">
 			<content>

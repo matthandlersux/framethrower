@@ -25,13 +25,41 @@ body {
 	-moz-border-radius: 6px;
 	margin: 2px;
 	color: #fff;
-	float: left;
+	cursor: pointer;
 }
 .kernelInfon {
 	padding: 4px;
 	background-color: #2d2d2d;
 	-moz-border-radius: 11px;
 	border: 1px solid #000;
+}
+
+.kernelObjectSurround {
+	float: left;
+	position: relative;
+}
+
+.kernelObjectSurround:hover {
+	padding: 10px;
+	margin: -13px;
+	border: 3px solid #2ae;
+	-moz-border-radius: 8px;
+}
+.kernelObjectParentSituation {
+	position:absolute;
+	color: #fff;
+	bottom: -13px;
+	left: 12px;
+	width: 300px;
+	display: none;
+}
+.kernelObjectSurround:hover .kernelObjectParentSituation {
+	display: block;
+}
+.kernelObjectParentSituation span {
+	background-color:#2ae;
+	padding: 1px 4px;
+	-moz-border-radius: 6px;
 }
 
 

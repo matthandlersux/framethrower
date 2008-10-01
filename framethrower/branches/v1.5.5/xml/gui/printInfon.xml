@@ -25,7 +25,7 @@
 							<xsl:otherwise>
 								<xsl:variable name="value" select="translate(normalize-space(.),' ','')" />
 								<xsl:if test="$value != ''">
-									<html:div class="kernelObject" style="background-color:#e09;">
+									<html:div class="kernelObject" style="float: left; background-color:#e09;">
 										<xsl:value-of select="$value" />
 									</html:div>
 								</xsl:if>
