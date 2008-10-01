@@ -27,7 +27,7 @@
 				
 				<html:div>
 					
-					<html:div class="blackButton" style="position: relative; height: 18px; margin: 4px;">
+					<html:div class="blackButton" style="position: relative; height: 18px; margin: 3px;">
 						<f:binding url="bindings/type.xml">
 							<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 							<f:with-param name="type"><xsl:copy-of select="f:key/*" /></f:with-param>

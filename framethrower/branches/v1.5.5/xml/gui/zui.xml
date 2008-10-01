@@ -28,7 +28,7 @@
 		
 		<xsl:variable name="titleBarHeight" select="29" />
 		
-		<xsl:variable name="childrenSidebarExpandedWidth" select="200" />
+		<xsl:variable name="childrenSidebarExpandedWidth" select="190" />
 		<xsl:variable name="childrenSidebarSearchHeight" select="47" />
 		<xsl:variable name="childrenSidebarAddHeight" select="30" />
 		
@@ -255,9 +255,9 @@
 			<xsl:variable name="openZuis" select="$childZuisMinimized/f:pair[f:value/f:bool/@value = 'false']" />
 			<xsl:variable name="openZuiCount" select="count($openZuis)" />
 
-			<f:consolelog>
+			<!-- <f:consolelog>
 				<xsl:value-of select="$openZuiCount" />
-			</f:consolelog>
+			</f:consolelog> -->
 
 			<xsl:variable name="childWindow">
 				<xsl:choose>
@@ -314,7 +314,7 @@
 					</xsl:for-each>
 				</html:div>
 
-				<html:div left="{$marginLeft}" top="{$height/@value - $marginBottom - $taskBarHeight}" width="{$w}">
+				<html:div f:identifier="scrollRail" left="{$marginLeft}" top="{$height/@value - $marginBottom - $taskBarHeight}" width="{$w}">
 					<f:binding url="bindings/scrollRail.xml">
 						<f:with-param name="count"><f:number value="{$count}" /></f:with-param>
 						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
@@ -328,7 +328,7 @@
 					</html:div>
 				</html:div>
 				
-				<html:div>
+				<html:div f:identifier="scrollOpening">
 					<f:binding url="bindings/scrollOpening.xml">
 						<f:with-param name="count"><f:number value="{$count}" /></f:with-param>
 						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>

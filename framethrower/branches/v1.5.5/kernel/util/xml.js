@@ -91,9 +91,9 @@ function compileXSL(xsl){
 				var parent = document.createElementNS("","parent");
 				parent.appendChild(source);
 			}
-            var result = p.transformToDocument(source);
+            var result = p.transformToFragment(source, document);
 			if(DEBUG){
-				var logs = xpath(".//f:consolelog", result);
+				var logs = xpath(".//f:consolelog", result.firstChild);
 				forEach(logs, function (log) {
 					console.log("debug output from xsl: ");
 					console.dirxml(log);

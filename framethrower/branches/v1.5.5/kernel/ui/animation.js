@@ -1,9 +1,9 @@
 var animation = (function () {
 	
-	var steps = 20;
-	var delay = 5;
+	var steps = 16;
+	var delay = 4;
 	
-	var fadeInSteps = 20;
+	var fadeInSteps = 16;
 	
 	
 	function curve(x) {
