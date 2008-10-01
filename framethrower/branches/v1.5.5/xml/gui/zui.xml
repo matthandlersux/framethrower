@@ -51,7 +51,7 @@
 				<f:button name="titlebar" />
 				<f:thunk url="printContent.xml">
 					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
-					<f:with-param name="style"><f:string value="inline" /></f:with-param>
+					<f:with-param name="style"><f:string value="title" /></f:with-param>
 				</f:thunk>
 				<html:span style="margin-left:15px;" />
 				<xsl:choose>
@@ -374,7 +374,7 @@
 						<html:div class="greyButtonViewingRight" style="color: #fff;">
 							<f:thunk url="printContent.xml">
 								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
-								<f:with-param name="style"><f:string value="inline" /></f:with-param>
+								<f:with-param name="style"><f:string value="title" /></f:with-param>
 							</f:thunk>
 						</html:div>
 						<html:div class="greyButtonViewingLeft" />

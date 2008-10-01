@@ -10,6 +10,9 @@
 	<f:derived name="content" from="focus">
 		<get what="content" />
 	</f:derived>
+	<f:derived name="type" from="focus">
+		<gettype />
+	</f:derived>
 	
 	<xsl:template>
 		<html:span>
@@ -19,33 +22,54 @@
 					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 				</f:binding>
 			</xsl:if>
+			
+			<xsl:variable name="name">
+				<xsl:choose>
+					<xsl:when test="$content/self::f:string">
+						<xsl:value-of select="$content/@value" />
+					</xsl:when>
+					<xsl:when test="$content/self::information">
+						<xsl:value-of select="$content/@name" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="$content" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			
 			<xsl:choose>
-				<xsl:when test="$content/self::f:string">
-					<xsl:value-of select="$content/@value" />
+				<xsl:when test="$style/@value = 'inline'">
+					<xsl:copy-of select="$name" />
 				</xsl:when>
-				<xsl:when test="$content/self::information">
-					<!--><html:img src="{$content/@thumbnail}" />-->
-					<xsl:choose>
-						<xsl:when test="$style/@value = 'inline'">
-							<html:span style="height:21px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=15&amp;height=21); background-repeat: no-repeat; padding-left:17px;">
-								<xsl:value-of select="$content/@name" />
-							</html:span>
-						</xsl:when>
-						<xsl:when test="$style/@value = 'listentry'">
-							<html:div style="display:table; width:100%;">
-								<html:div style="height:42px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=30&amp;height=42); background-repeat: no-repeat; padding-left: 30px; text-align:center; vertical-align:middle; display: table-cell;">
-									<xsl:value-of select="$content/@name" />
-								</html:div>
-							</html:div>
-						</xsl:when>
-						<xsl:otherwise>
-							
-						</xsl:otherwise>
-					</xsl:choose>
-
+				<xsl:when test="$style/@value = 'title'">
+					<html:span style="height:21px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=15&amp;height=21); background-repeat: no-repeat; padding-left:17px;">
+						<xsl:copy-of select="$name" />
+					</html:span>
+				</xsl:when>
+				<xsl:when test="$style/@value = 'listentry'">
+					<html:div style="display:table; width:100%;">
+						<html:div style="height:42px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=30&amp;height=42); background-repeat: no-repeat; padding-left: 30px; text-align:center; vertical-align:middle; display: table-cell;">
+							<xsl:copy-of select="$name" />
+						</html:div>
+					</html:div>
+				</xsl:when>
+				<xsl:when test="$style/@value = 'object'">
+					<xsl:variable name="color">
+						<xsl:choose>
+							<xsl:when test="$type/@value = 'kernel.individual'">#9e2</xsl:when>
+							<xsl:when test="$type/@value = 'kernel.situation'">#2ae</xsl:when>
+							<xsl:when test="$type/@value = 'kernel.relation'">#e29</xsl:when>
+							<xsl:otherwise>
+								
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					<html:span style="height:21px; background-color:{$color}; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=15&amp;height=21); background-repeat: no-repeat; padding-left:17px;">
+						<xsl:copy-of select="$name" />
+					</html:span>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:copy-of select="$content" />
+					
 				</xsl:otherwise>
 			</xsl:choose>
 			
@@ -53,4 +77,5 @@
 			<html:i>(id: <xsl:value-of select="$focus/@id" />)</html:i> -->
 		</html:span>
 	</xsl:template>
+	
 </f:function>

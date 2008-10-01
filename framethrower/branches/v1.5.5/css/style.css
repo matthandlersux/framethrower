@@ -20,6 +20,19 @@ body {
 	opacity: 0.7;
 }
 
+.kernelObject {
+	padding: 1px 4px;
+	-moz-border-radius: 6px;
+	margin: 2px;
+	color: #fff;
+	float: left;
+}
+.kernelInfon {
+	padding: 4px;
+	background-color: #2d2d2d;
+	-moz-border-radius: 11px;
+	border: 1px solid #000;
+}
 
 
 /*

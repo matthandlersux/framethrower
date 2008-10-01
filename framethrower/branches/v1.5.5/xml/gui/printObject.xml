@@ -1,0 +1,41 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="focus" />
+	<f:derived name="content" from="focus">
+		<get what="content" />
+	</f:derived>
+	<f:derived name="type" from="focus">
+		<gettype />
+	</f:derived>
+	
+	<xsl:template>
+		<xsl:variable name="color">
+			<xsl:choose>
+				<xsl:when test="$type/@value = 'kernel.individual'">#8c3</xsl:when>
+				<xsl:when test="$type/@value = 'kernel.situation'">#2ae</xsl:when>
+				<xsl:when test="$type/@value = 'kernel.relation'">#e29</xsl:when>
+				<xsl:otherwise>
+					
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
+		<html:div class="kernelObject" style="background-color:{$color};">
+			<f:binding url="bindings/object.xml">
+				<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+			</f:binding>
+			
+			<f:thunk url="printContent.xml">
+				<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
+				<f:with-param name="style"><f:string value="title" /></f:with-param>
+			</f:thunk>
+			
+			
+		</html:div>
+	</xsl:template>
+	
+</f:function>

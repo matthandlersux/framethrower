@@ -30,7 +30,7 @@
 	</f:derived>-->
 	
 	<xsl:template>		
-		<html:div>
+		<html:div style="padding: 20px; 10px; overflow-y: auto;">
 			<xsl:for-each select="$involves/*">
 				<f:thunk url="printInfon.xml">
 					<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>

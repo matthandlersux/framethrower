@@ -11,23 +11,31 @@
 	</f:derived>
 	
 	<xsl:template>
-		<html:div style="padding: 5px;">
-			<xsl:for-each select="$relationContent/node()">
-				<xsl:choose>
-					<xsl:when test="self::role">
-						<html:span style="color:purple">
-							<f:thunk name="printrole">
-								<f:with-param name="infon" value-id="{$focus/@id}" />
-								<f:with-param name="role"><f:string value="{@role}" /></f:with-param>
-							</f:thunk>
-						</html:span>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:value-of select="." />
-					</xsl:otherwise>
-				</xsl:choose>
-			</xsl:for-each>
-		</html:div>
+		<html:span>
+			<xsl:if test="$relationContent">
+				<html:div class="kernelInfon">
+					<xsl:for-each select="$relationContent/node()">
+						<xsl:choose>
+							<xsl:when test="self::role">
+								<f:thunk name="printrole">
+									<f:with-param name="infon" value-id="{$focus/@id}" />
+									<f:with-param name="role"><f:string value="{@role}" /></f:with-param>
+								</f:thunk>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:variable name="value" select="translate(normalize-space(.),' ','')" />
+								<xsl:if test="$value != ''">
+									<html:div class="kernelObject" style="background-color:#e09;">
+										<xsl:value-of select="$value" />
+									</html:div>
+								</xsl:if>
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:for-each>
+					<html:br style="clear:both" />
+				</html:div>
+			</xsl:if>
+		</html:span>
 	</xsl:template>
 	
 	<f:function name="printrole">
@@ -41,10 +49,8 @@
 		<xsl:template>
 			<html:span>
 				<xsl:if test="$arg">
-					<f:thunk url="printcontent.xml">
+					<f:thunk url="printObject.xml">
 						<f:with-param name="focus" value-id="{$arg/@id}" />
-						<f:with-param name="style"><f:string value="inline" /></f:with-param>
-						<f:with-param name="clickable"><f:bool value="true" /></f:with-param>
 					</f:thunk>
 				</xsl:if>
 			</html:span>

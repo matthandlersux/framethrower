@@ -1,9 +1,9 @@
 var animation = (function () {
 	
-	var steps = 16;
+	var steps = 18;
 	var delay = 4;
 	
-	var fadeInSteps = 16;
+	var fadeInSteps = 18;
 	
 	
 	function curve(x) {
@@ -24,8 +24,7 @@ var animation = (function () {
 		curveFadeInSteps.push(curveFadeIn(i / (fadeInSteps - 1)));
 	}
 	
-	console.log(curveFadeInSteps);
-	
+	//console.log(curveFadeInSteps);
 	//console.log(curveSteps);
 	
 	var animators = makeOhash(JSON.stringify);
