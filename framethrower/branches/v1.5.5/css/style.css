@@ -156,9 +156,11 @@ Stretch Buttons
 
 .greyButtonLeft {
 	background-position:left -124px;
+	opacity:.7;
 }
 .greyButtonRight {
 	background-position:right -124px;
+	opacity:.7;
 }
 .greyButton:hover .greyButtonLeft {
 	background-position:left -146px;

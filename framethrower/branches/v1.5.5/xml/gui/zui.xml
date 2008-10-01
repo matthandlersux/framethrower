@@ -284,13 +284,12 @@
 							</f:binding>
 							<f:button name="minimize" />
 
+
 							<f:thunk name="printZuiContent">
 								<f:with-param name="zui" value-id="{./f:key/f:ob/@id}" />
-								<!--
-																<xsl:variable name="scrollOffset" select="(count(preceding-sibling::*/[f:pair/f:value/f:bool/@value = 'false']) - $leftChildInView/@value)" />
-								-->
+									<xsl:variable name="scrollOffset" select="count(preceding-sibling::*[f:value/f:bool/@value = 'false']) - $leftChildInView/@value" />
 								<f:with-param name="inView">
-									<f:bool value="false" />
+									<f:bool value="{($scrollOffset &gt;= 0) and ($scrollOffset &lt; 2)}" />
 								</f:with-param>
 							</f:thunk>
 						</html:div>
@@ -345,14 +344,16 @@
 			<html:div class="greyButton">
 				<html:div style="color: #fff;">
 					<xsl:choose>
-						<xsl:when test="$minimized/@value = 'false'">
-							<xsl:attribute name="class">greyButtonRight</xsl:attribute>
+						<xsl:when test="$minimized/@value = 'true'">
+							<xsl:attribute name="class">greyButtonMinimizedRight</xsl:attribute>
+						</xsl:when>
+						<xsl:when test="$inView/@value = 'true'">
+							<xsl:attribute name="class">greyButtonViewingRight</xsl:attribute>
 						</xsl:when>
 						<xsl:otherwise>
-							<xsl:attribute name="class">greyButtonMinimizedRight</xsl:attribute>
+							<xsl:attribute name="class">greyButtonRight</xsl:attribute>
 						</xsl:otherwise>
 					</xsl:choose>
-					
 					<f:thunk url="printContent.xml">
 						<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 						<f:with-param name="style"><f:string value="inline" /></f:with-param>
@@ -360,11 +361,14 @@
 				</html:div>
 				<html:div>
 					<xsl:choose>
-						<xsl:when test="$minimized/@value = 'false'">
-							<xsl:attribute name="class">greyButtonLeft</xsl:attribute>
+						<xsl:when test="$minimized/@value = 'true'">
+							<xsl:attribute name="class">greyButtonMinimizedLeft</xsl:attribute>
+						</xsl:when>
+						<xsl:when test="$inView/@value = 'true'">
+							<xsl:attribute name="class">greyButtonViewingLeft</xsl:attribute>
 						</xsl:when>
 						<xsl:otherwise>
-							<xsl:attribute name="class">greyButtonMinimizedLeft</xsl:attribute>
+							<xsl:attribute name="class">greyButtonLeft</xsl:attribute>
 						</xsl:otherwise>
 					</xsl:choose>
 				</html:div>
