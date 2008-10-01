@@ -252,13 +252,31 @@
 			<xsl:variable name="h" select="$height/@value - $marginTop - $marginBetween - $taskBarHeight - $marginBottom - $padding * 2" />
 			
 			<xsl:variable name="count" select="count($childZuisMinimized/*)" />
-			<xsl:variable name="childWidth" select="floor(($w - 2 * $padding - $spacing * (2 - 1)) div 2)" />
+			<xsl:variable name="openZuis" select="$childZuisMinimized/f:pair[f:value/f:bool/@value = 'false']" />
+			<xsl:variable name="openZuiCount" select="count($openZuis)" />
+
+			<f:consolelog>
+				<xsl:value-of select="$openZuiCount" />
+			</f:consolelog>
+
+			<xsl:variable name="childWindow">
+				<xsl:choose>
+					<xsl:when test="$openZuiCount = 1 or $openZuiCount = 0">
+						1
+					</xsl:when>
+					<xsl:otherwise>
+						2
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			
+			<xsl:variable name="childWidth" select="floor(($w - 2 * $padding - $spacing * ($childWindow - 1)) div $childWindow)" />
 			
 			<html:div>
 				<!-- <f:consolelog msg="printing open zuis" count="{count($openZuis/*)}" /> -->
 				
 				<html:div class="zuiOpening" f:identifier="opening" left="{$marginLeft}" top="{$marginTop}" width="{$w}" height="{$h + $padding * 2}">
-					<xsl:for-each select="$childZuisMinimized/f:pair[f:value/f:bool/@value = 'false']">
+					<xsl:for-each select="$openZuis">
 						<html:div left="{$padding + (position() - 1 - ($leftChildInView/@value)) * ($childWidth + $spacing)}" top="{$padding}" f:identifier="{./f:key/f:ob/@id}">
 							<f:thunk url="zui.xml">
 								<f:with-param name="zui" value-id="{./f:key/f:ob/@id}" />
@@ -289,7 +307,7 @@
 								<f:with-param name="zui" value-id="{./f:key/f:ob/@id}" />
 									<xsl:variable name="scrollOffset" select="count(preceding-sibling::*[f:value/f:bool/@value = 'false']) - $leftChildInView/@value" />
 								<f:with-param name="inView">
-									<f:bool value="{($scrollOffset &gt;= 0) and ($scrollOffset &lt; 2)}" />
+									<f:bool value="{($scrollOffset &gt;= 0) and ($scrollOffset &lt; $childWindow)}" />
 								</f:with-param>
 							</f:thunk>
 						</html:div>
