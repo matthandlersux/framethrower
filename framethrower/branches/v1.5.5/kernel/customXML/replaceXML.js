@@ -39,6 +39,7 @@ function replaceXML(node, replacer, ambient, ids, relurl) {
 		
 		if (hasSizingAtts) {
 			node.style.position = "absolute";
+			if (!node.oldSize) node.oldSize = {};
 		} else {
 			node.setAttributeNS("", "style", replacer.getAttributeNS("", "style"));
 		}
@@ -47,10 +48,11 @@ function replaceXML(node, replacer, ambient, ids, relurl) {
 			var ns = att.namespaceURI;
 			var ln = att.localName;
 			var nv = att.nodeValue;
-			var old = node.getAttributeNS(ns, ln);
+			var old = node.oldSize[ln] || node.getAttributeNS(ns, ln);
 			if (old === "") {
 				node.style[ln] = nv + "px";
 			} else if (old !== nv) {
+				node.oldSize[ln] = old;
 				//node.style[ln] = nv + "px";
 				animation.animateStyle(node, ln, parseInt(old, 10), parseInt(nv, 10));
 			}

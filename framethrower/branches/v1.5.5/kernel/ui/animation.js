@@ -64,6 +64,7 @@ var animation = (function () {
 			}
 		});
 		forEach(removeAnimators, function (node) {
+			delete node.oldSize;
 			animators.remove(node);
 		});
 		if (!animators.isEmpty()) {

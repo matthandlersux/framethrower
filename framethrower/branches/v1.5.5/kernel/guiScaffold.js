@@ -8,7 +8,8 @@ var layout = scaffold({
 	addPanel: {},
 	tooltip: {
 		tooltipSituation: {}
-	}
+	},
+	embedMovie: {}
 }, "layout");
 
 layout.zui.prop = {
@@ -41,4 +42,10 @@ layout.tooltipSituation.prop = {
 
 layout.addPanel.prop = {
 	properties: interfaces.unit(basic.xml)
+};
+
+layout.embedMovie.prop = {
+	currentFrame: interfaces.unit(basic.number),
+	gotoFrame: interfaces.unit(basic.number),
+	isPlaying: interfaces.unit(basic.bool)
 };
