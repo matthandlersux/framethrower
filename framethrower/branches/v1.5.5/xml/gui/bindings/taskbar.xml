@@ -67,8 +67,7 @@
 	
 	<f:transaction name="Center" event="click" button="center">
 		<f:param name="zui" />
-		<f:param name="childWindow" />
-		
+				
 		<f:derived name="parentZui" from="zui">
 			<get what="parentZui" />
 		</f:derived>
@@ -84,6 +83,20 @@
 
 
 		<xsl:template>
+			<xsl:variable name="openZuis" select="$childZuisMinimized/f:pair[f:value/f:bool/@value = 'false']" />
+			<xsl:variable name="openZuiCount" select="count($openZuis)" />
+
+			<xsl:variable name="childWindow">
+				<xsl:choose>
+					<xsl:when test="$openZuiCount = 1 or $openZuiCount = 0">
+						1
+					</xsl:when>
+					<xsl:otherwise>
+						2
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			
 			<xsl:variable name="index" select="count($childZuisMinimized/*[f:key/*/@id = $zui/@id]/preceding-sibling::*[f:value/*/@value = 'false'])" />
 			<transaction>
 				<intact with-id="{$parentZui/@id}" prop="leftChildInView" action="set">
@@ -93,7 +106,7 @@
 								<f:number value="{$index}" />
 							</xsl:when>
 							<xsl:otherwise>
-								<f:number value="{$index - $childWindow/@value + 1}" />
+								<f:number value="{$index - $childWindow + 1}" />
 							</xsl:otherwise>
 						</xsl:choose>
 					</with-param>

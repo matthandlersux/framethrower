@@ -299,7 +299,6 @@
 								<f:with-param name="inView">
 									<f:bool value="{($scrollOffset &gt;= 0) and ($scrollOffset &lt; $childWindow)}" />
 								</f:with-param>
-								<f:with-param name="childWindow"><f:number value="{$childWindow}" /></f:with-param>
 								<f:with-param name="leftChildInView"><f:number value="{$leftChildInView/@value}" /></f:with-param>
 								<f:with-param name="openZuiCount"><f:number value="{$openZuiCount}" /></f:with-param>
 							</f:thunk>
@@ -350,7 +349,6 @@
 			<get what="minimized" />
 		</f:derived>
 		<f:param name="inView" />
-		<f:param name="childWindow" />
 		<f:param name="openZuiCount" />
 		
 		
@@ -358,7 +356,6 @@
 			<html:div class="greyButton">
 				<f:binding url="bindings/taskbar.xml">
 					<f:with-param name="zui" value-id="{$zui/@id}" />
-					<f:with-param name="childWindow"><f:number value="{$childWindow/@value}" /></f:with-param>
 					<f:with-param name="openZuiCount"><f:number value="{$openZuiCount/@value}" /></f:with-param>
 				</f:binding>
 				

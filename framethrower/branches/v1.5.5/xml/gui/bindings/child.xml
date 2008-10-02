@@ -52,8 +52,13 @@
 					<with-param value-var="newZui" />
 				</intact>
 				
+				<f:perform url="taskbar.xml#Center">
+					<f:with-param name="zui" value-var="newZui" />
+				</f:perform>
+				
 				<f:return as="newZui" value-var="newZui" />
 			</transaction>
 		</xsl:template>
 	</f:transaction>
+	
 </f:binding>
