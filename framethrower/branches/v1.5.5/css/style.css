@@ -119,6 +119,49 @@ ZUI Structural
 	overflow: hidden;
 }
 
+
+
+/*
+===============================================================================
+Infon CSS
+===============================================================================
+*/
+
+.zuiBuildInfon {
+	-moz-border-radius: 9px;
+	background:rgba(0, 0, 0, 0.3) none repeat scroll 0 0;
+	border:15px solid transparent;
+}
+
+.grabObject {
+	background-image: url(../images/zui.1/infon.png);
+	background-position: -3px -49px;
+	width: 32px;
+	height: 32px;
+	-moz-border-radius: 16px;
+	background-color: black;
+	
+}
+
+.chooseRelation {
+	background-image:url(../images/zui.1/infon.png);
+	background-position:-1px -1px;
+	color:white;
+	height:46px;
+	line-height:46px;
+	width:372px;
+	padding:0px 3px 0px 3px;
+	background-repeat:no-repeat;
+	text-align: center;
+}
+
+.chooseRelation input {
+	-moz-border-radius: 9px;
+	border: 2px solid rgba(12,12,12,.76);
+	padding: 3px;
+}
+
+
 /*
 ===============================================================================
 Backgrounds
@@ -162,6 +205,45 @@ Backgrounds
 .collapsed {
 	float:left; width:13px; height:13px; background-image: url(../images/collapsed.png); position:relative; top: 3px; margin-right: 3px;
 }
+
+.shadowBR, .shadowBL, .shadowTR, .shadowTL {
+	background-image: url(../images/zui.1/shadow.png);
+	position: absolute;
+}
+
+.shadowBR {
+	width: 100%;
+	height: 100%;
+	left: 56px;
+	top: 56px;
+	background-position: bottom right;
+}
+
+.shadowBL {
+	width: 112px;
+	height: 100%;
+	left: -56px;
+	top: 56px;
+	background-position: bottom left;
+}
+
+.shadowTR {
+	width: 100%;
+	height: 112px;
+	left: 56px;
+	top: -56px;
+	background-position: top right;
+}
+
+.shadowTL {
+	width: 112px;
+	height: 112px;
+	left: -56px;
+	top: -56px;
+	background-position: top left;
+}
+
+
 
 
 /*
@@ -570,9 +652,11 @@ buttons
 	height: 32px;
 }
 
+
 /*
 Solids
 */
+
 .searchChild {
 	background-image: url(../images/zui.1/solids.png);
 	background-position: -1px -1px;
