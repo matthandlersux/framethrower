@@ -301,6 +301,8 @@
 									<f:bool value="{($scrollOffset &gt;= 0) and ($scrollOffset &lt; $childWindow)}" />
 								</f:with-param>
 								<f:with-param name="childWindow"><f:number value="{$childWindow}" /></f:with-param>
+								<f:with-param name="leftChildInView"><f:number value="{$leftChildInView/@value}" /></f:with-param>
+								<f:with-param name="openZuiCount"><f:number value="{$openZuiCount}" /></f:with-param>
 							</f:thunk>
 						</html:div>
 					</xsl:for-each>
@@ -323,8 +325,8 @@
 				<html:div f:identifier="scrollOpening">
 					<f:binding url="bindings/scrollOpening.xml">
 						<f:with-param name="count"><f:number value="{$openZuiCount}" /></f:with-param>
-						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 						<f:with-param name="leftChildInView"><xsl:copy-of select="$leftChildInView" /></f:with-param>
+						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 					</f:binding>
 					<html:div class="pageLeft" left="{$padding}" top="{$h div 2 - 15}">
 						<f:button name="left" />
@@ -350,17 +352,20 @@
 		</f:derived>
 		<f:param name="inView" />
 		<f:param name="childWindow" />
+		<f:param name="openZuiCount" />
+		
 		
 		<xsl:template>
 			<html:div class="greyButton">
 				<f:binding url="bindings/taskbar.xml">
 					<f:with-param name="zui" value-id="{$zui/@id}" />
 					<f:with-param name="childWindow"><f:number value="{$childWindow/@value}" /></f:with-param>
+					<f:with-param name="openZuiCount"><f:number value="{$openZuiCount/@value}" /></f:with-param>
 				</f:binding>
 				
 				<xsl:choose>
 					<xsl:when test="$minimized/@value = 'true'">
-						<f:button name="minimize" />
+						<f:button name="restore" />
 						<html:div class="greyButtonMinimizedRight" style="color: #fff;">
 							<f:thunk url="printContent.xml">
 								<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
