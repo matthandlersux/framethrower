@@ -43,7 +43,7 @@ body {
 	padding: 10px;
 	margin: -13px;
 	border: 3px solid #2ae;
-	-moz-border-radius: 8px;
+	-moz-border-radius: 13px;
 }
 .kernelObjectParentSituation {
 	position:absolute;
@@ -234,10 +234,12 @@ Stretch Buttons
 	opacity:.2;
 }
 .greyButtonViewingLeft {
-	background-position:left -215px;
+	background-position:left -192px;
+	opacity: 1;
 }
 .greyButtonViewingRight {
-	background-position:right -215px;
+	background-position:right -192px;
+	opacity: 1;
 }
 
 /*
