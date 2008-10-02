@@ -224,7 +224,6 @@
 			<buildassoc what="minimized" />	
 		</f:derived>
 		
-		
 		<f:derived name="leftChildInView" from="zui">
 			<get what="leftChildInView" />
 		</f:derived>
