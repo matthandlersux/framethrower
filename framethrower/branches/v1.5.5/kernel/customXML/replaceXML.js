@@ -51,8 +51,8 @@ function replaceXML(node, replacer, ambient, ids, relurl) {
 			var old = node.oldSize[ln] || node.getAttributeNS(ns, ln);
 			if (old === "") {
 				node.style[ln] = nv + "px";
-			} else if (old !== nv) {
-				node.oldSize[ln] = old;
+			} else if (node.getAttributeNS(ns, ln) !== nv) {
+				node.oldSize[ln] = parseInt(old, 10);
 				//node.style[ln] = nv + "px";
 				animation.animateStyle(node, ln, parseInt(old, 10), parseInt(nv, 10));
 			}
