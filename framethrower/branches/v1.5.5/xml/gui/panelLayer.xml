@@ -44,6 +44,14 @@
 				</f:thunk>
 			</xsl:if>
 			
+			<xsl:if test="$properties/@addInfon='1'">
+				<f:thunk url="addInfon.xml">
+					<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
+					<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
+					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+				</f:thunk>
+			</xsl:if>
+			
 			<xsl:if test="$tooltip">
 				<f:thunk url="tooltip.xml">
 					<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>

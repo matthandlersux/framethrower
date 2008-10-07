@@ -1,0 +1,65 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="width" />
+	<f:param name="height" />
+	<f:param name="panelLayer" />
+	<f:param name="addPanel" />
+
+	<f:derived name="addFocus" from="panelLayer">
+		<f:get what="addFocus" />
+	</f:derived>
+	
+	<xsl:template>
+		<xsl:variable name="w" select="$width/@value" />
+		<xsl:variable name="h" select="$height/@value" />
+		
+		<xsl:variable name="titleBarHeight" select="30" />
+		<xsl:variable name="padding" select="15" />		
+		
+		
+		
+		<html:div>
+			<html:div style="position:absolute; left:0; top:0; width:100%; height:100%;">
+				<svg:svg width="100%" height="100%">
+					<svg:rect x="0" y="0" width="100%" height="100%" opacity=".7" fill="black" stroke="#333" stroke-width="0" />
+				</svg:svg>
+			</html:div>
+			<html:div class="zuiBuildInfon" top="{$h*.25}" left="{$w*.25}" style="opacity: 1; position: absolute; width: 650px; height: 312px;">
+				<f:binding url="bindings/addInfon.xml">
+					<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+					<f:with-param name="addFocus"><xsl:copy-of select="$addFocus" /></f:with-param>
+					<f:with-param name="addPanel"><xsl:copy-of select="$addPanel" /></f:with-param>
+				</f:binding>
+				
+				<html:div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;">
+					<html:div class="shadowBR" />
+					<html:div class="shadowBL" />
+					<html:div class="shadowTR" />
+					<html:div class="shadowTL" />
+					<html:div class="paneBackgroundBR" />
+					<html:div class="paneBackgroundBL" />
+					<html:div class="paneBackgroundTitle" style="background-color: #bbb;"/>
+					<html:div class="paneBackgroundTR" />
+					<html:div class="paneBackgroundTL" />
+				</html:div>
+				<html:div class="zuiTitle" style="top: 0px; position: absolute; text-align: center; font-weight: normal; font-family: century gothic; font-size: 13pt; height: 29px; left: 0pt; width: 623px;">
+					Build an Infon
+					<html:span style="margin-left:15px;">
+						<f:button name="close" />
+						X
+					</html:span>
+				</html:div>
+				<html:div class="chooseRelation" style="position: relative; left: 21%; top: 44%;">
+					choose a relation: <html:input/>
+				</html:div>
+
+			</html:div>
+		</html:div>
+	</xsl:template>
+	
+	
+</f:function>

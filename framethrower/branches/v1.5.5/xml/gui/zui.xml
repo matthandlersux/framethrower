@@ -194,6 +194,10 @@
 						<f:thunk url="objectView.xml">
 							<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 						</f:thunk>
+						<html:div style="margin-left:15px">
+							<f:button name="addInfon" />
+							Add Infon
+						</html:div>
 					</xsl:otherwise>
 				</xsl:choose>
 			</html:div>
