@@ -133,6 +133,40 @@ Infon CSS
 	border:15px solid transparent;
 }
 
+.infonInProgress {
+	padding: 5px;
+	text-align: center;
+}
+
+.infonFinished {
+	-moz-border-radius: 20px;
+	background-color:rgba(0, 0, 0, 0.7);
+	border:3px solid black;
+	margin:0px auto;
+	padding:28px 8px;
+	text-align:center;
+	display:block;
+	padding-bottom:42px;
+}
+
+.buildInfonElement {
+	-moz-border-radius: 20px;
+	background-color: white;
+	padding: 7px;
+	color: white;
+	font-size: 18pt;
+	margin: 0px 5px 0px 5px;
+}
+
+.buildInfonElement input {
+	color: grey;
+	border: 0px;
+	text-align: left;
+	font-size: 16pt;
+	width: 150px;
+	margin-right: 32px;
+}
+
 .grabObject {
 	background-image: url(../images/zui.1/infon.png);
 	background-position: -3px -49px;
@@ -140,7 +174,11 @@ Infon CSS
 	height: 32px;
 	-moz-border-radius: 16px;
 	background-color: black;
-	
+	border: 2px solid rgba(255,255,255,1);
+}
+
+.grabObject:hover {
+	border: 2px solid #8c3;
 }
 
 .chooseRelation {
@@ -159,6 +197,31 @@ Infon CSS
 	-moz-border-radius: 9px;
 	border: 2px solid rgba(12,12,12,.76);
 	padding: 3px;
+}
+
+.infonObjectSurround {
+	position: relative;
+	padding: 22px 5px;
+	border: 3px solid #2ae;
+	-moz-border-radius: 13px;
+}
+
+.infonObjectParentSituation {
+	position:absolute;
+	color: #fff;
+	bottom: -13px;
+	right: 12px;
+	width: 300px;
+	display: block;
+	text-align: right;
+}
+
+
+
+.infonObjectParentSituation span {
+	background-color:#2ae;
+	padding: 1px 8px;
+	-moz-border-radius: 6px;
 }
 
 
