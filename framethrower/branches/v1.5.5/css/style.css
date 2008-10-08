@@ -680,6 +680,36 @@ buttons
 	height: 18px;
 }
 
+.minimizeInactive {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -304px -1px;
+	width: 19px;
+	height: 18px;
+}
+
+.minimize:hover {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -304px -21px;
+	width: 19px;
+	height: 18px;
+}
+
+.minimize:active {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -304px -41px;
+	width: 19px;
+	height: 18px;
+}
+
+.minimize {
+	background-image: url(../images/zui.1/buttons.png);
+	background-position: -304px -61px;
+	width: 19px;
+	height: 18px;
+}
+
+
+
 .railScrollRight {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -141px -1px;
