@@ -224,6 +224,32 @@ Infon CSS
 	-moz-border-radius: 6px;
 }
 
+.infonSubmitNewInfon {
+	color: white;
+}
+
+.infonSubmitButton {
+	width: 130px;
+	position: absolute;
+}
+
+.infonSubmitL, .infonSubmitR {
+	position: absolute;
+	background-image: url(../images/zui.1/infon.png);
+	height: 46px;
+}
+
+.infonSubmitL {
+	width: 10px;
+	background-position: -1px -1px;
+	left: -10px;
+}
+
+.infonSubmitR {
+	width: 100%;
+	background-position: -243px -1px;
+}
+
 
 /*
 ===============================================================================
