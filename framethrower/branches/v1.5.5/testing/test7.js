@@ -24,6 +24,7 @@ panelLayer.control.addFocus.set(rw);
 
 var addPanel = layout.addPanel.make();
 addPanel.control.properties.set(parseXML("<addPanel newName='' newType=''/>"));
+addPanel.control.expanded.set(false);
 
 
 var zui = layout.zui.make();

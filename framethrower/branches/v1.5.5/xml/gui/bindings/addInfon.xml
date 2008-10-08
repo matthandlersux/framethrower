@@ -36,6 +36,35 @@
 		</xsl:template>
 	</f:transaction>
 	
+	
+	
+	<f:transaction name="DropDown" event="click" button="dropDown">
+		<f:param name="addPanel" />
+		
+		<f:derived name="expanded" from="addPanel">
+			<get what="expanded" />
+		</f:derived>
+		
+
+		<xsl:template>
+			<transaction>
+				<intact with-id="{$addPanel/@id}" prop="expanded" action="set">
+					<with-param>
+						<xsl:choose>
+							<xsl:when test="$expanded/@value = 'true'">
+								<f:bool value="false" />
+							</xsl:when>
+							<xsl:otherwise>
+								<f:bool value="true" />
+							</xsl:otherwise>
+						</xsl:choose>
+					</with-param>
+				</intact>
+			</transaction>
+		</xsl:template>
+		
+	</f:transaction>
+
 
 	<f:transaction name="NameInput" event="blur" button="nameinput">
 		<f:param name="addPanel" />

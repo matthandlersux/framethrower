@@ -199,11 +199,31 @@ Infon CSS
 	padding: 3px;
 }
 
+.chooseRelation .dropDownArrow {
+	position:absolute;
+	left: 313px;
+	top: 17px;
+	width: 16px;
+	height: 16px;
+	background-image: url(../images/expanded.png);
+	background-repeat:no-repeat;
+}
+
 .infonObjectSurround {
 	position: relative;
 	padding: 22px 5px;
 	border: 3px solid #2ae;
 	-moz-border-radius: 13px;
+}
+
+.dropDownBox {
+	position:absolute;
+	left:310px;
+	top:170px;
+	width:150px;
+	height:200px;
+	background-color: black;
+	opacity:.5;
 }
 
 .infonObjectParentSituation {
@@ -215,8 +235,6 @@ Infon CSS
 	display: block;
 	text-align: right;
 }
-
-
 
 .infonObjectParentSituation span {
 	background-color:#2ae;

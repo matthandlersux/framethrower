@@ -49,6 +49,7 @@
 					<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
 					<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
 					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
 				</f:thunk>
 			</xsl:if>
 			

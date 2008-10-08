@@ -41,7 +41,8 @@ layout.tooltipSituation.prop = {
 };
 
 layout.addPanel.prop = {
-	properties: interfaces.unit(basic.xml)
+	properties: interfaces.unit(basic.xml),
+	expanded: interfaces.unit(basic.bool)
 };
 
 layout.embedMovie.prop = {

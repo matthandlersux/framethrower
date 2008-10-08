@@ -12,6 +12,15 @@
 	<f:derived name="addFocus" from="panelLayer">
 		<f:get what="addFocus" />
 	</f:derived>
+	<f:derived name="expanded" from="addPanel">
+		<f:get what="expanded" />
+	</f:derived>
+	
+	<f:derived name="relationContent" predef="rw">
+		<get what="childObjects" />
+		<filtertype type="kernel.relation" />
+		<get what="content" />
+	</f:derived>
 	
 	<xsl:template>
 		<xsl:variable name="w" select="$width/@value" />
@@ -55,7 +64,23 @@
 				</html:div>
 				<html:div class="chooseRelation" style="position: relative; left: 21%; top: 44%;">
 					choose a relation: <html:input/>
+					<html:div class="dropDownArrow">
+						<f:button name="dropDown" />
+					</html:div>
 				</html:div>
+				<xsl:if test="$expanded/@value = 'true'" >
+					<html:div class="dropDownBox">
+
+						<xsl:for-each select="$relationContent/node()">
+							<xsl:variable name="value" select="translate(normalize-space(.),' ','')" />
+							<xsl:if test="$value != ''">
+								<html:div class="kernelObject" top="{position() * 20}" left="15" style="background-color:#e09;">
+									<xsl:value-of select="$value" />
+								</html:div>
+							</xsl:if>
+						</xsl:for-each>
+					</html:div>
+				</xsl:if>
 
 			</html:div>
 		</html:div>
