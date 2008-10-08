@@ -43,7 +43,8 @@ layout.tooltipSituation.prop = {
 
 layout.addPanel.prop = {
 	properties: interfaces.unit(basic.xml),
-	expanded: interfaces.unit(basic.bool)
+	expanded: interfaces.unit(basic.bool),
+	selectedRelation: interfaces.unit(kernel.relation)
 };
 
 

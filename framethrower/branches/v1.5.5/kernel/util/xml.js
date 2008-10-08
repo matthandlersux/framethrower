@@ -101,8 +101,7 @@ function compileXSL(xsl){
 			}
         } 
         catch (e) {
-            console.log("Execution Error", xsl, source, params, e);
-			console.dirxml(xsl);
+            console.log("Execution Error", xsl, source, params, e, p);
         }
         
         // Clear parameters

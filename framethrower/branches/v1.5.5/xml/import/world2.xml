@@ -37,6 +37,17 @@
 			</content>
 			
 		</relation>
+		<relation name="dubs">
+			<content>
+				<pseudo>
+					<role role="dubber"/>
+					 dubs <role role="dubbee"/>
+					
+				</pseudo>
+				
+			</content>
+			
+		</relation>		
 		<individual name="people.0000843" type="personType">
 			<content>
 				<information name="Anne Bancroft" thumbnail="nm0000843">

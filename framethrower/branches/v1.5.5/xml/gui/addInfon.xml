@@ -15,11 +15,15 @@
 	<f:derived name="expanded" from="addPanel">
 		<f:get what="expanded" />
 	</f:derived>
+	<f:derived name="selectedRelationContent" from="addPanel">
+		<f:get what="selectedRelation" />
+		<f:get what="content" />
+	</f:derived>
 	
 	<f:derived name="relationContent" predef="rw">
 		<get what="childObjects" />
 		<filtertype type="kernel.relation" />
-		<get what="content" />
+		<buildassoc what="content" />
 	</f:derived>
 	
 	<xsl:template>
@@ -62,19 +66,32 @@
 						X
 					</html:span>
 				</html:div>
-				<html:div class="chooseRelation" style="position: relative; left: 21%; top: 44%;">
-					choose a relation: <html:input/>
+				<html:div class="chooseRelation" left="136" top="137">
+					choose a relation: 
+					<xsl:choose>
+						<xsl:when test="$selectedRelationContent != ''">							
+							<html:input value="{$selectedRelationContent}" disabled="disabled" />
+						</xsl:when>
+						<xsl:otherwise>
+							<html:input />
+						</xsl:otherwise>
+					</xsl:choose>
 					<html:div class="dropDownArrow">
 						<f:button name="dropDown" />
 					</html:div>
 				</html:div>
 				<xsl:if test="$expanded/@value = 'true'" >
 					<html:div class="dropDownBox">
-
-						<xsl:for-each select="$relationContent/node()">
-							<xsl:variable name="value" select="translate(normalize-space(.),' ','')" />
+						<html:div class="dropDownBoxBackground" />
+						<xsl:for-each select="$relationContent/*">
+							<xsl:variable name="value" select="translate(normalize-space(./f:value/node()),' ','')" />
 							<xsl:if test="$value != ''">
-								<html:div class="kernelObject" top="{position() * 20}" left="15" style="background-color:#e09;">
+								<html:div class="kernelObject" top="{10 + (position() - 1) * 30}" left="15" style="background-color:#e09;">
+									<f:binding url="bindings/addInfon.xml" >
+										<f:with-param name="relation" value-id="{./f:key/*/@id}" />
+										<f:with-param name="addPanel"><xsl:copy-of select="$addPanel" /></f:with-param>
+									</f:binding>
+									<f:button name="select" />
 									<xsl:value-of select="$value" />
 								</html:div>
 							</xsl:if>

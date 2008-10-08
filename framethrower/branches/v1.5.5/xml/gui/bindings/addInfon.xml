@@ -158,6 +158,29 @@
 	</f:transaction>
 
 
+	
+	<f:transaction name="Select" event="click" button="select">
+		<f:param name="relation" />
+		<f:param name="addPanel" />
+		
+		<xsl:template>
+			<transaction>
+				<intact with-id="{$addPanel/@id}" prop="selectedRelation" action="set">
+					<with-param>
+						<xsl:copy-of select="$relation" />
+					</with-param>
+				</intact>
+				<f:perform name="DropDown">
+					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
+				</f:perform>
+			</transaction>
+		</xsl:template>
+		
+	</f:transaction>
+
+
+
+
 
 	
 	<f:transaction name="Add" event="click" button="add">
