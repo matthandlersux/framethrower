@@ -1,0 +1,35 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="videoTimeline" />
+	<f:derived name="embedVideo" from="videoTimeline">
+		<get what="embedVideo" />
+	</f:derived>
+	<f:derived name="src" from="videoTimeline">
+		<get what="src" />
+	</f:derived>
+	<f:derived name="aspect" from="videoTimeline">
+		<get what="aspect" />
+	</f:derived>
+	<f:derived name="dummy" from="videoTimeline">
+		<get what="dummy" />
+	</f:derived>
+	
+	<xsl:template>
+		<html:div>
+			video <xsl:value-of select="$dummy/@value" />
+			<html:br />
+			<f:embed>
+				<f:with-param name="type"><f:string value="video" /></f:with-param>
+				<f:with-param name="embedVideo"><xsl:copy-of select="$embedVideo" /></f:with-param>
+				<f:with-param name="src"><xsl:copy-of select="$src" /></f:with-param>
+				<f:with-param name="width"><f:number value="{round($aspect/@value * 240)}" /></f:with-param>
+				<f:with-param name="height"><f:number value="240" /></f:with-param>
+			</f:embed>
+		</html:div>
+	</xsl:template>
+	
+</f:function>

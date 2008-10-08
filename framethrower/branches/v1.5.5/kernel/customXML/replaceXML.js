@@ -19,6 +19,9 @@ function replaceXML(node, replacer, ambient, ids, relurl) {
 				sizingAtts.push(att);
 			} else if (!(ln === "style" && nln === "div")) {
 				node.setAttributeNS(ns, ln, nv);
+				if (ln === "value" && nln === "input") {
+					node.value = nv;
+				}
 			}
 		});
 		
@@ -154,6 +157,15 @@ function replaceXML(node, replacer, ambient, ids, relurl) {
 			// NOTE: because we're not returning anything here, we can't have a thunk that evaluates to another thunk directly (needs to be embedded in a html:div, for example)
 		}
 
+	} else if (replacer.localName === "embed" && replacer.namespaceURI === xmlns["f"]) {
+		if (node.thunkEssence && node.endCap && node.endCap.getActive() && compareThunkEssences(getThunkEssence(replacer, ids, relurl), node.thunkEssence)) {
+			return node;
+		} else {
+			if (node.endCap) {
+				node.endCap.deactivate();
+			}
+			processEmbed(ambient, node, ids, replacer);
+		}
 	} else {
 		deactivateEndCaps(node);
 		var c = replaceWithCopy(replacer, node);
@@ -206,6 +218,11 @@ function processAll(ambient, node, ids, relurl) {
 	var sizings = xpath("descendant-or-self::html:div[@left]", node);
 	forEach(sizings, function (sizing) {
 		sizeNode(sizing);
+	});
+	
+	var embeds = xpath("descendant-or-self::f:embed", node);
+	forEach(embeds, function (embed) {
+		processEmbed(ambient, embed, ids);
 	});
 	
 	// find bindings

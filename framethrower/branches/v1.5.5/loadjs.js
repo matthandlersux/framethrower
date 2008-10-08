@@ -42,6 +42,7 @@ loadjscssfile("../kernel/customXML/derive.js", "js");
 loadjscssfile("../kernel/customXML/import.js", "js");
 
 loadjscssfile("../kernel/ui/animation.js", "js");
+loadjscssfile("../kernel/ui/embed.js", "js");
 loadjscssfile("../kernel/ui/events.js", "js");
 loadjscssfile("../kernel/ui/uiStartCaps.js", "js");
 

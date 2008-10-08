@@ -1,0 +1,44 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://www.filmsfolded.com/xsl/ui"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:svg="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink">
+<head>
+  <title>Video Test</title>
+
+<!--
+
+Note: you must set in Firefox's about:config
+
+security.fileuri.strict_origin_policy
+
+to false to run this locally.
+	
+-->
+
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" title="no title" charset="utf-8" />
+
+	<script>
+	var ROOTDIR = "../";
+	var DEBUG = true;
+	console.log("hello world");
+	</script>
+	<script src="../loadjs.js"></script>
+	
+</head>
+<body style="background: #fff none">
+
+<div id="html_mainscreen">
+	<f:thunk url="xml/gui/videoTimeline/videoTimeline.xml">
+		<!-- <f:with-param name="width" value-id="uiStartCaps.windowSizeWidth" />
+		<f:with-param name="height" value-id="uiStartCaps.windowSizeHeight" /> -->
+		<f:with-param name="videoTimeline" value-id="videoTimeline" />
+	</f:thunk>
+</div>
+
+
+<script src="videotest.js"></script>
+
+</body>
+</html>

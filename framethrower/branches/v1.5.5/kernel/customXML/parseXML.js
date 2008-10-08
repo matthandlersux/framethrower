@@ -104,7 +104,8 @@ function getUrlFromXML(node, relurl) {
 		return urlStripHash(relurl) + "#" + atName;
 	}
 	
-	throw "No url specified on node";
+	return false;
+	//throw "No url specified on node";
 }
 
 

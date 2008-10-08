@@ -9,7 +9,8 @@ var layout = scaffold({
 	tooltip: {
 		tooltipSituation: {}
 	},
-	embedMovie: {}
+	embedVideo: {},
+	videoTimeline: {}
 }, "layout");
 
 layout.zui.prop = {
@@ -45,8 +46,17 @@ layout.addPanel.prop = {
 	expanded: interfaces.unit(basic.bool)
 };
 
-layout.embedMovie.prop = {
-	currentFrame: interfaces.unit(basic.number),
-	gotoFrame: interfaces.unit(basic.number),
+
+
+layout.embedVideo.prop = {
+	currentTime: interfaces.unit(basic.number),
+	gotoTime: interfaces.unit(basic.number),
 	isPlaying: interfaces.unit(basic.bool)
+};
+layout.videoTimeline.prop = {
+	src: interfaces.unit(basic.string),
+	aspect: interfaces.unit(basic.number),
+	duration: interfaces.unit(basic.number),
+	embedVideo: interfaces.unit(layout.embedVideo),
+	dummy: interfaces.unit(basic.string)
 };
