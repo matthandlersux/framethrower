@@ -14,7 +14,7 @@
 		<html:span>
 			<xsl:if test="$relationContent">
 				<html:div class="kernelInfon">
-					<xsl:for-each select="$relationContent/node()">
+					<xsl:for-each select="$relationContent/pseudo/*">
 						<xsl:choose>
 							<xsl:when test="self::role">
 								<f:thunk name="printrole">
@@ -23,7 +23,7 @@
 								</f:thunk>
 							</xsl:when>
 							<xsl:otherwise>
-								<xsl:variable name="value" select="translate(normalize-space(.),' ','')" />
+								<xsl:variable name="value" select="./@value" />
 								<xsl:if test="$value != ''">
 									<html:div class="kernelObject" style="float: left; background-color:#e09;">
 										<xsl:value-of select="$value" />

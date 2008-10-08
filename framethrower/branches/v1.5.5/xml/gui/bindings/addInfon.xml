@@ -4,9 +4,11 @@
 	
 	<f:transaction name="Close" event="click" button="close">
 		<f:param name="panelLayer" />
+		<f:param name="addPanel" />
 		<f:derived name="properties" from="panelLayer">
 			<get what="properties" />
 		</f:derived>
+
 		<xsl:template>
 			<transaction>
 				<intact with-id="{$panelLayer/@id}" prop="properties" action="set">
@@ -17,6 +19,9 @@
 							<xsl:with-param name="attributeValue" select="0" />
 						</xsl:call-template>
 					</with-param>
+				</intact>
+				<intact with-id="{$addPanel/@id}" prop="selectedRelation" action="set">
+					<with-param />
 				</intact>
 			</transaction>
 		</xsl:template>

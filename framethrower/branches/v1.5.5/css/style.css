@@ -136,6 +136,11 @@ Infon CSS
 .infonInProgress {
 	padding: 5px;
 	text-align: center;
+	position: absolute;
+	top: 125px;
+	left: 0px;
+	width: 100%;
+	height:50px;
 }
 
 .infonFinished {
@@ -218,8 +223,6 @@ Infon CSS
 
 .dropDownBox {
 	position:absolute;
-	left:310px;
-	top:170px;
 	width:150px;
 	height:200px;
 }

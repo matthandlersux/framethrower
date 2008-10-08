@@ -26,25 +26,29 @@
 			</content>
 			
 		</individual>
-		<relation name="performs">
+		<relation name="performs" returnas="performs">
 			<content>
-				<pseudo>
-					<role role="performer"/>
-					 performs <role role="performee"/>
-					
-				</pseudo>
-				
+				<relationcontent>
+					<name value="performs" />
+					<pseudo>
+						<role role="performer"/>
+						<verb value="performs"/>
+						<role role="performee"/>
+					</pseudo>
+				</relationcontent>
 			</content>
 			
 		</relation>
 		<relation name="dubs">
 			<content>
-				<pseudo>
-					<role role="dubber"/>
-					 dubs <role role="dubbee"/>
-					
-				</pseudo>
-				
+				<relationcontent>
+					<name value="dubs" />
+					<pseudo>
+						<role role="dubber"/>
+						<verb value="dubs" />
+						<role role="dubbee"/>
+					</pseudo>
+				</relationcontent>
 			</content>
 			
 		</relation>		
