@@ -14,14 +14,9 @@
 	<f:derived name="aspect" from="videoTimeline">
 		<get what="aspect" />
 	</f:derived>
-	<f:derived name="dummy" from="videoTimeline">
-		<get what="dummy" />
-	</f:derived>
 	
 	<xsl:template>
 		<html:div>
-			video <xsl:value-of select="$dummy/@value" />
-			<html:br />
 			<f:embed>
 				<f:with-param name="type"><f:string value="video" /></f:with-param>
 				<f:with-param name="embedVideo"><xsl:copy-of select="$embedVideo" /></f:with-param>
@@ -29,7 +24,42 @@
 				<f:with-param name="width"><f:number value="{round($aspect/@value * 240)}" /></f:with-param>
 				<f:with-param name="height"><f:number value="240" /></f:with-param>
 			</f:embed>
+			
+			<f:thunk name="currentTimeCursor">
+				<f:with-param name="videoTimeline"><xsl:copy-of select="$videoTimeline" /></f:with-param>
+			</f:thunk>
+			
+			<html:div style="position:absolute; top: 500px; left: 100px; width:500px; height: 100px; overflow-x: auto;">
+				<html:div style="position:absolute; top: 0px; left: 0px; width: 10000px; height: 40px; background-color:pink;" onmousemove="testChangeTime(event)">
+					<!-- <f:binding url="bindings/videoTimeline.xml">
+						<f:with-param name="videoTimeline"><xsl:copy-of select="$videoTimeline" /></f:with-param>
+					</f:binding> -->
+				</html:div>
+				<html:div style="position:absolute; top: 40px; left: 0px; width: 10000px; height: 40px; background-color:purple;">
+					<f:binding url="bindings/videoTimeline.xml">
+						<f:with-param name="videoTimeline"><xsl:copy-of select="$videoTimeline" /></f:with-param>
+					</f:binding>
+				</html:div>
+			</html:div>
 		</html:div>
 	</xsl:template>
+	
+	<f:function name="currentTimeCursor">
+		<f:param name="videoTimeline" />
+		<f:derived name="embedVideo" from="videoTimeline">
+			<get what="embedVideo" />
+		</f:derived>
+		<f:derived name="currentTime" from="embedVideo">
+			<get what="currentTime" />
+		</f:derived>
+		<xsl:template>
+			<html:div>
+				current time:
+				<xsl:if test="$currentTime">
+					<xsl:value-of select="$currentTime/@value" />
+				</xsl:if>
+			</html:div>
+		</xsl:template>
+	</f:function>
 	
 </f:function>

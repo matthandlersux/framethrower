@@ -93,6 +93,10 @@ var animation = (function () {
 			});
 			animator.opacity = map(curveFadeInSteps, function (x) {return x;});
 			startAnimation();
+		},
+		removeAnimation: function (node) {
+			delete node.oldSize;
+			animators.remove(node);
 		}
 	};
 })();

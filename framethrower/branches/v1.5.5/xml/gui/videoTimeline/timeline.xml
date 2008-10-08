@@ -1,0 +1,174 @@
+<xsl:stylesheet
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:ui="http://www.filmsfolded.com/xsl/ui"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:svg="http://www.w3.org/2000/svg"
+	version="1.0">
+
+	<xsl:include href="../../util.xsl" />
+	
+	<xsl:param name="view" />
+	<xsl:param name="dimensions" />
+	<xsl:param name="links" />
+	<xsl:param name="linkprefs" />
+
+	<xsl:variable name="uins" select="'http://www.filmsfolded.com/xsl/ui'" />
+	
+	<xsl:variable name="denominations">
+		<d d=".0001" />
+		<d d=".0005" />
+		<d d=".001" />
+		<d d=".005" />
+		<d d=".01" />
+		<d d=".05" />
+		<d d=".1" />
+		<d d=".5" />
+		<d d="1" />
+		<d d="5" />
+		<d d="10" />
+		<d d="30" />
+		<d d="60" />
+		<d d="300" />
+		<d d="600" />
+		<d d="1800" />
+		<d d="3600" />
+		<d d="18000" />
+		<d d="36000" />
+	</xsl:variable>
+	<xsl:variable name="denoms" select="document('')/*/*[@name='denominations']/*" />
+
+	<xsl:variable name="minspacing" select="150" />
+
+	<xsl:template match="*">
+		<html:div>
+
+			<html:div class="ruler">
+				<xsl:call-template name="stylesize">
+					<xsl:with-param name="left" select="'0'" />
+					<xsl:with-param name="top" select="'0'" />
+					<xsl:with-param name="width" select="$view/@zoomwidth" />
+					<xsl:with-param name="height" select="$dimensions/@height" />
+				</xsl:call-template>
+			
+				<xsl:call-template name="drawruler" />
+			</html:div>
+			
+			<xsl:variable name="viewpath" select="$view/@*[local-name()='path'][namespace-uri()=$uins]" />
+			<xsl:variable name="selectorpath" select="concat($viewpath,'selector[1]/')" />
+			
+			<svg:svg class="box" width="{$view/@zoomwidth}">
+				<xsl:call-template name="stylesize">
+					<xsl:with-param name="left" select="'0'" />
+					<xsl:with-param name="top" select="'0'" />
+					<xsl:with-param name="width" select="$view/@zoomwidth" />
+					<xsl:with-param name="height" select="$dimensions/@height" />
+				</xsl:call-template>
+				<xsl:call-template name="apply">
+					<xsl:with-param name="function" select="'[bs/render/timeline/timelineselector.xsl]/'" />
+					<xsl:with-param name="donttrigger" select="1" />
+					<xsl:with-param name="params">
+						<ui:param name="movie" select="{@*[local-name()='path'][namespace-uri()=$uins]}" />
+						<ui:param name="view" select="{$viewpath}" />
+						<ui:param name="selector" select="{$selectorpath}" />
+						<ui:param name="dimensions">
+							<dimensions width="{$dimensions/@width}" height="{$dimensions/@height}" />
+						</ui:param>
+					</xsl:with-param>
+				</xsl:call-template>
+			</svg:svg>
+
+			<xsl:variable name="origpath">
+				<xsl:call-template name="getmypath" />
+			</xsl:variable>
+			<xsl:call-template name="apply">
+				<xsl:with-param name="function" select="'[bs/render/timeline/linksegments.xsl]/'" />
+				<xsl:with-param name="params">
+					<ui:param name="view" select="{$view/@*[local-name()='path'][namespace-uri()=$uins]}" />
+					<ui:param name="dimensions">
+						<dimensions width="{$dimensions/@width}" height="{$dimensions/@height}" />
+					</ui:param>
+					<ui:param name="linkprefs" select="[ui:workspace]/workspace[1]/preferences[1]/links/" />
+					<ui:param name="links" select="{concat('[ui:links:',$origpath,']/')}" />
+				</xsl:with-param>
+			</xsl:call-template>
+
+		</html:div>
+				
+	</xsl:template>
+	
+	
+	<xsl:template name="drawruler">
+		<xsl:variable name="seconds" select="@duration div @timescale" />
+		<xsl:variable name="mininc" select="$seconds div ($view/@zoomwidth div $minspacing)" />
+		<xsl:variable name="rulerinc" select="$denoms[@d &gt; $mininc][1]" />
+		
+		<xsl:variable name="notchinc" select="$rulerinc/preceding-sibling::*[2]/@d" />
+		<xsl:call-template name="rulernotch">
+			<xsl:with-param name="timestep" select="0" />
+			<xsl:with-param name="pos" select="0" />
+			<xsl:with-param name="maxpos" select="$view/@zoomwidth" />
+			<xsl:with-param name="timeinc" select="$notchinc" />
+			<xsl:with-param name="posinc" select="$notchinc * ($view/@zoomwidth div $seconds)" />
+			<xsl:with-param name="intervals" select="$rulerinc | $rulerinc/preceding-sibling::*[position() &lt; 3]" />
+		</xsl:call-template>
+	</xsl:template>
+	
+	<xsl:template name="rulernotch">
+		<xsl:param name="timestep" />
+		<xsl:param name="pos" />
+		<xsl:param name="maxpos" />
+		<xsl:param name="timeinc" />
+		<xsl:param name="posinc" />
+		<xsl:param name="intervals" />
+		
+		<xsl:if test="$pos &lt; $maxpos">
+			<html:div class="{concat('ruler-notch-',count($intervals) + 1 - count($intervals[$timestep mod round(@d div $timeinc) = 0]))}">
+				<xsl:call-template name="stylesize">
+					<xsl:with-param name="left" select="round($pos)" />
+					<xsl:with-param name="top" select="'0'" />
+					<xsl:with-param name="width" select="$minspacing" />
+					<xsl:with-param name="height" select="$dimensions/@height" />
+				</xsl:call-template>
+				<xsl:if test="count($intervals) = count($intervals[$timestep mod round(@d div $timeinc) = 0])">
+					<xsl:call-template name="rulermarking">
+						<xsl:with-param name="t" select="$timestep * $timeinc" />
+					</xsl:call-template>
+					
+				</xsl:if>
+			</html:div>
+			
+			<xsl:call-template name="rulernotch">
+				<xsl:with-param name="timestep" select="$timestep+1" />
+				<xsl:with-param name="pos" select="$pos+$posinc" />
+				<xsl:with-param name="maxpos" select="$maxpos" />
+				<xsl:with-param name="timeinc" select="$timeinc" />
+				<xsl:with-param name="posinc" select="$posinc" />
+				<xsl:with-param name="intervals" select="$intervals" />
+			</xsl:call-template>
+		</xsl:if>
+	</xsl:template>
+	
+	<xsl:template name="rulermarking">
+		<xsl:param name="t" />
+
+		<xsl:variable name="h" select="floor($t div 3600)" />
+		<xsl:variable name="m" select="floor(($t mod 3600) div 60)" />
+		<xsl:variable name="s" select="floor(($t mod 60))" />
+
+		<xsl:if test="$h &gt; 0">
+			<xsl:value-of select="$h" />
+			<xsl:text>:</xsl:text>
+			<xsl:if test="$m &lt; 10">
+				<xsl:text>0</xsl:text>
+			</xsl:if>
+		</xsl:if>
+		<xsl:value-of select="$m" />
+		<xsl:text>:</xsl:text>
+		<xsl:if test="$s &lt; 10">
+			<xsl:text>0</xsl:text>
+		</xsl:if>
+		<xsl:value-of select="$s" />
+		
+	</xsl:template>
+</xsl:stylesheet>

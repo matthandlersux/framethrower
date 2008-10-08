@@ -33,6 +33,12 @@
 					
 					var eventXML = document.createElementNS("","eventXML");
 					if (eventParams) {
+						var clientRect = e.target.getBoundingClientRect();
+						eventParams["boundingLeft"] = clientRect.left;
+						eventParams["boundingTop"] = clientRect.top;
+						eventParams["boundingRight"] = clientRect.right;
+						eventParams["boundingBottom"] = clientRect.bottom;
+						
 						forEach(eventParams, function(param, name) {
 							eventXML.setAttribute(name, param);
 						});
@@ -93,7 +99,7 @@
 		
 	}
 	function mousemove(e) {
-		
+		processEvent("mousemove", e, {clientX: e.clientX, clientY: e.clientY});
 	}
 	function mouseover(e) {
 		processEvent("mouseover", e);

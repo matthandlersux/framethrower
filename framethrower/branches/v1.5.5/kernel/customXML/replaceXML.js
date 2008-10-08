@@ -45,6 +45,9 @@ function replaceXML(node, replacer, ambient, ids, relurl) {
 			if (!node.oldSize) node.oldSize = {};
 		} else {
 			node.setAttributeNS("", "style", replacer.getAttributeNS("", "style"));
+			if (node.oldSize) {
+				animation.removeAnimation(node);
+			}
 		}
 		
 		forEach(sizingAtts, function (att) {

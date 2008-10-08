@@ -1,3 +1,5 @@
+var testGoto;
+
 function processEmbed(ambient, node, ids, embed) {
 	console.log("embedding");
 	
@@ -27,7 +29,34 @@ function processEmbed(ambient, node, ids, embed) {
 		}
 	}, gotoTime);
 	
+	testGoto = embedVideo.control.gotoTime;
+	
 	node.parentNode.replaceChild(mov, node);
+	
+	function timeChanged() {
+		embedVideo.control.currentTime.set(mov.GetTime() / mov.GetTimeScale());
+		embedVideo.control.currentTime.PACKETCLOSE();
+	}
+	
+	var playing = false;
+	
+	function keepTime() {
+		timeChanged();
+		if (playing) {
+			setTimeout(keepTime, 2);
+		}
+	}
+	
+	mov.addEventListener("qt_timechanged", timeChanged, false);
+	mov.addEventListener("qt_play", function () {
+		console.log("playing");
+		playing = true;
+		keepTime();
+	}, false);
+	mov.addEventListener("qt_pause", function () {
+		console.log("paused");
+		playing = false;
+	}, false);
 	
 	mov.endCap = ec;
 	mov.thunkEssence = thunkEssence;
@@ -42,6 +71,7 @@ function makeQTMovie(src, width, height) {
 	setAtt("width", width);
 	setAtt("height", height);
 	setAtt("enablejavascript", "true");
+	setAtt("postdomevents", "true");
 	setAtt("scale", "aspect");
 	setAtt("controller", "false");
 	setAtt("autoplay", "false");
@@ -58,4 +88,9 @@ function makeQTMovie(src, width, height) {
 	<html:embed id="mov" style="position:absolute;top:0px;left:0px;"
 		width="400" height="300" enablejavascript="true" scale="aspect" controller="false" autoplay="false">
 	*/
+}
+
+
+function testChangeTime(e) {
+	testGoto.set(e.clientX);
 }

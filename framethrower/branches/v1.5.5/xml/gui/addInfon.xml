@@ -100,10 +100,8 @@
 					</html:div>
 				</xsl:if>
 				<xsl:if test="$selectedRelationContent != ''">
-					<html:div>
-						<html:div class="infonInProgress">
-							Hello
-						</html:div>
+					<html:div class="infonInProgress">
+						Hello
 					</html:div>
 				</xsl:if>
 			</html:div>

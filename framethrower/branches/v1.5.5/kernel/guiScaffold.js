@@ -58,6 +58,5 @@ layout.videoTimeline.prop = {
 	src: interfaces.unit(basic.string),
 	aspect: interfaces.unit(basic.number),
 	duration: interfaces.unit(basic.number),
-	embedVideo: interfaces.unit(layout.embedVideo),
-	dummy: interfaces.unit(basic.string)
+	embedVideo: interfaces.unit(layout.embedVideo)
 };
