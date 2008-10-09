@@ -23,15 +23,16 @@ body {
 .kernelObject {
 	padding: 1px 4px;
 	-moz-border-radius: 6px;
-	margin: 2px;
+	margin: 2px 3px;
 	color: #fff;
 	cursor: pointer;
 }
+
 .kernelInfon {
-	padding: 4px;
-	background-color: #2d2d2d;
+	padding: 6px;
+	background-color: #2b2b2b;
 	-moz-border-radius: 11px;
-	border: 1px solid #000;
+	border: 2px solid #000;
 }
 
 .kernelObjectSurround {
@@ -40,22 +41,22 @@ body {
 }
 
 .kernelObjectSurround:hover {
-	padding: 10px;
-	margin: -13px;
+	margin:-6px -5px -13px -5px;
+	padding:3px 2px 10px 2px;
 	border: 3px solid #2ae;
 	-moz-border-radius: 13px;
 }
 .kernelObjectParentSituation {
 	position:absolute;
 	color: #fff;
-	bottom: -13px;
-	left: 12px;
-	width: 300px;
+	bottom: -12px;
+	right: 5px;
 	display: none;
 }
-.kernelObjectSurround:hover .kernelObjectParentSituation {
-	display: block;
+.kernelObjectSurround:hover .kernelObjectParentSituation{
+	display: inline;
 }
+
 .kernelObjectParentSituation span {
 	background-color:#2ae;
 	padding: 1px 4px;
