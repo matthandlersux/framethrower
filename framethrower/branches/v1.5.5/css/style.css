@@ -52,6 +52,8 @@ body {
 	bottom: -12px;
 	right: 5px;
 	display: none;
+	text-align:right;
+	width:300px;
 }
 .kernelObjectSurround:hover .kernelObjectParentSituation{
 	display: inline;
