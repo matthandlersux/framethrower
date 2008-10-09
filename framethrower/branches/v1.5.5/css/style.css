@@ -821,6 +821,8 @@ Solids
 	background-position: -1px -36px;
 	width: 96px;
 	height: 23px;
+	position: absolute;
+	top: 3px;
 }
 
 .selectedChild {
