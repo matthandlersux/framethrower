@@ -56,39 +56,49 @@
 					<f:with-param name="style"><f:string value="title" /></f:with-param>
 				</f:thunk>
 				<html:span style="margin-left:15px;" />
-				<xsl:choose>
-					<xsl:when test="$focusType/@value='kernel.situation'">
-						<html:span>
-							<f:button name="childrenSidebar" />
-							Ch
-						</html:span>
-						|
-						<xsl:choose>
-							<xsl:when test="$properties/@view='situation'">
-								<html:span>
-									<f:button name="objectView" />
-									OV
-								</html:span>
-								|
-							</xsl:when>
-							<xsl:otherwise>
-								<html:span>
-									<f:button name="situationView" />
-									SV
-								</html:span>
-								|
-							</xsl:otherwise>
-						</xsl:choose>
-					</xsl:when>
-					<xsl:otherwise>
-
-					</xsl:otherwise>
-				</xsl:choose>
-				<html:span>
-					<f:button name="correspondSidebar" />
-					Co
+				<html:span style="position: absolute; left: 20%; top: 3px;" >
+					<xsl:choose>
+						<xsl:when test="$focusType/@value='kernel.situation'">
+							<xsl:choose>
+								<xsl:when test="$properties/@view='situation'">
+									<html:span>
+										<f:button name="situationView" />
+										<html:div class="viewSituationSelected" />
+									</html:span>
+									<html:span>
+										<f:button name="objectView" />
+										<html:div class="viewInfons" />
+									</html:span>
+									<html:span>
+										<f:button name="situationView" />
+										<html:div class="viewInfonsAbout" />
+									</html:span>
+								</xsl:when>
+								<xsl:otherwise>
+									<html:span>
+										<f:button name="situationView" />
+										<html:div class="viewSituation" />
+									</html:span>
+									<html:span>
+										<f:button name="objectView" />
+										<html:div class="viewInfonsSelected" />
+									</html:span>
+									<html:span>
+										<f:button name="situationView" />
+										<html:div class="viewInfonsAbout" />
+									</html:span>
+								</xsl:otherwise>
+							</xsl:choose>
+						</xsl:when>
+						<xsl:otherwise>
+	
+						</xsl:otherwise>
+					</xsl:choose>
+					<html:span style="margin-left: 15px">
+						<f:button name="correspondSidebar" />
+						Co
+					</html:span>
 				</html:span>
-				|
 				<html:span>
 					<f:button name="minimize" />
 					<html:div class="minimize" />

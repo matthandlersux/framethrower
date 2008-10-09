@@ -586,84 +586,96 @@ buttons
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -9px -1px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
+	float: left;
+	top: 0px;
 }
 
 .viewInfonsAbout:hover {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -9px -24px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
 }
 
 .viewInfonsAbout:active {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -9px -47px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
 }
 
 .viewInfonsAboutSelected {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -9px -71px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
+	float: left;
+	top: 0px;
 }
 
 .viewInfons {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -38px -1px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
+	float: left;
+	top: 0px;
 }
 
 .viewInfons:hover {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -38px -25px;
+	background-position: -38px -24px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
 }
 
 .viewInfons:active {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -38px -48px;
+	background-position: -38px -47px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
 }
 
 .viewInfonsSelected {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -38px -72px;
+	background-position: -38px -71px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
+	float: left;
+	top: 0px;
 }
 
 .viewSituation {
 	background-image: url(../images/zui.1/buttons.png);
 	background-position: -67px -1px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
+	float: left;
+	top: 0px;
 }
 
 .viewSituation:hover {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -67px -25px;
+	background-position: -67px -24px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
 }
 
 .viewSituation:active {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -67px -48px;
+	background-position: -67px -47px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
 }
 
-.viewSituationSelecte {
+.viewSituationSelected {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -67px -72px;
+	background-position: -67px -71px;
 	width: 27px;
-	height: 21px;
+	height: 22px;
+	float: left;
+	top: 0px;
 }
 
 
