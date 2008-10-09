@@ -584,7 +584,7 @@ buttons
 
 .viewInfonsAbout {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -9px -1px;
+/*	background-position: -9px -1px;*/
 	width: 27px;
 	height: 22px;
 	float: left;
@@ -593,21 +593,21 @@ buttons
 
 .viewInfonsAbout:hover {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -9px -24px;
+/*	background-position: -9px -24px;*/
 	width: 27px;
 	height: 22px;
 }
 
 .viewInfonsAbout:active {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -9px -47px;
+/*	background-position: -9px -47px;*/
 	width: 27px;
 	height: 22px;
 }
 
 .viewInfonsAboutSelected {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -9px -71px;
+/*	background-position: -9px -71px;*/
 	width: 27px;
 	height: 22px;
 	float: left;
@@ -616,7 +616,7 @@ buttons
 
 .viewInfons {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -38px -1px;
+/*	background-position: -38px -1px;*/
 	width: 27px;
 	height: 22px;
 	float: left;
@@ -625,21 +625,21 @@ buttons
 
 .viewInfons:hover {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -38px -24px;
+/*	background-position: -38px -24px;*/
 	width: 27px;
 	height: 22px;
 }
 
 .viewInfons:active {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -38px -47px;
+/*	background-position: -38px -47px;*/
 	width: 27px;
 	height: 22px;
 }
 
 .viewInfonsSelected {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -38px -71px;
+/*	background-position: -38px -71px;*/
 	width: 27px;
 	height: 22px;
 	float: left;
@@ -648,7 +648,7 @@ buttons
 
 .viewSituation {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -67px -1px;
+/*	background-position: -67px -1px;*/
 	width: 27px;
 	height: 22px;
 	float: left;
@@ -657,27 +657,50 @@ buttons
 
 .viewSituation:hover {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -67px -24px;
+/*	background-position: -67px -24px;*/
 	width: 27px;
 	height: 22px;
 }
 
 .viewSituation:active {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -67px -47px;
+/*	background-position: -67px -47px;*/
 	width: 27px;
 	height: 22px;
 }
 
 .viewSituationSelected {
 	background-image: url(../images/zui.1/buttons.png);
-	background-position: -67px -71px;
+/*	background-position: -67px -71px;*/
 	width: 27px;
 	height: 22px;
 	float: left;
 	top: 0px;
 }
 
+.viewSituation, .viewSituationSelected {
+	background-position: -67px -47px;
+}
+
+.viewInfons, .viewInfonsSelected {
+	background-position: -38px -47px;
+}
+
+.viewInfonsAbout, .viewInfonsAboutSelected {
+	background-position: -9px -47px;
+}
+
+.viewSituation, .viewInfons, .viewInfonsAbout {
+	opacity: .5;
+}
+
+.viewSituation:hover, .viewInfons:hover, .viewInfonsAbout:hover {
+	opacity: .75;
+}
+
+.viewSituationSelected, .viewInfonsSelected, .viewInfonsAboutSelected {
+	opacity: .9;
+}
 
 .closeInactive {
 	background-image: url(../images/zui.1/buttons.png);
