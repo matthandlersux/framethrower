@@ -33,7 +33,7 @@
 					
 					var eventXML = document.createElementNS("","eventXML");
 					if (eventParams) {
-						var clientRect = e.target.getBoundingClientRect();
+						var clientRect = at.getBoundingClientRect();
 						eventParams["boundingLeft"] = clientRect.left;
 						eventParams["boundingTop"] = clientRect.top;
 						eventParams["boundingRight"] = clientRect.right;
@@ -79,12 +79,14 @@
 	
 	function mousedown(e) {
 		mouseIsDown = copyEvent(e);
+		mouseDownPos = [e.clientX, e.clientY];
+		processEvent("mousedown", e, {clientX: e.clientX, clientY: e.clientY});
 		if (currentFocus && currentFocus.blur) {
 			var tmp = currentFocus;
 			currentFocus=false;
 			tmp.blur();
 		}		
-		if(e.target.localName != 'input'){
+		if (e.target.localName != 'input') {
 			dont(e);
 		}
 	}
@@ -92,14 +94,25 @@
 		if (mouseIsDragging) {
 			processEvent("dragEnd", e);
 		} else {
-			processEvent("click", mouseIsDown);
-			mouseIsDown = false;
-			mouseIsDragging = false;
+			processEvent("click", mouseIsDown, {clientX: mouseIsDown.clientX, clientY: mouseIsDown.clientY});
 		}
-		
+		mouseIsDown = false;
+		mouseIsDragging = false;
 	}
 	function mousemove(e) {
 		processEvent("mousemove", e, {clientX: e.clientX, clientY: e.clientY});
+		if (mouseIsDown && !mouseIsDragging) {
+			var xdiff=mouseDownPos[0]-e.clientX;
+			var ydiff=mouseDownPos[1]-e.clientY;
+			if (xdiff*xdiff + ydiff*ydiff >= dragRadius*dragRadius) {
+				//console.log(mouseDownPos,e.clientX,e.clientY);
+				mouseIsDragging = true;
+				processEvent("dragStart", e);
+			}
+		}
+		if (mouseIsDragging) {
+			processEvent("mouseDrag", e, {clientX: e.clientX, clientY: e.clientY});
+		}
 	}
 	function mouseover(e) {
 		processEvent("mouseover", e);

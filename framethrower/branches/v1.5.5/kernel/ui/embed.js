@@ -43,7 +43,7 @@ function processEmbed(ambient, node, ids, embed) {
 	function keepTime() {
 		timeChanged();
 		if (playing) {
-			setTimeout(keepTime, 2);
+			setTimeout(keepTime, 100);
 		}
 	}
 	
@@ -51,10 +51,11 @@ function processEmbed(ambient, node, ids, embed) {
 	mov.addEventListener("qt_play", function () {
 		console.log("playing");
 		playing = true;
-		keepTime();
+		//keepTime();
 	}, false);
 	mov.addEventListener("qt_pause", function () {
 		console.log("paused");
+		timeChanged();
 		playing = false;
 	}, false);
 	

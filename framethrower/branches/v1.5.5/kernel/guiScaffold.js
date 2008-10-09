@@ -9,6 +9,8 @@ var layout = scaffold({
 	tooltip: {
 		tooltipSituation: {}
 	},
+	
+	video: {},
 	embedVideo: {},
 	videoTimeline: {}
 }, "layout");
@@ -31,7 +33,8 @@ layout.panelLayer.prop = {
 	addFocus: interfaces.unit(kernel.ob),
 	addInfon: interfaces.unit(basic.bool),
 	selectArg: interfaces.unit(basic.number),
-	tooltip: interfaces.unit(layout.tooltip)
+	tooltip: interfaces.unit(layout.tooltip),
+	videoTimelines: interfaces.list(layout.videoTimeline)
 };
 
 layout.tooltip.prop = {
@@ -51,6 +54,11 @@ layout.addPanel.prop = {
 };
 
 
+layout.video.prop = {
+	src: interfaces.unit(basic.string),
+	aspect: interfaces.unit(basic.number),
+	duration: interfaces.unit(basic.number)
+};
 
 layout.embedVideo.prop = {
 	currentTime: interfaces.unit(basic.number),
@@ -58,8 +66,9 @@ layout.embedVideo.prop = {
 	isPlaying: interfaces.unit(basic.bool)
 };
 layout.videoTimeline.prop = {
-	src: interfaces.unit(basic.string),
-	aspect: interfaces.unit(basic.number),
-	duration: interfaces.unit(basic.number),
-	embedVideo: interfaces.unit(layout.embedVideo)
+	video: interfaces.unit(layout.video),
+	embedVideo: interfaces.unit(layout.embedVideo),
+	zoomWidth: interfaces.unit(basic.number),
+	selectedStartTime: interfaces.unit(basic.number),
+	selectedEndTime: interfaces.unit(basic.number)
 };

@@ -2,7 +2,8 @@ var xmlns = {
     f: "http://www.filmsfolded.com/xsl/ui",
     xsl: "http://www.w3.org/1999/XSL/Transform",
     html: "http://www.w3.org/1999/xhtml",
-    svg: "http://www.w3.org/2000/svg"
+    svg: "http://www.w3.org/2000/svg",
+	exsl: "http://exslt.org/common"
 };
 
 /* Put these in your root xml element
