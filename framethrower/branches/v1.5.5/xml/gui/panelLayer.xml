@@ -22,16 +22,38 @@
 		<get what="tooltip" />
 	</f:derived>
 	
+	<f:derived name="videoTimelines" from="panelLayer">
+		<get what="videoTimelines" />
+	</f:derived>
+	
 	
 	<xsl:template>
+		<xsl:variable name="videoTimelineHeight" select="200" />
+		
 		<html:div>
-			<f:thunk url="zui.xml">
-				<f:with-param name="zui" value-id="{$zui/@id}" />
-				<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
-				<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
-				<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
-				<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
-			</f:thunk>
+			<html:div>
+				<xsl:variable name="vts" select="$videoTimelines/*" />
+				<xsl:variable name="h" select="$height/@value" />
+				<xsl:variable name="zuiHeight" select="$h - count($vts) * $videoTimelineHeight" />
+				
+				<f:thunk url="zui.xml">
+					<f:with-param name="zui" value-id="{$zui/@id}" />
+					<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
+					<f:with-param name="height"><f:number value="{$zuiHeight}" /></f:with-param>
+					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
+				</f:thunk>
+				
+				<xsl:for-each select="$vts">
+					<html:div left="0" top="{$zuiHeight + count(preceding-sibling::*)}">
+						<f:thunk url="videoTimeline/videoTimeline.xml">
+							<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
+							<f:with-param name="height"><f:number value="{$videoTimelineHeight}" /></f:with-param>
+							<f:with-param name="videoTimeline"><xsl:copy-of select="." /></f:with-param>
+						</f:thunk>
+					</html:div>
+				</xsl:for-each>
+			</html:div>
 			
 			<xsl:if test="$properties/@addObject='1'">
 				<f:thunk url="addObject.xml">

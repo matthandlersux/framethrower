@@ -17,15 +17,34 @@ var cor1 = actions.makeInfon(world.rw, world.corresponds, {corresponder:world.mi
 var cor2 = actions.makeInfon(world.rw, world.corresponds, {corresponder:world.crazyMissRob, anchor:anchor});
 
 
+// Video Timeline
+var embedVideo = layout.embedVideo.make();
+
+var singin = layout.video.make();
+singin.control.src.set(ROOTDIR + "images/videos/Singin%27%20in%20the%20Rain-Lowest.mp4");
+singin.control.aspect.set(1.2958);
+singin.control.duration.set(6163.96);
+
+var videoTimeline = layout.videoTimeline.make();
+videoTimeline.control.embedVideo.set(embedVideo);
+
+videoTimeline.control.video.set(singin);
+
+videoTimeline.control.zoomWidth.set(15000);
+
+
+
 var panelLayer = layout.panelLayer.make();
 panelLayer.control.properties.set(parseXML("<panelLayer addObject='0' addCorresponds='0' addInfon='0'/>"));
 panelLayer.control.addFocus.set(rw);
 
+panelLayer.control.videoTimelines.append(videoTimeline);
 
 var addPanel = layout.addPanel.make();
 addPanel.control.properties.set(parseXML("<addPanel newName='' newType=''/>"));
 addPanel.control.expanded.set(false);
-
+//addPanel.control.infonArgs.insert(rw, 0);
+//addPanel.control.infonArgs.set(1, world.missRob);
 
 var zui = layout.zui.make();
 zui.control.focus.set(rw);
@@ -35,6 +54,7 @@ zui.control.leftRailChild.set(0);
 
 PREDEF["zui"] = zui;
 PREDEF["panelLayer"] = panelLayer;
+PREDEF["addPanel"] = addPanel;
 mergeInto(PREDEF, uiStartCaps);
 
 var mainAmbient = makeAmbient();
