@@ -85,6 +85,22 @@ ZUI Structural
 	
 }
 
+.zuiChildrenSidebarSearch{
+	
+}
+
+.zuiChildrenSidebarSearch input {
+	-moz-border-radius: 9px;
+	border: 2px solid rgba(12,12,12,.76);
+	padding: 2px;
+	position: absolute;
+	top: 9px;
+	right: 9px;
+	color: #2d2d2d;
+	font-family: monospace;
+	width: 55%;
+}
+
 .zuiChildrenSidebarList {
 	overflow-y: auto;
 }
@@ -653,17 +669,11 @@ buttons
 }
 
 .close:hover {
-	background-image: url(../images/zui.1/buttons.png);
 	background-position: -101px -21px;
-	width: 19px;
-	height: 18px;
 }
 
 .close:active {
-	background-image: url(../images/zui.1/buttons.png);
 	background-position: -101px -41px;
-	width: 19px;
-	height: 18px;
 }
 
 .close {
@@ -684,17 +694,11 @@ buttons
 }
 
 .maximize:hover {
-	background-image: url(../images/zui.1/buttons.png);
 	background-position: -121px -21px;
-	width: 19px;
-	height: 18px;
 }
 
 .maximize:active {
-	background-image: url(../images/zui.1/buttons.png);
 	background-position: -121px -41px;
-	width: 19px;
-	height: 18px;
 }
 
 .maximize {
@@ -715,17 +719,11 @@ buttons
 }
 
 .minimize:hover {
-	background-image: url(../images/zui.1/buttons.png);
 	background-position: -304px -21px;
-	width: 19px;
-	height: 18px;
 }
 
 .minimize:active {
-	background-image: url(../images/zui.1/buttons.png);
 	background-position: -304px -41px;
-	width: 19px;
-	height: 18px;
 }
 
 .minimize {
@@ -733,6 +731,9 @@ buttons
 	background-position: -304px -61px;
 	width: 19px;
 	height: 18px;
+	position: absolute;
+	top: 5px;
+	right: 55px;
 }
 
 
@@ -826,11 +827,24 @@ buttons
 Solids
 */
 
-.searchChild {
+.searchChildL {
 	background-image: url(../images/zui.1/solids.png);
-	background-position: -1px -1px;
-	width: 264px;
+	background-position: left -1px;
+	width: 10px;
 	height: 32px;
+	position: absolute;
+	left: 3px;
+	top: 6px;
+}
+
+.searchChildR {
+	background-image:url(../images/zui.1/solids.png);
+	background-position: -107px -1px;
+	height:32px;
+	max-width:264px;
+	position:relative;
+	right:-12px;
+	top:6px;
 }
 
 .titleRail {

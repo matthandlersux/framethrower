@@ -89,6 +89,10 @@
 				</html:span>
 				|
 				<html:span>
+					<f:button name="minimize" />
+					<html:div class="minimize" />
+				</html:span>
+				<html:span>
 					<f:button name="maximize" />
 					<html:div class="maximize" />
 				</html:span>
@@ -124,8 +128,18 @@
 						<xsl:variable name="childrenSidebarWidth" select="$properties/@childrenSidebar * $childrenSidebarExpandedWidth" />
 						<xsl:if test="$properties/@childrenSidebar='1'">
 							<html:div class="zuiChildrenSidebar" f:identifier="sidebar" left="0" top="0" width="{$childrenSidebarWidth}" height="{$h - $titleBarHeight}">
-								<html:div class="zuiChildrenSidebarSearch" left="0" top="0" width="{$childrenSidebarWidth}" height="{$childrenSidebarSearchHeight}" />
-								
+								<html:div class="zuiChildrenSidebarSearch" left="0" top="0" width="{$childrenSidebarWidth - 17}" height="{$childrenSidebarSearchHeight + 6}">
+									<html:div class="searchChildL" />
+									<html:div class="searchChildR" />
+									<html:input />
+									<html:div class="buttonContent" style="line-height: 40px; padding-left: 12px; color: #fff;">
+										search:
+									</html:div>
+								</html:div>
+								<html:span style="width: 15px; position: absolute; right: 2px; top: 6px;">
+									<f:button name="childrenSidebar" />
+									<html:div class="childViewClose" />
+								</html:span>
 								<html:div class="zuiChildrenSidebarList" left="0" top="{$childrenSidebarSearchHeight}" width="{$childrenSidebarWidth}" height="{$h - $titleBarHeight - $childrenSidebarSearchHeight - $childrenSidebarAddHeight}">
 									<f:thunk url="childrenSidebar.xml">
 										<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
