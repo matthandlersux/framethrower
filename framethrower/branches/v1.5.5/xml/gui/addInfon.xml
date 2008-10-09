@@ -58,10 +58,11 @@
 					<html:div class="paneBackgroundTR"/>
 					<html:div class="paneBackgroundTL"/>
 				</html:div>
-				<html:div class="zuiTitle" style="top: 0px; position: absolute; text-align: center; font-weight: normal; font-family: century gothic; font-size: 13pt; height: 29px; left: 0pt; width: 623px;">
+				<html:div class="zuiTitle" style="top: 0px; position: absolute; text-align: center; font-weight: normal; font-size: 13pt; height: 29px; left: 0pt; width: 648px;">
 					Build an Infon
-					<html:span style="margin-left:15px;"><f:button name="close"/>
-						X
+					<html:span style="margin-left:15px;">
+						<f:button name="close"/>
+						<html:div class="close" />
 					</html:span>
 				</html:div>
 				<xsl:variable name="chooseTop">
@@ -112,7 +113,7 @@
 									</xsl:choose>
 								</xsl:if>
 								<xsl:if test="self::verb">
-									<html:span class="buildInfonElement" style="background-color: #e09">
+									<html:span class="buildInfonRelation" style="background-color: #e09;">
 										<xsl:value-of select="@value" />
 									</html:span>
 								</xsl:if>

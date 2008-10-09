@@ -175,7 +175,7 @@
 								<xsl:otherwise>
 									<html:div style="width: 15px; position: absolute; right: 2px; top: 6px;">
 										<f:button name="childrenSidebar" />
-										<html:div class="childViewClose" />
+										<html:div class="childViewOpen" />
 									</html:div>
 								</xsl:otherwise>
 							</xsl:choose>
