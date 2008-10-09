@@ -10,6 +10,11 @@
 	<f:derived name="expanded" from="addPanel">
 		<f:get what="expanded"/>
 	</f:derived>
+	
+	<f:derived name="infonArgs" from="addPanel">
+		<f:get what="infonArgs" />
+	</f:derived>
+		
 	<f:derived name="selectedRelationContent" from="addPanel">
 		<f:get what="selectedRelation"/>
 		<f:get what="content"/>
@@ -65,46 +70,127 @@
 						<xsl:otherwise>136</xsl:otherwise>
 					</xsl:choose>
 				</xsl:variable>
-				<html:div class="chooseRelation" left="136" top="{$chooseTop}">
-					choose a relation: 
-					<xsl:choose>
-						<xsl:when test="$selectedRelationContent != ''">
-							<html:input value="{$selectedRelationContent/name/@value}" disabled="disabled"/>
-						</xsl:when>
-						<xsl:otherwise>
-							<html:input/>
-						</xsl:otherwise>
-					</xsl:choose>
-					<html:div class="dropDownArrow">
-						<f:button name="dropDown"/>
+				<html:div>
+					<xsl:if test="$selectedRelationContent != ''">
+						<html:div class="infonInProgress" top="125" left="0">
+							<xsl:for-each select="$selectedRelationContent/pseudo/*">
+								<xsl:if test="self::role">
+									<xsl:variable name="index" select="count(preceding-sibling::role)" />
+									<xsl:variable name="arg" select="$infonArgs/*[f:key/f:number/@value = ($index)]/f:value/*" />
+									<xsl:choose>
+										<xsl:when test="$arg">
+											<html:span class="infonObjectSurround">
+												<html:div class="infonObjectParentSituation">
+													<f:thunk name="printParentSitContent">
+														<f:with-param name="focus">
+															<xsl:copy-of select="$arg" />
+														</f:with-param>
+													</f:thunk>
+												</html:div>
+												<html:span class="buildInfonElement" style="background-color: #8c3">
+													<f:thunk url="printContent.xml">
+														<f:with-param name="focus"><xsl:copy-of select="$arg" /></f:with-param>
+														<f:with-param name="style"><f:string value="inline" /></f:with-param>
+													</f:thunk>
+												</html:span>
+											</html:span>
+										</xsl:when>
+										<xsl:otherwise>
+											<html:span class="buildInfonElement">
+												<html:input value="{@role}"/>
+												<html:div class="grabObject">
+													<f:binding url="bindings/addInfon.xml">
+														<f:with-param name="argNum">
+															<f:number value="{$index}" />
+														</f:with-param>
+														<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+													</f:binding>
+													<f:button name="browseArg" />
+												</html:div>
+											</html:span>
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:if>
+								<xsl:if test="self::verb">
+									<html:span class="buildInfonElement" style="background-color: #e09">
+										<xsl:value-of select="@value" />
+									</html:span>
+								</xsl:if>
+							</xsl:for-each>
+
+						</html:div>
+					</xsl:if>
+				</html:div>
+				<html:div>
+					<html:div class="chooseRelation" left="136" top="{$chooseTop}">
+						choose a relation: 
+						<xsl:choose>
+							<xsl:when test="$selectedRelationContent != ''">
+								<html:input value="{$selectedRelationContent/name/@value}" disabled="disabled"/>
+							</xsl:when>
+							<xsl:otherwise>
+								<html:input/>
+							</xsl:otherwise>
+						</xsl:choose>
+						<html:div class="dropDownArrow">
+							<f:button name="dropDown"/>
+						</html:div>
 					</html:div>
 				</html:div>
-				<xsl:if test="$expanded/@value = 'true'">
-					<html:div class="dropDownBox" top="{$chooseTop + 34}" left="310">
-						<html:div class="dropDownBoxBackground"/>
-						<xsl:for-each select="$relationContent/*">
-							<xsl:variable name="value" select="./f:value/relationcontent/name/@value"/>
-							<xsl:if test="$value != ''">
-								<html:div class="kernelObject" top="{10 + (position() - 1) * 30}" left="15" style="background-color:#e09;">
-									<f:binding url="bindings/addInfon.xml">
-										<f:with-param name="relation" value-id="{./f:key/*/@id}"/>
-										<f:with-param name="addPanel">
-											<xsl:copy-of select="$addPanel"/>
-										</f:with-param>
-									</f:binding>
-									<f:button name="select"/>
-									<xsl:value-of select="$value"/>
-								</html:div>
-							</xsl:if>
-						</xsl:for-each>
-					</html:div>
-				</xsl:if>
-				<xsl:if test="$selectedRelationContent != ''">
-					<html:div class="infonInProgress">
-						Hello
-					</html:div>
-				</xsl:if>
+				<html:div>
+					<xsl:if test="$expanded/@value = 'true'">
+						<html:div class="dropDownBox" top="{$chooseTop + 34}" left="310">
+							<html:div class="dropDownBoxBackground"/>
+							<xsl:for-each select="$relationContent/*">
+								<xsl:variable name="value" select="./f:value/relationcontent/name/@value"/>
+								<xsl:if test="$value != ''">
+									<html:div class="kernelObject" top="{10 + (position() - 1) * 30}" left="15" style="background-color:#e09;">
+										<f:binding url="bindings/addInfon.xml">
+											<f:with-param name="relation" value-id="{./f:key/*/@id}"/>
+											<f:with-param name="addPanel">
+												<xsl:copy-of select="$addPanel"/>
+											</f:with-param>
+										</f:binding>
+										<f:button name="select"/>
+										<xsl:value-of select="$value"/>
+									</html:div>
+								</xsl:if>
+							</xsl:for-each>
+						</html:div>
+					</xsl:if>
+				</html:div>
+				<html:div>
+					<xsl:variable name="roleCount" select="count($selectedRelationContent/pseudo/role)" />
+					<xsl:variable name="argCount" select="count($infonArgs/*)" />
+					<xsl:if test="$roleCount &gt; 0 and $argCount &gt;= $roleCount">
+						<html:div class="infonSubmitNewInfon" style="position: relative; left: 38%; bottom: -70%">
+							<f:button name="submit" />
+							<html:span class="infonSubmitButton">
+								<html:div class="infonSubmitR"/>
+								<html:div class="infonSubmitL"/>
+							</html:span>
+							<html:div style="position: absolute; line-height: 46px; left: 10px;">submit this infon</html:div>
+						</html:div>
+					</xsl:if>
+				</html:div>
 			</html:div>
 		</html:div>
 	</xsl:template>
+	
+	
+	<f:function name="printParentSitContent">
+		<f:param name="focus" />
+		<f:derived name="parentSituation" from="focus">
+			<get what="parentSituation" />
+		</f:derived>
+		
+		<xsl:template>
+			<html:div>
+				<f:thunk url="printContent.xml">
+					<f:with-param name="focus"><xsl:copy-of select="$parentSituation" /></f:with-param>
+					<f:with-param name="style"><f:string value="inline" /></f:with-param>
+				</f:thunk>
+			</html:div>
+		</xsl:template>
+	</f:function>
 </f:function>

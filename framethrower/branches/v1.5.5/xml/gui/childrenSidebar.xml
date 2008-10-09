@@ -7,6 +7,7 @@
 	<f:param name="zui" />
 	<f:param name="focus" />
 	<f:param name="panelLayer" />
+	<f:param name="addPanel" />
 	<f:derived name="properties" from="panelLayer">
 		<get what="properties" />
 	</f:derived>
@@ -64,7 +65,7 @@
 												<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
 											</f:binding>
 											<f:button name="secondArg" />
-										</xsl:when>
+										</xsl:when>									
 										<xsl:otherwise>
 											<f:binding url="bindings/child.xml">
 												<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>

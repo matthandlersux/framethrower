@@ -14,7 +14,7 @@ var applyGet = memoize(function (input, what) {
 	
 	var inType = intfargs[0];
 	if (!inType.getProp) {
-		console.warn("inType doesn't have a prop", inType.getName(), input);
+		console.warn("inType doesn't have a prop", inType.getName(), input.getId(), input.getState(), what);
 	}
 	var outType = inType.getProp(what);
 
@@ -52,7 +52,6 @@ function getFromContext(context, s) {
 // focus is an optional variable
 // derive puts together a chain of components and returns an output pin for the derived variable
 function derive(xml, context, focus) {
-
 	var next;
 	var name = xml.localName;
 	
@@ -174,7 +173,6 @@ function derive(xml, context, focus) {
 	if (next) {
 		return derive(next, context, focus);
 	} else if (focus) {
-		//console.log("derive done", focus.getOutputInterface().getName());
 		return focus;
 	} else {
 		return typeZero(interfaces.unit(basic.js));

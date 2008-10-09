@@ -13,6 +13,11 @@
 	<f:derived name="properties" from="panelLayer">
 		<get what="properties" />
 	</f:derived>
+	
+	<f:derived name="addInfon" from="panelLayer">
+		<get what="addInfon" />
+	</f:derived>
+	
 	<f:derived name="tooltip" from="panelLayer">
 		<get what="tooltip" />
 	</f:derived>
@@ -25,6 +30,7 @@
 				<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
 				<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
 				<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+				<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
 			</f:thunk>
 			
 			<xsl:if test="$properties/@addObject='1'">
@@ -44,7 +50,7 @@
 				</f:thunk>
 			</xsl:if>
 			
-			<xsl:if test="$properties/@addInfon='1'">
+			<xsl:if test="$addInfon/@value='true'">
 				<f:thunk url="addInfon.xml">
 					<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
 					<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>

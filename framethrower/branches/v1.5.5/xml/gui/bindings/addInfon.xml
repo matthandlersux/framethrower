@@ -5,40 +5,31 @@
 	<f:transaction name="Close" event="click" button="close">
 		<f:param name="panelLayer" />
 		<f:param name="addPanel" />
-		<f:derived name="properties" from="panelLayer">
-			<get what="properties" />
+		<f:derived name="infonArgs" from="addPanel">
+			<get what="infonArgs" />
 		</f:derived>
 
 		<xsl:template>
 			<transaction>
-				<intact with-id="{$panelLayer/@id}" prop="properties" action="set">
+				<intact with-id="{$panelLayer/@id}" prop="addInfon" action="set">
 					<with-param>
-						<xsl:call-template name="changeAttribute">
-							<xsl:with-param name="xml" select="$properties" />
-							<xsl:with-param name="attributeName" select="'addInfon'" />
-							<xsl:with-param name="attributeValue" select="0" />
-						</xsl:call-template>
+						<f:bool value="false" />
 					</with-param>
 				</intact>
 				<intact with-id="{$addPanel/@id}" prop="selectedRelation" action="set">
 					<with-param />
 				</intact>
+
+				<xsl:for-each select="$infonArgs/*">
+					<intact with-id="{$addPanel/@id}" prop="infonArgs" action="remove">
+						<with-param>
+							<xsl:copy-of select="./f:key/*" />
+						</with-param>
+					</intact>
+				</xsl:for-each>
 			</transaction>
 		</xsl:template>
 		
-		<xsl:template name="changeAttribute">
-			<xsl:param name="xml" />
-			<xsl:param name="attributeName" />
-			<xsl:param name="attributeValue" />
-			
-			<xsl:for-each select="$xml">
-				<xsl:copy>
-					<xsl:copy-of select="$xml/@*[local-name() != $attributeName]" />
-					<xsl:attribute name="{$attributeName}"><xsl:copy-of select="$attributeValue" /></xsl:attribute>
-					<xsl:copy-of select="$xml/node()" />
-				</xsl:copy>
-			</xsl:for-each>
-		</xsl:template>
 	</f:transaction>
 	
 	
@@ -71,96 +62,29 @@
 	</f:transaction>
 
 
-	<f:transaction name="NameInput" event="blur" button="nameinput">
-		<f:param name="addPanel" />
-		<f:param name="eventXML" />
+	
+	<f:transaction name="BrowseArg" event="click" button="browseArg">
+		<f:param name="argNum" />
+		<f:param name="panelLayer" />
 		
-		<f:derived name="properties" from="addPanel">
-			<get what="properties" />
-		</f:derived>
-
 		<xsl:template>
 			<transaction>
-				<intact with-id="{$addPanel/@id}" prop="properties" action="set">
+				<intact with-id="{$panelLayer/@id}" prop="selectArg" action="set">
 					<with-param>
-						<xsl:call-template name="changeAttribute">
-							<xsl:with-param name="xml" select="$properties" />
-							<xsl:with-param name="attributeName" select="'newName'" />
-							<xsl:with-param name="attributeValue" select="$eventXML/@value" />
-						</xsl:call-template>
+						<xsl:copy-of select="$argNum" />
+					</with-param>
+				</intact>
+				<intact with-id="{$panelLayer/@id}" prop="addInfon" action="set">
+					<with-param>
+						<f:bool value="false" />
 					</with-param>
 				</intact>
 			</transaction>
 		</xsl:template>
 		
-		<xsl:template name="changeAttribute">
-			<xsl:param name="xml" />
-			<xsl:param name="attributeName" />
-			<xsl:param name="attributeValue" />
-			
-			<xsl:for-each select="$xml">
-				<xsl:copy>
-					<xsl:copy-of select="$xml/@*[local-name() != $attributeName]" />
-					<xsl:attribute name="{$attributeName}"><xsl:value-of select="$attributeValue" /></xsl:attribute>
-					<xsl:copy-of select="$xml/node()" />
-				</xsl:copy>
-			</xsl:for-each>
-		</xsl:template>	
-	</f:transaction>
-
-	<f:transaction name="TypeInput" event="change" button="typeinput">
-		<f:param name="addPanel" />
-		<f:param name="eventXML" />
-
-		<xsl:template>
-			<transaction>
-				<f:perform name="TypeInputHelper">
-					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
-					<f:with-param name="value">
-						<f:string value="{$eventXML/@value}" />
-					</f:with-param>
-				</f:perform>
-			</transaction>
-		</xsl:template>
 	</f:transaction>
 
 
-	<f:transaction name="TypeInputHelper">
-		<f:param name="addPanel" />
-		<f:param name="value" />
-		
-		<f:derived name="properties" from="addPanel">
-			<get what="properties" />
-		</f:derived>
-
-		<xsl:template>
-			<transaction>
-				<intact with-id="{$addPanel/@id}" prop="properties" action="set">
-					<with-param>
-						<xsl:call-template name="changeAttribute">
-							<xsl:with-param name="xml" select="$properties" />
-							<xsl:with-param name="attributeName" select="'newType'" />
-							<xsl:with-param name="attributeValue" select="$value/@value" />
-						</xsl:call-template>
-					</with-param>
-				</intact>
-			</transaction>
-		</xsl:template>
-		
-		<xsl:template name="changeAttribute">
-			<xsl:param name="xml" />
-			<xsl:param name="attributeName" />
-			<xsl:param name="attributeValue" />
-			
-			<xsl:for-each select="$xml">
-				<xsl:copy>
-					<xsl:copy-of select="$xml/@*[local-name() != $attributeName]" />
-					<xsl:attribute name="{$attributeName}"><xsl:value-of select="$attributeValue" /></xsl:attribute>
-					<xsl:copy-of select="$xml/node()" />
-				</xsl:copy>
-			</xsl:for-each>
-		</xsl:template>	
-	</f:transaction>
 
 
 	
@@ -184,95 +108,89 @@
 	</f:transaction>
 
 
-
-
-
 	
-	<f:transaction name="Add" event="click" button="add">
+	<f:transaction name="SelectArg" event="click" button="selectArg">
 		<f:param name="addFocus" />
 		<f:param name="panelLayer" />
 		<f:param name="addPanel" />
 		
-		<f:derived name="properties" from="addPanel">
-			<get what="properties" />
+		<f:derived name="selectArg" from="panelLayer">
+			<get what="selectArg" />
 		</f:derived>
 
 		<xsl:template>
 			<transaction>
-				<xsl:choose>
-					<xsl:when test="$properties/@newType = 'Individual'">
-						<f:perform absurl="xml/api/makeIndividual.xml" prefix="newob">
-							<f:with-param name="parentSituation" value-id="{$addFocus/@id}" />
-						</f:perform>
-					</xsl:when>
-					<xsl:when test="$properties/@newType = 'Situation'">
-						<f:perform absurl="xml/api/makeSituation.xml" prefix="newob">
-							<f:with-param name="parentSituation" value-id="{$addFocus/@id}" />
-						</f:perform>
-					</xsl:when>
-					<xsl:otherwise>
-						<f:perform absurl="xml/api/makeIndividual.xml" prefix="newob">
-							<f:with-param name="parentSituation" value-id="{$addFocus/@id}" />
-						</f:perform>
-					</xsl:otherwise>
-				</xsl:choose>
-				
-				<f:perform absurl="xml/api/modifyContent.xml" prefix="ind">
-					<f:with-param name="object" value-var="newob.o" />
-					<f:with-param name="content">
-						<f:string value='{$properties/@newName}' />
-					</f:with-param>
-				</f:perform>
-
-				<f:perform absurl="xml/api/makeInfon.xml">
-					<f:with-param name="parentSituation" value-predef="ont" />
-					<f:with-param name="relation" value-predef="ofType" />
-				
-					<f:with-param name="arcs">
-						<f:assoc>
-							<f:pair>
-								<f:key><f:string value="type" /></f:key>
-								<f:value>
-									<xsl:choose>
-										<xsl:when test="$properties/@newType = 'Individual'">
-											<f:ob predef="personType" />
-										</xsl:when>
-										<xsl:when test="$properties/@newType = 'Situation'">
-											<f:ob predef="movieType" />
-										</xsl:when>
-										<xsl:otherwise>
-											<f:ob predef="personType" />
-										</xsl:otherwise>
-									</xsl:choose>
-								</f:value>
-							</f:pair>
-							<f:pair>
-								<f:key><f:string value="instance" /></f:key>
-								<f:value>
-									<f:ob var="newob.o" />
-								</f:value>
-							</f:pair>
-						</f:assoc>
-					</f:with-param>
-				</f:perform>
-
-
-
-
-				<f:perform name="TypeInputHelper">
-					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
-					<f:with-param name="value">
-						<f:string value="Individual" />
-					</f:with-param>
-				</f:perform>
-
-				<f:perform name="Close">
-					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
-				</f:perform>
-
+				<intact with-id="{$addPanel/@id}" prop="infonArgs" action="set">
+					<with-param>
+						<xsl:copy-of select="$selectArg" />
+					</with-param>
+					<with-param>
+						<xsl:copy-of select="$addFocus" />
+					</with-param>
+				</intact>
+				<intact with-id="{$panelLayer/@id}" prop="selectArg" action="set">
+					<with-param />
+				</intact>				
+				<intact with-id="{$panelLayer/@id}" prop="addInfon" action="set">
+					<with-param>
+						<f:bool value="true" />
+					</with-param>
+				</intact>
 			</transaction>
 		</xsl:template>		
 	</f:transaction>
+
+
+
+	<f:transaction name="Submit" event="click" button="submit">
+		<f:param name="panelLayer" />
+		<f:param name="addPanel" />
+		<f:derived name="infonArgs" from="addPanel">
+			<get what="infonArgs" />
+		</f:derived>
+		<f:derived name="selectedRelation" from="addPanel">
+			<get what="selectedRelation" />
+		</f:derived>
+		<f:derived name="selectedRelationContent" from="selectedRelation">
+			<get what="content" />
+		</f:derived>
+		<f:derived name="addFocus" from="panelLayer">
+			<get what="addFocus" />
+		</f:derived>
+		<f:derived name="parentSituation" from="addFocus">
+			<get what="parentSituation" />
+		</f:derived>
+		
+		<xsl:template>
+			<transaction>
+				<f:perform absurl="xml/api/makeInfon.xml">
+					<f:with-param name="parentSituation" value-id="{$parentSituation/@id}" />
+					<f:with-param name="relation" value-id="{$selectedRelation/@id}" />
+					<f:with-param name="arcs">
+						<f:assoc>
+							<xsl:for-each select="$selectedRelationContent/pseudo/*">
+								<xsl:if test="self::role">
+									<xsl:variable name="index" select="count(preceding-sibling::role)" />
+									<xsl:variable name="arg" select="$infonArgs/*[f:key/f:number/@value = ($index)]/f:value/*" />
+									<f:pair>
+										<f:key><f:string value="{@role}" /></f:key>
+										<f:value><xsl:copy-of select="$arg"/></f:value>
+									</f:pair>
+								</xsl:if>
+							</xsl:for-each>
+						</f:assoc>
+					</f:with-param>
+				</f:perform>
+				
+				<f:perform name="Close">
+					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
+				</f:perform>
+			</transaction>
+		</xsl:template>
+		
+	</f:transaction>
+
 	
 </f:binding>
 

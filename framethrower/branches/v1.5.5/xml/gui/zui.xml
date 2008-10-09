@@ -8,6 +8,7 @@
 	<f:param name="width" />
 	<f:param name="height" />
 	<f:param name="panelLayer" />
+	<f:param name="addPanel" />
 	
 	<f:derived name="focus" from="zui">
 		<get what="focus" />
@@ -130,6 +131,7 @@
 										<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 										<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
 										<f:with-param name="panelLayer"><xsl:copy-of select="$panelLayer" /></f:with-param>
+										<f:with-param name="addPanel"><xsl:copy-of select="$addPanel" /></f:with-param>
 									</f:thunk>
 								</html:div>
 								

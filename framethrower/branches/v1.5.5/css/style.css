@@ -130,6 +130,15 @@ Infon CSS
 ===============================================================================
 */
 
+.floatingSelector {
+	position:absolute;
+	left: 0px;
+	top: -20px;
+	width: 20px;
+	height: 20px;
+	background-color:green;
+}
+
 .zuiBuildInfon {
 	-moz-border-radius: 9px;
 	background:rgba(0, 0, 0, 0.3) none repeat scroll 0 0;
@@ -139,11 +148,7 @@ Infon CSS
 .infonInProgress {
 	padding: 5px;
 	text-align: center;
-	position: absolute;
-	top: 125px;
-	left: 0px;
 	width: 100%;
-	height:50px;
 }
 
 .infonFinished {
@@ -158,6 +163,7 @@ Infon CSS
 }
 
 .buildInfonElement {
+	position:relative;
 	-moz-border-radius: 20px;
 	background-color: white;
 	padding: 7px;
@@ -173,15 +179,20 @@ Infon CSS
 	font-size: 16pt;
 	width: 150px;
 	margin-right: 32px;
+	border: 3px solid #8c3;
+	-moz-border-radius: 23px
 }
 
 .grabObject {
 	background-image: url(../images/zui.1/infon.png);
 	background-position: -3px -49px;
+	background-color: #8c3;
+	position: absolute; 
+	right: 3px; 
+	top: 3px;
 	width: 32px;
 	height: 32px;
 	-moz-border-radius: 16px;
-	background-color: black;
 	border: 2px solid rgba(255,255,255,1);
 }
 
@@ -254,6 +265,10 @@ Infon CSS
 }
 
 .infonSubmitNewInfon {
+	position:absolute;
+	width: 200px;
+	top: 250px;
+	left: 270px;
 	color: white;
 }
 

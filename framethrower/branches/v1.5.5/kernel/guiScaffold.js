@@ -29,6 +29,8 @@ layout.zui.prop = {
 layout.panelLayer.prop = {
 	properties: interfaces.unit(basic.xml),
 	addFocus: interfaces.unit(kernel.ob),
+	addInfon: interfaces.unit(basic.bool),
+	selectArg: interfaces.unit(basic.number),
 	tooltip: interfaces.unit(layout.tooltip)
 };
 
@@ -44,7 +46,8 @@ layout.tooltipSituation.prop = {
 layout.addPanel.prop = {
 	properties: interfaces.unit(basic.xml),
 	expanded: interfaces.unit(basic.bool),
-	selectedRelation: interfaces.unit(kernel.relation)
+	selectedRelation: interfaces.unit(kernel.relation),
+	infonArgs: interfaces.assoc(basic.number, kernel.ob)
 };
 
 
