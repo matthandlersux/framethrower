@@ -654,6 +654,9 @@ buttons
 	background-position: -101px -61px;
 	width: 19px;
 	height: 18px;
+	position: absolute;
+	top: 5px;
+	right: 12px;
 }
 
 .maximizeInactive {
@@ -682,6 +685,9 @@ buttons
 	background-position: -121px -61px;
 	width: 19px;
 	height: 18px;
+	position: absolute;
+	top: 5px;
+	right: 33px;
 }
 
 .minimizeInactive {

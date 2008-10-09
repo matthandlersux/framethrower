@@ -89,12 +89,11 @@
 				|
 				<html:span>
 					<f:button name="maximize" />
-					Max
+					<html:div class="maximize" />
 				</html:span>
-				|
 				<html:span>
 					<f:button name="close" />
-					X
+					<html:div class="close" />
 				</html:span>
 			</html:div>
 			
