@@ -156,10 +156,27 @@ Infon CSS
 .floatingSelector {
 	position:absolute;
 	left: 0px;
-	top: -20px;
-	width: 20px;
-	height: 20px;
-	background-color:green;
+	top: -19px;
+	background-image:url(../images/zui.1/buttons.png);
+	background-position:-328px 0px;
+	height:19px;
+	width:19px;
+	background-color: rgba(153, 238, 54, .7);
+	-moz-border-radius: 9px;
+}
+
+.floatingSelector:hover {
+	background-color: rgba(153, 238, 54, 1);
+}
+
+.kernelObjectSurround:hover .kernelObject span .floatingSelector {
+	top: -16px;
+	left: 2px;
+}
+
+.kernelObjectSurround:hover .kernelObjectParentSituation span .floatingSelector {
+	left: 301px;
+	top: -17px;
 }
 
 .zuiBuildInfon {
@@ -250,7 +267,7 @@ Infon CSS
 
 .chooseRelation .dropDownArrow {
 	position:absolute;
-	left: 313px;
+	left: 304px;
 	top: 17px;
 	width: 16px;
 	height: 16px;
@@ -717,6 +734,16 @@ buttons
 
 .viewSituationSelected, .viewInfonsSelected, .viewInfonsAboutSelected, .viewCorrespondsSelected {
 	opacity: .9;
+}
+
+.objectSelectHandle {
+	background-image:url(../images/zui.1/buttons.png);
+	background-position:-328px 0px;
+	height:19px;
+	top:0;
+	width:19px;
+	background-color: #9e2;
+	-moz-border-radius: 9px;
 }
 
 .closeInactive {
