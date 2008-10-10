@@ -94,9 +94,9 @@
 	
 						</xsl:otherwise>
 					</xsl:choose>
-					<html:span style="margin-left: 15px">
+					<html:span style="margin-left: 45px">
 						<f:button name="correspondSidebar" />
-						Co
+						<html:div class="viewCorresponds" />
 					</html:span>
 				</html:span>
 				<html:span>

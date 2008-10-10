@@ -686,6 +686,15 @@ buttons
 	top: 0px;
 }
 
+.viewCorresponds, .viewCorrespondsSelected {
+	background-image:url(../images/zui.1/buttons.png);
+	background-position:-325px -48px;
+	float:right;
+	height:21px;
+	top:0;
+	width:27px;
+}
+
 .viewSituation, .viewSituationSelected {
 	background-position: -67px -47px;
 }
@@ -698,15 +707,15 @@ buttons
 	background-position: -9px -47px;
 }
 
-.viewSituation, .viewInfons, .viewInfonsAbout {
+.viewSituation, .viewInfons, .viewInfonsAbout, .viewCorresponds {
 	opacity: .5;
 }
 
-.viewSituation:hover, .viewInfons:hover, .viewInfonsAbout:hover {
+.viewSituation:hover, .viewInfons:hover, .viewInfonsAbout:hover, .viewCorresponds:hover {
 	opacity: .75;
 }
 
-.viewSituationSelected, .viewInfonsSelected, .viewInfonsAboutSelected {
+.viewSituationSelected, .viewInfonsSelected, .viewInfonsAboutSelected, .viewCorrespondsSelected {
 	opacity: .9;
 }
 
