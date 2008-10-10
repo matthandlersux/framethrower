@@ -359,9 +359,9 @@
 						<f:with-param name="leftChildInView"><xsl:copy-of select="$leftChildInView" /></f:with-param>
 						<f:with-param name="zui"><xsl:copy-of select="$zui" /></f:with-param>
 					</f:binding>
-					<html:div class="pageLeft" left="{$padding}" top="{$h div 2 - 15}">
-						<f:button name="left" />
-					</html:div>
+					<html:div class="pageLeft" left="{$padding}" top="{$h div 2 - 15}"> 
+						<f:button name="left" /> 
+					</html:div> 
 					<html:div class="pageRight" left="{$w - 38 - $padding}" top="{$h div 2 - 15}">
 						<f:button name="right" />
 					</html:div>
