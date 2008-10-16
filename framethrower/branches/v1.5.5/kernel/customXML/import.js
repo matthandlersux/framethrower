@@ -11,6 +11,7 @@ var importWorld = (function () {
 			var transXML = importer1(importer2(xml, {}), {});
 			
 			//console.dirxml(transXML);
+			//document.firstChild.appendChild(transXML);
 			
 			var transaction = {xml: transXML, ids: {}};
 			

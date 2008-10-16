@@ -15,14 +15,14 @@
 	</f:derived>
 	
 	<f:derived name="selectArg" from="panelLayer">
-		<get what="selectArg" />
+		<f:get what="selectArg" />
 	</f:derived>
 
 	<f:derived name="content" from="focus">
-		<get what="content" />
+		<f:get what="content" />
 	</f:derived>
 	<f:derived name="type" from="focus">
-		<gettype />
+		<f:gettype />
 	</f:derived>
 	
 	<xsl:template>

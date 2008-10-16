@@ -6,13 +6,13 @@
 	<f:transaction name="Display Containing Situation">
 		<f:param name="focus" />
 		<f:derived name="parentSituation" from="focus">
-			<get what="parentSituation" />
+			<f:get what="parentSituation" />
 		</f:derived>
 		<f:derived name="panelLayer" predef="panelLayer">
 			
 		</f:derived>
 		<xsl:template>
-			<transaction>
+			<f:transaction>
 				<f:make type="layout.tooltipSituation" name="tooltip" />
 				<f:intact with-var="tooltip" prop="situation" action="set">
 					<f:with-param><xsl:copy-of select="$parentSituation" /></f:with-param>
@@ -20,7 +20,7 @@
 				<f:intact with-id="{$panelLayer/@id}" prop="tooltip" action="set">
 					<f:with-param><f:ob var="tooltip" /></f:with-param>
 				</f:intact>
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 	</f:transaction>
 	
@@ -29,11 +29,11 @@
 			
 		</f:derived>
 		<xsl:template>
-			<transaction>
+			<f:transaction>
 				<f:intact with-id="{$panelLayer/@id}" prop="tooltip" action="set">
 					<f:with-param />
 				</f:intact>
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 	</f:transaction>
 	
@@ -50,7 +50,7 @@
 		</f:derived>
 		
 		<xsl:template>
-			<transaction>
+			<f:transaction>
 				<xsl:variable name="startSituationId" select="$startSituation/@id" />
 				
 				<!-- <f:consolelog>
@@ -101,7 +101,7 @@
 					</f:perform>
 				</xsl:if>
 				
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 	</f:transaction>
 	
@@ -109,12 +109,12 @@
 		<f:param name="zui" />
 		<f:param name="focus" />
 		<f:derived name="childZuis" from="zui">
-			<get what="childZuis" />
+			<f:get what="childZuis" />
 			<buildassoc what="focus" />
 		</f:derived>
 		
 		<xsl:template>
-			<transaction>
+			<f:transaction>
 				<xsl:variable name="zuiSit" select="$childZuis/f:pair[f:value/*[@id = $focus/@id]]" />
 				<xsl:choose>
 					<xsl:when test="$zuiSit">
@@ -133,7 +133,7 @@
 					<zui><xsl:copy-of select="$zui" /></zui>
 					<xsl:copy-of select="$childZuis" />
 				</f:consolelog> -->
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 	</f:transaction>
 </f:binding>

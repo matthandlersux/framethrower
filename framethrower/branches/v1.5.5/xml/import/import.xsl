@@ -3,7 +3,7 @@
 	xmlns:f="http://www.filmsfolded.com/xsl/ui">
 	
 	<xsl:template match="*">
-		<transaction>
+		<f:transaction>
 			<xsl:apply-templates select="." mode="print" />
 			<xsl:for-each select="//*[@returnas]">
 				<f:return as="{@returnas}">
@@ -13,7 +13,7 @@
 					</xsl:attribute>
 				</f:return>
 			</xsl:for-each>
-		</transaction>
+		</f:transaction>
 	</xsl:template>
 	
 	<xsl:template match="situation" mode="print">
@@ -92,16 +92,21 @@
 	</xsl:template>
 	
 	<xsl:template name="parentSituation">
-		<xsl:if test="parent::situation">
-			<f:with-param name="parentSituation">
-				<xsl:attribute name="value-var">
-					<xsl:call-template name="getName">
-						<xsl:with-param name="focus" select="parent::situation" />
-					</xsl:call-template>
-					<xsl:text>.o</xsl:text>
-				</xsl:attribute>
-			</f:with-param>
-		</xsl:if>
+		<xsl:choose>
+			<xsl:when test="parent::situation">
+				<f:with-param name="parentSituation">
+					<xsl:attribute name="value-var">
+						<xsl:call-template name="getName">
+							<xsl:with-param name="focus" select="parent::situation" />
+						</xsl:call-template>
+						<xsl:text>.o</xsl:text>
+					</xsl:attribute>
+				</f:with-param>
+			</xsl:when>
+			<xsl:otherwise>
+				<f:with-param name="parentSituation" />
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	
 	<xsl:template name="getName">

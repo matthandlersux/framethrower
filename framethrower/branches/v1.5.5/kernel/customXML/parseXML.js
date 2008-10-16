@@ -25,7 +25,7 @@ function extractXSLFromCustomXML(xml) {
 	var paramNodes = xpath("f:param | f:derived", xml);
 	forEach(paramNodes, function (n) {
 		var p = xslDoc.createElementNS(xmlns["xsl"], "param");
-		p.setAttributeNS("", "name", n.getAttributeNS("", "name"));
+		p.setAttributeNS("", "name", n.getAttribute("name"));
 		ss.appendChild(p);
 	});
 
@@ -49,7 +49,7 @@ function extractJSFromCustomXML(xml) {
 		return undefined;
 	}
 
-	var funcName = jsNode.getAttributeNS("", "name");
+	var funcName = jsNode.getAttribute("name");
 	var func = JSTRANSFUNCS[funcName];
 	
 	
@@ -89,17 +89,18 @@ function getUrlFromXML(node, relurl) {
 		return url.replace(/#.*/, "");
 	}
 	
-	var atAbsurl = node.getAttributeNS("", "absurl");
+	var atAbsurl = node.getAttribute("absurl");
 	if (atAbsurl) {
 		return atAbsurl;
 	}
 	
-	var atUrl = node.getAttributeNS("", "url");
+	//var atUrl = node.getAttribute("url");
+	var atUrl = node.getAttribute("url");
 	if (atUrl) {
 		return urlRelPath(relurl, atUrl);
 	}
 	
-	var atName = node.getAttributeNS("", "name");
+	var atName = node.getAttribute("name");
 	if (atName) {
 		return urlStripHash(relurl) + "#" + atName;
 	}
@@ -127,7 +128,6 @@ var documents = (function () {
 					var funcxml = xpath("f:*[local-name()='function' or local-name()='transaction'][@name='" + name + "']", xml)[0];
 					cache[url] = funcxml;
 				}
-				
 			}
 			return cache[url];
 		},
@@ -201,6 +201,7 @@ var qtDocs = (function () {
 		if (xsl) {
 			compiled = compileXSL(xsl);
 		} else {
+			console.log("IN JS LAND!!!");
 			compiled = extractJSFromCustomXML(xml);
 		}
 		
@@ -210,7 +211,7 @@ var qtDocs = (function () {
 			var context = merge(inputs);
 
 			forEach(derivedNodes, function (n) {
-				var name = n.getAttributeNS("", "name");
+				var name = n.getAttribute("name");
 				context[name] = derive(n, context);
 			});
 			

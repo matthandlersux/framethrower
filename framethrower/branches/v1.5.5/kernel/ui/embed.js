@@ -12,7 +12,7 @@ function processEmbed(ambient, node, ids, embed) {
 	var params = {};
 	var paramNodes = xpath("f:with-param", embed);
 	forEach (paramNodes, function(paramNode){
-		params[paramNode.getAttributeNS("", "name")] = getObjectFromParam(paramNode, ids, {});
+		params[paramNode.getAttribute("name")] = getObjectFromParam(paramNode, ids, {});
 	});
 	
 	var mov = makeQTMovie(params["src"], params["width"], params["height"]);

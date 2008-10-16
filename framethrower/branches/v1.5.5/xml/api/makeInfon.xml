@@ -6,30 +6,30 @@
 	<f:param name="relation" />
 	<f:param name="arcs" />
 	<xsl:template>
-		<transaction>
+		<f:transaction>
 			<f:perform url="helper/makeobject.xml" prefix="obj">
 				<f:with-param name="type"><f:string value="kernel.infon" /></f:with-param>
 				<f:with-param name="parentSituation"><xsl:copy-of select="$parentSituation" /></f:with-param>
 			</f:perform>
-			<!--<intact with-var="obj.o" prop="content" action="set">
+			<!--<f:intact with-var="obj.o" prop="content" action="set">
 				<f:with-param><f:string value="Test Infon" /></f:with-param>
-			</intact>-->
-			<intact with-var="obj.o" prop="relation" action="set">
-				<with-param value-id="{$relation/@id}" />
-			</intact>
-			<intact with-id="{$relation/@id}" prop="infons" action="add">
-				<with-param value-var="obj.o" />
-			</intact>
+			</f:intact>-->
+			<f:intact with-var="obj.o" prop="relation" action="set">
+				<f:with-param value-id="{$relation/@id}" />
+			</f:intact>
+			<f:intact with-id="{$relation/@id}" prop="infons" action="add">
+				<f:with-param value-var="obj.o" />
+			</f:intact>
 			<xsl:for-each select="$arcs/*">
-				<intact with-var="obj.o" prop="arcs" action="set">
-					<with-param><xsl:copy-of select="f:key/*" /></with-param>
-					<with-param><xsl:copy-of select="f:value/*" /></with-param>
-				</intact>
-				<intact with-id="{f:value/f:ob/@id}" prop="involves" action="add">
+				<f:intact with-var="obj.o" prop="arcs" action="set">
+					<f:with-param><xsl:copy-of select="f:key/*" /></f:with-param>
+					<f:with-param><xsl:copy-of select="f:value/*" /></f:with-param>
+				</f:intact>
+				<f:intact with-id="{f:value/f:ob/@id}" prop="involves" action="add">
 					<f:with-param value-var="obj.o" />
-				</intact>
+				</f:intact>
 			</xsl:for-each>
 			<f:return as="o" value-var="obj.o" />
-		</transaction>
+		</f:transaction>
 	</xsl:template>
 </f:transaction>

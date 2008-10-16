@@ -11,16 +11,16 @@
 	<f:param name="addPanel" />
 	
 	<f:derived name="focus" from="zui">
-		<get what="focus" />
+		<f:get what="focus" />
 	</f:derived>
 	<f:derived name="focusType" from="focus">
-		<gettype />
+		<f:gettype />
 	</f:derived>
 	<f:derived name="maximizedChild" from="zui">
-		<get what="maximizedChild" />
+		<f:get what="maximizedChild" />
 	</f:derived>
 	<f:derived name="properties" from="zui">
-		<get what="properties" />
+		<f:get what="properties" />
 	</f:derived>
 	
 	<xsl:template>
@@ -253,16 +253,16 @@
 		<f:param name="height" />
 		
 		<f:derived name="childZuisMinimized" from="zui">
-			<get what="childZuis" />
+			<f:get what="childZuis" />
 			<buildassoc what="minimized" />	
 		</f:derived>
 		
 		<f:derived name="leftChildInView" from="zui">
-			<get what="leftChildInView" />
+			<f:get what="leftChildInView" />
 		</f:derived>
 		
 		<f:derived name="leftRailChild" from="zui">
-			<get what="leftRailChild" />
+			<f:get what="leftRailChild" />
 		</f:derived>
 		
 		<xsl:template>
@@ -376,10 +376,10 @@
 	<f:function name="railButton">
 		<f:param name="zui" />
 		<f:derived name="focus" from="zui">
-			<get what="focus" />
+			<f:get what="focus" />
 		</f:derived>
 		<f:derived name="minimized" from="zui">
-			<get what="minimized" />
+			<f:get what="minimized" />
 		</f:derived>
 		<f:param name="inView" />
 		<f:param name="openZuiCount" />

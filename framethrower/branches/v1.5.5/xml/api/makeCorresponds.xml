@@ -6,37 +6,37 @@
 	<f:param name="arg2"/>
 	
 	<f:derived name="arg1Anchor" from="arg1">
-		<get what="involves" />
-		<filter>
-			<get what="relation" />
-			<equals>
-				<start predef="corresponds" />
-			</equals>
-		</filter>
-		<foreach type="kernel.ob">
-			<get what="arcs" />
-			<getkey key="'anchor'" />
-		</foreach>
-		<takeone />
+		<f:get what="involves" />
+		<f:filter>
+			<f:get what="relation" />
+			<f:equals>
+				<f:start predef="corresponds" />
+			</f:equals>
+		</f:filter>
+		<f:foreach type="kernel.ob">
+			<f:get what="arcs" />
+			<f:getkey key="'anchor'" />
+		</f:foreach>
+		<f:takeone />
 	</f:derived>
 	
 	<f:derived name="arg2Anchor" from="arg2">
-		<get what="involves" />
-		<filter>
-			<get what="relation" />
-			<equals>
-				<start predef="corresponds" />
-			</equals>
-		</filter>
-		<foreach type="kernel.ob">
-			<get what="arcs" />
-			<getkey key="'anchor'" />
-		</foreach>
-		<takeone />
+		<f:get what="involves" />
+		<f:filter>
+			<f:get what="relation" />
+			<f:equals>
+				<f:start predef="corresponds" />
+			</f:equals>
+		</f:filter>
+		<f:foreach type="kernel.ob">
+			<f:get what="arcs" />
+			<f:getkey key="'anchor'" />
+		</f:foreach>
+		<f:takeone />
 	</f:derived>
 	
 	<xsl:template>
-		<transaction>
+		<f:transaction>
 			<xsl:choose>
 				<xsl:when test="$arg1Anchor">
 					<xsl:choose>
@@ -129,6 +129,6 @@
 					</xsl:choose>
 				</xsl:otherwise>
 			</xsl:choose>
-		</transaction>
+		</f:transaction>
 	</xsl:template>
 </f:transaction>

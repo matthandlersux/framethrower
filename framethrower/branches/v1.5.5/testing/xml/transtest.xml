@@ -6,13 +6,13 @@
 	<f:param name="destination" />
 	
 	<xsl:template>
-		<transaction>
+		<f:transaction>
 			
 			<f:perform absurl="xml/api/moveObject.xml">
 				<f:with-param name="object" value-id="{$object/@id}" />
 				<f:with-param name="destination" value-id="{$destination/@id}" />
 			</f:perform>
 			
-		</transaction>
+		</f:transaction>
 	</xsl:template>
 </f:transaction>

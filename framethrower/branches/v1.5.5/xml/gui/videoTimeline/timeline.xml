@@ -7,13 +7,13 @@
 	
 	<f:param name="videoTimeline" />
 	<f:derived name="video" from="videoTimeline">
-		<get what="video" />
+		<f:get what="video" />
 	</f:derived>
 	<f:derived name="duration" from="video">
-		<get what="duration" />
+		<f:get what="duration" />
 	</f:derived>
 	<f:derived name="zoomWidth" from="videoTimeline">
-		<get what="zoomWidth" />
+		<f:get what="zoomWidth" />
 	</f:derived>
 	
 	<xsl:template>

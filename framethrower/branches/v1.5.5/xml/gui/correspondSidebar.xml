@@ -7,28 +7,28 @@
 	<f:param name="zui" />
 	<f:param name="focus" />
 	<f:derived name="children" from="focus">
-		<get what="involves" />
-		<filter>
-			<get what="relation" />
-			<equals>
-				<start predef="corresponds" />
-			</equals>
-		</filter>
-		<foreach type="kernel.ob">
-			<get what="arcs" />
-			<getkey key="'anchor'" />
-		</foreach>
-		<get what="involves" />
-		<filter>
-			<get what="relation" />
-			<equals>
-				<start predef="corresponds" />
-			</equals>
-		</filter>
-		<foreach type="kernel.ob">
-			<get what="arcs" />
-			<getkey key="'corresponder'" />
-		</foreach>
+		<f:get what="involves" />
+		<f:filter>
+			<f:get what="relation" />
+			<f:equals>
+				<f:start predef="corresponds" />
+			</f:equals>
+		</f:filter>
+		<f:foreach type="kernel.ob">
+			<f:get what="arcs" />
+			<f:getkey key="'anchor'" />
+		</f:foreach>
+		<f:get what="involves" />
+		<f:filter>
+			<f:get what="relation" />
+			<f:equals>
+				<f:start predef="corresponds" />
+			</f:equals>
+		</f:filter>
+		<f:foreach type="kernel.ob">
+			<f:get what="arcs" />
+			<f:getkey key="'corresponder'" />
+		</f:foreach>
 	</f:derived>
 	
 	<xsl:template>

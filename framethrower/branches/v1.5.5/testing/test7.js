@@ -5,10 +5,10 @@ var PREDEF = world;
 
 var rw = world.rw;
 
-
 //make a corresponds anchor in ONT
 var anchor = actions.makeIndividual(world.rw);
 anchor.control.content.set('Test Anchor');
+
 
 //make a corresponds infon between missRobinson and the anchor
 var cor1 = actions.makeInfon(world.rw, world.corresponds, {corresponder:world.missRob, anchor:anchor});

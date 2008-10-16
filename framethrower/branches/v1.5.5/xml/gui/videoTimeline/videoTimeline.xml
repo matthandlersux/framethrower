@@ -8,19 +8,19 @@
 	<f:param name="width" />
 	<f:param name="height" />
 	<f:derived name="embedVideo" from="videoTimeline">
-		<get what="embedVideo" />
+		<f:get what="embedVideo" />
 	</f:derived>
 	<f:derived name="video" from="videoTimeline">
-		<get what="video" />
+		<f:get what="video" />
 	</f:derived>
 	<f:derived name="src" from="video">
-		<get what="src" />
+		<f:get what="src" />
 	</f:derived>
 	<f:derived name="aspect" from="video">
-		<get what="aspect" />
+		<f:get what="aspect" />
 	</f:derived>
 	<f:derived name="zoomWidth" from="videoTimeline">
-		<get what="zoomWidth" />
+		<f:get what="zoomWidth" />
 	</f:derived>
 	
 	<xsl:template>
@@ -70,26 +70,26 @@
 	<f:function name="currentTimeCursor">
 		<f:param name="videoTimeline" />
 		<f:derived name="embedVideo" from="videoTimeline">
-			<get what="embedVideo" />
+			<f:get what="embedVideo" />
 		</f:derived>
 		<f:derived name="currentTime" from="embedVideo">
-			<get what="currentTime" />
+			<f:get what="currentTime" />
 		</f:derived>
 		<f:derived name="selectedStartTime" from="videoTimeline">
-			<get what="selectedStartTime" />
+			<f:get what="selectedStartTime" />
 		</f:derived>
 		<f:derived name="selectedEndTime" from="videoTimeline">
-			<get what="selectedEndTime" />
+			<f:get what="selectedEndTime" />
 		</f:derived>
 		
 		<f:derived name="video" from="videoTimeline">
-			<get what="video" />
+			<f:get what="video" />
 		</f:derived>
 		<f:derived name="duration" from="video">
-			<get what="duration" />
+			<f:get what="duration" />
 		</f:derived>
 		<f:derived name="zoomWidth" from="videoTimeline">
-			<get what="zoomWidth" />
+			<f:get what="zoomWidth" />
 		</f:derived>
 		
 		<xsl:template>

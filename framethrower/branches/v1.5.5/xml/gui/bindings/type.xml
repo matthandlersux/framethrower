@@ -6,25 +6,25 @@
 		<f:param name="zui" />
 		<f:param name="type" />
 		<f:derived name="expandedTypes" from="zui">
-			<get what="expandedTypes" />
+			<f:get what="expandedTypes" />
 		</f:derived>
 		
 		<xsl:template>
-			<transaction>
+			<f:transaction>
 				<xsl:variable name="typeId" select="$type/@id" />
 				<xsl:choose>
 					<xsl:when test="$expandedTypes/*[@id = $typeId]">
-						<intact with-id="{$zui/@id}" prop="expandedTypes" action="remove">
-							<with-param><xsl:copy-of select="$type" /></with-param>
-						</intact>
+						<f:intact with-id="{$zui/@id}" prop="expandedTypes" action="remove">
+							<f:with-param><xsl:copy-of select="$type" /></f:with-param>
+						</f:intact>
 					</xsl:when>
 					<xsl:otherwise>
-						<intact with-id="{$zui/@id}" prop="expandedTypes" action="add">
-							<with-param><xsl:copy-of select="$type" /></with-param>
-						</intact>
+						<f:intact with-id="{$zui/@id}" prop="expandedTypes" action="add">
+							<f:with-param><xsl:copy-of select="$type" /></f:with-param>
+						</f:intact>
 					</xsl:otherwise>
 				</xsl:choose>
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 	</f:transaction>
 </f:binding>

@@ -20,8 +20,8 @@
 		<f:get what="content"/>
 	</f:derived>
 	<f:derived name="relationContent" predef="rw">
-		<get what="childObjects"/>
-		<filtertype type="kernel.relation"/>
+		<f:get what="childObjects"/>
+		<f:filtertype type="kernel.relation"/>
 		<buildassoc what="content"/>
 	</f:derived>
 	<xsl:template>
@@ -182,7 +182,7 @@
 	<f:function name="printParentSitContent">
 		<f:param name="focus" />
 		<f:derived name="parentSituation" from="focus">
-			<get what="parentSituation" />
+			<f:get what="parentSituation" />
 		</f:derived>
 		
 		<xsl:template>

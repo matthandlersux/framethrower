@@ -5,17 +5,17 @@
 	<f:param name="type" />
 	<f:param name="parentSituation" />
 	<xsl:template>
-		<transaction>
-			<make type="{$type/@value}" name="o" />
+		<f:transaction>
+			<f:make type="{$type/@value}" name="o" />
 			<xsl:if test="$parentSituation">
-				<intact with-var="o" prop="parentSituation" action="set">
-					<with-param value-id="{$parentSituation/@id}" />
-				</intact>
-				<intact with-id="{$parentSituation/@id}" prop="childObjects" action="add">
-					<with-param value-var="o" />
-				</intact>
+				<f:intact with-var="o" prop="parentSituation" action="set">
+					<f:with-param value-id="{$parentSituation/@id}" />
+				</f:intact>
+				<f:intact with-id="{$parentSituation/@id}" prop="childObjects" action="add">
+					<f:with-param value-var="o" />
+				</f:intact>
 			</xsl:if>
 			<f:return as="o" value-var="o" />
-		</transaction>
+		</f:transaction>
 	</xsl:template>
 </f:transaction>

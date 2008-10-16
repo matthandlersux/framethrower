@@ -6,31 +6,31 @@
 	<f:param name="destination" />
 
 	<f:derived name="oldParent" from="object">
-		<get what="parentSituation" />
+		<f:get what="parentSituation" />
 	</f:derived>
 
 	<xsl:template>
-		<transaction>
+		<f:transaction>
 					
 			
-			<intact with-id="{$object/@id}" prop="parentSituation" action="set">
+			<f:intact with-id="{$object/@id}" prop="parentSituation" action="set">
 				<f:with-param value-id="{$destination/@id}" />
-			</intact>
+			</f:intact>
 			
 
-			<intact with-id="{$oldParent/@id}" prop="childObjects" action="remove">
+			<f:intact with-id="{$oldParent/@id}" prop="childObjects" action="remove">
 				<f:with-param value-id="{$object/@id}" />
-			</intact>
+			</f:intact>
 
-			<intact with-id="{$destination/@id}" prop="childObjects" action="add">
+			<f:intact with-id="{$destination/@id}" prop="childObjects" action="add">
 				<f:with-param value-id="{$object/@id}" />
-			</intact>
+			</f:intact>
 			
 			<!-->
 				TODO: add code for adjusting the corresponds chain
 				UPDATE: shouldn't have to add code here now
 			</!-->
 			
-		</transaction>
+		</f:transaction>
 	</xsl:template>
 </f:transaction>

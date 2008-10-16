@@ -31,7 +31,7 @@ function getThunkEssence(node, ids, relurl) {
 	var params = {};
 
 	forEach(paramNodes, function (paramNode) {
-		params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, ids, {});
+		params[paramNode.getAttribute("name")] = convertXMLToPin(paramNode, ids, {});
 	});
 	
 	return {url: url, params: params};

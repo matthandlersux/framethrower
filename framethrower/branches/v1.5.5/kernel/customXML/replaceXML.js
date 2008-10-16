@@ -44,7 +44,7 @@ function replaceXML(node, replacer, ambient, ids, relurl) {
 			node.style.position = "absolute";
 			if (!node.oldSize) node.oldSize = {};
 		} else {
-			node.setAttributeNS("", "style", replacer.getAttributeNS("", "style"));
+			node.setAttributeNS("", "style", replacer.getAttribute("style"));
 			if (node.oldSize) {
 				animation.removeAnimation(node);
 			}
@@ -252,18 +252,18 @@ function registerBinding(binding, ids, relurl) {
 	var params = {};
 	var paramNodes = xpath("f:with-param", binding);
 	forEach(paramNodes, function (paramNode) {
-		params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, ids, {});
+		params[paramNode.getAttribute("name")] = convertXMLToPin(paramNode, ids, {});
 	});
 	parent.bindingParams = params;
 }
 function registerButton(button) {
-	button.parentNode.bindingButtonName = button.getAttributeNS("", "name");
+	button.parentNode.bindingButtonName = button.getAttribute("name");
 }
 
 function sizeNode(node) {
 	node.style.position = "absolute";
 	function setAttr(name) {
-		var att = node.getAttributeNS("", name);
+		var att = node.getAttribute(name);
 		if (att) {
 			node.style[name] = att + "px";
 		}

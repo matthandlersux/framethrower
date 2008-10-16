@@ -7,15 +7,15 @@
 		<f:param name="leftRailChild" />
 
 		<xsl:template>
-			<transaction>
+			<f:transaction>
 				<xsl:if test="$leftRailChild/@value &gt; 0" >
-					<intact with-id="{$zui/@id}" prop="leftRailChild" action="set">
-						<with-param>
+					<f:intact with-id="{$zui/@id}" prop="leftRailChild" action="set">
+						<f:with-param>
 							<f:number value="{$leftRailChild/@value - 1}" />
-						</with-param>
-					</intact>
+						</f:with-param>
+					</f:intact>
 				</xsl:if>
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 	</f:transaction>
 	
@@ -25,15 +25,15 @@
 		<f:param name="count" />
 
 		<xsl:template>
-			<transaction>
+			<f:transaction>
 				<xsl:if test="$leftRailChild/@value &lt; ($count/@value - 2)" >
-					<intact with-id="{$zui/@id}" prop="leftRailChild" action="set">
-						<with-param>
+					<f:intact with-id="{$zui/@id}" prop="leftRailChild" action="set">
+						<f:with-param>
 							<f:number value="{$leftRailChild/@value + 1}" />
-						</with-param>
-					</intact>
+						</f:with-param>
+					</f:intact>
 				</xsl:if>
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 	</f:transaction>
 	

@@ -7,24 +7,24 @@
 		<f:param name="videoTimeline" />
 		<f:param name="eventXML" />
 		<f:derived name="embedVideo" from="videoTimeline">
-			<get what="embedVideo" />
+			<f:get what="embedVideo" />
 		</f:derived>
 		<f:derived name="video" from="videoTimeline">
-			<get what="video" />
+			<f:get what="video" />
 		</f:derived>
 		<f:derived name="duration" from="video">
-			<get what="duration" />
+			<f:get what="duration" />
 		</f:derived>
 		
 		<xsl:template>
-			<transaction>
+			<f:transaction>
 				<xsl:variable name="ratio" select="($eventXML/@clientX - $eventXML/@boundingLeft) div ($eventXML/@boundingRight - $eventXML/@boundingLeft)" />
 				<xsl:variable name="time" select="$duration/@value * $ratio" />
 				
 				<f:intact with-id="{$embedVideo/@id}" prop="gotoTime" action="set">
 					<f:with-param><f:number value="{$time}" /></f:with-param>
 				</f:intact>
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 	</f:transaction>
 	
@@ -32,14 +32,14 @@
 		<f:param name="videoTimeline" />
 		<f:param name="eventXML" />
 		<f:derived name="video" from="videoTimeline">
-			<get what="video" />
+			<f:get what="video" />
 		</f:derived>
 		<f:derived name="duration" from="video">
-			<get what="duration" />
+			<f:get what="duration" />
 		</f:derived>
 		
 		<xsl:template>
-			<transaction>
+			<f:transaction>
 				<xsl:variable name="ratio" select="($eventXML/@clientX - $eventXML/@boundingLeft) div ($eventXML/@boundingRight - $eventXML/@boundingLeft)" />
 				<xsl:variable name="time" select="$duration/@value * $ratio" />
 				
@@ -49,7 +49,7 @@
 				<f:intact with-id="{$videoTimeline/@id}" prop="selectedEndTime" action="set">
 					<f:with-param />
 				</f:intact>
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 	</f:transaction>
 	
@@ -57,21 +57,21 @@
 		<f:param name="videoTimeline" />
 		<f:param name="eventXML" />
 		<f:derived name="video" from="videoTimeline">
-			<get what="video" />
+			<f:get what="video" />
 		</f:derived>
 		<f:derived name="duration" from="video">
-			<get what="duration" />
+			<f:get what="duration" />
 		</f:derived>
 		
 		<xsl:template>
-			<transaction>
+			<f:transaction>
 				<xsl:variable name="ratio" select="($eventXML/@clientX - $eventXML/@boundingLeft) div ($eventXML/@boundingRight - $eventXML/@boundingLeft)" />
 				<xsl:variable name="time" select="$duration/@value * $ratio" />
 
 				<f:intact with-id="{$videoTimeline/@id}" prop="selectedEndTime" action="set">
 					<f:with-param><f:number value="{$time}" /></f:with-param>
 				</f:intact>
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 	</f:transaction>
 	

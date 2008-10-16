@@ -6,17 +6,17 @@
 		<f:param name="zui" />
 		<f:param name="focus" />
 		<f:derived name="type" from="focus">
-			<gettype />
+			<f:gettype />
 		</f:derived>
 		
 		<xsl:template>
-			<transaction>
-				<make type="layout.zui" name="newZui" />
-				<intact with-var="newZui" prop="focus" action="set">
-					<with-param><xsl:copy-of select="$focus" /></with-param>
-				</intact>
-				<intact with-var="newZui" prop="properties" action="set">
-					<with-param>
+			<f:transaction>
+				<f:make type="layout.zui" name="newZui" />
+				<f:intact with-var="newZui" prop="focus" action="set">
+					<f:with-param><xsl:copy-of select="$focus" /></f:with-param>
+				</f:intact>
+				<f:intact with-var="newZui" prop="properties" action="set">
+					<f:with-param>
 						<xsl:choose>
 							<xsl:when test="$type/@value = 'kernel.situation'">
 								<zui view="situation" childrenSidebar="1" correspondSidebar="0"/>
@@ -25,39 +25,39 @@
 								<zui view="object" correspondSidebar="0"/>
 							</xsl:otherwise>
 						</xsl:choose>
-					</with-param>
-				</intact>
-				<intact with-var="newZui" prop="parentZui" action="set">
-					<with-param value-id="{$zui/@id}" />
-				</intact>
+					</f:with-param>
+				</f:intact>
+				<f:intact with-var="newZui" prop="parentZui" action="set">
+					<f:with-param value-id="{$zui/@id}" />
+				</f:intact>
 				
-				<intact with-var="newZui" prop="minimized" action="set">
-					<with-param>
+				<f:intact with-var="newZui" prop="minimized" action="set">
+					<f:with-param>
 						<f:bool value="false" />
-					</with-param>
-				</intact>
-				<intact with-var="newZui" prop="leftChildInView" action="set">
-					<with-param>
+					</f:with-param>
+				</f:intact>
+				<f:intact with-var="newZui" prop="leftChildInView" action="set">
+					<f:with-param>
 						<f:number value="0" />
-					</with-param>
-				</intact>
-				<intact with-var="newZui" prop="leftRailChild" action="set">
-					<with-param>
+					</f:with-param>
+				</f:intact>
+				<f:intact with-var="newZui" prop="leftRailChild" action="set">
+					<f:with-param>
 						<f:number value="0" />
-					</with-param>
-				</intact>
+					</f:with-param>
+				</f:intact>
 				
 				
-				<intact with-id="{$zui/@id}" prop="childZuis" action="append">
-					<with-param value-var="newZui" />
-				</intact>
+				<f:intact with-id="{$zui/@id}" prop="childZuis" action="append">
+					<f:with-param value-var="newZui" />
+				</f:intact>
 				
 				<f:perform url="taskbar.xml#Center">
 					<f:with-param name="zui" value-var="newZui" />
 				</f:perform>
 				
 				<f:return as="newZui" value-var="newZui" />
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 	</f:transaction>
 	

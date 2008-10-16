@@ -6,28 +6,28 @@
 		<f:param name="panelLayer" />
 		<f:param name="addPanel" />
 		<f:derived name="infonArgs" from="addPanel">
-			<get what="infonArgs" />
+			<f:get what="infonArgs" />
 		</f:derived>
 
 		<xsl:template>
-			<transaction>
-				<intact with-id="{$panelLayer/@id}" prop="addInfon" action="set">
-					<with-param>
+			<f:transaction>
+				<f:intact with-id="{$panelLayer/@id}" prop="addInfon" action="set">
+					<f:with-param>
 						<f:bool value="false" />
-					</with-param>
-				</intact>
-				<intact with-id="{$addPanel/@id}" prop="selectedRelation" action="set">
-					<with-param />
-				</intact>
+					</f:with-param>
+				</f:intact>
+				<f:intact with-id="{$addPanel/@id}" prop="selectedRelation" action="set">
+					<f:with-param />
+				</f:intact>
 
 				<xsl:for-each select="$infonArgs/*">
-					<intact with-id="{$addPanel/@id}" prop="infonArgs" action="remove">
-						<with-param>
+					<f:intact with-id="{$addPanel/@id}" prop="infonArgs" action="remove">
+						<f:with-param>
 							<xsl:copy-of select="./f:key/*" />
-						</with-param>
-					</intact>
+						</f:with-param>
+					</f:intact>
 				</xsl:for-each>
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 		
 	</f:transaction>
@@ -38,14 +38,14 @@
 		<f:param name="addPanel" />
 		
 		<f:derived name="expanded" from="addPanel">
-			<get what="expanded" />
+			<f:get what="expanded" />
 		</f:derived>
 		
 
 		<xsl:template>
-			<transaction>
-				<intact with-id="{$addPanel/@id}" prop="expanded" action="set">
-					<with-param>
+			<f:transaction>
+				<f:intact with-id="{$addPanel/@id}" prop="expanded" action="set">
+					<f:with-param>
 						<xsl:choose>
 							<xsl:when test="$expanded/@value = 'true'">
 								<f:bool value="false" />
@@ -54,9 +54,9 @@
 								<f:bool value="true" />
 							</xsl:otherwise>
 						</xsl:choose>
-					</with-param>
-				</intact>
-			</transaction>
+					</f:with-param>
+				</f:intact>
+			</f:transaction>
 		</xsl:template>
 		
 	</f:transaction>
@@ -68,18 +68,18 @@
 		<f:param name="panelLayer" />
 		
 		<xsl:template>
-			<transaction>
-				<intact with-id="{$panelLayer/@id}" prop="selectArg" action="set">
-					<with-param>
+			<f:transaction>
+				<f:intact with-id="{$panelLayer/@id}" prop="selectArg" action="set">
+					<f:with-param>
 						<xsl:copy-of select="$argNum" />
-					</with-param>
-				</intact>
-				<intact with-id="{$panelLayer/@id}" prop="addInfon" action="set">
-					<with-param>
+					</f:with-param>
+				</f:intact>
+				<f:intact with-id="{$panelLayer/@id}" prop="addInfon" action="set">
+					<f:with-param>
 						<f:bool value="false" />
-					</with-param>
-				</intact>
-			</transaction>
+					</f:with-param>
+				</f:intact>
+			</f:transaction>
 		</xsl:template>
 		
 	</f:transaction>
@@ -93,16 +93,16 @@
 		<f:param name="addPanel" />
 		
 		<xsl:template>
-			<transaction>
-				<intact with-id="{$addPanel/@id}" prop="selectedRelation" action="set">
-					<with-param>
+			<f:transaction>
+				<f:intact with-id="{$addPanel/@id}" prop="selectedRelation" action="set">
+					<f:with-param>
 						<xsl:copy-of select="$relation" />
-					</with-param>
-				</intact>
+					</f:with-param>
+				</f:intact>
 				<f:perform name="DropDown">
 					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
 				</f:perform>
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 		
 	</f:transaction>
@@ -115,28 +115,28 @@
 		<f:param name="addPanel" />
 		
 		<f:derived name="selectArg" from="panelLayer">
-			<get what="selectArg" />
+			<f:get what="selectArg" />
 		</f:derived>
 
 		<xsl:template>
-			<transaction>
-				<intact with-id="{$addPanel/@id}" prop="infonArgs" action="set">
-					<with-param>
+			<f:transaction>
+				<f:intact with-id="{$addPanel/@id}" prop="infonArgs" action="set">
+					<f:with-param>
 						<xsl:copy-of select="$selectArg" />
-					</with-param>
-					<with-param>
+					</f:with-param>
+					<f:with-param>
 						<xsl:copy-of select="$addFocus" />
-					</with-param>
-				</intact>
-				<intact with-id="{$panelLayer/@id}" prop="selectArg" action="set">
-					<with-param />
-				</intact>				
-				<intact with-id="{$panelLayer/@id}" prop="addInfon" action="set">
-					<with-param>
+					</f:with-param>
+				</f:intact>
+				<f:intact with-id="{$panelLayer/@id}" prop="selectArg" action="set">
+					<f:with-param />
+				</f:intact>				
+				<f:intact with-id="{$panelLayer/@id}" prop="addInfon" action="set">
+					<f:with-param>
 						<f:bool value="true" />
-					</with-param>
-				</intact>
-			</transaction>
+					</f:with-param>
+				</f:intact>
+			</f:transaction>
 		</xsl:template>		
 	</f:transaction>
 
@@ -146,23 +146,23 @@
 		<f:param name="panelLayer" />
 		<f:param name="addPanel" />
 		<f:derived name="infonArgs" from="addPanel">
-			<get what="infonArgs" />
+			<f:get what="infonArgs" />
 		</f:derived>
 		<f:derived name="selectedRelation" from="addPanel">
-			<get what="selectedRelation" />
+			<f:get what="selectedRelation" />
 		</f:derived>
 		<f:derived name="selectedRelationContent" from="selectedRelation">
-			<get what="content" />
+			<f:get what="content" />
 		</f:derived>
 		<f:derived name="addFocus" from="panelLayer">
-			<get what="addFocus" />
+			<f:get what="addFocus" />
 		</f:derived>
 		<f:derived name="parentSituation" from="addFocus">
-			<get what="parentSituation" />
+			<f:get what="parentSituation" />
 		</f:derived>
 		
 		<xsl:template>
-			<transaction>
+			<f:transaction>
 				<f:perform absurl="xml/api/makeInfon.xml">
 					<f:with-param name="parentSituation" value-id="{$parentSituation/@id}" />
 					<f:with-param name="relation" value-id="{$selectedRelation/@id}" />
@@ -186,7 +186,7 @@
 					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
 					<f:with-param name="addPanel" value-id="{$addPanel/@id}" />
 				</f:perform>
-			</transaction>
+			</f:transaction>
 		</xsl:template>
 		
 	</f:transaction>

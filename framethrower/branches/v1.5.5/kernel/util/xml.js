@@ -68,6 +68,22 @@ function compileXSL(xsl){
     }
     addxmlns(xsl);
     
+	//for Safari, change each xsl:param to xsl:variable to extract the parameters from the source document
+	var paramNodes = xpath("xsl:param", xsl);
+	var templateNodes = xpath("xsl:template", xsl);
+	var templateNode = templateNodes[0];
+	
+	forEach(paramNodes, function(paramNode) {
+		var variableNode = document.createElementNS(xmlns.xsl, "variable");
+		variableNode.setAttribute("name", paramNode.getAttribute("name"));
+		variableNode.setAttribute("select", paramNode.getAttribute("name") + "/*");
+		templateNode.insertBefore(variableNode, templateNode.firstChild);
+		paramNode.parentNode.removeChild(paramNode);
+	});
+	
+	//xsl.firstChild.appendChild();
+	//xsl.firstChild.insertBefore(newnode, xsl.firstChild.firstChild);
+
     var p = new XSLTProcessor();
     
     // Compile
@@ -79,11 +95,36 @@ function compileXSL(xsl){
     }
     
     return function(source, params){
-        // Set parameters
+		// For Safari, add parameters to source document
+		// Leave source alone if there are no params
+		if(!isEmpty(params)){
+			source = document.createElementNS("", "parameters");
+		}
+
+		forEach(params, function(value, param){
+			if (value !== emptyXPathResult) {
+				var argNode = document.createElementNS("", param);
+				if(typeOf(value) == 'string'){
+					value = document.createTextNode(value);
+					document.adoptNode(value);
+					var stringNode = document.createElementNS("", "string");
+					stringNode.appendChild(value);
+					value = stringNode;
+				}
+			
+				document.adoptNode(value);
+			
+				argNode.appendChild(value);
+				source.appendChild(argNode);
+			}
+        });
+	
+        // Set parameters for Firefox
+/*
         forEach(params, function(value, param){
             p.setParameter(null, param, value);
         });
-        
+*/
         // Execute
         try {
 			//XSLTProcessor doesn't do well with a node with no parent
@@ -92,7 +133,8 @@ function compileXSL(xsl){
 				var parent = document.createElementNS("","parent");
 				parent.appendChild(source);
 			}
-            var result = p.transformToFragment(source, document);
+            //var result = p.transformToFragment(source, document);
+			var result = p.transformToDocument(source);
 			if(DEBUG){
 				var logs = xpath(".//f:consolelog", result.firstChild);
 				forEach(logs, function (log) {
@@ -109,7 +151,7 @@ function compileXSL(xsl){
         forEach(params, function(value, param){
             p.removeParameter(null, param);
         });
-        
+
         return result.firstChild;
     };
 }

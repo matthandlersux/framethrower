@@ -9,15 +9,15 @@
 	<f:param name="panelLayer" />
 	<f:param name="addPanel" />
 	<f:derived name="properties" from="panelLayer">
-		<get what="properties" />
+		<f:get what="properties" />
 	</f:derived>
 	
 	<f:derived name="childrenByType" from="focus">
-		<get what="childrenByType" />
+		<f:get what="childrenByType" />
 	</f:derived>
 
 	<f:derived name="expandedTypes" from="zui">
-		<get what="expandedTypes" />
+		<f:get what="expandedTypes" />
 	</f:derived>
 	
 	<xsl:template>

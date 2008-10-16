@@ -6,8 +6,8 @@
 
 	<f:param name="focus" />
 	<f:derived name="relationContent" from="focus">
-		<get what="relation" />
-		<get what="content" />
+		<f:get what="relation" />
+		<f:get what="content" />
 	</f:derived>
 	
 	<xsl:template>
@@ -42,8 +42,8 @@
 		<f:param name="infon" />
 		<f:param name="role" />
 		<f:derived name="arg" from="infon">
-			<get what="arcs" />
-			<getkey key="role" />
+			<f:get what="arcs" />
+			<f:getkey key="role" />
 		</f:derived>
 		
 		<xsl:template>

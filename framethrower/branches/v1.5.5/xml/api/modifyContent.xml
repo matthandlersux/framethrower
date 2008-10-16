@@ -5,10 +5,10 @@
 	<f:param name="object" />
 	<f:param name="content" />
 	<xsl:template>
-		<transaction>
-			<intact with-id="{$object/@id}" prop="content" action="set">
+		<f:transaction>
+			<f:intact with-id="{$object/@id}" prop="content" action="set">
 				<f:with-param><xsl:copy-of select="$content" /></f:with-param>
-			</intact>
-		</transaction>
+			</f:intact>
+		</f:transaction>
 	</xsl:template>
 </f:transaction>

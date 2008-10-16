@@ -2,24 +2,24 @@
 	xmlns:f="http://www.filmsfolded.com/xsl/ui"
 	name="childrenByType" from="focus">
 	
-	<get what="childObjects" />
+	<f:get what="childObjects" />
 	<groupby ascontext="focus" type="kernel.ob">
-		<get what="involves" />
-		<filter>
-			<get what="relation" />
-			<equals>
-				<start predef="ofType" />
-			</equals>
-		</filter>
-		<filter>
-			<get what="arcs" />
-			<getkey key="'instance'" />
-			<equals>
-				<start from="focus" />
-			</equals>
-		</filter>
-		<takeone />
-		<get what="arcs" />
-		<getkey key="'type'" />
+		<f:get what="involves" />
+		<f:filter>
+			<f:get what="relation" />
+			<f:equals>
+				<f:start predef="ofType" />
+			</f:equals>
+		</f:filter>
+		<f:filter>
+			<f:get what="arcs" />
+			<f:getkey key="'instance'" />
+			<f:equals>
+				<f:start from="focus" />
+			</f:equals>
+		</f:filter>
+		<f:takeone />
+		<f:get what="arcs" />
+		<f:getkey key="'type'" />
 	</groupby>
 </f:derived>

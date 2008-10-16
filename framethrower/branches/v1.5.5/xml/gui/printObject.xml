@@ -6,13 +6,13 @@
 
 	<f:param name="focus" />
 	<f:derived name="content" from="focus">
-		<get what="content" />
+		<f:get what="content" />
 	</f:derived>
 	<f:derived name="type" from="focus">
-		<gettype />
+		<f:gettype />
 	</f:derived>
 	<f:derived name="parentSituation" from="focus">
-		<get what="parentSituation" />
+		<f:get what="parentSituation" />
 	</f:derived>
 	
 	<xsl:template>

@@ -7,12 +7,12 @@
 	<f:param name="list" />
 	<f:derived name="filteredList" from="list">
 		<f:filter>
-			<get what="minimized" />
-			<equals>
-				<start>
+			<f:get what="minimized" />
+			<f:equals>
+				<f:start>
 					<f:bool value="true" />
-				</start>
-			</equals>
+				</f:start>
+			</f:equals>
 		</f:filter>
 	</f:derived>
 	

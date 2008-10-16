@@ -59,12 +59,12 @@ function derive(xml, context, focus) {
 	//if (name) console.log("hooking up", name, xml, focus);
 	
 	function startFrom(xml) {
-		var from = xml.getAttributeNS("", "from");
+		var from = xml.getAttribute("from");
 		if (from) {
 			return context[from];
 		}
 		
-		var predef = xml.getAttributeNS("", "predef");
+		var predef = xml.getAttribute("predef");
 		if (predef) {
 			return startCaps.unit(PREDEF[predef]);
 		}
@@ -83,10 +83,10 @@ function derive(xml, context, focus) {
 		focus = startFrom(xml);
 	} else if (focus) {
 		if (name === "get") {
-			focus = applyGet(focus, xml.getAttributeNS("", "what"));
+			focus = applyGet(focus, xml.getAttribute("what"));
 		} else if (name === "filter") {
 			var newcontext = merge(context);
-			var ascontext = xml.getAttributeNS("", "ascontext");
+			var ascontext = xml.getAttribute("ascontext");
 			var com = components.filterC(focus.getType().getConstructor(), focus.getType().getArguments()[0], function (o) {
 				var start = startCaps.unit(o);
 				if (ascontext) {
@@ -105,7 +105,7 @@ function derive(xml, context, focus) {
 			focus = simpleApply(com, focus);
 		} else if (name === "groupby") {
 			var newcontext = merge(context);
-			var ascontext = xml.getAttributeNS("", "ascontext");
+			var ascontext = xml.getAttribute("ascontext");
 			focus = deriveGroupBy(focus, function (o) {
 				var start = startCaps.unit(o);
 				if (ascontext) {
@@ -113,10 +113,10 @@ function derive(xml, context, focus) {
 				}
 				var res = derive(xml.firstChild, newcontext, start);
 				return res;
-			}, typeNames[xml.getAttributeNS("", "type")]);
+			}, typeNames[xml.getAttribute("type")]);
 		} else if (name === "buildassoc") {
 			var t = focus.getType();
-			var what = xml.getAttributeNS("", "what");
+			var what = xml.getAttribute("what");
 			var outType = t.getArguments()[0].getProp(what);
 			focus = deriveBuildAssoc(focus, function (o) {
 				return o.get[what]();
@@ -129,7 +129,7 @@ function derive(xml, context, focus) {
 			var out = com.makeApply({input1: focus, input2: input2});
 			focus = out.output;
 		} else if (name === "filtertype") {
-			var com = components.set.filterType(focus.getType().getArguments()[0], typeNames[xml.getAttributeNS("", "type")]);
+			var com = components.set.filterType(focus.getType().getArguments()[0], typeNames[xml.getAttribute("type")]);
 			focus = simpleApply(com, focus);
 		} else if (name === "gettype") {
 			var com = components.lift(focus.getType().getConstructor(), basic.fun(focus.getType().getArguments()[0], basic.string), function (o) {
@@ -138,17 +138,17 @@ function derive(xml, context, focus) {
 			focus = simpleApply(com, focus);
 		} else if (name === "getkey") {
 			var com = components.assoc.getKey(focus.getType().getArguments()[0], focus.getType().getArguments()[1]);
-			var key = getFromContext(context, xml.getAttributeNS("", "key"));
+			var key = getFromContext(context, xml.getAttribute("key"));
 			focus = com.makeApply({input: focus, key: key}).output;
 		} else if (name === "trace") {
 			var t = focus.getType();
-			var what = xml.getAttributeNS("", "what");
+			var what = xml.getAttribute("what");
 			var outType = t.getArguments()[0].getProp(what).getArguments()[0];
 			focus = deriveTrace(focus, function (o) {
 				return o.get[what]();
 			}, outType);
 		} else if (name === "foreach") {
-			var type = typeNames[xml.getAttributeNS("", "type")];
+			var type = typeNames[xml.getAttribute("type")];
 			focus = deriveForEach(focus, function (o) {
 				return derive(xml.firstChild, context, startCaps.unit(o));
 			}, type);
@@ -158,7 +158,7 @@ function derive(xml, context, focus) {
 			focus = deriveTakeOne(focus);
 		} else if (name === "treeify") {
 			var t = focus.getType();
-			var property = xml.getAttributeNS("", "property");
+			var property = xml.getAttribute("property");
 			focus = deriveTreeify(focus, property);
 		} else {
 			console.error("Unknown xml element in derive: " + name);

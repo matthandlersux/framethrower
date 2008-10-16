@@ -11,19 +11,19 @@
 	<f:param name="addPanel" />	
 	
 	<f:derived name="properties" from="panelLayer">
-		<get what="properties" />
+		<f:get what="properties" />
 	</f:derived>
 	
 	<f:derived name="addInfon" from="panelLayer">
-		<get what="addInfon" />
+		<f:get what="addInfon" />
 	</f:derived>
 	
 	<f:derived name="tooltip" from="panelLayer">
-		<get what="tooltip" />
+		<f:get what="tooltip" />
 	</f:derived>
 	
 	<f:derived name="videoTimelines" from="panelLayer">
-		<get what="videoTimelines" />
+		<f:get what="videoTimelines" />
 	</f:derived>
 	
 	

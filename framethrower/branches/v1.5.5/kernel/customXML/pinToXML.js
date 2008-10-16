@@ -29,24 +29,24 @@ function convertFromXML(xml, ids, vars) {
 	var name = xml.localName;
 	var namespace = xml.namespaceURI;
 	if (name === "ob" && namespace === xmlns["f"]) {
-		var valueId = xml.getAttributeNS("", "id");
+		var valueId = xml.getAttribute("id");
 		if (valueId) {
 			return ids[valueId];
 		}
-		var valueVar = xml.getAttributeNS("", "var");
+		var valueVar = xml.getAttribute("var");
 		if (valueVar) {
 			return vars[valueVar];
 		}
-		var valuePredef = xml.getAttributeNS("", "predef");
+		var valuePredef = xml.getAttribute("predef");
 		if (valuePredef) {
 			return PREDEF[valuePredef];
 		}		
 	} else if (name === "string" && namespace === xmlns["f"]) {
-		return xml.getAttributeNS("", "value");
+		return xml.getAttribute("value");
 	} else if (name === "number" && namespace === xmlns["f"]) {
-		return +xml.getAttributeNS("", "value");
+		return +xml.getAttribute("value");
 	} else if (name === "bool" && namespace === xmlns["f"]) {
-		return xml.getAttributeNS("", "value") === "true";
+		return xml.getAttribute("value") === "true";
 	} else {
 		return xml;
 	}
@@ -66,12 +66,12 @@ function getTrimmedFirstChild(node) {
 // Note: this function can't extract sets, assocs, etc.
 // do we need that functionality?
 function getObjectFromParam(paramNode, ids, vars) {
-	var value = paramNode.getAttributeNS("", "value-id");
+	var value = paramNode.getAttribute("value-id");
 	if (value) {
 		return ids[value];
 	}
 	
-	value = paramNode.getAttributeNS("", "value-var");
+	value = paramNode.getAttribute("value-var");
 	if (value) {
 		return vars[value];
 	}
@@ -627,17 +627,17 @@ function maybeUnit(o) {
 }
 
 function convertXMLToPin(node, ids, vars) {
-	var valueId = node.getAttributeNS("", "value-id");
+	var valueId = node.getAttribute("value-id");
 	if (valueId) {
 		return maybeUnit(ids[valueId]);
 	}
 	
-	var valueVar = node.getAttributeNS("", "value-var");
+	var valueVar = node.getAttribute("value-var");
 	if (valueVar) {
 		return maybeUnit(vars[valueVar]);
 	}
 	
-	var valuePredef = node.getAttributeNS("", "value-predef");
+	var valuePredef = node.getAttribute("value-predef");
 	if (valuePredef) {
 		return maybeUnit(PREDEF[valuePredef]);
 	}
@@ -690,19 +690,19 @@ function convertJSFromXML(xml) {
 	var name = xml.localName;
 	var namespace = xml.namespaceURI;
 	if (name === "ob" && namespace === xmlns["f"]) {
-		var valueId = xml.getAttributeNS("", "id");
+		var valueId = xml.getAttribute("id");
 		if (valueId) {
 			return valueId;
 		}
-		var valueVar = xml.getAttributeNS("", "var");
+		var valueVar = xml.getAttribute("var");
 		if (valueVar) {
 			//this shouldn't happen
 			return valueVar;
 		}
 	} else if (name === "string" && namespace === xmlns["f"]) {
-		return xml.getAttributeNS("", "value");
+		return xml.getAttribute("value");
 	} else if (name === "number" && namespace === xmlns["f"]) {
-		return +xml.getAttributeNS("", "value");
+		return +xml.getAttribute("value");
 	} else {
 		return xml;
 	}
@@ -711,7 +711,7 @@ function convertJSFromXML(xml) {
 
 // this function is used only to convert params from xml to js for transactions written in js
 function convertXMLToJS(xml) {
-	var valueId = xml.getAttributeNS("", "id");
+	var valueId = xml.getAttribute("id");
 	if (valueId) {
 		return valueId;
 	}

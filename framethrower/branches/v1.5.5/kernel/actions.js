@@ -24,6 +24,8 @@ var actions = (function () {
 			infon.control.relation.set(relation);
 			forEach(arcs, function (arg, role) {
 				infon.control.arcs.set(role, arg);
+				console.log(role);
+				console.log(arg);
 				arg.control.involves.add(infon);
 			});
 			return infon;
@@ -39,7 +41,7 @@ var actions = (function () {
 	<f:param name="type" />
 	<f:param name="parentSituation" />
 	<xsl:template>
-		<make type="{$type}" name="o" />
+		<f:make type="{$type}" name="o" />
 		<xsl:if test="$parentSituation">
 			<int with="$o" prop="parentSituation" action="set">
 				<param value="{$parentSituation}" />

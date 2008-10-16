@@ -9,7 +9,7 @@
 	<f:param name="height" />
 	
 	<f:derived name="tooltipType" from="tooltip">
-		<gettype />
+		<f:gettype />
 	</f:derived>
 	
 	<f:derived name="mousePositionX" predef="mousePositionX">
@@ -42,7 +42,7 @@
 	<f:function name="printTooltipSituation">
 		<f:param name="tooltip" />
 		<f:derived name="situation" from="tooltip">
-			<get what="situation" />
+			<f:get what="situation" />
 		</f:derived>
 		
 		<xsl:template>

@@ -1,3 +1,5 @@
+var gt;
+
 (function () {
 	
 	// =========================================================
@@ -33,18 +35,27 @@
 					
 					var eventXML = document.createElementNS("","eventXML");
 					if (eventParams) {
-						var clientRect = at.getBoundingClientRect();
-						eventParams["boundingLeft"] = clientRect.left;
-						eventParams["boundingTop"] = clientRect.top;
-						eventParams["boundingRight"] = clientRect.right;
-						eventParams["boundingBottom"] = clientRect.bottom;
+						gt = at;
+						if(at.getBoundingClientRect){
+							var clientRect = at.getBoundingClientRect();
+							eventParams["boundingLeft"] = clientRect.left;
+							eventParams["boundingTop"] = clientRect.top;
+							eventParams["boundingRight"] = clientRect.right;
+							eventParams["boundingBottom"] = clientRect.bottom;
+						} else {
+							// Temporary HACK for Safari.
+							eventParams["boundingLeft"] = 0;
+							eventParams["boundingTop"] = 0;
+							eventParams["boundingRight"] = 500;
+							eventParams["boundingBottom"] = 500;
+						}
 						
 						forEach(eventParams, function(param, name) {
 							eventXML.setAttribute(name, param);
 						});
 					}
 					
-					var transName = trans[0].getAttributeNS("", "name");
+					var transName = trans[0].getAttribute("name");
 					var inputParams = at.bindingParams;
 					inputParams.eventXML = startCaps.unit(eventXML);
 					processPerforms(makeAmbient(), null, null, null, null, at.bindingURL + "#" + transName, at.bindingParams);

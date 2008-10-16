@@ -26,24 +26,24 @@ function executeTransaction(transaction, url) {
 		var actionName = actionNode.localName;
 		
 		if (actionName == 'make') {
-			var type = actionNode.getAttributeNS("", "type");
+			var type = actionNode.getAttribute("type");
 			var result = typeNames[type].make();
-			var resultName = actionNode.getAttributeNS("", "name");
+			var resultName = actionNode.getAttribute("name");
 			if(resultName) {
 				newvars[resultName] = result;
 			}
 		} else if (actionName == 'intact') {
-			var prefix = actionNode.getAttributeNS("", "with-var");
+			var prefix = actionNode.getAttribute("with-var");
 			if (prefix) {
 				prefix = newvars[prefix];
 			} else {
-				prefix = actionNode.getAttributeNS("", "with-id");
+				prefix = actionNode.getAttribute("with-id");
 				if (prefix) {
 					prefix = ids[prefix];
 				}
 			}
-			var prop = actionNode.getAttributeNS("", "prop");
-			var action = actionNode.getAttributeNS("", "action");
+			var prop = actionNode.getAttribute("prop");
+			var action = actionNode.getAttribute("action");
 
 			var params = [];
 			//with-param nodes (put in xpath here?)
@@ -52,11 +52,10 @@ function executeTransaction(transaction, url) {
 				params.push(getObjectFromParam(paramNode, ids, newvars));
 			});
 			
-			
 			prefix.control[prop][action].apply(null, params);
 			prefix.control[prop].PACKETCLOSE();
 		} else if (actionName == 'perform') {
-			var newvarprefix = actionNode.getAttributeNS("", "prefix");
+			var newvarprefix = actionNode.getAttribute("prefix");
 			var result = processPerforms(null, actionNode, transaction.ids, newvars, url);
 			forEach(result.returnVars, function(addvar, key){
 				if(newvarprefix){
@@ -64,7 +63,7 @@ function executeTransaction(transaction, url) {
 				}
 			});
 		} else if (actionName == 'return') {
-			returnVars[actionNode.getAttributeNS("", "as")] = getObjectFromParam(actionNode, ids, newvars);
+			returnVars[actionNode.getAttribute("as")] = getObjectFromParam(actionNode, ids, newvars);
 		}
 	});
 	
@@ -80,19 +79,16 @@ function processPerforms(ambient, node, ids, vars, relurl, url, params) {
 	
 	var functionCom = qtDocs.get(url);
 	
-
-	
 	if (!params) {
 		var paramNodes = xpath("f:with-param", node);
 		params = {};
 		forEach(paramNodes, function (paramNode) {
-			params[paramNode.getAttributeNS("", "name")] = convertXMLToPin(paramNode, ids, vars);
+			params[paramNode.getAttribute("name")] = convertXMLToPin(paramNode, ids, vars);
 		});
 	}
-
 	
 	var transaction = evaluateTransaction(functionCom, params);
-	
+
 	return executeTransaction(transaction, url);
 }
 

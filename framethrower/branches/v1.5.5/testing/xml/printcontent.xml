@@ -6,7 +6,7 @@
 
 	<f:param name="focus" />
 	<f:derived name="content" from="focus">
-		<get what="content" />
+		<f:get what="content" />
 	</f:derived>
 	
 	<xsl:template>
