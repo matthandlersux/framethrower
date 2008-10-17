@@ -139,7 +139,11 @@ function compileXSL(xsl){
 				var logs = xpath(".//f:consolelog", result.firstChild);
 				forEach(logs, function (log) {
 					console.log("debug output from xsl: ");
-					console.dirxml(log);
+					if(console.dirxml){
+						console.dirxml(log);
+					} else {
+						console.log(log.firstChild);
+					}
 				});
 			}
         } 

@@ -22,7 +22,7 @@
 	<f:derived name="relationContent" predef="rw">
 		<f:get what="childObjects"/>
 		<f:filtertype type="kernel.relation"/>
-		<buildassoc what="content"/>
+		<f:buildassoc what="content"/>
 	</f:derived>
 	<xsl:template>
 		<xsl:variable name="w" select="$width/@value"/>
@@ -74,9 +74,9 @@
 				<html:div>
 					<xsl:if test="$selectedRelationContent != ''">
 						<html:div class="infonInProgress" top="125" left="0">
-							<xsl:for-each select="$selectedRelationContent/pseudo/*">
-								<xsl:if test="self::role">
-									<xsl:variable name="index" select="count(preceding-sibling::role)" />
+							<xsl:for-each select="$selectedRelationContent/f:pseudo/*">
+								<xsl:if test="self::f:role">
+									<xsl:variable name="index" select="count(preceding-sibling::f:role)" />
 									<xsl:variable name="arg" select="$infonArgs/*[f:key/f:number/@value = ($index)]/f:value/*" />
 									<xsl:choose>
 										<xsl:when test="$arg">
@@ -112,7 +112,7 @@
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:if>
-								<xsl:if test="self::verb">
+								<xsl:if test="self::f:verb">
 									<html:span class="buildInfonRelation" style="background-color: #e09;">
 										<xsl:value-of select="@value" />
 									</html:span>
@@ -127,7 +127,7 @@
 						choose a relation: 
 						<xsl:choose>
 							<xsl:when test="$selectedRelationContent != ''">
-								<html:input value="{$selectedRelationContent/name/@value}" disabled="disabled"/>
+								<html:input value="{$selectedRelationContent/f:name/@value}" disabled="disabled"/>
 							</xsl:when>
 							<xsl:otherwise>
 								<html:input/>
@@ -142,8 +142,9 @@
 					<xsl:if test="$expanded/@value = 'true'">
 						<html:div class="dropDownBox" top="{$chooseTop + 34}" left="310">
 							<html:div class="dropDownBoxBackground"/>
+							<xsl:copy-of select="$relationContent" />
 							<xsl:for-each select="$relationContent/*">
-								<xsl:variable name="value" select="./f:value/relationcontent/name/@value"/>
+								<xsl:variable name="value" select="./f:value/f:relationcontent/f:name/@value"/>
 								<xsl:if test="$value != ''">
 									<html:div class="kernelObject" top="{10 + (position() - 1) * 30}" left="15" style="background-color:#e09;">
 										<f:binding url="bindings/addInfon.xml">
@@ -161,7 +162,7 @@
 					</xsl:if>
 				</html:div>
 				<html:div>
-					<xsl:variable name="roleCount" select="count($selectedRelationContent/pseudo/role)" />
+					<xsl:variable name="roleCount" select="count($selectedRelationContent/f:pseudo/f:role)" />
 					<xsl:variable name="argCount" select="count($infonArgs/*)" />
 					<xsl:if test="$roleCount &gt; 0 and $argCount &gt;= $roleCount">
 						<html:div class="infonSubmitNewInfon" style="position: relative; left: 38%; bottom: -70%">

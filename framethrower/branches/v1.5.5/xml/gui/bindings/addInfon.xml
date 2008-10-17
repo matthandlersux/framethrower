@@ -168,9 +168,9 @@
 					<f:with-param name="relation" value-id="{$selectedRelation/@id}" />
 					<f:with-param name="arcs">
 						<f:assoc>
-							<xsl:for-each select="$selectedRelationContent/pseudo/*">
-								<xsl:if test="self::role">
-									<xsl:variable name="index" select="count(preceding-sibling::role)" />
+							<xsl:for-each select="$selectedRelationContent/f:pseudo/*">
+								<xsl:if test="self::f:role">
+									<xsl:variable name="index" select="count(preceding-sibling::f:role)" />
 									<xsl:variable name="arg" select="$infonArgs/*[f:key/f:number/@value = ($index)]/f:value/*" />
 									<f:pair>
 										<f:key><f:string value="{@role}" /></f:key>

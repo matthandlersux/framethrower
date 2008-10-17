@@ -14,9 +14,9 @@
 		<html:span>
 			<xsl:if test="$relationContent">
 				<html:div class="kernelInfon">
-					<xsl:for-each select="$relationContent/pseudo/*">
+					<xsl:for-each select="$relationContent/f:pseudo/*">
 						<xsl:choose>
-							<xsl:when test="self::role">
+							<xsl:when test="self::f:role">
 								<f:thunk name="printrole">
 									<f:with-param name="infon" value-id="{$focus/@id}" />
 									<f:with-param name="role"><f:string value="{@role}" /></f:with-param>

@@ -19,10 +19,10 @@
 					<f:with-param>
 						<xsl:choose>
 							<xsl:when test="$type/@value = 'kernel.situation'">
-								<zui view="situation" childrenSidebar="1" correspondSidebar="0"/>
+								<f:zui view="situation" childrenSidebar="1" correspondSidebar="0"/>
 							</xsl:when>
 							<xsl:otherwise>
-								<zui view="object" correspondSidebar="0"/>
+								<f:zui view="object" correspondSidebar="0"/>
 							</xsl:otherwise>
 						</xsl:choose>
 					</f:with-param>

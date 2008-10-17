@@ -18,7 +18,7 @@
 
 		<f:derived name="childZuisMinimized" from="parentZui">
 			<f:get what="childZuis" />
-			<buildassoc what="minimized" />	
+			<f:buildassoc what="minimized" />	
 		</f:derived>
 		
 		<xsl:template>

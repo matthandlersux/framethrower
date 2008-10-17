@@ -110,7 +110,7 @@
 		<f:param name="focus" />
 		<f:derived name="childZuis" from="zui">
 			<f:get what="childZuis" />
-			<buildassoc what="focus" />
+			<f:buildassoc what="focus" />
 		</f:derived>
 		
 		<xsl:template>

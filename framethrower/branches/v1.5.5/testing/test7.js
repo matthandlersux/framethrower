@@ -29,7 +29,7 @@ addPanel.control.expanded.set(false);
 
 var zui = layout.zui.make();
 zui.control.focus.set(rw);
-zui.control.properties.set(parseXML("<zui view='situation' childrenSidebar='1' correspondSidebar='0'/>"));
+zui.control.properties.set(parseXML("<zui view='situation' childrenSidebar='1' correspondSidebar='0' />"));
 zui.control.leftChildInView.set(0);
 zui.control.leftRailChild.set(0);
 
