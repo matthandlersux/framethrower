@@ -15,6 +15,16 @@ var layout = scaffold({
 	videoTimeline: {}
 }, "layout");
 
+var outliner = scaffold({
+	outline: {}
+}, "outliner");
+
+outliner.outline.prop = {
+	focus: interfaces.unit(kernel.ob),
+	expanded: interfaces.unit(basic.bool),
+	childType: interfaces.unit(kernel.ob)
+};
+
 layout.zui.prop = {
 	focus: interfaces.unit(kernel.ob),
 	properties: interfaces.unit(basic.xml),
