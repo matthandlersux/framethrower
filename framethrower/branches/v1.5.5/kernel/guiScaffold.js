@@ -16,13 +16,21 @@ var layout = scaffold({
 }, "layout");
 
 var outliner = scaffold({
+	root: {},
 	outline: {}
 }, "outliner");
 
-outliner.outline.prop = {
+outliner.root.prop = {
 	focus: interfaces.unit(kernel.ob),
 	expanded: interfaces.unit(basic.bool),
-	childType: interfaces.unit(kernel.ob)
+	childOutline: interfaces.unit(outliner.outline)
+};
+
+outliner.outline.prop = {
+	focus: interfaces.unit(kernel.ob),
+	expandedChildren: interfaces.set(kernel.ob),
+	childType: interfaces.unit(kernel.ob),
+	childOutlines: interfaces.assoc(kernel.ob, outliner.outline)
 };
 
 layout.zui.prop = {

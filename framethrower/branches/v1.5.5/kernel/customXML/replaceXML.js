@@ -243,6 +243,16 @@ function processAll(ambient, node, ids, relurl) {
 	forEach(thunks, function (thunk) {
 		processThunk(ambient, thunk, ids, relurl);
 	});
+
+/*	
+	// I (andrew) tried going down this path at one point and it worked
+	// but turned out I didn't need it
+	// find performs
+	var performs = xpath("descendant-or-self::f:perform", node);
+	forEach(performs, function (perform) {
+		processPerforms(ambient, perform, ids, [], relurl);
+	});
+*/	
 }
 
 function registerBinding(binding, ids, relurl) {

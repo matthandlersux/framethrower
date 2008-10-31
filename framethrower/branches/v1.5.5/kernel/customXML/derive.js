@@ -16,6 +16,7 @@ var applyGet = memoize(function (input, what) {
 	if (!inType.getProp) {
 		console.warn("inType doesn't have a prop", inType.getName(), input.getId(), input.getState(), what);
 	}
+
 	var outType = inType.getProp(what);
 
 	function getf(x) {

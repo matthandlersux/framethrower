@@ -1,0 +1,119 @@
+<f:binding
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	
+	<f:transaction name="Select" event="change" button="select">
+		<f:param name="outline" />
+		<f:param name="relations" />
+		<f:param name="eventXML" />
+
+		<xsl:template>
+			<f:transaction>
+				<f:intact with-id="{$outline/@id}" prop="childType" action="set">
+					<f:with-param>
+						<xsl:copy-of select="$relations/*[@id = $eventXML/@value]" />
+					</f:with-param>
+				</f:intact>
+			</f:transaction>
+		</xsl:template>
+		
+	</f:transaction>
+	
+	
+	<f:transaction name="RootExpand" event="click" button="rootExpand">
+		<f:param name="outlineRoot" />
+
+		<xsl:template>
+			<f:transaction>
+				<f:intact with-id="{$outlineRoot/@id}" prop="expanded" action="set">
+					<f:with-param>
+						<f:bool value="true" />
+					</f:with-param>
+				</f:intact>
+			</f:transaction>
+		</xsl:template>
+	</f:transaction>
+
+	<f:transaction name="RootUnexpand" event="click" button="rootUnexpand">
+		<f:param name="outlineRoot" />
+
+		<xsl:template>
+			<f:transaction>
+				<f:intact with-id="{$outlineRoot/@id}" prop="expanded" action="set">
+					<f:with-param>
+						<f:bool value="false" />
+					</f:with-param>
+				</f:intact>
+			</f:transaction>
+		</xsl:template>
+	</f:transaction>
+	
+	<f:transaction name="Expand" event="click" button="expand">
+		<f:param name="child" />
+		<f:param name="outline" />
+
+		<f:derived name="childOutlines" from="outline">
+			<f:get what="childOutlines" />
+		</f:derived>
+
+		<f:derived name="relations" from="child">
+			<f:get what="involves" />
+			<f:get what="relation" />
+		</f:derived>
+
+		<xsl:template>
+			<f:transaction>
+<!--				
+				Test if childOutlines contains an outline for the node you are expanding
+				If not, create a new childOutline				
+-->
+				<xsl:if test="count($childOutlines/f:pair/f:key/f:ob[@id = $child/@id]) = 0" >
+					<f:make type="outliner.outline" name="newOutline" />
+					<f:intact with-var="newOutline" prop="focus" action="set">
+						<f:with-param><xsl:copy-of select="$child" /></f:with-param>
+					</f:intact>
+					<f:intact with-id="{$outline/@id}" prop="childOutlines" action="set">
+						<f:with-param>
+							<xsl:copy-of select="$child" />
+						</f:with-param>
+						<f:with-param value-var="newOutline" />
+					</f:intact>
+					<f:intact with-var="newOutline" prop="childType" action="set">
+						<f:with-param>
+							<xsl:copy-of select="$relations/*[count(preceding-sibling::*) = 0]" />
+						</f:with-param>
+					</f:intact>
+
+				</xsl:if>
+
+					
+				<f:intact with-id="{$outline/@id}" prop="expandedChildren" action="add">
+					<f:with-param>
+						<xsl:copy-of select="$child" />
+					</f:with-param>
+				</f:intact>
+			</f:transaction>
+		</xsl:template>
+	</f:transaction>
+	
+	
+	
+	<f:transaction name="Unexpand" event="click" button="unexpand">
+		<f:param name="child" />
+		<f:param name="outline" />
+
+		<xsl:template>
+			<f:transaction>
+				<f:intact with-id="{$outline/@id}" prop="expandedChildren" action="remove">
+					<f:with-param>
+						<xsl:copy-of select="$child" />
+					</f:with-param>
+				</f:intact>
+			</f:transaction>
+		</xsl:template>
+	</f:transaction>
+	
+</f:binding>
+
+
+
