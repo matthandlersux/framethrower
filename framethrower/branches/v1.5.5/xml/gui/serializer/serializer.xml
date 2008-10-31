@@ -1,0 +1,113 @@
+<f:function
+	xmlns:f="http://www.filmsfolded.com/xsl/ui"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="focus" />
+	
+	<f:derived name="type" from="focus">
+		<f:gettype />
+	</f:derived>
+		
+	<xsl:template>
+		<object>
+			<xsl:choose>
+				<xsl:when test="$type/@value = 'kernel.situation'">
+					<f:thunk name="serializeSituation">
+						<f:with-param name="focus"><xsl:copy-of select="$focus"/></f:with-param>
+					</f:thunk>
+				</xsl:when>
+				<xsl:when test="$type/@value = 'kernel.infon'">
+					<f:thunk name="serializeInfon">
+						<f:with-param name="focus"><xsl:copy-of select="$focus"/></f:with-param>
+					</f:thunk>
+				</xsl:when>
+				<xsl:when test="$type/@value = 'kernel.relation'">
+					<f:thunk name="serializeRelation">
+						<f:with-param name="focus"><xsl:copy-of select="$focus"/></f:with-param>
+					</f:thunk>
+				</xsl:when>
+				<xsl:when test="$type/@value = 'kernel.individual'">
+					<f:thunk name="serializeIndividual">
+						<f:with-param name="focus"><xsl:copy-of select="$focus"/></f:with-param>
+					</f:thunk>
+				</xsl:when>
+			</xsl:choose>
+		</object>
+	</xsl:template>
+	
+	
+	<f:function name="serializeSituation">
+		<f:param name="focus" />
+		<f:derived name="content" from="focus">
+			<f:get what="content" />
+		</f:derived>
+		<f:derived name="childObjects" from="focus">
+			<f:get what="childObjects" />
+		</f:derived>
+		
+		<xsl:template>
+			<situation name="{$focus/@id}">
+				<content>
+					<xsl:value-of select="$content/@value" />
+				</content>
+			
+				<xsl:for-each select="$childObjects/*">
+					<f:thunk url="serializer.xml">
+						<f:with-param name="focus"><xsl:copy-of select="." /></f:with-param>
+					</f:thunk>
+				</xsl:for-each>
+			</situation>
+		</xsl:template>
+	</f:function>
+	
+	<f:function name="serializeIndividual">
+		<f:param name="focus" />
+		<f:derived name="content" from="focus">
+			<f:get what="content" />
+		</f:derived>
+				
+		<xsl:template>
+			<individual name="{$focus/@id}">
+				<content>
+					<xsl:copy-of select="$content" />
+				</content>
+			</individual>
+		</xsl:template>
+	</f:function>
+	
+	<f:function name="serializeRelation">
+		<f:param name="focus" />
+		<f:derived name="content" from="focus">
+			<f:get what="content" />
+		</f:derived>
+		
+		<xsl:template>
+			<relation name="{$focus/@id}">
+				<content>
+					<xsl:copy-of select="$content" />
+				</content>
+			</relation>
+		</xsl:template>
+	</f:function>
+	
+	<f:function name="serializeInfon">
+		<f:param name="focus" />
+		<f:derived name="relation" from="focus">
+			<f:get what="relation" />
+		</f:derived>
+		<f:derived name="arcs" from="focus">
+			<f:get what="arcs" />
+		</f:derived>
+		
+		<xsl:template>
+			<infon relation="{$relation/@id}">
+				<xsl:for-each select="$arcs/*">
+					<arc role="{./f:key/*/@value}" arg="{./f:value/*/@id}" />
+				</xsl:for-each>
+			</infon>
+		</xsl:template>
+	</f:function>	
+	
+</f:function>
