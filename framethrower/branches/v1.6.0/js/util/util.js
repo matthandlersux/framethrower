@@ -17,7 +17,7 @@ function typeOf(value){
 // Arrays/Objects
 
 function arrayLike(o) {
-	if (typeOf(o.length) === "number") {
+	if (typeOf(o.length) === "number" && typeof o !== "string") {
 		return true;
 	} else {
 		return false;
@@ -51,7 +51,10 @@ function forEachRecursive(o, f) {
 }
 
 function map(list, f) {
-	var ret = [];
+	var ret;
+	if (arrayLike(list)) ret = [];
+	else ret = {};
+	
 	forEach(list, function (val, key) {
 		ret[key] = f(val);
 	});
@@ -93,6 +96,11 @@ function isEmpty(o) {
 		return true;
 	});
 }
+function contains(o, e) {
+	return any(o, function (x) {
+		return e === x;
+	});
+}
 
 function values(o) {
 	var ret = [];
@@ -109,9 +117,35 @@ function keys(o) {
 	return ret;
 }
 
+// used for merging objects/records
+function merge() {
+	var ret = {};
+	forEach(arguments, function (arg) {
+		forEach(arg, function (v, k) {
+			ret[k] = v;
+		});
+	});
+	return ret;
+}
+
 
 function getProp(name) {
 	return function (o) {
 		return o[name];
 	};
 }
+
+
+
+
+
+
+
+function makeGenerator(prefix) {
+	var count = 0;
+	return function () {
+		count += 1;
+		return prefix + count;
+	};
+}
+
