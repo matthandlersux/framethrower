@@ -1,27 +1,39 @@
 /*
 
 parse(string) returns an AST
-	an AST is either a string or an object with properties cons, left, right
-		cons is a string, either "apply" or "lambda"
-		left and right are AST's
+	an AST is either
+		an object {kind: "prim", value: String}
+		or an object {kind: "cons"} with properties cons, left, right
+			cons is a string, either "apply" or "lambda"
+			left and right are AST's
 
 	try:
 		parse( "predicate -> bindSet (compose returnUnitSet (passthru predicate))" )
 */
 
-function makeApply(leftAST, rightAST) {
+function makeCons(cons, left, right) {
 	return {
-		cons: "apply",
-		left: leftAST,
-		right: rightAST
+		kind: "cons",
+		cons: cons,
+		left: left,
+		right: right
 	};
 }
-function makeLambda(leftAST, rightAST) {
+function makeApply(left, right) {
+	return makeCons("apply", left, right);
+}
+function makeLambda(left, right) {
+	return makeCons("lambda", left, right);
+}
+function makePrim(value) {
 	return {
-		cons: "lambda",
-		left: leftAST,
-		right: rightAST
+		kind: "prim",
+		value: value
 	};
+}
+function isPrim(o) {
+	return o.kind === "prim";
+	//return typeof o === "string";
 }
 
 
@@ -70,7 +82,7 @@ function parse(s) {
 	
 	function makeAST(parsed) {
 		if (typeOf(parsed) === "string") {
-			return parsed;
+			return makePrim(parsed);
 		} else if (parsed.input) {
 			return makeLambda(
 				makeAST(parsed.input),
@@ -96,8 +108,8 @@ function parse(s) {
 function unparse(ast, parens) {
 	if (!parens) parens = 0;
 	var ret;
-	if (!ast.cons) {
-		return ast;
+	if (isPrim(ast)) {
+		return ast.value;
 	} else if (ast.cons === "apply") {
 		ret = unparse(ast.left) + " " + unparse(ast.right, 1);
 	} else if (ast.cons === "lambda") {
