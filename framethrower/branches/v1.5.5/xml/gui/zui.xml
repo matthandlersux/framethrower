@@ -254,7 +254,7 @@
 		
 		<f:derived name="childZuisMinimized" from="zui">
 			<f:get what="childZuis" />
-			<f:buildassoc what="minimized" />	
+			<f:buildassoc what="minimized" />
 		</f:derived>
 		
 		<f:derived name="leftChildInView" from="zui">

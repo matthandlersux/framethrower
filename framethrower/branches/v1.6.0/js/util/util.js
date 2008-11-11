@@ -137,7 +137,11 @@ function getProp(name) {
 
 
 
-
+function getter(value) {
+	return function () {
+		return value;
+	};
+}
 
 
 
