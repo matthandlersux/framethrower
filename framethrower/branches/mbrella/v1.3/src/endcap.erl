@@ -1,10 +1,10 @@
 %%% -------------------------------------------------------------------
 %%% Author  : handler
-%%% Description : a box is a startcap bound to a process with a nondestructive output interface
+%%% Description : a endcap is a startcap bound to a process with a nondestructive output interface
 %%%
 %%% Created : Fri Sep 19 14:03:39 EDT 2008
 %%% -------------------------------------------------------------------
--module(box).
+-module(endcap).
 
 -behaviour(gen_server).
 
@@ -90,9 +90,9 @@ init([Process, Type]) ->
 	process:pwn(Process, Self),
 	if
 		Type =:= endcap -> Startcap = startcap:new(interface:new(Type, cleanup));
-		true -> Startcap = startcap:new(interface:new(Type, box))
+		true -> Startcap = startcap:new(interface:new(Type, endcap))
 	end,
-    {ok, #box{
+    {ok, #endcap{
 		type = Type,
 		process = Process,
 		startcap = Startcap,
@@ -102,10 +102,10 @@ init([Process]) ->
 	process_flag(trap_exit, true),
 	Self = self(),
 	process:pwn(Process, Self),
-    {ok, #box{
+    {ok, #endcap{
 		type = bag,
 		process = Process,
-		startcap = startcap:new(interface:new(bag, box)),
+		startcap = startcap:new(interface:new(bag, endcap)),
 		crossReference = crossreference:new()
 	}}.
 
@@ -137,10 +137,10 @@ handle_cast({data, Data}, State) ->
 			{noreply, State};
 		{null, CleanupFun} when ?this(type) =:= unit ->
 			CrossReference = crossreference:control(?this(crossReference), {Data, CleanupFun}),
-			{noreply, State#box{crossReference = CrossReference}};			
+			{noreply, State#endcap{crossReference = CrossReference}};			
 		{null, CleanupFun} -> %the process controls the startcap but returns cleanup functions for removal of that input
 			CrossReference = crossreference:control(?this(crossReference), {Data, CleanupFun}),
-			{noreply, State#box{crossReference = CrossReference}};
+			{noreply, State#endcap{crossReference = CrossReference}};
 		_ ->
 			startcap:control(?this(startcap), Data1),
 			{noreply, State}

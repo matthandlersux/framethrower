@@ -34,8 +34,8 @@ loop(Name) ->
 % S1 ! {alter, {a, {remove, someguy}}}.
 % 
 % Pid = fun(X) -> list_to_pid(X) end.
-% B1 = box:new(1,2,process).
-% B2 = box:new(1,2,process).
+% B1 = endcap:new(1,2,process).
+% B2 = endcap:new(1,2,process).
 % B2 ! {connect, {1, {boxPin, B1, 2}}}.
 % B2 ! activate.
 
@@ -53,7 +53,7 @@ loop(Name) ->
 % B = interface:new(set, b).
 % C = interface:new(unit, c).
 % S1 = startcap:new([A, B, C]).
-% B1 = box:new(1,1, fun process:filterListEvens/2).
+% B1 = endcap:new(1,1, fun process:filterListEvens/2).
 % D1 = debug:new(matty).
 % D2 = debug:new(toby).
 % B1 ! {addInform, {1, D1}}.
@@ -98,7 +98,7 @@ loop(Name) ->
 % Box = component:buildAssoc( fun component:buildAssocOfCorrespondences/1 ).
 % startcap:connect( Set1, Box ).
 % startcap:connect( Set2, Box ).
-% box:connect( Box, Matty ).
+% endcap:connect( Box, Matty ).
 
 %% ====================================================
 %% test equals
@@ -112,4 +112,4 @@ startcap:control( Set1, {add, Ind1} ).
 startcap:control( Set1, {add, Ind2} ).
 Box = component:equals( Ind1 ).
 startcap:connect( Set1, Box ).
-box:connect( Box, Matty ).
+endcap:connect( Box, Matty ).

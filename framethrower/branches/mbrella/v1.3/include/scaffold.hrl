@@ -34,7 +34,7 @@
 	cache		%pid
 	}).
 	
--record (box, {
+-record (endcap, {
 	type,
 	process, %pid
 	startcap,

@@ -7,7 +7,7 @@
 %% 
 
 filter(Fun) ->
-	box:new( process:new(filter, Fun) ).
+	endcap:new( process:new(filter, Fun) ).
 	
 % example:
 % 
@@ -28,7 +28,7 @@ filter(Fun) ->
 %% 
 
 groupBy(Fun) ->
-	box:new( process:new(groupBy, Fun), assoc).
+	endcap:new( process:new(groupBy, Fun), assoc).
 	
 % example:
 % 
@@ -50,7 +50,7 @@ groupBy(Fun) ->
 
 buildAssoc(Fun) ->
 	Process = process:new(buildAssoc, fun(X) -> X end),
-	Box = box:new( Process, assoc),
+	Box = endcap:new( Process, assoc),
 	process:replace(Process, Fun(Box) ),
 	Box.
 	
@@ -61,13 +61,13 @@ buildAssoc(Fun) ->
 % buildAssocOfCorrespondences({Control, Ob}) ->
 % 	ParentBox = process:get(self(), parentBox),
 % 	% build a box that listens for correspondence updates from Ob and push them to the assoc of the startcap
-% 	Gatherer = box:new( process:new(grouper, fun({Control, Ob2}) -> box:control(ParentBox, {control, {Control, {Ob, Ob2}}}), null end)),
+% 	Gatherer = endcap:new( process:new(grouper, fun({Control, Ob2}) -> endcap:control(ParentBox, {control, {Control, {Ob, Ob2}}}), null end)),
 % 	startcap:connect( object:get(Ob, corresponds), Gatherer),
-% 	box:ambient(ParentBox, Gatherer),
+% 	endcap:ambient(ParentBox, Gatherer),
 % 	null.
 
 gatherer(GatherFun) ->
-	box:new( process:new(gatherer, GatherFun), endcap ).
+	endcap:new( process:new(gatherer, GatherFun), endcap ).
 	
 %% 
 %% equals component takes an element and any input and returns bool if they're equal
@@ -80,17 +80,17 @@ equals(ObId) ->
 						true -> false
 					end
 				end,
-	box:new( process:new( equals, EqualsFun), static ).
+	endcap:new( process:new( equals, EqualsFun), static ).
 
 %% 
 %% returnUnit takes a static value and makes it a unit reactive value
 %% 
 returnUnit(BoxToControl) ->
 	ReturnUnitFun = fun(StaticValue) -> 
-						box:control(BoxToControl, {add, StaticValue}),
+						endcap:control(BoxToControl, {add, StaticValue}),
 						null
 					end,
-	box:new( process:new( returnUnit, ReturnUnitFun), endcap).
+	endcap:new( process:new( returnUnit, ReturnUnitFun), endcap).
 	
 %% 
 %% not component takes a unit(bool) and returns a unit(bool)
@@ -103,10 +103,10 @@ reactiveNot(ParentBox) ->
 	StaticFun = fun(StaticValue) -> 
 					Startcap = startcap:new( interface:new(static, bool) ),
 					startcap:control( Startcap, StaticValue ),
-					Box1 = box:new( process:new( fun(Bool) -> not Bool end ), static),
+					Box1 = endcap:new( process:new( fun(Bool) -> not Bool end ), static),
 					startcap:connect( Startcap, Box1 ),
 					Box2 = returnUnit(ParentBox),
-					box:connect( Box1, Box2 ),
+					endcap:connect( Box1, Box2 ),
 					Box2		
 				end,
 	bindUnitGeneral(StaticFun, ParentBox).
@@ -118,7 +118,7 @@ reactiveNot(ParentBox) ->
 
 bindUnit(Fun) ->
 	Process = process:new(bindUnit, fun(X) -> X end),
-	Box = box:new( Process, unit),
+	Box = endcap:new( Process, unit),
 	process:replace( Process, Fun(Box) ),
 	Box.
 	
@@ -128,8 +128,8 @@ bindUnit(Fun) ->
 %% 
 
 bindUnitGeneral(StaticFun, ParentBox) ->
-	ConnectFun = fun(Ob) -> box:connect(Ob, ParentBox) end,
-	CleanupFun = fun(Ob) -> box:die(Ob, "Original Set Changed") end,
+	ConnectFun = fun(Ob) -> endcap:connect(Ob, ParentBox) end,
+	CleanupFun = fun(Ob) -> endcap:die(Ob, "Original Set Changed") end,
 	bindUnitGeneral(StaticFun, ConnectFun, CleanupFun).
 	
 bindUnitGeneral(StaticFun, ConnectFun, CleanupFun) ->
@@ -148,7 +148,7 @@ bindUnitGeneral(StaticFun, ConnectFun, CleanupFun) ->
 %% 
 
 filterType(Type) ->
-	box:new( process:new(filterType, 
+	endcap:new( process:new(filterType, 
 		fun({_, Ob}) -> 
 			case object:get(Ob, type) of
 				Type -> true;
@@ -181,23 +181,23 @@ buildAssocGeneral(GatherFun, ConnectFun, CleanupFun) ->
 %% 
 
 buildAssocOfCorrespondences(ParentBox) ->
-	GatherFun = fun( Ob ) -> fun({Control, Ob2}) -> box:control(ParentBox, {Control, {Ob, Ob2}}), {remove, {Ob, Ob2}} end end,
+	GatherFun = fun( Ob ) -> fun({Control, Ob2}) -> endcap:control(ParentBox, {Control, {Ob, Ob2}}), {remove, {Ob, Ob2}} end end,
 	ConnectFun = fun( Ob ) -> object:get(Ob, corresponds) end,
-	CleanupFun = fun( Gatherer ) -> box:die(Gatherer, "Removed from set") end,
+	CleanupFun = fun( Gatherer ) -> endcap:die(Gatherer, "Removed from set") end,
 	buildAssocGeneral(GatherFun, ConnectFun, CleanupFun).
 
 % buildAssocOfCorrespondences(ParentBox) ->
 % 	fun({add, Ob}) ->
 % 		% build a box that listens for correspondence updates from Ob and push them to the assoc of the startcap
-% 		Gatherer = box:new( process:new(gatherer, fun({Control2, Ob2}) -> 
-% 													box:control(ParentBox, {Control2, {Ob, Ob2}}),
+% 		Gatherer = endcap:new( process:new(gatherer, fun({Control2, Ob2}) -> 
+% 													endcap:control(ParentBox, {Control2, {Ob, Ob2}}),
 % 													null
 % 												end)),
 % 		startcap:connect( object:get(Ob, corresponds), Gatherer), % this is the main component of the function
-% 		% box:ambient(ParentBox, Gatherer),
+% 		% endcap:ambient(ParentBox, Gatherer),
 % 		% return a cleanup function that is used when ParentBox receives {remove, Ob}
-% 		{null, fun() -> box:die(Gatherer, "Removed from set") end};
-% 		% {null, fun() -> box:disconnect(Gatherer, ParentBox) end}; may be better on more complicated functions
+% 		{null, fun() -> endcap:die(Gatherer, "Removed from set") end};
+% 		% {null, fun() -> endcap:disconnect(Gatherer, ParentBox) end}; may be better on more complicated functions
 % 	({remove, _}) ->
 % 		{null, terminate}
 % 	end.
