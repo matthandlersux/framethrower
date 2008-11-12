@@ -36,7 +36,8 @@
 	
 -record (endcap, {
 	type,
-	process, %pid
+	name = null,
+	process, %function
 	startcap,
 	crossReference
 	}).

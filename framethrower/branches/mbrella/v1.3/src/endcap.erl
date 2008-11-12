@@ -12,6 +12,7 @@
 % syntactic sugar babbbyyy
 -define (ob(Field), mblib:getVal(Ob, Field)).
 -define (this(Field), State#?MODULE.Field).
+-define (process(Data), F1 = State#?MODULE.process, F1(Data)).
 
 %% --------------------------------------------------------------------
 %% Include files
@@ -21,7 +22,7 @@
 
 %% --------------------------------------------------------------------
 %% External exports
--export([new/0, new/1, new/2, start_link/2, start_link/1, data/2, die/2, connect/2, disconnect/2, control/2, ambient/2]).
+-export([new/0, new/1, new/2, new/3, start_link/3, data/2, die/2, connect/2, disconnect/2, control/2, ambient/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -30,17 +31,13 @@
 %% External functions
 %% ====================================================================
 
-new() -> start_link( process:new() ).
-new(Process) -> start_link(Process).
-start_link(Process) ->
-	case gen_server:start_link(?MODULE, [Process], []) of
-		{ok, Pid} -> Pid;
-		Else -> Else
-	end.
+new() -> start_link( passThrough, fun(X) -> X end, bag).
+new(Process) -> start_link(no_name, Process, bag).
+new(Process, OutputType) -> start_link(no_name, Process, OutputType).
+new(Name, Process, OutputType) -> start_link(Name, Process, OutputType).
 
-new(Process, OutputType) -> start_link(Process, OutputType).
-start_link(Process, OutputType) -> 
-	case gen_server:start_link(?MODULE, [Process, OutputType], []) of
+start_link(Name, Process, OutputType) ->
+	case gen_server:start_link(?MODULE, [Name, Process, OutputType]) of
 		{ok, Pid} -> Pid;
 		Else -> Else
 	end.
@@ -84,28 +81,17 @@ die(BoxId, Reason) ->
 %%          ignore               |
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
-init([Process, Type]) ->
+init([Name, Process, Type]) ->
 	process_flag(trap_exit, true),
-	Self = self(),
-	process:pwn(Process, Self),
 	if
 		Type =:= endcap -> Startcap = startcap:new(interface:new(Type, cleanup));
-		true -> Startcap = startcap:new(interface:new(Type, endcap))
+		true -> Startcap = startcap:new(interface:new(Type, box))
 	end,
     {ok, #endcap{
 		type = Type,
+		name = Name,
 		process = Process,
 		startcap = Startcap,
-		crossReference = crossreference:new()
-	}};
-init([Process]) ->
-	process_flag(trap_exit, true),
-	Self = self(),
-	process:pwn(Process, Self),
-    {ok, #endcap{
-		type = bag,
-		process = Process,
-		startcap = startcap:new(interface:new(bag, endcap)),
 		crossReference = crossreference:new()
 	}}.
 
@@ -131,18 +117,18 @@ handle_call(Msg, From, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast({data, Data}, State) ->
-	Data1 = process:process(?this(process), Data),
-	case Data1 of
-		null -> %the process will control the startcap manually for reactivity
-			{noreply, State};
-		{null, CleanupFun} when ?this(type) =:= unit ->
-			CrossReference = crossreference:control(?this(crossReference), {Data, CleanupFun}),
-			{noreply, State#endcap{crossReference = CrossReference}};			
-		{null, CleanupFun} -> %the process controls the startcap but returns cleanup functions for removal of that input
+	try ?process(Data) of
+		null -> 
+			{noreply, State};			
+		{null, CleanupFun} -> 
 			CrossReference = crossreference:control(?this(crossReference), {Data, CleanupFun}),
 			{noreply, State#endcap{crossReference = CrossReference}};
-		_ ->
-			startcap:control(?this(startcap), Data1),
+		Data ->
+			startcap:control(?this(startcap), Data),
+			{noreply, State}
+	catch
+		_:_ -> 
+			?d("some error in called function", Data),
 			{noreply, State}
 	end;
 handle_cast({connect, Pid}, State) ->
