@@ -1,0 +1,111 @@
+-module (startcap).
+-compile(export_all).
+-import(interface, [getName/1, stream/3, alter/3]).
+
+-define(d(Msg, Var), io:format("Error in ~s:~n~s ~p~n~n", [?MODULE, Msg, Var])).
+
+% OutputInterfaces will be a list of interface data objects, [Interface1, Interface2, ...]
+% Interfaces will be named and typed data objects, 
+% 		I1 = {interface, [{name, Name}, {type, Type}, {alterFun, Fun1}, {streamFun, Fun2}], Data}
+% 		{interface, [AttrList], Data}
+% 		Fun1({alter, Payload}, I1, C1) -> I2
+% 			makes changes, sends changes, returns altered interface
+% 		Fun2(Pid, Data) -> Bool()
+% 			sends data down the chain, knows how to handle specific Data to that type of interface
+% 
+% Connections are of the form:
+% 		C1 = [{Name, [Pid1, Pid2, ...]}, ...]
+
+new(OutputInterfaces) ->
+	Connections = initConnections(OutputInterfaces),
+	spawn(fun() -> loop(OutputInterfaces, Connections) end).
+	
+loop(OutputInterfaces, Connections) ->
+	process_flag(trap_exit, true),
+	receive
+		{alter, {Name, Payload}} ->
+			{OutputInterfaces1, Connections1} = alterStartcap(OutputInterfaces, Connections, Name, Payload),
+			loop(OutputInterfaces1, Connections1);
+		{addInform, {OutputName, InputPid}} ->
+			% don't add twice
+			link(InputPid),
+			Connections1 = addConnection(Connections, InputPid, OutputName),
+			streamData(OutputName, InputPid, OutputInterfaces),
+			loop(OutputInterfaces, Connections1);
+		{removeInform, {OutputName, InputPid}} ->
+			unlink(InputPid),
+			Connections1 = removeConnection(Connections, InputPid, OutputName),
+			loop(OutputInterfaces, Connections1);
+		{'EXIT', Pid, _} ->
+			?d("exit from: ", Pid),
+			Connections1 = removeConnection(Connections, Pid),
+			loop(OutputInterfaces, Connections1);
+		debug ->
+			io:format("State of ~p is: ~n~n~nInterfaces:~n~p~n~n~nConnections:~n~p~n~n", [self(), OutputInterfaces, Connections]),
+			loop(OutputInterfaces, Connections);
+		Multi when is_list(Multi) ->
+			nyi;
+		Any ->
+			?d("Received: ", Any)		
+	end.
+	
+streamData(Name, Pid, OutputInterfaces) ->
+	{interface, StreamFun, Data} = chooseInterface(Name, OutputInterfaces),
+	stream(StreamFun, Pid, Data).
+	
+addConnection(Connections, Pid, Name) ->
+	case lists:keytake(Name, 1, Connections) of
+		{value, {_, PidList}, Rest} ->
+			Rest ++ [{Name, PidList ++ [Pid]}];
+		_ ->
+			?d("No Connection of that name.", false)
+	end.
+	
+removeConnection(Connections, Pid) ->
+	Fun = fun({Name, _}, AccIn) ->
+		removeConnection(AccIn, Pid, Name)
+	end,
+	lists:foldl(Fun, Connections, Connections).
+
+removeConnection(Connections, Pid, Name) ->
+	case lists:keytake(Name, 1, Connections) of
+		{value, {_, PidList}, Rest} ->
+			Rest ++ [{Name, PidList -- [Pid]}];
+		_ ->
+			?d("No Connection", Name)
+	end.
+
+initConnections([]) -> [];
+initConnections([H|T]) ->
+	% [{getName(H), []}|initConnections(T)].
+	[{getName(H), []}|initConnections(T)].
+	
+% altering the state of a startcap may need to be a composition of alterations to make erl-js interfacing easier
+% altering Payload should be {alter, [{name, Name}], Payload}
+	
+alterStartcap(OutputInterfaces, Connections, Name, Payload) ->
+	PidList = getConnections(Connections, Name),
+	case takeInterface(Name, OutputInterfaces) of
+		{Interface, Rest} ->
+			Interface1 = alter(Interface, PidList, Payload),
+			{Rest ++ [Interface1], Connections};
+		_ ->
+			?d("Couldn't find interface: ", Name)
+	end.
+
+getConnections(List, Name) ->
+	getField(List, Name).
+	
+getField(List, Field) ->
+	{value, {Field, Value}} = lists:keysearch(Field, 1, List),
+	Value.
+	
+chooseInterface(Name, OutputInterfaces) ->
+	Fun = fun(Interface) -> Name == interface:getName(Interface) end,
+	[Int1|_] = lists:filter(Fun, OutputInterfaces),
+	Int1.
+	
+takeInterface(Name, OutputInterfaces) ->
+	Fun = fun(I) -> Name == interface:getName(I) end,
+	{[Interface], Rest} = lists:partition(Fun, OutputInterfaces),
+	{Interface, Rest}.
