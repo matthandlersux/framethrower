@@ -1,0 +1,8 @@
+abstract out the annoying code syntax
+
+never do "Pid ! {...}"
+	instead do 		msg:pin(Pid, _, _, _)
+					msg:pin(Pid, _, list, _, _)
+					...
+					
+immediately abstract the multiple input/output boxes
