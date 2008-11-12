@@ -1,5 +1,5 @@
 var defaultStates = {
-	unit : function (a) {
+	unit : function () {
 		var cache = [];
 		return {
 			update : function (inMessages) {
@@ -12,7 +12,7 @@ var defaultStates = {
 			}
 		};
 	},
-	set : function (a) {
+	set : function () {
 		var cache = makeOhash();
 		return {
 			update : function (inMessages) {
@@ -29,7 +29,7 @@ var defaultStates = {
 			}
 		};
 	},
-	staticType : function (a) {
+	staticType : function () {
 		var cache = [];
 		return {
 			update : function (inMessages) {
@@ -47,7 +47,7 @@ var defaultStates = {
 function makeState(type) {
 	if (type.cons == "apply") {
 		//type is reactive
-		return defaultStates[type.left.toLowerCase()](type.right);
+		return defaultStates[type.left.value.toLowerCase()]();
 	} else {
 		//type is static
 		return defaultStates.staticType(type);

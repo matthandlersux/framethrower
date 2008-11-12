@@ -69,9 +69,6 @@ function makeEndCap (startCap, processor) {
 }
 
 
-function makeFunction (typeSig, f) {
-	var sc = makeStartCap(typeSig, null, null);
-	sc.send(f);
-	
-	return sc;
+function applyFunc (func, input) {
+	return func.fun(input);
 }

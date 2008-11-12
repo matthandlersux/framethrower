@@ -1,14 +1,34 @@
-function onRemove () {
-	console.log("onRemove");
-}
 
-var getState = undefined;
 
-var type = parse("Set String");
+var returnSet = makeFun("a -> Set a", function(val){
+	var sc = applyFunc(primFuncs.returnUnit, val);
+	return applyFunc(primFuncs.returnUnitSet, sc);	
+});
 
-var sc = makeStartCap(type, onRemove, getState);
+var sc = makeStartCap(parse("Set a"));
+sc.send([makeMessage.set(0)]);
+sc.send([makeMessage.set(1)]);
 
-sc.send([makeMessage.set("hello"), makeMessage.set("goodbye")]);
+
+var setCap0 = makeStartCap(parse("Set a"));
+setCap0.send([makeMessage.set("cap0 0")]);
+setCap0.send([makeMessage.set("cap0 1")]);
+
+var setCap1 = makeStartCap(parse("Set a"));
+setCap1.send([makeMessage.set("cap1 0")]);
+setCap1.send([makeMessage.set("cap1 1")]);
+
+
+var getSet = makeFun("a -> Set a", function(val){
+	if(val == 0){
+		return setCap0;
+	} else if (val == 1){
+		return setCap1;
+	}
+});
+
+
+var boundSet = applyFunc(applyFunc(primFuncs.bindSet, getSet), sc);
 
 
 function processor (messages) {
@@ -17,4 +37,4 @@ function processor (messages) {
 	});
 }
 
-var ec = makeEndCap(sc, processor);
+var ec = makeEndCap(boundSet, processor);

@@ -9,6 +9,15 @@ function makeCrossReference() {
 	var inputs = makeObjectHash();
 	var outputs = makeObjectHash();
 	
+	cr.getStateMessages = function () {
+		var stateArray = crossRef.getState();
+		var returnArray = [];
+		stateArray.forEach(function (value) {
+			returnArray.push(makeMessage.set(value));
+		});
+		return returnArray;
+	};
+	
 	cr.hasInput = function (input) {
 		return inputs.get(input);
 	};
@@ -55,140 +64,119 @@ function makeCrossReference() {
 }
 
 
+//helper function
+function setProcessor (funcs) {
+	return function (messages) {
+		forEach(messages, function (message) {
+			if (message.action == messageEnum.set) {
+				funcs.set(message.value);
+			} else if (message.action == messageEnum.remove) {
+				funcs.remove(message.value);
+			}
+		});
+	};
+}
+
+
 
 var primFuncs = {
-	returnUnit : {
-		typeSig : parse("a -> Unit a"),
-		make : function (a) {
-			return function (val) {
-				var sc = makeStartCap(a);
-				sc.send([makeMessage.set(val)]);
-				return sc;
-			};
-		}
-	},
-	returnUnitSet : {
-		typeSig : parse("Unit a -> Set a"),
-		make : function (a) {
-			return function (sc) {
-				var cache;
+	returnUnit : makeFun("a -> Unit a", function (val) {
+		var sc = makeStartCap(parse("Unit a"));
+		sc.send([makeMessage.set(val)]);
+		return sc;
+	}),
+	returnUnitSet : makeFun("Unit a -> Set a", function (sc) {
+		var cache;
 
-				var getState = function () {
-					return makeMessage.set(cache);
-				};
+		var getState = function () {
+			return [makeMessage.set(cache)];
+		};
 
-				var outputCap = makeStartCap(parse("Set " + unparse(a)), null, getState);
-				
-				var processor = function (messages) {
-					var message = messages[messages.length-1];
-					if(message.action == messageEnum.set) {
-						if(cache) {
-							outputCap.send(makeMessage.remove(message.value));
-						}
-						cache = message.value;
-						if(message.value) {
-							outputCap.send([message]);
-						}
-					}
-				};
-				
-				var ec = makeEndCap(sc, processor);
-				
-				return outputCap;
-			};
-		}
-	},
-	bindUnit : {
-		typeSig : parse("(a -> Unit b) -> Unit a -> Unit b"),
-		make : function (a, b) {
-			return function (f) {
-				return function (sc) {
-
-					var outputCap = makeStartCap(parse("Unit " + unparse(b)));
-					var innerEc;
-					var processor = function (messages) {
+		var outputCap = makeStartCap(parse("Set a"), null, getState);
+		
+		var processor = function (messages) {
+			var message = messages[messages.length-1];
+			if(message.action == messageEnum.set) {
+				if(cache) {
+					outputCap.send(makeMessage.remove(message.value));
+				}
+				cache = message.value;
+				if(message.value) {
+					outputCap.send([message]);
+				}
+			}
+		};
+		
+		var ec = makeEndCap(sc, processor);
+		
+		return outputCap;
+	}),
+	bindUnit : makeFun("(a -> Unit b) -> Unit a -> Unit b", function (f) {
+		return makeFun("Unit a -> Unit b", function (sc) {
+			var outputCap = makeStartCap(parse("Unit b"));
+			var innerEc;
+			var processor = function (messages) {
+				var message = messages[messages.length-1];
+				// could typeCheck message here	
+				if(message.value) {
+					var resultCap = applyFunc(f, message.value);
+					
+					var innerProcessor = function (messages) {
 						var message = messages[messages.length-1];
+						outputCap.send([message]);
+					};
+					if (innerEc) {
+						innerEc.deactivate();
+					}
+					innerEc = makeEndCap(resultCap, innerProcessor);				
+				} else {
+					if (innerEc) {
+						innerEc.deactivate();
+					}
+					outputCap.send(message);
+				}
+			};
 
-						// could typeCheck message here	
-						if(message.value) {
-							var resultCap = apply(f,message.value);
-							
-							var innerProcessor = function (messages) {
-								var message = messages[messages.length-1];
-								outputCap.send(message);
-							};
-							if (innerEc) {
-								innerEc.deactivate();
-							}
-							innerEc = makeEndCap(resultCap, innerProcessor);				
-						} else {
-							if (innerEc) {
-								innerEc.deactivate();
-							}
-							outputCap.send(message);
+			var ec = makeEndCap(sc, processor);
+			return outputCap;
+		});
+	}),
+	bindSet : makeFun("(a -> Set b) -> Set a -> Set b", function (f) {
+		return makeFun("Set a -> Set b", function (sc) {
+			var outputCap = makeStartCap(parse("Set b"));
+			var crossRef = makeCrossReference();
+			var ECs = makeOhash();
+			
+			makeEndCap(sc, setProcessor({
+				set : function (inputValue) {
+					var resultCap = applyFunc(f, inputValue);
+
+					var innerEc = makeEndCap(resultCap, setProcessor({
+						set : function (setValue) {
+							crossRef.addLink(inputValue, setValue, function (value) {
+								outputCap.send([makeMessage.set(value)]);
+							});								
+						},
+						remove : function (removeValue) {
+							crossRef.removeLink(message.value, removeValue, function (value) {
+								outputCap.send([makeMessage.remove(value)]);
+							});								
 						}
-					};
-				
-					var ec = makeEndCap(sc, processor);
-
-					return outputCap;
-				};
-			};
-		}
-	},
-	bindSet : {
-		typeSig : parse("(a -> Set b) -> Set a -> Set b"),
-		make : function (a, b) {
-			return function (f) {
-				return function (sc) {
-					var outputCap = makeStartCap(parse("Set " + unparse(b)));
+					}));
 					
-					var outputCR = makeCrossReference();
-					var ECs = makeOhash();
-					
-					
-					var processor = function (messages) {
-						forEach(messages, function (message) {
-							if (message.action == messageEnum.set) {
-								var input = message.value;
-								var resultCap = apply(f,message.value);
+					ECs.set(inputValue, innerEc);
+				},
+				remove : function (removeValue) {
+					crossRef.removeInput(removeValue, function (value) {
+						outputCap.send([makeMessage.remove(value)]);
+					});
+					//need to clean up the innerEc associated with this input
+					ECs.get(removeValue).deactivate();
+					ECs.remove(removeValue);
+				}
+			}), null, crossRef.getStateMessages);
 
-								var innerProcessor = function (messages) {
-									forEach(messages, function (message) {
-										if (message.action == messageEnum.set) {
-											var callback = function (value) {
-												outputCap.send(makeMessage.set(value));
-											};
-											outputCR.addLink(input, message.value, callback);
-										} else if (message.action == messageEnum.remove) {
-											var callback = function (value) {
-												outputCap.send(makeMessage.remove(value));
-											};
-											outputCR.removeLink(input, message.value, callback);
-										}
-									});
-								};
-
-								var innerEc = makeEndCap(resultCap, innerProcessor);
-								ECs.set(input, innerEC);
-							} else if (message.action == messageEnum.remove) {
-								var callback = function (value) {
-									outputCap.send(makeMessage.remove(value));
-								};
-								outputCR.removeInput(message.value, callback);
-								//need to clean up the innerEC associated with this input
-								var doneEC = ECs.get(message.value);
-								doneEC.deactivate();
-								ECs.remove(message.value);
-							}
-						});
-					};
-				
-					var ec = makeEndCap(sc, processor);
-
-					return outputCap;
-				};
-			};
-		}
-	}
+			return outputCap;
+		});
+	})
 };
