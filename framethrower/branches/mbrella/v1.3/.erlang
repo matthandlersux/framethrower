@@ -1,6 +1,0 @@
-io:format("running mbrella v1.3~n~n", []).
-code:add_patha("./include/").
-code:add_patha("./src/").
-code:add_patha("./ebin/").
-code:add_patha("/Users/handler/Documents/erlangmods/").
-code:load_file(user_default).
