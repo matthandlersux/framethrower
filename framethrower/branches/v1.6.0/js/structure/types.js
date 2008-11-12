@@ -106,10 +106,6 @@ function genConstraints(expr, env, constraints) {
 	
 	if (isPrim(expr)) {
 		return getType(env(expr.value));
-		/*if (!env[expr.value]) {
-			console.log("NOT FOUND IN ENV", expr.value);
-		}
-		return env[expr.value];*/
 	} else if (expr.cons === "apply") {
 		var funType = genConstraints(expr.left, env, constraints);
 		var inputType = genConstraints(expr.right, env, constraints);
@@ -118,8 +114,6 @@ function genConstraints(expr, env, constraints) {
 		return freshType;
 	} else if (expr.cons === "lambda") {
 		var freshType = makePrim(typeNameGen());
-		//var newEnv = merge(env);
-		//newEnv[expr.left.value] = freshType;
 		var newEnv = envAdd(env, expr.left.value, {type: freshType});
 		return makeLambda(freshType, genConstraints(expr.right, newEnv, constraints));
 	}
