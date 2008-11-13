@@ -1,6 +1,6 @@
 
-function makeStartCap (type, onRemove, getState) {
-	var startCap = makeIded("startCap");
+function makeStartCap (type, getState) {
+	var startCap = {};
 	
 	var informs = makeObjectHash();
 	var state;
@@ -53,7 +53,7 @@ function makeStartCap (type, onRemove, getState) {
 
 
 function makeEndCap (startCap, processor) {
-	var endCap = makeIded("endCap");
+	var endCap = {};
 	
 	endCap.send = function (messages) {
 		processor(messages);
@@ -70,5 +70,6 @@ function makeEndCap (startCap, processor) {
 
 
 function applyFunc (func, input) {
-	return func.fun(input);
+	//this will be changed...
+	return func(input);
 }

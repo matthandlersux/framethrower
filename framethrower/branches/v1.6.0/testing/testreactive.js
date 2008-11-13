@@ -6,29 +6,29 @@ var returnSet = makeFun("a -> Set a", function(val){
 });
 
 var sc = makeStartCap(parse("Set a"));
-sc.send([makeMessage.set(0)]);
+sc.send([makeMessage.set(2)]);
 sc.send([makeMessage.set(1)]);
+sc.send([makeMessage.set(3)]);
+
+/*
+var setCap0 = makeStartCap(parse("Unit Bool"));
+setCap0.send([makeMessage.set(false)]);
+
+var setCap1 = makeStartCap(parse("Unit Bool"));
+setCap1.send([makeMessage.set(false)]);
+
+var setCap2 = makeStartCap(parse("Unit Bool"));
+setCap2.send([makeMessage.set(true)]);
+*/
+
+var add = function (val1) {
+	return function (val2) {
+		return val1 + val2;
+	};
+};
 
 
-var setCap0 = makeStartCap(parse("Set a"));
-setCap0.send([makeMessage.set("cap0 0")]);
-setCap0.send([makeMessage.set("cap0 1")]);
-
-var setCap1 = makeStartCap(parse("Set a"));
-setCap1.send([makeMessage.set("cap1 0")]);
-setCap1.send([makeMessage.set("cap1 1")]);
-
-
-var getSet = makeFun("a -> Set a", function(val){
-	if(val == 0){
-		return setCap0;
-	} else if (val == 1){
-		return setCap1;
-	}
-});
-
-
-var boundSet = applyFunc(applyFunc(primFuncs.bindSet, getSet), sc);
+var boundSet = applyFunc(applyFunc(applyFunc(primFuncs.fold, add), 0), sc);
 
 
 function processor (messages) {
