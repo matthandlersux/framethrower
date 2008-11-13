@@ -1,0 +1,24 @@
+<test name='foldTest1'>
+	<startcap name='sc' />
+	
+	<messages>
+		<set scname = 'sc' value = '2' />
+		<set scname = 'sc' value = '5' />
+	</messages>
+	
+	<endcap name = 'ec'>
+		<syntax value="fold add 0 sc" />
+	</endcap>
+	
+	<messages>
+		<set scname = 'sc' value = '3' />
+		<set scname = 'sc' value = '5' />
+		<remove scname = 'sc' value = '2' />
+	</messages>
+	
+	<expectedmessages>
+		<set ecname = 'ec' value = '8' />
+	</expectedmessages>
+	
+	<removeEC name = 'ec' />
+</test>
