@@ -104,6 +104,46 @@ function parse(s) {
 }
 
 
+function parseType(s) {
+	return uniqueifyType(parse(s));
+}
+
+function makeVar(value) {
+	return {kind: "var", value: value};
+}
+
+function parseExpr(s) {
+	function helper(ast, env) {
+		if (isPrim(ast)) {
+			return env(ast.value);
+		} else if (ast.cons === "lambda") {
+			var name = ast.left.value;
+			var v = makeVar(name);
+			return makeLambda(v, helper(ast.right, envAdd(env, name, v)));
+		} else if (ast.cons === "apply") {
+			return makeApply(helper(ast.left, env), helper(ast.right, env));
+		}
+	}
+	return helper(parse(s), baseEnv);
+}
+
+function unparseExpr(expr) {
+	function helper(expr) {
+		if (expr.kind === "var") {
+			return makePrim(expr.value);
+		} else if (expr.kind === "cons") {
+			return makeCons(expr.cons, helper(expr.left), helper(expr.right));
+		} else {
+			if (expr.stringify) {
+				return makePrim(expr.stringify);
+			} else {
+				return makePrim(expr.toString());
+			}
+		}
+	}
+	return unparse(helper(expr));
+}
+
 
 function unparse(ast, parens) {
 	if (!parens) parens = 0;
@@ -111,7 +151,7 @@ function unparse(ast, parens) {
 	if (isPrim(ast)) {
 		return ast.value;
 	} else if (ast.cons === "apply") {
-		ret = unparse(ast.left) + " " + unparse(ast.right, 1);
+		ret = unparse(ast.left, 2) + " " + unparse(ast.right, 1);
 	} else if (ast.cons === "lambda") {
 		ret = unparse(ast.left, 2) + " -> " + unparse(ast.right);
 	}

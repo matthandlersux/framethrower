@@ -21,23 +21,12 @@ function envAdd(parentEnv, name, value) {
 }
 
 
-
-/*var lookupTable = {};
-
-function addFun(name, typeString, fun) {
-	lookupTable[name] = {
-		stringify: name,
-		type: parseType(typeString),
-		fun: fun
-	};
-}
-function addExpr(name, exprString) {
-	lookupTable[name] = parseExpr(exprString);
-}
+var emptyEnv = function (s) {
+	throw "Not found in environment: "+s;
+};
 
 
-
-
+var lookupTable = {};
 
 var baseEnv = function (s) {
 	// literals
@@ -59,9 +48,50 @@ var baseEnv = function (s) {
 		if (lookup) {
 			return lookup;
 		} else {
-			throw "Not found in environment: "+s;
+			return emptyEnv(s);
 		}
 	}
 };
 
-*/
+function addFun(name, typeString, f) {
+	lookupTable[name] = {
+		kind: "fun",
+		stringify: name,
+		type: parseType(typeString),
+		fun: curry(f)
+	};
+}
+function addExpr(name, exprString) {
+	lookupTable[name] = parseExpr(exprString);
+}
+
+
+
+addFun("bindSet", "(a -> Set b) -> Set a -> Set b", function () {
+	
+});
+addFun("returnUnitSet", "Unit a -> Set a", function () {
+	
+});
+addFun("passthru", "(a -> Bool) -> a -> Unit a", function () {
+	
+});
+
+
+addFun("and", "Bool -> Bool -> Bool", function (x, y) {
+	return x && y;
+});
+addFun("or", "Bool -> Bool -> Bool", function (x, y) {
+	return x || y;
+});
+addFun("not", "Bool -> Bool -> Bool", function (x) {
+	return !x;
+});
+
+
+
+addExpr("compose", "f -> g -> x -> f (g x)");
+addExpr("const", "x -> y -> x");
+addExpr("swap", "f -> x -> y -> f y x");
+
+

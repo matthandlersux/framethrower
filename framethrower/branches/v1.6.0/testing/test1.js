@@ -1,3 +1,3 @@
-var expr = parse("predicate -> bindSet (compose returnUnitSet (passthru predicate))");
+var expr = parseExpr("predicate -> bindSet (compose returnUnitSet (passthru predicate))");
 
 var c = [];

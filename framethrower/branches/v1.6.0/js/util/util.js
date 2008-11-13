@@ -136,6 +136,23 @@ function getProp(name) {
 }
 
 
+function curry(f) {
+	var expects = f.length;
+	function accumulate(savedArgs) {
+		if (savedArgs.length === expects) {
+			return f.apply(null, savedArgs);
+		} else {
+			return function (arg) {
+				var newSavedArgs = savedArgs.slice(0); // copy
+				newSavedArgs.push(arg);
+				return accumulate(newSavedArgs);
+			}
+		}
+	}
+	return accumulate([]);
+}
+
+
 
 function getter(value) {
 	return function () {

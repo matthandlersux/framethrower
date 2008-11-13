@@ -104,8 +104,10 @@ function genConstraints(expr, env, constraints) {
 			return vName -> (genConstraints on expr2 using env augmented with x::vName)
 	*/
 	
-	if (isPrim(expr)) {
+	if (expr.kind === "var") {
 		return getType(env(expr.value));
+	} else if (!expr.cons) {
+		return getType(expr);
 	} else if (expr.cons === "apply") {
 		var funType = genConstraints(expr.left, env, constraints);
 		var inputType = genConstraints(expr.right, env, constraints);
@@ -128,6 +130,7 @@ function substConstraints(constraints, substitutions) {
 	});
 }
 function unify(constraints) {
+	//console.log("constraints", constraints);
 	// given constraints, returns substitutions that satisfy, or throws an error "Type mismatch."
 	if (constraints.length === 0) {
 		return {};
@@ -154,14 +157,15 @@ function unify(constraints) {
 			copy.push([left.right, right.right]);
 			return unify(copy);
 		} else {
-			throw "Type mismatch.";
+			console.error("Type mismatch, unresolveable constraint", unparse(left), unparse(right));
+			//throw "Type mismatch.";
 		}
 	}
 }
 
 function getTypeOfExpr(expr) {
 	var constraints = [];
-	var t = genConstraints(expr, baseEnv, constraints);
+	var t = genConstraints(expr, emptyEnv, constraints);
 	var substitutions = unify(constraints);
 	return imposeList(t, substitutions);
 }
@@ -172,11 +176,11 @@ function getTypeOfExpr(expr) {
 function getType(o) {
 	var t = typeOf(o);
 	if (t === "string") {
-		return "String";
+		return makePrim("String");
 	} else if (t === "number") {
-		return "Number";
+		return makePrim("Number");
 	} else if (t === "boolean") {
-		return "Bool";
+		return makePrim("Bool");
 	} else { //object
 		if (!o.type) {
 			o.type = getTypeOfExpr(o);
@@ -200,5 +204,5 @@ function showType(type) {
 	return unparse(impose(type, sub));
 }
 function checkType(s) {
-	return showType(getType(parse(s)));
+	return showType(getType(parseExpr(s)));
 }
