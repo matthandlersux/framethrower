@@ -25,23 +25,13 @@ var typeVarGen = makeGenerator("t");
 
 // helper functions
 function makeFreshTypeVar() {
-	return {
-		kind: "typeVar",
-		value: typeVarGen()
-	};
+	return {kind: "typeVar", value: typeVarGen()};
 }
 function makeTypeName(name) {
-	return {
-		kind: "typeName",
-		value: name
-	};
+	return {kind: "typeName", value: name};
 }
 function makeTypeLambda(left, right) {
-	return {
-		kind: "typeLambda",
-		left: left,
-		right: right
-	};
+	return {kind: "typeLambda", left: left, right: right};
 }
 
 
@@ -87,6 +77,19 @@ function parseType(s) {
 		}
 	}
 	return helper(parse(s));
+}
+
+function unparseType(type) {
+	function helper(type) {
+		if (type.kind === "typeName" || type.kind === "typeVar") {
+			return type.value;
+		} else if (type.kind === "typeApply") {
+			return {cons: "apply", left: helper(type.left), right: helper(type.right)};
+		} else if (type.kind === "typeLambda") {
+			return {cons: "lambda", left: helper(type.left), right: helper(type.right)};
+		}
+	}
+	return unparse(helper(type));
 }
 
 

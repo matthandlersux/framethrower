@@ -6,4 +6,6 @@ var t = genConstraints(expr, emptyEnv, c);
 
 var subs = unify(c);
 
-console.log(imposeSubs(t, subs));
+var type = imposeSubs(t, subs);
+
+console.log(type);

@@ -27,6 +27,13 @@ A Var is:
 
 var varNameGen = makeGenerator("x");
 
+function makeLambda(left, right) {
+	return {kind: "cons", cons: "lambda", left: left, right: right};
+}
+function makeApply(left, right) {
+	return {kind: "cons", cons: "apply", left: left, right: right};
+}
+
 function parseExpr(s) {
 	/*
 	Takes in a string and returns an Expr.
@@ -36,6 +43,7 @@ function parseExpr(s) {
 		for each lambda we make the appropriate lambda Expr,
 			in this case we also rename the variable using varNameGen,
 			this way no Expr's ever use the same Var name twice (unless they correspond)
+			INVARIANT: no two lambdas use the same Var name as their parameter
 	*/
 	
 	function helper(ast, env) {
@@ -60,6 +68,30 @@ function parseExpr(s) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function freshenExpr(expr) {
+	// makes a copy of expr, but with all var's renamed to fresh varName's
+	// used by betaReduce
+	
+}
 
 
 
@@ -151,7 +183,7 @@ function betaReduce(expr, env) {
 	}
 }
 function normalizeExpr(expr) {
-	/*
+	/ *
 	Takes an expression and returns it back but with beta-reduction performed wherever possible,
 		and lambda expressions using parameters x0, x1, ... in a normalized way
 	* /

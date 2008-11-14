@@ -84,7 +84,22 @@ function parse(s) {
 }
 
 
-
+function unparse(ast, parens) {
+	if (!parens) parens = 0;
+	var ret;
+	if (typeOf(ast) === "string") {
+		return ast;
+	} else if (ast.cons === "apply") {
+		ret = unparse(ast.left, 2) + " " + unparse(ast.right, 1);
+	} else if (ast.cons === "lambda") {
+		ret = unparse(ast.left, 2) + " -> " + unparse(ast.right);
+	}
+	if ((parens === 2 && ast.cons === "lambda") || parens === 1) {
+		return "(" + ret + ")";
+	} else {
+		return ret;
+	}
+}
 
 
 
@@ -165,21 +180,5 @@ function unparseExpr(expr) {
 }
 
 
-function unparse(ast, parens) {
-	if (!parens) parens = 0;
-	var ret;
-	if (isPrim(ast)) {
-		return ast.value;
-	} else if (ast.cons === "apply") {
-		ret = unparse(ast.left, 2) + " " + unparse(ast.right, 1);
-	} else if (ast.cons === "lambda") {
-		ret = unparse(ast.left, 2) + " -> " + unparse(ast.right);
-	}
-	if ((parens === 2 && ast.cons === "lambda") || parens === 1) {
-		return "(" + ret + ")";
-	} else {
-		return ret;
-	}
-}
 
 */
