@@ -1,79 +1,92 @@
 /*
-
-a type is an AST formed from a type signature (written Haskell style)
-	so a prim with capitalized value is a primitive type
-	a prim with lowercase value is a polymorphic type
-	an apply is a constructed type with the constructor on the left
-	a lambda is the type of a function with input type on the left, output type on the right
-
-an expression (abbreviated: expr) is also an AST, formed from an expression (written Haskell style, but leave off the "\" lambdas)
-	a string is a value/startCap from the environment,
-		including a free variable from a lambda expression
-	an apply is an apply
-	a lambda is a lambda
-
+A Type is any one of the following:
+	*	{
+			kind: "typeName",
+			value: String
+		}
+	*	{
+			kind: "typeVar",
+			value: String
+		}
+	*	{
+			kind: "typeApply",
+			left: Type,
+			right: Type
+		}
+	*	{
+			kind: "typeLambda",
+			left: Type,
+			right: Type
+		}
 */
 
 
+var typeVarGen = makeGenerator("t");
 
-function isCapitalized(s) {
-	var fc = s.charAt(0);
-	return fc === fc.toUpperCase();
+// helper functions
+function makeFreshTypeVar() {
+	return {
+		kind: "typeVar",
+		value: typeVarGen()
+	};
+}
+function makeTypeName(name) {
+	return {
+		kind: "typeName",
+		value: name
+	};
+}
+function makeTypeLambda(left, right) {
+	return {
+		kind: "typeLambda",
+		left: left,
+		right: right
+	};
 }
 
-function isFV(type) {
-	return isPrim(type) && !isCapitalized(type.value);
-}
-function freeVariables(type) {
-	// returns a list of free variable names in type
-	var fv = {};
-	function helper(type) {
-		if (isPrim(type)) {
-			if (!isCapitalized(type.value)) {
-				fv[type.value] = true;
+
+function parseType(s) {
+	/*
+	Takes in a string and returns a Type.
+	After parsing to an AST,
+		apply's get turned into typeApply's, lambda's get turned into typeLambda's
+		capitalized strings get turned into typeName's
+		lowercase strings get turned into typeVar's
+			also, these get renamed using typeVarGen,
+			this way no Type's ever use the same typeVar name twice (unless they correspond)
+	*/
+	
+	function isCapitalized(s) {
+		var fc = s.charAt(0);
+		return fc === fc.toUpperCase();
+	}
+	
+	var typeVars = {};
+	
+	function helper(ast) {
+		if (typeOf(ast) === "string") {
+			if (isCapitalized(ast)) {
+				return {
+					kind: "typeName",
+					value: ast
+				};
+			} else {
+				if (!typeVars[ast]) {
+					typeVars[ast] = makeFreshTypeVar();
+				}
+				return typeVars[ast];
 			}
-		} else {
-			helper(type.left);
-			helper(type.right);
+		} else if (ast.cons === "apply") {
+			return {
+				kind: "typeApply",
+				left: helper(ast.left),
+				right: helper(ast.right)
+			};
+		} else if (ast.cons === "lambda") {
+			return makeTypeLambda(helper(ast.left), helper(ast.right));
 		}
 	}
-	helper(type);
-	return keys(fv);
-}
-
-function impose(type, substitutions) {
-	/*
-	takes in a type, and substitutions
-		substitutions is a map of variable names to types
-	returns type back, but with polymorphic variables substituted where noted in substitutions
-	*/
-	if (isPrim(type)) {
-		return substitutions[type.value] || type;
-	} else {
-		return makeCons(type.cons, impose(type.left, substitutions), impose(type.right, substitutions));
-	}
-}
-function imposeList(type, list) {
-	// for imposing a list of substitutions in order
-	forEach(list, function (sub) {
-		type = impose(type, sub);
-	});
-	return type;
-}
-
-
-
-
-var typeNameGen = makeGenerator("t");
-
-function uniqueifyType(type) {
-	var fv = freeVariables(type);
-	var sub = {};
-	forEach(fv, function (name) {
-		sub[name] = makePrim(typeNameGen());
-	});
-	//console.log("uniqueifying with", sub);
-	return impose(type, sub);
+	return helper(parse(s));
 }
 
 
@@ -84,15 +97,15 @@ function genConstraints(expr, env, constraints) {
 	/*
 	this function returns the type of expr, but also adds to constraints (which must be unified and imposed)
 	
-	env is a map (initially empty) of variable names to types
-	constraints is a list (initially empty) of contraints, where each constraint is a pair (length-2 list) of types
-	expr is an expression (AST)
+	env is a map of words to Expr's, initially baseEnv
+	constraints is a list (initially empty) of contraints, where each constraint is a pair (length-2 list) of types which must be equal
+	expr is an Expr
 	
 	Algorithm: if expr is
-		a literal
-			return the literal's type
 		a variable
-			return the env's recorded type for the variable
+			return getType(env(expr.value))
+		a non-cons
+			return getType(expr)
 		an application (funExpr inputExpr)
 			run genConstraints on funExpr -> funType
 			run genConstraints on inputExpr -> inputType
@@ -106,81 +119,129 @@ function genConstraints(expr, env, constraints) {
 	
 	if (expr.kind === "var") {
 		return getType(env(expr.value));
-	} else if (!expr.cons) {
+	} else if (expr.kind !== "cons") {
 		return getType(expr);
 	} else if (expr.cons === "apply") {
 		var funType = genConstraints(expr.left, env, constraints);
 		var inputType = genConstraints(expr.right, env, constraints);
-		var freshType = makePrim(typeNameGen());
-		constraints.push([funType, makeLambda(inputType, freshType)]);
+		var freshType = makeFreshTypeVar();
+		constraints.push([funType, makeTypeLambda(inputType, freshType)]);
 		return freshType;
 	} else if (expr.cons === "lambda") {
-		var freshType = makePrim(typeNameGen());
+		var freshType = makeFreshTypeVar();
 		var newEnv = envAdd(env, expr.left.value, {type: freshType});
-		return makeLambda(freshType, genConstraints(expr.right, newEnv, constraints));
+		return makeTypeLambda(freshType, genConstraints(expr.right, newEnv, constraints));
 	}
 }
 
-function substConstraints(constraints, substitutions) {
-	return map(constraints, function (constraint) {
-		return [
-			impose(constraint[0], substitutions),
-			impose(constraint[1], substitutions)
-		];
-	});
+function containsVar(type, typeVar) {
+	if (type.kind === "typeName") {
+		return false;
+	} else if (type.kind === "typeVar") {
+		return type.value === typeVar.value;
+	} else {
+		return containsVar(type.left, typeVar) || containsVar(type.right, typeVar);
+	}
 }
+
 function unify(constraints) {
 	//console.log("constraints", constraints);
-	// given constraints, returns substitutions that satisfy, or throws an error "Type mismatch."
-	if (constraints.length === 0) {
-		return {};
-	} else {
-		var constraint = constraints[0];
-		var rest = constraints.slice(1);
+	// given constraints, appends to subs or throws an error
+	
+	function subOnConstraints(name, value) {
+		forEach(constraints, function (constraint) {
+			constraint[0] = imposeSub(constraint[0], name, value);
+			constraint[1] = imposeSub(constraint[1], name, value);
+		});
+	}
+	
+	var subs = [];
+	
+	while (constraints.length !== 0) {
+		var constraint = constraints.shift(); // take a constraint from the front of the list
 		
 		var left = constraint[0];
 		var right = constraint[1];
 		
-		if (isPrim(left) && isPrim(right) && left.value === right.value) {
-			return unify(rest);
-		} else if (isFV(left) && !contains(freeVariables(right), left.value)) {
-			var sub = {};
-			sub[left.value] = right;
-			return [sub].concat(unify(substConstraints(rest, sub)));
-		} else if (isFV(right) && !contains(freeVariables(left), right.value)) {
-			var sub = {};
-			sub[right.value] = left;
-			return [sub].concat(unify(substConstraints(rest, sub)));
-		} else if (!isPrim(left) && !isPrim(right) && left.cons === right.cons) {
-			var copy = rest.slice(0);
-			copy.push([left.left, right.left]);
-			copy.push([left.right, right.right]);
-			return unify(copy);
+		if (left.kind === "typeName" && right.kind === "typeName") {
+			if (left.value !== right.value) {
+				throw "Type mismatch between `"+left.value+"` and `"+right.value+"`.";
+			}
+			// otherwise ignore
+		} else if (left.kind === "typeVar" && right.kind === "typeVar" && left.value === right.value) {
+			// ignore
+		} else if (left.kind === "typeVar" && !containsVar(right, left)) {
+			// add substitution
+			subs.push([left.value, right]);
+			subOnConstraints(left.value, right);
+		} else if (right.kind === "typeVar" && !containsVar(left, right)) {
+			// add substitution
+			subs.push([right.value, left]);
+			subOnConstraints(right.value, left);
+		} else if (left.kind === right.kind) {
+			// add two new constraints to the end of the list
+			constraints.push([left.left, right.left]);
+			constraints.push([left.right, right.right]);
 		} else {
-			console.error("Type mismatch, unresolveable constraint", unparse(left), unparse(right));
-			//throw "Type mismatch.";
+			throw "Type mismatch, unresolveable: ";
 		}
 	}
+	
+	return subs;
 }
+
+function imposeSub(type, name, value) {
+	if (type.kind === "typeName") {
+		return type;
+	} else if (type.kind === "typeVar") {
+		if (type.value === name) {
+			return value;
+		} else {
+			return type;
+		}
+	} else {
+		return {
+			kind: type.kind,
+			left: imposeSub(type.left, name, value),
+			right: imposeSub(type.right, name, value)
+		};
+	}
+}
+
+function imposeSubs(type, subs) {
+	function helper(type, name, value) {
+
+	}
+	forEach(subs, function (sub) {
+		type = imposeSub(type, sub[0], sub[1]);
+	});
+	return type;
+}
+
+
+
+
+
 
 function getTypeOfExpr(expr) {
 	var constraints = [];
 	var t = genConstraints(expr, emptyEnv, constraints);
-	var substitutions = unify(constraints);
-	return imposeList(t, substitutions);
+	var subs = unify(constraints);
+	return imposeSubs(t, subs);
 }
 
 
 
+var basicTypes = {
+	string: makeTypeName("String"),
+	number: makeTypeName("Number"),
+	bool: makeTypeName("Bool")
+};
 
 function getType(o) {
 	var t = typeOf(o);
-	if (t === "string") {
-		return makePrim("String");
-	} else if (t === "number") {
-		return makePrim("Number");
-	} else if (t === "boolean") {
-		return makePrim("Bool");
+	if (basicTypes[t]) {
+		return basicTypes[t];
 	} else { //object
 		if (!o.type) {
 			o.type = getTypeOfExpr(o);
@@ -191,7 +252,7 @@ function getType(o) {
 
 
 
-function showType(type) {
+/*function showType(type) {
 	// like unparse, but renames t1, t2, ... to a, b, ...
 	function getLetter(i) {
 		return "abcdefghijklmnopqrstuvwxyz".charAt(i);
@@ -205,4 +266,4 @@ function showType(type) {
 }
 function checkType(s) {
 	return showType(getType(parseExpr(s)));
-}
+}*/

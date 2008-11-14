@@ -1,4 +1,92 @@
 /*
+An Expr is any one of the following:
+	* Number, String, Bool
+	* Fun
+	* StartCap
+	* ScafOb
+	* Var
+	*	{
+			kind: "cons",
+			cons: "apply",
+			left: Expr,
+			right: Expr
+		}
+	*	{
+			kind: "cons",
+			cons: "lambda",
+			left: Var,
+			right: Expr
+		}
+
+A Var is:
+	{
+		kind: "var",
+		value: String
+	}
+*/
+
+var varNameGen = makeGenerator("x");
+
+function parseExpr(s) {
+	/*
+	Takes in a string and returns an Expr.
+	After parsing the string to an AST,
+		for each word we look it up in baseEnv
+		for each apply we make the appropriate apply Expr
+		for each lambda we make the appropriate lambda Expr,
+			in this case we also rename the variable using varNameGen,
+			this way no Expr's ever use the same Var name twice (unless they correspond)
+	*/
+	
+	function helper(ast, env) {
+		if (typeOf(ast) === "string") {
+			return env(ast);
+		} else if (ast.cons === "lambda") {
+			var name = ast.left;
+			var v = {
+				kind: "var",
+				value: varNameGen()
+			};
+			return makeLambda(v, helper(ast.right, envAdd(env, name, v)));
+		} else if (ast.cons === "apply") {
+			return makeApply(helper(ast.left, env), helper(ast.right, env));
+		}
+	}
+	return helper(parse(s), baseEnv);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 
 The result of an evaluate is always either:
 	a fun
@@ -7,7 +95,7 @@ The result of an evaluate is always either:
 	a reactive start cap
 
 */
-
+/*
 function evaluate(expr) {
 	if (expr && expr.cons === "apply") {
 		var ret;
@@ -66,7 +154,7 @@ function normalizeExpr(expr) {
 	/*
 	Takes an expression and returns it back but with beta-reduction performed wherever possible,
 		and lambda expressions using parameters x0, x1, ... in a normalized way
-	*/
+	* /
 	
 	expr = normalizeVariables(expr, makeGenerator("x"), emptyEnv); // uniqueify variable names (so betaReduce doesn't have to worry about variable capture issues)
 	expr = betaReduce(expr, emptyEnv); // beta reduce
@@ -74,3 +162,4 @@ function normalizeExpr(expr) {
 	
 	return expr;
 }
+*/
