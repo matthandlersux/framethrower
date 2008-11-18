@@ -48,19 +48,15 @@ function testFile(filename) {
 		var endCapName = actionNode.getAttribute('name');
 		var expression = actionNode.getAttribute('expression');
 
-		console.log(expression);
-
 		var scFromExp = evaluate(parse(expression));
 
 		function processor (messages) {
 			forEach(messages, function (message) {
-				console.log("Got Message: ", message.action, message.value);
 				testWorld.outMessages.push(message);
 			});
 		}
 
 		testWorld.endCaps[endCapName] = makeEndCap(scFromExp, processor);
-		console.log('end cap setup');
 		return testWorld;
 	}
 	
