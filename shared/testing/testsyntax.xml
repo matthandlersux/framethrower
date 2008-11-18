@@ -1,24 +1,47 @@
-<test name='foldTest1'>
-	<startcap name='sc' />
+<tests>
+
+	<test name='foldTest1'>
+		<startcap name='sc' type='set number' />
 	
-	<messages>
-		<set scname = 'sc' value = '2' />
-		<set scname = 'sc' value = '5' />
-	</messages>
+		<messages>
+			<set scname = 'sc'>
+				<number value='2' />
+			</set>
+			<set scname = 'sc'>
+				<number value='5' />
+			</set>
+		</messages>
 	
-	<endcap name = 'ec'>
-		<syntax value="fold add 0 sc" />
-	</endcap>
+		<endcap name = 'ec' expression = 'fold add 0 sc' />
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '7' />
+			</set>
+		</expectedmessages>
 	
-	<messages>
-		<set scname = 'sc' value = '3' />
-		<set scname = 'sc' value = '5' />
-		<remove scname = 'sc' value = '2' />
-	</messages>
+		<messages>
+			<set scname = 'sc'>
+				<number value='3' />
+			</set>
+			<set scname = 'sc'>
+				<number value='5' />
+			</set>
+			<remove scname = 'sc'>
+				<number value='2' />
+			</remove>
+		</messages>
 	
-	<expectedmessages>
-		<set ecname = 'ec' value = '8' />
-	</expectedmessages>
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '10' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '9' />
+			</set>
+		</expectedmessages>
 	
-	<removeEC name = 'ec' />
-</test>
+		<removecap name = 'ec' />
+	</test>
+
+</tests>

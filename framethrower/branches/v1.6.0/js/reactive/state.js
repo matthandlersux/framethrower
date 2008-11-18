@@ -47,7 +47,7 @@ var defaultStates = {
 function makeState(type) {
 	if (type.cons == "apply") {
 		//type is reactive
-		return defaultStates[type.left.value.toLowerCase()]();
+		return defaultStates[type.left.toLowerCase()]();
 	} else {
 		//type is static
 		return defaultStates.staticType(type);

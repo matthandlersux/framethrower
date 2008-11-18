@@ -209,6 +209,16 @@ var primFuncs = {
 		};
 	},
 	// ============================================================================
+	// Number utility functions
+	// ============================================================================
+// type: Number -> Number -> Number
+	add : function (val1) {
+		// type: Number -> Number
+		return function (val2) {
+			return val1 + val2;
+		};
+	},
+	// ============================================================================
 	// Other functions?
 	// ============================================================================
 // type: Unit (a -> b) -> a -> Unit b 
@@ -344,10 +354,56 @@ var primFuncs = {
 						}
 						outputCap.send([makeMessage.set(resultList[resultList.length-1])]);
 					}
-				}), function () {return [makeMessage.set(resultList[resultList.length-1])];});
+				}), function () {
+					if(resultList.length > 0) {
+						return [makeMessage.set(resultList[resultList.length-1])];
+					} else {
+						return [];
+					}
+				});
 
 				return outputCap;
 			};
 		};
 	}
 };
+
+
+
+
+var lookupTable = {};
+
+var baseEnv = function (s) {
+	// literals
+	if (/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/.test(s)) {
+		// matches a number
+		// using http://www.regular-expressions.info/floatingpoint.html
+		// might want to find the regular expression that javascript uses...
+		return +s;
+	} else if (/^".*"$/.test(s)) {
+		// matches a string
+		return s.substring(1, s.length - 2); // this needs to strip backslashes..
+	} else if (s === "true") {
+		return true;
+	} else if (s === "false") {
+		return false;
+	} else {
+		// lookup
+		var lookup = lookupTable[s];
+		if (lookup) {
+			return lookup;
+		} else {
+			console.log("Not found in environment: "+s);
+		}
+	}
+};
+
+// legacy function
+function spawnEnv(parentEnv, obj) {
+	forEach(obj, function(value, name) {
+		parentEnv = envAdd(parentEnv, name, value);
+	});
+	return parentEnv;
+}
+
+baseEnv = spawnEnv(baseEnv, primFuncs);
