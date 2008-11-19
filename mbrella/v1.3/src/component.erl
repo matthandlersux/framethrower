@@ -48,11 +48,11 @@ groupBy(Fun) ->
 %%		set(a) -> box -> assoc(a,b)
 %% 
 
-buildAssoc(Fun) ->
-	Process = process:new(buildAssoc, fun(X) -> X end),
-	Box = endcap:new( Process, assoc),
-	process:replace(Process, Fun(Box) ),
-	Box.
+buildAssoc(Fun) ->	% 
+	% Process = process:new(buildAssoc, fun(X) -> X end),
+	endcap:new( buildAssoc, Fun, assoc).
+	% process:replace(Process, Fun(Box) ),
+	% Box.
 	
 % example:
 % 
@@ -67,7 +67,7 @@ buildAssoc(Fun) ->
 % 	null.
 
 gatherer(GatherFun) ->
-	endcap:new( process:new(gatherer, GatherFun), endcap ).
+	endcap:new( gatherer, fun() -> GatherFun end, endcap ).
 	
 %% 
 %% equals component takes an element and any input and returns bool if they're equal
@@ -180,8 +180,9 @@ buildAssocGeneral(GatherFun, ConnectFun, CleanupFun) ->
 %% a possible implementation for assoc by correspondences
 %% 
 
-buildAssocOfCorrespondences(ParentBox) ->
-	GatherFun = fun( Ob ) -> fun({Control, Ob2}) -> endcap:control(ParentBox, {Control, {Ob, Ob2}}), {remove, {Ob, Ob2}} end end,
+buildAssocOfCorrespondences() ->
+	Self = self(),
+	GatherFun = fun( Ob ) -> fun({Control, Ob2}) -> endcap:control(Self, {Control, {Ob, Ob2}}), {remove, {Ob, Ob2}} end end,
 	ConnectFun = fun( Ob ) -> object:get(Ob, corresponds) end,
 	CleanupFun = fun( Gatherer ) -> endcap:die(Gatherer, "Removed from set") end,
 	buildAssocGeneral(GatherFun, ConnectFun, CleanupFun).

@@ -19,8 +19,8 @@
 	type, %interface type
 	subType, %interface subtype
 	parentObject, % pid
-	outputPin,% pid
-	% cache, now exists in the output pin
+	connections = [],
+	cache = [],
 	interface
 	}).
 	

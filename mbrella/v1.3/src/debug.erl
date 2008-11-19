@@ -79,37 +79,37 @@ loop(Name) ->
 %% test buildAssoc
 %% ====================================================
 
-% Ind1 = object:new(individual).
-% Ind2 = object:new(individual).
-% Ind3 = object:new(individual).
-% Lin1 = object:new(individual).
-% Lin2 = object:new(individual).
-% Lin3 = object:new(individual).
-% Matty = debug:new(matty).
-% object:control(Ind1, corresponds, {add, Ind2}).
-% object:control(Ind1, corresponds, {add, Ind3}).
-% object:control(Lin1, corresponds, {add, Lin2}).
-% object:control(Lin1, corresponds, {add, Lin3}).
-% Set1 = startcap:new( interface:new(set, individuals) ).
-% startcap:control( Set1, {add, Ind1}).
-% startcap:control( Set1, {add, Lin1}).
-% Set2 = startcap:new( interface:new(set, individuals) ).
-% startcap:control( Set2, {add, Ind1}).
-% Box = component:buildAssoc( fun component:buildAssocOfCorrespondences/1 ).
-% startcap:connect( Set1, Box ).
-% startcap:connect( Set2, Box ).
-% endcap:connect( Box, Matty ).
+Ind1 = object:new(individual).
+Ind2 = object:new(individual).
+Ind3 = object:new(individual).
+Lin1 = object:new(individual).
+Lin2 = object:new(individual).
+Lin3 = object:new(individual).
+Matty = debug:new(matty).
+object:control(Ind1, corresponds, {add, Ind2}).
+object:control(Ind1, corresponds, {add, Ind3}).
+object:control(Lin1, corresponds, {add, Lin2}).
+object:control(Lin1, corresponds, {add, Lin3}).
+Set1 = startcap:new( interface:new(set, individuals) ).
+startcap:control( Set1, {add, Ind1}).
+startcap:control( Set1, {add, Lin1}).
+Set2 = startcap:new( interface:new(set, individuals) ).
+startcap:control( Set2, {add, Ind1}).
+Box = component:buildAssoc( fun component:buildAssocOfCorrespondences/0 ).
+startcap:connect( Set1, Box ).
+startcap:connect( Set2, Box ).
+endcap:connect( Box, Matty ).
 
 %% ====================================================
 %% test equals
 %% ====================================================
 
-Ind1 = object:new(individual).
-Ind2 = object:new(individual).
-Set1 = startcap:new( interface:new(set, individuals) ).
-Matty = debug:new(matty).
-startcap:control( Set1, {add, Ind1} ).
-startcap:control( Set1, {add, Ind2} ).
-Box = component:equals( Ind1 ).
-startcap:connect( Set1, Box ).
-endcap:connect( Box, Matty ).
+% Ind1 = object:new(individual).
+% Ind2 = object:new(individual).
+% Set1 = startcap:new( interface:new(set, individuals) ).
+% Matty = debug:new(matty).
+% startcap:control( Set1, {add, Ind1} ).
+% startcap:control( Set1, {add, Ind2} ).
+% Box = component:equals( Ind1 ).
+% startcap:connect( Set1, Box ).
+% endcap:connect( Box, Matty ).

@@ -64,13 +64,10 @@ die(CacheId, Reason) ->
 %% --------------------------------------------------------------------
 init([Parent, Interface]) ->
 	process_flag(trap_exit, true),
-	OutputPin = pin:new(),
-	link(OutputPin),
     {ok, #startcap{
 		type = Interface#interface.type,
 		subType = Interface#interface.subType,
 		parentObject = Parent,
-		outputPin = OutputPin,
 		interface = Interface
 	}}.
 
@@ -96,16 +93,20 @@ handle_call(Msg, From, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast({connect, Pid}, State) ->
-	pin:connect(?this(outputPin), Pid),
-	pin:data(?this(outputPin), interface:dataList(?this(interface))),
-    {noreply, State};
+	link(Pid),
+	Connections = addConnection(Pid, ?this(connections)),
+	Cache = addCache(Pid, ?this(cache)),
+	Cache1 = stream(?this(interface), Cache),
+	{noreply, State#startcap{connections = Connections, cache = Cache1}};
 handle_cast({disconnect, Pid}, State) ->
-	pin:disconnect(?this(outputPin), Pid),
-	{noreply, State};
+	unlink(Pid),
+	Connections = removeConnection(Pid, ?this(connections)),
+	Cache = removeCache(Pid, ?this(cache)),
+	{noreply, State#startcap{connections = Connections, cache = Cache}};
 handle_cast({control, Data}, State) ->
-	Interface = interface:control(?this(type), Data, ?this(interface)),
-	pin:data(?this(outputPin), Data),
-	{noreply, State#startcap{interface = Interface}};
+	Interface = interface:control(?this(interface), Data),
+	Cache = stream(Data, ?this(cache)),
+	{noreply, State#startcap{interface = Interface, cache = Cache}};
 handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
 
@@ -116,16 +117,16 @@ handle_cast({terminate, Reason}, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_info({'EXIT', From, Reason}, State) ->
-	if
-		From =:= ?this(outputPin) ->
-			unlink(?this(outputPin)),
-			NewPin = pin:new(),
-			link(NewPin),
-			{noreply, State#startcap{outputPin = NewPin}};
-		true ->
-			{noreply, State}
-	end;
+% handle_info({'EXIT', From, Reason}, State) ->
+% 	if
+% 		From =:= ?this(outputPin) ->
+% 			unlink(?this(outputPin)),
+% 			NewPin = pin:new(),
+% 			link(NewPin),
+% 			{noreply, State#startcap{outputPin = NewPin}};
+% 		true ->
+% 			{noreply, State}
+% 	end;
 handle_info(Info, State) ->
     {noreply, State}.
 
@@ -135,7 +136,7 @@ handle_info(Info, State) ->
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
 terminate(Reason, State) ->
-	pin:die(?this(outputPin), pin_terminating),
+	% nyi -- output cleanup data depending on reason,
     ok.
 
 %% --------------------------------------------------------------------
@@ -149,3 +150,115 @@ code_change(OldVsn, State, Extra) ->
 %% --------------------------------------------------------------------
 %%% Internal functions
 %% --------------------------------------------------------------------
+
+%% 
+%% stream takes the list of data from interface, consults the cache, and streams the data down the line
+%%		it returns the updated cache
+%% 
+stream(Interface, Cache) when is_record(Interface, interface) ->
+	DataList = interface:dataList(Interface),
+	stream(DataList, Cache);
+stream([], Cache) ->
+	Cache;
+stream([H|T], Cache) ->
+	stream(T, stream(H, Cache));
+stream(Data, Cache) ->
+	PidList = consultCache(Data, Cache),
+	msg:send(PidList, data, Data),
+	updateCache(Data, Cache, PidList).
+
+%% 
+%% add connection adds a wire in which the startcap will send out its interface along
+%% 
+
+addConnection(Pid, PidList) ->
+	case lists:member(Pid, PidList) of
+		true ->
+			PidList;
+		false ->
+			PidList ++ [Pid]
+	end.
+
+%% 
+%% opposite of addConnection
+%% 
+
+removeConnection(Pid, PidList) ->
+	PidList -- [Pid].
+	
+
+%% ====================================================
+%% cache functions
+%% ====================================================
+
+addCache(Pid, CacheList) ->
+	case cacheMember(Pid, CacheList) of 
+		true ->
+			CacheList;
+		false ->
+			CacheList ++ [{Pid, []}]
+	end.
+
+removeCache(Pid, CacheList) ->
+	{value, _, CacheList1} = lists:keytake(Pid, 1, CacheList),
+	CacheList1.
+
+%% 
+%% consultCache returns a list of Pids for which Data has not been sent
+%% 
+
+
+consultCache(Data, CacheList) ->
+	Connections = cacheToPidList(CacheList),
+	Fun = fun(Pid) ->
+		TargetCache = getCache(Pid, CacheList),
+		case cacheMember(Data, TargetCache) of
+			true -> false;
+			false -> true
+		end
+	end,
+	lists:filter(Fun, Connections).
+
+
+%% 
+%% updateCache takes the State and a list of caches to be updated with Data and returns updated Cache
+%% 
+
+
+updateCache(Data, CacheList, PidList) ->
+	Fun = fun({Pid, DataList}) ->
+			case lists:member(Pid, PidList) of
+				true ->
+					{Pid, [Data] ++ DataList};
+				false ->
+					{Pid, DataList}
+			end
+		end,
+		lists:map(Fun, CacheList).
+
+%% ====================================================
+%% utility functions
+%% ====================================================
+
+%% 
+%% cacheMember checks if Data has been stored in a cache or if a Pid is a member of the cachelist
+%% 
+
+
+cacheMember(Data, {_, DataList}) ->
+	lists:member(Data, DataList);
+cacheMember(Pid, CacheList) ->
+	lists:keymember(Pid, 1, CacheList).
+
+getCache(Pid, CacheList) ->
+	case lists:keysearch(Pid, 1, CacheList) of
+		{value, Val} ->
+			Val;
+		Else ->
+			Else
+	end.
+
+cacheToPidList(CacheList) ->
+	{PidList, _} = lists:unzip(CacheList),
+	PidList.
+

@@ -37,7 +37,7 @@ new(Process, OutputType) -> start_link(no_name, Process, OutputType).
 new(Name, Process, OutputType) -> start_link(Name, Process, OutputType).
 
 start_link(Name, Process, OutputType) ->
-	case gen_server:start_link(?MODULE, [Name, Process, OutputType]) of
+	case gen_server:start_link(?MODULE, [Name, Process, OutputType], []) of
 		{ok, Pid} -> Pid;
 		Else -> Else
 	end.
@@ -84,13 +84,13 @@ die(BoxId, Reason) ->
 init([Name, Process, Type]) ->
 	process_flag(trap_exit, true),
 	if
-		Type =:= endcap -> Startcap = startcap:new(interface:new(Type, cleanup));
+		Type =:= endcap -> Startcap = startcap:new(interface:new(bag, cleanup));
 		true -> Startcap = startcap:new(interface:new(Type, box))
 	end,
     {ok, #endcap{
 		type = Type,
 		name = Name,
-		process = Process,
+		process = Process(),
 		startcap = Startcap,
 		crossReference = crossreference:new()
 	}}.
@@ -123,12 +123,12 @@ handle_cast({data, Data}, State) ->
 		{null, CleanupFun} -> 
 			CrossReference = crossreference:control(?this(crossReference), {Data, CleanupFun}),
 			{noreply, State#endcap{crossReference = CrossReference}};
-		Data ->
-			startcap:control(?this(startcap), Data),
+		Data1 ->
+			startcap:control(?this(startcap), Data1),
 			{noreply, State}
 	catch
-		_:_ -> 
-			?d("some error in called function", Data),
+		Error1:Error2 -> 
+			?d("some error in called function", {Data, Error1, Error2}),
 			{noreply, State}
 	end;
 handle_cast({connect, Pid}, State) ->
