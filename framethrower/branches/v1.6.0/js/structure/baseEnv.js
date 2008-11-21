@@ -44,7 +44,7 @@ function addFun(name, typeString, f) {
 	*/
 	lookupTable[name] = {
 		kind: "fun",
-		stringify: name,
+		name: name,
 		type: parseType(typeString),
 		fun: curry(f)
 	};

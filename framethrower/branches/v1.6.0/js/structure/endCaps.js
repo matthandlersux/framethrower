@@ -1,6 +1,7 @@
 function evaluate(expr) {
 	/*
-	This function will essentially get rid of all apply's in an Expr
+	This function will evaluate an Expr
+	Another way of looking at it is getting rid of all top-level apply's in an Expr by doing the applications
 	
 	*/
 	

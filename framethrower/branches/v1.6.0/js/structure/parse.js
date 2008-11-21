@@ -72,6 +72,7 @@ function parse(s) {
 		if (stack.length > 1) {
 			throw "Parse Error: Unbalanced parens. Too many (";
 		}
+		return ret;
 	}
 	tokens = nestParens(tokens);
 	
