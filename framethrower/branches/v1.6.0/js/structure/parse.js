@@ -13,29 +13,67 @@ function parse(s) {
 		parse( "predicate -> bindSet (compose returnUnitSet (passthru predicate))" )
 	*/
 	
-	var tokens = s.split(/\s+|(\(|\)|->)/); // split on spaces and extracts tokens: "(", ")", "->", and words
+	var tokens = s.split(/(\s+|\(|\)|->|")/); // extracts tokens: whitespace, "(", ")", "->", quotes ("), and words (anything in between those symbols)
 	
-	// turn nested parens into nested lists (of lists) of tokens: "->" and words
-	var ret = [];
-	var stack = [ret];
-	forEach(tokens, function (token) {
-		if (token === "") {
-		} else if (token === "(") {
-			var newCons = [];
-			stack[0].push(newCons);
-			stack.unshift(newCons);
-		} else if (token === ")") {
-			stack.shift();
-			if (stack.length === 0) {
-				throw "Parse Error: Unbalanced parens. Too many )";
+	function pullQuotedStrings(tokens) {
+		var ret = [];
+		var quoting = false;
+		var qs = [];
+		var prevBS = false;
+		forEach(tokens, function (token) {
+			if (!quoting) {
+				if (token === '"') {
+					quoting = true;
+					qs = [];
+				} else {
+					ret.push(token);
+				}
+			} else {
+				if (token === '"' && !prevBS) {
+					ret.push(qs.join(""));
+					quoting = false;
+				} else {
+					qs.push(token);
+				}
 			}
-		} else {
-			stack[0].push(token);
+			if (token.charAt(token.length - 1) === "\\") {
+				prevBS = true;
+			} else {
+				prevBS = false;
+			}
+		});
+		if (quoting) {
+			throw "Parse Error: Unbalanced quotes";
 		}
-	});
-	if (stack.length > 1) {
-		throw "Parse Error: Unbalanced parens. Too many (";
+		return ret;
 	}
+	tokens = pullQuotedStrings(tokens);
+	
+	// turn nested parens into nested lists of tokens: "->" and words
+	function nestParens(tokens) {
+		var ret = [];
+		var stack = [ret];
+		forEach(tokens, function (token) {
+			if (/^\s*$/.test(token)) {
+				// ignore whitespace token
+			} else if (token === "(") {
+				var newCons = [];
+				stack[0].push(newCons);
+				stack.unshift(newCons);
+			} else if (token === ")") {
+				stack.shift();
+				if (stack.length === 0) {
+					throw "Parse Error: Unbalanced parens. Too many )";
+				}
+			} else {
+				stack[0].push(token);
+			}
+		});
+		if (stack.length > 1) {
+			throw "Parse Error: Unbalanced parens. Too many (";
+		}
+	}
+	tokens = nestParens(tokens);
 	
 	// find "->" tokens and replace with lambda AST's
 	function parseLambdas(tokens) {
@@ -54,7 +92,7 @@ function parse(s) {
 			}
 		}
 	}
-	ret = parseLambdas(ret);
+	tokens = parseLambdas(tokens);
 	
 	// parse all lists of words as apply AST's
 	function parseApplys(tokens) {
@@ -78,9 +116,9 @@ function parse(s) {
 			}
 		}
 	}
-	ret = parseApplys(ret);
+	tokens = parseApplys(tokens);
 	
-	return ret;
+	return tokens;
 }
 
 
@@ -101,84 +139,3 @@ function unparse(ast, parens) {
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-function makeCons(cons, left, right) {
-	return {
-		kind: "cons",
-		cons: cons,
-		left: left,
-		right: right
-	};
-}
-function makeApply(left, right) {
-	return makeCons("apply", left, right);
-}
-function makeLambda(left, right) {
-	return makeCons("lambda", left, right);
-}
-function makePrim(value) {
-	return {
-		kind: "prim",
-		value: value
-	};
-}
-function isPrim(o) {
-	return o.kind === "prim";
-	//return typeof o === "string";
-}
-
-
-
-
-
-function makeVar(value) {
-	return {kind: "var", value: value};
-}
-
-function parseExpr(s) {
-	function helper(ast, env) {
-		if (isPrim(ast)) {
-			return env(ast.value);
-		} else if (ast.cons === "lambda") {
-			var name = ast.left.value;
-			var v = makeVar(name);
-			return makeLambda(v, helper(ast.right, envAdd(env, name, v)));
-		} else if (ast.cons === "apply") {
-			return makeApply(helper(ast.left, env), helper(ast.right, env));
-		}
-	}
-	return helper(parse(s), baseEnv);
-}
-
-function unparseExpr(expr) {
-	function helper(expr) {
-		if (expr.kind === "var") {
-			return makePrim(expr.value);
-		} else if (expr.kind === "cons") {
-			return makeCons(expr.cons, helper(expr.left), helper(expr.right));
-		} else {
-			if (expr.stringify) {
-				return makePrim(expr.stringify);
-			} else {
-				return makePrim(expr.toString());
-			}
-		}
-	}
-	return unparse(helper(expr));
-}
-
-
-
-*/

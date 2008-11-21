@@ -97,7 +97,7 @@ function unparseType(type) {
 
 
 function genConstraints(expr, env, constraints) {
-	/*
+	/* MUTATES: constraints
 	this function returns the type of expr, but also adds to constraints (which must be unified and imposed)
 	
 	env is a map of words to Expr's, initially baseEnv
@@ -148,8 +148,9 @@ function containsVar(type, typeVar) {
 }
 
 function unify(constraints) {
-	//console.log("constraints", constraints);
-	// given constraints, appends to subs or throws an error
+	/* MUTATES: constraints
+	given constraints, returns subs or throws an error
+	*/
 	
 	function subOnConstraints(name, value) {
 		forEach(constraints, function (constraint) {
@@ -186,7 +187,7 @@ function unify(constraints) {
 			constraints.push([left.left, right.left]);
 			constraints.push([left.right, right.right]);
 		} else {
-			throw "Type mismatch, unresolveable: ";
+			throw "Type mismatch, unresolveable: `"+unparseType(left)+"` and `"+unparseType(right)+"`";
 		}
 	}
 	
@@ -238,7 +239,7 @@ function getTypeOfExpr(expr) {
 var basicTypes = {
 	string: makeTypeName("String"),
 	number: makeTypeName("Number"),
-	bool: makeTypeName("Bool")
+	"boolean": makeTypeName("Bool")
 };
 
 function getType(o) {

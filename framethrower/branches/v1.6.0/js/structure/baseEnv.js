@@ -69,7 +69,7 @@ addFun("and", "Bool -> Bool -> Bool", function (x, y) {
 addFun("or", "Bool -> Bool -> Bool", function (x, y) {
 	return x || y;
 });
-addFun("not", "Bool -> Bool -> Bool", function (x) {
+addFun("not", "Bool -> Bool", function (x) {
 	return !x;
 });
 
