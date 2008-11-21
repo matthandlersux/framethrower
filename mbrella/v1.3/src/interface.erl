@@ -67,7 +67,7 @@ dataList(#interface{type = Type, subType = SubType} = Interface) ->
 %% ====================================================
 
 dataList(static, #interface{data = Data} = Interface) ->
-	{add, Data};
+	Data;
 dataList(unit, #interface{data = Data} = Interface) ->
 	{add, Data};
 dataList(set, #interface{data = Data} = Interface) ->
