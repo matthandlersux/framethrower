@@ -53,28 +53,5 @@ function evaluate(expr) {
 }
 
 
-function getExpr(o) {
-	/*
-	this function takes an object, and returns the expression (Expr) that was used to make this object
-	in particular, this returned expression will only make reference to the primitive functions, literals, and scafOb's
-	notice that Fun's and StartCap's created using evaluate() have their .expr field tagged already with such an expression
-	*/
-	var t = typeOf(o);
-	if (basicTypes[t]) { // literals: Number, String, or Bool
-		return o;
-	} else { //object
-		if (!o.expr) {
-			if (o.kind === "cons") {
-				o.expr = makeCons(o.cons, getExpr(o.left), getExpr(o.right));
-			} else if (o.kind === "var") {
-				o.expr = o;
-			} else {
-				// this should only be the case for primitive functions and ScafOb's
-				return o;
-			}
-			o.expr = getTypeOfExpr(o);
-		}
-		return o.expr;
-	}
-}
+
 

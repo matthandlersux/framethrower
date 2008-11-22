@@ -1,11 +1,11 @@
-function stringify(o) {
+/*function stringify(o) {
 	var s = o.stringify;
 	if (s) {
 		if (typeOf(s) === "string") {
 			return s;
-		} /*else if (typeOf(s) === "function") {
+		} / *else if (typeOf(s) === "function") {
 			return s();
-		}*/
+		}* /
 	}
 	
 	var t = getType(o);
@@ -14,4 +14,4 @@ function stringify(o) {
 	} else if (t === types.String) {
 		return '"' + o.replace(/"/g, '\\"') + '"';
 	}
-}
+}*/

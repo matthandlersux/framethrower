@@ -65,6 +65,10 @@ function parseExpr(s) {
 }
 
 function unparseExpr(expr) {
+	/*
+	This should only be called on Expr's that only make reference to primitive functions and ScafOb's.
+	So it will work on any Expr returned from getExpr(o).
+	*/
 	function helper(expr) {
 		if (expr.kind === "cons") {
 			return {
@@ -74,10 +78,16 @@ function unparseExpr(expr) {
 			};
 		} else if (expr.kind === "var") {
 			return expr.value;
-		} else if (expr.stringify) { // replace all this stuff with stringify()...
-			return expr.stringify;
+		} else if (expr.kind === "fun") {
+			return expr.name;
+		// TODO: add in case for ScafOb's
 		} else {
-			return expr.toString();
+			var t = typeOf(expr);
+			if (t === "string") {
+				return '"' + expr.replace(/"/g, '\\"') + '"';
+			} else if (t === "boolean" || t === "number") {
+				return expr.toString();
+			}
 		}
 	}
 	return unparse(helper(expr));
@@ -151,3 +161,35 @@ function normalizeExpr(expr) {
 	return normalizeVariables(betaReduce(normalizeVariables(expr)));
 }
 
+
+
+function getExpr(o) {
+	/*
+	this function takes an object, and returns the expression (Expr) that was used to make this object
+	in particular, this returned expression will only make reference to the primitive functions, literals, and scafOb's
+	notice that Fun's and StartCap's created using evaluate() have their .expr field tagged already with such an expression
+	*/
+	var t = typeOf(o);
+	if (basicTypes[t]) { // literals: Number, String, or Bool
+		return o;
+	} else { //object
+		if (!o.expr) {
+			if (o.kind === "cons") {
+				o.expr = makeCons(o.cons, getExpr(o.left), getExpr(o.right));
+			} else if (o.kind === "var") {
+				o.expr = o;
+			} else {
+				// this should only be the case for primitive functions and ScafOb's
+				o.expr = o;
+			}
+		}
+		return o.expr;
+	}
+}
+
+function stringify(o) {
+	/*
+	this function first runs getExpr(o), normalizes the result, then converts it into a string using unparseExpr
+	*/
+	return unparseExpr(normalizeExpr(getExpr(o)));
+}
