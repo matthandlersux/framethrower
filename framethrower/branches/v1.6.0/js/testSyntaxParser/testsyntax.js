@@ -7,6 +7,7 @@ function testFile(filename) {
 	
 	function messagesEqual (message1, message2) {
 		var argsCheck = true;
+
 		forEach(message1, function(property, pname) {
 			if(property != message2[pname]) {
 				argsCheck = false;
@@ -25,9 +26,11 @@ function testFile(filename) {
 	
 	function parsePrim (primNode) {
 		var primName = primNode.nodeName;
-		if(primName == 'number') {
+		if (primName == 'number') {
 			var numAsString = primNode.getAttribute('value');
 			return parseFloat(numAsString, 10);
+		} else if (primName == 'undefined') {
+			return undefined;
 		}
 		//TODO: add other primitive types
 	}
@@ -36,11 +39,12 @@ function testFile(filename) {
 		var scname = actionNode.getAttribute('name');
 		var sctype = actionNode.getAttribute('type');
 
-		testWorld.startCaps[scname] = makeStartCap(parse(sctype));
+		var sctypeFirstWord = sctype.split(" ")[0];
+
+		testWorld.startCaps[scname] = makeStartCap(sctypeFirstWord);
 		
 		// make this more functional
 		lookupTable[scname] = testWorld.startCaps[scname];
-		
 		return testWorld;
 	}
 
@@ -48,7 +52,7 @@ function testFile(filename) {
 		var endCapName = actionNode.getAttribute('name');
 		var expression = actionNode.getAttribute('expression');
 
-		var scFromExp = evaluate(parse(expression));
+		var scFromExp = evaluate(parseExpr(expression));
 
 		function processor (messages) {
 			forEach(messages, function (message) {
@@ -83,7 +87,11 @@ function testFile(filename) {
 			});
 			
 			var messageToCheck = makeMessage[messageName].apply(null, args);
-			if (messagesEqual(testWorld.outMessages[0], messageToCheck)) {
+			if (testWorld.outMessages.length == 0) {
+				testWorld.testOutput += "Error: Expected Message: " + messageToCheck.action + " " + messageToCheck.value;
+				testWorld.testOutput += ", but received NO Message\n";
+			}
+			else if (messagesEqual(testWorld.outMessages[0], messageToCheck)) {
 				testWorld.testOutput += "Confirmed Message: " + messageToCheck.action + " " + messageToCheck.value + "\n";
 				testWorld.outMessages.shift();
 			} else {

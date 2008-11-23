@@ -1,5 +1,5 @@
-var defaultStates = {
-	unit : function () {
+var defaultStates = function () {
+	var unit = function () {
 		var cache = [];
 		return {
 			update : function (inMessages) {
@@ -11,8 +11,8 @@ var defaultStates = {
 				return cache;
 			}
 		};
-	},
-	set : function () {
+	};
+	var set = function () {
 		var cache = makeOhash();
 		return {
 			update : function (inMessages) {
@@ -28,8 +28,8 @@ var defaultStates = {
 				return cache.toArray();
 			}
 		};
-	},
-	staticType : function () {
+	};
+	var staticType = function () {
 		var cache = [];
 		return {
 			update : function (inMessages) {
@@ -41,15 +41,22 @@ var defaultStates = {
 				return cache;
 			}
 		};
-	}
-};
+	};
+	
+	return {
+		unit : unit,
+		set : set,
+		assoc : set,
+		staticType : staticType
+	};
+}();
 
 function makeState(type) {
-	if (type.cons == "apply") {
-		//type is reactive
-		return defaultStates[type.left.toLowerCase()]();
-	} else {
+	if (type.cons == "static") {
 		//type is static
 		return defaultStates.staticType(type);
+	} else {
+		//type is reactive
+		return defaultStates[type.toLowerCase()]();
 	}
 }

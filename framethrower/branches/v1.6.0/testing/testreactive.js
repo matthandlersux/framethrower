@@ -1,14 +1,12 @@
 
 
-var returnSet = makeFun("a -> Set a", function(val){
-	var sc = applyFunc(primFuncs.returnUnit, val);
-	return applyFunc(primFuncs.returnUnitSet, sc);	
-});
 
-var sc = makeStartCap(parse("Set a"));
-sc.send([makeMessage.set(2)]);
-sc.send([makeMessage.set(1)]);
-sc.send([makeMessage.set(3)]);
+var sc = makeStartCap("Assoc");
+
+
+sc.send([makeMessage.setAssoc(2, 'andrew')]);
+sc.send([makeMessage.setAssoc(1, 'matt')]);
+sc.send([makeMessage.setAssoc(3, 'toby')]);
 
 /*
 var setCap0 = makeStartCap(parse("Unit Bool"));
@@ -28,13 +26,10 @@ var add = function (val1) {
 };
 
 
-var boundSet = applyFunc(applyFunc(applyFunc(primFuncs.fold, add), 0), sc);
-
-
 function processor (messages) {
 	forEach(messages, function (message) {
 		console.log("Got Message: ", message.action, message.value);
 	});
 }
 
-var ec = makeEndCap(boundSet, processor);
+var ec = makeEndCap(sc, processor);

@@ -2,7 +2,8 @@
 
 var messageEnum = {
 	set : "set",
-	remove : "remove"
+	remove : "remove",
+	setAssoc : "setAssoc"
 };
 
 var makeMessage = {
@@ -15,6 +16,13 @@ var makeMessage = {
 	remove : function (val) {
 		return {
 			action : messageEnum.remove,
+			value : val
+		};
+	},
+	setAssoc : function (key, val) {
+		return {
+			action : messageEnum.setAssoc,
+			key : key,
 			value : val
 		};
 	}

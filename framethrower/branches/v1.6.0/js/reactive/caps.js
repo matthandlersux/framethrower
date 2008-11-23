@@ -71,5 +71,5 @@ function makeEndCap (startCap, processor) {
 
 function applyFunc (func, input) {
 	//this will be changed...
-	return func(input);
+	return evaluate(makeApply(func, input));
 }
