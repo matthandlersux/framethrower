@@ -29,6 +29,23 @@ var defaultStates = function () {
 			}
 		};
 	};
+	var assoc = function () {
+		var cache = makeOhash();
+		return {
+			update : function (inMessages) {
+				forEach(inMessages, function (inMessage) {
+					if (inMessage.action == messageEnum.remove) {
+						cache.remove(inMessage.value);
+					} else {
+						cache.set(inMessage.key, inMessage);
+					}
+				});
+			},
+			get : function () {
+				return cache.toArray();
+			}
+		};
+	};
 	var staticType = function () {
 		var cache = [];
 		return {
@@ -46,7 +63,7 @@ var defaultStates = function () {
 	return {
 		unit : unit,
 		set : set,
-		assoc : set,
+		assoc : assoc,
 		staticType : staticType
 	};
 }();

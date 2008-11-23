@@ -146,7 +146,7 @@ function curry(f) {
 				var newSavedArgs = savedArgs.slice(0); // copy
 				newSavedArgs.push(arg);
 				return accumulate(newSavedArgs);
-			}
+			};
 		}
 	}
 	return accumulate([]);

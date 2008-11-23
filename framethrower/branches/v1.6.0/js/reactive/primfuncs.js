@@ -553,52 +553,116 @@ var primFuncs = {
 	invert : function (sc) {
 		var outputCap = makeStartCap("Assoc");
 		var ECs = makeOhash();
+		var OCs = makeOhash();
 		var cache = makeOhash();
+		var outputBag = makeOhash();
 
 		makeEndCap(sc, assocProcessor({
 			setAssoc : function (inputKey, inputValueSC) {
 				var innerCache = makeOhash();
-				var innerEc = makeEndCap(inputValueSC, setProcessor({
+				cache.set(inputKey, innerCache);
+				var prevEC = ECs.get(inputKey);
+				if (prevEC) prevEC.deactivate();
+				
+				ECs.set(inputKey, makeEndCap(inputValueSC, setProcessor({
 					set : function (setValue) {
 						if(!innerCache.get(setValue)) {
 							innerCache.set(setValue, setValue);
 							//send (setValue, inputKey) to the output carefully
+							var innerOutcap = OCs.get(setValue);
+							if(!innerOutcap) {
+								innerOutcap = makeStartCap("Set");
+								OCs.set(setValue, innerOutcap);
+								outputCap.send([makeMessage.setAssoc(setValue, innerOutcap)]);
+							}
+							innerOutcap.send([makeMessage.set(inputKey)]);
+							var bagCount = outputBag.get(setValue);
+							if (!bagCount) {
+								bagCount = 0;
+							}
+							outputBag.set(setValue, bagCount+1);
 						}
 					},
 					remove : function (removeValue) {
-
+						var innerOutcap = OCs.get(removeValue);
+						innerOutcap.send([makeMessage.remove(inputKey)]);
+						var bagCount = outputBag.get(removeValue);
+						if (bagCount <= 1) {
+							outputCap.send([makeMessage.remove(removeValue)]);
+							OCs.remove(removeValue);
+						}
+						outputBag.set(removeValue, bagCount-1);
 					}
-				}));
-
-				ECs.set(inputKey, innerEc);
+				})));
 			},
 			remove : function (removeValue) {
-				crossRef.removeInput(removeValue, function (value) {
-					outputCap.send([makeMessage.remove(value)]);
+				var innerCache = cache.get(removeValue);
+				innerCache.forEach(function(setValue) {
+					var innerOutcap = OCs.get(setValue);
+					innerOutcap.send([makeMessage.remove(removeValue)]);
+					var bagCount = outputBag.get(setValue);
+					if (bagCount <= 1) {
+						outputCap.send([makeMessage.remove(setValue)]);
+						OCs.remove(setValue);
+					}
+					outputBag.set(setValue, bagCount-1);
 				});
+				cache.remove(removeValue);
 				//need to clean up the innerEc associated with this input
 				ECs.get(removeValue).deactivate();
 				ECs.remove(removeValue);
 			}
-		}), crossRef.getStateMessages);
+		}));
 
 		return outputCap;
 	},
 // type: (a -> b) -> Assoc c a -> Assoc c b
 	mapAssocValue : function (f) {
 		return function (sc) {
-			
+			var outputCap = makeStartCap("Assoc");
+			makeEndCap(sc, assocProcessor({
+				setAssoc : function (inputKey, inputValue) {
+					var result = applyFunc(f, inputValue);
+					outputCap.send([makeMessage.setAssoc(inputKey, result)]);
+				},
+				remove : function (removeKey) {
+					outputCap.send([makeMessage.remove(removeKey)]);
+				}
+			}));
+			return outputCap;
 		};
 	},
 // type: a -> Assoc a b -> Unit b
 	getKey : function (key) {
 		return function (sc) {
-			
+			var outputCap = makeStartCap("Unit");
+			makeEndCap(sc, assocProcessor({
+				setAssoc : function (inputKey, inputValue) {
+					if (inputKey == key) {
+						outputCap.send([makeMessage.set(inputValue)]);
+					}
+				},
+				remove : function (removeKey) {
+					if (removeKey == key) {
+						outputCap.send([makeMessage.set(undefined)]);
+					}
+				}
+			}));
+			return outputCap;
 		};
 	},
 // type: Assoc a b -> Set a
 	keys : function (sc) {
-		
+		var outputCap = makeStartCap("Set");
+		makeEndCap(sc, assocProcessor({
+			setAssoc : function (inputKey, inputValue) {
+				outputCap.send([makeMessage.set(inputKey)]);
+			},
+			remove : function (removeKey) {
+				outputCap.send([makeMessage.remove(removeKey)]);
+			}
+		}));
+		return outputCap;
 	}
 };
 
