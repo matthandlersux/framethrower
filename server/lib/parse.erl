@@ -5,6 +5,13 @@
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define( test(X), X ++ "test" ).
 
+ast(String) ->
+	case parse(lambda(), String) of
+		[{Result, []}] -> Result;
+		[{Result, Leftovers}] -> io:format("unused input \"~s\"~n~nresult: ~p~n", [Leftovers, Result]);
+		[] -> io:format("invalid input ~n", [])
+	end.
+
 % parse(String) ->
 % 	{ok, RE} = regexp:parse( "(\\s+|\\(|\\)|->|\")"),
 % 	regexpSplit(String, RE).
@@ -68,12 +75,30 @@
 % parseP(Left, [Char|T]) ->
 % 	parseP(Left ++ [Char], T).
 
+%% 
+%% Ast :: List(Tuple(X, Y)) | List()
+%% 
+%% 
+%% Parser :: ¬ String -> Ast
+%% 
+
+
+%% 
+%% return X -> ¬ Y -> Ast
+%% 
 
 return(Ast) ->
 	fun(String) -> [{Ast, String}] end.
+%% 
+%% failure -> ¬ X -> Ast
+%% 
 
 failure() ->
 	fun(_String) -> [] end.
+
+%% 
+%% item -> ¬ String -> Ast
+%% 
 
 item() ->
 	fun(String) ->
@@ -83,8 +108,16 @@ item() ->
 		end
 	end.
 
+%% 
+%% parser (Parser A) String -> Ast
+%% 
+
 parse(Parser, String) ->
 	Parser(String).
+
+%% 
+%% then (Parser A) (¬ Parser B) -> Ast		¬ Parser B = ¬ String -> Parser B
+%% 		the monadic part is that you can compose parsers into a new parser
 
 then(Parser, FunToParser) ->
 	fun(String) ->
@@ -94,6 +127,10 @@ then(Parser, FunToParser) ->
 		end
 	end.
 
+%% 
+%% choice (Parser A) (Parser B) -> Ast
+%% 
+
 choice(Parser1, Parser2) ->
 	fun(String) ->
 		case parse(Parser1, String) of
@@ -102,13 +139,38 @@ choice(Parser1, Parser2) ->
 		end
 	end.
 
+choice([]) -> failure();
+choice([H|T]) ->
+	choice(H, choice(T)).
+
+%% 
+%% sat (Char -> Bool) -> (¬ Y -> Ast)
+%% 
+
 sat(Predicate) ->
-	then(item(), fun(X) -> 
+	% then(item(), fun(X) -> 
+	% 	case Predicate(X) of
+	% 		true -> return(X);
+	% 		false -> failure()
+	% 	end
+	% end
+	% ).
+	?do( X, item(),
 		case Predicate(X) of
 			true -> return(X);
 			false -> failure()
+		end).
+
+%% 
+%% notSat (Char -> Bool) -> (¬ Y -> Ast)
+%% 
+	
+notSat(Predicate) ->
+	?do( X, item(),
+		case Predicate(X) of
+			true -> failure();
+			false -> return(X)
 		end
-	end
 	).
 
 many(Parser) ->
@@ -174,6 +236,9 @@ letter() ->
 alphaNum() ->
 	sat(fun isAlphaNum/1).
 
+alphaNumSpace() ->
+	sat(fun isAlphaNumSpace/1).
+
 char(Char) ->
 	sat(isChar(Char)).
 
@@ -187,15 +252,23 @@ string([H|T] = String) ->
 				)
 		end
 	).
-	
+
+quotable() ->
+	many( choice(
+		notSat(isChar($")), %or
+		symbol("\\\"")
+	)).
+
+lit() ->
+	?do(_, symbol([$"]),
+	?do(Literal, quotable(),
+	?do(_, symbol([$"]),
+	return([$"] ++ Literal ++ [$"])))).
+
 ident() ->
-	then(lower(), fun(X) ->
-			then( many( alphaNum() ), fun(XS) ->
-					return([X|XS])
-				end
-			)
-		end
-	).
+	?do(X, lower(),
+	?do(XS, many( alphaNum() ),
+	return([X|XS]))).
 	
 nat() ->
 	then( many1( digit() ), fun(XS) ->
@@ -215,9 +288,72 @@ natural() ->
 symbol(XS) ->
 	token( string(XS) ).
 	
-% lambda() ->
-% 	then().
+literal() ->
+	token( lit() ).
 
+%% ====================================================
+%% our parser
+%% ====================================================
+
+
+lambda() ->
+	?do(T, apply(),
+		choice(
+			?do( _, symbol("->"),
+			?do( E, lambda(),
+			return({cons, lambda, T, E}))), %or
+			return(T)
+		)
+	).
+
+apply() ->
+	?do(Left, apply1(),
+		choice(
+			?do(_, space(),
+			?do(Right, choice([identifier(), literal(), natural()]),
+			return({cons, apply, Left, Right}))), %or
+			return(Left)
+		)
+	).	
+
+apply1() ->
+	?do(Left, element(),
+		choice(
+			?do(_, space(),
+			?do(Right, apply(),
+			return({cons, apply, Left, Right}))), %or
+			return(Left)
+		)
+	).
+
+element() ->
+	choice(
+		?do(_, symbol("("),
+		?do(E, lambda(),
+		?do(_, symbol(")"),
+		return(E)))), %or
+		identifier()
+	).
+
+% 	
+% apply() ->
+% 	?do(T, element(),
+% 		choice(
+% 			?do( _, space(),
+% 			?do( E, apply(),
+% 			return({cons, apply, T, E}))), %or
+% 			return(T)
+% 		)
+% 	).
+% 	
+% element() ->
+% 	choice(
+% 		?do(_, symbol("("),
+% 		?do(E, lambda(),
+% 		?do(_, symbol(")"),
+% 		return(E)))), %or
+% 		identifier()
+% 	).
 
 isDigit(Char) when Char >= $0, Char =< $9 -> true;
 isDigit(_) -> false.
@@ -232,31 +368,9 @@ isAlpha(Char) -> isLower(Char) orelse isUpper(Char).
 
 isAlphaNum(Char) -> isLower(Char) orelse isUpper(Char) orelse isDigit(Char).
 
+isAlphaNumSpace(Char) -> isAlphaNum(Char) orelse isSpace(Char).
+
 isChar(Char) ->
 	fun(TestChar) -> Char =:= TestChar end. 
 
 isSpace(Char) -> Char =:= $ .
-
-
-
-
-
-
-
-regexpLoop(Str, Parts, Index, []) ->
-    lists:reverse([string:substr(Str, Index)] ++ Parts);
-regexpLoop(Str, Parts, Index, Rem_Matches) ->
-    {NextPt,PtLen} = hd(Rem_Matches),
-    regexpLoop( Str, [ string:substr(Str, NextPt, PtLen),
-                        string:substr(Str, Index, NextPt - Index)]
-                      ++ Parts, NextPt + PtLen,
-                      tl(Rem_Matches) ).
-
-regexpSplit(Str, Regex) ->
-    {match, Matches} = regexp:matches(Str, Regex),
-    regexpLoop(Str, [], 1, Matches).
-
-trim([$ |T]) ->
-	trim(T);
-trim(String) ->
-	String.
