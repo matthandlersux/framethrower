@@ -136,8 +136,8 @@ function getProp(name) {
 }
 
 
-function curry(f) {
-	var expects = f.length;
+function curry(f, expects) {
+	if (!expects) expects = f.length;
 	function accumulate(savedArgs) {
 		if (savedArgs.length === expects) {
 			return f.apply(null, savedArgs);

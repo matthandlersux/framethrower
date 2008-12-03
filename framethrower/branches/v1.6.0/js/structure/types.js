@@ -122,18 +122,18 @@ function genConstraints(expr, env, constraints) {
 	
 	if (expr.kind === "var") {
 		return getType(env(expr.value));
-	} else if (expr.kind !== "cons") {
-		return getType(expr);
-	} else if (expr.cons === "apply") {
+	} else if (expr.kind === "exprApply") {
 		var funType = genConstraints(expr.left, env, constraints);
 		var inputType = genConstraints(expr.right, env, constraints);
 		var freshType = makeFreshTypeVar();
 		constraints.push([funType, makeTypeLambda(inputType, freshType)]);
 		return freshType;
-	} else if (expr.cons === "lambda") {
+	} else if (expr.kind === "exprLambda") {
 		var freshType = makeFreshTypeVar();
 		var newEnv = envAdd(env, expr.left.value, {type: freshType});
 		return makeTypeLambda(freshType, genConstraints(expr.right, newEnv, constraints));
+	} else {
+		return getType(expr);
 	}
 }
 

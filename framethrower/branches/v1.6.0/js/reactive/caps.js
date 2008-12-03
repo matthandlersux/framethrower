@@ -1,6 +1,6 @@
 
 function makeStartCap (type, getState) {
-	var startCap = {};
+	var startCap = {kind: "startCap"};
 	
 	var informs = makeObjectHash();
 	var state;

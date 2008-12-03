@@ -3,17 +3,15 @@ An Expr is any one of the following:
 	* Number, String, Bool
 	* Fun
 	* StartCap - TODO
-	* ScafOb - TODO
+	* Object - see objects.js
 	* Var
 	*	{
-			kind: "cons",
-			cons: "apply",
+			kind: "exprApply",
 			left: Expr,
 			right: Expr
 		}
 	*	{
-			kind: "cons",
-			cons: "lambda",
+			kind: "exprLambda",
 			left: Var,
 			right: Expr
 		}
@@ -30,15 +28,14 @@ A Var is:
 function makeVar(name) {
 	return {kind: "var", value: name};
 }
-function makeCons(cons, left, right) {
+/*function makeCons(cons, left, right) {
 	return {kind: "cons", cons: cons, left: left, right: right};
-}
+}*/
 function makeApply(left, right) {
-	// We can put a typechecker here...
-	return makeCons("apply", left, right);
+	return {kind: "exprApply", left: left, right: right};
 }
 function makeLambda(left, right) {
-	return makeCons("lambda", left, right);
+	return {kind: "exprLambda", left: left, right: right};
 }
 
 function parseExpr(s) {
@@ -64,23 +61,28 @@ function parseExpr(s) {
 	return helper(parse(s), baseEnv);
 }
 
+
+var localIds = makeGenerator("local.");
+
 function unparseExpr(expr) {
 	/*
 	This should only be called on Expr's that only make reference to primitive functions and ScafOb's.
 	So it will work on any Expr returned from getExpr(o).
 	*/
 	function helper(expr) {
-		if (expr.kind === "cons") {
-			return {
-				cons: expr.cons,
-				left: helper(expr.left),
-				right: helper(expr.right)
-			};
+		if (expr.kind === "exprApply") {
+			return {cons: "apply", left: helper(expr.left), right: helper(expr.right)};
+		} else if (expr.kind === "exprLambda") {
+			return {cons: "lambda", left: helper(expr.left), right: helper(expr.right)};
 		} else if (expr.kind === "var") {
 			return expr.value;
-		} else if (expr.kind === "fun") {
+		} else if (expr.kind === "fun" || expr.kind === "startCap") {
+			if (!expr.name) {
+				// this should only be the case for nested StartCaps
+				expr.name = localIds();
+			}
 			return expr.name;
-		// TODO: add in case for ScafOb's
+		// TODO: add in case for Object's
 		} else {
 			var t = typeOf(expr);
 			if (t === "string") {
@@ -104,14 +106,12 @@ function normalizeVariables(expr, prefix) {
 	*/
 	
 	function helper(expr, nameGen, env) {
-		if (expr.kind === "cons") {
-			if (expr.cons === "apply") {
-				return makeApply(helper(expr.left, nameGen, env), helper(expr.right, nameGen, env));
-			} else if (expr.cons === "lambda") {
-				var newVar = makeVar(nameGen());
-				var newEnv = envAdd(env, expr.left.value, newVar);
-				return makeLambda(newVar, helper(expr.right, nameGen, newEnv));
-			}
+		if (expr.kind === "exprApply") {
+			return makeApply(helper(expr.left, nameGen, env), helper(expr.right, nameGen, env));
+		} else if (expr.kind === "exprLambda") {
+			var newVar = makeVar(nameGen());
+			var newEnv = envAdd(env, expr.left.value, newVar);
+			return makeLambda(newVar, helper(expr.right, nameGen, newEnv));
 		} else if (expr.kind === "var") {
 			return env(expr.value);
 		} else {
@@ -129,8 +129,12 @@ function betaReplace(expr, name, replaceExpr) {
 	// this should only be called if expr and replaceExpr share no variable names (to avoid collisions)
 	if (expr.kind === "var" && expr.value === name) {
 		return replaceExpr;
-	} else if (expr.kind === "cons") {
-		return makeCons(expr.cons, betaReplace(expr.left, name, replaceExpr), betaReplace(expr.right, name, replaceExpr));
+	} else if (expr.kind === "exprApply" || expr.kind === "exprLambda") {
+		return {
+			kind: expr.kind,
+			left: betaReplace(expr.left, name, replaceExpr),
+			right: betaReplace(expr.right, name, replaceExpr)
+		};
 	} else {
 		return expr;
 	}
@@ -139,19 +143,17 @@ function betaReplace(expr, name, replaceExpr) {
 function betaReduce(expr) {
 	// applies beta reduction wherever possible in an Expr
 	// this should only be called on Expr's with normalized variables (to avoid collisions)
-	if (expr.kind === "cons") {
-		if (expr.cons === "apply") {
-			var fun = betaReduce(expr.left);
-			var input = betaReduce(expr.right);
-			if (fun.cons === "lambda") {
-				// we can do a beta reduction here
-				return betaReduce(betaReplace(fun.right, fun.left.value, input));
-			} else {
-				return makeApply(fun, input);
-			}
-		} else if (expr.cons === "lambda") {
-			return makeLambda(expr.left, betaReduce(expr.right));
+	if (expr.kind === "exprApply") {
+		var fun = betaReduce(expr.left);
+		var input = betaReduce(expr.right);
+		if (fun.kind === "exprLambda") {
+			// we can do a beta reduction here
+			return betaReduce(betaReplace(fun.right, fun.left.value, input));
+		} else {
+			return makeApply(fun, input);
 		}
+	} else if (expr.kind === "exprLambda") {
+		return makeLambda(expr.left, betaReduce(expr.right));
 	} else {
 		return expr;
 	}
@@ -166,7 +168,7 @@ function normalizeExpr(expr) {
 function getExpr(o) {
 	/*
 	this function takes an object, and returns the expression (Expr) that was used to make this object
-	in particular, this returned expression will only make reference to the primitive functions, literals, and scafOb's
+	in particular, this returned expression will only make reference to the primitive functions, literals, persistent StartCap's, and scafOb's
 	notice that Fun's and StartCap's created using evaluate() have their .expr field tagged already with such an expression
 	*/
 	var t = typeOf(o);
@@ -174,12 +176,16 @@ function getExpr(o) {
 		return o;
 	} else { //object
 		if (!o.expr) {
-			if (o.kind === "cons") {
-				o.expr = makeCons(o.cons, getExpr(o.left), getExpr(o.right));
+			if (o.kind === "exprApply" || o.kind === "exprLambda") {
+				o.expr = {
+					kind: o.kind,
+					left: getExpr(o.left),
+					right: getExpr(o.right)
+				};
 			} else if (o.kind === "var") {
 				o.expr = o;
 			} else {
-				// this should only be the case for primitive functions and ScafOb's
+				// this should only be the case for primitive functions, persistent StartCap's, and ScafOb's
 				o.expr = o;
 			}
 		}

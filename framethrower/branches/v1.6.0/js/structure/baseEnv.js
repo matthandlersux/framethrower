@@ -38,15 +38,37 @@ var baseEnv = function (s) {
 // Here we define our primitive functions and bind them
 // ============================================================================
 
+/*function returnsStartCap(type) {
+	// returns true if the type is a function (of n parameters) that returns a StartCap (constructed type)
+	if (type.kind === "typeApply") {
+		return true;
+	} else if (type.kind === "typeLambda") {
+		return returnsStartCap(type.right);
+	} else {
+		return false;
+	}
+}*/
+
 function addFun(name, typeString, f) {
 	/*
 	This creates a new Fun object and binds it (by putting it in lookupTable)
 	*/
+	
+	var type = parseType(typeString);
+	var fun;
+	/*if (returnsStartCap(type)) {
+		// save the last parameter as the type of the StartCap to return
+		fun = curry(f, f.length - 1);
+	} else {
+		fun = curry(f);
+	}*/
+	fun = curry(f);
+	
 	lookupTable[name] = {
 		kind: "fun",
 		name: name,
-		type: parseType(typeString),
-		fun: curry(f)
+		type: type,
+		fun: fun
 	};
 }
 
