@@ -29,7 +29,22 @@ function makeClass(name, inherit) {
 
 function addProp(name, propName, typeString) {
 	classes[name].prop[propName] = parseType(typeString);
+	// TODO add functions get, passthru, etc to baseEnv lookup table
 }
+
+function makeObject(c) {
+	var o = {
+		kind: "object",
+		type: {kind: "typeName", value: c.name},
+		prop: {}
+	};
+	// TODO add properties
+	return o;
+}
+
+// ==================================================================
+// Primitive Objects
+// ==================================================================
 
 makeClass("K.object");
 
@@ -41,6 +56,18 @@ addProp("K.cons", "arg", "K.object");
 addProp("K.cons", "truth", "Unit Bool"); // this only applies if the relation is "in (the context of)"
 
 
+// ==================================================================
+// UI
+// ==================================================================
 
 
+// ==================================================================
+// External Representations
+// ==================================================================
+
+makeClass("X.video");
+addProp("X.video", "url", "String");
+addProp("X.video", "width", "Number");
+addProp("X.video", "height", "Number");
+addProp("X.video", "duration", "Number");
 
