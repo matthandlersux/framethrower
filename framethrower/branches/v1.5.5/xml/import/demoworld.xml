@@ -1,0 +1,262 @@
+<situation name="ont" returnas="ont"
+	xmlns:f="http://www.filmsfolded.com/xsl/ui" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg">
+	<content>
+		Ontological Layer
+	</content>
+	<relation name="ofType" returnas="ofType"/>
+	<individual name="typeType" returnas="typeType" type="typeType">
+		<content>
+			Types
+		</content>
+		
+	</individual>
+	
+	<individual name="cyborgType" type="typeType" returnas="cyborgType">
+		<content>
+			Cyborgs
+		</content>
+	</individual>
+	<individual name="personType" type="typeType" returnas="personType">
+		<content>
+			People
+		</content>
+	</individual>
+	<individual name="movieType" type="typeType" returnas="movieType">
+		<content>
+			Movies
+		</content>
+	</individual>
+	
+	
+	
+	<relation name="corresponds" returnas="corresponds" />
+	<situation name="rw" returnas="rw">
+		<content>
+			Real Life
+		</content>
+
+		<relation name="performs" returnas="performs">
+			<content>
+				<f:relationcontent>
+					<f:name value="performs" />
+					<f:pseudo>
+						<f:role role="performer"/>
+						<f:verb value="performs"/>
+						<f:role role="performee"/>
+					</f:pseudo>
+				</f:relationcontent>
+			</content>
+			
+		</relation>
+		<relation name="dubs">
+			<content>
+				<f:relationcontent>
+					<f:name value="dubs" />
+					<f:pseudo>
+						<f:role role="dubber"/>
+						<f:verb value="dubs" />
+						<f:role role="dubbee"/>
+					</f:pseudo>
+				</f:relationcontent>
+			</content>
+			
+		</relation>
+		
+		<individual name="arnold" type="personType">
+			<content><information name="Arnold Schwartzenegger" thumbnail="arnold_real" /></content>
+		</individual>
+		
+		<individual name="stallone" type="personType">
+			<content><information name="Sylvester Stallone" thumbnail="stallone_real" /></content>
+		</individual>
+		
+		
+		<situation name="lah" type="movieType">
+			<content><information name="Last Action Hero" thumbnail="movie_last_action_hero_real" /></content>
+			
+			<individual name="arnoldlah" type="personType">
+				<content><information name="Arnold Schwartzenegger" thumbnail="arnold_lah" /></content>
+			</individual>
+			<individual name="danny" type="personType">
+				<content><information name="Danny Madigan" thumbnail="danny_madigan_lah" /></content>
+			</individual>
+			
+			<situation name="jackslateriv" type="movieType">
+				<content><information name="Jack Slater IV" /></content>
+				<individual name="jackslater" type="personType">
+					<content><information name="Jack Slater" thumbnail="jack_slater_jsiv" /></content>
+				</individual>
+				
+				<situation name="terminatorjs" type="movieType">
+					<content><information name="Terminator 2: Judgement Day" thumbnail="movie_terminator_two_jsiv" /></content>
+
+					<individual name="cyborgjs" type="cyborgType">
+						<content><information name="The Terminator" thumbnail="cyborg_jsiv" /></content>
+					</individual>
+				</situation>
+				
+				<infon relation="performs">
+					<arc role="performer" arg="stallone" />
+					<arc role="performee" arg="cyborgjs" />
+				</infon>
+			</situation>
+			
+		</situation>
+		
+		<situation name="tmov" type="movieType">
+			<content><information name="Terminator 2: Judgement Day" thumbnail="movie_terminator_two_judgement_day_real" /></content>
+			
+			<individual name="sc" type="personType">
+				<content><information name="Sarah Connor" /></content>
+			</individual>
+			<individual name="jc" type="personType">
+				<content><information name="John Connor" /></content>
+			</individual>
+			
+			<individual name="cyborg" type="cyborgType">
+				<content><information name="The Terminator" thumbnail="cyborg_terminator_2" /></content>
+			</individual>
+			<individual name="t1000" type="cyborgType">
+				<content><information name="T-1000" /></content>
+			</individual>
+		</situation>
+		
+		<infon relation="performs">
+			<arc role="performer" arg="arnold" />
+			<arc role="performee" arg="cyborg" />
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="arnold" />
+			<arc role="performee" arg="arnoldlah" />
+		</infon>
+		<infon relation="performs">
+			<arc role="performer" arg="arnold" />
+			<arc role="performee" arg="jackslater" />
+		</infon>
+		
+		
+		
+		<!-- <infon relation="performs">
+					<arc role="performer" arg="people.0000843"/>
+					<arc role="performee" arg="characters.Mrs. Robinson"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0000163"/>
+					<arc role="performee" arg="characters.Ben Braddock"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0001684"/>
+					<arc role="performee" arg="characters.Elaine Robinson"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0200122"/>
+					<arc role="performee" arg="characters.Mr. Braddock"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0358069"/>
+					<arc role="performee" arg="characters.Mr. Robinson"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0933361"/>
+					<arc role="performee" arg="characters.Mrs. Braddock"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0377750"/>
+					<arc role="performee" arg="characters.Room Clerk"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0043011"/>
+					<arc role="performee" arg="characters.Carl Smith"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0111754"/>
+					<arc role="performee" arg="characters.Mr. McGuire"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0001205"/>
+					<arc role="performee" arg="characters.Mr. McCleery"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0315933"/>
+					<arc role="performee" arg="characters.Mrs. Singleman"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0521079"/>
+					<arc role="performee" arg="characters.Miss DeWitte"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0301841"/>
+					<arc role="performee" arg="characters.Woman on Bus"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0234975"/>
+					<arc role="performee" arg="characters.Bellhop in Hotel Lobby (uncredited)"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0000377"/>
+					<arc role="performee" arg="characters.Boarding House Resident (uncredited)"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0268286"/>
+					<arc role="performee" arg="characters.Bellhop in Hotel Lobby (uncredited)"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0292116"/>
+					<arc role="performee" arg="characters.Second Lady (uncredited)"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0323304"/>
+					<arc role="performee" arg="characters.College student (uncredited)"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0390118"/>
+					<arc role="performee" arg="characters.The Minister (uncredited)"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0390418"/>
+					<arc role="performee" arg="characters.Mr. Singleman (uncredited)"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0588771"/>
+					<arc role="performee" arg="characters.Night Club Stripper (uncredited)"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0614101"/>
+					<arc role="performee" arg="characters.Shaving Student (uncredited)"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0685736"/>
+					<arc role="performee" arg="characters.Gas Station Attendant (uncredited)"/>
+					
+				</infon>
+				<infon relation="performs">
+					<arc role="performer" arg="people.0001798"/>
+					<arc role="performee" arg="characters.Extra (uncredited)"/>
+					
+				</infon> -->
+		
+	</situation>
+	
+</situation>

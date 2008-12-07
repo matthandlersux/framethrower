@@ -101,8 +101,18 @@
 					</html:div>
 				</xsl:if>
 				<xsl:choose>
-					<xsl:when test="$selectedStartTime and $selectedEndTime">
-						<html:div class="ruler-selected-range" style="left: {$selectedStartTime/@value * $ratio}px; width: {($selectedEndTime/@value - $selectedStartTime/@value) * $ratio - 1}px">
+					<xsl:when test="$selectedStartTime and $selectedEndTime and $selectedStartTime/@value != $selectedEndTime/@value">
+						<xsl:variable name="t1" select="$selectedStartTime/@value" />
+						<xsl:variable name="t2" select="$selectedEndTime/@value" />
+						<xsl:variable name="tmin"><xsl:choose>
+							<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t1" /></xsl:when>
+							<xsl:otherwise><xsl:value-of select="$t2" /></xsl:otherwise>
+						</xsl:choose></xsl:variable>
+						<xsl:variable name="tmax"><xsl:choose>
+							<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t2" /></xsl:when>
+							<xsl:otherwise><xsl:value-of select="$t1" /></xsl:otherwise>
+						</xsl:choose></xsl:variable>
+						<html:div class="ruler-selected-range" style="left: {round($tmin * $ratio)}px; width: {round(($tmax - $tmin) * $ratio) - 1}px;">
 							
 						</html:div>
 					</xsl:when>

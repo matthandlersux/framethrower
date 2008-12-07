@@ -21,11 +21,13 @@ body {
 }
 
 .kernelObject {
-	padding: 1px 4px;
+	padding: 1px 6px;
 	-moz-border-radius: 6px;
-	margin: 2px 3px;
+	margin: 2px 5px;
 	color: #fff;
 	cursor: pointer;
+	height: 35px;
+	line-height:35px;
 }
 
 .kernelInfon {
@@ -582,14 +584,17 @@ buttons
 	background-position: -209px 0px;
 	width: 43px;
 	height: 33px;
+	opacity: 0.0;
 }
 
 .pageLeft:hover {
 	background-position: -209px -33px;
+	opacity: 1.0;
 }
 
 .pageLeft:active {
 	background-position: -209px -67px;
+	opacity: 1.0;
 }
 
 .pageRight {
@@ -597,14 +602,17 @@ buttons
 	background-position: -260px 0px;
 	width: 43px;
 	height: 33px;
+	opacity: 0.0;
 }
 
 .pageRight:hover {
 	background-position: -260px -33px;
+	opacity: 1.0;
 }
 
 .pageRight:active {
 	background-position: -260px -67px;
+	opacity: 1.0;
 }
 
 

@@ -59,7 +59,7 @@
 				</xsl:when>
 				<xsl:when test="$style/@value = 'listentry'">
 					<html:div style="display:table; width:100%;">
-						<html:div style="height:42px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=30&amp;height=42); background-repeat: no-repeat; padding-left: 30px; text-align:center; vertical-align:middle; display: table-cell;">
+						<html:div style="height:56px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=40&amp;height=56); background-repeat: no-repeat; padding-left: 40px; text-align:center; vertical-align:middle; display: table-cell;">
 							<xsl:copy-of select="$name" />
 						</html:div>
 					</html:div>
@@ -75,9 +75,9 @@
 							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:variable>
-					<html:span style="height:21px; background-color:{$color}; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=15&amp;height=21); background-repeat: no-repeat; padding-left:17px;">
+					<html:div style="height:35px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$content/@thumbnail}&amp;width=25&amp;height=35); background-repeat: no-repeat; padding-left:28px;">
 						<xsl:copy-of select="$name" />
-					</html:span>
+					</html:div>
 				</xsl:when>
 				<xsl:otherwise>
 				

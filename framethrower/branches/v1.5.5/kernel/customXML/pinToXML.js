@@ -380,7 +380,9 @@ var convertPinToXML = memoize(function (pin) {
 			}
 		}
 		
-		var emptyFunc = function () {};
+		var emptyFunc = function () {
+			//myOut.set(xmlize(pin));
+		};
 		var constructor = pin.getType().getConstructor();
 		if (constructor === interfaces.unit) {
 			return {set: emptyFunc, PACKETCLOSE: maybePacketClose};

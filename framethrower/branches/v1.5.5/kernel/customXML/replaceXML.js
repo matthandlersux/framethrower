@@ -192,13 +192,13 @@ function deactivateEndCaps(node) {
 
 function replaceWithCopy(newNode, oldNode) {
 	var c = newNode.cloneNode(true);
-	oldNode.ownerDocument.adoptNode(c);
+	//oldNode.ownerDocument.adoptNode(c);
 	oldNode.parentNode.replaceChild(c, oldNode);
 	return c;
 }
 function copyBefore(parentNode, newNode, node) {
 	var c = newNode.cloneNode(true);
-	parentNode.ownerDocument.adoptNode(c);
+	//parentNode.ownerDocument.adoptNode(c);
 	insertBefore(parentNode, c, node);
 	return c;
 }

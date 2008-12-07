@@ -41,7 +41,7 @@
 			
 				<f:thunk url="printContent.xml">
 					<f:with-param name="focus"><xsl:copy-of select="$focus" /></f:with-param>
-					<f:with-param name="style"><f:string value="title" /></f:with-param>
+					<f:with-param name="style"><f:string value="object" /></f:with-param>
 				</f:thunk>
 				
 			</html:div>
