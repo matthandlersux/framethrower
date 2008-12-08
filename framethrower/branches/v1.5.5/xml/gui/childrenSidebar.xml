@@ -38,12 +38,12 @@
 						<html:div class="buttonContent" style="color:#fff; position:relative; top:-2px; left: 6px;">
 							<xsl:choose>
 								<xsl:when test="$expanded">
-									<!-- <html:div class="expanded" /> -->
-									<html:img src="../images/expanded.png" width="13" height="13" />
+									<html:div class="expanded" />
+									<!-- <html:img src="../images/expanded.png" width="13" height="13" /> -->
 								</xsl:when>
 								<xsl:otherwise>
-									<!-- <html:div class="collapsed" /> -->
-									<html:img src="../images/collapsed.png" width="13" height="13" />
+									<html:div class="collapsed" />
+									<!-- <html:img src="../images/collapsed.png" width="13" height="13" /> -->
 								</xsl:otherwise>
 							</xsl:choose>
 

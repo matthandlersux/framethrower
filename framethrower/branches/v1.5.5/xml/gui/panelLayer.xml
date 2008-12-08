@@ -89,6 +89,16 @@
 				</f:thunk>
 			</xsl:if>
 			
+			
+			<xsl:if test="$properties/@showDemoSpecial != ''">
+				<f:thunk url="demo/showSpecial.xml">
+					<f:with-param name="special"><f:number value="{$properties/@showDemoSpecial}" /></f:with-param>
+					<f:with-param name="width"><xsl:copy-of select="$width" /></f:with-param>
+					<f:with-param name="height"><xsl:copy-of select="$height" /></f:with-param>
+					<f:with-param name="panelLayer" value-id="{$panelLayer/@id}" />
+				</f:thunk>
+			</xsl:if>
+			
 		</html:div>
 	</xsl:template>
 	

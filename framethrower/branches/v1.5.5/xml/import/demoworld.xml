@@ -26,14 +26,18 @@
 			Movies
 		</content>
 	</individual>
+	<individual name="locationType" type="typeType" returnas="locationType">
+		<content> Locations</content>
+	</individual>
+	<individual name="sceneType" type="typeType">
+		<content> Scenes</content>
+	</individual>
 	
 	
 	
 	<relation name="corresponds" returnas="corresponds" />
 	<situation name="rw" returnas="rw">
-		<content>
-			Real Life
-		</content>
+		<content><information name="Real Life" thumbnail="real_life" /></content>
 
 		<relation name="performs" returnas="performs">
 			<content>
@@ -46,20 +50,18 @@
 					</f:pseudo>
 				</f:relationcontent>
 			</content>
-			
 		</relation>
-		<relation name="dubs">
+		<relation name="dreams" returnas="performs">
 			<content>
 				<f:relationcontent>
-					<f:name value="dubs" />
+					<f:name value="dreams" />
 					<f:pseudo>
-						<f:role role="dubber"/>
-						<f:verb value="dubs" />
-						<f:role role="dubbee"/>
+						<f:role role="dreamer"/>
+						<f:verb value="dreams"/>
+						<f:role role="dream"/>
 					</f:pseudo>
 				</f:relationcontent>
 			</content>
-			
 		</relation>
 		
 		<individual name="arnold" type="personType">
@@ -68,6 +70,10 @@
 		
 		<individual name="stallone" type="personType">
 			<content><information name="Sylvester Stallone" thumbnail="stallone_real" /></content>
+		</individual>
+		
+		<individual name="la" type="locationType">
+			<content><information name="Los Angeles" thumbnail="los_angeles_real" special="2" /></content>
 		</individual>
 		
 		
@@ -82,7 +88,7 @@
 			</individual>
 			
 			<situation name="jackslateriv" type="movieType">
-				<content><information name="Jack Slater IV" /></content>
+				<content><information name="Jack Slater IV" thumbnail="movie_jack_slater_iv_lah" /></content>
 				<individual name="jackslater" type="personType">
 					<content><information name="Jack Slater" thumbnail="jack_slater_jsiv" /></content>
 				</individual>
@@ -107,18 +113,33 @@
 			<content><information name="Terminator 2: Judgement Day" thumbnail="movie_terminator_two_judgement_day_real" /></content>
 			
 			<individual name="sc" type="personType">
-				<content><information name="Sarah Connor" /></content>
+				<content><information name="Sarah Connor" thumbnail="sarah_connor_terminator_2" /></content>
 			</individual>
 			<individual name="jc" type="personType">
-				<content><information name="John Connor" /></content>
+				<content><information name="John Connor" thumbnail="john_connor_terminator_2" /></content>
 			</individual>
 			
 			<individual name="cyborg" type="cyborgType">
 				<content><information name="The Terminator" thumbnail="cyborg_terminator_2" /></content>
 			</individual>
 			<individual name="t1000" type="cyborgType">
-				<content><information name="T-1000" /></content>
+				<content><information name="T-1000" thumbnail="t1000_terminator_2" /></content>
 			</individual>
+			
+			<situation name="apocalypse" type="sceneType">
+				<content><information name="Apocalypse" thumbnail="apocalypse_terminator_2" special="1" /></content>
+				<individual name="apla" type="locationType">
+					<content><information name="Los Angeles" special="2" thumbnail="los_angeles_real" /></content>
+				</individual>
+				<individual name="apsc" type="personType">
+					<content><information name="Sarah Connor" thumbnail="sarah_connor_terminator_2" /></content>
+				</individual>
+			</situation>
+			
+			<infon relation="dreams">
+				<arc role="dreamer" arg="sc" />
+				<arc role="dream" arg="apocalypse" />
+			</infon>
 		</situation>
 		
 		<infon relation="performs">
