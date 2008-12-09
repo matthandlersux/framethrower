@@ -1,4 +1,3 @@
-
 function makeStartCap (type, getState) {
 	var startCap = {kind: "startCap"};
 	

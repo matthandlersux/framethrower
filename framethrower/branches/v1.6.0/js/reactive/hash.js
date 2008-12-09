@@ -50,17 +50,11 @@ Node.prototype.toJSON = function () {
 // ========================================================================
 // Ohash
 // ========================================================================
-
-function makeOhash(stringify) {
+//depends on function stringify
+function makeOhash() {
 	var ohash = {};
 	
 	var hash = {};
-	
-	if (stringify === undefined) {
-		stringify = function (x) {
-			return x;
-		};
-	}
 	
 	ohash.get = function(key) {
 		var stringified = stringify(key);

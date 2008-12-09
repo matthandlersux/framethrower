@@ -13,7 +13,7 @@ function testFile(filename) {
 		var propCount = 0;
 		
 		forEach(message1, function(property, pname) {
-			if(!message2[pname]) {
+			if(message2[pname] == undefined) {
 				returnVal = false;
 				return;
 			}
@@ -67,7 +67,13 @@ function testFile(filename) {
 
 		var sctypeFirstWord = sctype.split(" ")[0];
 
-		testWorld.startCaps[scname] = makeStartCap(sctypeFirstWord);
+		//testWorld.startCaps[scname] = makeStartCap(sctypeFirstWord);
+		if(sctypeFirstWord == 'assoc') {
+			testWorld.startCaps[scname] = makeCellAssocInput();
+		} else {
+			testWorld.startCaps[scname] = makeCell();
+		}
+		
 		testWorld.startCaps[scname].type = parseType(sctype);
 		
 		// make this more functional
@@ -80,16 +86,25 @@ function testFile(filename) {
 		var expression = actionNode.getAttribute('expression');
 
 		var scFromExp = evaluate(parseExpr(expression));
-		
+
 		testWorld.outMessages[endCapName] = [];
 
-		function processor (messages) {
-			forEach(messages, function (message) {
-				testWorld.outMessages[endCapName].push(message);
-			});
-		}
+		scFromExp.injectFunc('output', null, function(keyVal) {
+			if(keyVal.key != undefined && keyVal.val != undefined) {
+				testWorld.outMessages[endCapName].push({action:'set', key:keyVal.key, value:keyVal.val});
+			} else {
+				testWorld.outMessages[endCapName].push({action:'set', key:keyVal});
+			}
+		});
 
-		testWorld.endCaps[endCapName] = makeEndCap(scFromExp, processor);
+		scFromExp.injectCustomRemoveLineResponse('output', function (keyVal, func, id) {
+			if(keyVal.key != undefined && keyVal.val != undefined) {
+				testWorld.outMessages[endCapName].push({action:'remove', key:keyVal.key});
+			} else {
+				testWorld.outMessages[endCapName].push({action:'remove', key:keyVal});
+			}			
+		});
+		
 		return testWorld;
 	}
 	
@@ -97,20 +112,36 @@ function testFile(filename) {
 		forEach(children(actionNode), function (messageNode) {
 			var messageName = messageNode.nodeName;
 			var scName = messageNode.getAttribute('scname');
+			
 			var args = [];
-			forEach(children(messageNode), function (argNode){
-				args.push(parsePrim(argNode, testWorld));
+			forEach(children(messageNode), function (childNode) {
+				args.push(parsePrim(childNode, testWorld));
 			});
-			testWorld.startCaps[scName].send([makeMessage[messageName].apply(null, args)]);
+
+			var value;
+			if(args.length == 2) {
+				value = {key:args[0], val:args[1]};
+			} else if (args.length == 1) {
+				value = args[0];
+			}
+			
+			
+			//testWorld.startCaps[scName].send([makeMessage[messageName].apply(null, args)]);
+			if (messageName == "set") {
+				testWorld.startCaps[scName].addLine(value);
+			} else if (messageName == "remove") {
+				testWorld.startCaps[scName].removeLine(value);
+			}
 		});
 		return testWorld;
 	}
 	
 	function messageToString (message, ecName) {
-		if(message.action == "setAssoc") {
+		if(message.value) {
 			return message.action + "(" + message.key + ", " + message.value + ") at endCap: " + ecName;
 		} else {
-			return message.action + "(" + message.value + ") at endCap: " + ecName;
+			//return message.action + "(" + message.value + ") at endCap: " + ecName;
+			return message.action + "(" + message.key + ") at endCap: " + ecName;
 		}
 	}
 	
@@ -118,23 +149,29 @@ function testFile(filename) {
 		forEach(children(actionNode), function (messageNode) {
 			var messageName = messageNode.nodeName;
 			var ecName = messageNode.getAttribute('ecname');
+
+			var childNodes = children(messageNode);
 			var args = [];
-			forEach(children(messageNode), function (argNode){
-				args.push(parsePrim(argNode, testWorld));
+			forEach(children(messageNode), function (childNode) {
+				args.push(parsePrim(childNode, testWorld));
 			});
-			
-			var messageToCheck = makeMessage[messageName].apply(null, args);
+			var messageToCheck;
+			if(args.length == 2) {
+				messageToCheck = {action:messageName, key:args[0], value:args[1]};
+			} else if (args.length == 1) {
+				messageToCheck = {action:messageName, key:args[0]};
+			}
 			
 			if (testWorld.outMessages[ecName].length == 0) {
-				testWorld.testOutput += "Error: Expected Message: " + messageToString(messageToCheck);
+				testWorld.testOutput += "Error: Expected Message: " + messageToString(messageToCheck, ecName);
 				testWorld.testOutput += ", but received NO Message\n";
 			}
 			else if (messagesEqual(testWorld.outMessages[ecName][0], messageToCheck)) {
 				testWorld.testOutput += "Confirmed Message: " + messageToString(messageToCheck, ecName) + "\n";
 				testWorld.outMessages[ecName].shift();
 			} else {
-				testWorld.testOutput += "Error: Expected Message: " + messageToString(messageToCheck);
-				testWorld.testOutput += ", but received Message: " + messageToString(testWorld.outMessages[ecName][0]) + "\n";
+				testWorld.testOutput += "Error: Expected Message: " + messageToString(messageToCheck, ecName);
+				testWorld.testOutput += ", but received Message: " + messageToString(testWorld.outMessages[ecName][0], ecName) + "\n";
 			}
 		});
 		return testWorld;
