@@ -256,6 +256,18 @@ function getType(o) {
 
 
 
+
+function testConstraints(s) {
+	var exp = parseExpr(s);
+	var c = [];
+	var t = genConstraints(exp, baseEnv, c);
+	forEach(c, function (x) {
+		console.log(unparseType(x[0]) + " = " + unparseType(x[1]));
+	});
+	console.log("type of the expression: " + unparseType(t));
+}
+
+
 /*function showType(type) {
 	// like unparse, but renames t1, t2, ... to a, b, ...
 	function getLetter(i) {
