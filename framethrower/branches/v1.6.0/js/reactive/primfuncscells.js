@@ -3,13 +3,13 @@ var primFuncs = function () {
 	var bindUnitOrSetHelper = function (f, cell) {
 		var outputCell = makeCell();
 		
-		cell.injectContFunc('bindUnit' + stringify(outputCell), function (val, innerId) {
+		cell.injectFunc(function (val) {
 			var resultCell = applyFunc(f, val);
-			resultCell.injectFunc(innerId, outputCell, function (innerVal) {
-				return innerVal;
+			return resultCell.injectFunc(function (innerVal) {
+				return outputCell.addLine(innerVal);
 			});
-			return resultCell;
 		});
+		
 		return outputCell;
 	};
 	
@@ -29,8 +29,8 @@ var primFuncs = function () {
 			type : "Unit a -> Set a",
 			func : function (cell) {
 				var outputCell = makeCell();
-				cell.injectFunc('returnUnitSet', outputCell, function (val) {
-					return val;
+				cell.injectFunc(function (val) {
+					return outputCell.addLine(val);
 				});
 				return outputCell;
 			}
@@ -39,9 +39,9 @@ var primFuncs = function () {
 			type : "a -> Unit b -> Assoc a b",
 			func : function (key, cell) {
 				var outputCell = makeCellAssocInput();
-				cell.injectFunc('returnUnitAssoc', outputCell, function (val) {
-					return {key:key, val:val};
-				}, true);
+				cell.injectFunc(function (val) {
+					return outputCell.addLine({key:key, val:val});
+				});
 				return outputCell;
 			}
 		},
@@ -58,13 +58,13 @@ var primFuncs = function () {
 			func : function (f, cell) {
 				var outputCell = makeCellAssocInput();
 
-				cell.injectContFunc('bindAssoc' + stringify(outputCell), function (keyVal, innerId) {
+				cell.injectFunc(function (keyVal) {
 					var resultCell = applyFunc(applyFunc(f, keyVal.key), keyVal.val);
-					resultCell.injectFunc(innerId, outputCell, function (innerKeyVal) {
-						return innerKeyVal;
-					}, true);
-					return resultCell;
+					return resultCell.injectFunc(function (innerKeyVal) {
+						return outputCell.addLine(innerKeyVal);
+					});
 				});
+				
 				return outputCell;
 			}
 		},
@@ -76,11 +76,11 @@ var primFuncs = function () {
 			func : function (cell1, cell2) {
 				var outputCell = makeCell();
 
-				cell1.injectFunc('union1', outputCell, function (val) {
-					return val;
+				cell1.injectFunc(function (val) {
+					return outputCell.addLine(val);
 				});
-				cell2.injectFunc('union2', outputCell, function (val) {
-					return val;
+				cell2.injectFunc(function (val) {
+					return outputCell.addLine(val);
 				});	
 
 				return outputCell;
@@ -89,17 +89,40 @@ var primFuncs = function () {
 		setDifference : {
 			type : "Set a -> Set a -> Set a",
 			func : function (cell1, cell2) {
-				var outputCell = makeCellCountNegatives();
+				var outputCell = makeCell();
+				var countHash = makeObjectHash();
 
-				cell1.injectFunc('setDifference1', outputCell, function (val) {
-					return val;
+				var add = function (count, value) {
+					count.num++;
+					if (count.num == 1) count.onRemove = outputCell.addLine(value);					
+				};
+				
+				var sub = function (count) {
+					count.num--;
+					if(count.num == 0) count.onRemove();
+				};
+
+				var getOrMake = function (value) {
+					return countHash.getOrMake(value, function () {
+						return {num:0};
+					});
+				};
+
+				cell1.injectFunc(function (value) {
+					var count = getOrMake(value);
+					add(count, value);
+					return function () {
+						sub(count);
+					};
 				});
-				cell2.injectCustomRemoveLineResponse('setDifference2', function (key, func, id) {
-					outputCell.addLine(key);
+
+				cell2.injectFunc(function (value) {
+					var count = getOrMake(value);
+					sub(count);
+					return function () {
+						add(count, value);
+					};
 				});
-				cell2.injectFunc('setDifference2', null, function (val) {
-					outputCell.removeLine(val);
-				});	
 
 				return outputCell;
 			}
@@ -161,6 +184,15 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
+		// Just for Testing!!
+		x2 : {
+			type : "Number -> Set Number",
+			func : function (val1) {
+				var outputCell = makeCell();
+				outputCell.addLine(val1 * 2);
+				return outputCell;
+			}
+		},
 		oneToAssoc : {
 			type : "Number -> Number -> Assoc Number Number",
 			func : function (val1, val2) {
@@ -183,8 +215,8 @@ var primFuncs = function () {
 			type : "Unit (a -> b) -> a -> Unit b",
 			func : function (cell, input) {
 				var outputCell = makeCell();
-				cell.injectFunc('reactiveApply', outputCell, function (val) {
-					return applyFunc(val, input);
+				cell.injectFunc(function (val) {
+					return outputCell.addLine(applyFunc(val, input));
 				});
 				return outputCell;
 			}
@@ -192,51 +224,93 @@ var primFuncs = function () {
 	 	passThru : {
 			type : "(a -> Bool) -> a -> Unit a",
 			func : function (f, input) {
+				var outputCell = makeCell();
 				if(applyFunc(f, input)) {
-					return applyFunc(primFuncs.returnUnit, input);
-				} else {
-					return applyFunc(primFuncs.returnUnit, null);
+					outputCell.addLine(input);
 				}
+				return outputCell;
 			}
 		},
 	 	any : {
 			type : "(a -> Unit Bool) -> Set a -> Unit Bool",
 			func : function (f, cell) {
-				var outputCell = makeCellWithDefault();
-				outputCell.setDefault(false);
-				cell.injectContFunc('any' + stringify(outputCell), function (val, innerId) {
+				var outputCell = makeCell();
+				var count = 0;
+				outputCell.addLine(false);
+
+				cell.injectFunc(function (val) {
 					var resultCell = applyFunc(f, val);
-					resultCell.injectFunc(innerId, outputCell, function (innerVal) {
+					return resultCell.injectFunc(function (innerVal) {
 						if (innerVal) {
-							return innerVal;
+							if (count == 0) {
+								outputCell.removeLine(false);
+								var onRemove = outputCell.addLine(true);
+							}
+							count++;
+							return function () {
+								count--;
+								if (count == 0) {
+									outputCell.removeLine(true);
+									outputCell.addLine(false);
+								}
+							};
 						}
 					});
-					return resultCell;
-				});
+				});				
+				
 				return outputCell;
 			}
 		},
 		fold : {
-			//gotta change this type signature! The second input function is the "inverse" of the first function
-			//to this: (a->b->b) -> (b->a->a) -> b -> Set a -> Unit b
 			type : "(a -> b -> b) -> (b -> a -> a) -> b -> Set a -> Unit b",
 			func : function (f, finv, init, cell) {
 				var outputCell = makeCell();
 				var cache = init;
 				outputCell.addLine(cache);
 				
-				cell.injectFunc('fold', outputCell, function (val) {
+				cell.injectFunc(function (val) {
 					outputCell.removeLine(cache);
 					cache = applyFunc(applyFunc(f, val), cache);
-					return cache;
-				});
-			
-				cell.injectCustomRemoveLineResponse('fold', function(key, func, id) {
-					outputCell.removeLine(cache);
-					cache = applyFunc(applyFunc(finv, cache), key);
 					outputCell.addLine(cache);
+					return function () {
+						outputCell.removeLine(cache);
+						cache = applyFunc(applyFunc(finv, cache), val);
+						outputCell.addLine(cache);	
+					};
 				});
 
+				return outputCell;
+			}
+		},
+		unfoldSet : {
+			type : "(a -> Set a) -> a -> Set a",
+			func : function (f, init) {
+				var outputCell = makeCell();
+
+				outputCell.addLine(init);		
+				outputCell.injectFunc(function (val) {
+					var resultCell = applyFunc(f, val);
+					resultCell.injectFunc(function (val) {
+						return outputCell.addLine(val);
+					});
+				});
+				
+				return outputCell;
+			}
+		},
+		unfoldAssoc : {
+			type : "(a -> Set a) -> a -> Assoc a Number",
+			func : function (f, init) {
+				var outputCell = makeCellAssocInput();
+				
+				outputCell.addLine({key:init, val:0});
+				outputCell.injectFunc(function (keyVal) {
+					var resultCell = applyFunc(f, keyVal.key);
+					resultCell.injectFunc(function (val) {
+						return outputCell.addLine({key:val, val:keyVal.val+1});
+					});
+				});
+				
 				return outputCell;
 			}
 		},
@@ -248,10 +322,10 @@ var primFuncs = function () {
 			func : function (f, cell) {
 				var outputCell = makeCellAssocInput();
 			
-				cell.injectFunc('buildAssoc', outputCell, function (val) {
+				cell.injectFunc(function (val) {
 					var result = applyFunc(f, val);
-					return {key:val, val:result};
-				}, true);
+					return outputCell.addLine({key:val, val:result});
+				});
 			
 				return outputCell;
 			}
@@ -262,11 +336,10 @@ var primFuncs = function () {
 			func : function (cell) {
 				var outputCell = makeCell();
 			
-				cell.injectContFunc('flattenSet' + stringify(outputCell), function (innerCell, innerId) {
-					innerCell.injectFunc(innerId, outputCell, function (val) {
-						return val;
+				cell.injectFunc(function (innerCell) {
+					return innerCell.injectFunc(function (val) {
+						return outputCell.addLine(val);
 					});
-					return innerCell;
 				});
 				return outputCell;
 			}
@@ -275,35 +348,43 @@ var primFuncs = function () {
 			type : "Assoc a (Set b) -> Assoc b (Set a)",
 			func : function (cell) {
 				var outputCell = makeCellAssocInput();
-
-				var middleCell = makeCellWithDuplicateKeys();
-
-				cell.injectContFunc('invert' + stringify(middleCell), function (keyVal, innerId) {
-					keyVal.val.injectFunc(innerId, middleCell, function (innerVal) {
-						return {key: innerVal, val: keyVal.key};
-					}, true);
-					return keyVal.val;
-				});
+				var bHash = makeObjectHash();
 				
-				middleCell.injectFunc('middleInvert' + stringify(outputCell), outputCell, function (innerKeyVal) {
-					return {key:innerKeyVal.key, val:makeCell()};
-				}, true);
-				middleCell.injectSecFunc('middleInvert', 'secInvert', function (innerKeyVal) {
-					return innerKeyVal.val;
+				var bHashCell = makeCell();
+
+				bHashCell.injectFunc(function (bValue) {
+					var newCell = makeCell();
+					bHash.set(bValue, newCell);
+					var onRemove = outputCell.addLine({key:bValue, val:newCell});
+					return function () {
+						bHash.remove(bValue);
+						onRemove();
+					};
 				});
-				
+
+				cell.injectFunc(function (keyVal) {
+					return keyVal.val.injectFunc(function (innerVal) {
+						var onRemove1 = bHashCell.addLine(innerVal);
+						var onRemove2 = bHash.get(innerVal).addLine(keyVal.key);
+						return function () {
+							onRemove2();
+							onRemove1();
+						};
+					});
+				});
+
 				return outputCell;
 			}
 		},
 		mapAssocValue : {
-			type : "type: (a -> b) -> Assoc c a -> Assoc c b",
+			type : "(a -> b) -> Assoc c a -> Assoc c b",
 			func : function (f, cell) {
 				var outputCell = makeCellAssocInput();
-			
-				cell.injectFunc('mapAssocValue', outputCell, function (keyVal) {
+
+				cell.injectFunc(function (keyVal) {
 					var result = applyFunc(f, keyVal.val);
-					return {key:keyVal.key, val:result};
-				}, true);
+					return outputCell.addLine({key:keyVal.key, val:result});
+				});
 			
 				return outputCell;
 			}
@@ -313,8 +394,10 @@ var primFuncs = function () {
 			func : function (key, cell) {
 				var outputCell = makeCell();
 			
-				cell.injectFunc('getKey', outputCell, function (keyVal) {
-					if(keyVal.key == key) return keyVal.val;
+				cell.injectFunc(function (keyVal) {
+					if (keyVal.key == key) {
+						return outputCell.addLine(keyVal.val);
+					}
 				});
 			
 				return outputCell;
@@ -325,8 +408,8 @@ var primFuncs = function () {
 			func : function (cell) {
 				var outputCell = makeCell();
 			
-				cell.injectFunc('keys', outputCell, function (keyVal) {
-					return keyVal.key;
+				cell.injectFunc(function (keyVal) {
+					return outputCell.addLine(keyVal.key);
 				});
 
 				return outputCell;

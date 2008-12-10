@@ -43,7 +43,14 @@ function testFile(filename) {
 		if (primName == 'number') {
 			var numAsString = primNode.getAttribute('value');
 			return parseFloat(numAsString, 10);
-		} else if (primName == 'sc') {
+		} else if (primName == 'bool') {
+			var boolAsString = primNode.getAttribute('value');
+			return (boolAsString == 'true');
+		} else if (primName == 'func') {
+			var name = primNode.getAttribute('name');
+			return lookupTable[name];
+		}
+		else if (primName == 'sc') {
 			var name = primNode.getAttribute('name');
 			if (!testWorld.startCaps[name]) {
 				return {
@@ -89,21 +96,20 @@ function testFile(filename) {
 
 		testWorld.outMessages[endCapName] = [];
 
-		scFromExp.injectFunc('output', null, function(keyVal) {
+		scFromExp.injectFunc(function(keyVal) {
 			if(keyVal.key != undefined && keyVal.val != undefined) {
 				testWorld.outMessages[endCapName].push({action:'set', key:keyVal.key, value:keyVal.val});
 			} else {
 				testWorld.outMessages[endCapName].push({action:'set', key:keyVal});
 			}
-		});
-
-		scFromExp.injectCustomRemoveLineResponse('output', function (keyVal, func, id) {
-			if(keyVal.key != undefined && keyVal.val != undefined) {
-				testWorld.outMessages[endCapName].push({action:'remove', key:keyVal.key});
-			} else {
-				testWorld.outMessages[endCapName].push({action:'remove', key:keyVal});
-			}			
-		});
+			return function () {
+				if(keyVal.key != undefined && keyVal.val != undefined) {
+					testWorld.outMessages[endCapName].push({action:'remove', key:keyVal.key});
+				} else {
+					testWorld.outMessages[endCapName].push({action:'remove', key:keyVal});
+				}
+			};
+		});		
 		
 		return testWorld;
 	}
@@ -137,11 +143,13 @@ function testFile(filename) {
 	}
 	
 	function messageToString (message, ecName) {
-		if(message.value) {
+		if(message.value != undefined) {
 			return message.action + "(" + message.key + ", " + message.value + ") at endCap: " + ecName;
-		} else {
+		} else if (message.key != undefined) {
 			//return message.action + "(" + message.value + ") at endCap: " + ecName;
 			return message.action + "(" + message.key + ") at endCap: " + ecName;
+		} else {
+			return message.action + " at endCap: " + ecName;
 		}
 	}
 	
@@ -160,9 +168,14 @@ function testFile(filename) {
 				messageToCheck = {action:messageName, key:args[0], value:args[1]};
 			} else if (args.length == 1) {
 				messageToCheck = {action:messageName, key:args[0]};
+			} else {
+				messageToCheck = {action:messageName};
 			}
-			
-			if (testWorld.outMessages[ecName].length == 0) {
+
+			if (testWorld.outMessages[ecName] == undefined || (testWorld.outMessages[ecName].length == 0 && messageToCheck.action == 'none')) {
+				testWorld.testOutput += "Confirmed Message: " + messageToString(messageToCheck, ecName) + "\n";
+			}
+			else if (testWorld.outMessages[ecName] == undefined || testWorld.outMessages[ecName].length == 0) {
 				testWorld.testOutput += "Error: Expected Message: " + messageToString(messageToCheck, ecName);
 				testWorld.testOutput += ", but received NO Message\n";
 			}

@@ -1,669 +1,373 @@
-// ============================================================================
-// Utility
-// ============================================================================
 
-// for keeping track of set correspondences
-function makeCrossReference() {
-	var cr = {};
-	
-	var inputs = makeObjectHash();
-	var outputs = makeObjectHash();
-	
-	cr.getStateMessages = function () {
-		var stateArray = outputs.getState();
-		var returnArray = [];
-		stateArray.forEach(function (value) {
-			returnArray.push(makeMessage.set(value));
-		});
-		return returnArray;
-	};
-	
-	cr.hasInput = function (input) {
-		return inputs.get(input);
-	};
-	
-	cr.addLink = function (input, output, callback) {
-		if (!outputs.get(output)) {
-			callback(output);
-		}
-		inputs.getOrMake(input, makeObjectHash).set(output, output);
-		outputs.getOrMake(output, makeObjectHash).set(input, input);
-	};
-	
-	function checkDead(output, callback) {
-		var ins = outputs.get(output);
-		if (ins.isEmpty()) {
-			outputs.remove(output);
-			callback(output);
-		}
-	}
-	
-	cr.removeLink = function (input, output, callback) {
-		var outs = inputs.get(input);
-		if (outs) {
-			outs.remove(output);
-			var ins = outputs.get(output);
-			ins.remove(input);
-			checkDead(output, callback);
-		}
-	};
-	
-	cr.removeInput = function (input, callback) {
-		var outs = inputs.get(input);
-		if (outs) {
-			outs.forEach(function (output) {
-				var ins = outputs.get(output);
-				ins.remove(input);
-				checkDead(output, callback);
+var primFuncs = function () {
+	var bindUnitOrSetHelper = function (f, cell) {
+		var outputCell = makeCell();
+		
+		cell.injectContFunc('bindUnit' + stringify(outputCell), function (val, innerId) {
+			var resultCell = applyFunc(f, val);
+			resultCell.injectFunc(innerId, outputCell, function (innerVal) {
+				return innerVal;
 			});
-		}
-		inputs.remove(input);
-	};
-	
-	return cr;
-}
-
-//This is almost the same as the Set Cross Reference, but keeps track of the values that go with each output key for getStateMessages
-function makeAssocCrossReference() {
-	var cr = {};
-	
-	var inputs = makeObjectHash();
-	var outputs = makeObjectHash();
-	
-	cr.getStateMessages = function () {
-		var stateArray = outputs.getState();
-		var returnArray = [];
-		stateArray.forEach(function (value, key) {
-			returnArray.push(makeMessage.setAssoc(key, value));
+			return resultCell;
 		});
-		return returnArray;
+		return outputCell;
 	};
 	
-	cr.hasInput = function (input) {
-		return inputs.get(input);
-	};
-	
-	cr.addLink = function (input, output, callback, assocVal) {
-		if (!outputs.get(output)) {
-			callback(output);
-		}
-		inputs.getOrMake(input, makeObjectHash).set(output, assocVal);
-		outputs.getOrMake(output, makeObjectHash).set(input, input);
-	};
-	
-	function checkDead(output, callback) {
-		var ins = outputs.get(output);
-		if (ins.isEmpty()) {
-			outputs.remove(output);
-			callback(output);
-		}
-	}
-	
-	cr.removeLink = function (input, output, callback) {
-		var outs = inputs.get(input);
-		if (outs) {
-			outs.remove(output);
-			var ins = outputs.get(output);
-			ins.remove(input);
-			checkDead(output, callback);
-		}
-	};
-	
-	cr.removeInput = function (input, callback) {
-		var outs = inputs.get(input);
-		if (outs) {
-			outs.forEach(function (output) {
-				var ins = outputs.get(output);
-				ins.remove(input);
-				checkDead(output, callback);
-			});
-		}
-		inputs.remove(input);
-	};
-	
-	return cr;
-}
-
-
-
-//helper functions
-function setProcessor (funcs) {
-	return function (messages) {
-		forEach(messages, function (message) {
-			if (message.action == messageEnum.set) {
-				funcs.set(message.value);
-			} else if (message.action == messageEnum.remove) {
-				funcs.remove(message.value);
+	return {
+		// ============================================================================
+		// Monadic Operators
+		// ============================================================================
+	 	returnUnit : {
+			type : "a -> Unit a",
+			func : function (val) {
+				var cell = makeCell();
+				cell.addLine(val);
+				return cell;
 			}
-		});
-	};
-}
-
-function assocProcessor (funcs) {
-	return function (messages) {
-		forEach(messages, function (message) {
-			if (message.action == messageEnum.setAssoc) {
-				funcs.setAssoc(message.key, message.value);
-			} else if (message.action == messageEnum.remove) {
-				funcs.remove(message.value);
+		},
+	 	returnUnitSet : {
+			type : "Unit a -> Set a",
+			func : function (cell) {
+				var outputCell = makeCell();
+				cell.injectFunc('returnUnitSet', outputCell, function (val) {
+					return val;
+				});
+				return outputCell;
 			}
-		});
-	};
-}
+		},
+		returnUnitAssoc : {
+			type : "a -> Unit b -> Assoc a b",
+			func : function (key, cell) {
+				var outputCell = makeCellAssocInput();
+				cell.injectFunc('returnUnitAssoc', outputCell, function (val) {
+					return {key:key, val:val};
+				}, true);
+				return outputCell;
+			}
+		},
+	 	bindUnit : {
+			type : "(a -> Unit b) -> Unit a -> Unit b",
+			func : bindUnitOrSetHelper
+		},
+	 	bindSet : {
+			type : "(a -> Set b) -> Set a -> Set b",
+			func : bindUnitOrSetHelper
+		},
+	 	bindAssoc : {
+			type : "(a -> b -> Assoc a c) -> Assoc a b -> Assoc a c",
+			func : function (f, cell) {
+				var outputCell = makeCellAssocInput();
 
-var primFuncs = {
-	// ============================================================================
-	// Monadic Operators
-	// ============================================================================
- 	returnUnit : {
-		type : "a -> Unit a",
-		func : function (val) {
-			var sc = makeStartCap("Unit");
-			sc.send([makeMessage.set(val)]);
-			return sc;
-		}
-	},
- 	returnUnitSet : {
-		type : "Unit a -> Set a",
-		func : function (sc) {
-			var cache;
+				cell.injectContFunc('bindAssoc' + stringify(outputCell), function (keyVal, innerId) {
+					var resultCell = applyFunc(applyFunc(f, keyVal.key), keyVal.val);
+					resultCell.injectFunc(innerId, outputCell, function (innerKeyVal) {
+						return innerKeyVal;
+					}, true);
+					return resultCell;
+				});
+				return outputCell;
+			}
+		},
+		// ============================================================================
+		// Set utility functions
+		// ============================================================================		
+		union : {
+			type : "Set a -> Set a -> Set a",
+			func : function (cell1, cell2) {
+				var outputCell = makeCell();
 
-			var getState = function () {
-				return [makeMessage.set(cache)];
-			};
+				cell1.injectFunc('union1', outputCell, function (val) {
+					return val;
+				});
+				cell2.injectFunc('union2', outputCell, function (val) {
+					return val;
+				});	
 
-			var outputCap = makeStartCap(("Set"), getState);
+				return outputCell;
+			}
+		},
+		setDifference : {
+			type : "Set a -> Set a -> Set a",
+			func : function (cell1, cell2) {
+				var outputCell = makeCellCountNegatives();
 
-			makeEndCap(sc, function (messages) {
-				var message = messages[messages.length-1];
-				if(cache) {
-					outputCap.send([makeMessage.remove(cache)]);
+				cell1.injectFunc('setDifference1', outputCell, function (val) {
+					return val;
+				});
+				cell2.injectCustomRemoveLineResponse('setDifference2', function (key, func, id) {
+					outputCell.addLine(key);
+				});
+				cell2.injectFunc('setDifference2', null, function (val) {
+					outputCell.removeLine(val);
+				});	
+
+				return outputCell;
+			}
+		},
+		// ============================================================================
+		// Bool utility functions
+		// ============================================================================
+	 	equal : {
+			type : "a -> a -> Bool",
+			func : function (val1, val2) {
+				return (val1 == val2);
+			}
+		},
+	 	not : {
+			type : "Bool -> Bool",
+			func : function (val1) {
+				return (!val1);
+			}
+		},
+	 	and : {
+			type : "Bool -> Bool -> Bool",
+			func : function (val1, val2) {
+				return (val1 && val2);
+			}
+		},
+	 	or : {
+			type : "Bool -> Bool -> Bool",
+			func : function (val1, val2) {
+				return (val1 || val2);
+			}
+		},
+		// ============================================================================
+		// Number utility functions
+		// ============================================================================
+		add : {
+			type : "Number -> Number -> Number",
+			func : function (val1, val2) {
+				return val1 + val2;
+			}
+		},
+		subtract : {
+			type : "Number -> Number -> Number",
+			func : function (val1, val2) {
+				return val1 - val2;
+			}
+		},
+		// ============================================================================
+		// Other functions?
+		// ============================================================================
+		// Just for Testing!!
+		// takes a number x, and returns a set with 1,2..x
+		oneTo : {
+			type : "Number -> Set Number",
+			func : function (val1) {
+				var outputCell = makeCell();
+				for(var i=1; i<= val1; i++) {
+					outputCell.addLine(i);
 				}
-				cache = message.value;
-				if(message.value) {
-					//outputCap.send(getState());
-					outputCap.send([message]);
+				return outputCell;
+			}
+		},
+		oneToAssoc : {
+			type : "Number -> Number -> Assoc Number Number",
+			func : function (val1, val2) {
+				var outputCell = makeCellAssocInput();
+				for(var i=1; i<= val1; i++) {
+					outputCell.addLine({key:i, val:val2});
 				}
-			});
-		
-			return outputCap;
-		}
-	},
-	returnUnitAssoc : {
-		type : "a -> Unit b -> Assoc a b",
-		func : function (key, sc) {
-			var cache;
-		
-			var getState = function () {
-				if (cache) {
-					return [makeMessage.setAssoc(key, cache)];
+				return outputCell;
+			}
+		},
+		x2ToAssoc : {
+			type : "Number -> Number -> Assoc Number Number",
+			func : function (val1, val2) {
+				var outputCell = makeCellAssocInput();
+				outputCell.addLine({key:val1*2, val:val2});
+				return outputCell;
+			}
+		},
+	 	reactiveApply : {
+			type : "Unit (a -> b) -> a -> Unit b",
+			func : function (cell, input) {
+				var outputCell = makeCell();
+				cell.injectFunc('reactiveApply', outputCell, function (val) {
+					return applyFunc(val, input);
+				});
+				return outputCell;
+			}
+		},
+	 	passThru : {
+			type : "(a -> Bool) -> a -> Unit a",
+			func : function (f, input) {
+				if(applyFunc(f, input)) {
+					return applyFunc(primFuncs.returnUnit, input);
 				} else {
-					return [];
+					return applyFunc(primFuncs.returnUnit, null);
 				}
-			};
-		
-			var outputCap = makeStartCap(("Assoc"), getState);
-		
-			makeEndCap(sc, function (messages) {
-				var message = messages[messages.length-1];
-				cache = message.value;
-				if(cache) {
-					outputCap.send(getState());
-				} else {
-					outputCap.send([makeMessage.remove(key)]);
-				}
-			});
-			return outputCap;
-		}
-	},
- 	bindUnit : {
-		type : "(a -> Unit b) -> Unit a -> Unit b",
-		func : function (f, sc) {
-			var outputCap = makeStartCap("Unit");
-			var innerEc;
-			makeEndCap(sc, function (messages) {
-				var message = messages[messages.length-1];
-				// could typeCheck message here	
-				if(message.value) {
-					if (innerEc) {
-						innerEc.deactivate();
-					}
-					var resultCap = applyFunc(f, message.value);
-					innerEc = makeEndCap(resultCap, function (messages) {
-						var message = messages[messages.length-1];
-						outputCap.send([message]);
-					});
-				} else {
-					if (innerEc) {
-						innerEc.deactivate();
-					}
-					outputCap.send(message);
-				}
-			});
-			return outputCap;
-		}
-	},
- 	bindSet : {
-		type : "(a -> Set b) -> Set a -> Set b",
-		func : function (f, sc) {
-			var outputCap = makeStartCap("Set");
-			var crossRef = makeCrossReference();
-			var ECs = makeOhash();
-		
-			makeEndCap(sc, setProcessor({
-				set : function (inputValue) {
-					var resultCap = applyFunc(f, inputValue);
-					var innerEc = makeEndCap(resultCap, setProcessor({
-						set : function (setValue) {
-							crossRef.addLink(inputValue, setValue, function (value) {
-								outputCap.send([makeMessage.set(value)]);
-							});								
-						},
-						remove : function (removeValue) {
-							crossRef.removeLink(inputValue, removeValue, function (value) {
-								outputCap.send([makeMessage.remove(value)]);
-							});								
+			}
+		},
+	 	any : {
+			type : "(a -> Unit Bool) -> Set a -> Unit Bool",
+			func : function (f, cell) {
+				var outputCell = makeCellWithDefault();
+				outputCell.setDefault(false);
+				cell.injectContFunc('any' + stringify(outputCell), function (val, innerId) {
+					var resultCell = applyFunc(f, val);
+					resultCell.injectFunc(innerId, outputCell, function (innerVal) {
+						if (innerVal) {
+							return innerVal;
 						}
-					}));
+					});
+					return resultCell;
+				});
+				return outputCell;
+			}
+		},
+		fold : {
+			//gotta change this type signature! The second input function is the "inverse" of the first function
+			//to this: (a->b->b) -> (b->a->a) -> b -> Set a -> Unit b
+			type : "(a -> b -> b) -> (b -> a -> a) -> b -> Set a -> Unit b",
+			func : function (f, finv, init, cell) {
+				var outputCell = makeCell();
+				var cache = init;
+				outputCell.addLine(cache);
 				
-					ECs.set(inputValue, innerEc);
-				},
-				remove : function (removeValue) {
-					crossRef.removeInput(removeValue, function (value) {
-						outputCap.send([makeMessage.remove(value)]);
-					});
-					//need to clean up the innerEc associated with this input
-					ECs.get(removeValue).deactivate();
-					ECs.remove(removeValue);
-				}
-			}), crossRef.getStateMessages);
+				cell.injectFunc('fold', outputCell, function (val) {
+					outputCell.removeLine(cache);
+					cache = applyFunc(applyFunc(f, val), cache);
+					return cache;
+				});
+			
+				cell.injectCustomRemoveLineResponse('fold', function(key, func, id) {
+					outputCell.removeLine(cache);
+					cache = applyFunc(applyFunc(finv, cache), key);
+					outputCell.addLine(cache);
+				});
 
-			return outputCap;
-		}
-	},
- 	bindAssoc : {
-		type : "(a -> b -> Assoc a c) -> Assoc a b -> Assoc a c",
-		func : function (f, sc) {
-			var outputCap = makeStartCap("Assoc");
-			var crossRef = makeAssocCrossReference();
-			var ECs = makeOhash();
-
-			makeEndCap(sc, assocProcessor({
-				setAssoc : function (inputKey, inputValue) {
-					var resultCap = applyFunc(f, inputKey, inputValue);
-
-					var innerEc = makeEndCap(resultCap, assocProcessor({
-						setAssoc : function (setKey, setValue) {
-							crossRef.addLink(inputKey, setKey, function (key) {
-								outputCap.send([makeMessage.setAssoc(key, setValue)]);
-							}, setValue);
-						},
-						remove : function (removeValue) {
-							crossRef.removeLink(inputKey, removeValue, function (value) {
-								outputCap.send([makeMessage.remove(value)]);
-							});
-						}
-					}));
-
-					ECs.set(inputKey, innerEc);
-				},
-				remove : function (removeValue) {
-					crossRef.removeInput(removeValue, function (value) {
-						outputCap.send([makeMessage.remove(value)]);
-					});
-					//need to clean up the innerEc associated with this input
-					ECs.get(removeValue).deactivate();
-					ECs.remove(removeValue);
-				}
-			}), crossRef.getStateMessages);
-
-			return outputCap;
-		}
-	},
-	// ============================================================================
-	// Bool utility functions
-	// ============================================================================
- 	equal : {
-		type : "a -> a -> Bool",
-		func : function (val1, val2) {
-			return (val1 == val2);
-		}
-	},
- 	not : {
-		type : "Bool -> Bool",
-		func : function (val1) {
-			return (!val1);
-		}
-	},
- 	and : {
-		type : "Bool -> Bool -> Bool",
-		func : function (val1, val2) {
-			return (val1 && val2);
-		}
-	},
- 	or : {
-		type : "Bool -> Bool -> Bool",
-		func : function (val1, val2) {
-			return (val1 || val2);
-		}
-	},
-	// ============================================================================
-	// Number utility functions
-	// ============================================================================
-	add : {
-		type : "Number -> Number -> Number",
-		func : function (val1, val2) {
-			return val1 + val2;
-		}
-	},
-	// Just for Testing!!
-	// takes a number x, and returns a set with 1,2..x
-	oneTo : {
-		type : "Number -> Set Number",
-		func : function (val1) {
-			var outputCap = makeStartCap("Set");
-			var outMessages = [];
-			for(var i=1; i<= val1; i++) {
-				outMessages.push(makeMessage.set(i));
+				return outputCell;
 			}
-			outputCap.send(outMessages);
-			return outputCap;
-		}
-	},
-	// ============================================================================
-	// Other functions?
-	// ============================================================================
- 	reactiveApply : {
-		type : "Unit (a -> b) -> a -> Unit b",
-		func : function (sc, input) {
-			var cache;
+		},
+		unfoldSet : {
+			type : "(a -> Set a) -> a -> Set a",
+			func : function (f, init) {
+				var outputCell = makeCell();
 
-			var getState = function () {
-				return [makeMessage.set(cache)];
-			};
+				outputCell.addLine(init);		
+				outputCell.injectFunc('unfoldSet', outputCell, function (val) {
+					var resultCell = applyFunc(f, val);
+					resultCell.injectFunc('innerUnfoldSet', outputCell, function (val) {
+						return val;
+					});
+				});
+				
+				return outputCell;
+			}
+		},
+		unfoldAssoc : {
+			type : "(a -> Set a) -> a -> Assoc a Number",
+			func : function (f, init) {
+				var outputCell = makeCellAssocInput();
+				
+				outputCell.addLine({key:init, val:0});
+				outputCell.injectFunc('unfoldAssoc', outputCell, function (keyVal) {
+					var resultCell = applyFunc(f, keyVal.key);
+					resultCell.injectFunc('innerUnfoldAssoc', outputCell, function (val) {
+						return {key:val, val:keyVal.val+1};
+					}, true);
+				});
+				
+				return outputCell;
+			}
+		},
+		// ============================================================================
+		// Assoc functions
+		// ============================================================================
+		buildAssoc : {
+			type : "(a -> b) -> Set a -> Assoc a b",
+			func : function (f, cell) {
+				var outputCell = makeCellAssocInput();
+			
+				cell.injectFunc('buildAssoc', outputCell, function (val) {
+					var result = applyFunc(f, val);
+					return {key:val, val:result};
+				}, true);
+			
+				return outputCell;
+			}
+		},
+		//REMOVE THIS LATER... JUST FOR TESTING
+		flattenSet : {
+			type : "Set (Set a) -> Set a",
+			func : function (cell) {
+				var outputCell = makeCell();
+			
+				cell.injectContFunc('flattenSet' + stringify(outputCell), function (innerCell, innerId) {
+					innerCell.injectFunc(innerId, outputCell, function (val) {
+						return val;
+					});
+					return innerCell;
+				});
+				return outputCell;
+			}
+		},
+		invert : {
+			type : "Assoc a (Set b) -> Assoc b (Set a)",
+			func : function (cell) {
+				var outputCell = makeCellAssocInput();
 
-			var outputCap = makeStartCap("Unit", getState);
+				var middleCell = makeCellWithDuplicateKeys();
 
-			makeEndCap(sc, function (messages) {
-				var message = messages[messages.length-1];
-				if(cache) {
-					outputCap.send([makeMessage.remove(cache)]);
-				}
-				if(message.value) {
-					var result = applyFunc(message.value, input);
-					outputCap.send([makeMessage.set(result)]);
-					cache = result;
-				}
-			});
-			return outputCap;
-		}
-	},
- 	passThru : {
-		type : "(a -> Bool) -> a -> Unit a",
-		func : function (f, input) {
-			if(f(input)) {
-				return applyFunc(primFuncs.returnUnit, input);
-			} else {
-				return applyFunc(primFuncs.returnUnit, null);
+				cell.injectContFunc('invert' + stringify(middleCell), function (keyVal, innerId) {
+					keyVal.val.injectFunc(innerId, middleCell, function (innerVal) {
+						return {key: innerVal, val: keyVal.key};
+					}, true);
+					return keyVal.val;
+				});
+				
+				var middleId = 'middleInvert' + stringify(outputCell);
+				
+				middleCell.injectFunc(middleId, outputCell, function (innerKeyVal) {
+					return {key:innerKeyVal.key, val:makeCell()};
+				}, true);
+				middleCell.injectSecFunc(middleId, 'secInvert', function (innerKeyVal) {
+					return innerKeyVal.val;
+				});
+				
+				return outputCell;
+			}
+		},
+		mapAssocValue : {
+			type : "(a -> b) -> Assoc c a -> Assoc c b",
+			func : function (f, cell) {
+				var outputCell = makeCellAssocInput();
+			
+				cell.injectFunc('mapAssocValue', outputCell, function (keyVal) {
+					var result = applyFunc(f, keyVal.val);
+					return {key:keyVal.key, val:result};
+				}, true);
+			
+				return outputCell;
+			}
+		},
+		getKey : {
+			type : "a -> Assoc a b -> Unit b",
+			func : function (key, cell) {
+				var outputCell = makeCell();
+			
+				cell.injectFunc('getKey', outputCell, function (keyVal) {
+					if(keyVal.key == key) return keyVal.val;
+				});
+			
+				return outputCell;
+			}
+		},
+		keys : {
+			type : "Assoc a b -> Set a",
+			func : function (cell) {
+				var outputCell = makeCell();
+			
+				cell.injectFunc('keys', outputCell, function (keyVal) {
+					return keyVal.key;
+				});
+
+				return outputCell;
 			}
 		}
-	},
- 	any : {
-		type : "(a -> Unit Bool) -> Set a -> Unit Bool",
-		func : function (f, sc) {
-			var outputCap = makeStartCap("Unit");
-			var simpleCrossRef = {};
-			var trueCount = 0;
-			var ECs = makeOhash();
-
-			outputCap.send([makeMessage.set(false)]);
-			makeEndCap(sc, setProcessor({
-				set : function (inputValue) {
-					var resultCap = applyFunc(f, inputValue);
-
-					var innerEc = makeEndCap(resultCap, function (messages) {
-						var setValue = messages[messages.length-1].value;
-						if (setValue && !simpleCrossRef[inputValue]) {
-							simpleCrossRef[inputValue] = true;
-							trueCount++;
-							if(trueCount == 1) {
-								outputCap.send([makeMessage.set(true)]);
-							}
-						} else if (!setValue && simpleCrossRef[inputValue]) {
-							simpleCrossRef[inputValue] = false;
-							trueCount--;
-							if(trueCount == 0) {
-								outputCap.send([makeMessage.set(false)]);
-							}
-						}
-					});
-				
-					ECs.set(inputValue, innerEc);
-				},
-				remove : function (removeValue) {
-					if(simpleCrossRef[removeValue]) {
-						delete simpleCrossRef[removeValue];
-						trueCount--;
-						if(trueCount == 0) {
-							outputCap.send([makeMessage.set(false)]);
-						}
-					}
-					//need to clean up the innerEc associated with this input
-					ECs.get(removeValue).deactivate();
-					ECs.remove(removeValue);
-				}
-			}));
-
-			return outputCap;
-		}
-	},
-	fold : {
-		type : "(a -> b -> b) -> b -> Set a -> Unit b",
-		func : function (f, init, sc) {
-			var outputCap = makeStartCap("Unit");
-			var list = [init];
-			var resultList = [init];
-			var cache = makeOhash();
-			cache.set(init, 0);
-
-			makeEndCap(sc, setProcessor({
-				set : function (inputValue) {
-					//ignore values we already have
-					if(!cache.get(inputValue)) {
-						var result = applyFunc(applyFunc(f, resultList[resultList.length-1]), inputValue);
-						list.push(inputValue);
-						resultList.push(result);
-						cache.set(inputValue, list.length-1);
-						outputCap.send([makeMessage.set(result)]);
-					}
-				},
-				remove : function (removeValue) {
-					var index = cache.get(removeValue);
-					if(!index) return;
-					if(index !== list.length-1) {
-						// insert last element in list where removeValue was
-						var lastElement = list.pop();
-						list.splice(index, 1, lastElement);
-						// remove the results that depended on the removedElement
-						resultList.splice(index);
-						// recompute the missing part of the resultList
-						// TODO: make this more functional
-						for (var i = index; i < list.length; i++){
-							resultList.push(applyFunc(applyFunc(f, list[i]), resultList[i-1]));
-						}
-						cache.remove(removeValue);
-						cache.set(lastElement, index);
-					} else {
-						// just remove the last element and last result
-						list.pop();
-						resultList.pop();
-						cache.remove(removeValue);
-					}
-					outputCap.send([makeMessage.set(resultList[resultList.length-1])]);
-				}
-			}), function () {
-				if(resultList.length > 0) {
-					return [makeMessage.set(resultList[resultList.length-1])];
-				} else {
-					return [];
-				}
-			});
-
-			return outputCap;
-		}
-	},
-	// ============================================================================
-	// Assoc functions
-	// ============================================================================
-	buildAssoc : {
-		type : "(a -> b) -> Set a -> Assoc a b",
-		func : function (f, sc) {
-			var outputCap = makeStartCap("Assoc");
-			var cache = makeOhash();
-		
-			var getState = function () {
-				return cache.toArray();
-			};
-		
-			makeEndCap(sc, setProcessor({
-				set : function (inputValue) {
-					if(!cache.get(inputValue));
-					var result = applyFunc(f, inputValue);
-					var message = makeMessage.setAssoc(inputValue, result);
-					cache.set(inputValue, message);
-					outputCap.send([message]);
-				},
-				remove : function (removeValue) {
-					if(cache.get(inputValue)) {
-						cache.remove(inputValue);
-						outputCap.send(makeMessages.remove(inputValue));
-					}
-				}
-			}), getState);
-
-			return outputCap;
-		}
-	},
-	invert : {
-		type : "Assoc a (Set b) -> Assoc b (Set a)",
-		func : function (sc) {
-			var outputCap = makeStartCap("Assoc");
-			var ECs = makeOhash();
-			var OCs = makeOhash();
-			var cache = makeOhash();
-			var outputBag = makeOhash();
-
-			makeEndCap(sc, assocProcessor({
-				setAssoc : function (inputKey, inputValueSC) {
-					var innerCache = makeOhash();
-					cache.set(inputKey, innerCache);
-					var prevEC = ECs.get(inputKey);
-					if (prevEC) prevEC.deactivate();
-				
-					ECs.set(inputKey, makeEndCap(inputValueSC, setProcessor({
-						set : function (setValue) {
-							if(!innerCache.get(setValue)) {
-								innerCache.set(setValue, setValue);
-								//send (setValue, inputKey) to the output carefully
-								var innerOutcap = OCs.get(setValue);
-								if(!innerOutcap) {
-									innerOutcap = makeStartCap("Set");
-									OCs.set(setValue, innerOutcap);
-									outputCap.send([makeMessage.setAssoc(setValue, innerOutcap)]);
-								}
-								innerOutcap.send([makeMessage.set(inputKey)]);
-								var bagCount = outputBag.get(setValue);
-								if (!bagCount) {
-									bagCount = 0;
-								}
-								outputBag.set(setValue, bagCount+1);
-							}
-						},
-						remove : function (removeValue) {
-							var innerOutcap = OCs.get(removeValue);
-							innerOutcap.send([makeMessage.remove(inputKey)]);
-							var bagCount = outputBag.get(removeValue);
-							if (bagCount <= 1) {
-								outputCap.send([makeMessage.remove(removeValue)]);
-								OCs.remove(removeValue);
-							}
-							outputBag.set(removeValue, bagCount-1);
-						}
-					})));
-				},
-				remove : function (removeValue) {
-					var innerCache = cache.get(removeValue);
-					innerCache.forEach(function(setValue) {
-						var innerOutcap = OCs.get(setValue);
-						innerOutcap.send([makeMessage.remove(removeValue)]);
-						var bagCount = outputBag.get(setValue);
-						if (bagCount <= 1) {
-							outputCap.send([makeMessage.remove(setValue)]);
-							OCs.remove(setValue);
-						}
-						outputBag.set(setValue, bagCount-1);
-					});
-					cache.remove(removeValue);
-					//need to clean up the innerEc associated with this input
-					ECs.get(removeValue).deactivate();
-					ECs.remove(removeValue);
-				}
-			}));
-
-			return outputCap;
-		}
-	},
-	mapAssocValue : {
-		type : "type: (a -> b) -> Assoc c a -> Assoc c b",
-		func : function (f, sc) {
-			var outputCap = makeStartCap("Assoc");
-			makeEndCap(sc, assocProcessor({
-				setAssoc : function (inputKey, inputValue) {
-					var result = applyFunc(f, inputValue);
-					outputCap.send([makeMessage.setAssoc(inputKey, result)]);
-				},
-				remove : function (removeKey) {
-					outputCap.send([makeMessage.remove(removeKey)]);
-				}
-			}));
-			return outputCap;
-		}
-	},
-	getKey : {
-		type : "a -> Assoc a b -> Unit b",
-		func : function (key, sc) {
-			var outputCap = makeStartCap("Unit");
-			makeEndCap(sc, assocProcessor({
-				setAssoc : function (inputKey, inputValue) {
-					if (inputKey == key) {
-						outputCap.send([makeMessage.set(inputValue)]);
-					}
-				},
-				remove : function (removeKey) {
-					if (removeKey == key) {
-						outputCap.send([makeMessage.set(undefined)]);
-					}
-				}
-			}));
-			return outputCap;
-		}
-	},
-	keys : {
-		type : "Assoc a b -> Set a",
-		func : function (sc) {
-			var outputCap = makeStartCap("Set");
-			makeEndCap(sc, assocProcessor({
-				setAssoc : function (inputKey, inputValue) {
-					outputCap.send([makeMessage.set(inputKey)]);
-				},
-				remove : function (removeKey) {
-					outputCap.send([makeMessage.remove(removeKey)]);
-				}
-			}));
-			return outputCap;
-		}
-	}
-};
+	};
+}();
 
 
 
