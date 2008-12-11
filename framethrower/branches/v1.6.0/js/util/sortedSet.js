@@ -62,9 +62,7 @@ function makeSortedSet(compFunc) {
 		getKeyByIndex: function (ind) {
 			return sorted[ind].k;
 		},
-		length: function () {
-			return sorted.length;
-		},
+		length: sorted.length,
 		forEach: function (f) {
 			forEach(sorted, function (entry) {
 				f(entry.v, entry.k);

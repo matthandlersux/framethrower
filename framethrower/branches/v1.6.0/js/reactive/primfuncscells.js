@@ -418,7 +418,7 @@ var primFuncs = function () {
 		// ============================================================================
 		// Range functions
 		// ============================================================================
-		getRangeByKey : {
+		rangeByKey : {
 			type : "Unit a -> Unit a -> Set a -> Set a",
 			func : function (startCell, endCell, cell) {
 				var outputCell = makeCell();
@@ -454,9 +454,10 @@ var primFuncs = function () {
 				cell.injectFunc(function (val) {
 					return outputCell.addLine(val);
 				});
+				return outputCell;
 			}
 		},
-		getRangeByPos : {
+		rangeByPos : {
 			type : "Unit Number -> Unit Number -> Set a -> Set a",
 			func : function (startCell, endCell, cell) {
 				var outputCell = makeCell();
@@ -492,6 +493,7 @@ var primFuncs = function () {
 				cell.injectFunc(function (val) {
 					return outputCell.addLine(val);
 				});
+				return outputCell;
 			}
 		}
 	};
