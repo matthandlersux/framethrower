@@ -335,7 +335,7 @@ var primFuncs = function () {
 			type : "Set (Set a) -> Set a",
 			func : function (cell) {
 				var outputCell = makeCell();
-			
+
 				cell.injectFunc(function (innerCell) {
 					return innerCell.injectFunc(function (val) {
 						return outputCell.addLine(val);
@@ -413,6 +413,85 @@ var primFuncs = function () {
 				});
 
 				return outputCell;
+			}
+		},
+		// ============================================================================
+		// Range functions
+		// ============================================================================
+		getRangeByKey : {
+			type : "Unit a -> Unit a -> Set a -> Set a",
+			func : function (startCell, endCell, cell) {
+				var outputCell = makeCell();
+				var start;
+				var end;
+				
+				var updateRange = function () {
+					if (start != undefined && end != undefined) {
+						cell.setKeyRange(start, end);
+					} else if (start == undefined && end == undefined) {
+						cell.clearRange();
+					}
+				};
+				
+				startCell.injectFunc(function(val) {
+					start = val;
+					updateRange();
+					return function () {
+						start = undefined;
+						updateRange();
+					};
+				});
+				
+				endCell.injectFunc(function(val) {
+					end = val;
+					updateRange();
+					return function () {
+						end = undefined;
+						updateRange();
+					};
+				});
+				
+				cell.injectFunc(function (val) {
+					return outputCell.addLine(val);
+				});
+			}
+		},
+		getRangeByPos : {
+			type : "Unit Number -> Unit Number -> Set a -> Set a",
+			func : function (startCell, endCell, cell) {
+				var outputCell = makeCell();
+				var start;
+				var end;
+				
+				var updateRange = function () {
+					if (start != undefined && end != undefined) {
+						cell.setPosRange(start, end);
+					} else if (start == undefined && end == undefined) {
+						cell.clearRange();
+					}
+				};
+				
+				startCell.injectFunc(function(val) {
+					start = val;
+					updateRange();
+					return function () {
+						start = undefined;
+						updateRange();
+					};
+				});
+				
+				endCell.injectFunc(function(val) {
+					end = val;
+					updateRange();
+					return function () {
+						end = undefined;
+						updateRange();
+					};
+				});
+				
+				cell.injectFunc(function (val) {
+					return outputCell.addLine(val);
+				});
 			}
 		}
 	};

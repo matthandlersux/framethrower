@@ -37,7 +37,7 @@ function makeSortedSet(compFunc) {
 		get: function (key) {
 			var l = lookup(0, sorted.length, key);
 			if (l[0] === true) {
-				return sorted[l[1]].value;
+				return sorted[l[1]].v;
 			} else {
 				return undefined;
 			}
