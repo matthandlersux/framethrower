@@ -1,6 +1,7 @@
 function makeBaseCell (toKey) {
 	var cell = {kind: "startCap"};
 	var funcs = makeObjectHash();
+	var onRemoves = [];
 	var funcColor = 0; //counter for coloring injected functions
 
 	var onAdd = function (val) {
@@ -44,12 +45,21 @@ function makeBaseCell (toKey) {
 		};
 	};
 	
+	cell.addOnRemove = function (onRemove) {
+		onRemoves.push(onRemove);
+	};
+	
 	cell.removeFunc = function (id) {
 		var fun = funcs.get(id);
 		funcs.remove(id);
 		dots.forRange(function (dot, key) {
 			removeLineResponse(key, fun, id);
 		});
+		if (funcs.isEmpty()) {
+			forEach(onRemoves, function(onRemove) {
+				onRemove();
+			});
+		}
 	};
 
 	cell.addLine = function (value) {

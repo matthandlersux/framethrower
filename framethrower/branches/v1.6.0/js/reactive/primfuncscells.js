@@ -3,12 +3,13 @@ var primFuncs = function () {
 	var bindUnitOrSetHelper = function (f, cell) {
 		var outputCell = makeCell();
 		
-		cell.injectFunc(function (val) {
+		var removeFunc = cell.injectFunc(function (val) {
 			var resultCell = applyFunc(f, val);
 			return resultCell.injectFunc(function (innerVal) {
 				return outputCell.addLine(innerVal);
 			});
 		});
+		outputCell.addOnRemove(removeFunc);
 		
 		return outputCell;
 	};
@@ -29,9 +30,10 @@ var primFuncs = function () {
 			type : "Unit a -> Set a",
 			func : function (cell) {
 				var outputCell = makeCell();
-				cell.injectFunc(function (val) {
+				var removeFunc = cell.injectFunc(function (val) {
 					return outputCell.addLine(val);
 				});
+				outputCell.addOnRemove(removeFunc);
 				return outputCell;
 			}
 		},
@@ -39,9 +41,10 @@ var primFuncs = function () {
 			type : "a -> Unit b -> Assoc a b",
 			func : function (key, cell) {
 				var outputCell = makeCellAssocInput();
-				cell.injectFunc(function (val) {
+				var removeFunc = cell.injectFunc(function (val) {
 					return outputCell.addLine({key:key, val:val});
 				});
+				outputCell.addOnRemove(removeFunc);
 				return outputCell;
 			}
 		},
@@ -58,12 +61,13 @@ var primFuncs = function () {
 			func : function (f, cell) {
 				var outputCell = makeCellAssocInput();
 
-				cell.injectFunc(function (keyVal) {
+				var removeFunc = cell.injectFunc(function (keyVal) {
 					var resultCell = applyFunc(applyFunc(f, keyVal.key), keyVal.val);
 					return resultCell.injectFunc(function (innerKeyVal) {
 						return outputCell.addLine(innerKeyVal);
 					});
 				});
+				outputCell.addOnRemove(removeFunc);
 				
 				return outputCell;
 			}
@@ -76,12 +80,14 @@ var primFuncs = function () {
 			func : function (cell1, cell2) {
 				var outputCell = makeCell();
 
-				cell1.injectFunc(function (val) {
+				var removeFunc1 = cell1.injectFunc(function (val) {
 					return outputCell.addLine(val);
 				});
-				cell2.injectFunc(function (val) {
+				var removeFunc2 = cell2.injectFunc(function (val) {
 					return outputCell.addLine(val);
 				});	
+				outputCell.addOnRemove(removeFunc1);
+				outputCell.addOnRemove(removeFunc2);
 
 				return outputCell;
 			}
@@ -108,7 +114,7 @@ var primFuncs = function () {
 					});
 				};
 
-				cell1.injectFunc(function (value) {
+				var removeFunc1 = cell1.injectFunc(function (value) {
 					var count = getOrMake(value);
 					add(count, value);
 					return function () {
@@ -116,13 +122,15 @@ var primFuncs = function () {
 					};
 				});
 
-				cell2.injectFunc(function (value) {
+				var removeFunc2 = cell2.injectFunc(function (value) {
 					var count = getOrMake(value);
 					sub(count);
 					return function () {
 						add(count, value);
 					};
 				});
+				outputCell.addOnRemove(removeFunc1);
+				outputCell.addOnRemove(removeFunc2);
 
 				return outputCell;
 			}
@@ -215,9 +223,10 @@ var primFuncs = function () {
 			type : "Unit (a -> b) -> a -> Unit b",
 			func : function (cell, input) {
 				var outputCell = makeCell();
-				cell.injectFunc(function (val) {
+				var removeFunc = cell.injectFunc(function (val) {
 					return outputCell.addLine(applyFunc(val, input));
 				});
+				outputCell.addOnRemove(removeFunc);
 				return outputCell;
 			}
 		},
@@ -238,7 +247,7 @@ var primFuncs = function () {
 				var count = 0;
 				outputCell.addLine(false);
 
-				cell.injectFunc(function (val) {
+				var removeFunc = cell.injectFunc(function (val) {
 					var resultCell = applyFunc(f, val);
 					return resultCell.injectFunc(function (innerVal) {
 						if (innerVal) {
@@ -257,6 +266,7 @@ var primFuncs = function () {
 						}
 					});
 				});				
+				outputCell.addOnRemove(removeFunc);
 				
 				return outputCell;
 			}
@@ -268,7 +278,7 @@ var primFuncs = function () {
 				var cache = init;
 				outputCell.addLine(cache);
 				
-				cell.injectFunc(function (val) {
+				var removeFunc = cell.injectFunc(function (val) {
 					outputCell.removeLine(cache);
 					cache = applyFunc(applyFunc(f, val), cache);
 					outputCell.addLine(cache);
@@ -278,6 +288,7 @@ var primFuncs = function () {
 						outputCell.addLine(cache);	
 					};
 				});
+				outputCell.addOnRemove(removeFunc);
 
 				return outputCell;
 			}
@@ -288,12 +299,13 @@ var primFuncs = function () {
 				var outputCell = makeCell();
 
 				outputCell.addLine(init);		
-				outputCell.injectFunc(function (val) {
+				var removeFunc = outputCell.injectFunc(function (val) {
 					var resultCell = applyFunc(f, val);
 					resultCell.injectFunc(function (val) {
 						return outputCell.addLine(val);
 					});
 				});
+				outputCell.addOnRemove(removeFunc);
 				
 				return outputCell;
 			}
@@ -304,12 +316,13 @@ var primFuncs = function () {
 				var outputCell = makeCellAssocInput();
 				
 				outputCell.addLine({key:init, val:0});
-				outputCell.injectFunc(function (keyVal) {
+				var removeFunc = outputCell.injectFunc(function (keyVal) {
 					var resultCell = applyFunc(f, keyVal.key);
 					resultCell.injectFunc(function (val) {
 						return outputCell.addLine({key:val, val:keyVal.val+1});
 					});
 				});
+				outputCell.addOnRemove(removeFunc);
 				
 				return outputCell;
 			}
@@ -322,10 +335,11 @@ var primFuncs = function () {
 			func : function (f, cell) {
 				var outputCell = makeCellAssocInput();
 			
-				cell.injectFunc(function (val) {
+				var removeFunc = cell.injectFunc(function (val) {
 					var result = applyFunc(f, val);
 					return outputCell.addLine({key:val, val:result});
 				});
+				outputCell.addOnRemove(removeFunc);
 			
 				return outputCell;
 			}
@@ -336,11 +350,13 @@ var primFuncs = function () {
 			func : function (cell) {
 				var outputCell = makeCell();
 
-				cell.injectFunc(function (innerCell) {
+				var removeFunc = cell.injectFunc(function (innerCell) {
 					return innerCell.injectFunc(function (val) {
 						return outputCell.addLine(val);
 					});
 				});
+				outputCell.addOnRemove(removeFunc);
+				
 				return outputCell;
 			}
 		},
@@ -352,7 +368,7 @@ var primFuncs = function () {
 				
 				var bHashCell = makeCell();
 
-				bHashCell.injectFunc(function (bValue) {
+				var removeFunc1 = bHashCell.injectFunc(function (bValue) {
 					var newCell = makeCell();
 					bHash.set(bValue, newCell);
 					var onRemove = outputCell.addLine({key:bValue, val:newCell});
@@ -362,7 +378,7 @@ var primFuncs = function () {
 					};
 				});
 
-				cell.injectFunc(function (keyVal) {
+				var removeFunc2 = cell.injectFunc(function (keyVal) {
 					return keyVal.val.injectFunc(function (innerVal) {
 						var onRemove1 = bHashCell.addLine(innerVal);
 						var onRemove2 = bHash.get(innerVal).addLine(keyVal.key);
@@ -373,6 +389,9 @@ var primFuncs = function () {
 					});
 				});
 
+				outputCell.addOnRemove(removeFunc1);
+				outputCell.addOnRemove(removeFunc2);
+
 				return outputCell;
 			}
 		},
@@ -381,10 +400,11 @@ var primFuncs = function () {
 			func : function (f, cell) {
 				var outputCell = makeCellAssocInput();
 
-				cell.injectFunc(function (keyVal) {
+				var removeFunc = cell.injectFunc(function (keyVal) {
 					var result = applyFunc(f, keyVal.val);
 					return outputCell.addLine({key:keyVal.key, val:result});
 				});
+				outputCell.addOnRemove(removeFunc);
 			
 				return outputCell;
 			}
@@ -394,11 +414,12 @@ var primFuncs = function () {
 			func : function (key, cell) {
 				var outputCell = makeCell();
 			
-				cell.injectFunc(function (keyVal) {
+				var removeFunc = cell.injectFunc(function (keyVal) {
 					if (keyVal.key == key) {
 						return outputCell.addLine(keyVal.val);
 					}
 				});
+				outputCell.addOnRemove(removeFunc);
 			
 				return outputCell;
 			}
@@ -408,9 +429,10 @@ var primFuncs = function () {
 			func : function (cell) {
 				var outputCell = makeCell();
 			
-				cell.injectFunc(function (keyVal) {
+				var removeFunc = cell.injectFunc(function (keyVal) {
 					return outputCell.addLine(keyVal.key);
 				});
+				outputCell.addOnRemove(removeFunc);
 
 				return outputCell;
 			}
@@ -433,7 +455,7 @@ var primFuncs = function () {
 					}
 				};
 				
-				startCell.injectFunc(function(val) {
+				var removeFunc1 = startCell.injectFunc(function(val) {
 					start = val;
 					updateRange();
 					return function () {
@@ -442,7 +464,7 @@ var primFuncs = function () {
 					};
 				});
 				
-				endCell.injectFunc(function(val) {
+				var removeFunc2 = endCell.injectFunc(function(val) {
 					end = val;
 					updateRange();
 					return function () {
@@ -451,9 +473,13 @@ var primFuncs = function () {
 					};
 				});
 				
-				cell.injectFunc(function (val) {
+				var removeFunc3 = cell.injectFunc(function (val) {
 					return outputCell.addLine(val);
 				});
+				outputCell.addOnRemove(removeFunc1);
+				outputCell.addOnRemove(removeFunc2);
+				outputCell.addOnRemove(removeFunc3);
+				
 				return outputCell;
 			}
 		},
@@ -472,7 +498,7 @@ var primFuncs = function () {
 					}
 				};
 				
-				startCell.injectFunc(function(val) {
+				var removeFunc1 = startCell.injectFunc(function(val) {
 					start = val;
 					updateRange();
 					return function () {
@@ -481,7 +507,7 @@ var primFuncs = function () {
 					};
 				});
 				
-				endCell.injectFunc(function(val) {
+				var removeFunc2 = endCell.injectFunc(function(val) {
 					end = val;
 					updateRange();
 					return function () {
@@ -490,9 +516,13 @@ var primFuncs = function () {
 					};
 				});
 				
-				cell.injectFunc(function (val) {
+				var removeFunc3 = cell.injectFunc(function (val) {
 					return outputCell.addLine(val);
 				});
+				outputCell.addOnRemove(removeFunc);
+				outputCell.addOnRemove(removeFunc);
+				outputCell.addOnRemove(removeFunc);
+				
 				return outputCell;
 			}
 		}
