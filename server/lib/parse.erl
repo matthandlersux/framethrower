@@ -5,75 +5,128 @@
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define( test(X), X ++ "test" ).
 
+%% ====================================================
+%% API
+%% ====================================================
+
+
 ast(String) ->
 	case parse(lambda(), String) of
 		[{Result, []}] -> Result;
 		[{Result, Leftovers}] -> io:format("unused input \"~s\"~n~nresult: ~p~n", [Leftovers, Result]);
 		[] -> io:format("invalid input ~n", [])
 	end.
+	
+tast(String) ->
+	case parse(control(), String) of
+		[{Result, []}] -> Result;
+		[{Result, Leftovers}] -> io:format("unused input \"~s\"~n~nresult: ~p~n", [Leftovers, Result]);
+		[] -> io:format("invalid input ~n", [])
+	end.
 
-% parse(String) ->
-% 	{ok, RE} = regexp:parse( "(\\s+|\\(|\\)|->|\")"),
-% 	regexpSplit(String, RE).
-% 	
-% 
-% parse(String) ->
-% 	parse([], String).
-% 
-% parse(Left, []) ->
-% 	Left;
-% parse(Left, [$-,$>,$ ,Char|T]) ->
-% 	if
-% 		Char =/= $  -> parse(lambda, Left, [Char] ++ T);
-% 		true -> parse(Left, [$-,$>|T])
-% 	end;
-% parse(Left, [$(, $ |T]) ->
-% 	parse(Left, [$(|T]);
-% parse(Left, [$(|T]) ->
-% 	parse(parenth, Left, T);
-% parse(Left, [$), $ |T]) ->
-% 	parse(Left, [$)|T]);
-% parse(Left, [$)|T]) ->
-% 	parse(apply, Left, T);
-% parse(Left, [$ ,Char|T]) ->
-% 	if
-% 		Char =/= $  andalso Char =/= $- andalso Char =/= $> -> parse(apply, Left, [Char] ++ T);
-% 		true -> parse(Left, [Char] ++ T)
-% 	end;
-% parse(Left, [Char1, Char2|T]) ->
-% 	if
-% 		Char2 =:= $  -> parse(Left ++ [Char1], T);
-% 		true -> parse(Left ++ [Char1, Char2], T)
-% 	end.
-% 	
-% parse(lambda, Left, Right) ->
-% 	"{ cons, lambda, " ++ parse(Left) ++ ", " ++ parse(Right) ++ " }";
-% parse(apply, Left, Right) ->
-% 	"{ cons, apply, " ++ parse(Left) ++ ", " ++ parse(Right) ++ " }";
-% parse(parenth, Left, Right) ->
-% 	Left ++ parse(Right).
+%% ====================================================
+%% our context free grammar to parse
+%% ====================================================
 
-% parse(String) ->
-% 	parse([], String).
+
+lambda() ->
+	?do(T, apply(),
+		choice(
+			?do( _, symbol("->"),
+			?do( E, lambda(),
+			return({cons, lambda, T, E}))), %or
+			return(T)
+		)
+	).
+
+% apply() ->
+% 	?do(Left, apply1(),
+% 		choice(
+% 			?do(_, space(),
+% 			?do(Right, choice([identifier(), literal(), natural()]),
+% 			return({cons, apply, Left, Right}))), %or
+% 			return(Left)
+% 		)
+% 	).	
 % 
-% parse(Left, []) -> Left;
-% parse(Left, [$(|T]) ->
-% 	{Inner, Outer} = parseP(trim(T)),
-% 	Left ++ [{Inner}] ++ parse(trim(Outer));
-% parse(Left, [Char|T]) ->
-% 	parse(Left ++ [Char], T).
-% 
-% parseP(String) ->
-% 	parseP([], String).
-% 
-% parseP(Left, []) -> {Left, []};
-% parseP(Left, [$)|T]) ->
-% 	{Left, trim(T)};
-% parseP(Left, [$(|T]) ->
-% 	{Inner, Outer} = parseP(trim(T)),
-% 	Left ++ [{Inner}] ++ parseP(trim(Outer));
-% parseP(Left, [Char|T]) ->
-% 	parseP(Left ++ [Char], T).
+% apply1() ->
+% 	?do(Left, element(),
+% 		choice(
+% 			?do(_, space(),
+% 			?do(Right, apply(),
+% 			return({cons, apply, Left, Right}))), %or
+% 			return(Left)
+% 		)
+% 	).
+
+apply() ->
+	choice(
+		?do(LeftMost, apply1(),
+		choice(
+			nest( LeftMost, choice([element(), literal(), natural()]), fun(X, Acc) -> {cons, apply, Acc, X} end), %or
+			return(LeftMost)
+		)), %or
+		element()
+	).
+	
+apply1() ->
+	?do(Left, element(),
+	?do(Right, element(),
+	return({cons, apply, Left, Right}))).
+
+element() ->
+	choice(
+		?do(_, symbol("("),
+		?do(E, lambda(),
+		?do(_, symbol(")"),
+		return(E)))), %or
+		identifier()
+	).
+	
+%% ====================================================
+%% type parser CFG
+%% ====================================================
+
+	
+control() ->
+	?do(T, elem(),
+		choice(
+			?do( _, symbol("->"),
+			?do( E, control(),
+			return({type, typeFun, {T, E}}))), %or
+			return(T)
+		)
+	).
+
+elem() ->
+	choice(
+		?do( LeftMost, elem1(),
+			choice(
+				nest(LeftMost, term(), fun(X,Acc) -> {type, typeApply, {Acc, X}} end), %or
+				return( LeftMost )
+			)
+		), %or
+		term()
+	).
+
+elem1() ->
+	?do(Left, term(),
+	?do(Right, term(),
+	return({type, typeApply, {Left, Right}}))).
+
+term() ->
+	choice([
+		?do(_, symbol("("),
+		?do(E, control(),
+		?do(_, symbol(")"),
+		return(E)))), %or
+		?do(Type, type(), return({type, typeName, list_to_atom(Type)})), %or
+		?do(TypeVar, typeVar(), return({type, typeVar, TypeVar}) )
+	]).
+
+%% ====================================================
+%% Parser
+%% ====================================================
 
 %% 
 %% Ast :: List(Tuple(X, Y)) | List()
@@ -143,18 +196,32 @@ choice([]) -> failure();
 choice([H|T]) ->
 	choice(H, choice(T)).
 
+
+	
+nest(LeftMost, Parser, NestFun) ->
+	fun(String) ->
+		case nestList(Parser, String) of
+			[] -> [];
+			[{ElemList, Tail}] -> [{lists:foldl(NestFun, LeftMost, ElemList), Tail}]
+		end			
+	end.
+	
+nestList(Parser, String) ->
+	nestList(Parser, [], String).
+	
+nestList(Parser, Acc, String) ->
+		case parse(Parser, String) of
+			[] -> [{Acc, String}];
+			[{H, Tail}] -> nestList(Parser, Acc ++ [H], Tail)
+		end.
+
 %% 
 %% sat (Char -> Bool) -> (¬ Y -> Ast)
 %% 
 
+% do(X,Y,Z) says Parse a Y off the string and then take Z and make a parser out of it that includes Y in some way
+
 sat(Predicate) ->
-	% then(item(), fun(X) -> 
-	% 	case Predicate(X) of
-	% 		true -> return(X);
-	% 		false -> failure()
-	% 	end
-	% end
-	% ).
 	?do( X, item(),
 		case Predicate(X) of
 			true -> return(X);
@@ -177,12 +244,6 @@ many(Parser) ->
 	choice( many1(Parser), return([]) ).
 
 many1(Parser) ->
-	% then(Parser, fun(V) ->
-	% 		% ?trace(?test(V)),
-	% 		then( many(Parser), fun(VS) -> return([V|VS]) end
-	% 		)
-	% 	end 
-	% ).
 	?do(V, Parser, 
 	?do(VS, many(Parser), 
 	return([V|VS]))).
@@ -192,24 +253,17 @@ token(Parser) ->
 	?do(V, Parser,
 	?do(_, space(),
 	return(V)))).
-	% then( space(), fun(_) ->
-	% 		then( Parser, fun(V) ->
-	% 				then( space(), fun(_) ->
-	% 						return(V)
-	% 					end)
-	% 			end)
-	% 	end).
 		
-p() ->
-	then( symbol("("), fun(_) ->
-			then( natural(), fun(N) ->
-					then( many( then( symbol(","), fun(_) -> natural() end )), fun(NS) ->
-						then( symbol(")"), fun(_) ->
-								return([N|NS])
-							end)
-					end)
-			end)
-	end).
+% p() ->
+% 	then( symbol("("), fun(_) ->
+% 			then( natural(), fun(N) ->
+% 					then( many( then( symbol(","), fun(_) -> natural() end )), fun(NS) ->
+% 						then( symbol(")"), fun(_) ->
+% 								return([N|NS])
+% 							end)
+% 					end)
+% 			end)
+% 	end).
 
 
 
@@ -270,6 +324,17 @@ ident() ->
 	?do(XS, many( alphaNum() ),
 	return([X|XS]))).
 	
+typ() ->
+	?do(X, upper(),
+	?do(XS, many( alphaNum() ),
+	return([X|XS]))).
+	
+typeW() ->
+	?do(X, upper(),
+	?do(Z, many( alphaNum() ),
+	?do(Y, typeVar(),
+	return([X|Y])))).
+	
 nat() ->
 	then( many1( digit() ), fun(XS) ->
 				return(list_to_integer(XS))
@@ -282,6 +347,15 @@ space() ->
 identifier() ->
 	token( ident() ).
 
+type() ->
+	token( typ() ).
+	
+typeVar() ->
+	token( ident() ).
+	
+typeWithVar() ->
+	token( typeW() ).
+
 natural() ->
 	token( nat() ).
 
@@ -292,68 +366,8 @@ literal() ->
 	token( lit() ).
 
 %% ====================================================
-%% our parser
+%% Char -> Bool functions
 %% ====================================================
-
-
-lambda() ->
-	?do(T, apply(),
-		choice(
-			?do( _, symbol("->"),
-			?do( E, lambda(),
-			return({cons, lambda, T, E}))), %or
-			return(T)
-		)
-	).
-
-apply() ->
-	?do(Left, apply1(),
-		choice(
-			?do(_, space(),
-			?do(Right, choice([identifier(), literal(), natural()]),
-			return({cons, apply, Left, Right}))), %or
-			return(Left)
-		)
-	).	
-
-apply1() ->
-	?do(Left, element(),
-		choice(
-			?do(_, space(),
-			?do(Right, apply(),
-			return({cons, apply, Left, Right}))), %or
-			return(Left)
-		)
-	).
-
-element() ->
-	choice(
-		?do(_, symbol("("),
-		?do(E, lambda(),
-		?do(_, symbol(")"),
-		return(E)))), %or
-		identifier()
-	).
-
-% 	
-% apply() ->
-% 	?do(T, element(),
-% 		choice(
-% 			?do( _, space(),
-% 			?do( E, apply(),
-% 			return({cons, apply, T, E}))), %or
-% 			return(T)
-% 		)
-% 	).
-% 	
-% element() ->
-% 	choice(
-% 		?do(_, symbol("("),
-% 		?do(E, lambda(),
-% 		?do(_, symbol(")"),
-% 		return(E)))), %or
-% 		identifier()
-% 	).
 
 isDigit(Char) when Char >= $0, Char =< $9 -> true;
 isDigit(_) -> false.
