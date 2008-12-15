@@ -5,7 +5,7 @@
 	<f:param name="parentSituation" />
 	<xsl:template>
 		<f:transaction>
-			<f:perform url="helper/makeobject.xml" prefix="obj">
+			<f:perform url="helper/makeObject.xml" prefix="obj">
 				<f:with-param name="type"><f:string value="kernel.situation" /></f:with-param>
 				<f:with-param name="parentSituation"><xsl:copy-of select="$parentSituation" /></f:with-param>
 			</f:perform>

@@ -43,6 +43,10 @@ function loadXMLNow(url) {
 	} catch (e) {
 		console.log("loadXMLNow failed: " + url);
 	}
+	
+	if (!req.responseXML) {
+		console.log("loadXMLNow returned no XML: " + url);
+	}
 
     return req.responseXML.firstChild;
 }

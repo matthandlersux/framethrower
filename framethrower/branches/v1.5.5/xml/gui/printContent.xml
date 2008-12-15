@@ -47,19 +47,27 @@
 					</xsl:otherwise>
 				</xsl:choose>
 				
-				<xsl:if test="$content/@special">
-					<xsl:variable name="icon">
-						<xsl:choose>
-							<xsl:when test="$content/@special=1">video_clip_icon</xsl:when>
-							<xsl:otherwise>map_icon</xsl:otherwise>
-						</xsl:choose>
-					</xsl:variable>
-					<html:span style="margin-left: 4px; height:17px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$icon}&amp;width=17&amp;height=17); background-repeat: no-repeat; padding-left:17px; -moz-border-radius: 4px;">
-						<f:binding url="bindings/showSpecial.xml">
-							<f:with-param name="special"><f:number value="{$content/@special}" /></f:with-param>
-						</f:binding>
-					</html:span>
-				</xsl:if>
+				<xsl:choose>
+					<xsl:when test="$content/@special=3">
+						<html:span onclick="javascript:addVid()" style="margin-left: 4px; height:17px; background-image: url(http://www.eversplosion.com/imdb/image.php?image=video_clip_icon&amp;width=17&amp;height=17); background-repeat: no-repeat; padding-left:17px; -moz-border-radius: 4px;">
+
+						</html:span>
+					</xsl:when>
+					<xsl:when test="$content/@special">
+						<xsl:variable name="icon">
+							<xsl:choose>
+								<xsl:when test="$content/@special=1">video_clip_icon</xsl:when>
+								<xsl:otherwise>map_icon</xsl:otherwise>
+							</xsl:choose>
+						</xsl:variable>
+						<html:span style="margin-left: 4px; height:17px; background-image: url(http://www.eversplosion.com/imdb/image.php?image={$icon}&amp;width=17&amp;height=17); background-repeat: no-repeat; padding-left:17px; -moz-border-radius: 4px;">
+							<f:binding url="bindings/showSpecial.xml">
+								<f:with-param name="special"><f:number value="{$content/@special}" /></f:with-param>
+							</f:binding>
+						</html:span>
+					</xsl:when>
+					<xsl:otherwise></xsl:otherwise>
+				</xsl:choose>
 			</xsl:variable>
 		
 			<xsl:choose>

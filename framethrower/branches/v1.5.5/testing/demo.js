@@ -64,3 +64,26 @@ processAllThunks(mainAmbient, document.getElementById("html_mainscreen"), {
 //var test2 = deriveLimit(test);
 
 //var ec = makeSimpleEndCap(mainAmbient, endCaps.log.list("test output"), test2);
+
+
+
+function addVid() {
+	// Video Timeline
+	var embedVideo = layout.embedVideo.make();
+
+	var singin = layout.video.make();
+	singin.control.src.set("file:///Users/tschachman/Desktop/t2trans.mp4");
+	singin.control.aspect.set(2.375);
+	singin.control.duration.set(8188);
+
+	var videoTimeline = layout.videoTimeline.make();
+	videoTimeline.control.embedVideo.set(embedVideo);
+
+	videoTimeline.control.video.set(singin);
+
+	videoTimeline.control.zoomWidth.set(15000);
+	
+	panelLayer.control.videoTimelines.append(videoTimeline);
+	
+	panelLayer.control.videoTimelines.PACKETCLOSE();
+}

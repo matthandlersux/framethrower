@@ -63,6 +63,18 @@
 				</f:relationcontent>
 			</content>
 		</relation>
+		<relation name="mother">
+			<content>
+				<f:relationcontent>
+					<f:name value="mother of" />
+					<f:pseudo>
+						<f:role role="mother"/>
+						<f:verb value="mother of"/>
+						<f:role role="son"/>
+					</f:pseudo>
+				</f:relationcontent>
+			</content>
+		</relation>
 		
 		<individual name="arnold" type="personType">
 			<content><information name="Arnold Schwartzenegger" thumbnail="arnold_real" /></content>
@@ -136,6 +148,10 @@
 				</individual>
 			</situation>
 			
+			<infon relation="mother">
+				<arc role="mother" arg="sc" />
+				<arc role="son" arg="jc" />
+			</infon>
 			<infon relation="dreams">
 				<arc role="dreamer" arg="sc" />
 				<arc role="dream" arg="apocalypse" />
@@ -156,127 +172,6 @@
 		</infon>
 		
 		
-		
-		<!-- <infon relation="performs">
-					<arc role="performer" arg="people.0000843"/>
-					<arc role="performee" arg="characters.Mrs. Robinson"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0000163"/>
-					<arc role="performee" arg="characters.Ben Braddock"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0001684"/>
-					<arc role="performee" arg="characters.Elaine Robinson"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0200122"/>
-					<arc role="performee" arg="characters.Mr. Braddock"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0358069"/>
-					<arc role="performee" arg="characters.Mr. Robinson"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0933361"/>
-					<arc role="performee" arg="characters.Mrs. Braddock"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0377750"/>
-					<arc role="performee" arg="characters.Room Clerk"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0043011"/>
-					<arc role="performee" arg="characters.Carl Smith"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0111754"/>
-					<arc role="performee" arg="characters.Mr. McGuire"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0001205"/>
-					<arc role="performee" arg="characters.Mr. McCleery"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0315933"/>
-					<arc role="performee" arg="characters.Mrs. Singleman"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0521079"/>
-					<arc role="performee" arg="characters.Miss DeWitte"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0301841"/>
-					<arc role="performee" arg="characters.Woman on Bus"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0234975"/>
-					<arc role="performee" arg="characters.Bellhop in Hotel Lobby (uncredited)"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0000377"/>
-					<arc role="performee" arg="characters.Boarding House Resident (uncredited)"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0268286"/>
-					<arc role="performee" arg="characters.Bellhop in Hotel Lobby (uncredited)"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0292116"/>
-					<arc role="performee" arg="characters.Second Lady (uncredited)"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0323304"/>
-					<arc role="performee" arg="characters.College student (uncredited)"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0390118"/>
-					<arc role="performee" arg="characters.The Minister (uncredited)"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0390418"/>
-					<arc role="performee" arg="characters.Mr. Singleman (uncredited)"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0588771"/>
-					<arc role="performee" arg="characters.Night Club Stripper (uncredited)"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0614101"/>
-					<arc role="performee" arg="characters.Shaving Student (uncredited)"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0685736"/>
-					<arc role="performee" arg="characters.Gas Station Attendant (uncredited)"/>
-					
-				</infon>
-				<infon relation="performs">
-					<arc role="performer" arg="people.0001798"/>
-					<arc role="performee" arg="characters.Extra (uncredited)"/>
-					
-				</infon> -->
 		
 	</situation>
 	
