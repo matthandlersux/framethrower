@@ -12,7 +12,7 @@ function makeBaseCell (toKey) {
 
 	var onRemove = function(key) {
 		funcs.forEach(function (func, id) {
-			removeLineResponse(key, func, id);
+			removeLineResponse(key, id);
 		});
 	};
 
@@ -50,10 +50,9 @@ function makeBaseCell (toKey) {
 	};
 	
 	cell.removeFunc = function (id) {
-		var fun = funcs.get(id);
 		funcs.remove(id);
 		dots.forRange(function (dot, key) {
-			removeLineResponse(key, fun, id);
+			removeLineResponse(key, id);
 		});
 		if (funcs.isEmpty()) {
 			forEach(onRemoves, function(onRemove) {
@@ -98,7 +97,7 @@ function makeBaseCell (toKey) {
 		}
 	};
 	
-	var removeLineResponse = function (key, func, id) {
+	var removeLineResponse = function (key, id) {
 		var dot = dots.get(key);
 		if (dot != undefined) {
 			dot.lines.get(id)();
