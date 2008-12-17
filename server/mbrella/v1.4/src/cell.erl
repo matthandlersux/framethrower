@@ -23,7 +23,15 @@
 %% ====================================================================
 -record(cell, {funcs, dots, toKey, onRemoves=[], funcColor=0}).
 
+%% ====================================================
+%% Types
+%% ====================================================
 
+%% 
+%% Value:: Nat | Bool | String | Cell | {Value, Value}
+%% Cell:: Pid
+%% Pid:: < Nat . Nat . Nat >
+%% 
 
 %% ====================================================================
 %% External functions
@@ -39,14 +47,21 @@ makeCellAssocInput() ->
 	{ok, Pid} = gen_server:start_link(?MODULE, [ToKey], []),
 	Pid.
 
-injectFunc(Pid, Fun) ->
+injectFunc(CellPid, Fun) ->
 	gen_server:call(Pid, {injectFunc, Fun}).
 
-addLine(Pid, Value) ->
-	gen_server:call(Pid, {addLine, Value}).
+%% 
+%% addline:: CellPid -> Value -> CleanupFun
+%% 
 
-removeLine(Pid, Value) ->
-	gen_server:cast(Pid, {removeLine, Value}).
+addLine(CellPid, Value) ->
+	gen_server:call(CellPid, {addLine, Value}).
+
+%% 
+%% removeline:: CellPid -> Value -> 'ok'
+%% 
+removeLine(CellPid, Value) ->
+	gen_server:cast(CellPid, {removeLine, Value}).
 
 %% ====================================================================
 %% Server functions
