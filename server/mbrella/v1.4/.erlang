@@ -2,6 +2,7 @@ io:format("running mbrella v1.3~n~n", []).
 code:add_patha("./include/").
 code:add_patha("./src/").
 code:add_patha("./ebin/").
+code:add_patha("../../lib/").
 code:load_abs("../../lib/user_default").
 os:putenv("ERL_COMPILER_OPTIONS", "[report_errors,report_warnings,nowarn_unused_vars, {outdir, \"./ebin/\"}]").
 
