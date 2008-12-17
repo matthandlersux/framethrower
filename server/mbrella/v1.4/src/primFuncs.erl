@@ -1,4 +1,4 @@
--module (primfunctions).
+-module (primFuncs).
 -compile(export_all).
 
 -include ("../../../lib/ast.hrl").
@@ -6,15 +6,19 @@
 getPrimitives() ->
 	BindUnitOrSetHelper = fun(Fun, Cell) ->
 		OutputCell = cell:makeCell(),
-		Removefunction = cell:injectfunction(Cell, fun(Val) ->
-			ResultCell = cell:applyfunction(Fun, Val),
-			cell:injectfunction(ResultCell, fun(InnerVal) ->
+		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+			ResultCell = cell:applyFunc(Fun, Val),
+			cell:injectFunc(ResultCell, fun(InnerVal) ->
 				cell:addLine(OutputCell, InnerVal) end
 			)
 		end),
+		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end,
 	[
+	%% ============================================================================
+	%% Monadic Operators
+	%% ============================================================================
 	#exprFun{
 	name = "returnUnit",
 	type = "a -> Unit a",
@@ -28,8 +32,9 @@ getPrimitives() ->
 	type = "Unit a -> Set a",
 	function = fun(Cell) ->
 		OutputCell = cell:makeCell(),
-		Removefunction = cell:injectfunction(Cell, fun(Val) ->
+		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
 			cell:addLine(OutputCell, Val) end),
+		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
 	#exprFun{
@@ -37,8 +42,9 @@ getPrimitives() ->
 	type = "a -> Unit b -> Assoc a b",
 	function = fun(Key, Cell) ->
 		OutputCell = cell:makeCellAssocInput(),
-		Removefunction = cell:injectfunction(Cell, fun(Val) ->
+		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
 			cell:addLine(OutputCell, {Key, Val}) end),
+		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
 	#exprFun{
@@ -54,12 +60,48 @@ getPrimitives() ->
 	type = "(a -> b -> Assoc a c) -> Assoc a b -> Assoc a c",
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCellAssocInput(),
-		Removefunction = cell:injectfunction(Cell, fun({Key,Val}) ->
-			ResultCell = cell:applyfunction(cell:applyfunction(Fun, Key),Val),
-			cell:injectfunction(ResultCell, fun(InnerVal) ->
+		RemoveFunc = cell:injectFunc(Cell, fun({Key,Val}) ->
+			ResultCell = cell:applyFunc(cell:applyFunc(Fun, Key),Val),
+			cell:injectFunc(ResultCell, fun(InnerVal) ->
 				cell:addLine(OutputCell, InnerVal) end
 			)
 		end),
+		cell:addOnRemove(OutputCell, RemoveFunc),
+		OutputCell
+	end},
+	%% ============================================================================
+	%% Set utility functions
+	%% ============================================================================
+	#exprFun{
+	name = "union",
+	type = "Set a -> Set a -> Set a",
+	function = fun(Cell1, Cell2) ->
+		OutputCell = cell:makeCell(),
+		RemoveFunc1 = cell:injectFunc(Cell1, fun(Val) ->
+			cell:addLine(OutputCell, Val) end
+		),
+		RemoveFunc2 = cell:injectFunc(Cell1, fun(Val) ->
+			cell:addLine(OutputCell, Val) end
+		),
+		cell:addOnRemove(OutputCell, RemoveFunc1),
+		cell:addOnRemove(OutputCell, RemoveFunc2),
+		OutputCell
+	end},
+	#exprFun{
+	name = "setDifference",
+	type = "Set a -> Set a -> Set a",
+	function = fun(Cell1, Cell2) ->
+		OutputCell = cell:makeCell(),
+		RemoveFunc1 = cell:injectFunc(Cell1, fun(Val) ->
+			cell:addLine(OutputCell, Val) end
+		),
+		RemoveFunc2 = cell:injectFunc(Cell1, fun(Val) ->
+			cell:addLine(OutputCell, Val) end
+		),
+		
+		
+		cell:addOnRemove(OutputCell, RemoveFunc1),
+		cell:addOnRemove(OutputCell, RemoveFunc2),
 		OutputCell
 	end}
 	].
