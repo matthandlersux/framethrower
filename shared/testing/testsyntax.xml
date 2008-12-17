@@ -1,8 +1,234 @@
 <tests>
+	<test name='rangeByKeyTest1'>
+		<startcap name='startCell' type='unit number' />
+		<startcap name='endCell' type='unit number' />
+	
+		<messages>
+			<set scname = 'startCell'>
+				<number value='5' />
+			</set>
+			<set scname = 'endCell'>
+				<number value='7' />
+			</set>
+		</messages>
+	
+		<endcap name = 'ec' expression = 'rangeByKey startCell endCell (oneTo 9)' />
+
+		<expectedmessages>
+			<set ecname = 'ec'>
+				<number value = '5' />
+			</set>
+			<set ecname = 'ec'>
+				<number value = '6' />
+			</set>
+			<set ecname = 'ec'>
+				<number value = '7' />
+			</set>
+			<none ecname = 'ec' />
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'startCell'>
+				<number value='5' />
+			</remove>
+			
+			<set scname = 'startCell'>
+				<number value = '2' />
+			</set>
+		</messages>
+		
+		<expectedmessages>
+			<set ecname = 'ec'>
+				<number value = '2' />
+			</set>
+			<set ecname = 'ec'>
+				<number value = '3' />
+			</set>
+			<set ecname = 'ec'>
+				<number value = '4' />
+			</set>
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'endCell'>
+				<number value='7' />
+			</remove>
+			
+			<set scname = 'endCell'>
+				<number value = '5' />
+			</set>
+		</messages>
+		
+		<expectedmessages>
+			<remove ecname = 'ec'>
+				<number value = '6' />
+			</remove>
+			<remove ecname = 'ec'>
+				<number value = '7' />
+			</remove>
+		</expectedmessages>
+		
+	</test>
+	
+	<test name='unfoldSetTest1'>
+		<endcap name = 'ec' expression = 'unfoldSet oneTo 5' />
+		
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '2' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '3' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '4' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '5' />
+			</set>
+		</expectedmessages>
+
+	</test>
+	
+	<test name='unfoldAssocTest1'>
+		<endcap name = 'ec' expression = 'invert (mapAssocValue (compose returnUnitSet returnUnit) (unfoldAssoc oneTo 5))' />
+		
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '0' />
+				<sc name = 'sc0' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '1' />
+				<sc name = 'sc1' />
+			</set>
+		</expectedmessages>
+		
+		<endcap name = 'ec0' expression = 'sc0' />
+		<endcap name = 'ec1' expression = 'sc1' />
+
+		<expectedmessages>
+			<set ecname ='ec0' >
+				<number value = '5' />
+			</set>
+			<set ecname ='ec1' >
+				<number value = '1' />
+			</set>
+			<set ecname ='ec1' >
+				<number value = '2' />
+			</set>
+			<set ecname ='ec1' >
+				<number value = '3' />
+			</set>
+			<set ecname ='ec1' >
+				<number value = '4' />
+			</set>									
+		</expectedmessages>
+
+	</test>
+	
+	<test name='setDifferenceTest1'>
+		<startcap name='sc' type='set number' />
+		<startcap name='sc2' type='set number' />
+		<messages>
+			<set scname = 'sc'>
+				<number value='1' />
+			</set>
+			<set scname = 'sc'>
+				<number value='5' />
+			</set>
+			<set scname = 'sc'>
+				<number value='7' />
+			</set>
+			<set scname = 'sc2'>
+				<number value='5' />
+			</set>
+			<set scname = 'sc2'>
+				<number value='6' />
+			</set>
+		</messages>
+	
+		<endcap name = 'ec' expression = 'setDifference sc sc2' />
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '7' />
+			</set>
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'sc2'>
+				<number value='5' />
+			</remove>
+		</messages>
+		
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '5' />
+			</set>
+		</expectedmessages>
+	</test>
+	
+	<test name='unionTest1'>
+		<startcap name='sc' type='set number' />
+		<startcap name='sc2' type='set number' />
+		<messages>
+			<set scname = 'sc'>
+				<number value='1' />
+			</set>
+			<set scname = 'sc'>
+				<number value='5' />
+			</set>
+			<set scname = 'sc2'>
+				<number value='5' />
+			</set>
+			<set scname = 'sc2'>
+				<number value='3' />
+			</set>
+		</messages>
+	
+		<endcap name = 'ec' expression = 'union sc sc2' />
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '3' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '5' />
+			</set>
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'sc'>
+				<number value='5' />
+			</remove>
+			<remove scname = 'sc'>
+				<number value='1' />
+			</remove>
+		</messages>
+		
+		<expectedmessages>
+			<remove ecname = 'ec' >
+				<number value = '1' />
+			</remove>
+		</expectedmessages>
+	</test>
+
 
 	<test name='foldTest1'>
 		<startcap name='sc' type='set number' />
-	
+
+		<endcap name = 'ec' expression = 'fold add subtract 0 sc' />
+
 		<messages>
 			<set scname = 'sc'>
 				<number value='2' />
@@ -11,15 +237,25 @@
 				<number value='5' />
 			</set>
 		</messages>
-	
-		<endcap name = 'ec' expression = 'fold add 0 sc' />
 
 		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '0' />
+			</set>
+			<remove ecname = 'ec' >
+				<number value = '0' />
+			</remove>
+			<set ecname = 'ec' >
+				<number value = '2' />
+			</set>
+			<remove ecname = 'ec' >
+				<number value = '2' />
+			</remove>
 			<set ecname = 'ec' >
 				<number value = '7' />
 			</set>
 		</expectedmessages>
-	
+
 		<messages>
 			<set scname = 'sc'>
 				<number value='3' />
@@ -33,15 +269,585 @@
 		</messages>
 	
 		<expectedmessages>
+			<remove ecname = 'ec' >
+				<number value = '7' />
+			</remove>
 			<set ecname = 'ec' >
 				<number value = '10' />
 			</set>
+			<remove ecname = 'ec' >
+				<number value = '10' />
+			</remove>
 			<set ecname = 'ec' >
-				<number value = '9' />
+				<number value = '8' />
+			</set>
+		</expectedmessages>
+	</test>
+
+	<test name='assocTest1'>
+		<startcap name='sc' type='unit number' />
+	
+		<messages>
+			<set scname = 'sc'>
+				<number value='2' />
+			</set>
+		</messages>
+
+		<endcap name = 'ec' expression = 'returnUnitAssoc 1 sc' />
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '1' />
+				<number value = '2' />
 			</set>
 		</expectedmessages>
 	
-		<removecap name = 'ec' />
+		<messages>
+			<remove scname = 'sc'>
+				<number value='2' />
+			</remove>
+			<set scname = 'sc'>
+				<number value='4' />
+			</set>
+		</messages>
+	
+		<expectedmessages>
+			<remove ecname = 'ec' >
+				<number value = '1' />
+			</remove>
+			<set ecname = 'ec' >
+				<number value = '1' />
+				<number value = '4' />
+			</set>
+		</expectedmessages>
+	
+		<messages>
+			<remove scname = 'sc'>
+				<number value='4' />
+			</remove>
+		</messages>
+	
+		<expectedmessages>
+			<remove ecname = 'ec' >
+				<number value = '1' />
+			</remove>
+		</expectedmessages>
+	
+	</test>
+
+	<test name='bindSetTest1'>
+		<startcap name='sc' type='set number' />
+	
+		<messages>
+			<set scname = 'sc'>
+				<number value='4' />
+			</set>
+		</messages>
+	
+		<endcap name = 'ec' expression = 'bindSet oneTo sc' />
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '2' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '3' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '4' />
+			</set>
+		</expectedmessages>
+	
+		<messages>
+			<set scname = 'sc'>
+				<number value='6' />
+			</set>
+		</messages>
+	
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '5' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '6' />
+			</set>
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'sc'>
+				<number value='6' />
+			</remove>
+		</messages>
+	
+		<expectedmessages>
+			<remove ecname = 'ec' >
+				<number value = '5' />
+			</remove>
+			<remove ecname = 'ec' >
+				<number value = '6' />
+			</remove>
+		</expectedmessages>
+	
+	</test>
+
+	<test name='bindAssocTest1'>
+		<startcap name='sc' type='assoc number number' />
+	
+		<messages>
+			<set scname = 'sc'>
+				<number value='4' />
+				<number value='1' />
+			</set>
+		</messages>
+	
+		<endcap name = 'ec' expression = 'bindAssoc oneToAssoc sc' />
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '1' />
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '2' />
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '3' />
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '4' />
+				<number value = '1' />
+			</set>
+		</expectedmessages>
+	
+		<messages>
+			<set scname = 'sc'>
+				<number value='6' />
+				<number value='2' />
+			</set>
+		</messages>
+	
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '5' />
+				<number value = '2' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '6' />
+				<number value = '2' />
+			</set>
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'sc'>
+				<number value='6' />
+			</remove>
+		</messages>
+	
+		<expectedmessages>
+			<remove ecname = 'ec' >
+				<number value = '5' />
+			</remove>
+			<remove ecname = 'ec' >
+				<number value = '6' />
+			</remove>
+		</expectedmessages>
+
+	</test>
+
+	<test name='bindAssocTest2'>
+		<startcap name='sc' type='assoc number number' />
+	
+		<messages>
+			<set scname = 'sc'>
+				<number value='4' />
+				<number value='1' />
+			</set>
+		</messages>
+	
+		<endcap name = 'ec' expression = 'bindAssoc oneToAssoc sc' />
+		<endcap name = 'ec2' expression = 'bindAssoc x2ToAssoc sc' />
+		
+		<expectedmessages>
+			<set ecname = 'ec2' >
+				<number value = '8' />
+				<number value = '1' />
+			</set>
+		</expectedmessages>
+		
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '1' />
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '2' />
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '3' />
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '4' />
+				<number value = '1' />
+			</set>
+		</expectedmessages>
+
+		<messages>
+			<set scname = 'sc'>
+				<number value='6' />
+				<number value='2' />
+			</set>
+		</messages>
+	
+		<expectedmessages>
+			<set ecname = 'ec2' >
+				<number value = '12' />
+				<number value = '2' />
+			</set>
+		</expectedmessages>
+	
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '5' />
+				<number value = '2' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '6' />
+				<number value = '2' />
+			</set>
+		</expectedmessages>
+
+		<messages>
+			<remove scname = 'sc'>
+				<number value='6' />
+			</remove>
+		</messages>
+	
+		<expectedmessages>
+			<remove ecname = 'ec' >
+				<number value = '5' />
+			</remove>
+			<remove ecname = 'ec' >
+				<number value = '6' />
+			</remove>
+			<remove ecname = 'ec2' >
+				<number value = '12' />
+			</remove>
+		</expectedmessages>
+
+	</test>
+
+	<test name='invertTest1'>
+		<startcap name='sc' type='assoc number (set number)' />
+		<startcap name='sc1' type='set number' />
+		<startcap name='sc2' type='set number' />
+		<startcap name='sc3' type='set number' />
+	
+		<messages>
+			<set scname = 'sc'>
+				<number value='1' />
+				<sc name='sc1' />
+			</set>
+			<set scname = 'sc'>
+				<number value='2' />
+				<sc name='sc2' />
+			</set>
+			<set scname = 'sc'>
+				<number value='3' />
+				<sc name='sc3' />
+			</set>
+			<set scname = 'sc1'>
+				<number value='10' />
+			</set>
+			<set scname = 'sc1'>
+				<number value='20' />
+			</set>
+			<set scname = 'sc2'>
+				<number value='20' />
+			</set>
+			<set scname = 'sc2'>
+				<number value='30' />
+			</set>
+			<set scname = 'sc3'>
+				<number value='10' />
+			</set>
+			<set scname = 'sc3'>
+				<number value='30' />
+			</set>
+		</messages>
+	
+		<endcap name = 'ec' expression = 'invert sc' />
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '10' />
+				<sc name = 'outCap10' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '20' />
+				<sc name = 'outCap20' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '30' />
+				<sc name = 'outCap30' />
+			</set>
+		</expectedmessages>
+
+		<endcap name = 'ec10' expression = 'outCap10' />
+		<endcap name = 'ec20' expression = 'outCap20' />
+		<endcap name = 'ec30' expression = 'outCap30' />
+
+		<expectedmessages>
+			<set ecname = 'ec10' >
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec10' >
+				<number value = '3' />
+			</set>
+			<set ecname = 'ec20' >
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec20' >
+				<number value = '2' />
+			</set>
+			<set ecname = 'ec30' >
+				<number value = '2' />
+			</set>
+			<set ecname = 'ec30' >
+				<number value = '3' />
+			</set>
+		</expectedmessages>
+
+		<messages>
+			<remove scname='sc3'>
+				<number value = '30' />
+			</remove>
+		</messages>
+
+		<expectedmessages>
+			<remove ecname ='ec30'>
+				<number value = '3' />
+			</remove>
+		</expectedmessages>
+
+		<messages>
+			<remove scname='sc'>
+				<number value = '2' />
+			</remove>
+		</messages>
+
+		<expectedmessages>
+			<remove ecname ='ec20'>
+				<number value = '2' />
+			</remove>
+			<remove ecname ='ec30'>
+				<number value = '2' />
+			</remove>
+			<remove ecname = 'ec' >
+				<number value = '30' />
+			</remove>
+		</expectedmessages>
+
+	</test>
+
+	<test name='returnUnitTest1'>
+
+		<endcap name = 'ec' expression = 'returnUnit 1' />
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '1' />
+			</set>
+		</expectedmessages>
+	
+	</test>
+
+	<test name='returnUnitSetTest1'>
+		<startcap name='sc' type='unit number' />
+
+		<endcap name = 'ec' expression = 'returnUnitSet sc' />
+
+		<messages>
+			<set scname = 'sc'>
+				<number value='2' />
+			</set>
+		</messages>
+		
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '2' />
+			</set>
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'sc'>
+				<number value='2' />
+			</remove>
+			<set scname = 'sc' >
+				<number value = '4' />
+			</set>
+		</messages>
+		
+		<expectedmessages>
+			<remove ecname = 'ec'>
+				<number value='2' />
+			</remove>
+			<set ecname = 'ec' >
+				<number value = '4' />
+			</set>
+		</expectedmessages>
+	</test>
+
+	<test name='reactiveApplyTest1'>
+		<startcap name='sc' type='unit (Number -> Set Number)' />
+
+		<endcap name = 'ec' expression = 'reactiveApply sc 5' />
+
+		<messages>
+			<set scname = 'sc'>
+				<func name='oneTo' />
+			</set>
+		</messages>
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<sc name = 'resultCap' />
+			</set>
+		</expectedmessages>
+		
+		<endcap name = 'ec2' expression = 'resultCap' />
+		
+		<expectedmessages>
+			<set ecname = 'ec2' >
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec2' >
+				<number value = '2' />
+			</set>
+			<set ecname = 'ec2' >
+				<number value = '3' />
+			</set>
+			<set ecname = 'ec2' >
+				<number value = '4' />
+			</set>
+			<set ecname = 'ec2' >
+				<number value = '5' />
+			</set>
+		</expectedmessages>
+
+		<messages>
+			<remove scname ='sc'>
+				<func name='oneTo' />
+			</remove>
+			<set scname ='sc'>
+				<func name='x2' />
+			</set>
+		</messages>
+
+		<expectedmessages>
+			<remove ecname = 'ec' >
+				<sc name = 'resultCap' />
+			</remove>
+			<set ecname = 'ec' >
+				<sc name = 'resultCap2' />
+			</set>
+		</expectedmessages>
+
+		<endcap name = 'ec3' expression = 'resultCap2' />
+		
+		<expectedmessages>
+			<set ecname = 'ec3' >
+				<number value = '10' />
+			</set>
+		</expectedmessages>
+
+	</test>
+
+	<test name='anyTest1'>
+		<startcap name='sc' type='Set Bool' />
+
+		<endcap name = 'ec' expression = 'any (compose returnUnit (equal false)) sc' />
+
+		<messages>
+			<set scname = 'sc'>
+				<bool value='true'/>
+			</set>
+		</messages>
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<bool value='false'/>
+			</set>
+		</expectedmessages>
+
+		<messages>
+			<set scname = 'sc'>
+				<bool value='false'/>
+			</set>
+		</messages>
+
+		<expectedmessages>
+			<remove ecname = 'ec' >
+				<bool value='false'/>
+			</remove>
+			<set ecname = 'ec' >
+				<bool value='true'/>
+			</set>
+		</expectedmessages>
+
+	</test>
+	
+	<test name='passThruTest1'>
+
+		<endcap name = 'ec' expression = 'passThru not false' />
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<bool value='false'/>
+			</set>
+		</expectedmessages>
+
+		<endcap name = 'ec2' expression = 'passThru not true' />
+
+		<expectedmessages>
+			<none ecname = 'ec' />
+		</expectedmessages>
+
+	</test>
+
+	<test name='buildAssocTest1'>
+
+		<startcap name = 'sc' type = 'set number' />
+
+		<endcap name = 'ec' expression = 'buildAssoc (add 2) sc' />
+
+		<messages>
+			<set scname = 'sc'>
+				<number value = '1' />
+			</set>
+			<set scname = 'sc'>
+				<number value = '2' />
+			</set>
+		</messages>
+
+		<expectedmessages>
+			<set ecname = 'ec'>
+				<number value = '1' />
+				<number value = '3' />
+			</set>
+			<set ecname = 'ec'>
+				<number value = '2' />
+				<number value = '4' />
+			</set>
+		</expectedmessages>
+
 	</test>
 
 </tests>

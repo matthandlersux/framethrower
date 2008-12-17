@@ -21,6 +21,8 @@
 	value
 }).
 
+%-----------------------------------------------------
+
 -record (constraint, {
 	type, % equals, lambda
 	left,

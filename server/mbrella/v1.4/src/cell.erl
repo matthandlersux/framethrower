@@ -48,7 +48,7 @@ makeCellAssocInput() ->
 	Pid.
 
 injectFunc(CellPid, Fun) ->
-	gen_server:call(Pid, {injectFunc, Fun}).
+	gen_server:call(CellPid, {injectFunc, Fun}).
 
 %% 
 %% addline:: CellPid -> Value -> CleanupFun
@@ -170,14 +170,11 @@ handle_cast({removeFunc, Id}, State) ->
 	NewFuncs = dict:remove(Id, Funcs),
 	NewDots = dict:map(fun(Key, Dot) -> removeLineResponse(Dot, Id) end, Dots),
 	NewState = State#cell{funcs=NewFuncs, dots=NewDots},
-	%TODO: destroy this cell if Funcs is empty
-    {noreply, NewState}.
+	%TODO: destroy this cell if Funcs is empty?
+    {noreply, NewState};
 handle_cast({addOnRemove, Fun}, State) ->
 	#cell{onRemoves=OnRemoves} = State,
-	NewFuncs = dict:remove(Id, Funcs),
-	NewDots = dict:map(fun(Key, Dot) -> removeLineResponse(Dot, Id) end, Dots),
-	NewState = State#cell{funcs=NewFuncs, dots=NewDots},
-	%TODO: destroy this cell if Funcs is empty
+	NewState = State#cell{onRemoves=[Fun | OnRemoves]},
     {noreply, NewState}.
 
 %% --------------------------------------------------------------------
