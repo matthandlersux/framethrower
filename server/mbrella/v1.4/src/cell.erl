@@ -21,7 +21,7 @@
 %% ====================================================================
 %% Cell data structure record
 %% ====================================================================
--record(cell, {funcs, dots, toKey, onRemoves=[], funcColor=0}).
+-record(cell, {funcs, dots, toKey, onRemoves=[], funcColor=0, intercept}).
 
 %% ====================================================
 %% Types
@@ -49,6 +49,13 @@ makeCellAssocInput() ->
 
 injectFunc(CellPid, Fun) ->
 	gen_server:call(CellPid, {injectFunc, Fun}).
+
+injectIntercept(CellPid, Fun, InitState) ->
+	gen_server:cast(CellPid, {injectIntercept, Fun, InitState}).
+
+sendIntercept(CellPid, Message) ->
+	gen_server:cast(CellPid, {sendIntercept, Message}).
+
 
 %% 
 %% addline:: CellPid -> Value -> CleanupFun
@@ -171,6 +178,14 @@ handle_cast({removeFunc, Id}, State) ->
 	NewDots = dict:map(fun(Key, Dot) -> removeLineResponse(Dot, Id) end, Dots),
 	NewState = State#cell{funcs=NewFuncs, dots=NewDots},
 	%TODO: destroy this cell if Funcs is empty?
+    {noreply, NewState};
+handle_cast({injectIntercept, Fun, IntState}, State) ->
+	NewState = State#cell{intercept={Fun, IntState}},
+    {noreply, NewState};
+handle_cast({sendIntercept, Message}, State) ->
+	#cell{intercept={Fun, IntState}} = State,
+	NewIntState = Fun(Message, IntState),
+	NewState = State#cell{intercept={Fun, NewIntState}},
     {noreply, NewState};
 handle_cast({addOnRemove, Fun}, State) ->
 	#cell{onRemoves=OnRemoves} = State,
