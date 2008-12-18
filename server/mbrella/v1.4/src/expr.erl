@@ -113,30 +113,32 @@ primitive() ->
 
 getFun(Key, Env) ->
 	try dict:fetch(Key, Env) of
-		{Type, Fun} -> {ok, {Type, Fun}}
+		#exprFun{type = Type, function = Fun} = ExprFun when is_record(ExprFun, exprFun) ->
+		% {Type, Fun} ->
+			 {ok, {Type, Fun}}
 	catch
 		_:_ -> false
 	end.
 		
 getEnv(default) ->
-	BuildEnv = fun({Name, TypeString, Fun}, {Suffix, Dict}) ->
-					{Suffix + 1, dict:store(Name, {type:shiftVars( type:parse(TypeString), integer_to_list(Suffix) ++ "v"), Fun}, Dict)}
-				end,
-	FunList = [
-		% {"bindUnit", "type" , fun component:bindUnit/1},
-		{"bindSet", "(a -> Set b) -> Set a -> Set b", fun component:bindSet/1},
-		% {"compose", "f -> g -> x -> f (g x)", fun component:compose/1},
-		% {"compose", "(b -> c) -> (a -> b) -> (a -> c)", fun component:compose/1},
-		{"compose", "(a -> b) -> (c -> a) -> (c -> b)", fun component:compose/1},
-		{"returnUnitSet", "Unit a -> Set a", fun component:returnUnitSet/1},
-		{"passthru", "(a -> Bool) -> a -> Unit a", fun component:passthru/1},
-		{"not", "Bool -> Bool", fun component:passthru/1}
-		
-
-	],
-	{_, FinalDict} = lists:foldl( BuildEnv, {1, dict:new()}, FunList),
-	FinalDict.
-	
+	% BuildEnv = fun({Name, TypeString, Fun}, {Suffix, Dict}) ->
+	% 				{Suffix + 1, dict:store(Name, {type:shiftVars( type:parse(TypeString), integer_to_list(Suffix) ++ "v"), Fun}, Dict)}
+	% 			end,
+	% FunList = [
+	% 	% {"bindUnit", "type" , fun component:bindUnit/1},
+	% 	{"bindSet", "(a -> Set b) -> Set a -> Set b", fun component:bindSet/1},
+	% 	% {"compose", "f -> g -> x -> f (g x)", fun component:compose/1},
+	% 	% {"compose", "(b -> c) -> (a -> b) -> (a -> c)", fun component:compose/1},
+	% 	{"compose", "(a -> b) -> (c -> a) -> (c -> b)", fun component:compose/1},
+	% 	{"returnUnitSet", "Unit a -> Set a", fun component:returnUnitSet/1},
+	% 	{"passthru", "(a -> Bool) -> a -> Unit a", fun component:passthru/1},
+	% 	{"not", "Bool -> Bool", fun component:passthru/1}
+	% 	
+	% 
+	% ],
+	% {_, FinalDict} = lists:foldl( BuildEnv, {1, dict:new()}, FunList),
+	% FinalDict.
+	primFuncs:getPrimitives().
 
 	
 %% ====================================================

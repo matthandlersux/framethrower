@@ -84,6 +84,7 @@ getType( Expr ) ->
 	getType( Expr, expr:getEnv(default) ).
 	
 getType( Expr, Env ) when is_record(Expr, exprFun) ->
+	% io:format("~100p~n~n", [unparse(Expr#exprFun.type)]),
 	Expr#exprFun.type;
 getType( Expr, Env ) when is_record(Expr, exprVar) ->
 	try dict:fetch(Expr#exprVar.value, Env)

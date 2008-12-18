@@ -1,4 +1,4 @@
-io:format("running mbrella v1.3~n~n", []).
+io:format("running mbrella v1.4~n~n", []).
 code:add_patha("./include/").
 code:add_patha("./src/").
 code:add_patha("./ebin/").
