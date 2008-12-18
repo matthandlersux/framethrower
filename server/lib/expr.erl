@@ -3,9 +3,9 @@
 
 -include ("ast.hrl").
 
-expr(AST) ->
+expr(String) ->
 	DefaultEnv = getEnv(default),
-	expr(AST, DefaultEnv).
+	expr( parse(String), DefaultEnv).
 
 expr(AST, Env) when is_record(AST, cons) ->
 	{cons, AST#cons.type, expr(AST#cons.left, Env), expr(AST#cons.right, Env)};

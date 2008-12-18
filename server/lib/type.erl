@@ -1,12 +1,74 @@
 -module (type).
 -compile( export_all).
 
+-import (parse, [choice/2, choice/1, literal/0, identifier/0, failure/0,
+ 				boolean/0, natural/0, symbol/1, return/1, then/2, nest/3, typeVar/0, type/0]).
+
 -include ("ast.hrl").
+-define (do(X, Y, Next), then( Y, fun(X) -> Next end )).
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+
 
 get(String) ->
-	{Type, Constraints} = genConstraints( expr:expr( parse:ast( String ) ) ),
+	{Type, Constraints} = genConstraints( expr:expr( String ) ),
 	Subs = unify(Constraints),
 	unparse(substitute(Type, Subs)).
+	
+
+%% ====================================================
+%% parser for parsing TypeStrings -> TypeExpressions
+%% ====================================================
+
+
+	
+parse(String) ->
+	case parse:parse( control(), String) of
+		[{Result, []}] -> Result;
+		[{Result, Leftovers}] -> io:format("unused input \"~s\"~n~nresult: ~p~n", [Leftovers, Result]);
+		[] -> io:format("invalid input ~n", [])
+	end.
+
+	
+%% ====================================================
+%% type parser CFG
+%% ====================================================
+
+	
+control() ->
+	?do(T, elem(),
+		choice(
+			?do( _, symbol("->"),
+			?do( E, control(),
+			return({type, typeFun, {T, E}}))), %or
+			return(T)
+		)
+	).
+
+elem() ->
+	choice(
+		?do( LeftMost, elem1(),
+			choice(
+				nest(LeftMost, term(), fun(X,Acc) -> {type, typeApply, {Acc, X}} end), %or
+				return( LeftMost )
+			)
+		), %or
+		term()
+	).
+
+elem1() ->
+	?do(Left, term(),
+	?do(Right, term(),
+	return({type, typeApply, {Left, Right}}))).
+
+term() ->
+	choice([
+		?do(_, symbol("("),
+		?do(E, control(),
+		?do(_, symbol(")"),
+		return(E)))), %or
+		?do(Type, type(), return({type, typeName, list_to_atom(Type)})), %or
+		?do(TypeVar, typeVar(), return({type, typeVar, TypeVar}) )
+	]).
 	
 %% 
 %% Expr:: string | bool | num | (Expr) | Expr -> Expr | exprFun | exprVar
@@ -27,6 +89,12 @@ getType( Expr, Env ) when is_record(Expr, exprVar) ->
 	try dict:fetch(Expr#exprVar.value, Env)
 		% {TypeString, _Fun} -> type(typeVar, parse:tast( TypeString ))
 	catch _:_ -> erlang:error({typeVar_not_found, Expr})
+	end;
+getType({primitive, Type, _}, _) -> 
+	case Type of
+		bool -> type(bool);
+		nat -> type(num);
+		string -> type(string)
 	end;
 getType( Expr, _ ) when is_boolean(Expr) -> type(bool);
 getType( Expr, _ ) when is_number(Expr) -> type(num);
@@ -77,9 +145,9 @@ maybeStore(_, _, Env) -> Env.
 %% type returns a well formed type tuple
 %% 
 	
-type(bool) -> {type, bool, null};
-type(num) -> {type, num, null};
-type(string) -> {type, string, null}.
+type(bool) -> {type, typeName, 'Bool'};
+type(num) -> {type, typeName, 'Nat'};
+type(string) -> {type, typeName, 'String'}.
 
 type(typeVar, Val) -> {type, typeVar, Val};
 type(typeFun, String) -> String.
@@ -134,7 +202,7 @@ unify([{#type{type = Ltype, value = Lvalue} = L, #type{type = Rtype, value = Rva
 %% containsVar:: Does #type contain TypeVar
 %% 
 
-containsVar(TypeVar, #type{type = Type, value = Val}) ->
+containsVar(TypeVar, #type{type = Type, value = Val} = TypeRec) when is_record(TypeRec, type) ->
 	case Type of
 		typeName -> false;
 		typeVar -> TypeVar#type.value =:= Val;
