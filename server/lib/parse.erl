@@ -9,13 +9,22 @@
 %% API
 %% ====================================================
 
+%% 
+%% pre-parse an expression
+%% 
 
 ast(String) ->
-	case parse(lambda(), String) of
+	case parse(lambda(), String ++ [eos]) of
 		[{Result, []}] -> Result;
-		[{Result, Leftovers}] -> io:format("unused input \"~s\"~n~nresult: ~p~n", [Leftovers, Result]);
+		[{Result, [eos]}] -> Result;
+		[{Result, Leftovers}] -> io:format("unused input \"~p\"~n~nresult: ~p~n", [Leftovers -- [eos], Result]);
+		% [{X,Y}] -> io:format("~120p~n~n~120p~n~n", [X, Y -- [eos]]);
 		[] -> io:format("invalid input ~n", [])
 	end.
+
+%% 
+%% parse a type string
+%% 
 	
 tast(String) ->
 	case parse(control(), String) of
@@ -39,31 +48,11 @@ lambda() ->
 		)
 	).
 
-% apply() ->
-% 	?do(Left, apply1(),
-% 		choice(
-% 			?do(_, space(),
-% 			?do(Right, choice([identifier(), literal(), natural()]),
-% 			return({cons, apply, Left, Right}))), %or
-% 			return(Left)
-% 		)
-% 	).	
-% 
-% apply1() ->
-% 	?do(Left, element(),
-% 		choice(
-% 			?do(_, space(),
-% 			?do(Right, apply(),
-% 			return({cons, apply, Left, Right}))), %or
-% 			return(Left)
-% 		)
-% 	).
-
 apply() ->
 	choice(
 		?do(LeftMost, apply1(),
 		choice(
-			nest( LeftMost, choice([element(), literal(), natural()]), fun(X, Acc) -> {cons, apply, Acc, X} end), %or
+			nest( LeftMost, element(), fun(X, Acc) -> {cons, apply, Acc, X} end), %or
 			return(LeftMost)
 		)), %or
 		element()
@@ -80,8 +69,26 @@ element() ->
 		?do(E, lambda(),
 		?do(_, symbol(")"),
 		return(E)))), %or
-		identifier()
+		primitive()
 	).
+	
+primitive() ->
+	choice([
+		?do(Lit, literal(),
+		return({primitive, string, Lit})),
+		
+		?do(Ident, identifier(),
+			if
+				Ident =:= "true"; Ident =:= "false" -> failure();
+				true -> return(Ident)
+			end),
+		
+		?do(Bool, boolean(), return({primitive, bool, list_to_atom(Bool)})),
+		
+		?do(Nat, natural(),
+		return({primitive, nat, list_to_integer(Nat)}))
+		% ?do(Cell, cell(), return...)
+	]).
 	
 %% ====================================================
 %% type parser CFG
@@ -287,6 +294,12 @@ upper() ->
 letter() ->
 	sat(fun isAlpha/1).
 
+bool() ->
+	choice(
+		string("true"),
+		string("false")
+	).
+
 alphaNum() ->
 	sat(fun isAlphaNum/1).
 
@@ -317,7 +330,8 @@ lit() ->
 	?do(_, symbol([$"]),
 	?do(Literal, quotable(),
 	?do(_, symbol([$"]),
-	return([$"] ++ Literal ++ [$"])))).
+	return(Literal)))).
+	% return([$"] ++ Literal ++ [$"])))).
 
 ident() ->
 	?do(X, lower(),
@@ -364,6 +378,9 @@ symbol(XS) ->
 	
 literal() ->
 	token( lit() ).
+	
+boolean() ->
+	token( bool() ).
 
 %% ====================================================
 %% Char -> Bool functions
@@ -379,6 +396,9 @@ isUpper(Char) when Char >= $A, Char =< $Z -> true;
 isUpper(_) -> false.
 
 isAlpha(Char) -> isLower(Char) orelse isUpper(Char).
+
+isEndOfString(eos) -> true;
+isEndOfString(_) -> false.
 
 isAlphaNum(Char) -> isLower(Char) orelse isUpper(Char) orelse isDigit(Char).
 
