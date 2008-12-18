@@ -1,3 +1,8 @@
+%% ====================================================
+%% old records, maybe not needed now
+%% ====================================================
+
+
 -record (interface, {
 	type,
 	subType,
@@ -53,3 +58,43 @@
 	function,
 	parentBox
 	}).
+	
+%% ====================================================
+%% expression records
+%% ====================================================
+
+
+-record (cons, {
+	type, % lambda | apply
+	left, % ast | fun
+	right % ast | fun | nat | bool |
+}).
+
+-record (exprFun, {
+	kind,
+	type,
+	name,
+	function
+}).
+
+-record (exprVar, {
+	kind,
+	value
+}).
+
+
+
+%% ====================================================
+%% type records
+%% ====================================================
+
+-record (constraint, {
+	type, % equals, lambda
+	left,
+	right
+}).
+
+-record (type, {
+	type, % typeFun: X -> Y | typeVar: a | typeName: Set
+	value
+}).

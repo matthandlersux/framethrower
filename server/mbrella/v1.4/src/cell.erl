@@ -123,35 +123,6 @@ handle_call({injectFunc, Fun}, From, State) ->
     {reply, CallBack, NewState}.
 
 
-addLineResponse(Dot, Fun, Id) ->
-	{dot, Num, Value, Lines} = Dot,
-	OnRemove = Fun(Value),
-	case OnRemove of
-		undefined -> Dot;
-		F -> {dot, Num, Value, dict:store(Id, OnRemove, Lines)}
-	end.
-
-removeLineResponse(Dot, Id) ->
-	{dot, Num, Value, Lines} = Dot,
-	NewLines = try dict:fetch(Id, Lines) of
-		OnRemove -> OnRemove(),
-					dict:remove(Id, Lines)
-	catch
-		Type:Exception -> Lines
-	end,
-	{dot, Num, Value, NewLines}.
-
-onAdd(Dot, Funcs) ->
-	AddFolder = fun(Id, Fun, CurDot) -> 
-		addLineResponse(CurDot, Fun, Id) end,
-	dict:fold(AddFolder, Dot, Funcs).
-
-onRemove(Dot, Funcs) ->
-	RemoveFolder = fun(Id) -> 
-		removeLineResponse(Dot, Id) end,
-	dict:map(RemoveFolder, Funcs),
-	{ok}.
-
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
 %% Description: Handling cast messages
@@ -224,3 +195,34 @@ code_change(OldVsn, State, Extra) ->
 %% --------------------------------------------------------------------
 %%% Internal functions
 %% --------------------------------------------------------------------
+
+
+
+addLineResponse(Dot, Fun, Id) ->
+	{dot, Num, Value, Lines} = Dot,
+	OnRemove = Fun(Value),
+	case OnRemove of
+		undefined -> Dot;
+		F -> {dot, Num, Value, dict:store(Id, OnRemove, Lines)}
+	end.
+
+removeLineResponse(Dot, Id) ->
+	{dot, Num, Value, Lines} = Dot,
+	NewLines = try dict:fetch(Id, Lines) of
+		OnRemove -> OnRemove(),
+					dict:remove(Id, Lines)
+	catch
+		Type:Exception -> Lines
+	end,
+	{dot, Num, Value, NewLines}.
+
+onAdd(Dot, Funcs) ->
+	AddFolder = fun(Id, Fun, CurDot) -> 
+		addLineResponse(CurDot, Fun, Id) end,
+	dict:fold(AddFolder, Dot, Funcs).
+
+onRemove(Dot, Funcs) ->
+	RemoveFolder = fun(Id) -> 
+		removeLineResponse(Dot, Id) end,
+	dict:map(RemoveFolder, Funcs),
+	{ok}.

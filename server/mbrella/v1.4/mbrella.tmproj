@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>src/primFuncs.erl</string>
+	<string>include/scaffold.hrl</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -25,43 +25,28 @@
 	<integer>200</integer>
 	<key>metaData</key>
 	<dict>
-		<key>src/cell.erl</key>
+		<key>include/scaffold.hrl</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>24</integer>
+				<integer>6</integer>
 				<key>line</key>
-				<integer>53</integer>
+				<integer>22</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>26</integer>
-		</dict>
-		<key>src/primFuncs.erl</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>1</integer>
-				<key>line</key>
-				<integer>51</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>47</integer>
+			<integer>8</integer>
 		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
-		<string>src/primFuncs.erl</string>
-		<string>src/cell.erl</string>
+		<string>include/scaffold.hrl</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<false/>
 	<key>windowFrame</key>
-	<string>{{394, 181}, {1146, 807}}</string>
+	<string>{{176, 70}, {1146, 807}}</string>
 </dict>
 </plist>
