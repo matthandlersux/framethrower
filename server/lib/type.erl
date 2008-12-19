@@ -3,6 +3,7 @@
 
 -import (parse, [choice/2, choice/1, literal/0, identifier/0, failure/0,
  				boolean/0, natural/0, symbol/1, return/1, then/2, nest/3, typeVar/0, type/0]).
+-import (mblib, [maybeStore/3]).
 
 -include ("ast.hrl").
 -define (do(X, Y, Next), then( Y, fun(X) -> Next end )).
@@ -130,17 +131,17 @@ genConstraints(Expr, Prefix, Env) ->
 			{type(lambda, Variable, Type1), Constraints1}
 	end.
 
-%% 
-%% maybeStore:: Expr -> FreshVariable -> Env -> Env
-%% 
-
-maybeStore(#exprVar{value = OldVar} = Expr, NewVar, Env) when is_record(Expr, exprVar) ->
-	try dict:fetch(OldVar, Env) of
-		_ -> Env
-	catch 
-		_:_ -> dict:store(OldVar, NewVar, Env)
-	end;
-maybeStore(_, _, Env) -> Env.
+% %% 
+% %% maybeStore:: Expr -> FreshVariable -> Env -> Env
+% %% 
+% 
+% maybeStore(#exprVar{value = OldVar} = Expr, NewVar, Env) when is_record(Expr, exprVar) ->
+% 	try dict:fetch(OldVar, Env) of
+% 		_ -> Env
+% 	catch 
+% 		_:_ -> dict:store(OldVar, NewVar, Env)
+% 	end;
+% maybeStore(_, _, Env) -> Env.
 
 %% 
 %% type returns a well formed type tuple
