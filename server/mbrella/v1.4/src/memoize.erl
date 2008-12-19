@@ -24,7 +24,7 @@
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--record (state, {}}).
+-record (state, {ets = ets}).
 
 %% ====================================================================
 %% External functions
@@ -36,6 +36,10 @@ start_link() ->
 		{ok, Pid} -> Pid;
 		Else -> Else
 	end.
+	
+add( Expr ) -> Expr.
+
+get( Expr ) -> sfalse.
 
 
 %% ====================================================================
@@ -50,7 +54,7 @@ start_link() ->
 %%          ignore               |
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
-init() ->
+init([]) ->
     {ok, #state{}}.
 
 %% --------------------------------------------------------------------
@@ -65,7 +69,7 @@ init() ->
 %% --------------------------------------------------------------------
 handle_call(Msg, From, State) ->
     Reply = ok,
-    {reply, Reply, State}. store bytes 
+    {reply, Reply, State}. %store bytes
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2

@@ -99,7 +99,7 @@ getType( Expr, Env ) when is_record(Expr, exprVar) ->
 	catch _:_ -> erlang:error({typeVar_not_found, Expr})
 	end;
 getType( Expr, Env ) when is_record(Expr, exprCell) ->
-	type(cell)
+	type(cell);
 getType({primitive, Type, _}, _) -> 
 	case Type of
 		bool -> type(bool);
@@ -324,6 +324,15 @@ unparse(#type{type = typeVar, value = Value}, Variables) ->
 % 	unparse(Value, Variables);
 unparse(String, Variables) ->
 	{String, Variables}.
-%% 
-%% solutions:: {[Substitution], Type}
-%% 
+
+
+isReactive(#type{type = typeApply, value = {#type{type = typeName, value = Val}, _}}) ->
+	if
+		Val =:= 'Unit';
+		Val =:= 'Set';
+		Val =:= 'Map';
+		Val =:= 'Assoc';
+		Val =:= 'List' -> true;
+		true -> false
+	end;
+isReactive(_) -> false.
