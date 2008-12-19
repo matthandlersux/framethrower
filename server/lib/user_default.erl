@@ -8,11 +8,11 @@ cc(File) when is_atom(File) ->
 	cc(File1);
 cc(File) ->
 	File1 = "src/" ++ File,
-	compile:file(File1, [nowarn_unused_vars, {outdir, "./ebin/"}]).
+	c:c(File1, [nowarn_unused_vars, {outdir, "./ebin/"}]).
 	
 ccd(File) when is_atom(File) -> 
 	File1 = atom_to_list(File),
 	cc(File1);
 ccd(File) ->
 	File1 = "src/" ++ File,
-	compile:file(File1, [nowarn_unused_vars, {outdir, "./ebin/"}, debug_info]).
+	c:c(File1, [nowarn_unused_vars, {outdir, "./ebin/"}, debug_info]).
