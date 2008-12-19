@@ -1,5 +1,6 @@
 -module(testsyntax).
 -compile(export_all).
+-include("../include/scaffold.hrl").
 -include_lib("xmerl/include/xmerl.hrl").
 
 -record(testWorld, {env=expr:getEnv(default), endCaps=dict:new(), outMessages=[], testOutput=[]}).
@@ -51,11 +52,9 @@ parseStartCap(R, State) ->
 	#testWorld{env=Env} = State,
 	SCTypeFirstWord = hd(string:tokens(Type, " ")),
 	SC = if 
-		SCTypeFirstWord == "assoc" -> cell:makeCellAssocInput();
-		true -> cell:makeCell()
+		SCTypeFirstWord == "assoc" -> #exprCell{pid=cell:makeCellAssocInput(), type=type:parse(Type)};
+		true -> #exprCell{pid=cell:makeCell(), type=type:parse(Type)}
 	end,
-	% %TODO: may need to parse type and add to startcap here
-	% %TODO: add this startcap to the environment somehow
 	NewEnv = dict:store(Name, SC, Env),
 	State#testWorld{env=NewEnv}.
 
