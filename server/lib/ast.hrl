@@ -13,13 +13,20 @@
 	kind,
 	type,
 	name,
-	function
+	function,
+	bottom
 }).
 
 -record (exprVar, {
 	kind,
 	value
 }).
+
+-record (exprCell, {
+	pid,
+	type,
+	bottom
+	}).
 
 %-----------------------------------------------------
 

@@ -10,12 +10,18 @@
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
 
-get(String) ->
-	{Type, Constraints} = genConstraints( expr:expr( String ) ),
+get( String ) when is_list( String ) ->
+	type:get( expr:expr(String) );
+get( Expr ) ->
+	{Type, Constraints} = genConstraints( Expr ),
 	Subs = unify(Constraints),
-	unparse(substitute(Type, Subs)).
+	substitute(Type, Subs).
 	
-
+show( String ) when is_list( String ) ->
+	show( expr:expr(String) );
+show( Expr ) ->
+	unparse( type:get(Expr) ).
+	
 %% ====================================================
 %% parser for parsing TypeStrings -> TypeExpressions
 %% ====================================================
@@ -92,6 +98,8 @@ getType( Expr, Env ) when is_record(Expr, exprVar) ->
 		% {TypeString, _Fun} -> type(typeVar, parse:tast( TypeString ))
 	catch _:_ -> erlang:error({typeVar_not_found, Expr})
 	end;
+getType( Expr, Env ) when is_record(Expr, exprCell) ->
+	type(cell)
 getType({primitive, Type, _}, _) -> 
 	case Type of
 		bool -> type(bool);
@@ -149,7 +157,8 @@ genConstraints(Expr, Prefix, Env) ->
 	
 type(bool) -> {type, typeName, 'Bool'};
 type(num) -> {type, typeName, 'Nat'};
-type(string) -> {type, typeName, 'String'}.
+type(string) -> {type, typeName, 'String'};
+type(cell) -> {type, typeName, 'Cell'}.
 
 type(typeVar, Val) -> {type, typeVar, Val};
 type(typeFun, String) -> String.
