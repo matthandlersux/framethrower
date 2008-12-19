@@ -74,7 +74,8 @@
 	kind,
 	type,
 	name,
-	function
+	function,
+	bottom
 }).
 
 -record (exprVar, {
@@ -83,6 +84,11 @@
 }).
 
 
+-record (exprCell, {
+	pid,
+	type,
+	bottom
+	}).
 
 %% ====================================================
 %% type records

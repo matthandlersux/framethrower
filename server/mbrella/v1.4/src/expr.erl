@@ -28,6 +28,8 @@ expr(AST, Env) when is_list(AST) ->
 		false ->
 			exit(AST)
 	end;
+expr({primitive, _, BoolStringNat}, _) ->
+	BoolStringNat;
 expr(AST, _) when is_number(AST) ->
 	AST;
 expr(AST, _) when is_boolean(AST) ->
@@ -101,7 +103,16 @@ primitive() ->
 		?do(Bool, boolean(), return({primitive, bool, list_to_atom(Bool)})),
 		
 		?do(Nat, natural(),
-		return({primitive, nat, list_to_integer(Nat)}))
+		return({primitive, nat, Nat})),
+		
+		?do(_, symbol("<"),
+		?do(X, natural(),
+		?do(_, symbol("."),
+		?do(Y, natural(),
+		?do(_, symbol("."),
+		?do(Z, natural(),
+		?do(_, symbol(">"),
+		return(list_to_pid("<"++integer_to_list(X)++"."++integer_to_list(Y)++"."++integer_to_list(Z)++">")))))))))
 		% ?do(Cell, cell(), return...)
 	]).
 
@@ -121,23 +132,6 @@ getFun(Key, Env) ->
 	end.
 		
 getEnv(default) ->
-	% BuildEnv = fun({Name, TypeString, Fun}, {Suffix, Dict}) ->
-	% 				{Suffix + 1, dict:store(Name, {type:shiftVars( type:parse(TypeString), integer_to_list(Suffix) ++ "v"), Fun}, Dict)}
-	% 			end,
-	% FunList = [
-	% 	% {"bindUnit", "type" , fun component:bindUnit/1},
-	% 	{"bindSet", "(a -> Set b) -> Set a -> Set b", fun component:bindSet/1},
-	% 	% {"compose", "f -> g -> x -> f (g x)", fun component:compose/1},
-	% 	% {"compose", "(b -> c) -> (a -> b) -> (a -> c)", fun component:compose/1},
-	% 	{"compose", "(a -> b) -> (c -> a) -> (c -> b)", fun component:compose/1},
-	% 	{"returnUnitSet", "Unit a -> Set a", fun component:returnUnitSet/1},
-	% 	{"passthru", "(a -> Bool) -> a -> Unit a", fun component:passthru/1},
-	% 	{"not", "Bool -> Bool", fun component:passthru/1}
-	% 	
-	% 
-	% ],
-	% {_, FinalDict} = lists:foldl( BuildEnv, {1, dict:new()}, FunList),
-	% FinalDict.
 	primFuncs:getPrimitives().
 
 	
@@ -154,3 +148,6 @@ is_string(String) ->
 				end
 			end,
 	lists:all(Pred, String).
+	
+normalize( Expr ) -> nyi.
+

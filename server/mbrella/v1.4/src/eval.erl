@@ -1,6 +1,7 @@
 -module (eval).
 -compile( export_all).
 
+
 -include ("../include/scaffold.hrl").
 
 evaluate(Expr) when is_record(Expr, cons) ->
@@ -12,9 +13,32 @@ evaluate(Expr) when is_record(Expr, cons) ->
 				#cons{type = lambda} = Lambda ->
 					evaluate( betaReduce(Lambda, Expr#cons.right) );
 				Left ->
-					F = evaluate( Left ), 
-					Input = evaluate( Expr#cons.right ),
-					applyFun( F, Input )
+					Type = type:get( Expr ),
+					BottomExpr = bottom(Expr),	
+					case type:isReactive(Type) of
+						true ->
+							case memoize:get( BottomExpr ) of
+								Cell when is_record(Cell, exprCell) ->
+									Cell;
+								_ ->
+									F = evaluate( Left ), 
+									Input = evaluate( Expr#cons.right ),
+									Pid = applyFun( F, Input ),
+									Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
+									OnRemove = memoize:add( BottomExpr, Cell),
+									cell:addOnRemove(Pid, OnRemove),
+									Cell
+							end;
+						false ->
+							F = evaluate( Left ), 
+							Input = evaluate( Expr#cons.right ),
+							case applyFun( F, Input ) of
+								X when is_function(X) ->
+									#exprFun{function = X, type = Type, bottom = BottomExpr};
+								NumStringBool ->
+									NumStringBool
+							end
+					end
 			end
 	end;
 evaluate(Expr) -> Expr.
@@ -24,7 +48,7 @@ evaluate(Expr) -> Expr.
 %% 
 
 betaReduce( #cons{left = Variable, right = Right} = LExpr, Replacement ) ->
-	io:format("~p~n~n", [betaReduce1( Right, Variable, Replacement)]).
+	betaReduce1( Right, Variable, Replacement).
 	
 betaReduce1( #cons{type = lambda, left = LeftVariable, right = Right} = Expr, Variable, Replace) ->
 	if
@@ -46,5 +70,7 @@ betaReduce1( Expr, _, _ ) -> Expr.
 %% take a primitave/created function and apply it to the right hand side object
 %% 
 
-applyFun( #exprFun{function = Fun}, Expr ) ->
+applyFun( #exprFun{function = Fun} = ExprFun, Expr ) when is_record(ExprFun, exprFun) ->
 	Fun(Expr).
+	
+bottom( Expr ) -> Expr.
