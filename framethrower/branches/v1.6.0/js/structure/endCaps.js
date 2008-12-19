@@ -32,7 +32,7 @@ function evaluate(expr) {
 			// check if we're returning a StartCap and see if it's already memoized
 			var resultExprStringified;
 			if (resultType.kind === "typeApply") {
-				resultExprStringified = stringify(resultExpr);
+				resultExprStringified = uniqueExpr(resultExpr);
 				var cached = evalCache[resultExprStringified];
 				if (cached) {
 					return cached;
@@ -76,4 +76,9 @@ function evaluate(expr) {
 
 
 
+
+function evaluateAndInject(expr, func) {
+	var e = evaluate(expr);
+	return e.injectFunc(func);
+}
 

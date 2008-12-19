@@ -241,6 +241,7 @@ var basicTypes = {
 	number: makeTypeName("Number"),
 	"boolean": makeTypeName("Bool")
 };
+var jsType = makeTypeName("JS"); // this is for all miscellaneous types
 
 function getType(o) {
 	var t = typeOf(o);

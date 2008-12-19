@@ -105,7 +105,7 @@ function makeBaseCell (toKey) {
 		}
 	};
 	
-	//GetState for DEBUG
+	//GetState for DEBUG (and for convertExprXML.js)
 	cell.getState = function () {
 		return dots.toArray();
 	};

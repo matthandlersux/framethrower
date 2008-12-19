@@ -71,9 +71,10 @@ function makeSortedSet(compFunc) {
 		
 		
 		toArray: function () {
-			return map(sorted, function (entry) {
-				return entry.v;
-			});
+			// return map(sorted, function (entry) {
+			// 	return entry.v;
+			// });
+			return sorted;
 		},
 		debug: function () {
 			return sorted;

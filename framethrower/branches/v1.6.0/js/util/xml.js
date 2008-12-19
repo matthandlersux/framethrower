@@ -1,5 +1,5 @@
 var xmlns = {
-    f: "http://www.filmsfolded.com/xsl/ui",
+    f: "http://www.worldmerge.com/2008/xsl",
     xsl: "http://www.w3.org/1999/XSL/Transform",
     html: "http://www.w3.org/1999/xhtml",
     svg: "http://www.w3.org/2000/svg",
@@ -8,7 +8,7 @@ var xmlns = {
 
 /* Put these in your root xml element
 
-xmlns:f="http://www.filmsfolded.com/xsl/ui"
+xmlns:f="http://www.worldmerge.com/2008/xsl"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns:html="http://www.w3.org/1999/xhtml"
 xmlns:svg="http://www.w3.org/2000/svg"
@@ -41,20 +41,69 @@ function loadXMLNow(url) {
 		req.open("GET", url, false);
 		req.send(null);
 	} catch (e) {
-		console.log("loadXMLNow failed: " + url);
+		debug.log("loadXMLNow failed: " + url);
 	}
 
     return req.responseXML.firstChild;
 }
 
 
-function createDocument() {
-	return document.implementation.createDocument("", "", null);
+// function createDocument() {
+// 	return document.implementation.createDocument("", "", null);
+// }
+
+
+
+function compileXSL(xsl) {
+	if (xsl.nodeType === 9) xsl = xsl.firstChild;
+	
+	// this is required for xpath's within the xsl (that use namespaces) to work correctly
+    function addxmlns(xml){
+        forEach(xmlns, function(uri, prefix){
+            xml.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:" + prefix, uri);
+        });
+    }
+    addxmlns(xsl);
+    
+    // Compile
+	var p = new XSLTProcessor();
+    try {
+        p.importStylesheet(xsl);
+    } 
+    catch (e) {
+        debug.log("Compilation Error", xsl, e);
+		debug.xml(xsl);
+    }
+	
+    return function (source) {
+        // Execute
+        try {
+            var result = p.transformToFragment(source, document);
+			if (DEBUG) {
+				var logs = xpath(".//f:consolelog", result.firstChild);
+				forEach(logs, function (log) {
+					debug.log("debug output from xsl: ");
+					debug.xml(log);
+				});
+			}
+        } 
+        catch (e) {
+            debug.log("Execution Error", xsl, source, e);
+        }
+
+        return result.firstChild;
+    };
 }
 
 
 
 
+
+
+
+
+
+/*
 // Node -> (Node, {Node | String | Number} -> Node)
 function compileXSL(xsl){
     if (xsl.nodeType === 9) 
@@ -76,7 +125,7 @@ function compileXSL(xsl){
 	forEach(paramNodes, function(paramNode) {
 		var variableNode = document.createElementNS(xmlns.xsl, "variable");
 		variableNode.setAttribute("name", paramNode.getAttribute("name"));
-		variableNode.setAttribute("select", paramNode.getAttribute("name") + "/*");
+		variableNode.setAttribute("select", paramNode.getAttribute("name") + "/" + "*");
 		templateNode.insertBefore(variableNode, templateNode.firstChild);
 		paramNode.parentNode.removeChild(paramNode);
 	});
@@ -95,9 +144,11 @@ function compileXSL(xsl){
     }
     
     return function(source, params){
+		if (!params) params = {};
+		
 		// For Safari, add parameters to source document
 		// Leave source alone if there are no params
-		if(!isEmpty(params)){
+		if (!isEmpty(params)) {
 			source = document.createElementNS("", "parameters");
 		}
 
@@ -119,12 +170,7 @@ function compileXSL(xsl){
 			}
         });
 	
-        // Set parameters for Firefox
-/*
-        forEach(params, function(value, param){
-            p.setParameter(null, param, value);
-        });
-*/
+
         // Execute
         try {
 			//XSLTProcessor doesn't do well with a node with no parent
@@ -151,14 +197,11 @@ function compileXSL(xsl){
             console.log("Execution Error", xsl, source, params, e, p);
         }
         
-        // Clear parameters
-        forEach(params, function(value, param){
-            p.removeParameter(null, param);
-        });
+
 
         return result.firstChild;
     };
-}
+}*/
 
 
 //useful DOM function
@@ -169,6 +212,12 @@ function insertAfter (parent, newnode, insertafter) {
 		parent.appendChild(newnode);
 	}
 }
+
+
+
+
+
+
 
 function parseXML(s) {
 	var firstTag = s.indexOf(">");
@@ -181,8 +230,52 @@ function parseXML(s) {
 	});
 	s = s.substring(0, firstTag) + nsString + s.substring(firstTag);
 	var parser = new DOMParser();
-	return parser.parseFromString(s, "text/xml").firstChild;
+	var ret = parser.parseFromString(s, "text/xml").firstChild;
+	document.adoptNode(ret);
+	return ret;
 }
 
+function serializeXML(xml) {
+	var s = new XMLSerializer();
+	return s.serializeToString(xml);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function getAttr(node, attName, attPrefix) {
+	if (attPrefix !== undefined) {
+		return node.getAttributeNS(xmlns[attPrefix], attName);
+	} else {
+		return node.getAttribute(attName);
+	}
+}
+
+function createEl(nodeName, prefix) {
+	if (prefix) {
+		return document.createElementNS(xmlns[prefix], nodeName);
+	} else {
+		return document.createElement(nodeName);
+	}
+}
+
+function setAttr(node, attName, attValue, attPrefix) {
+	if (attPrefix !== undefined) {
+		node.setAttributeNS(xmlns[attPrefix], attName, attValue);
+	} else {
+		node.setAttribute(attName, attValue);
+	}
+	return node;
+}
 
 

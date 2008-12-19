@@ -43,6 +43,18 @@ function forEach(o, f) {
 	}
 }
 
+function forEachReverse(o, f) {
+	if (arrayLike(o)) {
+		for (var i = o.length - 1; i >= 0; i--) {
+			f(o[i], i);
+		}
+	} else if (objectLike(o)) {
+		for (var i in o) if (o.hasOwnProperty(i)) {
+			f(o[i], i);
+		}
+	}
+}
+
 function forEachRecursive(o, f) {
 	forEach(o, function (value, key) {
 		f(value, key);
@@ -126,6 +138,12 @@ function merge() {
 		});
 	});
 	return ret;
+}
+// optimized
+function mergeInto(o, into) {
+	forEach(o, function (v, k) {
+		into[v] = k;
+	});
 }
 
 

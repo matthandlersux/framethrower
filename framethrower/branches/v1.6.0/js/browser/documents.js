@@ -1,12 +1,4 @@
-/*
-An XMLTemplate looks like:
-{
-	kind: "xmlTemplate",
-	paramList: [String],
-	url: String,
-	fun: Fun
-}
-*/
+if (window.ROOTDIR === undefined) window.ROOTDIR = "";
 
 function asyncRequest(url, callback) {
 	var req = new XMLHttpRequest();
@@ -26,16 +18,25 @@ function asyncRequest(url, callback) {
 
 var documents = (function () {
 	var urls = {};
+	var callbacks = {};
 	
 	return {
 		withDoc: function (url, callback) {
 			if (urls[url]) {
 				callback(urls[url]);
 			} else {
-				asyncRequest(ROOTDIR+url, function (req) {
-					urls[url] = req.responseXML.firstChild;
-					callback(urls[url]);
-				});
+				if (!callbacks[url]) {
+					callbacks[url] = [callback];
+					asyncRequest(ROOTDIR+url, function (req) {
+						urls[url] = req.responseXML.firstChild;
+						forEach(callbacks[url], function (cb) {
+							cb(urls[url]);
+						});
+						delete callbacks[url];
+					});					
+				} else {
+					callbacks[url].push(callback);					
+				}
 			}
 		},
 		preload: function (url) {
@@ -53,9 +54,7 @@ var xmlTemplates = (function () {
 				callback(urls[url]);
 			} else {
 				documents.withDoc(url, function (xml) {
-					urls[url] = {
-
-					};
+					urls[url] = makeXMLTemplate(xml, url);
 					callback(urls[url]);
 				});
 			}
@@ -65,6 +64,3 @@ var xmlTemplates = (function () {
 		}
 	};
 })();
-
-
-

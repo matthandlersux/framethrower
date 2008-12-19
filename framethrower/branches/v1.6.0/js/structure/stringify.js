@@ -3,7 +3,7 @@ var localIds = makeGenerator("local.");
 
 function unparseExpr(expr) {
 	/*
-	This should only be called on closed, bottomed out Expr's
+	This should only be called on closed Expr's
 	*/
 	function helper(expr) {
 		if (expr.kind === "exprApply") {
@@ -14,7 +14,6 @@ function unparseExpr(expr) {
 			return expr.value;
 		} else if (expr.kind === "fun" || expr.kind === "startCap" || expr.kind === "object") {
 			if (!expr.name) {
-				// this should only be the case for nested StartCaps
 				expr.name = localIds();
 			}
 			return expr.name;
@@ -30,6 +29,8 @@ function unparseExpr(expr) {
 	}
 	return unparse(helper(expr));
 }
+
+var stringify = unparseExpr;
 
 function getExpr(o) {
 	/*
@@ -58,9 +59,9 @@ function getExpr(o) {
 	}
 }
 
-function stringify(o) {
+function uniqueExpr(expr) {
 	/*
-	this function first runs getExpr(o), normalizes the result, then converts it into a string using unparseExpr
+	this function first runs getExpr (to bottom out expr), normalizes the result, then converts it into a string using unparseExpr
 	*/
-	return unparseExpr(normalizeExpr(getExpr(o)));
+	return unparseExpr(normalizeExpr(getExpr(expr)));
 }
