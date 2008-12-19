@@ -56,6 +56,8 @@ injectIntercept(CellPid, Fun, InitState) ->
 sendIntercept(CellPid, Message) ->
 	gen_server:cast(CellPid, {sendIntercept, Message}).
 
+addOnRemove(CellPid, Fun) ->
+	gen_server:cast(CellPid, {addOnRemove, Fun}).
 
 %% 
 %% addline:: CellPid -> Value -> CleanupFun
