@@ -253,7 +253,7 @@ var primFuncs = function () {
 						if (innerVal) {
 							if (count == 0) {
 								outputCell.removeLine(false);
-								var onRemove = outputCell.addLine(true);
+								outputCell.addLine(true);
 							}
 							count++;
 							return function () {
@@ -299,13 +299,12 @@ var primFuncs = function () {
 				var outputCell = makeCell();
 
 				outputCell.addLine(init);		
-				var removeFunc = outputCell.injectFunc(function (val) {
+				outputCell.injectFunc(function (val) {
 					var resultCell = applyFunc(f, val);
-					resultCell.injectFunc(function (val) {
-						return outputCell.addLine(val);
+					resultCell.injectFunc(function (innerVal) {
+						return outputCell.addLine(innerVal);
 					});
 				});
-				outputCell.addOnRemove(removeFunc);
 				
 				return outputCell;
 			}
@@ -316,13 +315,12 @@ var primFuncs = function () {
 				var outputCell = makeCellAssocInput();
 				
 				outputCell.addLine({key:init, val:0});
-				var removeFunc = outputCell.injectFunc(function (keyVal) {
+				outputCell.injectFunc(function (keyVal) {
 					var resultCell = applyFunc(f, keyVal.key);
 					resultCell.injectFunc(function (val) {
 						return outputCell.addLine({key:val, val:keyVal.val+1});
 					});
 				});
-				outputCell.addOnRemove(removeFunc);
 				
 				return outputCell;
 			}

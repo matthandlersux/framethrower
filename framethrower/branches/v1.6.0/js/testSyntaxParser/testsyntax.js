@@ -109,7 +109,7 @@ function testFile(filename) {
 					testWorld.outMessages[endCapName].push({action:'remove', key:keyVal});
 				}
 			};
-		});		
+		});
 		
 		return testWorld;
 	}

@@ -1,7 +1,7 @@
 -module (mblib).
 -compile (export_all).
 
--include ("ast.hrl").
+-include ("../mbrella/v1.4/include/scaffold.hrl").
 
 %% ====================================================
 %% Searching Functions
