@@ -13,6 +13,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 				#cons{type = lambda} = Lambda ->
 					evaluate( betaReduce(Lambda, Expr#cons.right) );
 				Left ->
+					% io:format("~p~n~n", [Expr]),
 					Type = type:get( Expr ),
 					BottomExpr = bottom(Expr),	
 					case type:isReactive(Type) of

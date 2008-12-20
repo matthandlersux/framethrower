@@ -1,32 +1,32 @@
-%% ====================================================
-%% expression records
-%% ====================================================
-
-
--record (cons, {
-	type, % lambda | apply
-	left, % ast | fun
-	right % ast | fun | nat | bool |
-}).
-
--record (exprFun, {
-	kind,
-	type,
-	name,
-	function,
-	bottom
-}).
-
--record (exprVar, {
-	kind,
-	value
-}).
-
--record (exprCell, {
-	pid,
-	type,
-	bottom
-	}).
+% %% ====================================================
+% %% expression records
+% %% ====================================================
+% 
+% 
+% -record (cons, {
+% 	type, % lambda | apply
+% 	left, % ast | fun
+% 	right % ast | fun | nat | bool |
+% }).
+% 
+% -record (exprFun, {
+% 	kind,
+% 	type,
+% 	name,
+% 	function,
+% 	bottom
+% }).
+% 
+% -record (exprVar, {
+% 	kind,
+% 	value
+% }).
+% 
+% -record (exprCell, {
+% 	pid,
+% 	type,
+% 	bottom
+% 	}).
 
 %-----------------------------------------------------
 

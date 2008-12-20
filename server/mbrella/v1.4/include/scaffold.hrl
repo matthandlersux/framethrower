@@ -71,7 +71,7 @@
 }).
 
 -record (exprFun, {
-	kind,
+	kind = "fun",
 	type,
 	name,
 	function,
@@ -90,17 +90,17 @@
 	bottom
 	}).
 
-%% ====================================================
-%% type records
-%% ====================================================
-
--record (constraint, {
-	type, % equals, lambda
-	left,
-	right
-}).
-
--record (type, {
-	type, % typeFun: X -> Y | typeVar: a | typeName: Set
-	value
-}).
+% %% ====================================================
+% %% type records
+% %% ====================================================
+% 
+% -record (constraint, {
+% 	type, % equals, lambda
+% 	left,
+% 	right
+% }).
+% 
+% -record (type, {
+% 	type, % typeFun: X -> Y | typeVar: a | typeName: Set
+% 	value
+% }).

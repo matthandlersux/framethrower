@@ -21,9 +21,11 @@ expr(AST, Env) when is_list(AST) ->
 		true -> 
 			case getFun(AST, Env) of
 				{ok, {Type, Fun}} ->
-					{exprFun, "fun", Type, AST, Fun};
+					#exprFun{type = Type, name = AST, function = Fun};
+					% {exprFun, "fun", Type, AST, Fun};
 				_ ->
-					{exprVar, "var", AST}
+					#exprVar{value = AST}
+					% {exprVar, "var", AST}
 			end;
 		false ->
 			exit(AST)

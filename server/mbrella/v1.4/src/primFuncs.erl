@@ -1,7 +1,7 @@
 -module (primFuncs).
 -compile(export_all).
 
--include ("../../../lib/ast.hrl").
+-include ("../include/scaffold.hrl").
 
 getPrimitives() ->
 	BuildEnv = fun(#exprFun{type = TypeString, name = Name} = Expr, {Suffix, Dict}) ->

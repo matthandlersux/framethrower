@@ -4,7 +4,7 @@
 %%%
 %%% Created : Fri Dec 19 13:24:05 EST 2008
 %%% -------------------------------------------------------------------
--module(memoize.erl).
+-module(memoize).
 
 -behaviour(gen_server).
 

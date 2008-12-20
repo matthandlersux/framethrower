@@ -6,6 +6,7 @@
 -import (mblib, [maybeStore/3]).
 
 -include ("ast.hrl").
+-include ("../mbrella/v1.4/include/scaffold.hrl").
 -define (do(X, Y, Next), then( Y, fun(X) -> Next end )).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
@@ -14,6 +15,7 @@ get( String ) when is_list( String ) ->
 	type:get( expr:expr(String) );
 get( Expr ) ->
 	{Type, Constraints} = genConstraints( Expr ),
+	% io:format("~p~n~n", [{Type, Constraints}]),
 	Subs = unify(Constraints),
 	substitute(Type, Subs).
 	
@@ -123,6 +125,7 @@ genConstraints(Expr, Prefix, Env) ->
 		exprVar ->
 			{getType(Expr, Env), []};
 		expr ->
+			% io:format("~p~n~n", [Expr]),
 			{getType( Expr, Env ), []};
 		apply ->
 			Variable = type(typeVar, "t" ++ Prefix),
