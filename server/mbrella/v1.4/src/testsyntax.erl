@@ -3,7 +3,7 @@
 -include("../include/scaffold.hrl").
 -include_lib("xmerl/include/xmerl.hrl").
 
--record(testWorld, {env=expr:getEnv(default), endCaps=dict:new(), outMessages=[], testOutput=[]}).
+-record(testWorld, {env=expr:getEnv(default), endCaps=dict:new(), outMessages=dict:new()}).
 % 
 % parseAll(D) ->
 % 	% find all RSS files underneath D
@@ -36,7 +36,7 @@ extract(R, State) when is_record(R, xmlElement) ->
 			parseEndCap(R, State);
 		messages ->
 			parseMessages(R, State);
-		expectedMessages ->
+		expectedmessages ->
 			parseExpectedMessages(R, State);
 		removeCap ->
 			parseRemoveCap(R, State);
@@ -60,17 +60,16 @@ parseStartCap(R, State) ->
 
 
 parseEndCap(R, State) ->
-	#testWorld{env=Env} = State,
+	#testWorld{env=Env, outMessages=OutMessages} = State,
 	Name = getAtt(name, R),
 	Expression = getAtt(expression, R),
-	EC = eval:evaluate(expr:expr(Expression), Env),
-	
+	#exprCell{pid=EC} = eval:evaluate(expr:expr(expr:parse(Expression), Env)),
 	Self = self(),
 	cell:injectFunc(EC, fun(Val) -> 
 		Self ! {response, Name, {set, Val}},
 		fun() -> Self ! {response, Name, {remove, Val}} end
 	end),
-	State.
+	State#testWorld{outMessages=dict:store(Name, [], OutMessages)}.
 	
 %private helper function
 parseArgs(R) ->
@@ -119,7 +118,7 @@ parseExpectedMessages(R, State) ->
 extractExpectedMessage(R, ExpectedMessages) when is_record(R, xmlElement) ->
 	ECName = getAtt(ecname, R),
 	MessageToCheck = {R#xmlElement.name, parseArgs(R)},
-	ExpectedMessages ++ [{{ECName, MessageToCheck}, false}];
+	ExpectedMessages ++ [{ECName, MessageToCheck, {false, undefined}}];
 extractExpectedMessage(_, State) -> State.  % ignore any other text data
 
 loop(ExpectedMessages, State) ->
@@ -129,21 +128,21 @@ loop(ExpectedMessages, State) ->
 			ECMessages = dict:fetch(ECName, OutMessages),
 			NewOutMessages = dict:store(ECName, ECMessages ++ [Message], OutMessages),
 			NewState = State#testWorld{outMessages=NewOutMessages},
-			
 			NewExpectedMessages = lists:map(fun(EMessage) -> checkIncomingMessage(EMessage, NewState) end, ExpectedMessages),
-			Finished = lists:foldl(fun({_,_,Done}, Truth) -> Truth and Done end, true, ExpectedMessages),
+			Finished = lists:foldl(fun({_,_,{Done,_}}, Truth) -> Truth and Done end, true, NewExpectedMessages),
 			if
 				Finished == true -> 
-					lists:foldL(fun outputExpectedMessage/2, NewState, NewExpectedMessages);
+					lists:foldl(fun outputExpectedMessage/2, NewState, NewExpectedMessages);
 				true -> loop(NewExpectedMessages, NewState)
 			end
 	after 1000 ->
-		io:format("Test Timed Out", [])
+		io:format("Error: Test Timed Out~n", []),
+		lists:foldl(fun outputExpectedMessage/2, State, ExpectedMessages)
 	end.
 	
 checkIncomingMessage({ECName, MessageToCheck, {true, Output}}, State) -> {ECName, MessageToCheck, {true, Output}};
 checkIncomingMessage({ECName, MessageToCheck, {false, _}}, State) ->
-	#testWorld{env=Env, outMessages=OutMessages, testOutput=TestOutput} = State,
+	#testWorld{env=Env, outMessages=OutMessages} = State,
 	Response =
 		try hd(dict:fetch(ECName, OutMessages)) of
 			{set, {startCap, TrySCName}} -> 
@@ -167,16 +166,17 @@ checkIncomingMessage({ECName, MessageToCheck, {false, _}}, State) ->
 					_ -> noMessage
 				end
 		end,
-	case Response of
+	Result = case Response of
 		match -> {true, {match, "Confirmed Message: " ++ messageToString(MessageToCheck, ECName)}};
 		none -> {true, {none, "Confirmed Message: " ++ messageToString(MessageToCheck, ECName)}};
 		{scPatternMatch, SCName, SC} -> {true, {{scPatternMatch, SCName, SC}, "Confirmed Message: " ++ messageToString(MessageToCheck, ECName)}};
 		{badMatch, WrongMessage} -> {false, "Error: Expected Message: " ++ messageToString(MessageToCheck, ECName) ++ ", but received message " ++ messageToString(WrongMessage, ECName)};
 		noMessage -> {false, "Error: Expected Message: " ++ messageToString(MessageToCheck, ECName) ++ ", but received NO Message"}
-	end.
+	end,
+	{ECName, MessageToCheck, Result}.
 	
 outputExpectedMessage({ECName, MessageToCheck, {true, Output}}, State) ->
-	#testWorld{env=Env, outMessages=OutMessages, testOutput=TestOutput} = State,
+	#testWorld{env=Env, outMessages=OutMessages} = State,
 	{Control, Message} = Output,
 	io:format("~p~n", [Message]),
 
@@ -195,10 +195,18 @@ outputExpectedMessage({ECName, MessageToCheck, {false, Output}}, State) ->
 	State.
 	
 
+toString(Value) ->
+	case Value of
+		List when is_list(List) -> List;
+		Num when is_integer(Num) -> integer_to_list(Num);
+		Num when is_float(Num) -> float_to_list(Num);
+		Atom when is_atom(Atom) -> atom_to_list(Atom)
+	end.
+
 messageToString({Name, {Key, Value}}, ECName) ->
-	Name ++ "(" ++ Key ++ ", " ++ Value ++ ") at endCap: " ++ ECName;
+	toString(Name) ++ "(" ++ toString(Key) ++ ", " ++ toString(Value) ++ ") at endCap: " ++ ECName;
 messageToString({Name, Value}, ECName) ->
-	Name ++ "(" ++ Value ++ ") at endCap: " ++ ECName.
+	toString(Name) ++ "(" ++ toString(Value) ++ ") at endCap: " ++ ECName.
 
 	
 parseRemoveCap(R, State) ->
@@ -208,7 +216,7 @@ parseRemoveCap(R, State) ->
 parsePrim(R) when is_record(R, xmlElement) ->
 	case R#xmlElement.name of
 		number ->
-			getAtt(value, R);
+			list_to_integer(getAtt(value, R));
 		_ -> undefined
 	end;
 parsePrim(_) ->
