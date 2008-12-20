@@ -72,6 +72,9 @@ betaReduce1( Expr, _, _ ) -> Expr.
 %% 
 
 applyFun( #exprFun{function = Fun} = ExprFun, Expr ) when is_record(ExprFun, exprFun) ->
-	Fun(Expr).
+	case Expr of
+		#exprCell{pid=Pid} -> Fun(Pid);
+		_ -> Fun(Expr)
+	end.
 	
 bottom( Expr ) -> Expr.

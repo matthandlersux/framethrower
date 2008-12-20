@@ -101,7 +101,7 @@ getType( Expr, Env ) when is_record(Expr, exprVar) ->
 	catch _:_ -> erlang:error({typeVar_not_found, Expr})
 	end;
 getType( Expr, Env ) when is_record(Expr, exprCell) ->
-	type(cell);
+	Expr#exprCell.type;
 getType({primitive, Type, _}, _) -> 
 	case Type of
 		bool -> type(bool);
@@ -160,8 +160,7 @@ genConstraints(Expr, Prefix, Env) ->
 	
 type(bool) -> {type, typeName, 'Bool'};
 type(num) -> {type, typeName, 'Nat'};
-type(string) -> {type, typeName, 'String'};
-type(cell) -> {type, typeName, 'Cell'}.
+type(string) -> {type, typeName, 'String'}.
 
 type(typeVar, Val) -> {type, typeVar, Val};
 type(typeFun, String) -> String.

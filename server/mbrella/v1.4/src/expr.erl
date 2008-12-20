@@ -19,10 +19,10 @@ expr(AST, _) when AST =:= "true" orelse AST =:= "false" ->
 expr(AST, Env) when is_list(AST) ->
 	case is_string(AST) of
 		true -> 
-			case getFun(AST, Env) of
-				{ok, {Type, Fun}} ->
-					#exprFun{type = Type, name = AST, function = Fun};
-					% {exprFun, "fun", Type, AST, Fun};
+			io:format("Going to run getFun on ~p~n", [AST]),
+			case getFromEnv(AST, Env) of
+				ExprFun when is_record(ExprFun, exprFun) -> ExprFun#exprFun{name=AST};
+				ExprCell when is_record(ExprCell, exprCell) -> ExprCell;
 				_ ->
 					#exprVar{value = AST}
 					% {exprVar, "var", AST}
@@ -124,11 +124,8 @@ primitive() ->
 %% environment functions
 %% ====================================================
 
-getFun(Key, Env) ->
-	try dict:fetch(Key, Env) of
-		#exprFun{type = Type, function = Fun} = ExprFun when is_record(ExprFun, exprFun) ->
-		% {Type, Fun} ->
-			 {ok, {Type, Fun}}
+getFromEnv(Key, Env) ->
+	try dict:fetch(Key, Env)
 	catch
 		_:_ -> false
 	end.

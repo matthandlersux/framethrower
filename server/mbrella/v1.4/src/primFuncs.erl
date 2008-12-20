@@ -13,7 +13,7 @@ getPrimitives() ->
 	FunList = primitives(),
 	{_, FinalDict} = lists:foldl( BuildEnv, {1, dict:new()}, FunList),
 	FinalDict.
-				
+
 primitives() ->
 	[
 	%% ============================================================================
@@ -32,6 +32,7 @@ primitives() ->
 	type = "Unit a -> Set a",
 	function = fun(Cell) ->
 		OutputCell = cell:makeCell(),
+		io:format("about to inject~n", []),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
 			cell:addLine(OutputCell, Val) end),
 		cell:addOnRemove(OutputCell, RemoveFunc),

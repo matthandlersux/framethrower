@@ -14,9 +14,8 @@
 parse(FName) ->
 	% parses a single RSS file
 	{R,_} = xmerl_scan:file(FName),
-	State = #testWorld{},
 	spawn(fun() -> 
-		L = extract(R,State)
+		L = extract(R,undefined)
 	end).
 	%L = lists:reverse(extract(R, [])),
 	% print channel title and data for first two episodes
@@ -29,7 +28,8 @@ extract(R, State) when is_record(R, xmlElement) ->
 		tests ->
 			lists:foldl(fun extract/2, State, R#xmlElement.content);
 		test ->
-			lists:foldl(fun extract/2, State, R#xmlElement.content);
+			io:format("Running test ~p~n", [getAtt(name, R)]),
+			lists:foldl(fun extract/2, #testWorld{}, R#xmlElement.content);
 		startcap ->
 			parseStartCap(R, State);
 		endcap ->
@@ -60,6 +60,7 @@ parseStartCap(R, State) ->
 
 
 parseEndCap(R, State) ->
+	io:format("Parsing End Cap ~n", []),
 	#testWorld{env=Env, outMessages=OutMessages} = State,
 	Name = getAtt(name, R),
 	Expression = getAtt(expression, R),
@@ -69,6 +70,7 @@ parseEndCap(R, State) ->
 		Self ! {response, Name, {set, Val}},
 		fun() -> Self ! {response, Name, {remove, Val}} end
 	end),
+	io:format("Done Parsing End Cap ~n", []),
 	State#testWorld{outMessages=dict:store(Name, [], OutMessages)}.
 	
 %private helper function

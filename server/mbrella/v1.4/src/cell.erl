@@ -48,6 +48,7 @@ makeCellAssocInput() ->
 	Pid.
 
 injectFunc(CellPid, Fun) ->
+	io:format("about to genserver:call on pid: ~p~n", [CellPid]),
 	gen_server:call(CellPid, {injectFunc, Fun}).
 
 injectIntercept(CellPid, Fun, InitState) ->
@@ -116,14 +117,16 @@ handle_call({addLine, Value}, From, State) ->
 	CallBack = fun() -> gen_server:cast(?MODULE, {removeLine, Key}) end,
     {reply, CallBack, NewState};
 handle_call({injectFunc, Fun}, From, State) ->
+	io:format("in handle call~n", []),
 	#cell{funcs=Funcs, dots=Dots, funcColor=FuncColor} = State,
 	Id = FuncColor,
 	NewFuncs = dict:store(Id, Fun, Funcs),
 	NewDots = dict:map(fun(Key, Dot) -> addLineResponse(Dot, Fun, Id) end, Dots),
 	NewState = State#cell{funcColor=Id+1, funcs=NewFuncs, dots=NewDots},
     CallBack = fun() -> gen_server:cast(?MODULE, {removeFunc, Id}) end,
-    {reply, CallBack, NewState}.
-
+    {reply, CallBack, NewState};
+handle_call(Something, From, State) ->
+	io:format("UH OH Something: ~p~n", [Something]).
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
