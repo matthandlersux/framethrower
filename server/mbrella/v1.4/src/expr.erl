@@ -19,7 +19,6 @@ expr(AST, _) when AST =:= "true" orelse AST =:= "false" ->
 expr(AST, Env) when is_list(AST) ->
 	case is_string(AST) of
 		true -> 
-			io:format("Going to run getFun on ~p~n", [AST]),
 			case getFromEnv(AST, Env) of
 				ExprFun when is_record(ExprFun, exprFun) -> ExprFun#exprFun{name=AST};
 				ExprCell when is_record(ExprCell, exprCell) -> ExprCell;

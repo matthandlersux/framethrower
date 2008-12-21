@@ -32,7 +32,6 @@ primitives() ->
 	type = "Unit a -> Set a",
 	function = fun(Cell) ->
 		OutputCell = cell:makeCell(),
-		io:format("about to inject~n", []),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
 			cell:addLine(OutputCell, Val) end),
 		cell:addOnRemove(OutputCell, RemoveFunc),
@@ -356,7 +355,7 @@ primitives() ->
 					dict:store(BVal, NewCell, BHash);
 				{bHashRemove, BVal} ->
 					cell:removeLine(OutputCell, BVal),
-					dict:remove(BVal, BHash);
+					dict:erase(BVal, BHash);
 				{addInnerLine, InnerVal, Key} ->
 					cell:addLine(dict:fetch(InnerVal, BHash), Key),
 					BHash;

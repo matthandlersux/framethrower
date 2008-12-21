@@ -60,7 +60,6 @@ parseStartCap(R, State) ->
 
 
 parseEndCap(R, State) ->
-	io:format("Parsing End Cap ~n", []),
 	#testWorld{env=Env, outMessages=OutMessages} = State,
 	Name = getAtt(name, R),
 	Expression = getAtt(expression, R),
@@ -68,9 +67,10 @@ parseEndCap(R, State) ->
 	Self = self(),
 	cell:injectFunc(EC, fun(Val) -> 
 		Self ! {response, Name, {set, Val}},
-		fun() -> Self ! {response, Name, {remove, Val}} end
+		fun() -> 
+			Self ! {response, Name, {remove, Val}} 
+		end
 	end),
-	io:format("Done Parsing End Cap ~n", []),
 	State#testWorld{outMessages=dict:store(Name, [], OutMessages)}.
 	
 %private helper function
@@ -92,7 +92,8 @@ extractMessage(R, State) when is_record(R, xmlElement) ->
 	#testWorld{env=Env} = State,
 	GetStartCap = fun() ->
 		SCName = getAtt(scname, R),
-		StartCap = dict:fetch(SCName, Env)
+		#exprCell{pid=Pid} = dict:fetch(SCName, Env),
+		Pid
 	end,
 	Value = parseArgs(R),
 	case R#xmlElement.name of
@@ -115,7 +116,7 @@ parseMessages(R, State) ->
 	
 parseExpectedMessages(R, State) ->
 	ExpectedMessages = lists:foldl(fun(InnerR, InnerExpectedMessages) -> extractExpectedMessage(InnerR, InnerExpectedMessages) end, [], R#xmlElement.content),
-	loop(ExpectedMessages, State).
+	loop(ExpectedMessages, [], State).
 
 extractExpectedMessage(R, ExpectedMessages) when is_record(R, xmlElement) ->
 	ECName = getAtt(ecname, R),
@@ -123,7 +124,7 @@ extractExpectedMessage(R, ExpectedMessages) when is_record(R, xmlElement) ->
 	ExpectedMessages ++ [{ECName, MessageToCheck, {false, undefined}}];
 extractExpectedMessage(_, State) -> State.  % ignore any other text data
 
-loop(ExpectedMessages, State) ->
+loop(ExpectedMessages, FinishedMessages, State) ->
 	#testWorld{outMessages=OutMessages} = State,
 	receive
 		{response, ECName, Message} ->
@@ -131,16 +132,27 @@ loop(ExpectedMessages, State) ->
 			NewOutMessages = dict:store(ECName, ECMessages ++ [Message], OutMessages),
 			NewState = State#testWorld{outMessages=NewOutMessages},
 			NewExpectedMessages = lists:map(fun(EMessage) -> checkIncomingMessage(EMessage, NewState) end, ExpectedMessages),
-			Finished = lists:foldl(fun({_,_,{Done,_}}, Truth) -> Truth and Done end, true, NewExpectedMessages),
+			NewerState = lists:foldl(fun updateOutMessages/2, NewState, NewExpectedMessages),
+			NewerExpectedMessages = lists:filter(fun filterExpectedMessages/1, NewExpectedMessages),
+			NewFinishedMessages = FinishedMessages ++ lists:filter(fun filterFinishedMessages/1, NewExpectedMessages),
 			if
-				Finished == true -> 
-					lists:foldl(fun outputExpectedMessage/2, NewState, NewExpectedMessages);
-				true -> loop(NewExpectedMessages, NewState)
+				length(NewerExpectedMessages) == 0 -> 
+					lists:map(fun outputExpectedMessage/1, NewFinishedMessages),
+					NewerState;
+				true -> loop(NewerExpectedMessages, NewFinishedMessages, NewerState)
 			end
 	after 1000 ->
 		io:format("Error: Test Timed Out~n", []),
-		lists:foldl(fun outputExpectedMessage/2, State, ExpectedMessages)
+		lists:foldl(fun outputExpectedMessage/1, FinishedMessages),
+		lists:foldl(fun outputExpectedMessage/1, ExpectedMessages),
+		State
 	end.
+	
+filterExpectedMessages({_,_,{false,_}}) -> true;
+filterExpectedMessages(_) -> false.
+	
+filterFinishedMessages({_,_,{true,_}}) -> true;
+filterFinishedMessages(_) -> false.
 	
 checkIncomingMessage({ECName, MessageToCheck, {true, Output}}, State) -> {ECName, MessageToCheck, {true, Output}};
 checkIncomingMessage({ECName, MessageToCheck, {false, _}}, State) ->
@@ -176,25 +188,26 @@ checkIncomingMessage({ECName, MessageToCheck, {false, _}}, State) ->
 		noMessage -> {false, "Error: Expected Message: " ++ messageToString(MessageToCheck, ECName) ++ ", but received NO Message"}
 	end,
 	{ECName, MessageToCheck, Result}.
-	
-outputExpectedMessage({ECName, MessageToCheck, {true, Output}}, State) ->
+
+
+updateOutMessages({ECName, MessageToCheck, {true, Output}}, State) ->
 	#testWorld{env=Env, outMessages=OutMessages} = State,
 	{Control, Message} = Output,
-	io:format("~p~n", [Message]),
 
 	ECMessages = dict:fetch(ECName, OutMessages),
-	
-	NewECMessages = case {Control, ECMessages} of
-		{match, [Head|Tail]} -> State#testWorld{outMessages=Tail};
-		{none, FullList} -> State#testWorld{outMessages=FullList};
-		{{scPatternMatch, SCName, SC},[Head|Tail]} -> State#testWorld{outMessages=Tail, env=dict:store(SCName, SC, Env)}
-		
-	end,
-	NewOutMessages = dict:store(ECName, NewECMessages, OutMessages),
-	State#testWorld{outMessages=NewOutMessages};
-outputExpectedMessage({ECName, MessageToCheck, {false, Output}}, State) ->
-	io:format("~p~n", [Output]),
+	case {Control, ECMessages} of
+		{match, [Head|Tail]} -> State#testWorld{outMessages=dict:store(ECName, Tail, OutMessages)};
+		{none, FullList} -> State;
+		{{scPatternMatch, SCName, SC},[Head|Tail]} -> State#testWorld{outMessages=dict:store(ECName, Tail, OutMessages), env=dict:store(SCName, SC, Env)}	
+	end;
+updateOutMessages(_, State) ->
 	State.
+	
+outputExpectedMessage({ECName, MessageToCheck, {true, Output}}) ->
+	{Control, Message} = Output,
+	io:format("~p~n", [Message]);
+outputExpectedMessage({ECName, MessageToCheck, {false, Output}}) ->
+	io:format("~p~n", [Output]).
 	
 
 toString(Value) ->

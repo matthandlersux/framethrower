@@ -48,7 +48,6 @@ makeCellAssocInput() ->
 	Pid.
 
 injectFunc(CellPid, Fun) ->
-	io:format("about to genserver:call on pid: ~p~n", [CellPid]),
 	gen_server:call(CellPid, {injectFunc, Fun}).
 
 injectIntercept(CellPid, Fun, InitState) ->
@@ -109,24 +108,24 @@ handle_call({addLine, Value}, From, State) ->
 	Dot = try dict:fetch(Key, Dots) of
 		{dot, Num, Value, Lines} -> {dot, Num+1, Value, Lines}
 	catch
-		Type:Exception -> {dot, 1, Value, dict:new()}
+		_:_ -> {dot, 1, Value, dict:new()}
 	end,
 	NewDot = onAdd(Dot, Funcs),
 	NewDots = dict:store(Key, NewDot, Dots),
 	NewState = State#cell{dots=NewDots},
-	CallBack = fun() -> gen_server:cast(?MODULE, {removeLine, Key}) end,
+	Self = self(),
+	CallBack = fun() -> 
+		gen_server:cast(Self, {removeLine, Key}) end,
     {reply, CallBack, NewState};
 handle_call({injectFunc, Fun}, From, State) ->
-	io:format("in handle call~n", []),
 	#cell{funcs=Funcs, dots=Dots, funcColor=FuncColor} = State,
 	Id = FuncColor,
 	NewFuncs = dict:store(Id, Fun, Funcs),
 	NewDots = dict:map(fun(Key, Dot) -> addLineResponse(Dot, Fun, Id) end, Dots),
 	NewState = State#cell{funcColor=Id+1, funcs=NewFuncs, dots=NewDots},
-    CallBack = fun() -> gen_server:cast(?MODULE, {removeFunc, Id}) end,
-    {reply, CallBack, NewState};
-handle_call(Something, From, State) ->
-	io:format("UH OH Something: ~p~n", [Something]).
+	Self = self(),
+    CallBack = fun() -> gen_server:cast(Self, {removeFunc, Id}) end,
+    {reply, CallBack, NewState}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -138,19 +137,19 @@ handle_call(Something, From, State) ->
 handle_cast({removeLine, Value}, State) ->
 	#cell{funcs=Funcs, dots=Dots} = State,
 	NewDots = try dict:fetch(Value, Dots) of
-		{dot, Num, Value, Lines} -> 
-			if Num == 0 -> onRemove(Value, Funcs),
-						   dict:remove(Value, Dots);
+		{dot, Num, Value, Lines} = Dot -> 
+			if Num == 1 -> onRemove(Dot, Funcs),
+						   dict:erase(Value, Dots);
 			   true -> dict:store(Value, {dot, Num-1, Value, Lines}, Dots)
 			end
 	catch
-		Type:Exception -> Dots
+		_:_ -> Dots
 	end,
 	NewState = State#cell{dots=NewDots},
     {noreply, NewState};
 handle_cast({removeFunc, Id}, State) ->
 	#cell{funcs=Funcs, dots=Dots} = State,
-	NewFuncs = dict:remove(Id, Funcs),
+	NewFuncs = dict:erase(Id, Funcs),
 	NewDots = dict:map(fun(Key, Dot) -> removeLineResponse(Dot, Id) end, Dots),
 	NewState = State#cell{funcs=NewFuncs, dots=NewDots},
 	%TODO: destroy this cell if Funcs is empty?
@@ -215,9 +214,9 @@ removeLineResponse(Dot, Id) ->
 	{dot, Num, Value, Lines} = Dot,
 	NewLines = try dict:fetch(Id, Lines) of
 		OnRemove -> OnRemove(),
-					dict:remove(Id, Lines)
+					dict:erase(Id, Lines)
 	catch
-		Type:Exception -> Lines
+		_:_ -> Lines
 	end,
 	{dot, Num, Value, NewLines}.
 
@@ -227,7 +226,7 @@ onAdd(Dot, Funcs) ->
 	dict:fold(AddFolder, Dot, Funcs).
 
 onRemove(Dot, Funcs) ->
-	RemoveFolder = fun(Id) -> 
+	RemoveFolder = fun(Id, Fun) -> 
 		removeLineResponse(Dot, Id) end,
 	dict:map(RemoveFolder, Funcs),
 	{ok}.

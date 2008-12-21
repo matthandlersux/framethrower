@@ -1,0 +1,37 @@
+<tests>
+	<test name='returnUnitSetTest1'>
+		<startcap name='sc' type='unit number' />
+
+		<endcap name = 'ec' expression = 'returnUnitSet sc' />
+
+		<messages>
+			<set scname = 'sc'>
+				<number value='2' />
+			</set>
+		</messages>
+		
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '2' />
+			</set>
+		</expectedmessages>
+
+		<messages>
+			<remove scname = 'sc'>
+				<number value='2' />
+			</remove>
+			<set scname = 'sc' >
+				<number value = '4' />
+			</set>
+		</messages>
+		
+		<expectedmessages>
+			<remove ecname = 'ec'>
+				<number value='2' />
+			</remove>
+			<set ecname = 'ec' >
+				<number value = '4' />
+			</set>
+		</expectedmessages>
+	</test>
+</tests>
