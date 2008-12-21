@@ -1,28 +1,18 @@
 <tests>
-	<test name='buildAssocTest1'>
+	<test name='passThruTest1'>
 
-		<startcap name = 'sc' type = 'Set Number' />
-
-		<endcap name = 'ec' expression = 'buildAssoc (add 2) sc' />
-
-		<messages>
-			<set scname = 'sc'>
-				<number value = '1' />
-			</set>
-			<set scname = 'sc'>
-				<number value = '2' />
-			</set>
-		</messages>
+		<endcap name = 'ec' expression = 'passThru not false' />
 
 		<expectedmessages>
-			<set ecname = 'ec'>
-				<number value = '1' />
-				<number value = '3' />
+			<set ecname = 'ec' >
+				<bool value='false'/>
 			</set>
-			<set ecname = 'ec'>
-				<number value = '2' />
-				<number value = '4' />
-			</set>
+		</expectedmessages>
+
+		<endcap name = 'ec2' expression = 'passThru not true' />
+
+		<expectedmessages>
+			<none ecname = 'ec' />
 		</expectedmessages>
 
 	</test>

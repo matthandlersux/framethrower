@@ -142,7 +142,7 @@ loop(ExpectedMessages, FinishedMessages, State) ->
 				true -> loop(NewerExpectedMessages, NewFinishedMessages, NewerState)
 			end
 	after 1000 ->
-		io:format("Error: Test Timed Out~n", []),
+		io:format("Test Timed Out~n", []),
 		lists:map(fun outputExpectedMessage/1, FinishedMessages),
 		lists:map(fun outputExpectedMessage/1, ExpectedMessages),
 		State
@@ -174,7 +174,7 @@ checkIncomingMessage({ECName, MessageToCheck, {false, _}}, State) ->
 			MessageToCheck -> match;
 			BadMatch -> {badMatch, BadMatch}
 		catch
-			Type:Exception -> 
+			_:_ -> 
 				case MessageToCheck of
 					{none,_} -> none;
 					_ -> noMessage
@@ -206,6 +206,8 @@ updateOutMessages(_, State) ->
 outputExpectedMessage({ECName, MessageToCheck, {true, Output}}) ->
 	{Control, Message} = Output,
 	io:format("~p~n", [Message]);
+outputExpectedMessage({ECName, {none, _}, _}) ->
+	io:format("No message Expected at endCap: ~p~n", [ECName]);
 outputExpectedMessage({ECName, MessageToCheck, {false, Output}}) ->
 	io:format("~p~n", [Output]).
 	
@@ -230,8 +232,8 @@ parseRemoveCap(R, State) ->
 
 parsePrim(R) when is_record(R, xmlElement) ->
 	case R#xmlElement.name of
-		number ->
-			list_to_integer(getAtt(value, R));
+		number -> list_to_integer(getAtt(value, R));
+		bool -> list_to_atom(getAtt(value, R));
 		_ -> undefined
 	end;
 parsePrim(_) ->
