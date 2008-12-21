@@ -110,3 +110,14 @@ which(E, [H|T], Pos) ->
 		true ->
 			which(E, T, Pos + 1)
 	end.
+	
+%% ====================================================
+%% functional functions - worst section name ever :(
+%% ====================================================
+
+curry(Func) ->
+	Info = erlang:fun_info(Func),
+	[{arity, Arity}] = lists:filter(fun(E) -> case E of {arity,_} -> true; _->false end end, Info),
+	curry(Func,Arity, []).
+curry(Func, 0, Args) -> apply(Func, Args);
+curry(Func, Arity, Args) -> fun(Arg) -> curry(Func, Arity-1, Args ++ [Arg])	end.

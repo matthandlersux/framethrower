@@ -1,6 +1,8 @@
 -module (primFuncs).
 -compile(export_all).
 
+-import(mblib, [curry/1]).
+-import(eval, [applyFunc/2]).
 -include ("../include/scaffold.hrl").
 
 getPrimitives() ->
@@ -433,16 +435,6 @@ bindUnitOrSetHelper(Fun, Cell) ->
 	end),
 	cell:addOnRemove(OutputCell, RemoveFunc),
 	OutputCell.
-
-applyFunc(Func, Input) ->
-	eval:applyFun(Func, Input).
-
-curry(Func) ->
-	Info = erlang:fun_info(Func),
-	[{arity, Arity}] = lists:filter(fun(E) -> case E of {arity,_} -> true; _->false end end, Info),
-	curry(Func,Arity, []).
-curry(Func, 0, Args) -> apply(Func, Args);
-curry(Func, Arity, Args) -> fun(Arg) -> curry(Func, Arity-1, Args ++ [Arg])	end.
 
 for(Max, Max, F) -> [F(Max)];
 for(I, Max, F) -> [F(I)|for(I+1, Max, F)].
