@@ -1,37 +1,30 @@
 <tests>
-	<test name='returnUnitSetTest1'>
-		<startcap name='sc' type='unit number' />
+	<test name='buildAssocTest1'>
 
-		<endcap name = 'ec' expression = 'returnUnitSet sc' />
+		<startcap name = 'sc' type = 'Set Number' />
+
+		<endcap name = 'ec' expression = 'buildAssoc (add 2) sc' />
 
 		<messages>
 			<set scname = 'sc'>
-				<number value='2' />
+				<number value = '1' />
+			</set>
+			<set scname = 'sc'>
+				<number value = '2' />
 			</set>
 		</messages>
-		
+
 		<expectedmessages>
-			<set ecname = 'ec' >
+			<set ecname = 'ec'>
+				<number value = '1' />
+				<number value = '3' />
+			</set>
+			<set ecname = 'ec'>
 				<number value = '2' />
+				<number value = '4' />
 			</set>
 		</expectedmessages>
 
-		<messages>
-			<remove scname = 'sc'>
-				<number value='2' />
-			</remove>
-			<set scname = 'sc' >
-				<number value = '4' />
-			</set>
-		</messages>
-		
-		<expectedmessages>
-			<remove ecname = 'ec'>
-				<number value='2' />
-			</remove>
-			<set ecname = 'ec' >
-				<number value = '4' />
-			</set>
-		</expectedmessages>
 	</test>
+
 </tests>

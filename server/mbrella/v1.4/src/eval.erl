@@ -36,6 +36,8 @@ evaluate(Expr) when is_record(Expr, cons) ->
 							case applyFun( F, Input ) of
 								X when is_function(X) ->
 									#exprFun{function = X, type = Type, bottom = BottomExpr};
+								Pid when is_pid(Pid) ->
+									#exprCell{pid = Pid, type = Type, bottom = BottomExpr};									
 								NumStringBool ->
 									NumStringBool
 							end

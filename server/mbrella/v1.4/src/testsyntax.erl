@@ -81,7 +81,7 @@ parseArgs(R) ->
 			Prim -> [Prim | L]
 		end
 	end,
-	Result = lists:foldl(GetArg, [], R#xmlElement.content),
+	Result = lists:foldr(GetArg, [], R#xmlElement.content),
 	case Result of
 		[A,B|[]] -> {A,B};
 		[A|[]] -> A;
@@ -143,8 +143,8 @@ loop(ExpectedMessages, FinishedMessages, State) ->
 			end
 	after 1000 ->
 		io:format("Error: Test Timed Out~n", []),
-		lists:foldl(fun outputExpectedMessage/1, FinishedMessages),
-		lists:foldl(fun outputExpectedMessage/1, ExpectedMessages),
+		lists:map(fun outputExpectedMessage/1, FinishedMessages),
+		lists:map(fun outputExpectedMessage/1, ExpectedMessages),
 		State
 	end.
 	

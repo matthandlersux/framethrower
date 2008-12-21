@@ -158,8 +158,10 @@ primitives() ->
 	#exprFun{
 	name = "add",
 	type = "Number -> Number -> Number",
-	function = fun(Val1, Val2) ->
-		Val1 + Val2
+	function = fun(Val1) ->
+		fun(Val2) ->
+			Val1 + Val2
+		end
 	end},
 	#exprFun{
 	name = "subtract",
@@ -319,14 +321,16 @@ primitives() ->
 	#exprFun{
 	name = "buildAssoc",
 	type = "(a -> b) -> Set a -> Assoc a b",
-	function = fun(Fun, Cell) ->
-		OutputCell = cell:makeCellAssocInput(),
-		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			Result = applyFunc(Fun, Val),
-			cell:addLine(OutputCell, {Val, Result})
-		end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
-		OutputCell
+	function = fun(Fun) ->
+		fun(Cell) ->
+			OutputCell = cell:makeCellAssocInput(),
+			RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+				Result = applyFunc(Fun, Val),
+				cell:addLine(OutputCell, {Val, Result})
+			end),
+			cell:addOnRemove(OutputCell, RemoveFunc),
+			OutputCell
+		end
 	end},
 	%%REMOVE THIS LATER... JUST FOR TESTING
 	#exprFun{
@@ -435,7 +439,7 @@ bindUnitOrSetHelper(Fun, Cell) ->
 	OutputCell.
 
 applyFunc(Func, Input) ->
-	Func(Input).
+	eval:applyFun(Func, Input).
 
 for(Max, Max, F) -> [F(Max)];
 for(I, Max, F) -> [F(I)|for(I+1, Max, F)].

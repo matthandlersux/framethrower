@@ -159,7 +159,7 @@ genConstraints(Expr, Prefix, Env) ->
 %% 
 	
 type(bool) -> {type, typeName, 'Bool'};
-type(num) -> {type, typeName, 'Nat'};
+type(num) -> {type, typeName, 'Number'};
 type(string) -> {type, typeName, 'String'}.
 
 type(typeVar, Val) -> {type, typeVar, Val};
