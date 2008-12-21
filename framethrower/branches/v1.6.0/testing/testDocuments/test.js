@@ -28,3 +28,27 @@ function onload() {
 document.addEventListener("load", onload, false);
 
 
+
+
+
+
+
+var type = parseType("Assoc Number (Set String)");
+var cell = makeCellAssocInput();
+cell.type = type;
+
+var othercells = [];
+othercells[0] = makeCell();
+othercells[1] = makeCell();
+othercells[2] = makeCell();
+
+othercells[0].addLine("andrew");
+othercells[1].addLine("matt");
+othercells[2].addLine("toby");
+othercells[2].addLine("andrew");
+
+cell.addLine(0, othercells[0]);
+cell.addLine(1, othercells[1]);
+cell.addLine(2, othercells[2]);
+
+
