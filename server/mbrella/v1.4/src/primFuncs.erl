@@ -4,8 +4,8 @@
 -include ("../include/scaffold.hrl").
 
 getPrimitives() ->
-	BuildEnv = fun(#exprFun{type = TypeString, name = Name} = Expr, {Suffix, Dict}) ->
-			{Suffix + 1, dict:store(Name, Expr#exprFun{type = type:shiftVars( type:parse(TypeString), integer_to_list(Suffix) ++ "v")}, Dict)}
+	BuildEnv = fun(#exprFun{function = Func, type = TypeString, name = Name} = Expr, {Suffix, Dict}) ->
+			{Suffix + 1, dict:store(Name, Expr#exprFun{function=curry(Func),type = type:shiftVars( type:parse(TypeString), integer_to_list(Suffix) ++ "v")}, Dict)}
 		end,
 	% BuildEnv = fun({Name, TypeString, Fun}, {Suffix, Dict}) ->
 	% 				{Suffix + 1, dict:store(Name, {type:shiftVars( type:parse(TypeString), integer_to_list(Suffix) ++ "v"), Fun}, Dict)}
@@ -158,10 +158,8 @@ primitives() ->
 	#exprFun{
 	name = "add",
 	type = "Number -> Number -> Number",
-	function = fun(Val1) ->
-		fun(Val2) ->
-			Val1 + Val2
-		end
+	function = fun(Val1, Val2) ->
+		Val1 + Val2
 	end},
 	#exprFun{
 	name = "subtract",
@@ -321,16 +319,14 @@ primitives() ->
 	#exprFun{
 	name = "buildAssoc",
 	type = "(a -> b) -> Set a -> Assoc a b",
-	function = fun(Fun) ->
-		fun(Cell) ->
-			OutputCell = cell:makeCellAssocInput(),
-			RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-				Result = applyFunc(Fun, Val),
-				cell:addLine(OutputCell, {Val, Result})
-			end),
-			cell:addOnRemove(OutputCell, RemoveFunc),
-			OutputCell
-		end
+	function = fun(Fun, Cell) ->
+		OutputCell = cell:makeCellAssocInput(),
+		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+			Result = applyFunc(Fun, Val),
+			cell:addLine(OutputCell, {Val, Result})
+		end),
+		cell:addOnRemove(OutputCell, RemoveFunc),
+		OutputCell
 	end},
 	%%REMOVE THIS LATER... JUST FOR TESTING
 	#exprFun{
@@ -440,6 +436,13 @@ bindUnitOrSetHelper(Fun, Cell) ->
 
 applyFunc(Func, Input) ->
 	eval:applyFun(Func, Input).
+
+curry(Func) ->
+	Info = erlang:fun_info(Func),
+	[{arity, Arity}] = lists:filter(fun(E) -> case E of {arity,_} -> true; _->false end end, Info),
+	curry(Func,Arity, []).
+curry(Func, 0, Args) -> apply(Func, Args);
+curry(Func, Arity, Args) -> fun(Arg) -> curry(Func, Arity-1, Args ++ [Arg])	end.
 
 for(Max, Max, F) -> [F(Max)];
 for(I, Max, F) -> [F(I)|for(I+1, Max, F)].
