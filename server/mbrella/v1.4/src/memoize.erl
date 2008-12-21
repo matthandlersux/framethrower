@@ -12,37 +12,50 @@
 % syntactic sugar babbbyyy
 -define (ob(Field), mblib:getVal(Ob, Field)).
 -define (this(Field), State#?MODULE.Field).
+-define (TABFILE, "data/memoize.ets").
 
 %% --------------------------------------------------------------------
 %% Include files
 %% --------------------------------------------------------------------
 
+-include ("../include/scaffold.hrl").
+
 %% --------------------------------------------------------------------
 %% External exports
--export([]).
+-export([add/2, get/1, start/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -compile(export_all).
 
--record (state, {ets = ets}).
+
 
 %% ====================================================================
 %% External functions
 %% ====================================================================
 
-new() -> start_link().
+start() -> start_link().
 start_link() ->
-	case gen_server:start_link(?MODULE, [], []) of
+	case gen_server:start_link({local, ?MODULE}, ?MODULE, [], []) of
 		{ok, Pid} -> Pid;
 		Else -> Else
 	end.
 	
-add( BottomExpr, Cell ) -> fun () -> undefined end.
+add( BottomExpr, Cell ) -> 
+	gen_server:cast(?MODULE, {add, BottomExpr, Cell}),
+	fun() -> erlang:apply(?MODULE, remove, [BottomExpr] ) end.
 
-get( Expr ) -> sfalse.
-
+remove( BottomExpr ) -> 
+	gen_server:cast(?MODULE, {remove, BottomExpr} ).
+	
+% ets:select can be used to get an expression with variable parameters... like
+% 	a {lambda, apply, etc..} nesting with some variable parameters
+get( BottomExpr ) -> % sfalse.
+	gen_server:call(?MODULE, {get, BottomExpr}).
+	
+die() ->
+	gen_server:cast(?MODULE, {terminate, killed}).
 
 %% ====================================================================
 %% Server functions
@@ -57,7 +70,13 @@ get( Expr ) -> sfalse.
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
-    {ok, #state{}}.
+	case ets:file2tab(?TABFILE) of
+		{ok, Table} ->
+			State = #memoize{ets = Table};
+		{error, _Reason} ->
+			State = #memoize{}
+	end,
+    {ok, State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_call/3
@@ -69,9 +88,14 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call(Msg, From, State) ->
-    Reply = ok,
-    {reply, Reply, State}. %store bytes
+handle_call({get, Expr}, From, State) ->
+	case ets:lookup(?this(ets), Expr) of
+		[{_, Reply}] ->
+			good;
+		[] -> 
+			Reply = key_does_not_exist
+	end,
+    {reply, Reply, State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -80,8 +104,14 @@ handle_call(Msg, From, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_cast(Msg, State) ->
-    {noreply, State}.
+handle_cast({add, Expr, Cell}, State) ->
+	ets:insert(?this(ets), {Expr, Cell}),
+    {noreply, State};
+handle_cast({remove, Expr}, State) ->
+	ets:delete(?this(ets), Expr),
+    {noreply, State};
+handle_cast({terminate, Reason}, State) ->
+	{stop, Reason, State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2
@@ -99,6 +129,8 @@ handle_info(Info, State) ->
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
 terminate(Reason, State) ->
+	ets:tab2file(?this(ets), ?TABFILE),
+	ets:delete(?this(ets)),
     ok.
 
 %% --------------------------------------------------------------------
