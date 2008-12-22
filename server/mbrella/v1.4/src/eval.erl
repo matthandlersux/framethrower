@@ -20,6 +20,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 						true ->
 							case memoize:get( BottomExpr ) of
 								Cell when is_record(Cell, exprCell) ->
+									io:format("cell: ~p~n~n", [Cell]),
 									Cell;
 								_ ->
 									F = evaluate( Left ), 
@@ -28,6 +29,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
 									OnRemove = memoize:add( BottomExpr, Cell),
 									cell:addOnRemove(Pid, OnRemove),
+									io:format("cell: ~p~n~n", [Cell]),
 									Cell
 							end;
 						false ->
