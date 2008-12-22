@@ -2,7 +2,7 @@
 -compile(export_all).
 
 -import(mblib, [curry/1]).
--import(eval, [applyFunc/2]).
+-import(eval, [applyFun/2]).
 -include ("../include/scaffold.hrl").
 
 getPrimitives() ->
@@ -63,7 +63,7 @@ primitives() ->
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCellAssocInput(),
 		RemoveFunc = cell:injectFunc(Cell, fun({Key,Val}) ->
-			ResultCell = applyFunc(applyFunc(Fun, Key),Val),
+			ResultCell = applyFun(applyFun(Fun, Key),Val),
 			cell:injectFunc(ResultCell, fun(InnerVal) ->
 				cell:addLine(OutputCell, InnerVal) end
 			)
@@ -210,7 +210,7 @@ primitives() ->
 	function = fun(Cell, Input) ->
 		OutputCell = cell:makeCell(),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			cell:addLine(OutputCell, applyFunc(Val, Input)) end),
+			cell:addLine(OutputCell, applyFun(Val, Input)) end),
 		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
@@ -219,7 +219,7 @@ primitives() ->
 	type = "(a -> Bool) -> a -> Unit a",
 	function = fun(Fun, Input) ->
 		OutputCell = cell:makeCell(),
-		case applyFunc(Fun, Input) of
+		case applyFun(Fun, Input) of
 			true -> cell:addLine(OutputCell, Input);
 			_ -> false
 		end,
@@ -248,7 +248,7 @@ primitives() ->
 			end
 		end, {count, 0}),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			ResultCell = applyFunc(Fun, Val),
+			ResultCell = applyFun(Fun, Val),
 			cell:injectFunc(fun(InnerVal) ->
 				case InnerVal of
 					true ->
@@ -272,12 +272,12 @@ primitives() ->
 			case Message of
 				{plus, Val} -> 
 					cell:removeLine(OutputCell, Cache),
-					NewCache = applyFunc(applyFunc(Fun, Val), Cache),
+					NewCache = applyFun(applyFun(Fun, Val), Cache),
 					cell:addLine(OutputCell, NewCache),
 					NewCache;
 				{minus, Val} ->
 					cell:removeLine(OutputCell, Cache),
-					NewCache = applyFunc(applyFunc(FunInv, Cache), Val),
+					NewCache = applyFun(applyFun(FunInv, Cache), Val),
 					cell:addLine(OutputCell, NewCache),
 					NewCache
 			end
@@ -296,7 +296,7 @@ primitives() ->
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, Init),
 		cell:injectFunc(OutputCell, fun(Val) ->
-			ResultCell = applyFunc(Fun, Val),
+			ResultCell = applyFun(Fun, Val),
 			cell:injectFunc(ResultCell, fun(InnerVal) ->
 				cell:addLine(OutputCell, InnerVal) end)
 		end),
@@ -309,7 +309,7 @@ primitives() ->
 		OutputCell = cell:makeCellAssocInput(),
 		cell:addLine(OutputCell, {Init, 0}),
 		cell:injectFunc(OutputCell, fun({Key, Val}) ->
-			ResultCell = applyFunc(Fun, Key),
+			ResultCell = applyFun(Fun, Key),
 			cell:injectFunc(ResultCell, fun(InnerVal) ->
 				cell:addLine(OutputCell, {InnerVal, Val+1}) end)
 		end),
@@ -324,7 +324,7 @@ primitives() ->
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCellAssocInput(),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			Result = applyFunc(Fun, Val),
+			Result = applyFun(Fun, Val),
 			cell:addLine(OutputCell, {Val, Result})
 		end),
 		cell:addOnRemove(OutputCell, RemoveFunc),
@@ -390,7 +390,7 @@ primitives() ->
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCellAssocInput(),
 		RemoveFunc = cell:injectFunc(Cell, fun({Key, Val}) ->
-			Result = applyFunc(Fun, Val),
+			Result = applyFun(Fun, Val),
 			cell:addLine(OutputCell, {Key, Result})
 		end),
 		cell:addOnRemove(OutputCell, RemoveFunc),
@@ -428,7 +428,7 @@ primitives() ->
 bindUnitOrSetHelper(Fun, Cell) ->
 	OutputCell = cell:makeCell(),
 	RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-		ResultCell = applyFunc(Fun, Val),
+		ResultCell = applyFun(Fun, Val),
 		cell:injectFunc(ResultCell, fun(InnerVal) ->
 			cell:addLine(OutputCell, InnerVal) end
 		)
