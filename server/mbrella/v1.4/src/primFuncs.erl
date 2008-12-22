@@ -1,20 +1,8 @@
 -module (primFuncs).
 -compile(export_all).
 
--import(mblib, [curry/1]).
 -import(eval, [applyFun/2]).
 -include ("../include/scaffold.hrl").
-
-getPrimitives() ->
-	BuildEnv = fun(#exprFun{function = Func, type = TypeString, name = Name} = Expr, {Suffix, Dict}) ->
-			{Suffix + 1, dict:store(Name, Expr#exprFun{function=curry(Func),type = type:shiftVars( type:parse(TypeString), integer_to_list(Suffix) ++ "v")}, Dict)}
-		end,
-	% BuildEnv = fun({Name, TypeString, Fun}, {Suffix, Dict}) ->
-	% 				{Suffix + 1, dict:store(Name, {type:shiftVars( type:parse(TypeString), integer_to_list(Suffix) ++ "v"), Fun}, Dict)}
-	% 			end,
-	FunList = primitives(),
-	{_, FinalDict} = lists:foldl( BuildEnv, {1, dict:new()}, FunList),
-	FinalDict.
 
 primitives() ->
 	[

@@ -11,7 +11,6 @@
 expr(String) ->
 	DefaultEnv = getEnv(default),
 	expr( parse(String), DefaultEnv).
-
 expr(AST, Env) when is_record(AST, cons) ->
 	{cons, AST#cons.type, expr(AST#cons.left, Env), expr(AST#cons.right, Env)};
 expr(AST, _) when AST =:= "true" orelse AST =:= "false" ->
@@ -130,7 +129,8 @@ getFromEnv(Key, Env) ->
 	end.
 		
 getEnv(default) ->
-	primFuncs:getPrimitives().
+	io:format("Trying to get default env~n", []),
+	env:getDefaultEnv().
 
 	
 %% ====================================================
