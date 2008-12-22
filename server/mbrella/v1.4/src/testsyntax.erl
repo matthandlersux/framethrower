@@ -95,7 +95,16 @@ extractMessage(R, State) when is_record(R, xmlElement) ->
 		#exprCell{pid=Pid} = dict:fetch(SCName, Env),
 		Pid
 	end,
-	Value = parseArgs(R),
+	Args = parseArgs(R),
+	Value = case Args of 
+		{scPatternMatch, Name} -> 
+			#exprCell{pid=Pid} = dict:fetch(Name, Env),
+			Pid;
+		{Key, {scPatternMatch, Name}} ->
+			#exprCell{pid=Pid} = dict:fetch(Name, Env),
+			{Key, Pid};
+		Arg -> Arg
+	end,
 	case R#xmlElement.name of
 		set ->
 			StartCap = GetStartCap(),
@@ -159,19 +168,18 @@ checkIncomingMessage({ECName, MessageToCheck, {false, _}}, State) ->
 	#testWorld{env=Env, outMessages=OutMessages} = State,
 	Response =
 		try hd(dict:fetch(ECName, OutMessages)) of
-			{set, {startCap, TrySCName}} -> 
-				try dict:fetch(TrySCName, Env) of
-					TrySC -> case MessageToCheck of
-						{set, TrySC} -> match;
-						OtherMessage -> {badMatch, OtherMessage}
-					end
-				catch
-					Type:Exception -> case MessageToCheck of
-						{set, TrySC} -> {scPatternMatch, TrySCName, TrySC};
-						OtherMessage -> {badMatch, OtherMessage}
-					end
-				end;
 			MessageToCheck -> match;
+			{set, TrySC} -> 
+				case MessageToCheck of
+					{set, {scPatternMatch, TrySCName}} -> 
+						try dict:fetch(TrySCName, Env) of
+							TrySC -> match;
+							_ -> {badMatch, {set, TrySC}}
+						catch
+							_:_ -> {scPatternMatch, TrySCName, TrySC}
+						end;
+					_ -> {badMatch, {set, TrySC}}
+				end;
 			BadMatch -> {badMatch, BadMatch}
 		catch
 			_:_ -> 
@@ -217,7 +225,9 @@ toString(Value) ->
 		List when is_list(List) -> List;
 		Num when is_integer(Num) -> integer_to_list(Num);
 		Num when is_float(Num) -> float_to_list(Num);
-		Atom when is_atom(Atom) -> atom_to_list(Atom)
+		Atom when is_atom(Atom) -> atom_to_list(Atom);
+		{scPatternMatch, SCName} -> "StartCap-" ++ SCName;
+		_ -> "No Match for this String"
 	end.
 
 messageToString({Name, {Key, Value}}, ECName) ->
@@ -234,6 +244,7 @@ parsePrim(R) when is_record(R, xmlElement) ->
 	case R#xmlElement.name of
 		number -> list_to_integer(getAtt(value, R));
 		bool -> list_to_atom(getAtt(value, R));
+		sc -> {scPatternMatch, getAtt(name, R)};
 		_ -> undefined
 	end;
 parsePrim(_) ->

@@ -219,27 +219,34 @@ primitives() ->
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, false),
+		io:format("Adding default false value~n", []),
 		cell:injectIntercept(OutputCell, fun(Message, {count, Count}) ->
 			case {Message, Count} of
-				{plus, 0} -> 
+				{plus, 0} ->
+					io:format("Add 0~n", []),
 					cell:removeLine(OutputCell, false),
 					cell:addLine(OutputCell, true),
 					1;
 				{plus, Num} ->
+					io:format("Add ~p~n", [Num]),
 					Num + 1;
 				{minus, 1} ->
+					io:format("Minus 1~n", []),
 					cell:removeLine(OutputCell, true),
 					cell:addLine(OutputCell, false),
 					0;
 				{minus, Num} ->
+					io:format("Minus ~p~n", [Num]),
 					Num - 1
 			end
 		end, {count, 0}),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+			io:format("Receiving Val at injectedFunc: ~p~n", [Val]),
 			ResultCell = applyFun(Fun, Val),
 			cell:injectFunc(fun(InnerVal) ->
 				case InnerVal of
 					true ->
+						io:format("Sending plus intercept~n", []),
 						cell:sendIntercept(OutputCell, plus),
 						fun() -> cell:sendIntercept(OutputCell, minus) end;
 					false ->
@@ -337,11 +344,15 @@ primitives() ->
 	function = fun(Cell) ->
 		OutputCell = cell:makeCellAssocInput(),
 		BHashCell = cell:makeCell(),
-		cell:injectIntercept(OutputCell, fun(Message, {bHash, BHash}) ->
-			case Message of
+		Intercept = cell:injectIntercept(OutputCell, fun(Message, BHash) ->
+			io:format("Intercepted Message: ~p~n", [Message]),
+			Answer = case Message of
 				{bHashAdd, BVal} -> 
+					io:format("BHashAdd: ~p~n", [BVal]),
 					NewCell = cell:makeCell(),
+					io:format("AddLine to Output Cell: ~p~n", [{BVal, NewCell}]),
 					cell:addLine(OutputCell, {BVal, NewCell}),
+					io:format("Done AddLine to Output Cell: ~n", []),
 					dict:store(BVal, NewCell, BHash);
 				{bHashRemove, BVal} ->
 					cell:removeLine(OutputCell, BVal),
@@ -352,18 +363,20 @@ primitives() ->
 				{removeInnerLine, InnerVal, Key} ->
 					cell:removeLine(dict:fetch(InnerVal, BHash), Key),
 					BHash
-			end
-		end, {bHash, dict:new()}),
+			end,
+			io:format("Done Intercepted Message: ~p~n", [Message]),
+			Answer
+		end, dict:new()),
 		RemoveFunc1 = cell:injectFunc(BHashCell, fun(BVal) ->
-			cell:sendIntercept(OutputCell, {bHashAdd, BVal}),
-			fun() -> cell:sendIntercept(OutputCell, {bHashRemove, BVal}) end
+			intercept:sendIntercept(Intercept, {bHashAdd, BVal}),
+			fun() -> intercept:sendIntercept(Intercept, {bHashRemove, BVal}) end
 		end),
 		RemoveFunc2 = cell:injectFunc(Cell, fun({Key, Val}) ->
 			cell:injectFunc(Val, fun(InnerVal) ->
 				OnRemove1 = cell:addLine(BHashCell, InnerVal),
-				cell:sendIntercept(OutputCell, {addInnerLine, InnerVal, Key}),
+				intercept:sendIntercept(Intercept, {addInnerLine, InnerVal, Key}),
 				fun() ->
-					cell:sendIntercept(OutputCell, {removeInnerLine, InnerVal, Key}),
+					intercept:sendIntercept(Intercept, {removeInnerLine, InnerVal, Key}),
 					OnRemove1()
 				end
 			end)

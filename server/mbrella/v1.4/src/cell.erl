@@ -53,10 +53,7 @@ injectFunc(CellPid, Fun) ->
 	gen_server:call(CellPid, {injectFunc, Fun}).
 
 injectIntercept(CellPid, Fun, InitState) ->
-	gen_server:cast(CellPid, {injectIntercept, Fun, InitState}).
-
-sendIntercept(CellPid, Message) ->
-	gen_server:cast(CellPid, {sendIntercept, Message}).
+	gen_server:call(CellPid, {injectIntercept, Fun, InitState}).
 
 addOnRemove(CellPid, Fun) ->
 	gen_server:cast(CellPid, {addOnRemove, Fun}).
@@ -108,7 +105,7 @@ handle_call({addLine, Value}, From, State) ->
 	#cell{funcs=Funcs, dots=Dots, toKey=ToKey} = State,
 	Key = ToKey(Value),
 	Dot = try dict:fetch(Key, Dots) of
-		{dot, Num, Value, Lines} -> {dot, Num+1, Value, Lines}
+		{dot, Num, Val, Lines} -> {dot, Num+1, Val, Lines}
 	catch
 		_:_ -> {dot, 1, Value, dict:new()}
 	end,
@@ -127,7 +124,12 @@ handle_call({injectFunc, Fun}, From, State) ->
 	NewState = State#cell{funcColor=Id+1, funcs=NewFuncs, dots=NewDots},
 	Self = self(),
     CallBack = fun() -> gen_server:cast(Self, {removeFunc, Id}) end,
-    {reply, CallBack, NewState}.
+    {reply, CallBack, NewState};
+handle_call({injectIntercept, Fun, IntState}, From, State) ->
+	Intercept = intercept:makeIntercept(Fun, IntState),
+	NewState = State#cell{intercept=Intercept},
+    {reply, Intercept, NewState}.
+
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -156,18 +158,13 @@ handle_cast({removeFunc, Id}, State) ->
 	NewState = State#cell{funcs=NewFuncs, dots=NewDots},
 	%TODO: destroy this cell if Funcs is empty?
     {noreply, NewState};
-handle_cast({injectIntercept, Fun, IntState}, State) ->
-	NewState = State#cell{intercept={Fun, IntState}},
-    {noreply, NewState};
-handle_cast({sendIntercept, Message}, State) ->
-	#cell{intercept={Fun, IntState}} = State,
-	NewIntState = Fun(Message, IntState),
-	NewState = State#cell{intercept={Fun, NewIntState}},
-    {noreply, NewState};
 handle_cast({addOnRemove, Fun}, State) ->
 	#cell{onRemoves=OnRemoves} = State,
 	NewState = State#cell{onRemoves=[Fun | OnRemoves]},
-    {noreply, NewState}.
+    {noreply, NewState};
+handle_cast(Something, State) ->
+	io:format("SOMETHING: ~p~n", [Something]),
+	{noreply, State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2
@@ -188,7 +185,6 @@ handle_info({get, state}, State) ->
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
 terminate(Reason, State) ->
-	io:format("This Cell is Dying, Reason: ~p~n, State: ~p~n", [Reason, State]),
     ok.
 
 %% --------------------------------------------------------------------

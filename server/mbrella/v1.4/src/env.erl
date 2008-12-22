@@ -27,6 +27,17 @@ getPrimitives() ->
 	{_, FinalDict} = lists:foldl( BuildEnv, {1, dict:new()}, FunList),
 	FinalDict.
 
+createEnv() ->
+	PrimEnv = getPrimitives(),
+	FuncExprs = [
+		{"plus1", "x -> add x 1"},
+		{"plus2", "n -> add n 1"},
+		{"compose", "f -> g -> y -> f (g y)"}
+		%{"const", "x -> y -> x"},
+		%{"swap", "f -> x -> y -> f y x"}
+	],
+	DefaultEnv = lists:foldl(fun addExpr/2, PrimEnv, FuncExprs).
+
 addExpr({Name, ExprString}, Env) ->
 	dict:store(Name, expr:expr(expr:parse(ExprString), Env), Env).	
 	
@@ -36,18 +47,12 @@ addExpr({Name, ExprString}, Env) ->
 
 init([]) ->
 	process_flag(trap_exit, true),
-	PrimEnv = getPrimitives(),
-	FuncExprs = [
-		{"plus1", "x -> add x 1"},
-		{"compose", "f -> g -> x -> f (g x)"},
-		{"const", "x -> y -> x"},
-		{"swap", "f -> x -> y -> f y x"}
-	],
-	DefaultEnv = lists:foldl(fun addExpr/2, PrimEnv, FuncExprs),
-    {ok, DefaultEnv}.
+    {ok, createEnv()}.
 
 handle_call(getDefaultEnv, From, State) ->
-    {reply, State, State};
+	%change this later...
+	Env = createEnv(),
+    {reply, Env, Env};
 handle_call(stop, From, State) ->
 	{stop, normal, stopped, State}.
 
