@@ -5,4 +5,6 @@ code:add_patha("./ebin/").
 code:add_patha("../../lib/").
 code:load_abs("../../lib/user_default").
 os:putenv("ERL_COMPILER_OPTIONS", "[report_errors,report_warnings,nowarn_unused_vars, {outdir, \"./ebin/\"}]").
+memoize:start().
+env:start().
 
