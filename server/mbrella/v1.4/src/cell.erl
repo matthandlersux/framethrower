@@ -60,14 +60,14 @@ addOnRemove(CellPid, Fun) ->
 	gen_server:cast(CellPid, {addOnRemove, Fun}).
 
 %% 
-%% addline:: CellPid -> Value -> CleanupFun
+%% addline:: CellPid -> a -> CleanupFun
 %% 
 
 addLine(CellPid, Value) ->
 	gen_server:call(CellPid, {addLine, Value}).
 
 %% 
-%% removeline:: CellPid -> Value -> 'ok'
+%% removeline:: CellPid -> a -> Atom
 %% 
 removeLine(CellPid, Value) ->
 	gen_server:cast(CellPid, {removeLine, Value}).
