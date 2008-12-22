@@ -1,6 +1,7 @@
 -module (eval).
 -compile( export_all).
 
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
 -include ("../include/scaffold.hrl").
 

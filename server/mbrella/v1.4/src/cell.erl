@@ -7,6 +7,8 @@
 
 -behaviour(gen_server).
 
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+
 %% --------------------------------------------------------------------
 %% External exports
 %-export([injectFunc/2]).

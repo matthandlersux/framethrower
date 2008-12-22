@@ -51,7 +51,7 @@ remove( BottomExpr ) ->
 	
 % ets:select can be used to get an expression with variable parameters... like
 % 	a {lambda, apply, etc..} nesting with some variable parameters
-get( BottomExpr ) -> % sfalse.
+get( BottomExpr ) -> 
 	gen_server:call(?MODULE, {get, BottomExpr}).
 	
 die() ->
@@ -70,12 +70,13 @@ die() ->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
-	case ets:file2tab(?TABFILE) of
-		{ok, Table} ->
-			State = #memoize{ets = Table};
-		{error, _Reason} ->
-			State = #memoize{}
-	end,
+	% case ets:file2tab(?TABFILE) of
+	% 	{ok, Table} ->
+	% 		State = #memoize{ets = Table};
+	% 	{error, _Reason} ->
+	% 		State = #memoize{}
+	% end,
+	State = #memoize{},
     {ok, State}.
 
 %% --------------------------------------------------------------------
@@ -129,7 +130,7 @@ handle_info(Info, State) ->
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
 terminate(Reason, State) ->
-	ets:tab2file(?this(ets), ?TABFILE),
+	% ets:tab2file(?this(ets), ?TABFILE),
 	ets:delete(?this(ets)),
     ok.
 
