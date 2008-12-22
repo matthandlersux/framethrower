@@ -8,10 +8,12 @@
 evaluate(Expr) when is_record(Expr, cons) ->
 	case Expr#cons.type of
 		lambda ->
+			?trace(Expr),
 			Expr;
 		apply ->
 			case Expr#cons.left of
 				#cons{type = lambda} = Lambda ->
+					?trace(Lambda),
 					evaluate( betaReduce(Lambda, Expr#cons.right) );
 				Left ->
 					% io:format("~p~n~n", [Expr]),
@@ -32,6 +34,8 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									Cell
 							end;
 						false ->
+							?trace(Left),
+							?trace(Expr#cons.right),
 							F = evaluate( Left ), 
 							Input = evaluate( Expr#cons.right ),
 							case applyFun( F, Input ) of

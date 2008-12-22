@@ -19,11 +19,9 @@ expr(AST, Env) when is_list(AST) ->
 	case is_string(AST) of
 		true -> 
 			case getFromEnv(AST, Env) of
-				ExprFun when is_record(ExprFun, exprFun) -> ExprFun#exprFun{name=AST};
-				ExprCell when is_record(ExprCell, exprCell) -> ExprCell;
-				_ ->
-					#exprVar{value = AST}
-					% {exprVar, "var", AST}
+				false ->
+					#exprVar{value = AST};
+				Expr -> Expr
 			end;
 		false ->
 			exit(AST)
@@ -129,9 +127,7 @@ getFromEnv(Key, Env) ->
 	end.
 		
 getEnv(default) ->
-	io:format("Trying to get default env~n", []),
 	env:getDefaultEnv().
-
 	
 %% ====================================================
 %% utilities
