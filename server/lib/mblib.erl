@@ -38,11 +38,15 @@ traverse( Expr, LookFor) ->
 						traverseCons( CalledExpr )
 				end
 			end,
-	case LookFor1(Expr) of
+	traverse1( Expr, LookFor1 ).
+
+
+traverse1( Expr, LookFor) ->
+	case LookFor(Expr) of
 		{ok, Replaced} ->
 			Replaced;
 		{next, ElementList} ->
-			replaceElement(Expr, ElementList, fun(X) -> traverse(X, LookFor) end)
+			replaceElement(Expr, ElementList, fun(X) -> traverse1(X, LookFor) end)
 	end.
 
 %% 
@@ -86,6 +90,20 @@ maybeStore(OldVar, NewVar, Dict) ->
 		_ -> Dict
 	catch 
 		_:_ -> dict:store(OldVar, NewVar, Dict)
+	end.
+
+%% 
+%% catchElements is used to store elements while another function runs, this is a helper function
+%% 
+catchElements() ->
+	spawn(fun() -> catchElements([]) end).
+	
+catchElements(Vars) ->
+	receive
+		{add, Var} ->
+			catchElements(Vars ++ [Var]);
+		{return, Pid} ->
+			Pid ! Vars
 	end.
 
 %% ====================================================

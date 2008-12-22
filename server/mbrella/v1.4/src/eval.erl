@@ -56,7 +56,10 @@ evaluate(Expr) -> Expr.
 %% betaReduce:: LambdaCons -> ExprVar -> Expr
 %% 
 
-betaReduce( #cons{left = Variable, right = Right} = LExpr, Replacement ) when is_record(LExpr, cons) ->
+betaReduce( LExpr, Replacement ) when is_record(LExpr, cons) ->
+	LeftLambdaVars = getLambdaVars( LExpr ),
+	RightAllVars = getAllVars( Replacement ),
+	#cons{left = Variable, right = Right} = lambdaVarAdjust(LeftLambdaVars, RightAllVars, LExpr),
 	betaReduce1( Right, Variable, Replacement).
 	
 betaReduce1( #cons{type = lambda, left = LeftVariable, right = Right} = Expr, Variable, Replace) ->
@@ -74,6 +77,79 @@ betaReduce1( Expr, Variable, Replace) when is_record(Expr, exprVar)->
 		true -> Expr
 	end;
 betaReduce1( Expr, _, _ ) -> Expr.
+
+lambdaVarAdjust(LeftLambdaVars, RightAllVars, Expr) ->
+	% ?trace({LeftLambdaVars, RightAllVars}),
+	LambdaVars = lists:usort(LeftLambdaVars),
+	RightVars = lists:usort(RightAllVars),
+	case LambdaVars -- RightVars of
+		LambdaVars -> Expr;
+		SafeVars ->
+			ReplaceVars = LambdaVars -- SafeVars,
+			Substitutions = findSafeSubs( ReplaceVars, getAllVars(Expr) ),
+			ReplaceOverlappingLambdaVars = 
+				fun( #exprVar{value = Variable} = Expr1 ) when is_record(Expr1, exprVar) ->
+					case lists:keysearch(Variable, 1, Substitutions) of
+						{value, {_, NewVal}} ->
+							{ok, Expr1#exprVar{value = NewVal}};
+						_ ->
+							{ok, Expr1}
+					end
+				end,
+			mblib:traverse(Expr, ReplaceOverlappingLambdaVars)
+	end.
+	
+findSafeSubs([], _) -> [];
+findSafeSubs([H|T], AvoidVars) ->
+	[{H, dontCollide(H, AvoidVars)}|findSafeSubs(T, AvoidVars)].
+	
+% safeReplaceVar(Variable, Expr) ->
+% 	AllVars = getAllVars(Expr),
+% 	?trace(AllVars),
+% 	ReplaceVar =
+% 		fun( #exprVar{value = Variable1} = Expr1 ) when is_record(Expr, exprVar) ->
+% 			if 
+% 				Variable =:= Variable1 ->
+% 					{ok, Expr1#exprVar{value = dontCollide(Variable, AllVars)}};
+% 				true ->
+% 					{ok, Expr1}
+% 			end
+% 		end,
+% 	mblib:traverse(Expr, ReplaceVar).
+% 
+dontCollide(Variable, AllVars) -> 
+	dontCollide(Variable, AllVars, "1").
+	
+dontCollide(Variable, AllVars, Suffix) ->
+	NewVar = Variable ++ Suffix,
+	case lists:member(NewVar, AllVars) of
+		true ->
+			dontCollide(Variable, AllVars, Suffix ++ "1");
+		_ ->
+			NewVar
+	end.
+
+getLambdaVars( Expr ) ->
+	Catcher = mblib:catchElements(),
+	LookForLambda =
+		fun( #cons{type = lambda, left = Variable, right = RightExpr} = Expr1 ) when is_record(Expr1, cons) ->
+			Catcher ! {add, Variable#exprVar.value},
+			{next, mblib:recordKeysToIndex(cons, [right])}
+		end,
+	mblib:traverse( Expr, LookForLambda ),
+	Catcher ! {return, self()},
+	receive X -> X end.
+
+getAllVars( Expr ) ->
+	Catcher = mblib:catchElements(),
+	LookForVars =
+		fun( #exprVar{value = Variable} = Expr1 ) when is_record(Expr1, exprVar) ->
+			Catcher ! {add, Variable},
+			{ok, Expr1}
+		end,
+	mblib:traverse( Expr, LookForVars ),
+	Catcher ! {return, self()},
+	receive X -> X end.
 
 %% 
 %% take a primitave/created function and apply it to the right hand side object

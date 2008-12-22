@@ -39,10 +39,9 @@ init([]) ->
 	PrimEnv = getPrimitives(),
 	FuncExprs = [
 		{"plus1", "x -> add x 1"},
-		{"plus2", "n -> add n 1"},
-		{"compose", "f -> g -> y -> f (g y)"}
-		%{"const", "x -> y -> x"},
-		%{"swap", "f -> x -> y -> f y x"}
+		{"compose", "f -> g -> x -> f (g x)"},
+		{"const", "x -> y -> x"},
+		{"swap", "f -> x -> y -> f y x"}
 	],
 	DefaultEnv = lists:foldl(fun addExpr/2, PrimEnv, FuncExprs),
     {ok, DefaultEnv}.
