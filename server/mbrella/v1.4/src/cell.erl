@@ -39,12 +39,12 @@
 
 makeCell() -> 
 	ToKey = fun(X) -> X end,
-	{ok, Pid} = gen_server:start_link(?MODULE, [ToKey], []),
+	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
 	Pid.
 	
 makeCellAssocInput() ->
 	ToKey = fun({Key,Val}) -> Key end,
-	{ok, Pid} = gen_server:start_link(?MODULE, [ToKey], []),
+	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
 	Pid.
 
 injectFunc(CellPid, Fun) ->
@@ -186,6 +186,7 @@ handle_info({get, state}, State) ->
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
 terminate(Reason, State) ->
+	io:format("This Cell is Dying, Reason: ~p~n, State: ~p~n", [Reason, State]),
     ok.
 
 %% --------------------------------------------------------------------
