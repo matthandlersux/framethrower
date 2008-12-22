@@ -20,11 +20,7 @@ lookForExprVar(VarName, Replace) ->
 					{ok, Replace};
 				_ ->
 					{ok, Expr}
-			end;
-		( Expr ) when is_record(Expr, cons) ->
-			ElementList = recordKeysToIndex( cons, [left, right]),
-			{next, ElementList};
-		( Expr ) -> {ok, Expr}
+			end
 	end.
 
 %%	Traverse is like lists:keysearch except that it traverses nested tuples rather than a tuple list
@@ -35,13 +31,30 @@ lookForExprVar(VarName, Replace) ->
 %%		LookFor:: Tuple -> {ok, replacedexpr} | {next, ListOfElementsToTraverse}
 
 traverse( Expr, LookFor) ->
-	case LookFor(Expr) of
+	LookFor1 = fun( CalledExpr ) ->
+				try LookFor( CalledExpr )
+				catch 
+					_:_ ->
+						traverseCons( CalledExpr )
+				end
+			end,
+	case LookFor1(Expr) of
 		{ok, Replaced} ->
 			Replaced;
 		{next, ElementList} ->
 			replaceElement(Expr, ElementList, fun(X) -> traverse(X, LookFor) end)
 	end.
 
+%% 
+%% traverseCons is a package function for traverse LookFor functions
+%% 
+
+traverseCons( Expr ) when is_record(Expr, cons) ->
+	ElementList = recordKeysToIndex( cons, [left, right]),
+	{next, ElementList};
+traverseCons( Expr ) -> 
+	{ok, Expr}.
+	
 %% 
 %% replaceElement:: Tuple -> List Natural -> (Tuple -> Tuple) -> Tuple
 %% 

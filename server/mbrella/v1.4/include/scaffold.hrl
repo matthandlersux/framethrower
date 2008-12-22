@@ -75,7 +75,7 @@
 	type,
 	name,
 	function,
-	bottom
+	expr
 }).
 
 -record (exprVar, {
@@ -87,7 +87,8 @@
 -record (exprCell, {
 	pid,
 	type,
-	bottom
+	name,
+	expr
 }).
 	
 %% ====================================================

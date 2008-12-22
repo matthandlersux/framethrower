@@ -18,7 +18,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 				Left ->
 					% io:format("~p~n~n", [Expr]),
 					Type = type:get( Expr ),
-					BottomExpr = bottom(Expr),	
+					BottomExpr = bottomOut(Expr),	
 					case type:isReactive(Type) of
 						true ->
 							case memoize:get( BottomExpr ) of
@@ -28,7 +28,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									F = evaluate( Left ), 
 									Input = evaluate( Expr#cons.right ),
 									Pid = applyFun( F, Input ),
-									Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
+									Cell = #exprCell{pid = Pid, type = Type, expr = BottomExpr},
 									OnRemove = memoize:add( BottomExpr, Cell),
 									cell:addOnRemove(Pid, OnRemove),
 									Cell
@@ -40,9 +40,10 @@ evaluate(Expr) when is_record(Expr, cons) ->
 							Input = evaluate( Expr#cons.right ),
 							case applyFun( F, Input ) of
 								X when is_function(X) ->
-									#exprFun{function = X, type = Type, bottom = BottomExpr};
+									%decide if it needs to be named
+									#exprFun{function = X, type = Type, expr = BottomExpr};
 								Pid when is_pid(Pid) ->
-									#exprCell{pid = Pid, type = Type, bottom = BottomExpr};									
+									#exprCell{pid = Pid, type = Type, expr = BottomExpr};									
 								NumStringBool ->
 									NumStringBool
 							end
@@ -55,7 +56,7 @@ evaluate(Expr) -> Expr.
 %% betaReduce:: LambdaCons -> ExprVar -> Expr
 %% 
 
-betaReduce( #cons{left = Variable, right = Right} = LExpr, Replacement ) ->
+betaReduce( #cons{left = Variable, right = Right} = LExpr, Replacement ) when is_record(LExpr, cons) ->
 	betaReduce1( Right, Variable, Replacement).
 	
 betaReduce1( #cons{type = lambda, left = LeftVariable, right = Right} = Expr, Variable, Replace) ->
@@ -84,4 +85,23 @@ applyFun( #exprFun{function = Fun} = ExprFun, Expr ) when is_record(ExprFun, exp
 		_ -> Fun(Expr)
 	end.
 	
-bottom( Expr ) -> Expr.
+bottomOut( InExpr ) -> 
+	LookForAndReplaceFun = 
+		fun( Expr ) when is_record(Expr, exprFun) ->
+				case Expr#exprFun.name of
+					undefined ->
+						{ok, Expr#exprFun.expr};
+					_ ->
+						{ok, Expr}
+				end;
+			( Expr ) when is_record(Expr, exprCell) ->
+				case Expr#exprCell.name of 
+					undefined ->
+						{ok, Expr#exprCell.expr};
+					_ ->
+						{ok, Expr}
+				end
+		end,
+	mblib:traverse(InExpr, LookForAndReplaceFun).
+
+normalize( Expr ) -> Expr.
