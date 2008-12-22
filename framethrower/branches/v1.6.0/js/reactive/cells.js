@@ -54,7 +54,7 @@ function makeBaseCell (toKey) {
 		dots.forRange(function (dot, key) {
 			removeLineResponse(key, id);
 		});
-		if (funcs.isEmpty()) {
+		if (funcs.isEmpty() && !cell.persist) {
 			forEach(onRemoves, function(onRemove) {
 				onRemove();
 			});
@@ -92,22 +92,25 @@ function makeBaseCell (toKey) {
 	
 	var addLineResponse = function (value, func, id) {
 		var onRemove = func(value);
-		if (onRemove != undefined) {
+		if (onRemove !== undefined) {
 			dots.get(toKey(value)).lines.set(id, onRemove);
 		}
 	};
 	
 	var removeLineResponse = function (key, id) {
 		var dot = dots.get(key);
-		if (dot != undefined) {
-			dot.lines.get(id)();
+		if (dot !== undefined) {
+			var removeFunc = dot.lines.get(id);
+			if (removeFunc) {
+				removeFunc();
+			}
 			dot.lines.remove(id);
 		}
 	};
 	
 	//GetState for DEBUG (and for convertExprXML.js)
 	cell.getState = function () {
-		return dots.toArray();
+		return map(dots.toArray(), function (x) {return x.v.val;});
 	};
 	
 	return cell;

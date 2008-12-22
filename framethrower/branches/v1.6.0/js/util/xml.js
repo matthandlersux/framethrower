@@ -253,29 +253,30 @@ function serializeXML(xml) {
 
 
 
-function getAttr(node, attName, attPrefix) {
-	if (attPrefix !== undefined) {
-		return node.getAttributeNS(xmlns[attPrefix], attName);
+function getAttr(node, attName) {
+	var n = attName.split(":");
+	if (n.length > 1) {
+		return node.getAttributeNS(xmlns[n[0]], attName);
 	} else {
 		return node.getAttribute(attName);
 	}
 }
-
-function createEl(nodeName, prefix) {
-	if (prefix) {
-		return document.createElementNS(xmlns[prefix], nodeName);
-	} else {
-		return document.createElement(nodeName);
-	}
-}
-
-function setAttr(node, attName, attValue, attPrefix) {
-	if (attPrefix !== undefined) {
-		node.setAttributeNS(xmlns[attPrefix], attName, attValue);
+function setAttr(node, attName, attValue) {
+	var n = attName.split(":");
+	if (n > 1) {
+		node.setAttributeNS(xmlns[n[0]], attName, attValue);
 	} else {
 		node.setAttribute(attName, attValue);
 	}
 	return node;
+}
+function createEl(nodeName) {
+	var n = nodeName.split(":");
+	if (n.length > 1) {
+		return document.createElementNS(xmlns[n[0]], nodeName);
+	} else {
+		return document.createElement(nodeName);
+	}
 }
 
 

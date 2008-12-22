@@ -24,6 +24,7 @@
 			<xsl:if test="count(preceding-sibling::xsl:template) = 0">
 				<xsl:attribute name="match">/</xsl:attribute>
 			</xsl:if>
+			<xsl:copy-of select="@*" />
 			<xsl:copy-of select="node()" />
 		</xsl:copy>
 	</xsl:template>

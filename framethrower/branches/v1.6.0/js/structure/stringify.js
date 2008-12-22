@@ -12,18 +12,17 @@ function unparseExpr(expr) {
 			return {cons: "lambda", left: helper(expr.left), right: helper(expr.right)};
 		} else if (expr.kind === "var") {
 			return expr.value;
-		} else if (expr.kind === "fun" || expr.kind === "startCap" || expr.kind === "object") {
-			if (!expr.name) {
-				expr.name = localIds();
-			}
-			return expr.name;
 		} else {
-			// literal
 			var t = typeOf(expr);
 			if (t === "string") {
 				return '"' + expr.replace(/"/g, '\\"') + '"';
 			} else if (t === "boolean" || t === "number") {
 				return expr.toString();
+			} else {
+				if (!expr.name) {
+					expr.name = localIds();
+				}
+				return expr.name;
 			}
 		}
 	}

@@ -54,8 +54,27 @@ var xmlTemplates = (function () {
 				callback(urls[url]);
 			} else {
 				documents.withDoc(url, function (xml) {
-					urls[url] = makeXMLTemplate(xml, url);
-					callback(urls[url]);
+					
+					var xmlincludexsl = xpath("f:includexsl", xml);
+					var funcs = [];
+					forEach(xmlincludexsl, function (inc) {
+						var includeUrl = urlToAbs(url, getAttr(inc, "url"));
+						funcs.push(function (callback) {
+							documents.withDoc(includeUrl, function (doc) {
+								forEach(xpath("*", doc), function (x) {
+									xml.ownerDocument.adoptNode(x);
+									xml.appendChild(x); // BROWSER
+								});
+								callback();
+							});
+						});
+					});
+					
+					parallelCallback(funcs, function () {
+						urls[url] = makeXMLTemplate(xml, url);
+						callback(urls[url]);							
+					});
+					
 				});
 			}
 		},
@@ -64,3 +83,21 @@ var xmlTemplates = (function () {
 		}
 	};
 })();
+
+
+function parallelCallback(funcs, callback) {
+	var count = funcs.length;
+	if (count === 0) {
+		callback();
+	} else {
+		function check() {
+			count--;
+			if (count === 0) {
+				callback();
+			}
+		}
+		forEach(funcs, function (func) {
+			func(check);
+		});
+	}
+}

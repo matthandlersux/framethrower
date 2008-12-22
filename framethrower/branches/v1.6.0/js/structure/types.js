@@ -269,6 +269,17 @@ function testConstraints(s) {
 }
 
 
+
+function getTypeConstructor(type) {
+	var constructor = type;
+	while (constructor.kind === "typeApply") {
+		constructor = constructor.left;
+	}
+	constructor = constructor.value;
+	return constructor;
+}
+
+
 /*function showType(type) {
 	// like unparse, but renames t1, t2, ... to a, b, ...
 	function getLetter(i) {

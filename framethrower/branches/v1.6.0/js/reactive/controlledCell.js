@@ -2,9 +2,32 @@ function makeControlledCell(typeString) {
 	var type = parseType(typeString);
 	
 	var cell;
-	var lhs = type.left.value;
+	var constructor = getTypeConstructor(type);
+
 	
-	if (lhs === "Unit" || lhs === "Set") {
+	// TODO test these and throw errors on erroneous calls
+	if (constructor === "Unit") {
+		cell = makeCell();
+		cell.control = {
+			set: function (k) {
+				var state = cell.getState();
+				if (state.length === 0) {
+					cell.addLine(k);
+				} else {
+					cell.removeLine(state[0]);
+					cell.addLine(k);
+				}
+			},
+			unset: function () {
+				var state = cell.getState();
+				if (state.length === 0) {
+					
+				} else {
+					cell.removeLine(state[0]);
+				}
+			}
+		};		
+	} else if (constructor === "Set") {
 		cell = makeCell();
 		cell.control = {
 			add: function (k) {
@@ -14,7 +37,7 @@ function makeControlledCell(typeString) {
 				cell.removeLine(k);
 			}
 		};
-	} else if (lhs === "Assoc") {
+	} else if (constructor === "Assoc") {
 		cell = makeCellAssocInput();
 		cell.control = {
 			add: function (k, v) {
@@ -29,6 +52,7 @@ function makeControlledCell(typeString) {
 	}
 	
 	cell.type = type;
+	cell.persist = true;
 	
 	return cell;
 }

@@ -42,10 +42,10 @@ function makeXMLTemplate(xml, url) {
 	// runXSL :: {paramName: paramValueInXML} -> XML
 	function runXSL(params) {
 		// make source document
-		var source = createEl("source", "f");
+		var source = createEl("f:source");
 		
 		forEach(params, function (xml, name) {
-			var node = createEl("pass", "f");
+			var node = createEl("f:pass");
 			node.setAttributeNS("", "name", name);
 			if (xml) {
 				node.appendChild(xml);
@@ -202,12 +202,17 @@ function getWithParam(node, ids) {
 	} else if (getAttr(node, "string")) {
 		return getAttr(node, "string");
 	} else {
-		
+		var child = xpath("*[1]", node);
+		if (child.length === 0) {
+			console.error("f:with-param is undefined.", node);
+		} else {
+			return xmlToExpr(child[0], ids);
+		}
 	}
 }
 
 function getThunkEssence(thunkNode, baseUrl, ids) {
-	var xtUrl = getAttr(thunkNode, "template"); // TODO proper url
+	var xtUrl = urlToAbs(baseUrl, getAttr(thunkNode, "template")); // TODO handle non template attribute url (that is, to pass in xml templates)
 	
 	var withParams = {};
 	var tunnel = {};

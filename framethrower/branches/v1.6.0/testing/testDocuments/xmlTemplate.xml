@@ -6,17 +6,26 @@
 	
 	<f:param name="p1" type="Number" />
 	<f:param name="p2" type="Number" />
+	<f:param name="assocTest" type="Assoc Number String" />
 	
 	<f:derive name="d1" d="add p1 p2" />
 	
-	<!-- <f:includexsl url="_URL_" /> -->
+	<f:includexsl url="../../xml/debug/prettyPrint.xml" />
 	
 	<xsl:template>
 		<html:div>
-			<xsl:copy-of select="$p1" />,
-			<xsl:copy-of select="$p2" />,
-			<xsl:copy-of select="$d1" />
+			<xsl:value-of select="$p1/@value" />,
+			<xsl:value-of select="$p2/@value" />,
+			<xsl:value-of select="$d1/@value" />
+			<html:div>
+				<!-- <xsl:copy-of select="$assocTest" /> -->
+				<xsl:call-template name="prettyPrint">
+					<xsl:with-param name="node" select="$assocTest" />
+				</xsl:call-template>
+			</html:div>
 		</html:div>
 	</xsl:template>
+	
+
 
 </f:template>
