@@ -1,7 +1,7 @@
 -module (primFuncs).
 -compile(export_all).
 
--import(eval, [applyFun/2]).
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -include ("../include/scaffold.hrl").
 
 primitives() ->
@@ -217,10 +217,11 @@ primitives() ->
 	name = "any",
 	type = "(a -> Unit Bool) -> Set a -> Unit Bool",
 	function = fun(Fun, Cell) ->
+		?trace("Here"),
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, false),
 		io:format("Adding default false value~n", []),
-		cell:injectIntercept(OutputCell, fun(Message, {count, Count}) ->
+		Intercept = cell:injectIntercept(OutputCell, fun(Message, Count) ->
 			case {Message, Count} of
 				{plus, 0} ->
 					io:format("Add 0~n", []),
@@ -239,16 +240,15 @@ primitives() ->
 					io:format("Minus ~p~n", [Num]),
 					Num - 1
 			end
-		end, {count, 0}),
+		end, 0),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			io:format("Receiving Val at injectedFunc: ~p~n", [Val]),
-			ResultCell = applyFun(Fun, Val),
-			cell:injectFunc(fun(InnerVal) ->
+			#exprCell{pid=ResultCell} = applyFun(Fun, Val),
+			cell:injectFunc(ResultCell, fun(InnerVal) ->
 				case InnerVal of
 					true ->
 						io:format("Sending plus intercept~n", []),
-						cell:sendIntercept(OutputCell, plus),
-						fun() -> cell:sendIntercept(OutputCell, minus) end;
+						intercept:sendIntercept(Intercept, plus),
+						fun() -> intercept:sendIntercept(Intercept, minus) end;
 					false ->
 						undefined
 				end
@@ -263,7 +263,7 @@ primitives() ->
 	function = fun(Fun, FunInv, Init, Cell) ->
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, Init),
-		cell:injectIntercept(OutputCell, fun(Message, {cache, Cache}) ->
+		Intercept = cell:injectIntercept(OutputCell, fun(Message, {cache, Cache}) ->
 			case Message of
 				{plus, Val} -> 
 					cell:removeLine(OutputCell, Cache),
@@ -278,8 +278,8 @@ primitives() ->
 			end
 		end, {cache, Init}),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			cell:sendIntercept(OutputCell, {plus, Val}),
-			fun() -> cell:sendIntercept(OutputCell, {minus, Val}) end
+			intercept:sendIntercept(Intercept, {plus, Val}),
+			fun() -> intercept:sendIntercept(Intercept, {minus, Val}) end
 		end),
 		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
@@ -439,4 +439,7 @@ bindUnitOrSetHelper(Fun, Cell) ->
 
 for(Max, Max, F) -> [F(Max)];
 for(I, Max, F) -> [F(I)|for(I+1, Max, F)].
-	
+
+
+applyFun(Fun, Input) ->
+	eval:evaluate(#cons{type=apply, left=Fun, right=Input}).

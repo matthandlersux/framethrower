@@ -3,6 +3,8 @@
 -include("../include/scaffold.hrl").
 -include_lib("xmerl/include/xmerl.hrl").
 
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+
 -record(testWorld, {env=expr:getEnv(default), endCaps=dict:new(), outMessages=dict:new()}).
 % 
 % parseAll(D) ->
@@ -134,14 +136,10 @@ extractExpectedMessage(R, ExpectedMessages) when is_record(R, xmlElement) ->
 extractExpectedMessage(_, State) -> State.  % ignore any other text data
 
 loop(ExpectedMessages, FinishedMessages, State) ->
-	#testWorld{outMessages=OutMessages} = State,
 	receive
 		{response, ECName, Message} ->
-			ECMessages = dict:fetch(ECName, OutMessages),
-			NewOutMessages = dict:store(ECName, ECMessages ++ [Message], OutMessages),
-			NewState = State#testWorld{outMessages=NewOutMessages},
-			NewExpectedMessages = lists:map(fun(EMessage) -> checkIncomingMessage(EMessage, NewState) end, ExpectedMessages),
-			NewerState = lists:foldl(fun updateOutMessages/2, NewState, NewExpectedMessages),
+			NewExpectedMessages = lists:map(fun(EMessage) -> checkIncomingMessage(EMessage, Message, State) end, ExpectedMessages),
+			NewerState = lists:foldl(fun updateState/2, State, NewExpectedMessages),
 			NewerExpectedMessages = lists:filter(fun filterExpectedMessages/1, NewExpectedMessages),
 			NewFinishedMessages = FinishedMessages ++ lists:filter(fun filterFinishedMessages/1, NewExpectedMessages),
 			if
@@ -162,31 +160,33 @@ filterExpectedMessages(_) -> false.
 	
 filterFinishedMessages({_,_,{true,_}}) -> true;
 filterFinishedMessages(_) -> false.
+
+scMatch(MessageToCheck, TrySC, Env) ->
+	case MessageToCheck of
+		{set, {scPatternMatch, TrySCName}} -> 
+			try dict:fetch(TrySCName, Env) of
+				TrySC -> match;
+				_ -> {badMatch, {set, TrySC}}
+			catch
+				_:_ -> {scPatternMatch, TrySCName, TrySC}
+			end;
+		_ -> {badMatch, {set, TrySC}}
+	end.	
 	
-checkIncomingMessage({ECName, MessageToCheck, {true, Output}}, State) -> {ECName, MessageToCheck, {true, Output}};
-checkIncomingMessage({ECName, MessageToCheck, {false, _}}, State) ->
-	#testWorld{env=Env, outMessages=OutMessages} = State,
+checkIncomingMessage({ECName, MessageToCheck, {true, Output}}, IncomingMessage, State) -> {ECName, MessageToCheck, {true, Output}};
+checkIncomingMessage({ECName, MessageToCheck, {false, _}}, IncomingMessage, State) ->
+	#testWorld{env=Env} = State,
 	Response =
-		try hd(dict:fetch(ECName, OutMessages)) of
+		case IncomingMessage of
 			MessageToCheck -> match;
-			{set, TrySC} -> 
+			{set, {Key,TrySC}} = BadMatch ->
 				case MessageToCheck of
-					{set, {scPatternMatch, TrySCName}} -> 
-						try dict:fetch(TrySCName, Env) of
-							TrySC -> match;
-							_ -> {badMatch, {set, TrySC}}
-						catch
-							_:_ -> {scPatternMatch, TrySCName, TrySC}
-						end;
-					_ -> {badMatch, {set, TrySC}}
+					{Key, MVal} -> scMatch(MVal, TrySC, Env);
+					_ -> {badMatch, BadMatch}
 				end;
+			{set, TrySC} ->
+				scMatch(MessageToCheck, TrySC, Env);
 			BadMatch -> {badMatch, BadMatch}
-		catch
-			_:_ -> 
-				case MessageToCheck of
-					{none,_} -> none;
-					_ -> noMessage
-				end
 		end,
 	Result = case Response of
 		match -> {true, {match, "Confirmed Message: " ++ messageToString(MessageToCheck, ECName)}};
@@ -198,17 +198,14 @@ checkIncomingMessage({ECName, MessageToCheck, {false, _}}, State) ->
 	{ECName, MessageToCheck, Result}.
 
 
-updateOutMessages({ECName, MessageToCheck, {true, Output}}, State) ->
-	#testWorld{env=Env, outMessages=OutMessages} = State,
-	{Control, Message} = Output,
-
-	ECMessages = dict:fetch(ECName, OutMessages),
-	case {Control, ECMessages} of
-		{match, [Head|Tail]} -> State#testWorld{outMessages=dict:store(ECName, Tail, OutMessages)};
-		{none, FullList} -> State;
-		{{scPatternMatch, SCName, SC},[Head|Tail]} -> State#testWorld{outMessages=dict:store(ECName, Tail, OutMessages), env=dict:store(SCName, SC, Env)}	
+updateState({ECName, MessageToCheck, {true, {Control, _}}}, State) ->
+	#testWorld{env=Env} = State,
+	case Control of
+		match -> State;
+		none -> State;
+		{scPatternMatch, SCName, SC} -> State#testWorld{env=dict:store(SCName, SC, Env)}	
 	end;
-updateOutMessages(_, State) ->
+updateState(_, State) ->
 	State.
 	
 outputExpectedMessage({ECName, MessageToCheck, {true, Output}}) ->
