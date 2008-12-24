@@ -65,14 +65,19 @@ function xmlToExpr(xml, ids) {
 	var ns = xml.namespaceURI;
 	
 	if (ns === xmlns["f"]) {
-		// TODO: number, string, bool
-		if (name === "o") {
+		if (name === "number") {
+			return +getAttr(xml, "value");
+		} else if (name === "string") {
+			return getAttr(xml, "value");
+		} else if (name === "bool") {
+			return getAttr(xml, "value") === "true";
+		} else if (name === "o") {
 			var id = getAttr(xml, "name");
 			return ids[id];
 		} else if (name === "set") {
-			
+			// TODO
 		} else if (name === "assoc") { // TODO: we really need to change assoc to map
-			
+			// TODO
 		}
 	} else {
 		return xml;
