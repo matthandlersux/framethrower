@@ -23,11 +23,13 @@ evaluate(Expr) when is_record(Expr, cons) ->
 						true ->
 							case memoize:get( BottomExpr ) of
 								Cell when is_record(Cell, exprCell) ->
+									?trace("got memoized value"),
 									Cell;
 								_ ->
 									F = evaluate( Left ), 
 									Input = evaluate( Expr#cons.right ),
 									Pid = applyFun( F, Input ),
+									?trace(Pid),
 									Cell = #exprCell{pid = Pid, type = Type, expr = BottomExpr},
 									OnRemove = memoize:add( BottomExpr, Cell),
 									cell:addOnRemove(Pid, OnRemove),
@@ -50,7 +52,18 @@ evaluate(Expr) when is_record(Expr, cons) ->
 					end
 			end
 	end;
-evaluate(Expr) -> Expr.
+evaluate(Expr) ->
+	Type = type:get( Expr ),
+	BottomExpr = bottomOut(Expr),
+	case Expr of
+		X when is_function(X) ->
+			%decide if it needs to be named
+			#exprFun{function = X, type = Type, expr = BottomExpr};
+		Pid when is_pid(Pid) ->
+			#exprCell{pid = Pid, type = Type, expr = BottomExpr};									
+		NumStringBool ->
+			NumStringBool
+	end.
 
 %% 
 %% betaReduce:: LambdaCons -> ExprVar -> Expr

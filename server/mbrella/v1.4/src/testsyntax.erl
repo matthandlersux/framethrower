@@ -65,12 +65,16 @@ parseEndCap(R, State) ->
 	#testWorld{env=Env, outMessages=OutMessages} = State,
 	Name = getAtt(name, R),
 	Expression = getAtt(expression, R),
-	#exprCell{pid=EC} = eval:evaluate(expr:expr(expr:parse(Expression), Env)),
+	Answer = eval:evaluate(expr:expr(expr:parse(Expression), Env)),
+	#exprCell{pid=EC} = Answer,
 	Self = self(),
 	cell:injectFunc(EC, fun(Val) -> 
 		Self ! {response, Name, {set, Val}},
 		fun() -> 
-			Self ! {response, Name, {remove, Val}} 
+			case Val of
+				{K,V} -> Self ! {response, Name, {remove, K}};
+				_ -> Self ! {response, Name, {remove, Val}}
+			end
 		end
 	end),
 	State#testWorld{outMessages=dict:store(Name, [], OutMessages)}.
@@ -163,7 +167,7 @@ filterFinishedMessages(_) -> false.
 
 scMatch(MessageToCheck, TrySC, Env) ->
 	case MessageToCheck of
-		{set, {scPatternMatch, TrySCName}} -> 
+		{scPatternMatch, TrySCName} -> 
 			try dict:fetch(TrySCName, Env) of
 				TrySC -> match;
 				_ -> {badMatch, {set, TrySC}}
@@ -179,13 +183,16 @@ checkIncomingMessage({ECName, MessageToCheck, {false, _}}, IncomingMessage, Stat
 	Response =
 		case IncomingMessage of
 			MessageToCheck -> match;
-			{set, {Key,TrySC}} = BadMatch ->
+			{set, {Key,TrySC}} ->
 				case MessageToCheck of
-					{Key, MVal} -> scMatch(MVal, TrySC, Env);
-					_ -> {badMatch, BadMatch}
+					{set, {Key, MVal}} -> scMatch(MVal, TrySC, Env);
+					_ -> {badMatch, IncomingMessage}
 				end;
 			{set, TrySC} ->
-				scMatch(MessageToCheck, TrySC, Env);
+				case MessageToCheck of
+					{set, MVal} -> scMatch(MVal, TrySC, Env);
+					_ -> {badMatch, IncomingMessage}
+				end;
 			BadMatch -> {badMatch, BadMatch}
 		end,
 	Result = case Response of

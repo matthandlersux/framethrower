@@ -217,27 +217,21 @@ primitives() ->
 	name = "any",
 	type = "(a -> Unit Bool) -> Set a -> Unit Bool",
 	function = fun(Fun, Cell) ->
-		?trace("Here"),
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, false),
-		io:format("Adding default false value~n", []),
 		Intercept = cell:injectIntercept(OutputCell, fun(Message, Count) ->
 			case {Message, Count} of
 				{plus, 0} ->
-					io:format("Add 0~n", []),
 					cell:removeLine(OutputCell, false),
 					cell:addLine(OutputCell, true),
 					1;
 				{plus, Num} ->
-					io:format("Add ~p~n", [Num]),
 					Num + 1;
 				{minus, 1} ->
-					io:format("Minus 1~n", []),
 					cell:removeLine(OutputCell, true),
 					cell:addLine(OutputCell, false),
 					0;
 				{minus, Num} ->
-					io:format("Minus ~p~n", [Num]),
 					Num - 1
 			end
 		end, 0),
@@ -246,7 +240,6 @@ primitives() ->
 			cell:injectFunc(ResultCell, fun(InnerVal) ->
 				case InnerVal of
 					true ->
-						io:format("Sending plus intercept~n", []),
 						intercept:sendIntercept(Intercept, plus),
 						fun() -> intercept:sendIntercept(Intercept, minus) end;
 					false ->
@@ -345,14 +338,10 @@ primitives() ->
 		OutputCell = cell:makeCellAssocInput(),
 		BHashCell = cell:makeCell(),
 		Intercept = cell:injectIntercept(OutputCell, fun(Message, BHash) ->
-			io:format("Intercepted Message: ~p~n", [Message]),
-			Answer = case Message of
+			case Message of
 				{bHashAdd, BVal} -> 
-					io:format("BHashAdd: ~p~n", [BVal]),
 					NewCell = cell:makeCell(),
-					io:format("AddLine to Output Cell: ~p~n", [{BVal, NewCell}]),
 					cell:addLine(OutputCell, {BVal, NewCell}),
-					io:format("Done AddLine to Output Cell: ~n", []),
 					dict:store(BVal, NewCell, BHash);
 				{bHashRemove, BVal} ->
 					cell:removeLine(OutputCell, BVal),
@@ -363,9 +352,7 @@ primitives() ->
 				{removeInnerLine, InnerVal, Key} ->
 					cell:removeLine(dict:fetch(InnerVal, BHash), Key),
 					BHash
-			end,
-			io:format("Done Intercepted Message: ~p~n", [Message]),
-			Answer
+			end
 		end, dict:new()),
 		RemoveFunc1 = cell:injectFunc(BHashCell, fun(BVal) ->
 			intercept:sendIntercept(Intercept, {bHashAdd, BVal}),

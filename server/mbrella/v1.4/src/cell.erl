@@ -107,10 +107,9 @@ handle_call({addLine, Value}, From, State) ->
 	Dot = try dict:fetch(Key, Dots) of
 		{dot, Num, Val, Lines} -> {dot, Num+1, Val, Lines}
 	catch
-		_:_ -> {dot, 1, Value, dict:new()}
+		_:_ -> onAdd({dot, 1, Value, dict:new()}, Funcs)
 	end,
-	NewDot = onAdd(Dot, Funcs),
-	NewDots = dict:store(Key, NewDot, Dots),
+	NewDots = dict:store(Key, Dot, Dots),
 	NewState = State#cell{dots=NewDots},
 	Self = self(),
 	CallBack = fun() -> 
@@ -141,10 +140,10 @@ handle_call({injectIntercept, Fun, IntState}, From, State) ->
 handle_cast({removeLine, Value}, State) ->
 	#cell{funcs=Funcs, dots=Dots} = State,
 	NewDots = try dict:fetch(Value, Dots) of
-		{dot, Num, Value, Lines} = Dot -> 
+		{dot, Num, Val, Lines} = Dot -> 
 			if Num == 1 -> onRemove(Dot, Funcs),
 						   dict:erase(Value, Dots);
-			   true -> dict:store(Value, {dot, Num-1, Value, Lines}, Dots)
+			   true -> dict:store(Value, {dot, Num-1, Val, Lines}, Dots)
 			end
 	catch
 		_:_ -> Dots
@@ -161,10 +160,7 @@ handle_cast({removeFunc, Id}, State) ->
 handle_cast({addOnRemove, Fun}, State) ->
 	#cell{onRemoves=OnRemoves} = State,
 	NewState = State#cell{onRemoves=[Fun | OnRemoves]},
-    {noreply, NewState};
-handle_cast(Something, State) ->
-	io:format("SOMETHING: ~p~n", [Something]),
-	{noreply, State}.
+    {noreply, NewState}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2
