@@ -477,9 +477,6 @@
 				<number value = '8' />
 				<number value = '1' />
 			</set>
-		</expectedmessages>
-		
-		<expectedmessages>
 			<set ecname = 'ec' >
 				<number value = '1' />
 				<number value = '1' />
@@ -510,10 +507,6 @@
 				<number value = '12' />
 				<number value = '2' />
 			</set>
-		</expectedmessages>
-	
-
-		<expectedmessages>
 			<set ecname = 'ec' >
 				<number value = '5' />
 				<number value = '2' />
