@@ -174,11 +174,11 @@ scMatch(MessageToCheck, TrySC, Env) ->
 		{scPatternMatch, TrySCName} -> 
 			try dict:fetch(TrySCName, Env) of
 				TrySC -> match;
-				_ -> {badMatch, {set, TrySC}}
+				_ -> false
 			catch
 				_:_ -> {scPatternMatch, TrySCName, TrySC}
 			end;
-		_ -> {badMatch, {set, TrySC}}
+		_ -> false
 	end.	
 	
 checkIncomingMessage({ECName, MessageToCheck, {true, Output}}, IncomingMessage, State) -> {ECName, MessageToCheck, {true, Output}};
@@ -187,14 +187,22 @@ checkIncomingMessage({ECName, MessageToCheck, {false, _}}, IncomingMessage, Stat
 	Response =
 		case IncomingMessage of
 			MessageToCheck -> match;
-			{set, {Key,TrySC}} ->
+			{Action, {Key,TrySC}} ->
 				case MessageToCheck of
-					{set, {Key, MVal}} -> scMatch(MVal, TrySC, Env);
+					{Action, {Key, MVal}} -> 
+						case scMatch(MVal, TrySC, Env) of
+							false -> {badMatch, IncomingMessage};
+							SCMatch -> SCMatch
+						end;
 					_ -> {badMatch, IncomingMessage}
 				end;
-			{set, TrySC} ->
+			{Action, TrySC} ->
 				case MessageToCheck of
-					{set, MVal} -> scMatch(MVal, TrySC, Env);
+					{Action, MVal} -> 
+						case scMatch(MVal, TrySC, Env) of
+							false -> {badMatch, IncomingMessage};
+							SCMatch -> SCMatch
+						end;
 					_ -> {badMatch, IncomingMessage}
 				end;
 			BadMatch -> {badMatch, BadMatch}

@@ -1,20 +1,66 @@
 <tests>
-	<test name='passThruTest1'>
+	<test name='reactiveApplyTest1'>
+		<startcap name='sc' type='Unit (Number -> Set Number)' />
 
-		<endcap name = 'ec' expression = 'passThru not false' />
+		<endcap name = 'ec' expression = 'reactiveApply sc 5' />
+
+		<messages>
+			<set scname = 'sc'>
+				<func name='oneTo' />
+			</set>
+		</messages>
 
 		<expectedmessages>
 			<set ecname = 'ec' >
-				<bool value='false'/>
+				<sc name = 'resultCap' />
+			</set>
+		</expectedmessages>
+		
+		<endcap name = 'ec2' expression = 'resultCap' />
+		
+		<expectedmessages>
+			<set ecname = 'ec2' >
+				<number value = '1' />
+			</set>
+			<set ecname = 'ec2' >
+				<number value = '2' />
+			</set>
+			<set ecname = 'ec2' >
+				<number value = '3' />
+			</set>
+			<set ecname = 'ec2' >
+				<number value = '4' />
+			</set>
+			<set ecname = 'ec2' >
+				<number value = '5' />
 			</set>
 		</expectedmessages>
 
-		<endcap name = 'ec2' expression = 'passThru not true' />
+		<messages>
+			<remove scname ='sc'>
+				<func name='oneTo' />
+			</remove>
+			<set scname ='sc'>
+				<func name='x2' />
+			</set>
+		</messages>
 
 		<expectedmessages>
-			<none ecname = 'ec' />
+			<remove ecname = 'ec' >
+				<sc name = 'resultCap' />
+			</remove>
+			<set ecname = 'ec' >
+				<sc name = 'resultCap2' />
+			</set>
+		</expectedmessages>
+
+		<endcap name = 'ec3' expression = 'resultCap2' />
+		
+		<expectedmessages>
+			<set ecname = 'ec3' >
+				<number value = '10' />
+			</set>
 		</expectedmessages>
 
 	</test>
-
 </tests>
