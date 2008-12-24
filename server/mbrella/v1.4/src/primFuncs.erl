@@ -51,8 +51,7 @@ primitives() ->
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCellAssocInput(),
 		RemoveFunc = cell:injectFunc(Cell, fun({Key,Val}) ->
-			ResultCell = applyFun(applyFun(Fun, Key),Val),
-			cell:injectFunc(ResultCell, fun(InnerVal) ->
+			applyAndInject(applyFun(Fun, Key), Val, fun(InnerVal) ->
 				cell:addLine(OutputCell, InnerVal) end
 			)
 		end),
@@ -70,7 +69,7 @@ primitives() ->
 		RemoveFunc1 = cell:injectFunc(Cell1, fun(Val) ->
 			cell:addLine(OutputCell, Val) end
 		),
-		RemoveFunc2 = cell:injectFunc(Cell1, fun(Val) ->
+		RemoveFunc2 = cell:injectFunc(Cell2, fun(Val) ->
 			cell:addLine(OutputCell, Val) end
 		),
 		cell:addOnRemove(OutputCell, RemoveFunc1),
@@ -82,7 +81,7 @@ primitives() ->
 	type = "Set a -> Set a -> Set a",
 	function = fun(Cell1, Cell2) ->
 		OutputCell = cell:makeCell(),
-		cell:injectIntercept(OutputCell, fun(Message, State) ->
+		Intercept = cell:injectIntercept(OutputCell, fun(Message, State) ->
 			case Message of
 				{plus, Val} -> 
 					NewEntry = try dict:fetch(Val, State) of
@@ -103,12 +102,12 @@ primitives() ->
 			end
 		end, dict:new()),
 		RemoveFunc1 = cell:injectFunc(Cell1, fun(Val) ->
-			cell:sendIntercept(OutputCell, {plus, Val}),
-			fun() -> cell:sendIntercept(OutputCell, {minus, Val}) end
+			intercept:sendIntercept(Intercept, {plus, Val}),
+			fun() -> intercept:sendIntercept(Intercept, {minus, Val}) end
 		end),
-		RemoveFunc2 = cell:injectFunc(Cell1, fun(Val) ->
-			cell:sendIntercept(OutputCell, {minus, Val}),
-			fun() -> cell:sendIntercept(OutputCell, {plus, Val}) end
+		RemoveFunc2 = cell:injectFunc(Cell2, fun(Val) ->
+			intercept:sendIntercept(Intercept, {minus, Val}),
+			fun() -> intercept:sendIntercept(Intercept, {plus, Val}) end
 		end),
 		
 		cell:addOnRemove(OutputCell, RemoveFunc1),
@@ -236,8 +235,7 @@ primitives() ->
 			end
 		end, 0),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			#exprCell{pid=ResultCell} = applyFun(Fun, Val),
-			cell:injectFunc(ResultCell, fun(InnerVal) ->
+			applyAndInject(Fun, Val, fun(InnerVal) ->
 				case InnerVal of
 					true ->
 						intercept:sendIntercept(Intercept, plus),
@@ -256,7 +254,7 @@ primitives() ->
 	function = fun(Fun, FunInv, Init, Cell) ->
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, Init),
-		Intercept = cell:injectIntercept(OutputCell, fun(Message, {cache, Cache}) ->
+		Intercept = cell:injectIntercept(OutputCell, fun(Message, Cache) ->
 			case Message of
 				{plus, Val} -> 
 					cell:removeLine(OutputCell, Cache),
@@ -269,7 +267,7 @@ primitives() ->
 					cell:addLine(OutputCell, NewCache),
 					NewCache
 			end
-		end, {cache, Init}),
+		end, Init),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
 			intercept:sendIntercept(Intercept, {plus, Val}),
 			fun() -> intercept:sendIntercept(Intercept, {minus, Val}) end
@@ -284,9 +282,9 @@ primitives() ->
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, Init),
 		cell:injectFunc(OutputCell, fun(Val) ->
-			ResultCell = applyFun(Fun, Val),
-			cell:injectFunc(ResultCell, fun(InnerVal) ->
-				cell:addLine(OutputCell, InnerVal) end)
+			applyAndInject(Fun, Val, fun(InnerVal) ->
+				cell:addLine(OutputCell, InnerVal) 
+			end)
 		end),
 		OutputCell
 	end},
@@ -297,9 +295,9 @@ primitives() ->
 		OutputCell = cell:makeCellAssocInput(),
 		cell:addLine(OutputCell, {Init, 0}),
 		cell:injectFunc(OutputCell, fun({Key, Val}) ->
-			ResultCell = applyFun(Fun, Key),
-			cell:injectFunc(ResultCell, fun(InnerVal) ->
-				cell:addLine(OutputCell, {InnerVal, Val+1}) end)
+			applyAndInject(Fun, Key, fun(InnerVal) ->
+				cell:addLine(OutputCell, {InnerVal, Val+1})
+			end)
 		end),
 		OutputCell
 	end},
@@ -416,8 +414,7 @@ primitives() ->
 bindUnitOrSetHelper(Fun, Cell) ->
 	OutputCell = cell:makeCell(),
 	RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-		ResultCell = applyFun(Fun, Val),
-		cell:injectFunc(ResultCell, fun(InnerVal) ->
+		applyAndInject(Fun, Val, fun(InnerVal) ->
 			cell:addLine(OutputCell, InnerVal) end
 		)
 	end),
@@ -430,3 +427,7 @@ for(I, Max, F) -> [F(I)|for(I+1, Max, F)].
 
 applyFun(Fun, Input) ->
 	eval:evaluate(#cons{type=apply, left=Fun, right=Input}).
+
+applyAndInject(Fun, Input, InjectedFun) ->
+	#exprCell{pid=Pid} = applyFun(Fun, Input),
+	cell:injectFunc(Pid, InjectedFun).

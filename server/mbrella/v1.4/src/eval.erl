@@ -22,14 +22,11 @@ evaluate(Expr) when is_record(Expr, cons) ->
 					case type:isReactive(Type) of
 						true ->
 							case memoize:get( BottomExpr ) of
-								Cell when is_record(Cell, exprCell) ->
-									?trace("got memoized value"),
-									Cell;
+								Cell when is_record(Cell, exprCell) -> Cell;
 								_ ->
 									F = evaluate( Left ), 
 									Input = evaluate( Expr#cons.right ),
 									Pid = applyFun( F, Input ),
-									?trace(Pid),
 									Cell = #exprCell{pid = Pid, type = Type, expr = BottomExpr},
 									OnRemove = memoize:add( BottomExpr, Cell),
 									cell:addOnRemove(Pid, OnRemove),
@@ -186,7 +183,9 @@ bottomOut( InExpr ) ->
 			( Expr ) when is_record(Expr, exprCell) ->
 				case Expr#exprCell.name of 
 					undefined ->
-						{ok, Expr#exprCell.expr};
+						%change this once all exprCell's are tagged with expr
+						%{ok, Expr#exprCell.expr};
+						{ok, Expr#exprCell.pid};
 					_ ->
 						{ok, Expr}
 				end

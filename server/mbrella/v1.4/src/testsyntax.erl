@@ -109,6 +109,10 @@ extractMessage(R, State) when is_record(R, xmlElement) ->
 		{Key, {scPatternMatch, Name}} ->
 			#exprCell{pid=Pid} = dict:fetch(Name, Env),
 			{Key, Pid};
+		{func, Name} ->
+			dict:fetch(Name, Env);
+		{Key, {func, Name}} ->
+			{Key, dict:fetch(Name, Env)};			
 		Arg -> Arg
 	end,
 	case R#xmlElement.name of
@@ -231,6 +235,7 @@ toString(Value) ->
 		Num when is_float(Num) -> float_to_list(Num);
 		Atom when is_atom(Atom) -> atom_to_list(Atom);
 		{scPatternMatch, SCName} -> "StartCap-" ++ SCName;
+		{func, FuncName} -> "Function-" ++ FuncName;
 		_ -> "No Match for this String"
 	end.
 
@@ -248,6 +253,7 @@ parsePrim(R) when is_record(R, xmlElement) ->
 	case R#xmlElement.name of
 		number -> list_to_integer(getAtt(value, R));
 		bool -> list_to_atom(getAtt(value, R));
+		func -> {func, getAtt(name, R)};
 		sc -> {scPatternMatch, getAtt(name, R)};
 		_ -> undefined
 	end;
