@@ -1,65 +1,37 @@
 <tests>
-	<test name='reactiveApplyTest1'>
-		<startcap name='sc' type='Unit (Number -> Set Number)' />
-
-		<endcap name = 'ec' expression = 'reactiveApply sc 5' />
-
-		<messages>
-			<set scname = 'sc'>
-				<func name='oneTo' />
-			</set>
-		</messages>
-
+	<test name='unfoldAssocTest1'>
+		<endcap name = 'ec' expression = 'invert (mapAssocValue (compose returnUnitSet returnUnit) (unfoldAssoc oneTo 5))' />
+		
 		<expectedmessages>
 			<set ecname = 'ec' >
-				<sc name = 'resultCap' />
+				<number value = '0' />
+				<sc name = 'sc0' />
+			</set>
+			<set ecname = 'ec' >
+				<number value = '1' />
+				<sc name = 'sc1' />
 			</set>
 		</expectedmessages>
 		
-		<endcap name = 'ec2' expression = 'resultCap' />
-		
+		<endcap name = 'ec0' expression = 'sc0' />
+		<endcap name = 'ec1' expression = 'sc1' />
+
 		<expectedmessages>
-			<set ecname = 'ec2' >
-				<number value = '1' />
-			</set>
-			<set ecname = 'ec2' >
-				<number value = '2' />
-			</set>
-			<set ecname = 'ec2' >
-				<number value = '3' />
-			</set>
-			<set ecname = 'ec2' >
-				<number value = '4' />
-			</set>
-			<set ecname = 'ec2' >
+			<set ecname ='ec0' >
 				<number value = '5' />
 			</set>
-		</expectedmessages>
-
-		<messages>
-			<remove scname ='sc'>
-				<func name='oneTo' />
-			</remove>
-			<set scname ='sc'>
-				<func name='x2' />
+			<set ecname ='ec1' >
+				<number value = '1' />
 			</set>
-		</messages>
-
-		<expectedmessages>
-			<remove ecname = 'ec' >
-				<sc name = 'resultCap' />
-			</remove>
-			<set ecname = 'ec' >
-				<sc name = 'resultCap2' />
+			<set ecname ='ec1' >
+				<number value = '2' />
 			</set>
-		</expectedmessages>
-
-		<endcap name = 'ec3' expression = 'resultCap2' />
-		
-		<expectedmessages>
-			<set ecname = 'ec3' >
-				<number value = '10' />
+			<set ecname ='ec1' >
+				<number value = '3' />
 			</set>
+			<set ecname ='ec1' >
+				<number value = '4' />
+			</set>									
 		</expectedmessages>
 
 	</test>

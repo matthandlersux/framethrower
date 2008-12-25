@@ -280,12 +280,7 @@ primitives() ->
 	type = "(a -> Set a) -> a -> Set a",
 	function = fun(Fun, Init) ->
 		OutputCell = cell:makeCell(),
-		cell:addLine(OutputCell, Init),
-		cell:injectFunc(OutputCell, fun(Val) ->
-			applyAndInject(Fun, Val, fun(InnerVal) ->
-				cell:addLine(OutputCell, InnerVal) 
-			end)
-		end),
+		unfoldSetHelper(Init, Fun, OutputCell, dict:new()),
 		OutputCell
 	end},
 	#exprFun{
@@ -293,12 +288,7 @@ primitives() ->
 	type = "(a -> Set a) -> a -> Assoc a Number",
 	function = fun(Fun, Init) ->
 		OutputCell = cell:makeCellAssocInput(),
-		cell:addLine(OutputCell, {Init, 0}),
-		cell:injectFunc(OutputCell, fun({Key, Val}) ->
-			applyAndInject(Fun, Key, fun(InnerVal) ->
-				cell:addLine(OutputCell, {InnerVal, Val+1})
-			end)
-		end),
+		unfoldAssocHelper({Init, 0}, Fun, OutputCell, dict:new()),
 		OutputCell
 	end},
 	%% ============================================================================
@@ -409,6 +399,24 @@ primitives() ->
 	end}
 	].
 
+unfoldSetHelper(Val, Fun, OutputCell, Done) ->
+	try dict:fetch(Val, Done)
+	catch _:_ ->
+		cell:addLine(OutputCell, Val),
+		applyAndInject(Fun, Val, fun(InnerVal) ->
+			unfoldSetHelper(InnerVal, Fun, OutputCell, dict:store(Val, Val, Done))
+		end)
+	end.
+
+unfoldAssocHelper({Key, Val}, Fun, OutputCell, Done) ->
+	?trace(Val),
+	try dict:fetch(Key, Done)
+	catch _:_ ->
+		cell:addLine(OutputCell, {Key, Val}),
+		applyAndInject(Fun, Key, fun(InnerVal) ->
+			unfoldSetHelper({InnerVal, Val+1}, Fun, OutputCell, dict:store(Key, Key, Done))
+		end)
+	end.
 
 
 bindUnitOrSetHelper(Fun, Cell) ->
