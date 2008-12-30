@@ -28,7 +28,7 @@ function init() {
 	console.log(t);
 	//console.log(getThunkEssence(t));
 	
-	replaceThunk(t, "", {testCell: cell}, emptyEnv);
+	evalThunk(t, {baseUrl: "", ids: {testCell: cell}, tunnelEnv: emptyEnv});
 	
 }
 
