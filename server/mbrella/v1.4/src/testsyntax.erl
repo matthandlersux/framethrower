@@ -54,7 +54,7 @@ parseStartCap(R, State) ->
 	#testWorld{env=Env} = State,
 	SCTypeFirstWord = hd(string:tokens(Type, " ")),
 	SC = if 
-		SCTypeFirstWord == "assoc" -> #exprCell{pid=cell:makeCellAssocInput(), type=type:parse(Type)};
+		SCTypeFirstWord == "map" -> #exprCell{pid=cell:makeCellMapInput(), type=type:parse(Type)};
 		true -> #exprCell{pid=cell:makeCell(), type=type:parse(Type)}
 	end,
 	NewEnv = dict:store(Name, SC, Env),

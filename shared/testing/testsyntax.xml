@@ -93,8 +93,8 @@
 
 	</test>
 	
-	<test name='unfoldAssocTest1'>
-		<endcap name = 'ec' expression = 'invert (mapAssocValue (compose returnUnitSet returnUnit) (unfoldAssoc oneTo 5))' />
+	<test name='unfoldMapTest1'>
+		<endcap name = 'ec' expression = 'invert (mapMapValue (compose returnUnitSet returnUnit) (unfoldMap oneTo 5))' />
 		
 		<expectedmessages>
 			<set ecname = 'ec' >
@@ -284,7 +284,7 @@
 		</expectedmessages>
 	</test>
 
-	<test name='assocTest1'>
+	<test name='mapTest1'>
 		<startcap name='sc' type='unit number' />
 	
 		<messages>
@@ -293,7 +293,7 @@
 			</set>
 		</messages>
 
-		<endcap name = 'ec' expression = 'returnUnitAssoc 1 sc' />
+		<endcap name = 'ec' expression = 'returnUnitMap 1 sc' />
 
 		<expectedmessages>
 			<set ecname = 'ec' >
@@ -393,8 +393,8 @@
 	
 	</test>
 
-	<test name='bindAssocTest1'>
-		<startcap name='sc' type='assoc number number' />
+	<test name='bindMapTest1'>
+		<startcap name='sc' type='map number number' />
 	
 		<messages>
 			<set scname = 'sc'>
@@ -403,7 +403,7 @@
 			</set>
 		</messages>
 	
-		<endcap name = 'ec' expression = 'bindAssoc oneToAssoc sc' />
+		<endcap name = 'ec' expression = 'bindMap oneToMap sc' />
 
 		<expectedmessages>
 			<set ecname = 'ec' >
@@ -459,8 +459,8 @@
 
 	</test>
 
-	<test name='bindAssocTest2'>
-		<startcap name='sc' type='assoc number number' />
+	<test name='bindMapTest2'>
+		<startcap name='sc' type='map number number' />
 	
 		<messages>
 			<set scname = 'sc'>
@@ -469,8 +469,8 @@
 			</set>
 		</messages>
 	
-		<endcap name = 'ec' expression = 'bindAssoc oneToAssoc sc' />
-		<endcap name = 'ec2' expression = 'bindAssoc x2ToAssoc sc' />
+		<endcap name = 'ec' expression = 'bindMap oneToMap sc' />
+		<endcap name = 'ec2' expression = 'bindMap x2ToMap sc' />
 		
 		<expectedmessages>
 			<set ecname = 'ec2' >
@@ -538,7 +538,7 @@
 	</test>
 
 	<test name='invertTest1'>
-		<startcap name='sc' type='assoc number (set number)' />
+		<startcap name='sc' type='map number (set number)' />
 		<startcap name='sc1' type='set number' />
 		<startcap name='sc2' type='set number' />
 		<startcap name='sc3' type='set number' />
@@ -815,11 +815,11 @@
 
 	</test>
 
-	<test name='buildAssocTest1'>
+	<test name='buildMapTest1'>
 
 		<startcap name = 'sc' type = 'set number' />
 
-		<endcap name = 'ec' expression = 'buildAssoc (add 2) sc' />
+		<endcap name = 'ec' expression = 'buildMap (add 2) sc' />
 
 		<messages>
 			<set scname = 'sc'>

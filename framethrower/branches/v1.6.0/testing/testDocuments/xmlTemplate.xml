@@ -6,7 +6,7 @@
 	
 	<f:param name="p1" type="Number" />
 	<f:param name="p2" type="Number" />
-	<f:param name="assocTest" type="Assoc Number String" />
+	<f:param name="mapTest" type="Map Number String" />
 	
 	<f:derive name="d1" d="add p1 p2" />
 	
@@ -18,9 +18,9 @@
 			<xsl:value-of select="$p2/@value" />,
 			<xsl:value-of select="$d1/@value" />
 			<html:div>
-				<!-- <xsl:copy-of select="$assocTest" /> -->
+				<!-- <xsl:copy-of select="$mapTest" /> -->
 				<xsl:call-template name="prettyPrint">
-					<xsl:with-param name="node" select="$assocTest" />
+					<xsl:with-param name="node" select="$mapTest" />
 				</xsl:call-template>
 			</html:div>
 		</html:div>

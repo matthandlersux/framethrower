@@ -14,7 +14,7 @@ xmlTemplates.withTemplate("testing/testDocuments/xmlTemplate.xml", function (xt)
 });
 */
 
-var cell = makeControlledCell("Assoc Number String");
+var cell = makeControlledCell("Map Number String");
 
 cell.control.add(7, "hello");
 cell.control.add(6, "goodbye");

@@ -50,7 +50,7 @@
 -record (crossReference, {
 	type = set,
 	score = interface:new(bag, crossReference),
-	controller = interface:new(assoc, crossReference)
+	controller = interface:new(map, crossReference)
 	}).
 	
 -record (process, {
@@ -75,7 +75,7 @@
 	type,
 	name,
 	function,
-	expr
+	bottom
 }).
 
 -record (exprVar, {
@@ -87,8 +87,7 @@
 -record (exprCell, {
 	pid,
 	type,
-	name,
-	expr
+	bottom
 }).
 	
 %% ====================================================

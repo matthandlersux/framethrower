@@ -28,10 +28,10 @@ primitives() ->
 		OutputCell
 	end},
 	#exprFun{
-	name = "returnUnitAssoc",
-	type = "a -> Unit b -> Assoc a b",
+	name = "returnUnitMap",
+	type = "a -> Unit b -> Map a b",
 	function = fun(Key, Cell) ->
-		OutputCell = cell:makeCellAssocInput(),
+		OutputCell = cell:makeCellMapInput(),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
 			cell:addLine(OutputCell, {Key, Val}) end),
 		cell:addOnRemove(OutputCell, RemoveFunc),
@@ -46,10 +46,10 @@ primitives() ->
 	type = "(a -> Set b) -> Set a -> Set b",
 	function = fun bindUnitOrSetHelper/2},
 	#exprFun{
-	name = "bindAssoc",
-	type = "(a -> b -> Assoc a c) -> Assoc a b -> Assoc a c",
+	name = "bindMap",
+	type = "(a -> b -> Map a c) -> Map a b -> Map a c",
 	function = fun(Fun, Cell) ->
-		OutputCell = cell:makeCellAssocInput(),
+		OutputCell = cell:makeCellMapInput(),
 		RemoveFunc = cell:injectFunc(Cell, fun({Key,Val}) ->
 			applyAndInject(applyFun(Fun, Key), Val, fun(InnerVal) ->
 				cell:addLine(OutputCell, InnerVal) end
@@ -176,18 +176,18 @@ primitives() ->
 		OutputCell
 	end},
 	#exprFun{
-	name = "oneToAssoc",
-	type = "Number -> Number -> Assoc Number Number",
+	name = "oneToMap",
+	type = "Number -> Number -> Map Number Number",
 	function = fun(Val1, Val2) ->
-		OutputCell = cell:makeCellAssocInput(),
+		OutputCell = cell:makeCellMapInput(),
 		for(1, Val1, fun(X) -> cell:addLine(OutputCell, {X, Val2}) end),
 		OutputCell
 	end},
 	#exprFun{
-	name = "x2ToAssoc",
-	type = "Number -> Number -> Assoc Number Number",
+	name = "x2ToMap",
+	type = "Number -> Number -> Map Number Number",
 	function = fun(Val1, Val2) ->
-		OutputCell = cell:makeCellAssocInput(),
+		OutputCell = cell:makeCellMapInput(),
 		cell:addLine(OutputCell, {Val1*2, Val2}),
 		OutputCell
 	end},
@@ -284,21 +284,21 @@ primitives() ->
 		OutputCell
 	end},
 	#exprFun{
-	name = "unfoldAssoc",
-	type = "(a -> Set a) -> a -> Assoc a Number",
+	name = "unfoldMap",
+	type = "(a -> Set a) -> a -> Map a Number",
 	function = fun(Fun, Init) ->
-		OutputCell = cell:makeCellAssocInput(),
-		unfoldAssocHelper({Init, 0}, Fun, OutputCell, dict:new()),
+		OutputCell = cell:makeCellMapInput(),
+		unfoldMapHelper({Init, 0}, Fun, OutputCell, dict:new()),
 		OutputCell
 	end},
 	%% ============================================================================
-	%% Assoc Functions
+	%% Map Functions
 	%% ============================================================================
 	#exprFun{
-	name = "buildAssoc",
-	type = "(a -> b) -> Set a -> Assoc a b",
+	name = "buildMap",
+	type = "(a -> b) -> Set a -> Map a b",
 	function = fun(Fun, Cell) ->
-		OutputCell = cell:makeCellAssocInput(),
+		OutputCell = cell:makeCellMapInput(),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
 			Result = applyFun(Fun, Val),
 			cell:addLine(OutputCell, {Val, Result})
@@ -321,9 +321,9 @@ primitives() ->
 	end},
 	#exprFun{
 	name = "invert",
-	type = "Assoc a (Set b) -> Assoc b (Set a)",
+	type = "Map a (Set b) -> Map b (Set a)",
 	function = fun(Cell) ->
-		OutputCell = cell:makeCellAssocInput(),
+		OutputCell = cell:makeCellMapInput(),
 		BHashCell = cell:makeCell(),
 		Intercept = cell:injectIntercept(OutputCell, fun(Message, BHash) ->
 			case Message of
@@ -361,10 +361,10 @@ primitives() ->
 		OutputCell
 	end},
 	#exprFun{
-	name = "mapAssocValue",
-	type = "(a -> b) -> Assoc c a -> Assoc c b",
+	name = "mapMapValue",
+	type = "(a -> b) -> Map c a -> Map c b",
 	function = fun(Fun, Cell) ->
-		OutputCell = cell:makeCellAssocInput(),
+		OutputCell = cell:makeCellMapInput(),
 		RemoveFunc = cell:injectFunc(Cell, fun({Key, Val}) ->
 			Result = applyFun(Fun, Val),
 			cell:addLine(OutputCell, {Key, Result})
@@ -374,7 +374,7 @@ primitives() ->
 	end},
 	#exprFun{
 	name = "getKey",
-	type = "a -> Assoc a b -> Unit b",
+	type = "a -> Map a b -> Unit b",
 	function = fun(GetKey, Cell) ->
 		OutputCell = cell:makeCell(),
 		RemoveFunc = cell:injectFunc(Cell, fun(KeyVal) ->
@@ -388,7 +388,7 @@ primitives() ->
 	end},
 	#exprFun{
 	name = "keys",
-	type = "Assoc a b -> Set a",
+	type = "Map a b -> Set a",
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCell(),
 		RemoveFunc = cell:injectFunc(Cell, fun({Key, Val}) ->
@@ -408,7 +408,7 @@ unfoldSetHelper(Val, Fun, OutputCell, Done) ->
 		end)
 	end.
 
-unfoldAssocHelper({Key, Val}, Fun, OutputCell, Done) ->
+unfoldMapHelper({Key, Val}, Fun, OutputCell, Done) ->
 	?trace(Val),
 	try dict:fetch(Key, Done)
 	catch _:_ ->

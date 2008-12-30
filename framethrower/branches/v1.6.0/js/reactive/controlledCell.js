@@ -37,8 +37,8 @@ function makeControlledCell(typeString) {
 				cell.removeLine(k);
 			}
 		};
-	} else if (constructor === "Assoc") {
-		cell = makeCellAssocInput();
+	} else if (constructor === "Map") {
+		cell = makeCellMapInput();
 		cell.control = {
 			add: function (k, v) {
 				cell.addLine({key: k, value: v});

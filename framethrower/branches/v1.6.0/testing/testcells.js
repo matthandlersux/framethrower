@@ -1,4 +1,4 @@
-var type = parseType("Assoc Number (Set String)");
+var type = parseType("Map Number (Set String)");
 var cell = makeCell();
 cell.type = type;
 

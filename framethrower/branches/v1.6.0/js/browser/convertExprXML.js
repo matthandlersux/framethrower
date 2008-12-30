@@ -32,8 +32,8 @@ function exprToXML(expr, type) {
 				forEach(state, function (entry) {
 					append(xml, exprToXML(entry, entryType));
 				});
-			} else if (constructor === "Assoc") {
-				xml = createEl("f:assoc");
+			} else if (constructor === "Map") {
+				xml = createEl("f:map");
 				var keyType = type.left.right;
 				var valueType = type.right;
 				forEach(state, function (entry) {
@@ -76,7 +76,7 @@ function xmlToExpr(xml, ids) {
 			return ids[id];
 		} else if (name === "set") {
 			// TODO
-		} else if (name === "assoc") { // TODO: we really need to change assoc to map
+		} else if (name === "map") { // TODO: we really need to change map to map
 			// TODO
 		}
 	} else {

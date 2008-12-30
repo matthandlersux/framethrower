@@ -44,7 +44,7 @@ makeCell() ->
 	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
 	Pid.
 	
-makeCellAssocInput() ->
+makeCellMapInput() ->
 	ToKey = fun({Key,Val}) -> Key end,
 	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
 	Pid.

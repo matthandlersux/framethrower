@@ -75,8 +75,8 @@ function testFile(filename) {
 		var sctypeFirstWord = sctype.split(" ")[0];
 
 		//testWorld.startCaps[scname] = makeStartCap(sctypeFirstWord);
-		if(sctypeFirstWord == 'assoc') {
-			testWorld.startCaps[scname] = makeCellAssocInput();
+		if(sctypeFirstWord == 'map') {
+			testWorld.startCaps[scname] = makeCellMapInput();
 		} else {
 			testWorld.startCaps[scname] = makeCell();
 		}

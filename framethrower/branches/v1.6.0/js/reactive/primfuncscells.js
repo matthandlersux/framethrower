@@ -37,10 +37,10 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
-		returnUnitAssoc : {
-			type : "a -> Unit b -> Assoc a b",
+		returnUnitMap : {
+			type : "a -> Unit b -> Map a b",
 			func : function (key, cell) {
-				var outputCell = makeCellAssocInput();
+				var outputCell = makeCellMapInput();
 				var removeFunc = cell.injectFunc(function (val) {
 					return outputCell.addLine({key:key, val:val});
 				});
@@ -56,10 +56,10 @@ var primFuncs = function () {
 			type : "(a -> Set b) -> Set a -> Set b",
 			func : bindUnitOrSetHelper
 		},
-	 	bindAssoc : {
-			type : "(a -> b -> Assoc a c) -> Assoc a b -> Assoc a c",
+	 	bindMap : {
+			type : "(a -> b -> Map a c) -> Map a b -> Map a c",
 			func : function (f, cell) {
-				var outputCell = makeCellAssocInput();
+				var outputCell = makeCellMapInput();
 
 				var removeFunc = cell.injectFunc(function (keyVal) {
 					var resultCell = applyFunc(applyFunc(f, keyVal.key), keyVal.val);
@@ -201,20 +201,20 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
-		oneToAssoc : {
-			type : "Number -> Number -> Assoc Number Number",
+		oneToMap : {
+			type : "Number -> Number -> Map Number Number",
 			func : function (val1, val2) {
-				var outputCell = makeCellAssocInput();
+				var outputCell = makeCellMapInput();
 				for(var i=1; i<= val1; i++) {
 					outputCell.addLine({key:i, val:val2});
 				}
 				return outputCell;
 			}
 		},
-		x2ToAssoc : {
-			type : "Number -> Number -> Assoc Number Number",
+		x2ToMap : {
+			type : "Number -> Number -> Map Number Number",
 			func : function (val1, val2) {
-				var outputCell = makeCellAssocInput();
+				var outputCell = makeCellMapInput();
 				outputCell.addLine({key:val1*2, val:val2});
 				return outputCell;
 			}
@@ -309,10 +309,10 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
-		unfoldAssoc : {
-			type : "(a -> Set a) -> a -> Assoc a Number",
+		unfoldMap : {
+			type : "(a -> Set a) -> a -> Map a Number",
 			func : function (f, init) {
-				var outputCell = makeCellAssocInput();
+				var outputCell = makeCellMapInput();
 				
 				outputCell.addLine({key:init, val:0});
 				outputCell.injectFunc(function (keyVal) {
@@ -326,12 +326,12 @@ var primFuncs = function () {
 			}
 		},
 		// ============================================================================
-		// Assoc functions
+		// Map functions
 		// ============================================================================
-		buildAssoc : {
-			type : "(a -> b) -> Set a -> Assoc a b",
+		buildMap : {
+			type : "(a -> b) -> Set a -> Map a b",
 			func : function (f, cell) {
-				var outputCell = makeCellAssocInput();
+				var outputCell = makeCellMapInput();
 			
 				var removeFunc = cell.injectFunc(function (val) {
 					var result = applyFunc(f, val);
@@ -359,9 +359,9 @@ var primFuncs = function () {
 			}
 		},
 		invert : {
-			type : "Assoc a (Set b) -> Assoc b (Set a)",
+			type : "Map a (Set b) -> Map b (Set a)",
 			func : function (cell) {
-				var outputCell = makeCellAssocInput();
+				var outputCell = makeCellMapInput();
 				var bHash = makeObjectHash();
 				
 				var bHashCell = makeCell();
@@ -393,10 +393,10 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
-		mapAssocValue : {
-			type : "(a -> b) -> Assoc c a -> Assoc c b",
+		mapMapValue : {
+			type : "(a -> b) -> Map c a -> Map c b",
 			func : function (f, cell) {
-				var outputCell = makeCellAssocInput();
+				var outputCell = makeCellMapInput();
 
 				var removeFunc = cell.injectFunc(function (keyVal) {
 					var result = applyFunc(f, keyVal.val);
@@ -408,7 +408,7 @@ var primFuncs = function () {
 			}
 		},
 		getKey : {
-			type : "a -> Assoc a b -> Unit b",
+			type : "a -> Map a b -> Unit b",
 			func : function (key, cell) {
 				var outputCell = makeCell();
 			
@@ -423,7 +423,7 @@ var primFuncs = function () {
 			}
 		},
 		keys : {
-			type : "Assoc a b -> Set a",
+			type : "Map a b -> Set a",
 			func : function (cell) {
 				var outputCell = makeCell();
 			
