@@ -1,5 +1,6 @@
-function makeSortedSet(compFunc) {
+function makeAltSortedSet(compFunc) {
 	var sorted = [];
+	var hash = {};
 	
 	function lookup(start, end, key) {
 		if (start === end) {
@@ -33,20 +34,17 @@ function makeSortedSet(compFunc) {
 					sorted.splice(index, 0, insert);
 				}
 			}
+			hash[key] = value;
 		},
 		get: function (key) {
-			var l = lookup(0, sorted.length, key);
-			if (l[0] === true) {
-				return sorted[l[1]].v;
-			} else {
-				return undefined;
-			}
+			return hash[key];
 		},
 		remove: function (key) {
 			var l = lookup(0, sorted.length, key);
 			if (l[0] === true) {
 				sorted.splice(l[1], 1);
 			}
+			delete hash[key];
 		},
 		getIndex: function (key) {
 			var len = sorted.length;
@@ -69,7 +67,6 @@ function makeSortedSet(compFunc) {
 			});
 		},
 		
-		
 		toArray: function () {
 			// return map(sorted, function (entry) {
 			// 	return entry.v;
@@ -82,16 +79,16 @@ function makeSortedSet(compFunc) {
 	};
 }
 
-function makeSortedSetNumbers() {
-	return makeSortedSet(function (a, b) {
+function makeAltSortedSetNumbers() {
+	return makeAltSortedSet(function (a, b) {
 		if (a < b) return -1;
 		else if (a === b) return 0;
 		else return 1;	
 	});
 }
 
-function makeSortedSetStringify() {
-	return makeSortedSet(function (a, b) {
+function makeAltSortedSetStringify() {
+	return makeAltSortedSet(function (a, b) {
 		var sa = stringify(a);
 		var sb = stringify(b);
 		if (sa < sb) return -1;

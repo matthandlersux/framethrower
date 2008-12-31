@@ -1,6 +1,36 @@
-function makeSortedSet(compFunc) {
-	var sorted = [];
+function makeConSortedSet(compFunc) {
+	var hash = {};
+	css = {};
 	
+	css.set = function (key, value) {
+		hash[key] = value;
+	};
+	css.get = function (key) {
+		return hash[key];
+	};
+	css.remove = function (key) {
+		delete hash[key];
+	};
+
+	css.length = hash.length;
+	css.forEach = function (f) {
+		return forEach(hash, f);
+	};
+	
+	css.toArray = function () {
+		var ret = [];
+		forEach(hash, function (val, key) {
+			ret.push({k:key, v:val});
+		});
+		return ret;
+	};
+	
+	css.debug = function () {
+		return hash;
+	};
+
+	var sorted = [];
+
 	function lookup(start, end, key) {
 		if (start === end) {
 			return [false, start];
@@ -16,9 +46,16 @@ function makeSortedSet(compFunc) {
 			}
 		}
 	}
+
+	css.makeCompare = function() {
+		css.forEach(function (val, key) {
+			sorted.push({k:key, v:val});
+		});
+		sorted.sort(function(a, b) {
+			return compFunc(a.k, b.k);
+		});
 		
-	return {
-		set: function (key, value) {
+		css.set = function(key, value) {
 			var len = sorted.length;
 			var l = lookup(0, len, key);
 			var found = l[0];
@@ -33,65 +70,52 @@ function makeSortedSet(compFunc) {
 					sorted.splice(index, 0, insert);
 				}
 			}
-		},
-		get: function (key) {
-			var l = lookup(0, sorted.length, key);
-			if (l[0] === true) {
-				return sorted[l[1]].v;
-			} else {
-				return undefined;
-			}
-		},
-		remove: function (key) {
+			hash[key] = value;
+		};
+		
+		css.remove = function(key) {
 			var l = lookup(0, sorted.length, key);
 			if (l[0] === true) {
 				sorted.splice(l[1], 1);
 			}
-		},
-		getIndex: function (key) {
+			delete hash[key];
+		};
+		css.getIndex = function (key) {
 			var len = sorted.length;
 			var l = lookup(0, len, key);
 			var found = l[0];
 			var index = l[1];
 			if (found) return index;
 			else return undefined;
-		},
-		getByIndex: function (ind) {
+		};
+		css.getByIndex = function (ind) {
 			return sorted[ind].v;
-		},
-		getKeyByIndex: function (ind) {
+		};
+		css.getKeyByIndex = function (ind) {
 			return sorted[ind].k;
-		},
-		length: sorted.length,
-		forEach: function (f) {
-			forEach(sorted, function (entry) {
-				f(entry.v, entry.k);
-			});
-		},
-		
-		
-		toArray: function () {
-			// return map(sorted, function (entry) {
-			// 	return entry.v;
-			// });
+		};
+		css.toArray = function () {
 			return sorted;
-		},
-		debug: function () {
+		};
+		css.debug = function () {
 			return sorted;
-		}
+		};
 	};
+
+
+	return css;
 }
 
-function makeSortedSetNumbers() {
-	return makeSortedSet(function (a, b) {
+function makeConSortedSetNumbers() {
+	return makeConSortedSet(function (a, b) {
 		if (a < b) return -1;
 		else if (a === b) return 0;
 		else return 1;	
 	});
 }
 
-function makeSortedSetStringify() {
-	return makeSortedSet(function (a, b) {
+function makeConSortedSetStringify() {
+	return makeConSortedSet(function (a, b) {
 		var sa = stringify(a);
 		var sb = stringify(b);
 		if (sa < sb) return -1;
