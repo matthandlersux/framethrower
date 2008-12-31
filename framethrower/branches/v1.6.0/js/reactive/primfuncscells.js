@@ -1,11 +1,18 @@
 
 var primFuncs = function () {
+	function applyFunc (func, input) {
+		return evaluate(makeApply(func, input));
+	}
+
+	function applyAndInject (func, input, injectFunc) {
+		return evaluateAndInject(makeApply(func, input), injectFunc);
+	}	
+	
 	var bindUnitOrSetHelper = function (f, cell) {
 		var outputCell = makeCell();
 		
 		var removeFunc = cell.injectFunc(function (val) {
-			var resultCell = applyFunc(f, val);
-			return resultCell.injectFunc(function (innerVal) {
+			return applyAndInject(f, val, function (innerVal) {
 				return outputCell.addLine(innerVal);
 			});
 		});
@@ -62,8 +69,7 @@ var primFuncs = function () {
 				var outputCell = makeCellMapInput();
 
 				var removeFunc = cell.injectFunc(function (keyVal) {
-					var resultCell = applyFunc(applyFunc(f, keyVal.key), keyVal.val);
-					return resultCell.injectFunc(function (innerKeyVal) {
+					return applyAndInject(applyFunc(f, keyVal.key), keyVal.val, function (innerKeyVal) {
 						return outputCell.addLine(innerKeyVal);
 					});
 				});
@@ -248,8 +254,7 @@ var primFuncs = function () {
 				outputCell.addLine(false);
 
 				var removeFunc = cell.injectFunc(function (val) {
-					var resultCell = applyFunc(f, val);
-					return resultCell.injectFunc(function (innerVal) {
+					return applyAndInject(f, val, function (innerVal) {
 						if (innerVal) {
 							if (count == 0) {
 								outputCell.removeLine(false);
@@ -300,8 +305,7 @@ var primFuncs = function () {
 
 				outputCell.addLine(init);		
 				outputCell.injectFunc(function (val) {
-					var resultCell = applyFunc(f, val);
-					resultCell.injectFunc(function (innerVal) {
+					return applyAndInject(f, val, function (innerVal) {
 						return outputCell.addLine(innerVal);
 					});
 				});
@@ -316,8 +320,7 @@ var primFuncs = function () {
 				
 				outputCell.addLine({key:init, val:0});
 				outputCell.injectFunc(function (keyVal) {
-					var resultCell = applyFunc(f, keyVal.key);
-					resultCell.injectFunc(function (val) {
+					return applyAndInject(f, keyVal.key, function (val) {
 						return outputCell.addLine({key:val, val:keyVal.val+1});
 					});
 				});

@@ -131,8 +131,3 @@ function makeCellMapInput () {
 		
 	return makeBaseCell(toKey);
 }
-
-function applyFunc (func, input) {
-	//this will be changed...
-	return evaluate(makeApply(func, input));
-}

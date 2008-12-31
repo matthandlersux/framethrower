@@ -1,33 +1,47 @@
+var scount = 0;
+
 function makeConSortedSet(compFunc) {
-	var hash = {};
-	css = {};
+	var hash = makeOHash();
+	var css = {};
 	
 	css.set = function (key, value) {
-		hash[key] = value;
+		hash.set(key, value);
 	};
 	css.get = function (key) {
-		return hash[key];
+		return hash.get(key);
 	};
 	css.remove = function (key) {
-		delete hash[key];
+		hash.remove(key);
 	};
 
 	css.length = hash.length;
 	css.forEach = function (f) {
-		return forEach(hash, f);
+		return hash.forEach(f);
 	};
 	
 	css.toArray = function () {
 		var ret = [];
-		forEach(hash, function (val, key) {
-			ret.push({k:key, v:val});
-		});
+		hash.toArray();
 		return ret;
 	};
 	
 	css.debug = function () {
 		return hash;
 	};
+
+	css.getIndex = function (key) {
+		css.makeCompare();
+		return css.getIndex(key);
+	};
+	css.getByIndex = function (ind) {
+		css.makeCompare();
+		return css.getByIndex(ind);
+	};
+	css.getKeyByIndex = function (ind) {
+		css.makeCompare();
+		return css.getKeyByIndex(ind);
+	};
+
 
 	var sorted = [];
 
@@ -86,7 +100,9 @@ function makeConSortedSet(compFunc) {
 			var found = l[0];
 			var index = l[1];
 			if (found) return index;
-			else return undefined;
+			else {
+				return undefined;
+			}
 		};
 		css.getByIndex = function (ind) {
 			return sorted[ind].v;
