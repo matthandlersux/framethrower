@@ -1,0 +1,25 @@
+<f:template
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="p1" type="Number" />
+	<f:param name="p2" type="Number" />
+	<f:param name="mapTest" type="Map Number String" />
+	
+	<f:derive name="d1" d="add p1 p2" />
+	
+	
+	<html:div>
+		<xsl:value-of select="$p1/@value" />,
+		<xsl:value-of select="$p2/@value" />,
+		<xsl:value-of select="$d1/@value" />
+		<html:div>
+			<xsl:copy-of select="$mapTest" />
+		</html:div>
+	</html:div>
+	
+
+
+</f:template>

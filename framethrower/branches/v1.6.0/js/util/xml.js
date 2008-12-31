@@ -278,5 +278,8 @@ function createEl(nodeName) {
 		return document.createElement(nodeName);
 	}
 }
+function appendChild(node, childNode) {
+	node.appendChild(childNode);
+}
 
 

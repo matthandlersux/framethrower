@@ -35,30 +35,29 @@ function makeLambda(left, right) {
 	return {kind: "exprLambda", left: left, right: right};
 }
 
+
+function parseExpression(ast, env) {
+	if (typeOf(ast) === "string") {
+		return env(ast);
+	} else if (ast.cons === "lambda") {
+		var name = ast.left;
+		var v = makeVar(name);
+		return makeLambda(v, parseExpression(ast.right, envAdd(env, name, v)));
+	} else if (ast.cons === "apply") {
+		return makeApply(parseExpression(ast.left, env), parseExpression(ast.right, env));
+	}
+}
+
 function parseExpr(s) {
 	/*
 	Takes in a string and returns an Expr.
 	After parsing the string to an AST,
-		for each word we look it up in baseEnv
+		for each word we look it up in env
 		for each apply we make the appropriate apply Expr
 		for each lambda we make the appropriate lambda Expr
 	*/
-	
-	function helper(ast, env) {
-		if (typeOf(ast) === "string") {
-			return env(ast);
-		} else if (ast.cons === "lambda") {
-			var name = ast.left;
-			var v = makeVar(name);
-			return makeLambda(v, helper(ast.right, envAdd(env, name, v)));
-		} else if (ast.cons === "apply") {
-			return makeApply(helper(ast.left, env), helper(ast.right, env));
-		}
-	}
-	return helper(parse(s), baseEnv);
+	return parseExpression(parse(s), baseEnv);
 }
-
-
 
 
 

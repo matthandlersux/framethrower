@@ -1,12 +1,15 @@
 var x;
 var c;
+var xsl;
 
-documents.withDoc("testing/testDocuments/xmlTemplate.xml", function (xt) {
+documents.withDoc("testing/testXMLTemplates/xmlTemplate.xml", function (xt) {
 	x = xt;
+	xsl = makeXSLFromTemplate(x);
+	debug.xml(xsl);
 });
 
 
-var cell = makeControlledCell("Map Number String");
+/*var cell = makeControlledCell("Map Number String");
 
 cell.control.add(7, "hello");
 cell.control.add(6, "goodbye");
@@ -23,5 +26,8 @@ function init() {
 	evalThunk(t, {baseUrl: "", ids: {testCell: cell}, tunnelEnv: emptyEnv});
 	
 }
+*/
 
-
+function init() {
+	
+}

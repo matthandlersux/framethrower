@@ -13,11 +13,12 @@
 	<f:includexsl url="../../xml/debug/prettyPrint.xml" />
 	
 	<xsl:template>
+		<xsl:variable name="blah" />
 		<html:div>
 			<xsl:value-of select="$p1/@value" />,
 			<xsl:value-of select="$p2/@value" />,
 			<xsl:value-of select="$d1/@value" />
-			<html:div>
+			<html:div specat="{$blah}">
 				<!-- <xsl:copy-of select="$mapTest" /> -->
 				<xsl:call-template name="prettyPrint">
 					<xsl:with-param name="node" select="$mapTest" />
