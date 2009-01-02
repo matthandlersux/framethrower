@@ -2,11 +2,12 @@ var x;
 var c;
 var xsl;
 
-documents.withDoc("testing/testXMLTemplates/xmlTemplate.xml", function (xt) {
+/*documents.withDoc("testing/testXMLTemplates/xmlTemplate.xml", function (xt) {
 	x = xt;
 	xsl = makeXSLFromTemplate(x);
-	debug.xml(xsl);
-});
+	debug.xml(xsl.ss);
+	debug.log(xsl.varNames);
+});*/
 
 
 /*var cell = makeControlledCell("Map Number String");
@@ -29,5 +30,20 @@ function init() {
 */
 
 function init() {
+	var thunkNode = xpath("//f:thunk", document.body)[0];
 	
+	//console.log(getThunkEssence(thunkNode, "", {}));
+	
+	/*makeTemplateFunFromUrl("testing/testXMLTemplates/xmlTemplate.xml", function (fun) {
+		var e = makeApply(makeApply(fun.fun, 6), 222);
+		
+		evaluateAndInject(e, function (xmlids) {
+			// TODO replace with replaceXML function
+			thunkNode.parentNode.replaceChild(xmlids.xml, thunkNode);
+			thunkNode = xmlids.xml;
+		});
+		
+	});*/
+	
+	evalThunk(thunkNode, "", {});
 }

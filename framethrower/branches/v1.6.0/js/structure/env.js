@@ -23,3 +23,14 @@ function envAdd(parentEnv, name, value) {
 		}
 	};
 }
+
+function extendEnv(parentEnv, hash) {
+	return function (s) {
+		var lookup = hash[s];
+		if (lookup === undefined) {
+			return parentEnv(s);
+		} else {
+			return lookup;
+		}
+	};
+}

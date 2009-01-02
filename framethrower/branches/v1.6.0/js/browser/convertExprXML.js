@@ -76,7 +76,7 @@ function xmlToExpr(xml, ids) {
 			return ids[id];
 		} else if (name === "set") {
 			// TODO
-		} else if (name === "map") { // TODO: we really need to change map to map
+		} else if (name === "map") {
 			// TODO
 		}
 	} else {

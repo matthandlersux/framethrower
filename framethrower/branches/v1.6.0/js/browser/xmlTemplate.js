@@ -1,3 +1,17 @@
+
+
+
+
+
+// OUTDATED
+
+
+
+
+
+
+
+
 /*
 An XMLTemplate looks like:
 	{
@@ -156,18 +170,7 @@ function makeXMLTemplate(xml, url) {
 
 
 
-// ============================================================================
-// Controlling Screen Refreshes
-// ============================================================================
 
-var dirtyThunks = {}; // a hash of XMLTemplate application update functions
-
-function refreshScreen() {
-	forEach(dirtyThunks, function (f) {
-		f();
-	});
-	// run it again here... TODO?
-}
 
 
 // ============================================================================

@@ -45,7 +45,7 @@ var documents = (function () {
 	};
 })();
 
-var xmlTemplates = (function () {
+/*var xmlTemplates = (function () {
 	var urls = {};
 	
 	return {
@@ -82,7 +82,7 @@ var xmlTemplates = (function () {
 			
 		}
 	};
-})();
+})();*/
 
 
 function parallelCallback(funcs, callback) {

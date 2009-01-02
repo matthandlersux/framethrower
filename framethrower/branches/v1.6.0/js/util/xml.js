@@ -281,5 +281,10 @@ function createEl(nodeName) {
 function appendChild(node, childNode) {
 	node.appendChild(childNode);
 }
+function cloneNode(node) {
+	var clone = node.cloneNode(true);
+	document.adoptNode(clone);
+	return clone;
+}
 
 
