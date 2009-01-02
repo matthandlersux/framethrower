@@ -39,20 +39,22 @@ scopeVars is an object with these properties:
 function evalThunk(thunkNode, baseUrl, ids) {
 	var thunkEssence = getThunkEssence(thunkNode, baseUrl, ids);
 	
-	if (thunkEssence.url) {
-		xmlTemplates.withTemplate(thunkEssence.url, function (xt) {
-			var e = xt.fun;
-			forEach(xt.params, function (p) {
-				e = makeApply(e, thunkEssence.params[p.name]);
-			});
-			
-			evaluateAndInject(e, function (xmlids) {
-				// TODO replace with replaceXML function
-				thunkNode.parentNode.replaceChild(xmlids.xml, thunkNode);
-				thunkNode = xmlids.xml;
-			});
+	function perform(xt) {
+		var e = xt.fun;
+		forEach(xt.params, function (p) {
+			e = makeApply(e, thunkEssence.params[p.name]);
 		});
+		
+		evaluateAndInject(e, function (xmlids) {
+			// TODO replace with replaceXML function
+			thunkNode.parentNode.replaceChild(xmlids.xml, thunkNode);
+			thunkNode = xmlids.xml;
+		});
+	}
+	
+	if (thunkEssence.url) {
+		xmlTemplates.withTemplate(thunkEssence.url, perform);
 	} else {
-		// TODO
+		perform(thunkEssence.template);
 	}
 }
