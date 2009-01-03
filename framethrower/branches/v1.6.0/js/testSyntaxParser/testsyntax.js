@@ -3,12 +3,12 @@ function testFile(filename) {
 	
 	var scPatternMatch = {};
 	
-	function children (xml) {
+	function children(xml) {
 		return xpath("*", xml);
 	}
 	
 
-	function messagesEqual (message1, message2) {
+	function messagesEqual(message1, message2) {
 		var returnVal = true;
 		var propCount = 0;
 		
@@ -38,7 +38,7 @@ function testFile(filename) {
 	
 	//parse Functions
 	
-	function parsePrim (primNode, testWorld) {
+	function parsePrim(primNode, testWorld) {
 		var primName = primNode.nodeName;
 		if (primName == 'number') {
 			var numAsString = primNode.getAttribute('value');
@@ -68,7 +68,7 @@ function testFile(filename) {
 		//TODO: add other primitive types
 	}
 	
-	function parseStartCap (actionNode, testWorld) {
+	function parseStartCap(actionNode, testWorld) {
 		var scname = actionNode.getAttribute('name');
 		var sctype = actionNode.getAttribute('type');
 
@@ -88,7 +88,7 @@ function testFile(filename) {
 		return testWorld;
 	}
 
-	function parseEndCap (actionNode, testWorld) {
+	function parseEndCap(actionNode, testWorld) {
 		var endCapName = actionNode.getAttribute('name');
 		var expression = actionNode.getAttribute('expression');
 
@@ -114,7 +114,7 @@ function testFile(filename) {
 		return testWorld;
 	}
 	
-	function parseMessages (actionNode, testWorld) {
+	function parseMessages(actionNode, testWorld) {
 		forEach(children(actionNode), function (messageNode) {
 			var messageName = messageNode.nodeName;
 			var scName = messageNode.getAttribute('scname');
@@ -142,7 +142,7 @@ function testFile(filename) {
 		return testWorld;
 	}
 	
-	function messageToString (message, ecName) {
+	function messageToString(message, ecName) {
 		if(message.value != undefined) {
 			return message.action + "(" + message.key + ", " + message.value + ") at endCap: " + ecName;
 		} else if (message.key != undefined) {
@@ -153,7 +153,7 @@ function testFile(filename) {
 		}
 	}
 	
-	function parseExpectedMessages (actionNode, testWorld) {
+	function parseExpectedMessages(actionNode, testWorld) {
 		forEach(children(actionNode), function (messageNode) {
 			var messageName = messageNode.nodeName;
 			var ecName = messageNode.getAttribute('ecname');
@@ -190,7 +190,7 @@ function testFile(filename) {
 		return testWorld;
 	}
 	
-	function parseRemoveCap (actionNode, testWorld) {
+	function parseRemoveCap(actionNode, testWorld) {
 		return testWorld;
 	}
 

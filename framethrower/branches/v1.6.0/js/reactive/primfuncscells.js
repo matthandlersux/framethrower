@@ -1,10 +1,10 @@
 
 var primFuncs = function () {
-	function applyFunc (func, input) {
+	function applyFunc(func, input) {
 		return evaluate(makeApply(func, input));
 	}
 
-	function applyAndInject (func, input, injectFunc) {
+	function applyAndInject(func, input, injectFunc) {
 		return evaluateAndInject(makeApply(func, input), injectFunc);
 	}	
 	

@@ -116,7 +116,7 @@ function makeBaseCell (toKey) {
 	return cell;
 }
 
-function makeCell () {
+function makeCell() {
 	var toKey = function (value) {
 		return value;
 	};
@@ -124,7 +124,7 @@ function makeCell () {
 	return makeBaseCell(toKey);
 }
 
-function makeCellMapInput () {
+function makeCellMapInput() {
 	var toKey = function (value) {
 		return value.key;
 	};

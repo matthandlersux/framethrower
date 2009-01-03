@@ -205,7 +205,7 @@ function compileXSL(xsl){
 
 
 //useful DOM function
-function insertAfter (parent, newnode, insertafter) {
+function insertAfter(parent, newnode, insertafter) {
 	if(insertAfter.nextSibling){
 		parent.insertBefore(newnode, insertAfter.nextSibling);
 	}else{

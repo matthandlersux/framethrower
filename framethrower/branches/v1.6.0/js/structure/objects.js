@@ -20,25 +20,100 @@ A Class looks like:
 var classes = {};
 
 function makeClass(name, inherit) {
+	var cast = makeCast(name);
 	classes[name] = {
 		name: name,
 		prop: {},
-		inherit: inherit && classes[inherit]
+		inherit: inherit && classes[inherit],
+		castUp: cast,
+		castDown: makeCastDown(cast, name)
 	};
+	
+	// add 2 casting functions to env for each inherited Class
+	makeCasts(classes[name].inherit, name);
+}
+
+function makeCasts(superClass, targetClassName) {
+	if (superClass !== undefined) {
+		var superClassName = superClass.name;
+		// Casting Up, example castUp: 'K.object.cast.K.cons'
+		var castUpFuncName = targetClassName + ".cast." + superClassName;
+		var castUpType = targetClassName + " -> " + superClassName;
+		var castUpFunc = superClass.castUp;
+		addFun(castUpFuncName, castUpType, castUpFunc);
+		// Casting Down, example castDown: 'K.cons.cast.K.object'
+		var castDownFuncName = superClassName + ".cast." + targetClassName;
+		var castDownType = superClassName + " -> Unit " + targetClassName;
+		var castDownFunc = superClass.castDown;
+		addFun(castDownFuncName, castDownType, castDownFunc);
+
+		makeCasts(superClass.inherit, targetClassName);
+	}
+}
+
+function makeCast(targetClassName) {
+	return function (obj) {
+		return {
+			kind: obj.kind,
+			origType: obj.origType,
+			type: {kind: "typeName", value: targetClassName},
+			prop: obj.prop
+		};
+	};
+}
+
+function makeCastDown(cast, targetClassName) {
+	return function (obj) {
+		var outputCell = makeCell();
+		if(inherits(classes[obj.origType.value], classes[targetClassName])) {
+			outputCell.addLine(cast(obj));
+		}
+		return outputCell;
+	};
+}
+
+function inherits(subClass, superClass) {
+	if (subClass == superClass) {
+		return true;
+	} else if (subClass.inherit !== undefined) {
+		return inherits(subClass.inherit, superClass);
+	} else {
+		return false;
+	}
 }
 
 function addProp(name, propName, typeString) {
 	classes[name].prop[propName] = parseType(typeString);
-	// TODO add functions get, passthru, etc to baseEnv lookup table
+
+	// Get, example getFuncName: 'K.cons.getRelation' 
+	var getFuncName = name + ".get" + capFirst(propName);
+	var funcType = name + " -> " + typeString;
+	var getFunc = function(obj) {
+		return obj.prop[propName];
+	};
+	addFun(getFuncName, funcType, getFunc);
+
 }
 
-function makeObject(c) {
+function makeObject(className, props) {
 	var o = {
 		kind: "object",
-		type: {kind: "typeName", value: c.name},
+		origType: {kind: "typeName", value: className},
+		type: {kind: "typeName", value: className},
 		prop: {}
 	};
-	// TODO add properties
+	// typecheck property for each property name in the Class
+	forEach(classes[className].prop, function (propType, propName) {
+		if (props[propName] !== undefined) {
+			if (getType(props[propName]).value == propType.value) {
+				o.prop[propName] = props[propName];
+			} else {
+				//throw type exception
+				throw "Property type mismatch: `"+ unparseType(getType(props[propName])) +"` and `"+unparseType(propType)+"`";
+			}
+		}
+	});
+	
 	return o;
 }
 
@@ -49,6 +124,8 @@ function makeObject(c) {
 makeClass("K.object");
 
 makeClass("K.cons", "K.object");
+makeClass("K.childOfCons", "K.cons");
+
 
 addProp("K.object", "involves", "Set K.cons");
 addProp("K.cons", "relation", "K.object");
