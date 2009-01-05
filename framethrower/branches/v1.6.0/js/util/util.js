@@ -82,6 +82,13 @@ function filter(list, pred) {
 	return ret;
 }
 
+function forEachRegexp(s, regexp, f) {
+	var result;
+	while ((result = regexp.exec(s)) != null) {
+		f(result[0]);
+	}
+}
+
 function any(o, f) {
 	if (arrayLike(o)) {
 		for (var i = 0, len = o.length; i < len; i++) {
@@ -142,7 +149,7 @@ function merge() {
 // optimized
 function mergeInto(o, into) {
 	forEach(o, function (v, k) {
-		into[v] = k;
+		into[k] = v;
 	});
 }
 

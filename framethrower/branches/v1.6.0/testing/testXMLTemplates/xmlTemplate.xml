@@ -6,20 +6,85 @@
 	
 	<f:param name="p1" type="Number" />
 	<f:param name="p2" type="Number" />
-	<!--><f:param name="mapTest" type="Map Number String" />-->
+	<f:param name="mapTest" type="Map Number String" />
 	
 	<f:derive name="d1" d="add p1 p2" />
-	
 	
 	<html:div>
 		<xsl:value-of select="$p1/@value" />,
 		<xsl:value-of select="$p2/@value" />,
 		<xsl:value-of select="$d1/@value" />
-		<!-- <html:div>
-					<xsl:copy-of select="$mapTest" />
-				</html:div> -->
+		<html:div>
+			<xsl:call-template name="prettyPrint">
+				<xsl:with-param name="node" select="$mapTest" />
+			</xsl:call-template>
+			<xsl:copy-of select="$mapTest" />
+		</html:div>
+		
+		<f:thunk>
+			<f:with-template select="$inner" />
+			<f:with-param name="a" select="$d1" />
+		</f:thunk>
 	</html:div>
 	
+	<f:template name="inner">
+		<f:param name="a" type="Number" />
+		<html:div>
+			Number: <xsl:value-of select="$a/@value" />.
+			Accessing something outside my scope: <xsl:value-of select="$p1/@value" />.
+		</html:div>
+	</f:template>
 
+	<xsl:template name="prettyPrint">
+		<xsl:param name="node" select="." />
+		<html:div class="prettyPrint">
+			<xsl:for-each select="$node">
+				<xsl:call-template name="prettyPrint2" />
+			</xsl:for-each>
+		</html:div>
+	</xsl:template>
 
+	<xsl:template name="prettyPrint2">
+		<xsl:choose>
+			<xsl:when test="self::text()">
+				<xsl:value-of select="." />
+			</xsl:when>
+			<xsl:when test="node()">
+				<html:div>
+					<xsl:text>&lt;</xsl:text>
+					<xsl:call-template name="prettyPrintElement" />
+					<xsl:text>&gt;</xsl:text>
+			
+					<html:div class="prettyPrintIndent">
+						<xsl:for-each select="node()">
+							<xsl:call-template name="prettyPrint2" />
+						</xsl:for-each>
+					</html:div>
+			
+					<xsl:text>&lt;/</xsl:text>
+					<xsl:value-of select="name()" />
+					<xsl:text>&gt;</xsl:text>
+				</html:div>
+			</xsl:when>
+			<xsl:otherwise>
+				<html:div>
+					<xsl:text>&lt;</xsl:text>
+					<xsl:call-template name="prettyPrintElement" />
+					<xsl:text> /&gt;</xsl:text>
+				</html:div>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<xsl:template name="prettyPrintElement">
+		<xsl:value-of select="name()" />
+	
+		<xsl:for-each select="@*">
+			<xsl:text> </xsl:text>
+			<xsl:value-of select="name()" />
+			<xsl:text>="</xsl:text>
+			<xsl:value-of select="." />
+			<xsl:text>"</xsl:text>
+		</xsl:for-each>
+	</xsl:template>
 </f:template>

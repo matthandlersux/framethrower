@@ -9,6 +9,9 @@ var debug = (function () {
 			} else {
 				console.log(serializeXML(xml));
 			}
+		},
+		error: function (arg) {
+			throw arg;
 		}
 	};
 })();

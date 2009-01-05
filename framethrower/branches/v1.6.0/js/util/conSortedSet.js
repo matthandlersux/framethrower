@@ -20,9 +20,8 @@ function makeConSortedSet(compFunc) {
 	};
 	
 	css.toArray = function () {
-		var ret = [];
-		hash.toArray();
-		return ret;
+		css.makeCompare();
+		return css.toArray();
 	};
 	
 	css.debug = function () {

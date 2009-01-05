@@ -1,35 +1,82 @@
-function replaceXML(node, replacer, scopeVars) {
-/*	if replacer is a thunk
-		if node was a thunk && thunk essences the same
+function replaceXML(node, replacer, pass, firstRun) {
+	/*
+	if replacer is a thunk or on
+		if node was a thunk/on && thunk essences the same
 			return node
 		else
 			return bruteReplace(node, replacer)
 	else
-		if nodenames not the same,
-			return bruteReplace(node, replacer)
-		else
+		if nodenames the same,
+			unloadXMLNode(node) if necessary (and not the first run)
 			replace node's attributes with replacer's attributes
 			replaceChildren(node, replacer)
 			return node
-*/
+		else
+			return bruteReplace(node, replacer)
+	*/
+	
+	
+	if (xpath("self::f:thunk | self::f:on", replacer).length > 0) {
+		if (node.custom && node.custom.thunkEssence) {
+			var replacerTe = getThunkEssence(replacer, pass.baseUrl, pass.ids);
+			if (compareThunkEssences(replacerTe, node.custom.thunkEssence)) {
+				// node is already the thunk that would replace it
+				return node;
+			}
+		}
+		
+		return bruteReplace(node, replacer, pass);
+	} else {
+		var rln = replacer.localName;
+		var rns = replacer.namespaceURI;
+		var nln = node.localName;
+		var nns = node.namespaceURI;
+		
+		if (rln === nln && rns === nns) {
+			if (!firstRun && node.custom) {
+				unloadXMLNode(node);
+			}
+			replaceAttributes(node, replacer);
+			replaceChildren(node, replacer, pass);
+			return node;			
+		} else {
+			return bruteReplace(node, replacer, pass);
+		}
+	}
 }
 
 
 
 
-function bruteReplace(node, replacer, scopeVars) {
+function bruteReplace(node, replacer, pass) {
 	unloadXML(node);
 	
 	// dom replace node with replacer
 	node.parentNode.replaceChild(replacer, node);
 	
-	// evaluate any thunks in replacer
-	var thunks = xpath(".//f:thunk", replacer);
-	forEach(thunks, function (thunk) {
-		evalThunk(thunk, scopeVars);
-	});
+	processThunks(replacer, pass);
 	
 	return replacer;
+}
+
+function processThunks(node, pass) {
+	// note: all new XML must be processed by this function
+	
+	// TODO: process "onload" events in the XML
+	
+	// first, tag thunkEssence on any bindings (f:on nodes)
+	var fons = xpath(".//f:on", node);
+	forEach(fons, function (fon) {
+		var thunkEssence = getThunkEssence(fon, pass.baseUrl, pass.ids);
+		fon.custom = {thunkEssence: thunkEssence};
+	});
+	
+	
+	// evaluate any thunks in replacer
+	var thunks = xpath(".//f:thunk", node);
+	forEach(thunks, function (thunk) {
+		evalThunk(thunk, pass.baseUrl, pass.ids);
+	});
 }
 
 function replaceAttributes(node, replacer) {
@@ -59,11 +106,95 @@ function replaceAttributes(node, replacer) {
 	});
 }
 
-function replaceChildren(node, replacer) {
-	// TODO
+function replaceChildren(node, replacer, pass) {
+	
+	function getNextNonIdentifier(node) {
+		if (node && node.nodeType === 1 && getAttr(node, "f:identifier")) {
+			return getNextNonIdentifier(node.nextSibling);
+		}
+		return node;
+	}
+	
+	var identifierNodes = xpath("*[@f:identifier]", node);
+	var identifiers = {};
+	forEach(identifierNodes, function (idNode) {
+		identifiers[getAttr(idNode, "f:identifier")] = idNode;
+	});
+	
+	var nNode = getNextNonIdentifier(node.firstChild);
+	var rNode = replacer.firstChild;
+	while (rNode) {
+		if (rNode.nodeType === 1) {
+			var identifier = getAttr(rNode, "f:identifier");
+			if (identifier) {
+				var corresponder = identifiers[identifier];
+				if (corresponder) {
+					var c = replaceXML(corresponder, rNode, pass);
+					delete identifiers[identifier];
+				} else {
+					var c = copyBefore(node, rNode, nNode);
+					processThunks(c, pass);
+				}
+			} else if (nNode && nNode.nodeType === 1) {
+				var nextNode = getNextNonIdentifier(nNode.nextSibling);
+				replaceXML(nNode, rNode, pass);
+				nNode = nextNode;
+			} else {
+				var c = copyBefore(node, rNode, nNode); // this just appends rNode to node
+				processThunks(c, pass);
+			}
+		} else {
+			if (nNode && nNode.nodeType === rNode.nodeType) {
+				nNode.nodeValue = rNode.nodeValue;
+				nNode = getNextNonIdentifier(nNode.nextSibling);
+			} else {
+				copyBefore(node, rNode, nNode);
+			}
+		}
+
+		rNode = rNode.nextSibling;
+	}
+	
+	// remove identified nodes that weren't in the replacer
+	forEach(identifiers, function (idNode) {
+		unloadXML(idNode);
+		node.removeChild(idNode);
+	});
+	// remove any remaining children from node
+	while (nNode) {
+		unloadXML(nNode);
+		var nextNode = nNode.nextSibling;
+		node.removeChild(nNode);
+		nNode = nextNode;
+	}
+}
+
+function copyBefore(parentNode, newNode, node) {
+	var c = newNode.cloneNode(true);
+	//parentNode.ownerDocument.adoptNode(c);
+	insertBefore(parentNode, c, node);
+	return c;
+}
+function insertBefore(parentNode, newNode, node) {
+	if (node) {
+		parentNode.insertBefore(newNode, node);
+	} else {
+		parentNode.appendChild(newNode);
+	}
 }
 
 
+
 function unloadXML(node) {
-	// TODO
+	var concerns = xpath(".//f:on | .//*[@f:was-thunk]", node);
+	forEach(concerns, unloadXMLNode);
+}
+
+function unloadXMLNode(node) {
+	// call remove function on active thunks
+	if (node.custom.removeFunc) {
+		node.custom.removeFunc();
+	}
+	// null out custom property (for garbage collection)
+	delete node.custom;	
 }

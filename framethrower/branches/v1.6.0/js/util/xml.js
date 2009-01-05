@@ -263,7 +263,7 @@ function getAttr(node, attName) {
 }
 function setAttr(node, attName, attValue) {
 	var n = attName.split(":");
-	if (n > 1) {
+	if (n.length > 1) {
 		node.setAttributeNS(xmlns[n[0]], attName, attValue);
 	} else {
 		node.setAttribute(attName, attValue);

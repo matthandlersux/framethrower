@@ -1,4 +1,4 @@
-<f:include
+<f:includes
 	xmlns:f="http://www.worldmerge.com/2008/xsl"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:html="http://www.w3.org/1999/xhtml"
@@ -57,4 +57,4 @@
 		</xsl:for-each>
 	</xsl:template>
 
-</f:include>
+</f:includes>

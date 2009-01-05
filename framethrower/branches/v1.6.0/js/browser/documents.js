@@ -28,6 +28,10 @@ var documents = (function () {
 				if (!callbacks[url]) {
 					callbacks[url] = [callback];
 					asyncRequest(ROOTDIR+url, function (req) {
+						// TODO: add support for xml includes
+						
+						
+						
 						urls[url] = req.responseXML.firstChild;
 						forEach(callbacks[url], function (cb) {
 							cb(urls[url]);

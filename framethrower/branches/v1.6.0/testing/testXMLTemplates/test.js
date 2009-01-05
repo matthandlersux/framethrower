@@ -10,13 +10,13 @@ var xsl;
 });*/
 
 
-/*var cell = makeControlledCell("Map Number String");
+var cell = makeControlledCell("Map Number String");
 
 cell.control.add(7, "hello");
 cell.control.add(6, "goodbye");
 
 
-
+/*
 function init() {
 	var thunks = xpath("//f:thunk", document.body);
 	
@@ -32,18 +32,29 @@ function init() {
 function init() {
 	var thunkNode = xpath("//f:thunk", document.body)[0];
 	
-	//console.log(getThunkEssence(thunkNode, "", {}));
+	var te = getThunkEssence(thunkNode, "", {testCell: cell});
+	console.log("thunk essence", te);
+	console.log("compare", compareThunkEssences(te, te));
 	
 	/*makeTemplateFunFromUrl("testing/testXMLTemplates/xmlTemplate.xml", function (fun) {
 		var e = makeApply(makeApply(fun.fun, 6), 222);
 		
 		evaluateAndInject(e, function (xmlids) {
-			// TODO replace with replaceXML function
 			thunkNode.parentNode.replaceChild(xmlids.xml, thunkNode);
 			thunkNode = xmlids.xml;
 		});
 		
 	});*/
 	
-	evalThunk(thunkNode, "", {});
+	evalThunk(thunkNode, "", {testCell: cell});
+}
+
+
+function test1() {
+	cell.control.remove(6);
+	refreshScreen();
+}
+function test2() {
+	cell.control.add(2,"new");
+	refreshScreen();
 }
