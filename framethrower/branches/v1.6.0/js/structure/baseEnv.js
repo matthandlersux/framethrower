@@ -73,29 +73,6 @@ function addFun(name, typeString, f) {
 }
 
 
-
-addFun("bindSet", "(a -> Set b) -> Set a -> Set b", function () {
-	
-});
-addFun("returnUnitSet", "Unit a -> Set a", function () {
-	
-});
-addFun("passthru", "(a -> Bool) -> a -> Unit a", function () {
-	
-});
-
-
-addFun("and", "Bool -> Bool -> Bool", function (x, y) {
-	return x && y;
-});
-addFun("or", "Bool -> Bool -> Bool", function (x, y) {
-	return x || y;
-});
-addFun("not", "Bool -> Bool", function (x) {
-	return !x;
-});
-
-
 // ============================================================================
 // These are like primitive functions in that they're shared between client and server,
 // but they are defined using expressions, that is, combinations of primitive functions

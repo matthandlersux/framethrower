@@ -75,6 +75,9 @@
 		
 		<expectedmessages>
 			<set ecname = 'ec' >
+				<number value = '5' />
+			</set>
+			<set ecname = 'ec' >
 				<number value = '1' />
 			</set>
 			<set ecname = 'ec' >
@@ -85,9 +88,6 @@
 			</set>
 			<set ecname = 'ec' >
 				<number value = '4' />
-			</set>
-			<set ecname = 'ec' >
-				<number value = '5' />
 			</set>
 		</expectedmessages>
 
@@ -200,10 +200,10 @@
 				<number value = '1' />
 			</set>
 			<set ecname = 'ec' >
-				<number value = '3' />
+				<number value = '5' />
 			</set>
 			<set ecname = 'ec' >
-				<number value = '5' />
+				<number value = '3' />
 			</set>
 		</expectedmessages>
 		
