@@ -27,6 +27,13 @@ function makeControlledCell(typeString) {
 				}
 			}
 		};		
+	} else if (constructor === "Future") {
+		cell = makeCell();
+		cell.control = {
+			add: function (k) {
+				cell.addLine(k);
+			}
+		};		
 	} else if (constructor === "Set") {
 		cell = makeCell();
 		cell.control = {

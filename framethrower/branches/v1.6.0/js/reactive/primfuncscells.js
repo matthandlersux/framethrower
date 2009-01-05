@@ -55,6 +55,17 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
+		returnFutureUnit : {
+			type : "Future a -> Unit a",
+			func : function (cell) {
+				var outputCell = makeCell();
+				var removeFunc = cell.injectFunc(function(val) {
+					outputCell.addLine(val);
+				});
+				outputCell.addOnRemove(removeFunc);
+				return outputCell;
+			}
+		},
 	 	bindUnit : {
 			type : "(a -> Unit b) -> Unit a -> Unit b",
 			func : bindUnitOrSetHelper
@@ -75,6 +86,20 @@ var primFuncs = function () {
 				});
 				outputCell.addOnRemove(removeFunc);
 				
+				return outputCell;
+			}
+		},
+		bindFuture : {
+			type : "(a -> Future b) -> Future a -> Future b",
+			func : function (f, cell) {
+				var outputCell = makeCell();
+				
+				var removeFunc = cell.injectFunc(function (val) {
+					return applyAndInject(f, val, function (innerVal) {
+						outputCell.addLine(innerVal);
+					});
+				});
+				outputCell.addOnRemove(removeFunc);
 				return outputCell;
 			}
 		},
