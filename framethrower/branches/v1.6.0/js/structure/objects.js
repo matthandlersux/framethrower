@@ -95,6 +95,23 @@ function addProp(name, propName, typeString) {
 
 }
 
+function addPropsToObject(props, obj, objClass) {
+	// typecheck property for each property name in the Class and inherited Classes
+	if (objClass) {
+		forEach(objClass.prop, function (propType, propName) {
+			if (props[propName] !== undefined) {
+				if (getType(props[propName]).value == propType.value) {
+					obj.prop[propName] = props[propName];
+				} else {
+					//throw type exception
+					throw "Property type mismatch: `"+ unparseType(getType(props[propName])) +"` and `"+unparseType(propType)+"`";
+				}
+			}
+		});
+		addPropsToObject(props, obj, objClass.inherit);
+	}
+}
+
 function makeObject(className, props) {
 	var o = {
 		kind: "object",
@@ -102,18 +119,9 @@ function makeObject(className, props) {
 		type: {kind: "typeName", value: className},
 		prop: {}
 	};
-	// typecheck property for each property name in the Class
-	forEach(classes[className].prop, function (propType, propName) {
-		if (props[propName] !== undefined) {
-			if (getType(props[propName]).value == propType.value) {
-				o.prop[propName] = props[propName];
-			} else {
-				//throw type exception
-				throw "Property type mismatch: `"+ unparseType(getType(props[propName])) +"` and `"+unparseType(propType)+"`";
-			}
-		}
-	});
-	
+
+	addPropsToObject(props, o, classes[className]);
+
 	return o;
 }
 
@@ -127,11 +135,11 @@ makeClass("K.cons", "K.object");
 makeClass("K.childOfCons", "K.cons");
 
 
-addProp("K.object", "involves", "Set K.cons");
+addProp("K.object", "involvesLeft", "Set K.cons");
 addProp("K.cons", "relation", "K.object");
 addProp("K.cons", "arg", "K.object");
 addProp("K.cons", "truth", "Unit Bool"); // this only applies if the relation is "in (the context of)"
-
+addProp("K.cons", "involvesRight", "Set K.cons");
 
 // ==================================================================
 // UI

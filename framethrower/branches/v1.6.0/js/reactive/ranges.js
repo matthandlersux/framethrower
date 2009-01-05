@@ -1,5 +1,5 @@
 function makeRangedSet(onAdd, onRemove) {
-	var sSet = makeSortedSetStringify();
+	var sSet = makeConSortedSetStringify();
 	var range;
 	
 	var forInd = function (startInd, endInd, f) {

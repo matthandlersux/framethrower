@@ -1,7 +1,7 @@
 var scount = 0;
 
 function makeConSortedSet(compFunc) {
-	var hash = makeOHash();
+	var hash = makeOhash();
 	var css = {};
 	
 	css.set = function (key, value) {
