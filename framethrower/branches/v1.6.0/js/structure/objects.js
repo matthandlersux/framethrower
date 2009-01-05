@@ -132,14 +132,12 @@ function makeObject(className, props) {
 makeClass("K.object");
 
 makeClass("K.cons", "K.object");
-makeClass("K.childOfCons", "K.cons");
 
-
+addProp("K.object", "involvesRight", "Set K.cons");
 addProp("K.object", "involvesLeft", "Set K.cons");
 addProp("K.cons", "relation", "K.object");
 addProp("K.cons", "arg", "K.object");
 addProp("K.cons", "truth", "Unit Bool"); // this only applies if the relation is "in (the context of)"
-addProp("K.cons", "involvesRight", "Set K.cons");
 
 // ==================================================================
 // UI
