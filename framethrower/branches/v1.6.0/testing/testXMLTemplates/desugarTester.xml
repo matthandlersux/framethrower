@@ -1,0 +1,31 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="p1" type="Number" />
+	
+	<html:div>
+		<f:thunk url="TESTINGURL">
+			<f:with-param name="TESTINGNUMBER" select="345" />
+			<f:with-param name="TESTINGSTRING" select="'hello'" />
+			<f:with-param name="TESTINGBOOL" select="true" />
+			<f:with-param name="TESTINGPARAM" select="$p1" />
+		</f:thunk>
+		
+		<f:on event="click" with-action="$myAction" />
+	</html:div>
+	
+	<f:action name="myAction">
+		<f:create name="myNewObject" type="Cons">
+			<f:with-param name="PROPERTY" select="22" />
+		</f:create>
+		
+		<f:perform name="anotherObject" url="TESTINGURL">
+			<f:with-param name="param1" select="'a string'" />
+		</f:perform>
+		
+		<f:intact object="$myNewObject" property="PROPERTY" action="add" key="16" value="$anotherObject" />
+	</f:action>
+</f:template>

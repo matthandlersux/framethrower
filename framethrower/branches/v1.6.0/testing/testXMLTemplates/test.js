@@ -2,12 +2,14 @@ var x;
 var c;
 var xsl;
 
-/*documents.withDoc("testing/testXMLTemplates/xmlTemplate.xml", function (xt) {
-	x = xt;
-	xsl = makeXSLFromTemplate(x);
-	debug.xml(xsl.ss);
-	debug.log(xsl.varNames);
-});*/
+function testDesugar(url) {
+	documents.withDoc(url, function (xt) {
+		console.log("Testing desugaring on: "+url, desugarXSL(xt));
+	});	
+}
+
+testDesugar("testing/testXMLTemplates/desugarTester.xml");
+testDesugar("testing/testXMLTemplates/xmlTemplate.xml");
 
 
 var cell = makeControlledCell("Map Number String");
@@ -29,12 +31,12 @@ function init() {
 }
 */
 
-function init() {
+function initialize() {
 	var thunkNode = xpath("//f:thunk", document.body)[0];
 	
 	var te = getThunkEssence(thunkNode, "", {testCell: cell});
-	console.log("thunk essence", te);
-	console.log("compare", compareThunkEssences(te, te));
+	// console.log("thunk essence", te);
+	// console.log("compare", compareThunkEssences(te, te));
 	
 	/*makeTemplateFunFromUrl("testing/testXMLTemplates/xmlTemplate.xml", function (fun) {
 		var e = makeApply(makeApply(fun.fun, 6), 222);

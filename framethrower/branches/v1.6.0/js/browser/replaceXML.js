@@ -64,8 +64,8 @@ function processThunks(node, pass) {
 	
 	// TODO: process "onload" events in the XML
 	
-	// first, tag thunkEssence on any bindings (f:on nodes)
-	var fons = xpath(".//f:on", node);
+	// first, tag thunkEssence on any bindings, or actions that need it (f:on, f:create, f:intact, f:servercall)
+	var fons = xpath(".//*[self::f:on or self::f:create or self::f:intact or self::f:servercall]", node);
 	forEach(fons, function (fon) {
 		var thunkEssence = getThunkEssence(fon, pass.baseUrl, pass.ids);
 		fon.custom = {thunkEssence: thunkEssence};

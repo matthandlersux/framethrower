@@ -6,6 +6,7 @@ function evalThunk(thunkNode, baseUrl, ids) {
 	function perform(xt) {
 		var e = xt;
 		forEach(xt.params, function (p) {
+			// TODO: typecheck here
 			e = makeApply(e, thunkEssence.params[p.name]);
 		});
 		

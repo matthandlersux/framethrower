@@ -53,9 +53,11 @@ function makeXSLFromTemplate(templateNode) {
 	var baseNode = xpath("*[not(self::f:param | self::f:derive | self::f:template | self::f:action | self::xsl:template)]", templateNode);
 	
 	if (baseNode.length === 1) {
-		baseNode = cloneNode(baseNode[0]);
+		baseNode = baseNode[0];
 	} else if (baseNode.length > 1) {
 		var res = createEl("f:result");
+		var container = createEl("container"); // this is a hack, Firefox doesn't like using parentless nodes as source documents in XSL transforms
+		container.appendChild(res);
 		forEach(baseNode, function (node) {
 			appendChild(res, cloneNode(node));
 		});
@@ -63,7 +65,8 @@ function makeXSLFromTemplate(templateNode) {
 	} else {
 		debug.error("Template has no output XML");
 	}
-	desugarXSL(baseNode);
+	
+	baseNode = desugarXSL(baseNode);
 	
 	var ss = createEl("xsl:stylesheet");
 	setAttr(ss, "version", "1.0");
@@ -84,30 +87,76 @@ function makeXSLFromTemplate(templateNode) {
 	
 	var fetchedTemplates = fetchCalledTemplates(getCallTemplates(baseNode), templateNode);
 	forEach(fetchedTemplates, function (template) {
-		var clone = cloneNode(template);
-		desugarXSL(clone);
-		appendChild(ss, clone);
+		template = desugarXSL(template);
+		appendChild(ss, template);
 	});
 	
 	return {ss: ss, varNames: varNames};
 }
 
-function desugarXSL(xslNode) {
-	// replace <f:with-param ... select="XXX" /> with <f:with-param ...><xsl:copy-of select="XXX" /></f:with-param>
-	var selects = xpath(".//*[self::f:with-param or self::f:with-template][@select]", xslNode);
-	forEach(selects, function (select) {
-		var copyOf = createEl("xsl:copy-of");
-		setAttr(copyOf, "select", getAttr(select, "select"));
-		appendChild(select, copyOf);
+
+var desugarXSL = compileXSL(loadXMLNow(ROOTDIR + "js/browser/desugar.xml"));
+
+/*function desugarXSL(xslNode) {
+	var nodes;
+	
+	// convert f:intact so that object, key, value go into with-param's
+	nodes = xpath(".//f:intact", xslNode);
+	forEach(nodes, function (node) {
+		function makeIntoWithParam(attr) {
+			var attrVal = getAttr(node, attr);
+			if (attrVal) {
+				var w = createEl("f:with-param");
+				setAttr(w, "name", attr);
+				setAttr(w, "select", attrVal);
+				appendChild(node, w);
+			}
+		}
+		makeIntoWithParam("object");
+		makeIntoWithParam("key");
+		makeIntoWithParam("value");
 	});
 	
-	// TODO:
+	// convert f:let -> f:let/f:thunk
+	// TODO
+
+	// convert f:create to f:create + xsl:variable
+	// TODO
 	
-	// replace <f:thunk with-template/action="XXX">...</f:thunk> into <f:thunk><f:with-template/action><xsl:copy-of select="XXX" /></f:with-template/action></f:thunk>
-	
+	// replace <f:thunk with-template/action="XXX">...</f:thunk> into <f:thunk><f:with-template/action select="XXX"></f:thunk>
+	nodes = xpath(".//*[self::f:thunk][@with-template]", xslNode);
+	forEach(nodes, function (node) {
+		var w = createEl("xsl:with-template");
+		setAttr(w, "select", getAttr(node, "with-template"));
+		appendChild(node, w);
+	});
+	nodes = xpath(".//*[self::f:thunk][@with-action]", xslNode);
+	forEach(nodes, function (node) {
+		var w = createEl("xsl:with-template");
+		setAttr(w, "select", getAttr(node, "with-action"));
+		appendChild(node, w);
+	});
+
 	// replace <f:thunk url="XXX">...</f:thunk> into <f:thunk><f:with-template url="XXX" /></f:thunk>
+	nodes = xpath(".//*[self::f:thunk][@url]", xslNode);
+	forEach(nodes, function (node) {
+		var w = createEl("xsl:with-template");
+		setAttr(w, "url", getAttr(node, "url"));
+		appendChild(node, w);
+	});
+
+	// replace <f:with-param/template/action ... select="XXX" /> with <f:with-param/.. ...><xsl:copy-of select="XXX" /></f:with-param>
+	nodes = xpath(".//*[self::f:with-param or self::f:with-template or self::f:with-action][@select]", xslNode);
+	forEach(nodes, function (node) {
+		var copyOf = createEl("xsl:copy-of");
+		setAttr(copyOf, "select", getAttr(node, "select"));
+		appendChild(node, copyOf);
+	});
 	
-}
+	
+	
+	
+}*/
 
 
 

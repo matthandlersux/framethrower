@@ -15,44 +15,20 @@
 <script>
 var ROOTDIR = "../../";
 var DEBUG = true;
+
+var INCLUDES=["test.js"];
+var ONLOAD="initialize()";
 </script>
 
-<script src="../../js/util/debug.js"></script>
-<script src="../../js/util/util.js"></script>
-<script src="../../js/util/xml.js"></script>
-<script src="../../js/util/sortedSet.js"></script>
-<script src="../../js/util/conSortedSet.js"></script>
-
-<script src="../../js/structure/parse.js"></script>
-<script src="../../js/structure/env.js"></script>
-<script src="../../js/structure/types.js"></script>
-<script src="../../js/structure/expr.js"></script>
-
-<script src="../../js/structure/baseEnv.js"></script>
-
-<script src="../../js/structure/stringify.js"></script>
-<script src="../../js/structure/evaluate.js"></script>
-
-<script src="../../js/reactive/hash.js"></script>
-<script src="../../js/reactive/primfuncscells.js"></script>
-<script src="../../js/reactive/cells.js"></script>
-<script src="../../js/reactive/ranges.js"></script>
-<script src="../../js/reactive/controlledCell.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.6.0/build/yuiloader/yuiloader-min.js"></script> 
+<script src="../../js/include.js"></script>
 
 
 
-<script src="../../js/browser/xsl.js"></script>
-
-<script src="../../js/browser/documents.js"></script>
-<script src="../../js/browser/convertExprXML.js"></script>
-<script src="../../js/browser/evalThunk.js"></script>
-<script src="../../js/browser/replaceXML.js"></script>
-
-<script src="test.js"></script>
 
 </head>
 
-<body onload="init();">
+<body>
 	<div>blah</div>
 	<div>
 		<f:thunk>

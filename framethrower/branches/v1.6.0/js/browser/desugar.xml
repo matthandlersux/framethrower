@@ -1,0 +1,131 @@
+<xsl:stylesheet
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg"
+	version="1.0">
+	
+	<xsl:variable name="xslns" select="'http://www.w3.org/1999/XSL/Transform'" />
+	
+	<xsl:template match="@*|node()">
+	  <xsl:copy>
+	    <xsl:apply-templates select="@*|node()"/>
+	  </xsl:copy>
+	</xsl:template>
+		
+	<xsl:template match="f:intact">
+		<xsl:copy>
+			<xsl:copy-of select="@*[not(name() = 'object' or name() = 'key' or name() = 'value')]" />
+			<xsl:call-template name="write-with-param">
+				<xsl:with-param name="name" select="'object'" />
+			</xsl:call-template>
+			<xsl:call-template name="write-with-param">
+				<xsl:with-param name="name" select="'key'" />
+			</xsl:call-template>
+			<xsl:call-template name="write-with-param">
+				<xsl:with-param name="name" select="'value'" />
+			</xsl:call-template>
+			<xsl:apply-templates select="node()" />
+		</xsl:copy>
+	</xsl:template>
+	<xsl:template name="write-with-param">
+		<xsl:param name="name" />
+		<f:with-param name="{$name}">
+			<xsl:call-template name="write-select">
+				<xsl:with-param name="s" select="@*[name() = $name]" />
+			</xsl:call-template>
+		</f:with-param>
+	</xsl:template>
+	
+	<!-- // convert f:perform -> f:let/f:thunk
+	// TODO
+
+	// convert f:create to f:create + xsl:variable
+	// TODO -->
+	
+	<xsl:template match="f:create">
+		<xsl:copy>
+			<xsl:apply-templates select="@*|node()" />
+		</xsl:copy>
+		<xsl:call-template name="dummy-variable" />
+	</xsl:template>
+	
+	<!--
+		TODO: add support for multiple return values by separating names with commas
+	-->
+	<xsl:template match="f:perform">
+		<f:let name="{@name}">
+			<f:thunk>
+				<xsl:if test="@url">
+					<f:with-template url="{@url}" />
+				</xsl:if>
+				<xsl:if test="@with-template | @with-action">
+					<f:with-template>
+						<xsl:call-template name="write-select">
+							<xsl:with-param name="s" select="@with-template | @with-action" />
+						</xsl:call-template>
+					</f:with-template>
+				</xsl:if>
+				<xsl:apply-templates select="node()" />
+			</f:thunk>
+		</f:let>
+		<xsl:call-template name="dummy-variable" />
+	</xsl:template>
+	
+	<xsl:template name="dummy-variable">
+		<xsl:param name="name" select="@name" />
+		<xsl:element name="xsl:variable" namespace="{$xslns}">
+			<xsl:attribute name="name"><xsl:value-of select="$name" /></xsl:attribute>
+			<f:var name="{$name}" />
+		</xsl:element>
+	</xsl:template>
+	
+	<xsl:template match="*[self::f:thunk or self::f:on][@with-template or @with-action]">
+		<xsl:copy>
+			<xsl:copy-of select="@*[not(name() = 'with-template' or name() = 'with-action')]" />
+			<f:with-template>
+				<xsl:call-template name="write-select">
+					<xsl:with-param name="s" select="@with-template | @with-action" />
+				</xsl:call-template>
+			</f:with-template>
+			<xsl:apply-templates select="node()" />
+		</xsl:copy>
+	</xsl:template>
+
+	<xsl:template match="*[self::f:thunk or self::f:on][@url]">
+		<xsl:copy>
+			<xsl:copy-of select="@*[not(name() = 'url')]" />
+			<f:with-template url="{@url}" />
+			<xsl:apply-templates select="node()" />
+		</xsl:copy>
+	</xsl:template>
+	
+	<xsl:template match="*[self::f:with-param or self::f:with-template or self::f:with-action][@select]">
+		<xsl:copy>
+			<xsl:copy-of select="@*[not(name() = 'select')]" />
+			<xsl:call-template name="write-select" />
+		</xsl:copy>
+	</xsl:template>
+	
+	<xsl:template name="write-select">
+		<xsl:param name="s" select="@select" />
+		<xsl:variable name="fc" select="substring($s, 1, 1)" />
+		<xsl:choose>
+			<xsl:when test='$fc = "&#39;"'>
+				<f:string value="{$s}" />
+			</xsl:when>
+			<xsl:when test="contains('0123456789', $fc)">
+				<f:number value="{$s}" />
+			</xsl:when>
+			<xsl:when test="$s = 'true' or $s = 'false'">
+				<f:boolean value="{$s}" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:element name="xsl:copy-of" namespace="{$xslns}">
+					<xsl:attribute name="select"><xsl:value-of select="$s" /></xsl:attribute>
+				</xsl:element>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	
+</xsl:stylesheet>
