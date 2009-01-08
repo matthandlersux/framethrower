@@ -61,21 +61,24 @@ function bruteReplace(node, replacer, pass) {
 
 function processThunks(node, pass) {
 	// note: all new XML must be processed by this function
-	
-	// TODO: process "onload" events in the XML
+	// bootstrap uses this method with pass = {baseUrl: "", ids: {}}
 	
 	// first, tag thunkEssence on any bindings, or actions that need it (f:on, f:create, f:intact, f:servercall)
-	var fons = xpath(".//*[self::f:on or self::f:create or self::f:intact or self::f:servercall]", node);
-	forEach(fons, function (fon) {
-		var thunkEssence = getThunkEssence(fon, pass.baseUrl, pass.ids);
-		fon.custom = {thunkEssence: thunkEssence};
+	var nodesNeedingTagging = xpath(".//*[self::f:thunk or self::f:on or self::f:create or self::f:intact or self::f:servercall]", node);
+	forEach(nodesNeedingTagging, function (node) {
+		tagThunkEssence(node, pass.baseUrl, pass.ids);
+	});
+
+	// process "on load" events
+	var onloadNodes = xpath(".//f:on[@event='load']", node);
+	forEach(onloadNodes, function (node) {
+		triggerAction(node.custom.thunkEssence);
 	});
 	
-	
-	// evaluate any thunks in replacer
+	// evaluate any thunks
 	var thunks = xpath(".//f:thunk", node);
 	forEach(thunks, function (thunk) {
-		evalThunk(thunk, pass.baseUrl, pass.ids);
+		evalThunk(thunk);
 	});
 }
 

@@ -1,6 +1,9 @@
 function makeControlledCell(typeString) {
 	var type = parseType(typeString);
-	
+	return makeCC(type);
+}
+
+function makeCC(type) {
 	var cell;
 	var constructor = getTypeConstructor(type);
 

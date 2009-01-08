@@ -21,12 +21,16 @@
 		"js/reactive/cells.js",
 		"js/reactive/ranges.js",
 		"js/reactive/controlledCell.js",
+		
+		"js/objects/objects.js",
+		"js/objects/rootObjects.js",
 
 		"js/browser/xsl.js",
 		"js/browser/documents.js",
 		"js/browser/convertExprXML.js",
 		"js/browser/evalThunk.js",
-		"js/browser/replaceXML.js"
+		"js/browser/replaceXML.js",
+		"js/browser/actionXML.js"
 		
 	];
 	

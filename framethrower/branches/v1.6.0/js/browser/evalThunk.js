@@ -1,7 +1,10 @@
+function bootstrap(node, ids) {
+	if (!ids) ids = {};
+	processThunks(node, {baseUrl: "", ids: ids});
+}
 
-
-function evalThunk(thunkNode, baseUrl, ids) {
-	var thunkEssence = getThunkEssence(thunkNode, baseUrl, ids);
+function evalThunk(thunkNode) {
+	var thunkEssence = thunkNode.custom.thunkEssence;
 	
 	function perform(xt) {
 		var e = xt;
@@ -10,23 +13,19 @@ function evalThunk(thunkNode, baseUrl, ids) {
 			e = makeApply(e, thunkEssence.params[p.name]);
 		});
 		
-		var custom = {thunkEssence: thunkEssence};
+		var custom = thunkNode.custom;
 		
 		var removeFunc = evaluateAndInject(e, function (xmlids) {
 			thunkNode = replaceXML(thunkNode, xmlids.xml, {baseUrl: xt.url, ids: xmlids.ids}, true);
-
-			// Old way (before replaceXML)
-			/*var thunks = xpath(".//f:thunk", xmlids.xml);
-			forEach(thunks, function (thunk) {
-				evalThunk(thunk, xt.url, xmlids.ids);
-			});
-			
-			thunkNode.parentNode.replaceChild(xmlids.xml, thunkNode);
-			thunkNode = xmlids.xml;
-			*/
 			
 			thunkNode.custom = custom;
 			setAttr(thunkNode, "f:was-thunk", "yes");
+			
+			var top = xpath("ancestor-or-self::*[@f:was-thunk][last()]", thunkNode)[0]; // TODO: might want to revisit this
+			
+			if (top.custom && top.custom.onXMLUpdate) {
+				top.custom.onXMLUpdate();
+			}
 		});
 		custom.removeFunc = removeFunc;
 	}
@@ -39,16 +38,24 @@ function evalThunk(thunkNode, baseUrl, ids) {
 }
 
 
+function tagThunkEssence(node, baseUrl, ids) {
+	var thunkEssence = getThunkEssence(node, baseUrl, ids);
+	if (!node.custom) node.custom = {};
+	node.custom.thunkEssence = thunkEssence;
+}
+
 function getThunkEssence(thunkNode, baseUrl, ids) {
 	var thunkEssence = {};
 	
 	var withTemplate = xpath("f:with-template | f:with-action", thunkNode);
-	withTemplate = withTemplate[0];
-	var url = getAttr(withTemplate, "url");
-	if (url) {
-		thunkEssence.url = urlToAbs(baseUrl, url);
-	} else {
-		thunkEssence.template = getWithParam(withTemplate, ids);
+	if (withTemplate.length > 0) {
+		withTemplate = withTemplate[0];
+		var url = getAttr(withTemplate, "url");
+		if (url) {
+			thunkEssence.url = urlToAbs(baseUrl, url);
+		} else {
+			thunkEssence.template = getWithParam(withTemplate, ids);
+		}
 	}
 		
 	var withParams = xpath("f:with-param", thunkNode);
@@ -81,20 +88,20 @@ function compareThunkEssences(te1, te2) {
 
 
 function getWithParam(node, ids) {
-	if (getAttr(node, "number")) {
-		return +(getAttr(node, "number"));
-	} else if (getAttr(node, "bool")) {
-		return !!(getAttr(node, "bool"));
-	} else if (getAttr(node, "string")) {
-		return getAttr(node, "string");
-	} else {
+	// if (getAttr(node, "number")) {
+	// 	return +(getAttr(node, "number"));
+	// } else if (getAttr(node, "bool")) {
+	// 	return !!(getAttr(node, "bool"));
+	// } else if (getAttr(node, "string")) {
+	// 	return getAttr(node, "string");
+	// } else {
 		var child = xpath("*[1]", node);
 		if (child.length === 0) {
 			console.error("f:with-param is undefined.", node);
 		} else {
 			return xmlToExpr(child[0], ids);
 		}
-	}
+	// }
 }
 
 function urlToAbs(baseUrl, url) {

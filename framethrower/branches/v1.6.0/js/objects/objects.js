@@ -100,11 +100,18 @@ function addPropsToObject(props, obj, objClass) {
 	if (objClass) {
 		forEach(objClass.prop, function (propType, propName) {
 			if (props[propName] !== undefined) {
-				if (getType(props[propName]).value == propType.value) {
+				if (getType(props[propName]).value == propType.value) { // TODO: replace this with compareTypes
 					obj.prop[propName] = props[propName];
 				} else {
 					//throw type exception
 					throw "Property type mismatch: `"+ unparseType(getType(props[propName])) +"` and `"+unparseType(propType)+"`";
+				}
+			} else {
+				// use the default, that is an empty controlled cell
+				if (propType.kind === "typeApply") {
+					obj.prop[propName] = makeCC(propType);
+				} else {
+					throw "Property needs to be defined: "+propName;
 				}
 			}
 		});
@@ -113,6 +120,8 @@ function addPropsToObject(props, obj, objClass) {
 }
 
 function makeObject(className, props) {
+	if (!props) props = {};
+	
 	var o = {
 		kind: "object",
 		origType: {kind: "typeName", value: className},
@@ -133,10 +142,10 @@ makeClass("K.object");
 
 makeClass("K.cons", "K.object");
 
-addProp("K.object", "involvesRight", "Set K.cons");
-addProp("K.object", "involvesLeft", "Set K.cons");
-addProp("K.cons", "relation", "K.object");
-addProp("K.cons", "arg", "K.object");
+addProp("K.object", "upRight", "Set K.cons");
+addProp("K.object", "upLeft", "Set K.cons");
+addProp("K.cons", "left", "K.object");
+addProp("K.cons", "right", "K.object");
 addProp("K.cons", "truth", "Unit Bool"); // this only applies if the relation is "in (the context of)"
 
 // ==================================================================
@@ -153,4 +162,9 @@ addProp("X.video", "url", "String");
 addProp("X.video", "width", "Number");
 addProp("X.video", "height", "Number");
 addProp("X.video", "duration", "Number");
+
+
+
+
+
 

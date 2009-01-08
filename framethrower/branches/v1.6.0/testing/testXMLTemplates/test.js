@@ -8,8 +8,8 @@ function testDesugar(url) {
 	});	
 }
 
-testDesugar("testing/testXMLTemplates/desugarTester.xml");
-testDesugar("testing/testXMLTemplates/xmlTemplate.xml");
+//testDesugar("testing/testXMLTemplates/desugarTester.xml");
+//testDesugar("testing/testXMLTemplates/xmlTemplate.xml");
 
 
 var cell = makeControlledCell("Map Number String");
@@ -31,9 +31,19 @@ function init() {
 */
 
 function initialize() {
-	var thunkNode = xpath("//f:thunk", document.body)[0];
 	
-	var te = getThunkEssence(thunkNode, "", {testCell: cell});
+	bootstrap(document.body, {testCell: cell});
+	
+	/*var thunkNodes = xpath("//f:thunk", document.body);
+	
+	forEach(thunkNodes, function (thunkNode) {
+		tagThunkEssence(thunkNode, "", {testCell: cell});
+
+		thunkNode.custom.persist="test persistence";
+
+		evalThunk(thunkNode);
+	});*/
+	
 	// console.log("thunk essence", te);
 	// console.log("compare", compareThunkEssences(te, te));
 	
@@ -47,7 +57,6 @@ function initialize() {
 		
 	});*/
 	
-	//evalThunk(thunkNode, "", {testCell: cell});
 }
 
 

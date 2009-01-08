@@ -11,6 +11,8 @@ function exprToXML(expr, type) {
 			
 			if (!type) type = getType(expr);
 			var constructor = getTypeConstructor(type);
+			
+			expr.makeSorted();
 			var state = expr.getState();
 			
 			var ids = {};
@@ -61,24 +63,21 @@ function exprToXML(expr, type) {
 
 
 function xmlToExpr(xml, ids) {
-	var name = xml.localName;
-	var ns = xml.namespaceURI;
+	var nn = xml.nodeName;
 	
-	if (ns === xmlns["f"]) {
-		if (name === "number") {
-			return +getAttr(xml, "value");
-		} else if (name === "string") {
-			return getAttr(xml, "value");
-		} else if (name === "bool") {
-			return getAttr(xml, "value") === "true";
-		} else if (name === "o") {
-			var id = getAttr(xml, "name");
-			return ids[id];
-		} else if (name === "set") {
-			// TODO
-		} else if (name === "map") {
-			// TODO
-		}
+	if (nn === "f:number") {
+		return +getAttr(xml, "value");
+	} else if (nn === "f:string") {
+		return getAttr(xml, "value");
+	} else if (nn === "f:bool") {
+		return getAttr(xml, "value") === "true";
+	} else if (nn === "f:o") {
+		var id = getAttr(xml, "name");
+		return ids[id];
+	} else if (nn === "f:set") {
+		// TODO
+	} else if (nn === "f:map") {
+		// TODO
 	} else {
 		return xml;
 	}

@@ -1,0 +1,17 @@
+<f:action name="actionTest"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:derive name="in" d="r.in" />
+	
+	<f:create type="K.object" name="myObject" />
+	<f:create type="K.cons" name="myCons">
+		<f:with-param name="left" select="$in" />
+		<f:with-param name="right" select="$myObject" />
+	</f:create>
+	<f:intact object="$myObject" property="upLeft" action="add" key="$myCons" />
+	<f:intact object="$in" property="upRight" action="add" key="$myCons" />
+	
+</f:action>

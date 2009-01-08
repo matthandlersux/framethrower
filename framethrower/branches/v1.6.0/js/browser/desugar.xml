@@ -30,18 +30,14 @@
 	</xsl:template>
 	<xsl:template name="write-with-param">
 		<xsl:param name="name" />
-		<f:with-param name="{$name}">
-			<xsl:call-template name="write-select">
-				<xsl:with-param name="s" select="@*[name() = $name]" />
-			</xsl:call-template>
-		</f:with-param>
+		<xsl:if test="@*[name() = $name]">
+			<f:with-param name="{$name}">
+				<xsl:call-template name="write-select">
+					<xsl:with-param name="s" select="@*[name() = $name]" />
+				</xsl:call-template>
+			</f:with-param>
+		</xsl:if>
 	</xsl:template>
-	
-	<!-- // convert f:perform -> f:let/f:thunk
-	// TODO
-
-	// convert f:create to f:create + xsl:variable
-	// TODO -->
 	
 	<xsl:template match="f:create">
 		<xsl:copy>

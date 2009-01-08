@@ -134,7 +134,7 @@ function runXSL(compiledXSL, params) {
 
 
 
-
+var unitJS = parseType("Unit JS");
 function compileTemplate(templateNode, url) {
 	var params = xpath("f:param", templateNode);
 	params = map(params, function (param) {
@@ -160,93 +160,104 @@ function compileTemplate(templateNode, url) {
 	var compiledXSL = compileXSL(xsl.ss);
 	var varNames = xsl.varNames;
 	
-	var funType = parseType("Unit JS");
+	
+	var funType = unitJS;
 	forEachReverse(params, function (param) {
 		funType = makeTypeLambda(param.type, funType);
 	});
 	
 	return function (env) {
-		return {
-			kind: "fun",
-			type: funType,
-			fun: curry(function () {
-				var scope = {};
-				var newEnv = extendEnv(env, scope);
+		var myFun = curry(function () {
+			var scope = {};
+			var newEnv = extendEnv(env, scope);
 
-				// build the new scope
-				// fill in params
-				forEach(arguments, function (arg, i) {
-					scope[params[i].name] = arg;
-				});
-				// parse derives using newEnv and add the resulting expressions to the scope
-				forEach(derives, function (derive) {
-					scope[derive.name] = parseExpression(derive.parsed, newEnv);
-				});
-				// finally, add the f:template's to the scope, using newEnv as their env
-				forEach(templates, function (template) {
-					scope[template.name] = template.compiled(newEnv);
-				});
-			
-			
-			
-				var cell = makeCell();
+			// build the new scope
+			// fill in params
+			forEach(arguments, function (arg, i) {
+				scope[params[i].name] = arg;
+			});
+			// parse derives using newEnv and add the resulting expressions to the scope
+			forEach(derives, function (derive) {
+				scope[derive.name] = parseExpression(derive.parsed, newEnv);
+			});
+			// finally, add the f:template's to the scope, using newEnv as their env
+			forEach(templates, function (template) {
+				scope[template.name] = template.compiled(newEnv);
+			});
+		
+		
+		
+			var cell = makeCell();
+			cell.type = unitJS;
 
-				// put all dependent bindings (that is, the varNames that the xsl depends on) from the newEnv in a hash
-				var p = {};
-				forEach(varNames, function (varName, i) {
-					p[varName] = newEnv(varName);
-				});
+			// put all dependent bindings (that is, the varNames that the xsl depends on) from the newEnv in a hash
+			var p = {};
+			forEach(varNames, function (varName, i) {
+				p[varName] = newEnv(varName);
+			});
 
-				var state = false;
-				function update() {
-					if (state) {
-						cell.removeLine(state);
-					}
-
-					var pxml = {};
-					var ids = {};
-					forEach(p, function (paramExpr, paramName) {
-						var convert = exprToXML(paramExpr);
-						pxml[paramName] = convert.xml;
-						mergeInto(convert.ids, ids);
-					});
-
-					var resultXML = runXSL(compiledXSL, pxml);
-					
-					state = {xml: resultXML, ids: ids};
-					cell.addLine(state);
-					delete dirtyThunks[stringify(cell)];
+			var state = false;
+			function update() {
+				if (state) {
+					cell.removeLine(state);
 				}
 
+				var pxml = {};
+				var ids = {};
+				forEach(p, function (paramExpr, paramName) {
+					var convert = exprToXML(paramExpr);
+					pxml[paramName] = convert.xml;
+					mergeInto(convert.ids, ids);
+				});
 
-				function makeDirty() {
-					dirtyThunks[stringify(cell)] = update;
-					return makeDirty;
+				var resultXML = runXSL(compiledXSL, pxml);
+				
+				state = {xml: resultXML, ids: ids};
+				cell.addLine(state);
+				delete dirtyThunks[stringify(cell)];
+			}
+
+
+			function makeDirty() {
+				dirtyThunks[stringify(cell)] = update;
+				return makeDirty;
+			}
+			cell.addOnRemove(function () {
+				delete dirtyThunks[stringify(cell)]; // remove itself from dirtyThunks
+			});
+
+
+			forEach(p, function (expr, name) {
+				var result = evaluate(expr);
+				p[name] = result;
+
+				// if the result is a startCap (dynamic), inject makeDirty function
+				var t = getType(result);
+				if (t.kind === "typeApply") {
+					var removeFunc = result.injectFunc(makeDirty);
+					cell.addOnRemove(removeFunc);
 				}
-				cell.addOnRemove(function () {
-					delete dirtyThunks[stringify(cell)]; // remove itself from dirtyThunks
-				});
+			});
 
+			update();
 
-				forEach(p, function (expr, name) {
-					var result = evaluate(expr);
-					p[name] = result;
-
-					// if the result is a startCap (dynamic), inject makeDirty function
-					var t = getType(result);
-					if (t.kind === "typeApply") {
-						var removeFunc = result.injectFunc(makeDirty);
-						cell.addOnRemove(removeFunc);
-					}
-				});
-
-				update();
-
-				return cell;
-			}, params.length),
-			params: params,
-			url: url
-		};
+			return cell;
+		}, params.length);
+		
+		if (params.length === 0) {
+			// in this case, myFun isn't a fun at all, but a cell
+			myFun.params = params;
+			myFun.url = url;
+			return myFun;
+		} else {
+			return {
+				kind: "fun",
+				type: funType,
+				fun: myFun,
+				params: params,
+				url: url
+			};			
+		}
 	};
 	
 }

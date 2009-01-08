@@ -94,6 +94,12 @@ function unparseType(type) {
 
 
 
+function compareTypes(type1, type2) {
+	// TODO
+}
+
+
+
 
 
 function genConstraints(expr, env, constraints) {

@@ -33,10 +33,14 @@ var ONLOAD="initialize()";
 	<div>
 		<f:thunk>
 			<f:with-template url="testing/testXMLTemplates/xmlTemplate.xml" />
-			<f:with-param name="p1" number="3" />
-			<f:with-param name="p2" number="100" />
+			<f:with-param name="p1"><f:number value="3" /></f:with-param>
+			<f:with-param name="p2"><f:number value="100" /></f:with-param>
 			<f:with-param name="mapTest"><f:o name="testCell" /></f:with-param>
 		</f:thunk>
+		
+		<f:on event="load">
+			<f:with-template url="testing/testXMLTemplates/actionTest.xml" />
+		</f:on>
 	</div>
 	
 </body>
