@@ -30,10 +30,17 @@ function makeBaseCell (toKey) {
 		dots.setKeyRange(start, end);
 	};
 	
+	cell.getIndex = function (key) {
+		return dots.getIndex(key);
+	};
+	
+	cell.makeSorted = function () {
+		dots.makeSorted();
+	};
+	
 	cell.injectFunc = function (f) {
 		var id = funcColor++;
 		funcs.set(id, f);
-		
 		dots.forRange(function (dot, key) {
 			if(dot.num > 0) {
 				addLineResponse(dot.val, f, id);

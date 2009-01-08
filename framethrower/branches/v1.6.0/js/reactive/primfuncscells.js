@@ -1,7 +1,7 @@
 
 var primFuncs = function () {
 	function applyFunc(func, input) {
-		return evaluate(makeApply(func, input));
+		return evaluate(makeApply(func, input));		
 	}
 
 	function applyAndInject(func, input, injectFunc) {
@@ -470,14 +470,15 @@ var primFuncs = function () {
 			type : "Unit a -> Unit a -> Set a -> Set a",
 			func : function (startCell, endCell, cell) {
 				var outputCell = makeCell();
+				outputCell.makeSorted();
 				var start;
 				var end;
 				
 				var updateRange = function () {
 					if (start != undefined && end != undefined) {
-						cell.setKeyRange(start, end);
+						outputCell.setKeyRange(start, end);
 					} else if (start == undefined && end == undefined) {
-						cell.clearRange();
+						outputCell.clearRange();
 					}
 				};
 				
@@ -513,14 +514,15 @@ var primFuncs = function () {
 			type : "Unit Number -> Unit Number -> Set a -> Set a",
 			func : function (startCell, endCell, cell) {
 				var outputCell = makeCell();
+				outputCell.makeSorted();
 				var start;
 				var end;
 				
 				var updateRange = function () {
 					if (start != undefined && end != undefined) {
-						cell.setPosRange(start, end);
+						outputCell.setPosRange(start, end);
 					} else if (start == undefined && end == undefined) {
-						cell.clearRange();
+						outputCell.clearRange();
 					}
 				};
 				
@@ -556,24 +558,71 @@ var primFuncs = function () {
 			type : "Bool -> (a -> b -> b) -> b -> Set a -> Unit b",
 			func : function (ascending, f, init, cell) {
 				var outputCell = makeCell();
-				var cache = init;
-				outputCell.addLine(cache);
-				
-				var removeFunc = cell.injectFunc(function (val) {
-					outputCell.removeLine(cache);
-					cache = applyFunc(applyFunc(f, val), cache);
-					outputCell.addLine(cache);
+				var cache = [];
+				cell.makeSorted();
+				var lastRemoveFunc = outputCell.addLine(init);
+								
+				var removeFunc = cell.injectFunc(function (val) {					
+					var index = cell.getIndex(val);
+					if (index < cache.length) {
+						cache[index].removeFunc();
+					} else {
+						lastRemoveFunc();
+					}
+					var newCell = makeCell();
+					var cellRemoveFunc;
+					
+					if (index > 0) {
+						cellRemoveFunc = cache[index-1].cell.injectFunc(function (innerVal) {
+							return newCell.addLine(applyFunc(applyFunc(f, val), innerVal));
+						});
+					} else {
+						cellRemoveFunc = newCell.addLine(applyFunc(applyFunc(f, val), init));
+					}
+					cache.splice(index, 0, {cell:newCell, val:val, removeFunc:cellRemoveFunc});
+					if (index < cache.length - 1) {
+						cache[index+1].removeFunc = cache[index].cell.injectFunc(function (innerVal) {
+							return cache[index+1].cell.addLine(applyFunc(applyFunc(f, cache[index+1].val), innerVal));
+						});
+					} else {
+						lastRemoveFunc = cache[index].cell.injectFunc(function (innerVal) {
+							return outputCell.addLine(innerVal);
+						});
+					}
+
 					return function () {
-						outputCell.removeLine(cache);
-						cache = applyFunc(applyFunc(finv, cache), val);
-						outputCell.addLine(cache);	
+						var remIndex = cell.getIndex(val);
+						cache[remIndex].removeFunc();
+						if(remIndex < cache.length -1) {
+							cache[remIndex+1].removeFunc();
+						} else {
+							lastRemoveFunc();
+						}
+						cache.splice(remIndex, 1);
+						if (remIndex > 0) {
+							if (remIndex < cache.length) {
+								cache[remIndex].removeFunc = cache[remIndex-1].cell.injectFunc(function (innerVal) {
+									return cache[remIndex].cell.addLine(applyFunc(applyFunc(f, cache[remIndex].val), innerVal));
+								});
+							} else {
+								lastRemoveFunc = cache[remIndex-1].cell.injectFunc(function (innerVal) {
+									return outputCell.addLine(innerVal);
+								});
+							}
+						} else {
+							if (remIndex < cache.length) {
+								cache[remIndex].removeFunc = cache[remIndex].cell.addLine(applyFunc(cache[remIndex].val, init));
+							} else {
+								lastRemoveFunc = outputCell.addLine(init);
+							}
+						}
 					};
 				});
 				outputCell.addOnRemove(removeFunc);
 
 				return outputCell;
 			}
-		},
+		}
 	};
 }();
 

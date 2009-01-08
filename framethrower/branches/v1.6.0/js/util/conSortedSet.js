@@ -20,27 +20,16 @@ function makeConSortedSet(compFunc) {
 	};
 	
 	css.toArray = function () {
-		css.makeCompare();
-		return css.toArray();
+		var retArray = [];
+		hash.forEach(function(val, key) {
+			retArray.push({k:key, v:val});
+		});
+		return retArray;
 	};
 	
 	css.debug = function () {
 		return hash;
 	};
-
-	css.getIndex = function (key) {
-		css.makeCompare();
-		return css.getIndex(key);
-	};
-	css.getByIndex = function (ind) {
-		css.makeCompare();
-		return css.getByIndex(ind);
-	};
-	css.getKeyByIndex = function (ind) {
-		css.makeCompare();
-		return css.getKeyByIndex(ind);
-	};
-
 
 	var sorted = [];
 
@@ -60,7 +49,7 @@ function makeConSortedSet(compFunc) {
 		}
 	}
 
-	css.makeCompare = function() {
+	css.makeSorted = function() {
 		css.forEach(function (val, key) {
 			sorted.push({k:key, v:val});
 		});
@@ -109,12 +98,18 @@ function makeConSortedSet(compFunc) {
 		css.getKeyByIndex = function (ind) {
 			return sorted[ind].k;
 		};
+		css.forEach = function (f) {
+			return sorted.forEach(function(keyVal, pos) {
+				f(keyVal.v, keyVal.k);
+			});
+		};
 		css.toArray = function () {
 			return sorted;
 		};
 		css.debug = function () {
 			return sorted;
 		};
+		css.makeSorted = function () {};
 	};
 
 

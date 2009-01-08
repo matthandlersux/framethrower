@@ -88,8 +88,8 @@ function runTests() {
 
 	var ss4 = makeConSortedSetNumbers();
 	
-	console.log("\nconSortedSet2 MakeCompare", time(function () {
-		ss4.makeCompare();
+	console.log("\nconSortedSet2 MakeSorted", time(function () {
+		ss4.makeSorted();
 	}));
 	
 	console.log("conSortedSet2 Set", time(function () {
@@ -109,8 +109,8 @@ function runTests() {
 		profileSet(a, ss5);
 	}));
 	
-	console.log("conSortedSet3 MakeCompare", time(function () {
-		ss5.makeCompare();
+	console.log("conSortedSet3 MakeSorted", time(function () {
+		ss5.makeSorted();
 	}));
 	
 	console.log("conSortedSet3 Get", time(function () {
