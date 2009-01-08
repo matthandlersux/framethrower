@@ -83,7 +83,7 @@ function makeConSortedSet(compFunc) {
 					sorted.splice(index, 0, insert);
 				}
 			}
-			hash[key] = value;
+			hash.set(key, value);
 		};
 		
 		css.remove = function(key) {

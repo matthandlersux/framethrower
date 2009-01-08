@@ -136,7 +136,8 @@ findThumbnail: "situatedObj -> firstUnit(match(getInOntThumbnail, situatedObj), 
 id: "x -> x"
 };
 
-
+/*
 forEach(exprLib, function(funcString, name){
 	addExpr(name, funcString);
 });
+*/
