@@ -55,7 +55,16 @@ var desugarXSL = compileXSL(loadXMLNow(ROOTDIR + "js/browser/desugar.xml"));
 function makeXSLFromTemplate(templateNode) {
 	var baseNode = xpath("*[not(self::f:param | self::f:derive | self::f:template | self::f:action | self::xsl:template)]", templateNode);
 	
-	if (baseNode.length === 1) {
+	var res = createEl("f:result");
+	var container = createEl("container"); // this is a hack, Firefox doesn't like using parentless nodes as source documents in XSL transforms
+	container.appendChild(res);
+	forEach(baseNode, function (node) {
+		appendChild(res, cloneNode(node));
+	});
+	baseNode = res;
+	
+	
+	/*if (baseNode.length === 1) {
 		baseNode = baseNode[0];
 	} else if (baseNode.length > 1) {
 		var res = createEl("f:result");
@@ -67,7 +76,7 @@ function makeXSLFromTemplate(templateNode) {
 		baseNode = res;
 	} else {
 		debug.error("Template has no output XML");
-	}
+	}*/
 	
 	baseNode = desugarXSL(baseNode);
 	

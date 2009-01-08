@@ -17,7 +17,6 @@ var cell = makeControlledCell("Map Number String");
 cell.control.add(7, "hello");
 cell.control.add(6, "goodbye");
 
-
 /*
 function init() {
 	var thunks = xpath("//f:thunk", document.body);
@@ -48,7 +47,7 @@ function initialize() {
 		
 	});*/
 	
-	evalThunk(thunkNode, "", {testCell: cell});
+	//evalThunk(thunkNode, "", {testCell: cell});
 }
 
 
