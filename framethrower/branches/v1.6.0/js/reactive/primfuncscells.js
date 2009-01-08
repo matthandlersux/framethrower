@@ -464,7 +464,7 @@ var primFuncs = function () {
 			}
 		},
 		// ============================================================================
-		// Range functions
+		// Range/Sorted functions
 		// ============================================================================
 		rangeByKey : {
 			type : "Unit a -> Unit a -> Set a -> Set a",
@@ -551,7 +551,29 @@ var primFuncs = function () {
 				
 				return outputCell;
 			}
-		}
+		},
+		sortedFold : {
+			type : "Bool -> (a -> b -> b) -> b -> Set a -> Unit b",
+			func : function (ascending, f, init, cell) {
+				var outputCell = makeCell();
+				var cache = init;
+				outputCell.addLine(cache);
+				
+				var removeFunc = cell.injectFunc(function (val) {
+					outputCell.removeLine(cache);
+					cache = applyFunc(applyFunc(f, val), cache);
+					outputCell.addLine(cache);
+					return function () {
+						outputCell.removeLine(cache);
+						cache = applyFunc(applyFunc(finv, cache), val);
+						outputCell.addLine(cache);	
+					};
+				});
+				outputCell.addOnRemove(removeFunc);
+
+				return outputCell;
+			}
+		},
 	};
 }();
 
