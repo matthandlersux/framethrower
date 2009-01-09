@@ -152,7 +152,7 @@ function compileTemplate(templateNode, url) {
 	forEachReverse(params, function (param) {
 		//funType = makeTypeLambda(param.type, funType);
 		funType = makeTypeLambda(makeFreshTypeVar(), funType);
-		// this is a cheat, so make sure to type check somewhere else! TODO
+		// this is a cheat, so make sure to type check somewhere else! (I do this in evalThunk)
 		// I need to do this to deal with f:var's being passed around as parameters (in lieu of real objects) in f:action's
 	});
 	

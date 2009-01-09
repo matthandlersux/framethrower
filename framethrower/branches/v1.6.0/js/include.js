@@ -30,7 +30,8 @@
 		"js/browser/convertExprXML.js",
 		"js/browser/evalThunk.js",
 		"js/browser/replaceXML.js",
-		"js/browser/actionXML.js"
+		"js/browser/actionXML.js",
+		"js/browser/events.js"
 		
 	];
 	

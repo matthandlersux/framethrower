@@ -51,6 +51,9 @@ function replaceXML(node, replacer, pass, firstRun) {
 function bruteReplace(node, replacer, pass) {
 	unloadXML(node);
 	
+	// clone the replacer node
+	replacer = cloneNode(replacer);
+	
 	// dom replace node with replacer
 	node.parentNode.replaceChild(replacer, node);
 	
