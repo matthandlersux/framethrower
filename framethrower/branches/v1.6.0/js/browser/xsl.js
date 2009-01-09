@@ -63,7 +63,6 @@ function makeXSLFromTemplate(templateNode) {
 	});
 	baseNode = res;
 	
-	
 	/*if (baseNode.length === 1) {
 		baseNode = baseNode[0];
 	} else if (baseNode.length > 1) {
@@ -134,7 +133,7 @@ function runXSL(compiledXSL, params) {
 
 
 
-var unitJS = parseType("Unit JS");
+
 function compileTemplate(templateNode, url) {
 	var params = xpath("f:param", templateNode);
 	params = map(params, function (param) {
@@ -163,7 +162,10 @@ function compileTemplate(templateNode, url) {
 	
 	var funType = unitJS;
 	forEachReverse(params, function (param) {
-		funType = makeTypeLambda(param.type, funType);
+		//funType = makeTypeLambda(param.type, funType);
+		funType = makeTypeLambda(makeFreshTypeVar(), funType);
+		// this is a cheat, so make sure to type check somewhere else! TODO
+		// I need to do this to deal with f:var's being passed around as parameters (in lieu of real objects) in f:action's
 	});
 	
 	return function (env) {
@@ -206,6 +208,7 @@ function compileTemplate(templateNode, url) {
 				var ids = {};
 				forEach(p, function (paramExpr, paramName) {
 					var convert = exprToXML(paramExpr);
+					
 					pxml[paramName] = convert.xml;
 					mergeInto(convert.ids, ids);
 				});
@@ -300,10 +303,15 @@ var xmlTemplates = (function () {
 var dirtyThunks = {}; // a hash of XMLTemplate application update functions
 
 function refreshScreen() {
+	var hadUpdate = false;
 	forEach(dirtyThunks, function (f) {
 		f();
+		hadUpdate = true;
 	});
-	// run it again here... TODO?
+	// run it again here to account for <f:on event="load"> actions triggering
+	if (hadUpdate) {
+		refreshScreen();
+	}
 }
 
 

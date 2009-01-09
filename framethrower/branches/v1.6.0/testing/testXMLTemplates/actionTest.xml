@@ -6,12 +6,32 @@
 	
 	<f:derive name="in" d="r.in" />
 	
-	<f:create type="K.object" name="myObject" />
-	<f:create type="K.cons" name="myCons">
+	<f:perform with-action="$subAction" name="myObject" />
+	<!-- <f:create type="K.object" name="myObject" /> -->
+	
+	<f:perform with-action="$makeCons">
 		<f:with-param name="left" select="$in" />
 		<f:with-param name="right" select="$myObject" />
-	</f:create>
-	<f:intact object="$myObject" property="upLeft" action="add" key="$myCons" />
-	<f:intact object="$in" property="upRight" action="add" key="$myCons" />
+	</f:perform>
+	
+	<f:action name="subAction">
+		<f:create type="K.object" name="x" />
+		<f:return name="x" />
+	</f:action>
+	
+	<f:action name="makeCons">
+		<f:param name="left" type="K.object" />
+		<f:param name="right" type="K.object" />
+		
+		<f:create type="K.cons" name="cons">
+			<f:with-param name="left" select="$left" />
+			<f:with-param name="right" select="$right" />
+		</f:create>
+		
+		<f:intact object="$left" property="upLeft" action="add" key="$cons" />
+		<f:intact object="$right" property="upRight" action="add" key="$cons" />
+		
+		<f:return name="cons" />
+	</f:action>
 	
 </f:action>

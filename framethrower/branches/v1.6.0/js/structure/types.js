@@ -175,7 +175,7 @@ function unify(constraints) {
 		
 		if (left.kind === "typeName" && right.kind === "typeName") {
 			if (left.value !== right.value) {
-				throw "Type mismatch between `"+left.value+"` and `"+right.value+"`.";
+				debug.error("Type mismatch between `"+left.value+"` and `"+right.value+"`.");
 			}
 			// otherwise ignore
 		} else if (left.kind === "typeVar" && right.kind === "typeVar" && left.value === right.value) {
@@ -193,7 +193,7 @@ function unify(constraints) {
 			constraints.push([left.left, right.left]);
 			constraints.push([left.right, right.right]);
 		} else {
-			throw "Type mismatch, unresolveable: `"+unparseType(left)+"` and `"+unparseType(right)+"`";
+			debug.error("Type mismatch, unresolveable: `"+unparseType(left)+"` and `"+unparseType(right)+"`");
 		}
 	}
 	
@@ -248,11 +248,15 @@ var basicTypes = {
 	"boolean": makeTypeName("Bool")
 };
 var jsType = makeTypeName("JS"); // this is for all miscellaneous types
+var xmlType = makeTypeName("XML");
+var unitJS = parseType("Unit JS");
 
 function getType(o) {
 	var t = typeOf(o);
 	if (basicTypes[t]) {
 		return basicTypes[t];
+	} else if (o.nodeType) {
+		return xmlType;
 	} else { //object
 		if (!o.type) {
 			o.type = getTypeOfExpr(o);

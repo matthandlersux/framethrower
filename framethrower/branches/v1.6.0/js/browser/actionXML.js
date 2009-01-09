@@ -16,7 +16,7 @@ function createObject(type, properties) {
 }
 
 
-function performActions(node, callback) {
+function performActions(node, env, callback) {
 	if (!callback) callback = function () {};
 	
 	var children = [];
@@ -47,7 +47,7 @@ function performActions(node, callback) {
 			callback(map(ret, env));
 		}
 	}
-	process(emptyEnv);
+	process(env);
 }
 
 
@@ -59,7 +59,7 @@ function performAction(node, env, callback) {
 	if (nn === "f:let") {
 		// TODO: add support for multiple returns via commas in name
 		var name = getAttr(node, "name");
-		performActions(node, function (ret) {
+		performActions(node, env, function (ret) {
 			if (name) {
 				callback(envAdd(env, name, ret[0]));
 			} else {
@@ -117,7 +117,8 @@ function triggerAction(thunkEssence) {
 	function onXMLUpdate() {
 		var remaining = xpath(".//f:thunk", island);
 		if (remaining.length === 0) {
-			performActions(island.firstChild);
+			console.log("about to perform some actions", island);
+			performActions(island.firstChild, emptyEnv);
 		}
 	}
 	

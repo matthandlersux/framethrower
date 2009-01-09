@@ -70,10 +70,12 @@
 	
 	<xsl:template name="dummy-variable">
 		<xsl:param name="name" select="@name" />
-		<xsl:element name="xsl:variable" namespace="{$xslns}">
-			<xsl:attribute name="name"><xsl:value-of select="$name" /></xsl:attribute>
-			<f:var name="{$name}" />
-		</xsl:element>
+		<xsl:if test="$name">
+			<xsl:element name="xsl:variable" namespace="{$xslns}">
+				<xsl:attribute name="name"><xsl:value-of select="$name" /></xsl:attribute>
+				<f:var name="{$name}" />
+			</xsl:element>
+		</xsl:if>
 	</xsl:template>
 	
 	<xsl:template match="*[self::f:thunk or self::f:on][@with-template or @with-action]">

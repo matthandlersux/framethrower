@@ -61,7 +61,10 @@ function evaluate(expr) {
 				evalCache[resultExprStringified] = ret;
 				
 				// add remove-from-cache callback to the StartCap
-				// TODO
+				ret.addOnRemove(function () {
+					delete evalCache[resultExprStringified];
+				});
+				// TODO: test this cacheing
 				
 				return ret;
 			} else {

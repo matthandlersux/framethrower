@@ -28,15 +28,31 @@ var documents = (function () {
 				if (!callbacks[url]) {
 					callbacks[url] = [callback];
 					asyncRequest(ROOTDIR+url, function (req) {
-						// TODO: add support for xml includes
+						var xml = req.responseXML.firstChild;
+						var xmlIncludes = xpath("f:include", xml);
 						
-						
-						
-						urls[url] = req.responseXML.firstChild;
-						forEach(callbacks[url], function (cb) {
-							cb(urls[url]);
+						var funcs = [];
+						forEach(xmlIncludes, function (include) {
+							var includeUrl = urlToAbs(url, getAttr(include, "url"));
+							funcs.push(function (callback) {
+								documents.withDoc(includeUrl, function (doc) {
+									forEach(xpath("*", doc), function (x) {
+										xml.ownerDocument.importNode(x, true);
+										xml.appendChild(x); // BROWSER
+									});
+									callback();
+								});
+							});
 						});
-						delete callbacks[url];
+						
+						parallelCallback(funcs, function () {
+							urls[url] = xml;
+							forEach(callbacks[url], function (cb) {
+								cb(xml);
+							});
+							delete callbacks[url];							
+						});
+						
 					});					
 				} else {
 					callbacks[url].push(callback);					
@@ -48,45 +64,6 @@ var documents = (function () {
 		}
 	};
 })();
-
-/*var xmlTemplates = (function () {
-	var urls = {};
-	
-	return {
-		withTemplate: function (url, callback) {
-			if (urls[url]) {
-				callback(urls[url]);
-			} else {
-				documents.withDoc(url, function (xml) {
-					
-					var xmlincludexsl = xpath("f:includexsl", xml);
-					var funcs = [];
-					forEach(xmlincludexsl, function (inc) {
-						var includeUrl = urlToAbs(url, getAttr(inc, "url"));
-						funcs.push(function (callback) {
-							documents.withDoc(includeUrl, function (doc) {
-								forEach(xpath("*", doc), function (x) {
-									xml.ownerDocument.adoptNode(x);
-									xml.appendChild(x); // BROWSER
-								});
-								callback();
-							});
-						});
-					});
-					
-					parallelCallback(funcs, function () {
-						urls[url] = makeXMLTemplate(xml, url);
-						callback(urls[url]);							
-					});
-					
-				});
-			}
-		},
-		preload: function (url) {
-			
-		}
-	};
-})();*/
 
 
 function parallelCallback(funcs, callback) {

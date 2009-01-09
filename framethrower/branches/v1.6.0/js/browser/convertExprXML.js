@@ -7,7 +7,8 @@ function exprToXML(expr, type) {
 	} else if (t === "boolean") {
 		return {xml: setAttr(createEl("f:bool"), "value", expr), ids: {}};
 	} else {
-		if (expr.kind === "startCap") {
+		if (expr.kind === "startCap" && !expr.params) {
+			// Note: the !expr.params is for excluding parameter-less templates which otherwise look like StartCap's (not Fun's)
 			
 			if (!type) type = getType(expr);
 			var constructor = getTypeConstructor(type);
@@ -18,7 +19,7 @@ function exprToXML(expr, type) {
 			var ids = {};
 			var xml;
 			function append(parentNode, child) {
-				parentNode.appendChild(child.xml); // BROWSER
+				appendChild(parentNode, child.xml);
 				mergeInto(child.ids, ids);
 			}
 			
@@ -45,9 +46,9 @@ function exprToXML(expr, type) {
 					append(key, exprToXML(entry.key, keyType));
 					append(value, exprToXML(entry.value, valueType));
 					
-					entryXML.appendChild(key);
-					entryXML.appendChild(value);
-					xml.appendChild(entryXML); // BROWSER
+					appendChild(entryXML, key);
+					appendChild(entryXML, value);
+					appendChild(xml, entryXML);
 				});
 			}
 			
