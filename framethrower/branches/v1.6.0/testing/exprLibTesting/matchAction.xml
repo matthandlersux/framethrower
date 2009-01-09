@@ -1,0 +1,82 @@
+<f:action name="actionTest"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:derive name="in" d="r.in" />
+	
+	<f:create type="K.object" name="Term" />
+	<f:create type="K.object" name="Scene1" />
+	<f:create type="K.object" name="JSIV" />
+	<f:create type="K.object" name="T2" />
+
+
+	<f:perform with-action="$makeCons" name="inScene1">
+		<f:with-param name="left" select="$in" />
+		<f:with-param name="right" select="$Scene1" />
+	</f:perform>
+	
+	<f:perform with-action="$makeConsCast" name="inScene1Term">
+		<f:with-param name="left" select="$inScene1" />
+		<f:with-param name="right" select="$Term" />
+	</f:perform>
+	
+	<f:perform with-action="$makeCons" name="inT2">
+		<f:with-param name="left" select="$in" />
+		<f:with-param name="right" select="$T2" />
+	</f:perform>	
+	
+	<f:perform with-action="$makeConsCast" name="inT2inScene1Term">
+		<f:with-param name="left" select="$inT2" />
+		<f:with-param name="right" select="$inScene1Term" />
+	</f:perform>
+	
+	<f:perform with-action="$makeCons" name="inJSIV">
+		<f:with-param name="left" select="$in" />
+		<f:with-param name="right" select="$JSIV" />
+	</f:perform>	
+	
+	<f:perform with-action="$makeConsCast" name="inJSIVinT2inScene1Term">
+		<f:with-param name="left" select="$inJSIV" />
+		<f:with-param name="right" select="$inT2inScene1Term" />
+	</f:perform>
+	
+	
+	
+	
+	<f:action name="makeCons">
+		<f:param name="left" type="K.object" />
+		<f:param name="right" type="K.object" />
+		
+		<f:create type="K.cons" name="cons">
+			<f:with-param name="left" select="$left" />
+			<f:with-param name="right" select="$right" />
+		</f:create>
+		
+		<f:intact object="$left" property="upLeft" action="add" key="$cons" />
+		<f:intact object="$right" property="upRight" action="add" key="$cons" />
+		
+		<f:return name="cons" />
+	</f:action>
+	
+	<f:action name="makeConsCast">
+		<f:param name="left" type="K.cons" />
+		<f:param name="right" type="K.cons" />
+		
+		<f:derive name="leftCast" d="K.cons~K.object left" />
+		<f:derive name="rightCast" d="K.cons~K.object right" />
+		
+		
+		<f:create type="K.cons" name="cons">
+			<f:with-param name="left" select="$leftCast" />
+			<f:with-param name="right" select="$rightCast" />
+		</f:create>
+		
+		<f:intact object="$leftCast" property="upLeft" action="add" key="$cons" />
+		<f:intact object="$rightCast" property="upRight" action="add" key="$cons" />
+		
+		<f:return name="cons" />
+	</f:action>
+	
+</f:action>
