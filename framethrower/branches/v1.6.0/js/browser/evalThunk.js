@@ -9,8 +9,13 @@ function evalThunk(thunkNode) {
 	function perform(xt) {
 		var e = xt;
 		forEach(xt.params, function (p) {
-			// TODO: typecheck here
-			e = makeApply(e, thunkEssence.params[p.name]);
+			var thunksParam = thunkEssence.params[p.name];
+			
+			// typecheck
+			if (p.type && !compareTypes(p.type, getType(thunksParam)) && !(thunksParam.nodeName === "f:var")) {
+				debug.log("Type check failed for param `"+p.name+"`. Expected type: `"+unparseType(p.type)+"` but got: `"+unparseType(getType(thunksParam))+"`.", thunkNode);
+			}
+			e = makeApply(e, thunksParam);
 		});
 		
 		var custom = thunkNode.custom;

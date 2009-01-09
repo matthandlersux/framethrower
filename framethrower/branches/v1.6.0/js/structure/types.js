@@ -95,7 +95,8 @@ function unparseType(type) {
 
 
 function compareTypes(type1, type2) {
-	// TODO
+	// TODO make this work with type variables
+	return unparseType(type1) === unparseType(type2);
 }
 
 

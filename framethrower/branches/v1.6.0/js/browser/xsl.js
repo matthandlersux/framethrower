@@ -39,7 +39,8 @@ function fetchCalledTemplates(names, start, templates) {
 	if (!templates) templates = [];
 	forEach(names, function (name) {
 		var template = xpath("ancestor-or-self::*/xsl:template[@name='" + name + "'][1]", start);
-		// TODO: throw error if template.length === 0
+		if (template.length === 0) console.error("Unable to find XSL Template with name: "+name, start);
+		
 		template = template[0];
 		if (!contains(templates, template)) {
 			templates.push(template);
@@ -63,19 +64,6 @@ function makeXSLFromTemplate(templateNode) {
 	});
 	baseNode = res;
 	
-	/*if (baseNode.length === 1) {
-		baseNode = baseNode[0];
-	} else if (baseNode.length > 1) {
-		var res = createEl("f:result");
-		var container = createEl("container"); // this is a hack, Firefox doesn't like using parentless nodes as source documents in XSL transforms
-		container.appendChild(res);
-		forEach(baseNode, function (node) {
-			appendChild(res, cloneNode(node));
-		});
-		baseNode = res;
-	} else {
-		debug.error("Template has no output XML");
-	}*/
 	
 	baseNode = desugarXSL(baseNode);
 	
@@ -181,6 +169,13 @@ function compileTemplate(templateNode, url) {
 			// parse derives using newEnv and add the resulting expressions to the scope
 			forEach(derives, function (derive) {
 				scope[derive.name] = parseExpression(derive.parsed, newEnv);
+				// typecheck
+				try {
+					getType(scope[derive.name]);
+				} catch (e) {
+					debug.log("Type check failed on derive `"+derive.name+"`: "+unparse(derive.parsed));
+					throw e;
+				}
 			});
 			// finally, add the f:template's to the scope, using newEnv as their env
 			forEach(templates, function (template) {
