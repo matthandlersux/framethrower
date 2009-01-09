@@ -291,6 +291,10 @@ function getTypeConstructor(type) {
 }
 
 
+function isReactive(type) {
+	return (type.kind === "typeApply");
+}
+
 /*function showType(type) {
 	// like unparse, but renames t1, t2, ... to a, b, ...
 	function getLetter(i) {

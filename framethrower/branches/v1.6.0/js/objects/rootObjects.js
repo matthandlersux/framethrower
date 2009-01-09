@@ -9,6 +9,8 @@
 var rootObjects = {};
 
 rootObjects["r.in"] = makeObject("K.object");
+rootObjects["r.Ont"] = makeObject("K.object");
+rootObjects["r.name"] = makeObject("K.object");
 
 
 // add them to the baseEnv

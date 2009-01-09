@@ -103,8 +103,9 @@ function addPropsToObject(props, obj, objClass) {
 				if (getType(props[propName]).value == propType.value) { // TODO: replace this with compareTypes
 					obj.prop[propName] = props[propName];
 				} else {
+					obj.prop[propName] = classes[propType.value].castUp(props[propName]);
 					//throw type exception
-					throw "Property type mismatch: `"+ unparseType(getType(props[propName])) +"` and `"+unparseType(propType)+"`";
+					//throw "Property type mismatch: `"+ unparseType(getType(props[propName])) +"` and `"+unparseType(propType)+"`";
 				}
 			} else {
 				// use the default, that is an empty controlled cell
@@ -119,7 +120,30 @@ function addPropsToObject(props, obj, objClass) {
 	}
 }
 
+var memoTable = {};
+
+function getMemoString(className, props) {
+	var classObj = classes[className];
+	var memoString = className + "=";
+	forEach(props, function(prop, propName) {
+		if (!isReactive(classObj.prop[propName])) {
+			memoString += propName + ":" + stringify(prop) + ";";
+		}
+	});
+	return memoString;
+}
+
 function makeObject(className, props) {
+	//check memoization table - only for K.cons for now. Later we will annotate classes with how to memoize them
+	if(className === "K.cons" && props !== undefined) {
+		console.log("PROPS", props);
+		var memoObject = memoTable[getMemoString(className, props)];
+		if (memoObject !== undefined) {
+			console.log("RETURNING memoized cons!!!!!!!!");
+			return memoObject;
+		}
+	}
+	
 	if (!props) props = {};
 	
 	var o = {
@@ -157,14 +181,12 @@ addProp("K.cons", "truth", "Unit Bool"); // this only applies if the relation is
 // External Representations
 // ==================================================================
 
-makeClass("X.video");
+makeClass("X.video", "K.object");
 addProp("X.video", "url", "String");
 addProp("X.video", "width", "Number");
 addProp("X.video", "height", "Number");
 addProp("X.video", "duration", "Number");
 
 
-
-
-
-
+makeClass("X.text", "K.object");
+addProp("X.text", "string", "String");

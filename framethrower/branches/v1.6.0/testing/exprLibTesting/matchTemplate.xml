@@ -4,36 +4,31 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
-	<f:param name="p1" type="Number" />
-	<f:param name="p2" type="Number" />
-	<f:param name="mapTest" type="Map Number String" />
+	<f:param name="rootObj" type="K.object" />
 	
-	<f:derive name="d1" d="add p1 p2" />
+	<f:derive name="sitObj" d="takeOne (K.object:upLeft rootObj)" />
 	
 	<html:div>
-		<xsl:value-of select="$p1/@value" />,
-		<xsl:value-of select="$p2/@value" />,
-		<xsl:value-of select="$d1/@value" />
 		<html:div>
 			<xsl:call-template name="prettyPrint">
-				<xsl:with-param name="node" select="$mapTest" />
+				<xsl:with-param name="node" select="$sitObj" />
 			</xsl:call-template>
-			<xsl:copy-of select="$mapTest" />
+			<xsl:copy-of select="$sitObj" />
 		</html:div>
 		
-		<f:thunk>
+		<!-- <f:thunk>
 			<f:with-template select="$inner" />
 			<f:with-param name="a" select="$d1" />
-		</f:thunk>
+		</f:thunk> -->
 	</html:div>
 	
-	<f:template name="inner">
+	<!-- <f:template name="inner">
 		<f:param name="a" type="Number" />
 		<html:div>
 			Number: <xsl:value-of select="$a/@value" />.
 			Accessing a thing outside my scope: <xsl:value-of select="$p1/@value" />.
 		</html:div>
-	</f:template>
+	</f:template> -->
 
 	<f:include url="/xml/debug/prettyPrint.xml" />
 </f:template>

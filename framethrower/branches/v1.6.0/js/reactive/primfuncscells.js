@@ -166,6 +166,32 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
+		takeOne : {
+			type : "Set a -> Unit a",
+			func : function (cell) {
+				var outputCell = makeCell();
+				var cache;
+				
+				var removeFunc = cell.injectFunc(function (val) {
+					if (cache === undefined) {
+						outputCell.addLine(val);
+						cache = val;
+					}
+					return function () {
+						if (cache === val) {
+							outputCell.removeLine(val);
+							cache = cell.getState()[0];
+							if (cache !== undefined) {
+								outputCell.addLine(cache);
+							}
+						}
+					};
+				});
+				outputCell.addOnRemove(removeFunc);
+				
+				return outputCell;
+			}
+		},
 		// ============================================================================
 		// Bool utility functions
 		// ============================================================================

@@ -29,17 +29,15 @@ var ONLOAD="initialize()";
 </head>
 
 <body>
-	<div>blah</div>
 	<div>
 		<f:thunk>
 			<f:with-template url="testing/exprLibTesting/matchTemplate.xml" />
-			<f:with-param name="p1"><f:number value="3" /></f:with-param>
-			<f:with-param name="p2"><f:number value="100" /></f:with-param>
-			<f:with-param name="mapTest"><f:o name="testCell" /></f:with-param>
+			<f:with-param name="rootObj"><f:o name="rootObj" /></f:with-param>
 		</f:thunk>
 		
 		<f:on event="load">
 			<f:with-template url="testing/exprLibTesting/matchAction.xml" />
+			<f:with-param name="rootObj"><f:o name="rootObj" /></f:with-param>			
 		</f:on>
 	</div>
 	

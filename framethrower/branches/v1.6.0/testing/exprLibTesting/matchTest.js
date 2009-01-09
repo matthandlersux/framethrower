@@ -1,62 +1,9 @@
-var x;
-var c;
-var xsl;
+var cell = makeControlledCell("Set K.cons");
+var rootObj = makeObject("K.object", {upLeft:cell});
 
-function testDesugar(url) {
-	documents.withDoc(url, function (xt) {
-		console.log("Testing desugaring on: "+url, desugarXSL(xt));
-	});	
-}
-
-//testDesugar("testing/testXMLTemplates/desugarTester.xml");
-//testDesugar("testing/testXMLTemplates/xmlTemplate.xml");
-
-
-var cell = makeControlledCell("Map Number String");
-
-cell.control.add(7, "hello");
-cell.control.add(6, "goodbye");
-
-/*
-function init() {
-	var thunks = xpath("//f:thunk", document.body);
-	
-	var t = thunks[0];
-	console.log(t);
-	//console.log(getThunkEssence(t));
-	
-	evalThunk(t, {baseUrl: "", ids: {testCell: cell}, tunnelEnv: emptyEnv});
-	
-}
-*/
 
 function initialize() {
-	
-	bootstrap(document.body, {testCell: cell});
-	
-	/*var thunkNodes = xpath("//f:thunk", document.body);
-	
-	forEach(thunkNodes, function (thunkNode) {
-		tagThunkEssence(thunkNode, "", {testCell: cell});
-
-		thunkNode.custom.persist="test persistence";
-
-		evalThunk(thunkNode);
-	});*/
-	
-	// console.log("thunk essence", te);
-	// console.log("compare", compareThunkEssences(te, te));
-	
-	/*makeTemplateFunFromUrl("testing/testXMLTemplates/xmlTemplate.xml", function (fun) {
-		var e = makeApply(makeApply(fun.fun, 6), 222);
-		
-		evaluateAndInject(e, function (xmlids) {
-			thunkNode.parentNode.replaceChild(xmlids.xml, thunkNode);
-			thunkNode = xmlids.xml;
-		});
-		
-	});*/
-	
+	bootstrap(document.body, {rootObj:rootObj});
 }
 
 
