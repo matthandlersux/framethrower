@@ -1,5 +1,5 @@
 function makeBaseCell (toKey) {
-	var cell = {kind: "startCap"};
+	var cell = {kind: "startCap", remote: 2};
 	var funcs = makeObjectHash();
 	var onRemoves = [];
 	var funcColor = 0; //counter for coloring injected functions

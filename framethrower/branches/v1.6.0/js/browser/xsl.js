@@ -253,7 +253,8 @@ function compileTemplate(templateNode, url) {
 				type: funType,
 				fun: myFun,
 				params: params,
-				url: url
+				url: url,
+				remote: 2
 			};			
 		}
 	};

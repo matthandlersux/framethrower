@@ -4,9 +4,17 @@ function evaluate(expr) {
 	/*
 	This function will evaluate an Expr
 	Another way of looking at it is getting rid of all top-level apply's in an Expr by doing the applications
+	Also, if the expr is a remote cell, this function will create/return the proper surrogate cell
 	*/
 	
 	//console.log("evaluating expression", unparseExpr(expr));
+	
+	
+	
+	/*var resultType = getType(expr);
+	var resultExpr = getExpr(expr);*/
+	
+	
 	
 	if (expr.kind === "exprApply") {
 		var fun = evaluate(expr.left);
@@ -27,7 +35,7 @@ function evaluate(expr) {
 			if (resultType.kind === "typeLambda" || resultType.kind === "typeApply") {
 				// we're returning a Fun or a StartCap (constructed type), so we'll need to tag its .expr
 				resultExpr = makeApply(getExpr(fun), getExpr(input));
-			}	
+			}
 			
 			// check if we're returning a StartCap and see if it's already memoized
 			var resultExprStringified;

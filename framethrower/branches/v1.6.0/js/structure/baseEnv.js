@@ -68,7 +68,8 @@ function addFun(name, typeString, f) {
 		kind: "fun",
 		name: name,
 		type: type,
-		fun: fun
+		fun: fun,
+		remote: 0
 	};
 }
 

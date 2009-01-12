@@ -2,8 +2,8 @@
 An Expr is any one of the following:
 	* Number, String, Bool
 	* Fun
-	* StartCap - TODO
-	* Object - see objects.js
+	* StartCap - see reactive/cells.js
+	* Object - see objects/objects.js
 	* Var
 	*	{
 			kind: "exprApply",
