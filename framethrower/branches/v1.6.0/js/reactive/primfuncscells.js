@@ -21,6 +21,47 @@ var primFuncs = function () {
 		return outputCell;
 	};
 	
+	var rangeHelper = function (outputCell, setRangeFunc, startCell, endCell, cell) {
+		outputCell.makeSorted();
+		var start;
+		var end;
+		
+		var updateRange = function () {
+			if (start != undefined && end != undefined) {
+				setRangeFunc(start, end);
+			} else if (start == undefined && end == undefined) {
+				outputCell.clearRange();
+			}
+		};
+		
+		var removeFunc1 = startCell.injectFunc(function(val) {
+			start = val;
+			updateRange();
+			return function () {
+				start = undefined;
+				updateRange();
+			};
+		});
+		
+		var removeFunc2 = endCell.injectFunc(function(val) {
+			end = val;
+			updateRange();
+			return function () {
+				end = undefined;
+				updateRange();
+			};
+		});
+		
+		var removeFunc3 = cell.injectFunc(function (val) {
+			return outputCell.addLine(val);
+		});
+		outputCell.addOnRemove(removeFunc);
+		outputCell.addOnRemove(removeFunc);
+		outputCell.addOnRemove(removeFunc);
+		
+		return outputCell;
+	};
+	
 	return {
 		// ============================================================================
 		// Monadic Operators
@@ -496,88 +537,28 @@ var primFuncs = function () {
 			type : "Unit a -> Unit a -> Set a -> Set a",
 			func : function (startCell, endCell, cell) {
 				var outputCell = makeCell();
-				outputCell.makeSorted();
-				var start;
-				var end;
-				
-				var updateRange = function () {
-					if (start != undefined && end != undefined) {
-						outputCell.setKeyRange(start, end);
-					} else if (start == undefined && end == undefined) {
-						outputCell.clearRange();
-					}
-				};
-				
-				var removeFunc1 = startCell.injectFunc(function(val) {
-					start = val;
-					updateRange();
-					return function () {
-						start = undefined;
-						updateRange();
-					};
-				});
-				
-				var removeFunc2 = endCell.injectFunc(function(val) {
-					end = val;
-					updateRange();
-					return function () {
-						end = undefined;
-						updateRange();
-					};
-				});
-				
-				var removeFunc3 = cell.injectFunc(function (val) {
-					return outputCell.addLine(val);
-				});
-				outputCell.addOnRemove(removeFunc1);
-				outputCell.addOnRemove(removeFunc2);
-				outputCell.addOnRemove(removeFunc3);
-				
-				return outputCell;
+				return rangeHelper(outputCell, outputCell.setKeyRange, startCell, endCell, cell);
 			}
 		},
 		rangeByPos : {
 			type : "Unit Number -> Unit Number -> Set a -> Set a",
 			func : function (startCell, endCell, cell) {
 				var outputCell = makeCell();
-				outputCell.makeSorted();
-				var start;
-				var end;
-				
-				var updateRange = function () {
-					if (start != undefined && end != undefined) {
-						outputCell.setPosRange(start, end);
-					} else if (start == undefined && end == undefined) {
-						outputCell.clearRange();
-					}
-				};
-				
-				var removeFunc1 = startCell.injectFunc(function(val) {
-					start = val;
-					updateRange();
-					return function () {
-						start = undefined;
-						updateRange();
-					};
-				});
-				
-				var removeFunc2 = endCell.injectFunc(function(val) {
-					end = val;
-					updateRange();
-					return function () {
-						end = undefined;
-						updateRange();
-					};
-				});
-				
-				var removeFunc3 = cell.injectFunc(function (val) {
-					return outputCell.addLine(val);
-				});
-				outputCell.addOnRemove(removeFunc);
-				outputCell.addOnRemove(removeFunc);
-				outputCell.addOnRemove(removeFunc);
-				
-				return outputCell;
+				return rangeHelper(outputCell, outputCell.setPosRange, startCell, endCell, cell);
+			}
+		},
+		rangeMapByKey : {
+			type : "Unit Number -> Unit Number -> Map a b -> Map a b",
+			func : function (startCell, endCell, cell) {
+				var outputCell = makeCellAssocInput();
+				return rangeHelper(outputCell, outputCell.setKeyRange, startCell, endCell, cell);
+			}
+		},
+		rangeMapByPos : {
+			type : "Unit Number -> Unit Number -> Map a b -> Map a b",
+			func : function (startCell, endCell, cell) {
+				var outputCell = makeCellAssocInput();
+				return rangeHelper(outputCell, outputCell.setPosRange, startCell, endCell, cell);
 			}
 		},
 		sortedFold : {
@@ -587,7 +568,7 @@ var primFuncs = function () {
 				var cache = [];
 				cell.makeSorted();
 				var lastRemoveFunc = outputCell.addLine(init);
-								
+
 				var removeFunc = cell.injectFunc(function (val) {					
 					var index = cell.getIndex(val);
 					if (index < cache.length) {

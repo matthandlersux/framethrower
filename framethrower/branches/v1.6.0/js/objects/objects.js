@@ -135,11 +135,11 @@ function getMemoString(className, props) {
 
 function makeObject(className, props) {
 	//check memoization table - only for K.cons for now. Later we will annotate classes with how to memoize them
+	var memoString;
 	if(className === "K.cons" && props !== undefined) {
-		console.log("PROPS", props);
-		var memoObject = memoTable[getMemoString(className, props)];
+		memoString = getMemoString(className, props);
+		var memoObject = memoTable[memoString];
 		if (memoObject !== undefined) {
-			console.log("RETURNING memoized cons!!!!!!!!");
 			return memoObject;
 		}
 	}
@@ -154,6 +154,10 @@ function makeObject(className, props) {
 	};
 
 	addPropsToObject(props, o, classes[className]);
+
+	if(memoString !== undefined) {
+		memoTable[memoString] = o;
+	}
 
 	return o;
 }

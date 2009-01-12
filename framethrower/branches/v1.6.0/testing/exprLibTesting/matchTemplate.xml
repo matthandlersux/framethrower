@@ -5,8 +5,10 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
 	<f:param name="rootObj" type="K.object" />
-	
 	<f:derive name="sitObj" d="takeOne (K.object:upLeft rootObj)" />
+	
+	<f:derive name="inOntThumbnail" d="getInOntThumbnail" />
+	
 	
 	<html:div>
 		<html:div>

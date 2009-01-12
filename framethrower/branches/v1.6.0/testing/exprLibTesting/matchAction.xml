@@ -6,8 +6,8 @@
 	
 	<f:param name="rootObj" type="K.object"/>
 	
-	<f:derive name="in" d="r.in" />
-	<f:derive name="nameRel" d="r.name" />
+	<f:derive name="in" d="R.in" />
+	<f:derive name="nameRel" d="R.name" />
 	
 	<f:perform with-action="$makeObjWithName" name="Term">
 		<f:with-param name="name" select="'Term'" />
@@ -44,7 +44,7 @@
 	
 	
 	<f:action name="makeObjWithName">
-		<f:derive name="Ont" d="r.Ont" />
+		<f:derive name="ont" d="R.ont" />
 		
 		<f:param name="name" type="String" />
 				
@@ -62,7 +62,7 @@
 		
 		<f:perform with-action="$makeBinaryInfon">
 			<f:with-param name="relation" select="$in" />
-			<f:with-param name="arg1" select="$Ont" />
+			<f:with-param name="arg1" select="$ont" />
 			<f:with-param name="arg2" select="$nameInfon" />		
 		</f:perform>
 		

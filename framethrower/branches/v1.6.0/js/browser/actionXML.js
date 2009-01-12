@@ -70,7 +70,6 @@ function performAction(node, env, callback) {
 		var te = node.custom.thunkEssence;
 		var name = getAttr(node, "name");
 		var type = getAttr(node, "type");
-		console.log(node);
 		var properties = map(te.params, function (param) {
 			return getVar(param, env);
 		});

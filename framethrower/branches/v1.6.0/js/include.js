@@ -21,9 +21,11 @@
 		"js/reactive/cells.js",
 		"js/reactive/ranges.js",
 		"js/reactive/controlledCell.js",
-		
+				
 		"js/objects/objects.js",
 		"js/objects/rootObjects.js",
+
+		"js/structure/exprLib.js",
 
 		"js/browser/xsl.js",
 		"js/browser/documents.js",
