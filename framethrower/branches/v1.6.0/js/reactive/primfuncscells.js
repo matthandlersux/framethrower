@@ -42,7 +42,7 @@ var primFuncs = function () {
 				updateRange();
 			};
 		});
-		
+
 		var removeFunc2 = endCell.injectFunc(function(val) {
 			end = val;
 			updateRange();
@@ -55,9 +55,9 @@ var primFuncs = function () {
 		var removeFunc3 = cell.injectFunc(function (val) {
 			return outputCell.addLine(val);
 		});
-		outputCell.addOnRemove(removeFunc);
-		outputCell.addOnRemove(removeFunc);
-		outputCell.addOnRemove(removeFunc);
+		outputCell.addOnRemove(removeFunc1);
+		outputCell.addOnRemove(removeFunc2);
+		outputCell.addOnRemove(removeFunc3);
 		
 		return outputCell;
 	};
