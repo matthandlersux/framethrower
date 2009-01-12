@@ -4,7 +4,7 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
-	<f:derive name="in" d="r.in" />
+	<f:derive name="in" d="shared.in" />
 	
 	<f:perform with-action="$subAction" name="myObject" />
 	<!-- <f:create type="K.object" name="myObject" /> -->
