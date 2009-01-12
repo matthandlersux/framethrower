@@ -33,6 +33,9 @@ function makeTypeName(name) {
 function makeTypeLambda(left, right) {
 	return {kind: "typeLambda", left: left, right: right};
 }
+function makeTypeApply(left, right) {
+	return {kind: "typeApply", left: left, right: right};
+}
 
 
 function parseType(s) {
@@ -68,11 +71,7 @@ function parseType(s) {
 				return {kind: "typeVar", value: ast};
 			}
 		} else if (ast.cons === "apply") {
-			return {
-				kind: "typeApply",
-				left: helper(ast.left),
-				right: helper(ast.right)
-			};
+			return makeTypeApply(helper(ast.left), helper(ast.right));
 		} else if (ast.cons === "lambda") {
 			return makeTypeLambda(helper(ast.left), helper(ast.right));
 		}
@@ -266,6 +265,39 @@ function getTypeOfExpr(expr) {
 	var t = genConstraints(expr, emptyEnv, constraints);
 	var subs = unify(constraints);
 	return imposeSubs(t, subs);
+}
+
+
+function buildType(explicitType, templateTypeString, typeToBuildString) {
+	var templateType = parseType(templateTypeString);
+	var typeToBuild = parseType(typeToBuildString);
+	
+	var typeVars = {};
+	function bindVars(explicit, template) {
+		if (template.kind === "typeVar") {
+			typeVars[template.value] = explicit;
+		} else if (template.kind === "typeLambda" || template.kind === "typeApply") {
+			bindVars(explicit.left, template.left);
+			bindVars(explicit.right, template.right);
+		}
+	}
+	bindVars(explicitType, templateType);
+	
+	function build(type) {
+		if (type.kind === "typeVar") {
+			return typeVars[type.value];
+		} else if (type.kind === "typeName") {
+			return type;
+		} else {
+			return {
+				kind: type.kind,
+				left: build(type.left),
+				right: build(type.right)
+			};
+		}
+	}
+	
+	return build(typeToBuild);
 }
 
 

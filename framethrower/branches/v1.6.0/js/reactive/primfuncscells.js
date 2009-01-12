@@ -456,7 +456,7 @@ var primFuncs = function () {
 		invert : {
 			type : "Map a (Set b) -> Map b (Set a)",
 			func : function (cell) {
-				var setType = getType(cell).right;
+				var setType = buildType(getType(cell), "Map a (Set b)", "Set a");
 				
 				var outputCell = makeCellMapInput();
 				var bHash = makeObjectHash();
