@@ -19,9 +19,9 @@ staticMatch: "relation -> arg -> takeOne (filter (K.object:upRight relation) (in
 
 addTest: "a -> b -> returnUnit (add a b)",
 
-bindUnitTwice: "f -> compose (bindUnit id) (bindUnit (compose returnUnit (compose bindUnit f)))",
+bindUnitTwice: "func -> arg1 -> arg2 -> bindUnit id (reactiveApply (((compose bindUnit (f -> compose returnUnit (compose bindUnit f))) func) arg1) arg2)",
 
-butTest: "(bindUnitTwice addTest) (returnUnit 1) (returnUnit 2)",
+butTest: "(bindUnitTwice addTest) (returnUnit 1) (returnUnit 5)",
 
 simpleTest: "returnUnit (returnUnit 1)",
 

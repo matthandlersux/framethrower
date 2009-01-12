@@ -10,12 +10,13 @@
 	<!-- <f:derive name="simpleTest" d="simpleTest" /> -->
 	
 	<f:derive name="butTest" d="butTest" />
-	
+	<xsl:value-of select="$butTest/@value" />
 	<!-- <f:derive name="inOntThumbnail" d="getInOntThumbnail" /> -->
 	
 	
 	<html:div>
 		<html:div>
+			
 			<xsl:call-template name="prettyPrint">
 				<xsl:with-param name="node" select="$sitObj" />
 			</xsl:call-template>
