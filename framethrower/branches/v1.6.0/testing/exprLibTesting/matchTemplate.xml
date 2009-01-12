@@ -7,7 +7,11 @@
 	<f:param name="rootObj" type="K.object" />
 	<f:derive name="sitObj" d="takeOne (K.object:upLeft rootObj)" />
 	
-	<f:derive name="inOntThumbnail" d="getInOntThumbnail" />
+	<!-- <f:derive name="simpleTest" d="simpleTest" /> -->
+	
+	<f:derive name="butTest" d="butTest" />
+	
+	<!-- <f:derive name="inOntThumbnail" d="getInOntThumbnail" /> -->
 	
 	
 	<html:div>

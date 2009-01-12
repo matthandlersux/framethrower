@@ -6,8 +6,8 @@
 	
 	<f:param name="rootObj" type="K.object"/>
 	
-	<f:derive name="in" d="R.in" />
-	<f:derive name="nameRel" d="R.name" />
+	<f:derive name="in" d="shared.in" />
+	<f:derive name="nameRel" d="shared.name" />
 	
 	<f:perform with-action="$makeObjWithName" name="Term">
 		<f:with-param name="name" select="'Term'" />
@@ -44,7 +44,7 @@
 	
 	
 	<f:action name="makeObjWithName">
-		<f:derive name="ont" d="R.ont" />
+		<f:derive name="ont" d="shared.ont" />
 		
 		<f:param name="name" type="String" />
 				

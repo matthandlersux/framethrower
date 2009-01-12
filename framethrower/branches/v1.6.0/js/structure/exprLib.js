@@ -1,5 +1,7 @@
 var exprLib = {
 
+id: "x -> x",
+
 length: "S -> fold (a -> b -> add b 1) (b -> a -> subtract b 1) 0 S",
 
 maplength: "compose length keys",
@@ -13,7 +15,17 @@ returnSet: "compose returnUnitSet returnUnit",
 
 filter: "S -> pred -> bindSet (compose returnUnitSet (passThru pred)) S",
 
-match: "relation -> arg -> takeOne (filter (K.object:upRight relation) (infon -> equal (K.cons:right infon) arg))",
+staticMatch: "relation -> arg -> takeOne (filter (K.object:upRight relation) (infon -> equal (K.cons:right infon) arg))",
+
+addTest: "a -> b -> returnUnit (add a b)",
+
+bindUnitTwice: "f -> compose (bindUnit id) (bindUnit (compose returnUnit (compose bindUnit f)))",
+
+butTest: "(bindUnitTwice addTest) (returnUnit 1) (returnUnit 2)",
+
+simpleTest: "returnUnit (returnUnit 1)",
+
+match: "bindUnitTwice staticMatch",
 
 // type of reactiveFoldList is something like: (a -> Unit b -> Unit b) -> b -> Map Number a -> Unit b
 //reactiveFoldList: "?",
@@ -22,8 +34,9 @@ match: "relation -> arg -> takeOne (filter (K.object:upRight relation) (infon ->
 
 isInfonTrue: "situatedInfon -> K.cons:truth situatedInfon",
 
-getInOntThumbnail: "match (match R.in R.ont) R.thumbnail",
-
+//getInOntThumbnail: "match (staticMatch shared.in shared.ont) (returnUnit shared.thumbnailthumbnail)",
+getInOntThumbnail: "match (returnUnit shared.in) (returnUnit shared.ont)",
+//getInOntThumbnail: "bindSet (compose K.object:upRight K.cons~K.object) (returnUnitSet (staticMatch shared.in shared.ont))",
 
 //probably has to be primFunc
 firstUnit: "X -> Y -> Y",
@@ -44,9 +57,8 @@ nameThisFunc: "sitObj -> betterAnswer -> num -> firstUnit betterAnswer (makeNewS
 
 secondBestMatch: "betterAnswer -> sitObj -> sortedFold (nameThisFunc sitObj) (sitObjList sitObj) betterAnswer (oneTo (length (sitObjList sitObj)))",
 
-findThumbnail: "situatedObj -> secondBestMatch (match getInOntThumbnail situatedObj) situatedObj",
+findThumbnail: "situatedObj -> secondBestMatch (match getInOntThumbnail situatedObj) situatedObj"
 
-id: "x -> x"
 };
 
 

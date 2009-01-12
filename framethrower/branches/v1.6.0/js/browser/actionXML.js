@@ -1,7 +1,5 @@
 function intact(object, property, action, params) {
 	// params has properties key and value, or just key
-	console.log("intact called", arguments);
-	
 	object.prop[property].control[action](params.key, params.value);
 }
 
@@ -35,8 +33,6 @@ function performActions(node, env, callback) {
 		});
 	}
 	addChildren(node);
-	
-	console.log("perform actions children", children);
 	
 	var i = -1;
 	function process(env) {
@@ -117,7 +113,6 @@ function triggerAction(thunkEssence) {
 	function onXMLUpdate() {
 		var remaining = xpath(".//f:thunk", island);
 		if (remaining.length === 0) {
-			console.log("about to perform some actions", island);
 			performActions(island.firstChild, emptyEnv);
 		}
 	}

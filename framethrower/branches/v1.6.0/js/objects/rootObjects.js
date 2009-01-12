@@ -8,10 +8,10 @@
 
 var rootObjects = {};
 
-rootObjects["R.in"] = makeObject("K.object");
-rootObjects["R.ont"] = makeObject("K.object");
-rootObjects["R.name"] = makeObject("K.object");
-rootObjects["R.thumbnail"] = makeObject("K.object");
+rootObjects["shared.in"] = makeObject("K.object");
+rootObjects["shared.ont"] = makeObject("K.object");
+rootObjects["shared.name"] = makeObject("K.object");
+rootObjects["shared.thumbnailthumbnail"] = makeObject("K.object");
 
 
 // add them to the baseEnv
