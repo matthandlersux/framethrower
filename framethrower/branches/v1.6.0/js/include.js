@@ -33,7 +33,9 @@
 		"js/browser/evalThunk.js",
 		"js/browser/replaceXML.js",
 		"js/browser/actionXML.js",
-		"js/browser/events.js"
+		"js/browser/events.js",
+		
+		"js/remote/remote.js"
 		
 	];
 	

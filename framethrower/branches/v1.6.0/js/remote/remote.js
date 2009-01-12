@@ -44,4 +44,51 @@ function makeRemoteObject(name, type) {
 
 function queryExpr(expr) {
 	// TODO
+	
+	var type = getType(expr);
+	var cell = makeCC(type);
+	
+	// TODO make it not persist, and proper onRemove handler to tell the server to stop updating
+	
+	
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var currentSession;
+function initializeSession() {
+	var sessionId = null;
+	var queriesToAsk = [];
+	var nextQueryId = 1;
+	
+	function addQuery(expr) {
+		queriesToAsk.push({
+			expr: expr,
+			queryId: nextQueryId
+		});
+		nextQueryId++;
+	}
+	
+	function askAllQueries() {
+		
+	}
+	
+	return {
+		addQuery: addQuery
+	};
+}
+
+

@@ -11,9 +11,23 @@ function evaluate(expr) {
 	
 	
 	
-	/*var resultType = getType(expr);
-	var resultExpr = getExpr(expr);*/
+	var resultType = getType(expr);
+	var resultExpr = getExpr(expr);
 	
+	// check if we're returning a StartCap and see if it's already memoized
+	var resultExprStringified;
+	if (isReactive(resultType)) {
+		resultExprStringified = uniqueExpr(resultExpr);
+		var cached = evalCache[resultExprStringified];
+		if (cached) {
+			return cached;
+		}
+		
+		if (getRemote(expr) === 1) {
+			var ret = queryExpr(expr);
+			memoizeCell(resultExprStringified, ret);
+		}
+	}
 	
 	
 	if (expr.kind === "exprApply") {
@@ -28,26 +42,6 @@ function evaluate(expr) {
 		} else {
 			// fun wasn't a lambda, and evaluate can't return an apply, so fun must be a Fun, so we can run it
 			
-			// but first, let's get the type
-			var resultType = getType(makeApply(fun, input));
-			
-			var resultExpr;
-			if (resultType.kind === "typeLambda" || resultType.kind === "typeApply") {
-				// we're returning a Fun or a StartCap (constructed type), so we'll need to tag its .expr
-				resultExpr = makeApply(getExpr(fun), getExpr(input));
-			}
-			
-			// check if we're returning a StartCap and see if it's already memoized
-			var resultExprStringified;
-			if (resultType.kind === "typeApply") {
-				resultExprStringified = uniqueExpr(resultExpr);
-				var cached = evalCache[resultExprStringified];
-				if (cached) {
-					return cached;
-				}
-			}
-			
-			// okay, now run fun
 			var ret = fun.fun(input);
 
 			if (typeof ret === "function") {
@@ -65,14 +59,7 @@ function evaluate(expr) {
 				ret.type = resultType;
 				ret.expr = resultExpr;
 				
-				// memoize
-				evalCache[resultExprStringified] = ret;
-				
-				// add remove-from-cache callback to the StartCap
-				ret.addOnRemove(function () {
-					delete evalCache[resultExprStringified];
-				});
-				// TODO: test this cacheing
+				memoizeCell(resultExprStringified, ret);
 				
 				return ret;
 			} else {
@@ -83,6 +70,15 @@ function evaluate(expr) {
 	} else {
 		return expr;
 	}
+}
+
+function memoizeCell(exprString, cell) {
+	evalCache[exprString] = cell;
+	// add remove-from-cache callback to the cell
+	cell.addOnRemove(function () {
+		delete evalCache[exprString];
+	});
+	// TODO: test this cacheing
 }
 
 

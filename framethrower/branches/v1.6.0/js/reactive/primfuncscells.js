@@ -456,6 +456,8 @@ var primFuncs = function () {
 		invert : {
 			type : "Map a (Set b) -> Map b (Set a)",
 			func : function (cell) {
+				var setType = getType(cell).right;
+				
 				var outputCell = makeCellMapInput();
 				var bHash = makeObjectHash();
 				
@@ -463,6 +465,7 @@ var primFuncs = function () {
 
 				var removeFunc1 = bHashCell.injectFunc(function (bValue) {
 					var newCell = makeCell();
+					newCell.type = setType;
 					bHash.set(bValue, newCell);
 					var onRemove = outputCell.addLine({key:bValue, val:newCell});
 					return function () {

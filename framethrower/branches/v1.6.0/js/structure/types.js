@@ -61,10 +61,11 @@ function parseType(s) {
 					value: ast
 				};
 			} else {
-				if (!typeVars[ast]) {
+				/*if (!typeVars[ast]) {
 					typeVars[ast] = makeFreshTypeVar();
 				}
-				return typeVars[ast];
+				return typeVars[ast];*/
+				return {kind: "typeVar", value: ast};
 			}
 		} else if (ast.cons === "apply") {
 			return {
@@ -78,6 +79,32 @@ function parseType(s) {
 	}
 	return helper(parse(s));
 }
+
+
+function freshenType(type) {
+	var typeVars = {};
+	
+	function helper(type) {
+		if (type.kind === "typeName") {
+			return type;
+		} else if (type.kind === "typeVar") {
+			if (!typeVars[type.value]) {
+				typeVars[type.value] = makeFreshTypeVar();
+			}
+			return typeVars[type.value];
+		} else if (type.kind === "typeLambda" || type.kind === "typeApply") {
+			return {
+				kind: type.kind,
+				left: helper(type.left),
+				right: helper(type.right)
+			};
+		}
+	}
+	
+	return helper(type);
+}
+
+
 
 function unparseType(type) {
 	function helper(type) {
@@ -107,7 +134,7 @@ function genConstraints(expr, env, constraints) {
 	/* MUTATES: constraints
 	this function returns the type of expr, but also adds to constraints (which must be unified and imposed)
 	
-	env is a map of words to Expr's, initially baseEnv
+	env is a map of variable names to Expr's, initially emptyEnv
 	constraints is a list (initially empty) of contraints, where each constraint is a pair (length-2 list) of types which must be equal
 	expr is an Expr
 	
@@ -140,7 +167,7 @@ function genConstraints(expr, env, constraints) {
 		var newEnv = envAdd(env, expr.left.value, {type: freshType});
 		return makeTypeLambda(freshType, genConstraints(expr.right, newEnv, constraints));
 	} else {
-		return getType(expr);
+		return freshenType(getType(expr));
 	}
 }
 
@@ -260,6 +287,9 @@ function getType(o) {
 		return xmlType;
 	} else { //object
 		if (!o.type) {
+			if (o.kind !== "exprApply" && o.kind !== "exprLambda") {
+				debug.error("Expected this expression to have a type: ", o);
+			}
 			o.type = getTypeOfExpr(o);
 		}
 		return o.type;
