@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>include/scaffold.hrl</string>
+	<string>src/cell.erl</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -12,11 +12,9 @@
 			<key>name</key>
 			<string>v1.3</string>
 			<key>regexFileFilter</key>
-			<string>!(.*\.(beam))|(.*\.(tmproj|o|pyc))$</string>
+			<string>!(.*\.(beam))|(.*\.(tmproj|o|pyc))|(/\.(?!(htaccess|erlang))[^/]*)$</string>
 			<key>regexFolderFilter</key>
 			<string>!.*/(\.[^/]*|CVS|_darcs|_MTN|\{arch\}|blib|.*~\.nib|.*\.(framework|app|pbproj|pbxproj|xcode(proj)?|bundle))$</string>
-			<key>selected</key>
-			<true/>
 			<key>sourceDirectory</key>
 			<string></string>
 		</dict>
@@ -25,6 +23,20 @@
 	<integer>200</integer>
 	<key>metaData</key>
 	<dict>
+		<key>.erlang</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>12</integer>
+				<key>line</key>
+				<integer>8</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
 		<key>include/scaffold.hrl</key>
 		<dict>
 			<key>caret</key>
@@ -32,21 +44,112 @@
 				<key>column</key>
 				<integer>6</integer>
 				<key>line</key>
-				<integer>22</integer>
+				<integer>89</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>8</integer>
+			<integer>64</integer>
+		</dict>
+		<key>src/cell.erl</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>25</integer>
+		</dict>
+		<key>src/env.erl</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>src/eval.erl</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>18</integer>
+				<key>line</key>
+				<integer>95</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>140</integer>
+		</dict>
+		<key>src/expr.erl</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>21</integer>
+				<key>line</key>
+				<integer>91</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>80</integer>
+		</dict>
+		<key>src/memoize.erl</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>43</integer>
+				<key>line</key>
+				<integer>13</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>3</integer>
+		</dict>
+		<key>src/primFuncs.erl</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>261</integer>
 		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
 		<string>include/scaffold.hrl</string>
+		<string>src/expr.erl</string>
+		<string>src/primFuncs.erl</string>
+		<string>src/cell.erl</string>
+		<string>src/eval.erl</string>
+		<string>src/env.erl</string>
+		<string>.erlang</string>
+		<string>src/memoize.erl</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<false/>
 	<key>windowFrame</key>
-	<string>{{176, 70}, {1146, 807}}</string>
+	<string>{{186, 56}, {1146, 807}}</string>
 </dict>
 </plist>
