@@ -27,7 +27,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									F = evaluate( Left ), 
 									Input = evaluate( Expr#cons.right ),
 									Pid = applyFun( F, Input ),
-									Cell = #exprCell{pid = Pid, type = Type, expr = BottomExpr},
+									Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
 									OnRemove = memoize:add( BottomExpr, Cell),
 									cell:addOnRemove(Pid, OnRemove),
 									Cell
@@ -40,9 +40,9 @@ evaluate(Expr) when is_record(Expr, cons) ->
 							case applyFun( F, Input ) of
 								X when is_function(X) ->
 									%decide if it needs to be named
-									#exprFun{function = X, type = Type, expr = BottomExpr};
+									#exprFun{function = X, type = Type, bottom = BottomExpr};
 								Pid when is_pid(Pid) ->
-									#exprCell{pid = Pid, type = Type, expr = BottomExpr};									
+									#exprCell{pid = Pid, type = Type, bottom = BottomExpr};									
 								NumStringBool ->
 									NumStringBool
 							end
@@ -55,9 +55,9 @@ evaluate(Expr) ->
 	case Expr of
 		X when is_function(X) ->
 			%decide if it needs to be named
-			#exprFun{function = X, type = Type, expr = BottomExpr};
+			#exprFun{function = X, type = Type, bottom = BottomExpr};
 		Pid when is_pid(Pid) ->
-			#exprCell{pid = Pid, type = Type, expr = BottomExpr};									
+			#exprCell{pid = Pid, type = Type, bottom = BottomExpr};									
 		NumStringBool ->
 			NumStringBool
 	end.
@@ -176,7 +176,7 @@ bottomOut( InExpr ) ->
 		fun( Expr ) when is_record(Expr, exprFun) ->
 				case Expr#exprFun.name of
 					undefined ->
-						{ok, Expr#exprFun.expr};
+						{ok, Expr#exprFun.bottom};
 					_ ->
 						{ok, Expr}
 				end;

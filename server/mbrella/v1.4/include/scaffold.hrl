@@ -85,6 +85,7 @@
 
 
 -record (exprCell, {
+	name,
 	pid,
 	type,
 	bottom
