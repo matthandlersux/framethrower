@@ -12,7 +12,7 @@ rootObjects["shared.in"] = makeObject("K.object");
 rootObjects["shared.ont"] = makeObject("K.object");
 rootObjects["shared.name"] = makeObject("K.object");
 rootObjects["shared.thumbnail"] = makeObject("K.object");
-
+rootObjects["shared.test"] = makeObject("K.cons", {left:rootObjects["shared.in"], right:rootObjects["shared.ont"]});
 
 // add them to the baseEnv
 forEach(rootObjects, function (v, k) {

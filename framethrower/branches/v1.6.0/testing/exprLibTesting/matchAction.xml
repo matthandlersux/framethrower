@@ -117,8 +117,8 @@
 			<f:with-param name="right" select="$right" />
 		</f:create>
 		
-		<f:intact object="$left" property="upLeft" action="add" key="$cons" />
-		<f:intact object="$right" property="upRight" action="add" key="$cons" />
+		<f:intact object="$left" property="upRight" action="add" key="$cons" />
+		<f:intact object="$right" property="upLeft" action="add" key="$cons" />
 		
 		<f:return name="cons" />
 	</f:action>

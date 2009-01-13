@@ -7,15 +7,17 @@
 	<f:param name="rootObj" type="K.object" />
 	<f:derive name="sitObj" d="takeOne (K.object:upLeft rootObj)" />
 
-	<f:derive name="thumbTest" d="matchTest" />
+	<!-- <f:derive name="thumbTest" d="matchTest (UnitK.cons~K.object sitObj)" /> -->
+	<!-- <f:derive name="nameTest" d="getName (UnitK.cons~K.object sitObj)" /> -->
+	<f:derive name="unitTest" d="unitTest" />
 
-	
+
 	
 	<html:div>
 		<html:div>
 			
 			<xsl:call-template name="prettyPrint">
-				<xsl:with-param name="node" select="$thumbTest" />
+				<xsl:with-param name="node" select="$unitTest" />
 			</xsl:call-template>
 		</html:div>
 		
