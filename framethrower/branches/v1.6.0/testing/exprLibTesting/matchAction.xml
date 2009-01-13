@@ -8,6 +8,8 @@
 	
 	<f:derive name="in" d="shared.in" />
 	<f:derive name="nameRel" d="shared.name" />
+	<f:derive name="thumbnail" d="shared.thumbnail" />
+	<f:derive name="ont" d="shared.ont" />
 	
 	<f:perform with-action="$makeObjWithName" name="Term">
 		<f:with-param name="name" select="'Term'" />
@@ -40,9 +42,28 @@
 		<f:with-param name="arg2" select="$inT2inScene1Term" />		
 	</f:perform>
 	
+	
+	
+	<f:create type="X.text" name="thumbLink">
+		<f:with-param name="string" select="'http://example.thumbnail.com/pic.jpg'" />
+	</f:create>
+	
+	<f:perform with-action="$makeBinaryInfon" name="thumbInfon">
+		<f:with-param name="relation" select="$thumbnail" />
+		<f:with-param name="arg1" select="$inJSIVinT2inScene1Term" />
+		<f:with-param name="arg2" select="$thumbLink" />
+	</f:perform>
+	
+	<f:perform with-action="$makeBinaryInfon" >
+		<f:with-param name="relation" select="$in" />
+		<f:with-param name="arg1" select="$ont" />
+		<f:with-param name="arg2" select="$thumbInfon" />		
+	</f:perform>
+	
+	
 	<f:intact object="$rootObj" property="upLeft" action="add" key="$inJSIVinT2inScene1Term" />
 	
-	
+
 	<f:action name="makeObjWithName">
 		<f:derive name="ont" d="shared.ont" />
 		

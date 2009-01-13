@@ -12,11 +12,11 @@ var debug = (function () {
 		},
 		error: function (arg) {
 			if (console.error) {
-				console.log.apply(null, arguments);
+				console.log.apply(console, arguments);
 			} else {
 				
 			}
-			console.error(arg);
+			throw arg;
 		}
 	};
 })();

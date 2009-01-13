@@ -34,9 +34,11 @@ match: "bindUnitTwice staticMatch",
 
 isInfonTrue: "situatedInfon -> K.cons:truth situatedInfon",
 
-//getInOntThumbnail: "match (staticMatch shared.in shared.ont) (returnUnit shared.thumbnailthumbnail)",
-getInOntThumbnail: "match (returnUnit shared.in) (returnUnit shared.ont)",
+getInOntThumbnail: "match (staticMatch shared.in shared.ont) (returnUnit shared.thumbnail)",
+//getInOntThumbnail: "staticMatch shared.in shared.ont",
 //getInOntThumbnail: "bindSet (compose K.object:upRight K.cons~K.object) (returnUnitSet (staticMatch shared.in shared.ont))",
+
+getInOntName: "match (staticMatch shared.in shared.ont) (returnUnit shared.name)",
 
 //probably has to be primFunc
 firstUnit: "X -> Y -> Y",
@@ -57,7 +59,13 @@ nameThisFunc: "sitObj -> betterAnswer -> num -> firstUnit betterAnswer (makeNewS
 
 secondBestMatch: "betterAnswer -> sitObj -> sortedFold (nameThisFunc sitObj) (sitObjList sitObj) betterAnswer (oneTo (length (sitObjList sitObj)))",
 
-findThumbnail: "situatedObj -> secondBestMatch (match getInOntThumbnail situatedObj) situatedObj"
+matchStaticUnit: "arg1 -> arg2Unit -> bindUnit (staticMatch arg1) arg2Unit",
+
+findThumbnail: "situatedObj -> secondBestMatch (match getInOntThumbnail situatedObj) situatedObj",
+
+matchTest: "getInOntThumbnail",
+
+getName: "namedObjUnit -> match getInOntName namedObjUnit"
 
 };
 

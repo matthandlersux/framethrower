@@ -174,7 +174,7 @@ function compileTemplate(templateNode, url) {
 					getType(scope[derive.name]);
 				} catch (e) {
 					debug.log("Type check failed on derive `"+derive.name+"`: "+unparse(derive.parsed));
-					throw e;
+					debug.error(e);
 				}
 			});
 			// finally, add the f:template's to the scope, using newEnv as their env
