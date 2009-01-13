@@ -39,7 +39,13 @@ function getRemote(expr) {
 }
 
 function makeRemoteObject(name, type) {
-	// TODO
+	var o = {
+		kind: "remoteObject",
+		remote: 1,
+		name: name,
+		type: type
+	};
+	return o;
 }
 
 function queryExpr(expr) {
@@ -68,34 +74,7 @@ function queryExpr(expr) {
 
 
 
-var currentSession;
-function initializeSession() {
-	var sessionId = null;
-	var queriesToAsk = [];
-	var nextQueryId = 1;
-	
-	function addQuery(expr) {
-		queriesToAsk.push({
-			exprString: unparseExpr(expr),
-			queryId: nextQueryId
-		});
-		nextQueryId++;
-	}
-	
-	function askAllQueries() {
-		var asking = queriesToAsk;
-		queriesToAsk = [];
-		
-	}
-	
-	xhr(serverBaseUrl+"newSession", "", function (text) {
-		
-	});
-	
-	return {
-		addQuery: addQuery
-	};
-}
+
 
 
 var timeoutDefault = 30 * 1000; // 30 seconds
@@ -105,6 +84,8 @@ function xhr(url, post, callback, failCallback, timeout) {
 	
 	// BROWSER: this is just to test from local files, will be removed
 	netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+	
+	url = url + Math.random();
 	
 	if (!timeout) timeout = timeoutDefault;
 	
@@ -140,3 +121,92 @@ function xhr(url, post, callback, failCallback, timeout) {
 		fail();
 	}, timeout);
 }
+
+
+
+var session = (function () {
+	var sessionId = null;
+	var queriesToAsk = [];
+	var nextQueryId = 1;
+	var lastMessageId = 0;
+	
+	var cells = {};
+	
+	function addQuery(expr) {
+		if (!sessionId) {
+			newSession();
+		}
+		
+		var queryId = nextQueryId;
+		nextQueryId++;		
+		
+		queriesToAsk.push({
+			expr: unparseExpr(expr),
+			queryId: queryId
+		});
+		
+		var type = getType(expr);
+		var cell = makeCC(type);
+		cell.expr = expr;
+		
+		cells[queryId] = cell;
+		
+		return cell;
+	}
+	
+	function askAllQueries() {
+		if (queriesToAsk.length > 0) {
+			var asking = queriesToAsk;
+			queriesToAsk = [];
+			var json = JSON.stringify({
+				sessionId: sessionId,
+				queries: asking
+			});
+			
+			xhr(serverBaseUrl+"query", json, function (text) {
+				
+			}, function () {
+				queriesToAsk = queriesToAsk.concat(asking);
+				askAllQueries();
+			});
+		}
+	}
+	
+	var updaterRunning = false;
+	function startUpdater() {
+		updaterRunning = true;
+		var json = JSON.stringify({
+			sessionId: sessionId,
+			lastMessageId: lastMessageId
+		});
+		xhr(serverBaseUrl+"pipeline", json, function (text) {
+			var o = JSON.parse(text);
+			forEach(o.updates, function (update) {
+				// TODO do update
+			});
+			lastMessageId = o.lastMessageId;
+			startUpdater();
+		});
+	}
+	
+	function newSession() {
+		sessionId = "initializing";
+		lastMessageId = 0;
+		nextQueryId = 1;
+		// TODO: move all cells' expr's into queriesToAsk
+		xhr(serverBaseUrl+"newSession", "", function (text) {
+			// console.log("newSession got back text: ", text);
+			var o = JSON.parse(text);
+			sessionId = o.sessionId;
+
+			askAllQueries();
+			if (!updaterRunning) startUpdater();
+		});
+	}
+	
+	return {
+		query: addQuery,
+		flush: askAllQueries
+	};
+})();
+

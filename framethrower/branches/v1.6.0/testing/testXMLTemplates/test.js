@@ -17,6 +17,9 @@ var cell = makeControlledCell("Map Number String");
 cell.control.add(7, "hello");
 cell.control.add(6, "goodbye");
 
+var cell2 = makeControlledCell("Unit Number");
+cell2.control.set(22);
+
 /*
 function init() {
 	var thunks = xpath("//f:thunk", document.body);
@@ -32,7 +35,7 @@ function init() {
 
 function initialize() {
 	
-	bootstrap(document.body, {testCell: cell});
+	bootstrap(document.body, {testCell: cell, testCell2: cell2});
 	
 	/*var thunkNodes = xpath("//f:thunk", document.body);
 	

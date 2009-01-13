@@ -25,7 +25,7 @@ function exprToXML(expr, type) {
 			
 			if (constructor === "Unit") {
 				if (state.length === 0) {
-					return null;
+					xml = document.createDocumentFragment();
 				} else {
 					return exprToXML(state[0], type.right);
 				}

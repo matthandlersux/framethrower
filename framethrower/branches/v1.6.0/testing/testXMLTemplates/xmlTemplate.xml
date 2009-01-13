@@ -7,6 +7,7 @@
 	<f:param name="p1" type="Number" />
 	<f:param name="p2" type="Number" />
 	<f:param name="mapTest" type="Map Number String" />
+	<f:param name="unitTest" type="Unit Number" />
 	
 	<f:derive name="d1" d="add p1 p2" />
 	
@@ -19,6 +20,10 @@
 				<xsl:with-param name="node" select="$mapTest" />
 			</xsl:call-template>
 			<xsl:copy-of select="$mapTest" />
+		</html:div>
+		<html:div>
+			Unit Test:
+			<xsl:copy-of select="$unitTest" />
 		</html:div>
 		
 		<f:thunk>
