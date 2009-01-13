@@ -34,6 +34,9 @@ loop(Req, DocRoot) ->
             end;
         'POST' ->
             case Path of
+				"newSession" ->
+					SessionId = session:new(),
+					spit(Req, "sessionId", SessionId);
 				"pipeline" ->
 					Data = Req:parse_post(),
 					Json = proplists:get_value("json", Data),
