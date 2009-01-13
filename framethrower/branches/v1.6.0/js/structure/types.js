@@ -170,7 +170,7 @@ function genConstraints(expr, env, constraints) {
 	}
 }
 
-function containsVar(type, typeVar) {
+ function containsVar(type, typeVar) {
 	if (type.kind === "typeName") {
 		return false;
 	} else if (type.kind === "typeVar") {
