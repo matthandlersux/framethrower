@@ -12,7 +12,7 @@ var debug = (function () {
 		},
 		error: function (arg) {
 			if (console.error) {
-				console.log.apply(console, arguments);
+				console.error.apply(console, arguments);
 			} else {
 				
 			}
