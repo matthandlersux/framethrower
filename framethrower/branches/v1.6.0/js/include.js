@@ -1,6 +1,9 @@
 (function () {
 	
 	var includes = [
+		"js/external/XMLHttpRequest.1.0.3/XMLHttpRequest.js",
+		"js/external/json2.js",
+		
 		"js/util/debug.js",
 		"js/util/util.js",
 		"js/util/xml.js",

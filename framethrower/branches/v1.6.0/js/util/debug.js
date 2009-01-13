@@ -16,7 +16,7 @@ var debug = (function () {
 			} else {
 				
 			}
-			throw arg;
+			console.error(arg);
 		}
 	};
 })();

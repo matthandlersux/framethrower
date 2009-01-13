@@ -51,7 +51,7 @@ function queryExpr(expr) {
 	// TODO make it not persist, and proper onRemove handler to tell the server to stop updating
 	
 	
-	
+	return cell;
 }
 
 
@@ -76,15 +76,21 @@ function initializeSession() {
 	
 	function addQuery(expr) {
 		queriesToAsk.push({
-			expr: expr,
+			exprString: unparseExpr(expr),
 			queryId: nextQueryId
 		});
 		nextQueryId++;
 	}
 	
 	function askAllQueries() {
+		var asking = queriesToAsk;
+		queriesToAsk = [];
 		
 	}
+	
+	xhr(serverBaseUrl+"newSession", "", function (text) {
+		
+	});
 	
 	return {
 		addQuery: addQuery
@@ -92,3 +98,45 @@ function initializeSession() {
 }
 
 
+var timeoutDefault = 30 * 1000; // 30 seconds
+var serverBaseUrl = "http://www.eversplosion.com/resources/servertest.php?";
+
+function xhr(url, post, callback, failCallback, timeout) {
+	
+	// BROWSER: this is just to test from local files, will be removed
+	netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+	
+	if (!timeout) timeout = timeoutDefault;
+	
+	function fail() {
+		if (failCallback) {
+			failCallback();
+		} else {
+			// retry
+			xhr(url, post, callback, failCallback, timeout);
+		}
+	}
+	
+	var timer;
+	
+	var req = new XMLHttpRequest();
+	req.open("POST", url, true);
+	//req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	//req.setRequestHeader("Content-length", post.length);
+	//req.setRequestHeader("Connection", "close");
+	req.onreadystatechange = function () {
+		if (req.readyState == 4) {
+			clearTimeout(timer);
+		 	if (req.status == 200 || req.status == 0) {
+				callback(req.responseText);
+			} else {
+				fail();
+			}
+		}
+	};
+	req.send(post);
+	timer = setTimeout(function () {
+		req.abort();
+		fail();
+	}, timeout);
+}
