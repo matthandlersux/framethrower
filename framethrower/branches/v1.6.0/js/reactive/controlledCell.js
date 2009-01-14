@@ -29,7 +29,9 @@ function makeCC(type) {
 					cell.removeLine(state[0]);
 				}
 			}
-		};		
+		};
+		cell.control.add = cell.control.set;
+		cell.control.remove = cell.control.unset;
 	} else if (constructor === "Future") {
 		cell = makeCell();
 		cell.control = {

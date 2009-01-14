@@ -8,8 +8,7 @@ so in general, baseEnv will take a word and convert it to an Expr
 
 var lookupTable = {};
 
-var baseEnv = function (s) {
-	// literals
+function parseLiteral(s) {
 	if (/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/.test(s)) {
 		// matches a number
 		// using http://www.regular-expressions.info/floatingpoint.html
@@ -22,6 +21,15 @@ var baseEnv = function (s) {
 		return true;
 	} else if (s === "false") {
 		return false;
+	} else {
+		return undefined;
+	}
+}
+
+var baseEnv = function (s) {
+	var lit = parseLiteral(s);
+	if (lit !== undefined) {
+		return lit;
 	} else {
 		// lookup
 		var lookup = lookupTable[s];

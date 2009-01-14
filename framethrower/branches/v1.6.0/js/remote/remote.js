@@ -71,25 +71,31 @@ function queryExpr(expr) {
 
 
 
-
+var maxCalls = 12;
 
 
 
 
 
 var timeoutDefault = 30 * 1000; // 30 seconds
-var serverBaseUrl = "http://www.eversplosion.com/resources/servertest.php?";
+var serverBaseUrl = "http://24.218.127.46:8000/";
+//var serverBaseUrl = "http://www.eversplosion.com/resources/servertest.php?";
 
 function xhr(url, post, callback, failCallback, timeout) {
+	
+	maxCalls--;
+	if (maxCalls <= 0) {
+		console.error("Max calls exceeded");
+		return;
+	}
 	
 	// BROWSER: this is just to test from local files, will be removed
 	netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
 	
-	url = url + Math.random();
-	
 	if (!timeout) timeout = timeoutDefault;
 	
 	function fail() {
+		//console.error("fail called", req);
 		if (failCallback) {
 			failCallback();
 		} else {
@@ -101,27 +107,40 @@ function xhr(url, post, callback, failCallback, timeout) {
 	var timer;
 	
 	var req = new XMLHttpRequest();
-	req.open("POST", url, true);
-	//req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	req.open("POST", url + "?" + Math.random(), true);
+	req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 	//req.setRequestHeader("Content-length", post.length);
 	//req.setRequestHeader("Connection", "close");
 	req.onreadystatechange = function () {
 		if (req.readyState == 4) {
 			clearTimeout(timer);
 		 	if (req.status == 200 || req.status == 0) {
+				console.log("called: "+url+"\nwith post: "+post+"\ngot response: "+req.responseText);
 				callback(req.responseText);
 			} else {
 				fail();
 			}
 		}
 	};
-	req.send(post);
+	req.send("json="+post);
 	timer = setTimeout(function () {
 		req.abort();
 		fail();
 	}, timeout);
 }
 
+
+function parseServerResponse(s, expectedType) {
+	if (!s) return undefined;
+	if (typeOf(s) === "number") return s;
+	var lit = parseLiteral(s);
+	if (lit !== undefined) {
+		return lit;
+	} else {
+		// TODO
+		makeRemoteObject();
+	}
+}
 
 
 var session = (function () {
@@ -138,18 +157,18 @@ var session = (function () {
 		}
 		
 		var queryId = nextQueryId;
-		nextQueryId++;		
-		
-		queriesToAsk.push({
-			expr: unparseExpr(expr),
-			queryId: queryId
-		});
+		nextQueryId++;
 		
 		var type = getType(expr);
 		var cell = makeCC(type);
 		cell.expr = expr;
 		
 		cells[queryId] = cell;
+		
+		queriesToAsk.push({
+			expr: unparseExpr(expr),
+			queryId: queryId
+		});
 		
 		return cell;
 	}
@@ -179,12 +198,38 @@ var session = (function () {
 			sessionId: sessionId,
 			lastMessageId: lastMessageId
 		});
+		console.log("I'm pipelining", json);
 		xhr(serverBaseUrl+"pipeline", json, function (text) {
-			var o = JSON.parse(text);
-			forEach(o.updates, function (update) {
-				// TODO do update
-			});
-			lastMessageId = o.lastMessageId;
+			console.log("updater got a message", text);
+			
+			try {
+				var o = JSON.parse(text);
+				//console.log("json parsed to", o);
+				
+				if (o.sessionClosed) {
+					// TODO
+				} else {
+					lastMessageId = o.lastMessageId;
+
+					forEach(o.updates, function (update) {
+						//console.log("doing update", update, o.updates);
+						var cell = cells[update.queryId];
+						var key = parseServerResponse(update.key);
+						var value = parseServerResponse(update.value);
+						cell.control[update.action](key, value);
+					});
+					refreshScreen();
+				}
+				
+
+
+				
+			} catch (e) {
+				console.log("had an error", e, cells, cells["1"]);
+			}
+
+			
+			//console.log("starting updater again", "last message id", lastMessageId);
 			startUpdater();
 		});
 	}
@@ -206,7 +251,8 @@ var session = (function () {
 	
 	return {
 		query: addQuery,
-		flush: askAllQueries
+		flush: askAllQueries,
+		debugCells: cells
 	};
 })();
 

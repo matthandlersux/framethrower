@@ -124,10 +124,17 @@ function makeConSortedSetNumbers() {
 	});
 }
 
+// I've changed this so that it sorts numbers correctly also. Maybe we should remove the above function? -Toby
 function makeConSortedSetStringify() {
 	return makeConSortedSet(function (a, b) {
-		var sa = stringify(a);
-		var sb = stringify(b);
+		var sa, sb;
+		if (typeOf(a) === "number") {
+			sa = a;
+			sb = b;
+		} else {
+			sa = stringify(a);
+			sb = stringify(b);
+		}
 		if (sa < sb) return -1;
 		else if (sa === sb) return 0;
 		else return 1;

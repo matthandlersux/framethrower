@@ -37,8 +37,8 @@ var documents = (function () {
 							funcs.push(function (callback) {
 								documents.withDoc(includeUrl, function (doc) {
 									forEach(xpath("*", doc), function (x) {
-										xml.ownerDocument.importNode(x, true);
-										xml.appendChild(x); // BROWSER
+										var imported = xml.ownerDocument.importNode(x, true);
+										xml.appendChild(imported); // BROWSER
 									});
 									callback();
 								});
