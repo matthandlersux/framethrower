@@ -34,7 +34,7 @@ manager(State) ->
 		{newId, From} ->
 			[{_, LastId}] = ets:lookup(State, sessionIds),
 			ets:insert(State, {sessionIds, LastId + 1}),
-			From ! "server." ++ integer_to_list(LastId + 1),
+			From ! list_to_binary( "session." ++ integer_to_list(LastId + 1) ),
 			manager(State);
 		{lookup, From, SessionId} ->
 			case ets:lookup(State, SessionId) of
@@ -72,16 +72,21 @@ session() ->
 session([{LastMessageId, _}|_] = MsgQueue) ->
 	receive 
 		{pipeline, From, LastMessageId2} ->
-			io:format("pid=~p~n", [self()]),
+			% io:format("pid=~p~n", [self()]),
 			if
 				LastMessageId > LastMessageId2 ->
 					MsgQueue2 = streamUntil(From, MsgQueue, LastMessageId2),
 					session(MsgQueue2);
 				LastMessageId =:= LastMessageId2 ->
 					receive
-						{data, Data} ->
-							stream(From, Data, LastMessageId),
-							session([{LastMessageId + 1, Data}])
+						{data, {QueryId, Action, Data}} ->
+							% case Data of
+							% 	{Key, Value} -> Data1 = [{"key", <<Key>>},{"value",<<Value>>}];
+							% 	_ -> Data1 = [{"key", Data}]
+							% end,
+							Struct = [ wellFormedUpdate(Data, QueryId, Action) ],
+							stream(From, Struct, LastMessageId + 1),
+							session([{LastMessageId + 1, Struct}])
 					after 
 						30000 ->
 							session([{LastMessageId, null}])
@@ -91,11 +96,12 @@ session([{LastMessageId, _}|_] = MsgQueue) ->
 					session(MsgQueue)
 			end;
 		{data, {QueryId, Action, Data}} ->
-			case Data of
-				{Key, Value} -> Data1 = [{"key", Key},{"value",Value}];
-				_ -> Data1 = [{"key", Data}]
-			end,
-			Struct = {struct, [{"queryId",QueryId},{"action", Action}|Data1]},
+			% case Data of
+			% 	{Key, Value} -> Data1 = [{"key", <<Key>>},{"value", <<Value>>}];
+			% 	_ -> Data1 = [{"key", Data}]
+			% end,
+			% Struct = {struct, [{"queryId",QueryId},{"action", Action}|Data1]},
+			Struct = wellFormedUpdate(Data, QueryId, Action),
 			session([{LastMessageId + 1, Struct}|MsgQueue])
 	after
 		120000 ->
@@ -105,6 +111,29 @@ session([{LastMessageId, _}|_] = MsgQueue) ->
 %% ====================================================
 %% utilities
 %% ====================================================
+
+wellFormedUpdate(Data, QueryId, Action) ->
+		case Data of
+			{Key, Value} -> Data1 = [{"key", to_atom(Key)},{"value", to_atom(Value)}];
+			_ -> Data1 = [{"key", to_atom(Data)}]
+		end,
+		{struct, [{"queryId",QueryId},{"action", Action}|Data1]}.
+
+to_atom(X) when is_integer(X) -> X1 = integer_to_list(X), list_to_binary(X1);
+to_atom(X) when is_boolean(X) -> list_to_binary(atom_to_list(X));
+to_atom(X) when is_list(X) ->
+	Fun = fun(XX) ->         
+		if XX < 0 -> false;  
+			XX > 255 -> false;
+			true -> true      
+		end                  
+	end,
+	case lists:all(Fun, X) of
+		true -> list_to_binary($" ++ X ++ $");
+		false -> X
+	end;
+to_atom(X) -> X.
+
 
 streamUntil(To, MsgQueue, Until) ->
 	Predicate = fun({Id, _}) ->
