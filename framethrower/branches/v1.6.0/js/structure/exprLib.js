@@ -11,32 +11,44 @@ invertUnfoldMap: "f -> init -> invert (unfoldMap f init)",
 //this might be too inefficient
 sortedFoldMap: "f -> init -> m -> sortedFold (k -> accum -> f (getKey k m) accum) init (keys m)",
 
-returnSet: "compose returnUnitSet returnUnit",
-
 filter: "S -> pred -> bindSet (compose returnUnitSet (passThru pred)) S",
 
-staticMatch: "relation -> arg -> takeOne (filter (K.object:upRight relation) (infon -> equal (K.cons:right infon) arg))",
 
-addTest: "a -> b -> returnUnit (add a b)",
 
 bindUnitTwice: "func -> arg1 -> arg2 -> bindUnit id (reactiveApply (((compose bindUnit (f -> compose returnUnit (compose bindUnit f))) func) arg1) arg2)",
 
-butTest: "(bindUnitTwice addTest) (returnUnit 1) (returnUnit 5)",
 
-simpleTest: "returnUnit (returnUnit 1)",
+
+
+//matching
+staticMatch: "relation -> arg -> takeOne (filter (K.object:upRight relation) (infon -> equal (K.cons:right infon) arg))",
+
 
 match: "bindUnitTwice staticMatch",
 
-// type of reactiveFoldList is something like: (a -> Unit b -> Unit b) -> b -> Map Number a -> Unit b
-//reactiveFoldList: "?",
 
-//matchList: "relation -> argList -> reactiveFoldList(relSoFar -> arg -> match(relSoFar: arg): relation: argList)",
+//matches that return a set
+
+matchLeft: "relation -> K.object:upRight relation",
+
+matchRight: "arg -> K.object:upLeft arg",
+
+staticMatchSet: "relation -> arg -> filter (K.object:upRight relation) (infon -> equal (K.cons:right infon) arg)",
+
+matchSet: "bindUnitTwice staticMatchSet", 
+
+matchRightSet: "left -> rightSet -> bindSet (setItem -> matchSet left setItem) rightSet",
+
+
+//infon functions
 
 isInfonTrue: "situatedInfon -> K.cons:truth situatedInfon",
 
 'UnitK.cons~K.object': "argUnit -> bindUnit (compose returnUnit K.cons~K.object) argUnit",
 
 'UnitK.cons:right': "argUnit -> bindUnit K.cons:right argUnit",
+
+
 
 getInOntThumbnail: "match (UnitK.cons~K.object (staticMatch shared.in shared.ont)) (returnUnit shared.thumbnail)",
 //getInOntThumbnail: "staticMatch shared.in shared.ont",
@@ -67,11 +79,21 @@ matchStaticUnit: "arg1 -> arg2Unit -> bindUnit (staticMatch arg1) arg2Unit",
 
 findThumbnail: "situatedObj -> secondBestMatch (match getInOntThumbnail situatedObj) situatedObj",
 
-matchTest: "sitObj -> match (UnitK.cons~K.object getInOntThumbnail) sitObj",
-
 getName: "namedObjUnit -> UnitK.cons:right (match (UnitK.cons~K.object getInOntName) namedObjUnit)",
 
-unitTest: "match (UnitK.cons~K.object (staticMatch shared.in shared.ont)) (returnUnit shared.name)"
+
+//tests
+
+addTest: "a -> b -> returnUnit (add a b)",
+
+butTest: "(bindUnitTwice addTest) (returnUnit 1) (returnUnit 5)",
+
+simpleTest: "returnUnit (returnUnit 1)",
+
+
+matchTest: "sitObj -> match (UnitK.cons~K.object getInOntThumbnail) sitObj",
+
+unitTest: "getInOntName"
 
 //unitTest: "staticMatch shared.in shared.ont"
 

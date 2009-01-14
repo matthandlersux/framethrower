@@ -11,6 +11,9 @@
 	<f:derive name="thumbnail" d="shared.thumbnail" />
 	<f:derive name="ont" d="shared.ont" />
 	
+	
+	<!-- These are "Leaf" objects. They each will have a name infon <in, ont, <name, Term, 'term'>> -->
+	
 	<f:perform with-action="$makeObjWithName" name="Term">
 		<f:with-param name="name" select="'Term'" />
 	</f:perform>
@@ -23,6 +26,16 @@
 	<f:perform with-action="$makeObjWithName" name="T2">
 		<f:with-param name="name" select="'T2'" />
 	</f:perform>
+
+
+	<!-- This is "InOntName". Just for testing. Might not actually make sense. -->
+	<f:perform with-action="$makeBinaryInfon" >
+		<f:with-param name="relation" select="$in" />
+		<f:with-param name="arg1" select="$ont" />
+		<f:with-param name="arg2" select="$nameRel" />		
+	</f:perform>
+
+
 
 	<f:perform with-action="$makeBinaryInfon" name="inScene1Term">
 		<f:with-param name="relation" select="$in" />
