@@ -28,9 +28,11 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									Input = evaluate( Expr#cons.right ),
 									Pid = applyFun( F, Input ),
 									Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
-									OnRemove = memoize:add( BottomExpr, Cell),
+									NamedCell = env:nameAndStore(Cell),
+									% this is correct - memoize:add returns an onRemove function
+									OnRemove = memoize:add( BottomExpr, NamedCell),
 									cell:addOnRemove(Pid, OnRemove),
-									Cell
+									NamedCell
 							end;
 						false ->
 							% ?trace(Left),
@@ -42,7 +44,8 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									%decide if it needs to be named
 									#exprFun{function = X, type = Type, bottom = BottomExpr};
 								Pid when is_pid(Pid) ->
-									#exprCell{pid = Pid, type = Type, bottom = BottomExpr};									
+									Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
+									env:nameAndStore(Cell);
 								NumStringBool ->
 									NumStringBool
 							end
@@ -57,7 +60,8 @@ evaluate(Expr) ->
 			%decide if it needs to be named
 			#exprFun{function = X, type = Type, bottom = BottomExpr};
 		Pid when is_pid(Pid) ->
-			#exprCell{pid = Pid, type = Type, bottom = BottomExpr};									
+			Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
+			env:nameAndStore(Cell);
 		NumStringBool ->
 			NumStringBool
 	end.
@@ -174,20 +178,18 @@ applyFun( #exprFun{function = Fun} = ExprFun, Expr ) when is_record(ExprFun, exp
 bottomOut( InExpr ) -> 
 	LookForAndReplaceFun = 
 		fun( Expr ) when is_record(Expr, exprFun) ->
-				case Expr#exprFun.name of
+				case Expr#exprFun.bottom of
 					undefined ->
-						{ok, Expr#exprFun.bottom};
+						{ok, Expr#exprFun.name};
 					_ ->
-						{ok, Expr}
+						{ok, Expr#exprFun.bottom}
 				end;
 			( Expr ) when is_record(Expr, exprCell) ->
-				case Expr#exprCell.name of 
+				case Expr#exprCell.bottom of 
 					undefined ->
-						%change this once all exprCell's are tagged with expr
-						%{ok, Expr#exprCell.expr};
-						{ok, Expr#exprCell.pid};
+						{ok, Expr#exprCell.name};
 					_ ->
-						{ok, Expr}
+						{ok, Expr#exprCell.bottom}
 				end
 		end,
 	mblib:traverse(InExpr, LookForAndReplaceFun).

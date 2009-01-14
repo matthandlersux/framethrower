@@ -90,15 +90,19 @@ term() ->
 %% 
 
 getType( Expr ) ->
-	getType( Expr, expr:getEnv(default) ).
+	getType( Expr, dict:new() ).
 	
-getType( Expr, Env ) when is_record(Expr, exprFun) ->
+getType( Expr, _ ) when is_record(Expr, exprFun) ->
 	% io:format("~100p~n~n", [unparse(Expr#exprFun.type)]),
 	Expr#exprFun.type;
 getType( Expr, Env ) when is_record(Expr, exprVar) ->
 	try dict:fetch(Expr#exprVar.value, Env)
 		% {TypeString, _Fun} -> type(typeVar, parse:tast( TypeString ))
-	catch _:_ -> erlang:error({typeVar_not_found, Expr})
+	catch _:_ ->
+		case env:lookup(Expr#exprVar.value) of
+			notfound -> erlang:error({typeVar_not_found, Expr});
+			Result -> Result
+		end
 	end;
 getType( Expr, Env ) when is_record(Expr, exprCell) ->
 	Expr#exprCell.type;
@@ -117,7 +121,8 @@ getType( Expr, _ ) -> type(string).
 %% genConstraints:: Expr -> {Type, [Constraints]}
 %% 
 genConstraints(Expr) ->
-	Env = expr:getEnv(default),
+	%Env = expr:getEnv(default),
+	Env = dict:new(),
 	genConstraints(Expr, "1", Env).
 
 genConstraints(Expr, Prefix, Env) ->

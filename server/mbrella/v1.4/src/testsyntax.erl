@@ -5,7 +5,7 @@
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
--record(testWorld, {env=expr:getEnv(default), endCaps=dict:new(), outMessages=dict:new()}).
+-record(testWorld, {startCaps=dict:new(), endCaps=dict:new(), outMessages=dict:new()}).
 % 
 % parseAll(D) ->
 % 	% find all RSS files underneath D
@@ -51,21 +51,24 @@ extract(#xmlText{}, State) -> State.  % ignore any other text data
 parseStartCap(R, State) ->
 	Name = getAtt(name, R),
 	Type = getAtt(type, R),
-	#testWorld{env=Env} = State,
+	#testWorld{startCaps=StartCaps} = State,
 	SCTypeFirstWord = hd(string:tokens(Type, " ")),
-	SC = if 
-		SCTypeFirstWord == "map" -> #exprCell{pid=cell:makeCellMapInput(), type=type:parse(Type)};
-		true -> #exprCell{pid=cell:makeCell(), type=type:parse(Type)}
+	SC = if
+		SCTypeFirstWord == "map" -> Cell = #exprCell{pid=cell:makeCellMapInput(), type=type:parse(Type)},
+									env:nameAndStore(Cell);
+		true -> Cell = #exprCell{pid=cell:makeCell(), type=type:parse(Type)},
+				env:nameAndStore(Cell)
 	end,
-	NewEnv = dict:store(Name, SC, Env),
-	State#testWorld{env=NewEnv}.
-
+	NewStartCaps = dict:store(Name, SC, StartCaps),
+	State#testWorld{startCaps=NewStartCaps}.
 
 parseEndCap(R, State) ->
-	#testWorld{env=Env, outMessages=OutMessages} = State,
+	#testWorld{startCaps=StartCaps, outMessages=OutMessages} = State,
 	Name = getAtt(name, R),
 	Expression = getAtt(expression, R),
-	Answer = eval:evaluate(expr:expr(expr:parse(Expression), Env)),
+	
+	Answer = eval:evaluate(expr:customExprParse(Expression, StartCaps)),
+	
 	#exprCell{pid=EC} = Answer,
 	Self = self(),
 	cell:injectFunc(EC, fun(Val) -> 
@@ -95,24 +98,24 @@ parseArgs(R) ->
 	end.
 
 extractMessage(R, State) when is_record(R, xmlElement) ->
-	#testWorld{env=Env} = State,
+	#testWorld{startCaps=StartCaps} = State,
 	GetStartCap = fun() ->
 		SCName = getAtt(scname, R),
-		#exprCell{pid=Pid} = dict:fetch(SCName, Env),
+		#exprCell{pid=Pid} = dict:fetch(SCName, StartCaps),
 		Pid
 	end,
 	Args = parseArgs(R),
 	Value = case Args of 
 		{scPatternMatch, Name} -> 
-			#exprCell{pid=Pid} = dict:fetch(Name, Env),
+			#exprCell{pid=Pid} = dict:fetch(Name, StartCaps),
 			Pid;
 		{Key, {scPatternMatch, Name}} ->
-			#exprCell{pid=Pid} = dict:fetch(Name, Env),
+			#exprCell{pid=Pid} = dict:fetch(Name, StartCaps),
 			{Key, Pid};
 		{func, Name} ->
-			dict:fetch(Name, Env);
+			env:lookup(Name);
 		{Key, {func, Name}} ->
-			{Key, dict:fetch(Name, Env)};			
+			{Key, env:lookup(Name)};			
 		Arg -> Arg
 	end,
 	case R#xmlElement.name of
@@ -169,10 +172,10 @@ filterExpectedMessages(_) -> false.
 filterFinishedMessages({_,_,{true,_}}) -> true;
 filterFinishedMessages(_) -> false.
 
-scMatch(MessageToCheck, TrySC, Env) ->
+scMatch(MessageToCheck, TrySC, StartCaps) ->
 	case MessageToCheck of
 		{scPatternMatch, TrySCName} -> 
-			try dict:fetch(TrySCName, Env) of
+			try dict:fetch(TrySCName, StartCaps) of
 				TrySC -> match;
 				_ -> false
 			catch
@@ -183,14 +186,14 @@ scMatch(MessageToCheck, TrySC, Env) ->
 	
 checkIncomingMessage({ECName, MessageToCheck, {true, Output}}, IncomingMessage, State) -> {ECName, MessageToCheck, {true, Output}};
 checkIncomingMessage({ECName, MessageToCheck, {false, _}}, IncomingMessage, State) ->
-	#testWorld{env=Env} = State,
+	#testWorld{startCaps=StartCaps} = State,
 	Response =
 		case IncomingMessage of
 			MessageToCheck -> match;
 			{Action, {Key,TrySC}} ->
 				case MessageToCheck of
 					{Action, {Key, MVal}} -> 
-						case scMatch(MVal, TrySC, Env) of
+						case scMatch(MVal, TrySC, StartCaps) of
 							false -> {badMatch, IncomingMessage};
 							SCMatch -> SCMatch
 						end;
@@ -199,7 +202,7 @@ checkIncomingMessage({ECName, MessageToCheck, {false, _}}, IncomingMessage, Stat
 			{Action, TrySC} ->
 				case MessageToCheck of
 					{Action, MVal} -> 
-						case scMatch(MVal, TrySC, Env) of
+						case scMatch(MVal, TrySC, StartCaps) of
 							false -> {badMatch, IncomingMessage};
 							SCMatch -> SCMatch
 						end;
@@ -218,11 +221,11 @@ checkIncomingMessage({ECName, MessageToCheck, {false, _}}, IncomingMessage, Stat
 
 
 updateState({ECName, MessageToCheck, {true, {Control, _}}}, State) ->
-	#testWorld{env=Env} = State,
+	#testWorld{startCaps=StartCaps} = State,
 	case Control of
 		match -> State;
 		none -> State;
-		{scPatternMatch, SCName, SC} -> State#testWorld{env=dict:store(SCName, SC, Env)}	
+		{scPatternMatch, SCName, SC} -> State#testWorld{startCaps=dict:store(SCName, SC, StartCaps)}	
 	end;
 updateState(_, State) ->
 	State.

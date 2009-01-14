@@ -5,34 +5,68 @@
  				boolean/0, natural/0, symbol/1, return/1, then/2, nest/3]).
 -include ("../include/scaffold.hrl").
 
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+
 % do notation
 -define (do(X, Y, Next), then( Y, fun(X) -> Next end )).
 
-expr(String) ->
-	DefaultEnv = getEnv(default),
-	expr( parse(String), DefaultEnv).
-expr(AST, Env) when is_record(AST, cons) ->
-	{cons, AST#cons.type, expr(AST#cons.left, Env), expr(AST#cons.right, Env)};
-expr(AST, _) when AST =:= "true" orelse AST =:= "false" ->
+%exprCustom checks for cells in a passed in dict
+customExprParse(String, Dict) ->
+	customExpr(parse(String), Dict).
+customExpr(AST, Dict) when is_record(AST, cons) ->
+	{cons, AST#cons.type, customExpr(AST#cons.left, Dict), customExpr(AST#cons.right, Dict)};
+customExpr(AST, _) when AST =:= "true" orelse AST =:= "false" ->
 	list_to_atom(AST);
-expr(AST, Env) when is_list(AST) ->
+customExpr(AST, Dict) when is_list(AST) ->
+	case is_string(AST) of
+		true ->
+			try dict:fetch(AST, Dict)
+			catch
+				_:_ -> 
+					case env:lookup(AST) of
+						notfound ->
+							#exprVar{value = AST};
+						Expr -> Expr
+					end
+			end;
+		false ->
+			exit(AST)
+	end;
+customExpr({primitive, _, BoolStringNat}, _) ->
+	BoolStringNat;
+customExpr(AST, _) when is_number(AST) ->
+	AST;
+customExpr(AST, _) when is_boolean(AST) ->
+	AST;
+customExpr(AST, _) ->
+	AST.
+
+
+
+exprParse(String) ->
+	expr(parse(String)).
+expr(AST) when is_record(AST, cons) ->
+	{cons, AST#cons.type, expr(AST#cons.left), expr(AST#cons.right)};
+expr(AST) when AST =:= "true" orelse AST =:= "false" ->
+	list_to_atom(AST);
+expr(AST) when is_list(AST) ->
 	case is_string(AST) of
 		true -> 
-			case getFromEnv(AST, Env) of
-				false ->
+			case env:lookup(AST) of
+				notfound ->
 					#exprVar{value = AST};
 				Expr -> Expr
 			end;
 		false ->
 			exit(AST)
 	end;
-expr({primitive, _, BoolStringNat}, _) ->
+expr({primitive, _, BoolStringNat}) ->
 	BoolStringNat;
-expr(AST, _) when is_number(AST) ->
+expr(AST) when is_number(AST) ->
 	AST;
-expr(AST, _) when is_boolean(AST) ->
+expr(AST) when is_boolean(AST) ->
 	AST;
-expr(AST, _) ->
+expr(AST) ->
 	AST.
 	
 %% ====================================================
@@ -115,19 +149,6 @@ primitive() ->
 	]).
 
 
-
-%% ====================================================
-%% environment functions
-%% ====================================================
-
-getFromEnv(Key, Env) ->
-	try dict:fetch(Key, Env)
-	catch
-		_:_ -> false
-	end.
-		
-getEnv(default) ->
-	env:getDefaultEnv().
 	
 %% ====================================================
 %% utilities
