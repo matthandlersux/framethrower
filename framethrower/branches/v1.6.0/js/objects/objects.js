@@ -101,7 +101,7 @@ var objects = (function (classesToMake) {
 			// Casting Down, example castDown: 'Cons~Object'
 			var castDownFuncName = superClassName + "~" + targetClassName;
 			var castDownType = superClassName + " -> Unit " + targetClassName;
-			var castDownFunc = superClass.castDown;
+			var castDownFunc = classes[targetClassName].castDown;
 			addFun(castDownFuncName, castDownType, castDownFunc);
 
 			makeCasts(superClass.inherit, targetClassName);
@@ -122,7 +122,8 @@ var objects = (function (classesToMake) {
 	function makeCastDown(cast, targetClassName) {
 		return function (obj) {
 			var outputCell = makeCell();
-			if(inherits(classes[obj.origType.value], classes[targetClassName])) {
+			
+			if (inherits(classes[obj.origType.value], classes[targetClassName])) {
 				outputCell.addLine(cast(obj));
 			}
 			return outputCell;
@@ -130,7 +131,7 @@ var objects = (function (classesToMake) {
 	}
 
 	function inherits(subClass, superClass) {
-		if (subClass == superClass) {
+		if (subClass === superClass) {
 			return true;
 		} else if (subClass.inherit !== undefined) {
 			return inherits(subClass.inherit, superClass);

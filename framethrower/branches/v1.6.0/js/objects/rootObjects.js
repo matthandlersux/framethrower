@@ -17,6 +17,11 @@ rootObjects["shared.realLife"] = objects.make("Object");
 rootObjects["shared.thumbnailthumbnail"] = objects.make("Object");
 
 
+
+rootObjects["debug.text"] = objects.make("X.text", {string:"hello world"});
+
+
+
 // add them to the baseEnv
 forEach(rootObjects, function (v, k) {
 	lookupTable[k] = v;

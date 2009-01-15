@@ -32,7 +32,47 @@ var exprLib = {
 	flattenSet: {
 		type: "Set (Set a) -> Set a",
 		expr: "bindSet identity"
+	},
+	
+	
+	upRight: {
+		type: "Object -> Set Object",
+		expr: "compose (mapSet Cons~Object) Object:upRight"
+	},
+	upLeft: {
+		type: "Object -> Set Object",
+		expr: "compose (mapSet Cons~Object) Object:upLeft"
+	},
+	
+	consWithRelation: {
+		type: "Set Object -> Set Object",
+		expr: "bindSet upRight"
+	},
+	consWithArgument: {
+		type: "Set Object -> Set Object",
+		expr: "bindSet upLeft"
+	},
+	
+	
+	
+	
+	
+	test1: {
+		type: "Object -> Set X.text",
+		expr: "obj -> ((bindSet (compose returnUnitSet Object~X.text)) (consWithRelation ((mapSet Cons~Object) (returnUnitSet (Cons::lookup shared.name obj)))))"
+	},
+	
+	// nameInfonToString: {
+	// 		type: "Set Object -> Set String",
+	// 		expr: "infons -> compose returnUnitSet Object~Cons"
+	// 	},
+	
+	
+	getName: {
+		type: "Object -> Set String",
+		expr: "obj -> (mapSet X.text:string) ((bindSet (compose returnUnitSet Object~X.text)) (consWithRelation ((mapSet Cons~Object) (returnUnitSet (Cons::lookup shared.name obj)))))"
 	}
+	
 };
 
 
