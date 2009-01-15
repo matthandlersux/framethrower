@@ -23,7 +23,7 @@ function exprToXML(expr, type) {
 				mergeInto(child.ids, ids);
 			}
 			
-			if (constructor === "Unit") {
+			if (constructor === "Unit" || constructor === "Future") {
 				if (state.length === 0) {
 					xml = document.createDocumentFragment();
 				} else {

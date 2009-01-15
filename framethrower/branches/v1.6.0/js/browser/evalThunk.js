@@ -11,6 +11,10 @@ function evalThunk(thunkNode) {
 		forEach(xt.params, function (p) {
 			var thunksParam = thunkEssence.params[p.name];
 			
+			if (!thunksParam) {
+				debug.error("No f:with-param for `"+p.name+"` in thunk", thunkNode);
+			}
+			
 			// typecheck
 			if (p.type && !compareTypes(p.type, getType(thunksParam)) && !(thunksParam.nodeName === "f:var")) {
 				debug.log("Type check failed for param `"+p.name+"`. Expected type: `"+unparseType(p.type)+"` but got: `"+unparseType(getType(thunksParam))+"`.", thunkNode);
@@ -37,8 +41,10 @@ function evalThunk(thunkNode) {
 	
 	if (thunkEssence.url) {
 		xmlTemplates.withTemplate(thunkEssence.url, perform);
-	} else {
+	} else if (thunkEssence.template) {
 		perform(thunkEssence.template);
+	} else {
+		debug.error("Thunk has no url or template specified.", thunkNode);
 	}
 }
 

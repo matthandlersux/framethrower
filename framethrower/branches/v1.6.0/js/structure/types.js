@@ -121,8 +121,27 @@ function unparseType(type) {
 
 
 function compareTypes(type1, type2) {
-	// TODO make this work with type variables
-	return unparseType(type1) === unparseType(type2);
+	var correspond12 = {};
+	var correspond21 = {};
+	function helper(type1, type2) {
+		if (type1.kind !== type2.kind) return false;
+		if (type1.kind === "typeName") {
+			return type1.value === type2.value;
+		} else if (type1.kind === "typeVar") {
+			var c12 = !correspond12[type1.value] || correspond12[type1.value] === type2.value;
+			var c21 = !correspond21[type2.value] || correspond21[type2.value] === type1.value;
+			if (c12 && c21) {
+				correspond12[type1.value] = type2.value;
+				correspond21[type2.value] = type1.value;
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return (helper(type1.left, type2.left) && helper(type1.right, type2.right));
+		}
+	}
+	return helper(type1, type2);
 }
 
 
@@ -355,6 +374,13 @@ function getTypeConstructor(type) {
 
 function isReactive(type) {
 	return (type.kind === "typeApply");
+}
+
+
+
+
+function testType(exprString) {
+	return unparseType(getType(parseExpr(exprString)));
 }
 
 /*function showType(type) {

@@ -3,6 +3,13 @@ function makeControlledCell(typeString) {
 	return makeCC(type);
 }
 
+function makeFuture(value) {
+	var type = getType(value);
+	var cell = makeCC(makeTypeApply(makeTypeName("Future"), type));
+	cell.control.add(value);
+	return cell;
+}
+
 function makeCC(type) {
 	var cell;
 	var constructor = getTypeConstructor(type);
@@ -37,6 +44,9 @@ function makeCC(type) {
 		cell.control = {
 			add: function (k) {
 				cell.addLine(k);
+				cell.control.add = function () {
+					debug.error("Future already set.");
+				};
 			}
 		};		
 	} else if (constructor === "Set") {

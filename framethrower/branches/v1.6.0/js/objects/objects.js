@@ -4,193 +4,288 @@ An Object looks like:
 {
 	kind: "object",
 	type: Type,
+	origType: Type,
 	prop: {propName:property}
 }
 
-
-A Class looks like:
-{
-	name: String
-	prop: {propName:Type}
-	inherit: Class
-}
 */
 
 
-var classes = {};
-
-function makeClass(name, inherit) {
-	var cast = makeCast(name);
-	classes[name] = {
-		name: name,
-		prop: {},
-		inherit: inherit && classes[inherit],
-		castUp: cast,
-		castDown: makeCastDown(cast, name)
-	};
+var classesToMake = {
 	
-	// add 2 casting functions to env for each inherited Class
-	makeCasts(classes[name].inherit, name);
-}
-
-function makeCasts(superClass, targetClassName) {
-	if (superClass !== undefined) {
-		var superClassName = superClass.name;
-		// Casting Up, example castUp: 'K.object.cast.K.cons'
-		var castUpFuncName = targetClassName + "~" + superClassName;
-		var castUpType = targetClassName + " -> " + superClassName;
-		var castUpFunc = superClass.castUp;
-		addFun(castUpFuncName, castUpType, castUpFunc);
-		// Casting Down, example castDown: 'K.cons.cast.K.object'
-		var castDownFuncName = superClassName + "~" + targetClassName;
-		var castDownType = superClassName + " -> Unit " + targetClassName;
-		var castDownFunc = superClass.castDown;
-		addFun(castDownFuncName, castDownType, castDownFunc);
-
-		makeCasts(superClass.inherit, targetClassName);
-	}
-}
-
-function makeCast(targetClassName) {
-	return function (obj) {
-		return {
-			kind: obj.kind,
-			origType: obj.origType,
-			type: {kind: "typeName", value: targetClassName},
-			prop: obj.prop
-		};
-	};
-}
-
-function makeCastDown(cast, targetClassName) {
-	return function (obj) {
-		var outputCell = makeCell();
-		if(inherits(classes[obj.origType.value], classes[targetClassName])) {
-			outputCell.addLine(cast(obj));
+	// ====================================================
+	// Core
+	// ====================================================
+	
+	"Object": {
+		prop: {
+			"upLeft": "Set Cons",
+			"upRight": "Set Cons"
 		}
-		return outputCell;
-	};
-}
-
-function inherits(subClass, superClass) {
-	if (subClass == superClass) {
-		return true;
-	} else if (subClass.inherit !== undefined) {
-		return inherits(subClass.inherit, superClass);
-	} else {
-		return false;
+	},
+	"Cons": {
+		inherit: "Object",
+		prop: {
+			"left": "Object",
+			"right": "Object",
+			"truth": "Unit Bool"
+		},
+		memoize: ["left", "right"]
+	},
+	
+	// ====================================================
+	// External Representations
+	// ====================================================
+	
+	"X.video": {
+		inherit: "Object",
+		prop: {
+			"url": "String",
+			"width": "Number",
+			"height": "Number",
+			"duration": "Number"
+		}
+	},
+	"X.text": {
+		inherit: "Object",
+		prop: {
+			"string": "String"
+		},
+		memoize: ["string"]
 	}
-}
+	
+	// ====================================================
+	// UI
+	// ====================================================
+	
+	
+};
 
-function addProp(name, propName, typeString) {
-	classes[name].prop[propName] = parseType(typeString);
 
-	// Get, example getFuncName: 'K.cons.getRelation' 
-	var getFuncName = name + ":" + propName;
-	var funcType = name + " -> " + typeString;
-	var getFunc = function(obj) {
-		return obj.prop[propName];
-	};
-	addFun(getFuncName, funcType, getFunc);
+var objects = (function (classesToMake) {
+	var classes = {};
+	
+	// ====================================================
+	// Making classes
+	// ====================================================
+	
+	function makeClass(name, inherit, memoize) {
+		var cast = makeCast(name);
+		classes[name] = {
+			name: name,
+			prop: {},
+			inherit: inherit && classes[inherit],
+			memoize: memoize,
+			memoTable: {},
+			makeMemoEntry: function () {
+				return {
+					broadcaster: makeCC(parseType("Unit "+name))
+				};
+			},
+			castUp: cast,
+			castDown: makeCastDown(cast, name)
+		};
 
-}
+		// add 2 casting functions to env for each inherited Class
+		makeCasts(classes[name].inherit, name);
+	}
 
-function addPropsToObject(props, obj, objClass) {
-	// typecheck property for each property name in the Class and inherited Classes
-	if (objClass) {
+	function makeCasts(superClass, targetClassName) {
+		if (superClass !== undefined) {
+			var superClassName = superClass.name;
+			// Casting Up, example castUp: 'Object~Cons'
+			var castUpFuncName = targetClassName + "~" + superClassName;
+			var castUpType = targetClassName + " -> " + superClassName;
+			var castUpFunc = superClass.castUp;
+			addFun(castUpFuncName, castUpType, castUpFunc);
+			// Casting Down, example castDown: 'Cons~Object'
+			var castDownFuncName = superClassName + "~" + targetClassName;
+			var castDownType = superClassName + " -> Unit " + targetClassName;
+			var castDownFunc = superClass.castDown;
+			addFun(castDownFuncName, castDownType, castDownFunc);
+
+			makeCasts(superClass.inherit, targetClassName);
+		}
+	}
+
+	function makeCast(targetClassName) {
+		return function (obj) {
+			return {
+				kind: obj.kind,
+				origType: obj.origType,
+				type: {kind: "typeName", value: targetClassName},
+				prop: obj.prop
+			};
+		};
+	}
+
+	function makeCastDown(cast, targetClassName) {
+		return function (obj) {
+			var outputCell = makeCell();
+			if(inherits(classes[obj.origType.value], classes[targetClassName])) {
+				outputCell.addLine(cast(obj));
+			}
+			return outputCell;
+		};
+	}
+
+	function inherits(subClass, superClass) {
+		if (subClass == superClass) {
+			return true;
+		} else if (subClass.inherit !== undefined) {
+			return inherits(subClass.inherit, superClass);
+		} else {
+			return false;
+		}
+	}
+
+	function addProp(name, propName, typeString) {
+		classes[name].prop[propName] = parseType(typeString);
+		
+		// get function, example: 'Object:upLeft'
+		var getFuncName = name + ":" + propName;
+		var funcType = name + " -> " + "("+typeString+")";
+		var getFunc = function (obj) {
+			return obj.prop[propName];
+		};
+		addFun(getFuncName, funcType, getFunc);
+	}
+	
+	
+	// ====================================================
+	// Memoizing
+	// ====================================================
+	
+	function makeMemoString(memoValues) {
+		var strings = map(memoValues, function (value) {
+			return JSON.stringify(stringify(value));
+		});
+		return strings.join(",");
+	}
+	
+	function addMemoLookup(className, classDef) {
+		if (classDef.memoize) {
+			var c = classes[className];
+			var memoTable = c.memoTable;
+			
+			var funcName = className + "::" + "lookup";
+			var typeStrings = map(classDef.memoize, function (propName) {
+				return classDef.prop[propName];
+			});
+			var funcType = "(" + typeStrings.join(") -> (") + ")" + " -> " + "Unit " + className;
+			var func = function () {
+				var memoString = makeMemoString(arguments);
+				
+				if (!memoTable[memoString]) {
+					memoTable[memoString] = c.makeMemoEntry();
+				}
+				return memoTable[memoString].broadcaster;
+			};
+			addFun(funcName, funcType, func, c.memoize.length);
+		}
+	}
+	
+		
+	// ====================================================
+	// Make the classes based on class definitions
+	// ====================================================
+	
+	// make the classes
+	forEach(classesToMake, function (classDef, name) {
+		makeClass(name, classDef.inherit, classDef.memoize);
+	});
+	
+	// add the properties
+	forEach(classesToMake, function (classDef, name) {
+		forEach(classDef.prop, function (typeString, propName) {
+			addProp(name, propName, typeString);
+		});
+		addMemoLookup(name, classDef);
+	});
+	
+	
+	// ====================================================
+	// Making objects
+	// ====================================================
+	
+	function addPropsToObject(props, obj, objClass) {
 		forEach(objClass.prop, function (propType, propName) {
-			if (props[propName] !== undefined) {
-				if (getType(props[propName]).value == propType.value) { // TODO: replace this with compareTypes
-					obj.prop[propName] = props[propName];
-				} else {
-					obj.prop[propName] = classes[propType.value].castUp(props[propName]);
-					//throw type exception
-					//throw "Property type mismatch: `"+ unparseType(getType(props[propName])) +"` and `"+unparseType(propType)+"`";
-				}
+			if (isReactive(propType)) {
+				// fill in with an empty controlled cell
+				obj.prop[propName] = makeCC(propType);
 			} else {
-				// use the default, that is an empty controlled cell
-				if (propType.kind === "typeApply") {
-					obj.prop[propName] = makeCC(propType);
-				} else {
-					throw "Property needs to be defined: "+propName;
+				var instanceValue = props[propName];
+				if (instanceValue === undefined) {
+					debug.error("Error making object of type `"+objClass.name+"`. Property `"+propName+"` needs to be defined.");
 				}
+				var instanceType = getType(instanceValue);
+				
+				var propValue;
+				if (compareTypes(instanceType, propType)) {
+					propValue = instanceValue;
+				} else if (instanceType.kind === "typeName" && propType.kind === "typeName" && inherits(classes[instanceType.value], classes[propType.value])) {
+					propValue = classes[propType.value].castUp(props[propName]);
+				} else {
+					debug.error("Property type mismatch: `"+ unparseType(getType(props[propName])) +"` and `"+unparseType(propType)+"`");
+				}
+				
+				obj.prop[propName] = makeFuture(propValue);
 			}
 		});
-		addPropsToObject(props, obj, objClass.inherit);
-	}
-}
-
-var memoTable = {};
-
-function getMemoString(className, props) {
-	var classObj = classes[className];
-	var memoString = className + "=";
-	forEach(props, function(prop, propName) {
-		if (!isReactive(classObj.prop[propName])) {
-			memoString += propName + ":" + stringify(prop) + ";";
-		}
-	});
-	return memoString;
-}
-
-function makeObject(className, props) {
-	//check memoization table - only for K.cons for now. Later we will annotate classes with how to memoize them
-	var memoString;
-	if(className === "K.cons" && props !== undefined) {
-		memoString = getMemoString(className, props);
-		var memoObject = memoTable[memoString];
-		if (memoObject !== undefined) {
-			return memoObject;
+		if (objClass.inherit) {
+			addPropsToObject(props, obj, objClass.inherit);				
 		}
 	}
+
+	function makeObject(className, props) {
+		if (!props) props = {};
+		
+		var c = classes[className];
+		
+		var memoString;
+		if (c.memoize) {
+			var memoValues = map(c.memoize, function (propName) {
+				if (props[propName] === undefined) {
+					debug.error("Property `"+propName+"` needs to be specified for memoizing when creating an object of type `"+className+"`");
+				}
+				return props[propName];
+			});
+			memoString = makeMemoString(memoValues);
+			
+			if (c.memoTable[memoString] && c.memoTable[memoString].object) {
+				return c.memoTable[memoString].object;
+			}
+		}
+		
+		var type = {kind: "typeName", value: className};
+
+		var o = {
+			kind: "object",
+			origType: type,
+			type: type,
+			prop: {}
+		};
+
+		addPropsToObject(props, o, classes[className]);
+
+		if (c.memoize) {
+			if (!c.memoTable[memoString]) {
+				c.memoTable[memoString] = c.makeMemoEntry();
+			}
+			
+			var entry = c.memoTable[memoString];
+			if (entry) {
+				entry.object = o;
+				entry.broadcaster.control.add(o);
+			}
+		}
+
+		return o;
+	}
 	
-	if (!props) props = {};
-	
-	var o = {
-		kind: "object",
-		origType: {kind: "typeName", value: className},
-		type: {kind: "typeName", value: className},
-		prop: {}
+	return {
+		make: makeObject,
+		classDefs: classesToMake,
+		debug: classes
 	};
-
-	addPropsToObject(props, o, classes[className]);
-
-	if(memoString !== undefined) {
-		memoTable[memoString] = o;
-	}
-
-	return o;
-}
-
-// ==================================================================
-// Primitive Objects
-// ==================================================================
-
-makeClass("K.object");
-
-makeClass("K.cons", "K.object");
-
-addProp("K.object", "upRight", "Set K.cons");
-addProp("K.object", "upLeft", "Set K.cons");
-addProp("K.cons", "left", "K.object");
-addProp("K.cons", "right", "K.object");
-addProp("K.cons", "truth", "Unit Bool"); // this only applies if the relation is "in (the context of)"
-
-// ==================================================================
-// UI
-// ==================================================================
-
-
-// ==================================================================
-// External Representations
-// ==================================================================
-
-makeClass("X.video", "K.object");
-addProp("X.video", "url", "String");
-addProp("X.video", "width", "Number");
-addProp("X.video", "height", "Number");
-addProp("X.video", "duration", "Number");
-
-
-makeClass("X.text", "K.object");
-addProp("X.text", "string", "String");
+})(classesToMake);

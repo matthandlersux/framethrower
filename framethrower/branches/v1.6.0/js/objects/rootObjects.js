@@ -8,11 +8,14 @@
 
 var rootObjects = {};
 
-rootObjects["shared.in"] = makeObject("K.object");
-rootObjects["shared.ont"] = makeObject("K.object");
-rootObjects["shared.name"] = makeObject("K.object");
-rootObjects["shared.thumbnail"] = makeObject("K.object");
-rootObjects["shared.test"] = makeObject("K.cons", {left:rootObjects["shared.in"], right:rootObjects["shared.ont"]});
+rootObjects["shared.in"] = objects.make("Object");
+rootObjects["shared.ont"] = objects.make("Object");
+rootObjects["shared.name"] = objects.make("Object");
+
+rootObjects["shared.realLife"] = objects.make("Object");
+
+rootObjects["shared.thumbnailthumbnail"] = objects.make("Object");
+
 
 // add them to the baseEnv
 forEach(rootObjects, function (v, k) {

@@ -122,7 +122,7 @@ function xhr(url, post, callback, failCallback, timeout) {
 			}
 		}
 	};
-	req.send("json="+post);
+	req.send("json="+encodeURIComponent(post));
 	timer = setTimeout(function () {
 		req.abort();
 		fail();
@@ -214,6 +214,8 @@ var session = (function () {
 					forEach(o.updates, function (update) {
 						//console.log("doing update", update, o.updates);
 						var cell = cells[update.queryId];
+						var keyType; // TODO
+						var valueType;
 						var key = parseServerResponse(update.key);
 						var value = parseServerResponse(update.value);
 						cell.control[update.action](key, value);

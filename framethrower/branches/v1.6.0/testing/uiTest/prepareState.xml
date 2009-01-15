@@ -1,0 +1,109 @@
+<f:action name="prepareState"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:derive name="in" d="shared.in" />
+	<f:derive name="realLife" d="shared.realLife" />
+	
+	<f:perform with-action="$makeNamedObject" name="gfmov">
+		<f:with-param name="name" select="'Goldfinger'" />
+	</f:perform>
+	
+	<f:perform with-action="$putObjectInSituation">
+		<f:with-param name="situation" select="$realLife" />
+		<f:with-param name="object" select="$gfmov" />
+	</f:perform>
+	
+	
+	
+	
+	
+	<f:action name="putObjectInSituation">
+		<f:param name="object" type="Object" />
+		<f:param name="situation" type="Object" />
+		<f:derive name="in" d="shared.in" />
+		
+		<f:perform with-action="$makeInfon2" name="infon">
+			<f:with-param name="relation" select="$in" />
+			<f:with-param name="arg1" select="$situation" />
+			<f:with-param name="arg2" select="$object" />
+		</f:perform>
+		<f:intact object="$infon" property="truth" action="add" key="true" />
+	</f:action>
+	
+	
+	<f:action name="makeNamedObject">
+		<f:param name="name" type="String" />
+				
+		<f:create type="Object" name="object" />
+
+		<f:perform with-action="$nameObject" name="nameObject">
+			<f:with-param name="object" select="$object" />
+			<f:with-param name="name" select="$name" />
+		</f:perform>
+		
+		<f:return name="object" />
+	</f:action>
+	
+	<f:action name="nameObject">
+		<f:param name="object" type="Object" />
+		<f:param name="name" type="String" />
+		
+		<f:derive name="ont" d="shared.ont" />
+		<f:derive name="nameRel" d="shared.name" />
+		
+		<f:create type="X.text" name="nameText">
+			<f:with-param name="string" select="$name" />
+		</f:create>
+		
+		<f:perform with-action="$makeInfon2" name = "nameInfon">
+			<f:with-param name="relation" select="$nameRel" />
+			<f:with-param name="arg1" select="$object" />
+			<f:with-param name="arg2" select="$nameText" />		
+		</f:perform>
+		
+		<f:perform with-action="$makeInfon2" name="situatedNameInfon">
+			<f:with-param name="relation" select="$in" />
+			<f:with-param name="arg1" select="$ont" />
+			<f:with-param name="arg2" select="$nameInfon" />		
+		</f:perform>
+		
+		<f:intact object="$situatedNameInfon" property="truth" action="add" key="true" />
+	</f:action>
+	
+	<f:action name="makeInfon2">
+		<f:param name="relation" type="Object" />
+		<f:param name="arg1" type="Object" />
+		<f:param name="arg2" type="Object" />		
+		
+		<f:perform with-action="$makeCons" name="cons1">
+			<f:with-param name="left" select="$relation" />
+			<f:with-param name="right" select="$arg1" />
+		</f:perform>
+
+		<f:perform with-action="$makeCons" name="cons2">
+			<f:with-param name="left" select="$cons1" />
+			<f:with-param name="right" select="$arg2" />
+		</f:perform>
+		
+		<f:return name="cons2" />
+	</f:action>	
+	
+	<f:action name="makeCons">
+		<f:param name="left" type="Object" />
+		<f:param name="right" type="Object" />
+		
+		<f:create type="Cons" name="cons">
+			<f:with-param name="left" select="$left" />
+			<f:with-param name="right" select="$right" />
+		</f:create>
+		
+		<f:intact object="$left" property="upRight" action="add" key="$cons" />
+		<f:intact object="$right" property="upLeft" action="add" key="$cons" />
+		
+		<f:return name="cons" />
+	</f:action>
+	
+</f:action>

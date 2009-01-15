@@ -7,7 +7,7 @@
 	<f:derive name="in" d="shared.in" />
 	
 	<f:perform with-action="$subAction" name="myObject" />
-	<!-- <f:create type="K.object" name="myObject" /> -->
+	<!-- <f:create type="Object" name="myObject" /> -->
 	
 	<f:perform with-action="$makeCons">
 		<f:with-param name="left" select="$in" />
@@ -15,15 +15,15 @@
 	</f:perform>
 	
 	<f:action name="subAction">
-		<f:create type="K.object" name="x" />
+		<f:create type="Object" name="x" />
 		<f:return name="x" />
 	</f:action>
 	
 	<f:action name="makeCons">
-		<f:param name="left" type="K.object" />
-		<f:param name="right" type="K.object" />
+		<f:param name="left" type="Object" />
+		<f:param name="right" type="Object" />
 		
-		<f:create type="K.cons" name="cons">
+		<f:create type="Cons" name="cons">
 			<f:with-param name="left" select="$left" />
 			<f:with-param name="right" select="$right" />
 		</f:create>

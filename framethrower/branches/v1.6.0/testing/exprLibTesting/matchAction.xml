@@ -4,7 +4,7 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
-	<f:param name="rootObj" type="K.object"/>
+	<f:param name="rootObj" type="Object"/>
 	
 	<f:derive name="in" d="shared.in" />
 	<f:derive name="nameRel" d="shared.name" />
@@ -82,7 +82,7 @@
 		
 		<f:param name="name" type="String" />
 				
-		<f:create type="K.object" name="obj" />
+		<f:create type="Object" name="obj" />
 
 		<f:create type="X.text" name="nameText">
 			<f:with-param name="string" select="$name" />
@@ -104,9 +104,9 @@
 	</f:action>
 	
 	<f:action name="makeBinaryInfon">
-		<f:param name="relation" type="K.object" />
-		<f:param name="arg1" type="K.object" />
-		<f:param name="arg2" type="K.object" />		
+		<f:param name="relation" type="Object" />
+		<f:param name="arg1" type="Object" />
+		<f:param name="arg2" type="Object" />		
 		
 		<f:perform with-action="$makeCons" name="cons1">
 			<f:with-param name="left" select="$relation" />
@@ -122,10 +122,10 @@
 	</f:action>	
 	
 	<f:action name="makeCons">
-		<f:param name="left" type="K.object" />
-		<f:param name="right" type="K.object" />
+		<f:param name="left" type="Object" />
+		<f:param name="right" type="Object" />
 		
-		<f:create type="K.cons" name="cons">
+		<f:create type="Cons" name="cons">
 			<f:with-param name="left" select="$left" />
 			<f:with-param name="right" select="$right" />
 		</f:create>

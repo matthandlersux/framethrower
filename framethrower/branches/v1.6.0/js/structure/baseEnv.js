@@ -57,7 +57,7 @@ var baseEnv = function (s) {
 	}
 }*/
 
-function addFun(name, typeString, f) {
+function addFun(name, typeString, f, numArguments) {
 	/*
 	This creates a new Fun object and binds it (by putting it in lookupTable)
 	*/
@@ -70,7 +70,7 @@ function addFun(name, typeString, f) {
 	} else {
 		fun = curry(f);
 	}*/
-	fun = curry(f);
+	fun = curry(f, numArguments);
 	
 	lookupTable[name] = {
 		kind: "fun",
@@ -87,8 +87,15 @@ function addFun(name, typeString, f) {
 // but they are defined using expressions, that is, combinations of primitive functions
 // ============================================================================
 
-function addExpr(name, exprString) {
-	lookupTable[name] = parseExpr(exprString);
+function addExpr(name, exprString, optionalTypeString) {
+	var expr = parseExpr(exprString);
+	if (optionalTypeString) {
+		var type = parseType(optionalTypeString);
+		if (!compareTypes(getType(expr), type)) {
+			debug.error("Expression `"+name+"` has type `"+unparseType(getType(expr))+"` but expected `"+optionalTypeString+"`");
+		}
+	}
+	lookupTable[name] = expr;
 }
 
 addExpr("compose", "f -> g -> x -> f (g x)");

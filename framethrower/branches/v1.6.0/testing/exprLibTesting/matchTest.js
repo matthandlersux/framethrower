@@ -1,5 +1,5 @@
-var cell = makeControlledCell("Set K.cons");
-var rootObj = makeObject("K.object", {upLeft:cell});
+var cell = makeControlledCell("Set Cons");
+var rootObj = objects.make("Object", {upLeft:cell});
 
 
 function initialize() {

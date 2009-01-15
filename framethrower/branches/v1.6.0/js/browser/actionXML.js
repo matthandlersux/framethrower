@@ -1,4 +1,10 @@
 function intact(object, property, action, params) {
+	if (DEBUG) {
+		if (!object.prop[property]) {
+			debug.error("intact failed. Object does not have property `"+property+"`", object);
+		}
+	}
+	
 	// params has properties key and value, or just key
 	object.prop[property].control[action](params.key, params.value);
 }
@@ -7,7 +13,7 @@ function createObject(type, properties) {
 	// properties has all of the "future" properties, reactive properties should start out as empty
 	//console.log("createObject called", arguments);
 	
-	return makeObject(type, properties);
+	return objects.make(type, properties);
 	
 	// needs to return the created object
 	// return "This should be the created object";
