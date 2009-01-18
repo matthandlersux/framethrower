@@ -41,7 +41,7 @@ var exprLib = {
 	},
 	
 	
-	upRight: {
+/*	upRight: {
 		type: "Object -> Set Object",
 		expr: "compose (mapSet Cons~Object) Object:upRight"
 	},
@@ -58,18 +58,15 @@ var exprLib = {
 		type: "Set Object -> Set Object",
 		expr: "bindSet upLeft"
 	},
-	
+*/	
 	
 	
 	
 
 	
-	nameInfonsToStrings: {
-		type: "Set Object -> Set String",
-		chain: ["Cons:right", "X.text:string"]
-	},
+
 	
-	test1: {
+/*	test1: {
 		type: "Set Object -> Set Object",
 		chain: ["Cons:right"]
 	},
@@ -78,40 +75,60 @@ var exprLib = {
 		type: "Set Object -> Set Cons",
 		expr: "bindSet (compose returnUnitSet Object~Cons)"
 	},
+*/	
+
 	
-	potentialNameInfonsHelper: {
-		type: "Unit Cons -> Set Object",
-		chain: ["upRight"]
-	},
-	
-	potentialNameInfons: {
-		type: "Object -> Set Object",
-		expr: "obj -> potentialNameInfonsHelper (Cons::lookup shared.name obj)"
-	},
+
 	
 	getName: {
 		type: "Object -> Set String",
-		expr: "obj -> nameInfonsToStrings (potentialNameInfons obj)"
+		expr: "obj -> nameInfonsToStrings (getNameInfons obj)",
+		where: {
+			getNameInfons: {
+				type: "Object -> Set Cons",
+				expr: "obj -> helper (Cons::lookup shared.name obj)",
+				where: {
+					helper: {
+						type: "Unit Cons -> Set Cons",
+						chain: ["Object:upRight"]
+					}
+				}
+			},
+			nameInfonsToStrings: {
+				type: "Set Cons -> Set String",
+				chain: ["Cons:right", "X.text:string"]
+			}
+		}
 	}
 	
 };
 
-
-forEach(exprLib, function(o, name) {
-	if (o.expr) {
-		addExpr(name, o.expr, o.type, base);		
-	} else if (o.chain) {
-		var chain = map(o.chain, function (exprString) {
-			return parseExpr(exprString);
-		});
-		var startType = o.startType;
-		if (o.type) {
-			startType = parseType(o.type).left;
+function processExprs(exprs, dynamicEnv) {
+	forEach(exprs, function (o, name) {
+		var scope = makeDynamicEnv(dynamicEnv.env);
+		
+		if (o.where) {
+			processExprs(o.where, scope);
 		}
-		var expr = exprChainer.chain(startType, chain);
+		
+		var expr;
+		if (o.expr) {
+			var expr = parseExpr(o.expr, scope.env);
+		} else if (o.chain) {
+			var chain = map(o.chain, function (exprString) {
+				return parseExpr(exprString, scope.env);
+			});
+			var startType = o.startType;
+			if (o.type) {
+				startType = parseType(o.type).left;
+			}
+			var expr = exprChainer.chain(startType, chain);
+		}
 		if (o.type && !compareTypes(parseType(o.type), getType(expr))) {
 			debug.error("Expression `"+name+"` has type `"+unparseType(getType(expr))+"` but expected `"+o.type+"`");
 		}
-		base.add(name, expr);
-	}
-});
+		dynamicEnv.add(name, expr);
+	});
+}
+
+processExprs(exprLib, base);

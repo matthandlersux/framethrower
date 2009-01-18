@@ -13,11 +13,9 @@ function unparseExpr(expr) {
 		} else if (expr.kind === "var") {
 			return expr.value;
 		} else {
-			var t = typeOf(expr);
-			if (t === "string") {
-				return '"' + expr.replace(/"/g, '\\"') + '"';
-			} else if (t === "boolean" || t === "number") {
-				return expr.toString();
+			var lit = unparseLiteral(expr);
+			if (lit !== undefined) {
+				return lit;
 			} else {
 				if (!expr.name) {
 					expr.name = localIds();

@@ -110,13 +110,16 @@
 		<xsl:variable name="fc" select="substring($s, 1, 1)" />
 		<xsl:choose>
 			<xsl:when test='$fc = "&#39;"'>
-				<f:string value="{{{$s}}}" />
+				<f:literal type="String" value="{{{$s}}}" />
 			</xsl:when>
 			<xsl:when test="contains('0123456789', $fc)">
-				<f:number value="{$s}" />
+				<f:literal type="Number" value="{$s}" />
 			</xsl:when>
 			<xsl:when test="$s = 'true' or $s = 'false'">
-				<f:boolean value="{$s}" />
+				<f:literal type="Bool" value="{$s}" />
+			</xsl:when>
+			<xsl:when test="$s = 'null'">
+				<f:literal type="Null" value="null" />
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:element name="xsl:copy-of" namespace="{$xslns}">

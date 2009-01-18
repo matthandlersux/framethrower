@@ -99,20 +99,12 @@ function compareThunkEssences(te1, te2) {
 
 
 function getWithParam(node, ids) {
-	// if (getAttr(node, "number")) {
-	// 	return +(getAttr(node, "number"));
-	// } else if (getAttr(node, "bool")) {
-	// 	return !!(getAttr(node, "bool"));
-	// } else if (getAttr(node, "string")) {
-	// 	return getAttr(node, "string");
-	// } else {
-		var child = xpath("*[1]", node);
-		if (child.length === 0) {
-			console.error("f:with-param is undefined.", node);
-		} else {
-			return xmlToExpr(child[0], ids);
-		}
-	// }
+	var child = xpath("*[1]", node);
+	if (child.length === 0) {
+		debug.error("f:with-param node should have a child.", node);
+	} else {
+		return xmlToExpr(child[0], ids);
+	}
 }
 
 function urlToAbs(baseUrl, url) {

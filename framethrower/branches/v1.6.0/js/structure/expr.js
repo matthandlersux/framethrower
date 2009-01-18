@@ -48,7 +48,7 @@ function parseExpression(ast, env) {
 	}
 }
 
-function parseExpr(s) {
+function parseExpr(s, env) {
 	/*
 	Takes in a string and returns an Expr.
 	After parsing the string to an AST,
@@ -56,7 +56,8 @@ function parseExpr(s) {
 		for each apply we make the appropriate apply Expr
 		for each lambda we make the appropriate lambda Expr
 	*/
-	return parseExpression(parse(s), base.env);
+	if (!env) env = base.env;
+	return parseExpression(parse(s), env);
 }
 
 

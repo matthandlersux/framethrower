@@ -28,7 +28,7 @@ var classesToMake = {
 		prop: {
 			"left": "Object",
 			"right": "Object",
-			"truth": "Unit Bool"
+			"truth": "Unit Null"
 		},
 		memoize: ["left", "right"]
 	},

@@ -10,6 +10,13 @@ function makeFuture(value) {
 	return cell;
 }
 
+function typeCheck(expr, type) {
+	var exprType = getType(expr);
+	if (!compareTypes(exprType, type)) {
+		debug.error("Expected type `"+unparseType(type)+"` but got an Expr of type `"+unparseType(exprType)+"`.");
+	}
+}
+
 function makeCC(type) {
 	var cell;
 	var constructor = getTypeConstructor(type);
@@ -20,6 +27,7 @@ function makeCC(type) {
 		cell = makeCell();
 		cell.control = {
 			set: function (k) {
+				typeCheck(k, type.right);
 				var state = cell.getState();
 				if (state.length === 0) {
 					cell.addLine(k);
@@ -43,6 +51,7 @@ function makeCC(type) {
 		cell = makeCell();
 		cell.control = {
 			add: function (k) {
+				typeCheck(k, type.right);
 				cell.addLine(k);
 				cell.control.add = function () {
 					debug.error("Future already set.");
@@ -53,9 +62,11 @@ function makeCC(type) {
 		cell = makeCell();
 		cell.control = {
 			add: function (k) {
+				typeCheck(k, type.right);
 				cell.addLine(k);
 			},
 			remove: function (k) {
+				typeCheck(k, type.right);
 				cell.removeLine(k);
 			}
 		};
@@ -63,9 +74,12 @@ function makeCC(type) {
 		cell = makeCellMapInput();
 		cell.control = {
 			add: function (k, v) {
+				typeCheck(k, type.left.right);
+				typeCheck(v, type.right);
 				cell.addLine({key: k, value: v});
 			},
 			remove: function (k) {
+				typeCheck(k, type.left.right);
 				cell.removeLine(k);
 			}
 		};

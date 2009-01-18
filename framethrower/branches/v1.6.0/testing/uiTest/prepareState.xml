@@ -35,7 +35,7 @@
 			<f:with-param name="arg1" select="$situation" />
 			<f:with-param name="arg2" select="$object" />
 		</f:perform>
-		<f:intact object="$infon" property="truth" action="add" key="true" />
+		<f:intact object="$infon" property="truth" action="add" key="null" />
 	</f:action>
 	
 	
@@ -75,7 +75,7 @@
 			<f:with-param name="arg2" select="$nameInfon" />		
 		</f:perform>
 		
-		<f:intact object="$situatedNameInfon" property="truth" action="add" key="true" />
+		<f:intact object="$situatedNameInfon" property="truth" action="add" key="null" />
 	</f:action>
 	
 	<f:action name="makeInfon2">

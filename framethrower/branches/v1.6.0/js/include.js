@@ -14,6 +14,7 @@
 		"js/structure/types.js",
 		"js/structure/expr.js",
 
+		"js/structure/literalTypes.js",
 		"js/structure/baseEnv.js",
 
 		"js/structure/stringify.js",

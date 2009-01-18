@@ -1,11 +1,7 @@
 function exprToXML(expr, type) {
-	var t = typeOf(expr);
-	if (t === "number") {
-		return {xml: setAttr(createEl("f:number"), "value", expr), ids: {}};
-	} else if (t === "string") {
-		return {xml: setAttr(createEl("f:string"), "value", expr), ids: {}};
-	} else if (t === "boolean") {
-		return {xml: setAttr(createEl("f:bool"), "value", expr), ids: {}};
+	var lit = xmlizeLiteral(expr);
+	if (lit !== undefined) {
+		return lit;
 	} else {
 		if (expr.kind === "startCap" && !expr.params) {
 			// Note: the !expr.params is for excluding parameter-less templates which otherwise look like StartCap's (not Fun's)
@@ -66,12 +62,8 @@ function exprToXML(expr, type) {
 function xmlToExpr(xml, ids) {
 	var nn = xml.nodeName;
 	
-	if (nn === "f:number") {
-		return +getAttr(xml, "value");
-	} else if (nn === "f:string") {
-		return getAttr(xml, "value");
-	} else if (nn === "f:bool") {
-		return getAttr(xml, "value") === "true";
+	if (nn === "f:literal") {
+		return unxmlizeLiteral(xml);
 	} else if (nn === "f:o") {
 		var id = getAttr(xml, "name");
 		return ids[id];

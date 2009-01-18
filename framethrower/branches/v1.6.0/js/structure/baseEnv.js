@@ -4,24 +4,7 @@ base.env will convert literal strings (Number's, String's, Bool's) to their actu
 here we also create bindings for our so-called "primitive functions", the server-client shared vocabulary
 */
 
-function parseLiteral(s) {
-	if (/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/.test(s)) {
-		// matches a number
-		// using http://www.regular-expressions.info/floatingpoint.html
-		// might want to find the regular expression that javascript uses...
-		return +s;
-	} else if (/^".*"$/.test(s)) {
-		// matches a string
-		var sub = s.substring(1, s.length - 2);
-		return sub.replace(/\\(["\\])/g, "$1");
-	} else if (s === "true") {
-		return true;
-	} else if (s === "false") {
-		return false;
-	} else {
-		return undefined;
-	}
-}
+
 
 var literalEnv = function (s) {
 	var lit = parseLiteral(s);
