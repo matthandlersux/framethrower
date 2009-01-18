@@ -8,8 +8,8 @@ nullObject = {
 
 
 // ============================================================================
-// Note: the following functions are the interface through which the system interprets literals.
-// But also make sure to modify desugar.xml write-select if adding new literals.
+// NOTE: the following functions are the interface through which the system interprets literals.
+// But also make sure to modify browser/desugar.xml write-select if adding new literals.
 // ============================================================================
 
 // String -> Literal

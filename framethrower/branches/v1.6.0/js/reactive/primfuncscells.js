@@ -336,6 +336,42 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
+		
+		// TODO
+		reactiveNot: {
+			type: "Unit Null -> Unit Null",
+			func: function (cell) {
+				
+			}
+		},
+		reactiveAnd: {
+			type: "Unit Null -> Unit Null -> Unit Null",
+			func: function (cell1, cell2) {
+				
+			}
+		},
+		reactiveOr: {
+			type: "Unit Null -> Unit Null -> Unit Null",
+			func: function (cell1, cell2) {
+				
+			}
+		},
+		isEmpty: {
+			type: "Set a -> Unit Null",
+			func: function (cell) {
+				
+			}
+		},
+		gate: {
+			type: "Unit Null -> a -> Unit a",
+			func: function (gatekeeper, passer) {
+				// if gatekeeper is set, send passer through
+				// if gatekeeper is empty, output is empty
+				
+			}
+		},
+		
+		// TODO: let's remove passThru
 	 	passThru : {
 			type : "(a -> Bool) -> a -> Unit a",
 			func : function (f, input) {
@@ -346,6 +382,8 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
+		
+		
 	 	any : {
 			type : "(a -> Unit Bool) -> Set a -> Unit Bool",
 			func : function (f, cell) {
