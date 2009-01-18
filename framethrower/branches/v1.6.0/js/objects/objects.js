@@ -129,7 +129,8 @@ var objects = (function (classesToMake) {
 			return outputCell;
 		};
 	}
-
+	
+	// test inheritance
 	function inherits(subClass, superClass) {
 		if (subClass === superClass) {
 			return true;
@@ -145,7 +146,13 @@ var objects = (function (classesToMake) {
 		
 		// get function, example: 'Object:upLeft'
 		var getFuncName = name + ":" + propName;
-		var funcType = name + " -> " + "("+typeString+")";
+		
+		var funcType;
+		if (isReactive(classes[name].prop[propName])) {
+			funcType = name + " -> " + "("+typeString+")";
+		} else {
+			funcType = name + " -> " + "Future " + "("+typeString+")";
+		}
 		var getFunc = function (obj) {
 			return obj.prop[propName];
 		};
@@ -287,6 +294,9 @@ var objects = (function (classesToMake) {
 	return {
 		make: makeObject,
 		classDefs: classesToMake,
-		debug: classes
+		debug: classes,
+		inherits: function (subClassName, superClassName) {
+			return (classes[subClassName] && classes[superClassName] && inherits(classes[subClassName], classes[superClassName]));
+		}
 	};
 })(classesToMake);

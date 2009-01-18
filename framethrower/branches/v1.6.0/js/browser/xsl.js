@@ -266,7 +266,7 @@ function makeTemplateFunFromUrl(url, callback) {
 	documents.withDoc(url, function (doc) {
 		var name = getAttr(doc, "name");
 		var scope = {};
-		var newEnv = extendEnv(baseEnv, scope);
+		var newEnv = extendEnv(base.env, scope);
 		var fun = compileTemplate(doc, url)(newEnv);
 		scope[name] = fun;
 		callback(fun);

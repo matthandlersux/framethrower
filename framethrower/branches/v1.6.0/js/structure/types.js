@@ -350,18 +350,6 @@ function getType(o) {
 
 
 
-function testConstraints(s) {
-	var exp = parseExpr(s);
-	var c = [];
-	var t = genConstraints(exp, baseEnv, c);
-	forEach(c, function (x) {
-		console.log(unparseType(x[0]) + " = " + unparseType(x[1]));
-	});
-	console.log("type of the expression: " + unparseType(t));
-}
-
-
-
 function getTypeConstructor(type) {
 	var constructor = type;
 	while (constructor.kind === "typeApply") {

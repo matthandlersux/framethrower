@@ -22,7 +22,7 @@ rootObjects["debug.text"] = objects.make("X.text", {string:"hello world"});
 
 
 
-// add them to the baseEnv
+// add them to the base environment
 forEach(rootObjects, function (v, k) {
-	lookupTable[k] = v;
+	base.add(k, v);
 });

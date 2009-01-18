@@ -34,3 +34,22 @@ function extendEnv(parentEnv, hash) {
 		}
 	};
 }
+
+
+function makeDynamicEnv(inherit) {
+	if (!inherit) inherit = emptyEnv;
+	var lookup = {};
+	return {
+		add: function (name, value) {
+			lookup[name] = value;
+		},
+		env: function (s) {
+			var value = lookup[s];
+			if (value === undefined) {
+				return inherit(s);
+			} else {
+				return value;
+			}
+		}
+	};
+}

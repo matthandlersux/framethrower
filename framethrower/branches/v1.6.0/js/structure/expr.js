@@ -56,7 +56,7 @@ function parseExpr(s) {
 		for each apply we make the appropriate apply Expr
 		for each lambda we make the appropriate lambda Expr
 	*/
-	return parseExpression(parse(s), baseEnv);
+	return parseExpression(parse(s), base.env);
 }
 
 

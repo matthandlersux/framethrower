@@ -110,7 +110,7 @@
 		<xsl:variable name="fc" select="substring($s, 1, 1)" />
 		<xsl:choose>
 			<xsl:when test='$fc = "&#39;"'>
-				<f:string value="{$s}" />
+				<f:string value="{{{$s}}}" />
 			</xsl:when>
 			<xsl:when test="contains('0123456789', $fc)">
 				<f:number value="{$s}" />

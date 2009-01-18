@@ -74,6 +74,14 @@ var primFuncs = function () {
 				return cell;
 			}
 		},
+		returnFuture : { // TODO: test this, merge code with returnUnit
+			type : "a -> Future a",
+			func : function (val) {
+				var cell = makeCell();
+				cell.addLine(val);
+				return cell;
+			}
+		},
 	 	returnUnitSet : {
 			type : "Unit a -> Set a",
 			func : function (cell) {
