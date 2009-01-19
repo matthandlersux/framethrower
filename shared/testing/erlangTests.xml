@@ -1,4 +1,75 @@
 <tests>
+	<test name='rangeByKeyTest1'>
+		<startcap name='startCell' type='unit number' />
+		<startcap name='endCell' type='unit number' />
+	
+		<messages>
+			<set scname = 'startCell'>
+				<number value='5' />
+			</set>
+			<set scname = 'endCell'>
+				<number value='7' />
+			</set>
+		</messages>
+	
+		<endcap name = 'ec' expression = 'rangeByKey startCell endCell (oneTo 9)' />
+
+		<expectedmessages>
+			<set ecname = 'ec'>
+				<number value = '5' />
+			</set>
+			<set ecname = 'ec'>
+				<number value = '6' />
+			</set>
+			<set ecname = 'ec'>
+				<number value = '7' />
+			</set>
+			<none ecname = 'ec' />
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'startCell'>
+				<number value='5' />
+			</remove>
+			
+			<set scname = 'startCell'>
+				<number value = '2' />
+			</set>
+		</messages>
+		
+		<expectedmessages>
+			<set ecname = 'ec'>
+				<number value = '2' />
+			</set>
+			<set ecname = 'ec'>
+				<number value = '3' />
+			</set>
+			<set ecname = 'ec'>
+				<number value = '4' />
+			</set>
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'endCell'>
+				<number value='7' />
+			</remove>
+			
+			<set scname = 'endCell'>
+				<number value = '5' />
+			</set>
+		</messages>
+		
+		<expectedmessages>
+			<remove ecname = 'ec'>
+				<number value = '6' />
+			</remove>
+			<remove ecname = 'ec'>
+				<number value = '7' />
+			</remove>
+		</expectedmessages>
+		
+	</test>
+	
 	
 	<test name='unfoldSetTest1'>
 		<endcap name = 'ec' expression = 'unfoldSet oneTo 5' />
@@ -659,7 +730,7 @@
 	<test name='anyTest1'>
 		<startcap name='sc' type='Set Bool' />
 
-		<endcap name = 'ec' expression = 'any (compose returnUnit (equal false)) sc' />
+		<endcap name = 'ec' expression = 'any (arg -> returnUnit (equal false arg)) sc' />
 
 		<messages>
 			<set scname = 'sc'>
