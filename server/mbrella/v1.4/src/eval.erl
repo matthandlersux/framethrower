@@ -39,7 +39,8 @@ evaluate(Expr) when is_record(Expr, cons) ->
 					BottomExpr = bottomOut(Expr),	
 					case type:isReactive(Type) of
 						true ->
-							case memoize:get( BottomExpr ) of
+							NormalExpr = normalize(BottomExpr),
+							case memoize:get( NormalExpr ) of
 								Cell when is_record(Cell, exprCell) -> Cell;
 								_ ->
 									F = evaluate( Left ), 
@@ -48,7 +49,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
 									NamedCell = env:nameAndStore(Cell),
 									% this is correct - memoize:add returns an onRemove function
-									OnRemove = memoize:add( BottomExpr, NamedCell),
+									OnRemove = memoize:add( NormalExpr, NamedCell),
 									cell:addOnRemove(Pid, OnRemove),
 									NamedCell
 							end;
@@ -216,4 +217,10 @@ bottomOut( InExpr ) ->
 		end,
 	mblib:traverse(InExpr, LookForAndReplaceFun).
 
-normalize( Expr ) -> Expr.
+normalize( Expr ) -> 
+	NormFun = fun( Expr ) when is_record(Expr, exprFun) ->
+					{ok, Expr#exprFun{type = undefined, function = undefined, bottom = undefined}};
+				( Expr ) when is_record(Expr, exprCell) ->
+					{ok, Expr#exprCell{pid = undefined, type = undefined, bottom = undefined}}
+		end,
+	mblib:traverse(Expr, NormFun).
