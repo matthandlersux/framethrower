@@ -26,6 +26,7 @@ var exprChainer = (function () {
 
 
 	var compose = parseExpr("compose");
+	var identity = parseExpr("x -> x");
 
 	function makeCompose(f, g) {
 		return makeApply(makeApply(compose, f), g);
@@ -60,28 +61,28 @@ var exprChainer = (function () {
 
 
 
-	function getNext(startType, expr) {
+	function getNext(startType, expr, input) {
 		var start = getCandC(startType);
-		var input = getCandC(getType(expr).left);
-	
+		if (!input) input = getCandC(getType(expr).left);
+		
 		var startClass = start.className;
 		var inputClass = input.className;
 	
 		if (startClass === inputClass) {
-			return convertConstructor(startType, expr);
+			return convertConstructor(startType, expr, input);
 		} else if (objects.inherits(startClass, inputClass) || objects.inherits(inputClass, startClass)) {
 			var classT = convertConstructor(startType, parseExpr(startClass+"~"+inputClass));
 			var newType = getType(classT).right;
-			var constructorT = convertConstructor(newType, expr);
+			var constructorT = convertConstructor(newType, expr, input);
 			return makeCompose(constructorT, classT);
 		} else {
 			debug.error("Cannot convert between classes `"+startClass+"` and `"+inputClass+"`.");
 		}
 	}
 
-	function convertConstructor(startType, expr) {
+	function convertConstructor(startType, expr, input) {
 		var start = getCandC(startType);
-		var input = getCandC(getType(expr).left);
+		if (!input) input = getCandC(getType(expr).left);
 		var output = getCandC(getType(expr).right);
 	
 		var startCons = constructorOrd[start.constructor];
@@ -110,7 +111,7 @@ var exprChainer = (function () {
 	}
 	
 	return {
-		chain: function (startType, exprs) {
+		chain: function (startType, exprs, endType) {
 			var myVar = makeVar("x");
 			var ret = myVar;
 			forEach(exprs, function (expr) {
@@ -118,6 +119,10 @@ var exprChainer = (function () {
 				ret = makeApply(f, ret);
 				startType = getType(f).right;
 			});
+			if (endType) {
+				var f = getNext(startType, identity, getCandC(endType));
+				ret = makeApply(f, ret);
+			}
 			return makeLambda(myVar, ret);
 		},
 		chainOn: function (startExpr, exprs) {

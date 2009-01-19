@@ -40,7 +40,7 @@ function exprToXML(expr, type) {
 					var key = createEl("f:key");
 					var value = createEl("f:value");
 					append(key, exprToXML(entry.key, keyType));
-					append(value, exprToXML(entry.value, valueType));
+					append(value, exprToXML(entry.val, valueType));
 					
 					appendChild(entryXML, key);
 					appendChild(entryXML, value);

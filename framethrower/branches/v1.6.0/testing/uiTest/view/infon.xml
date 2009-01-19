@@ -1,0 +1,18 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="Cons" />
+	<f:derive name="infonArgs" d="getInfonArguments focus" />
+	
+	<html:div>
+		Infon: <xsl:value-of select="$focus/@name" /><html:br />
+		<xsl:call-template name="prettyPrint">
+			<xsl:with-param name="node" select="$infonArgs" />
+		</xsl:call-template>
+	</html:div>
+	
+	<f:include url="/xml/debug/prettyPrint.xml" />
+</f:template>

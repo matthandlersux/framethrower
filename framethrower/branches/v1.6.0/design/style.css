@@ -2,6 +2,18 @@
 @import url(typography.css);
 
 
+
+
+
+.object {
+	color:#fff;
+	background-color:#666; /* default, but will be overwritten depending on the object's type */
+	padding:3px;
+	-moz-border-radius: 4px;
+}
+
+
+
 .prettyPrint {
 	font-family: monospace;
 }

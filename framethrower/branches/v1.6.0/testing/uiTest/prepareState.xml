@@ -6,11 +6,20 @@
 	
 	<f:derive name="in" d="shared.in" />
 	<f:derive name="realLife" d="shared.realLife" />
+	<f:derive name="situationType" d="shared.type.situation" />
 	
 	<f:perform with-action="$nameObject">
 		<f:with-param name="object" select="$realLife" />
 		<f:with-param name="name" select="'Real Life'" />
 	</f:perform>
+	
+	<f:perform with-action="$typeObject">
+		<f:with-param name="object" select="$realLife" />
+		<f:with-param name="type" select="$situationType" />
+	</f:perform>
+	
+	
+	
 	
 	<f:perform with-action="$makeNamedObject" name="gfmov">
 		<f:with-param name="name" select="'Goldfinger'" />
@@ -21,6 +30,20 @@
 		<f:with-param name="object" select="$gfmov" />
 	</f:perform>
 	
+	
+	<f:perform with-action="$initUI" />
+	
+	<f:action name="initUI">
+		<f:derive name="prefs" d="ui.prefs" />
+		<f:derive name="situationType" d="shared.type.situation" />
+		<f:derive name="entityType" d="shared.type.entity" />
+		<f:derive name="relationType" d="shared.type.relation" />
+		
+		<f:intact object="$prefs" property="typeDisplay" action="add" key="$situationType" value="'#2ae'" />
+		<f:intact object="$prefs" property="typeDisplay" action="add" key="$entityType" value="'#8c3'" />
+		<f:intact object="$prefs" property="typeDisplay" action="add" key="$relationType" value="'#e29'" />
+		
+	</f:action>
 	
 	
 	
@@ -37,6 +60,8 @@
 		</f:perform>
 		<f:intact object="$infon" property="truth" action="add" key="null" />
 	</f:action>
+	
+	
 	
 	
 	<f:action name="makeNamedObject">
@@ -77,6 +102,45 @@
 		
 		<f:intact object="$situatedNameInfon" property="truth" action="add" key="null" />
 	</f:action>
+	
+	
+	<f:action name="typeObject">
+		<f:param name="object" type="Object" />
+		<f:param name="type" type="Object" />
+		
+		<f:derive name="ont" d="shared.ont" />
+		<f:derive name="isA" d="shared.isA" />
+		
+		<f:perform with-action="$makeInfon2" name="infon">
+			<f:with-param name="relation" select="$isA" />
+			<f:with-param name="arg1" select="$object" />
+			<f:with-param name="arg2" select="$type" />
+		</f:perform>
+		
+		<f:perform with-action="$makeTrueInOnt">
+			<f:with-param name="infon" select="$infon" />
+		</f:perform>
+	</f:action>
+	
+	
+	
+	<f:action name="makeTrueInOnt">
+		<f:param name="infon" type="Cons" />
+		<f:derive name="ont" d="shared.ont" />
+		<f:derive name="in" d="shared.in" />
+		
+		<f:perform with-action="$makeInfon2" name="situatedInfon">
+			<f:with-param name="relation" select="$in" />
+			<f:with-param name="arg1" select="$ont" />
+			<f:with-param name="arg2" select="$infon" />
+		</f:perform>
+		
+		<f:intact object="$situatedInfon" property="truth" action="add" key="null" />
+	</f:action>
+	
+	
+	
+	
 	
 	<f:action name="makeInfon2">
 		<f:param name="relation" type="Object" />

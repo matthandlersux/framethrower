@@ -78,15 +78,13 @@ var exprLib = {
 */	
 
 	
-
-	
-	getName: {
-		type: "Object -> Set String",
-		expr: "obj -> nameInfonsToStrings (getNameInfons obj)",
+	getOntProp: {
+		type: "Object -> Object -> Set Object",
+		expr: "rel -> obj -> infonsToObjects (getInfons rel obj)", // TODO: filter here for truth in the ont layer
 		where: {
-			getNameInfons: {
-				type: "Object -> Set Cons",
-				expr: "obj -> helper (Cons::lookup shared.name obj)",
+			getInfons: {
+				type: "Object -> Object -> Set Cons",
+				expr: "rel -> obj -> helper (Cons::lookup rel obj)",
 				where: {
 					helper: {
 						type: "Unit Cons -> Set Cons",
@@ -94,13 +92,71 @@ var exprLib = {
 					}
 				}
 			},
-			nameInfonsToStrings: {
-				type: "Set Cons -> Set String",
-				chain: ["Cons:right", "X.text:string"]
+			infonsToObjects: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:right"]
+			}
+		}
+	},
+	
+	getName: {
+		type: "Object -> Set String",
+		expr: "obj -> getStrings (getOntProp shared.name obj)",
+		where: {
+			getStrings: {
+				type: "Set Object -> Set String",
+				chain: ["X.text:string"]
+			}
+		}
+	},
+	
+	getTypes: {
+		type: "Object -> Set Object",
+		expr: "unfoldSet (getOntProp shared.isA)"
+	},
+	
+	getInfonsAbout: {
+		type: "Object -> Set Cons",
+		expr: "x -> bindSet (unfoldSet up) (Object:upLeft x)",
+		where: {
+			up: {
+				type: "Cons -> Set Cons",
+				expr: "x -> union (upLeft x) (upRight x)",
+				where: {
+					upLeft: {
+						type: "Cons -> Set Cons",
+						chain: ["Object:upLeft"]
+					},
+					upRight: {
+						type: "Cons -> Set Cons",
+						chain: ["Object:upRight"]
+					}
+				}
+			}
+		}
+	},
+	
+	unfoldMapInv: {
+		type: "(a -> Set a) -> a -> Map Number (Set a)",
+		expr: "f -> x -> invert (mapMapValue returnSet (unfoldMap f x))"
+	},
+	
+	getInfonArguments: {
+		type: "Cons -> Map Number (Unit Object)",
+		expr: "infon -> mapMapValue (compose takeOne downRight) (unfoldMapInv downLeft infon)",
+		where: {
+			downLeft: {
+				type: "Cons -> Set Cons",
+				chain: ["Cons:left"]
+			},
+			downRight: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:right"]
 			}
 		}
 	}
 	
+
 };
 
 function processExprs(exprs, dynamicEnv) {
@@ -120,14 +176,21 @@ function processExprs(exprs, dynamicEnv) {
 			});
 			var startType = o.startType;
 			if (o.type) {
-				startType = parseType(o.type).left;
+				var type = parseType(o.type);
+				startType = type.left;
+				endType = type.right;
 			}
-			var expr = exprChainer.chain(startType, chain);
+			var expr = exprChainer.chain(startType, chain, endType);
 		}
+		
+		// for debug:
+		getType(expr); // to make sure it's even well typed at all
 		if (o.type && !compareTypes(parseType(o.type), getType(expr))) {
-			debug.error("Expression `"+name+"` has type `"+unparseType(getType(expr))+"` but expected `"+o.type+"`");
+			debug.error("Expression `"+name+"` has type `"+unparseType(getType(expr))+"` but is annotated as `"+o.type+"`");
 		}
-		dynamicEnv.add(name, expr);
+		
+		
+		dynamicEnv.add(name, normalizeExpr(expr));
 	});
 }
 

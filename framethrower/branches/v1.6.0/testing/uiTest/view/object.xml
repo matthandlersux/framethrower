@@ -1,0 +1,20 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="Object" />
+	<f:derive name="name" d="getName focus" />
+	<f:derive name="types" d="getTypes focus" />
+	
+	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
+	
+	<html:span class="object">
+		<xsl:variable name="color" select="$typeDisplay/f:entry[f:key/f:o/@name = $types/f:o/@name][1]/f:value/f:literal/@value" />
+		
+		<xsl:attribute name="style">background-color: <xsl:value-of select="$color" /></xsl:attribute>
+		
+		<xsl:value-of select="$name/*/@value" />
+	</html:span>
+</f:template>

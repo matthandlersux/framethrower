@@ -7,18 +7,30 @@
 	<f:derive name="realLife" d="shared.realLife" />
 	<f:derive name="set" d="Object:upLeft realLife" />
 	
+	<f:derive name="test1" d="getInfonsAbout realLife" />
+	
 	<!-- <f:derive name="rlname" d="getName realLife" /> -->
 	
 	<html:div>
 		<html:div>
 			<xsl:call-template name="prettyPrint">
-				<xsl:with-param name="node" select="$set" />
+				<xsl:with-param name="node" select="$test1" />
 			</xsl:call-template>
 		</html:div>
+		
+		<xsl:for-each select="$test1/*">
+			<f:thunk url="view/infon.xml">
+				<f:with-param name="focus" select="." />
+			</f:thunk>
+		</xsl:for-each>
 		
 		<!-- <html:div>
 			<xsl:copy-of select="$rlname" />
 		</html:div> -->
+		
+		<f:thunk url="view/object.xml">
+			<f:with-param name="focus" select="$realLife" />
+		</f:thunk>
 	</html:div>
 	
 	<f:include url="/xml/debug/prettyPrint.xml" />

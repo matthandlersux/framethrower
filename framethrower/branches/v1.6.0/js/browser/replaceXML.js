@@ -192,7 +192,7 @@ function insertBefore(parentNode, newNode, node) {
 
 
 function unloadXML(node) {
-	var concerns = xpath(".//f:on | .//*[@f:was-thunk]", node);
+	var concerns = xpath(".//f:on | .//f:result", node);
 	forEach(concerns, unloadXMLNode);
 }
 

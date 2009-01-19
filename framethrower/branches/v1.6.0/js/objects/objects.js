@@ -52,13 +52,17 @@ var classesToMake = {
 			"string": "String"
 		},
 		memoize: ["string"]
-	}
+	},
 	
 	// ====================================================
 	// UI
 	// ====================================================
 	
-	
+	"UI.prefs": {
+		prop: {
+			"typeDisplay": "Map Object String"
+		}
+	}
 };
 
 

@@ -28,9 +28,8 @@ function evalThunk(thunkNode) {
 			thunkNode = replaceXML(thunkNode, xmlids.xml, {baseUrl: xt.url, ids: xmlids.ids}, true);
 			
 			thunkNode.custom = custom;
-			setAttr(thunkNode, "f:was-thunk", "yes");
 			
-			var top = xpath("ancestor-or-self::*[@f:was-thunk][last()]", thunkNode)[0]; // TODO: might want to revisit this
+			var top = xpath("ancestor-or-self::f:result[last()]", thunkNode)[0]; // TODO: might want to revisit this
 			
 			if (top.custom && top.custom.onXMLUpdate) {
 				top.custom.onXMLUpdate();
