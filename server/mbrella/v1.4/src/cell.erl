@@ -58,6 +58,9 @@ injectIntercept(CellPid, Fun, InitState) ->
 addOnRemove(CellPid, Fun) ->
 	gen_server:cast(CellPid, {addOnRemove, Fun}).
 
+setKeyRange(CellPid, Start, End) ->
+	gen_server:cast(CellPid, {setKeyRange, Start, End}).
+
 %% 
 %% addline:: CellPid -> a -> CleanupFun
 %% 
@@ -87,7 +90,7 @@ init([ToKey]) ->
 	process_flag(trap_exit, true),
     {ok, #cell{
 		funcs=dict:new(),
-		dots=dict:new(),
+		dots=rangedict:new(),
 		toKey=ToKey
 	}}.
 
@@ -104,12 +107,12 @@ init([ToKey]) ->
 handle_call({addLine, Value}, From, State) ->
 	#cell{funcs=Funcs, dots=Dots, toKey=ToKey} = State,
 	Key = ToKey(Value),
-	Dot = try dict:fetch(Key, Dots) of
+	Dot = try rangedict:fetch(Key, Dots) of
 		{dot, Num, Val, Lines} -> {dot, Num+1, Val, Lines}
 	catch
 		_:_ -> onAdd({dot, 1, Value, dict:new()}, Funcs)
 	end,
-	NewDots = dict:store(Key, Dot, Dots),
+	NewDots = rangedict:store(Key, Dot, Dots),
 	NewState = State#cell{dots=NewDots},
 	Self = self(),
 	CallBack = fun() -> 
@@ -119,7 +122,7 @@ handle_call({injectFunc, Fun}, From, State) ->
 	#cell{funcs=Funcs, dots=Dots, funcColor=FuncColor} = State,
 	Id = FuncColor,
 	NewFuncs = dict:store(Id, Fun, Funcs),
-	NewDots = dict:map(fun(Key, Dot) -> addLineResponse(Dot, Fun, Id) end, Dots),
+	NewDots = rangedict:map(fun(Key, Dot) -> addLineResponse(Dot, Fun, Id) end, Dots),
 	NewState = State#cell{funcColor=Id+1, funcs=NewFuncs, dots=NewDots},
 	Self = self(),
     CallBack = fun() -> gen_server:cast(Self, {removeFunc, Id}) end,
@@ -139,11 +142,11 @@ handle_call({injectIntercept, Fun, IntState}, From, State) ->
 %% --------------------------------------------------------------------
 handle_cast({removeLine, Value}, State) ->
 	#cell{funcs=Funcs, dots=Dots} = State,
-	NewDots = try dict:fetch(Value, Dots) of
+	NewDots = try rangedict:fetch(Value, Dots) of
 		{dot, Num, Val, Lines} = Dot -> 
 			if Num == 1 -> onRemove(Dot, Funcs),
-						   dict:erase(Value, Dots);
-			   true -> dict:store(Value, {dot, Num-1, Val, Lines}, Dots)
+						   rangedict:erase(Value, Dots);
+			   true -> rangedict:store(Value, {dot, Num-1, Val, Lines}, Dots)
 			end
 	catch
 		_:_ -> Dots
@@ -153,14 +156,25 @@ handle_cast({removeLine, Value}, State) ->
 handle_cast({removeFunc, Id}, State) ->
 	#cell{funcs=Funcs, dots=Dots} = State,
 	NewFuncs = dict:erase(Id, Funcs),
-	NewDots = dict:map(fun(Key, Dot) -> removeLineResponse(Dot, Id) end, Dots),
+	NewDots = rangedict:map(fun(Key, Dot) -> removeLineResponse(Dot, Id) end, Dots),
 	NewState = State#cell{funcs=NewFuncs, dots=NewDots},
 	%TODO: destroy this cell if Funcs is empty?
     {noreply, NewState};
 handle_cast({addOnRemove, Fun}, State) ->
 	#cell{onRemoves=OnRemoves} = State,
 	NewState = State#cell{onRemoves=[Fun | OnRemoves]},
-    {noreply, NewState}.
+    {noreply, NewState};
+handle_cast({setKeyRange, Start, End}, State) ->
+	#cell{funcs=Funcs, dots=Dots} = State,
+	OnAdd = fun(Val) ->
+		onAdd(Val, Funcs)
+	end,
+	OnRemove = fun(Val) ->
+		onRemove(Val, Funcs)
+	end,
+	NewDots = rangedict:setKeyRange({Start, End}, OnAdd, OnRemove, Dots),
+    {noreply, State#cell{dots=NewDots}}.
+
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2

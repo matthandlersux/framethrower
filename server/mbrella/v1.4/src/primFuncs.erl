@@ -396,6 +396,16 @@ primitives() ->
 		end),
 		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
+	end},
+	%% ============================================================================
+	%% Range/Sorted functions
+	%% ============================================================================
+	#exprFun{
+	name = "rangeByKey",
+	type = "Unit a -> Unit a -> Set a -> Set a",
+	function = fun(StartCell, EndCell, Cell) ->
+		OutputCell = cell:makeCell(),
+		rangeHelper(OutputCell, fun(Min, Max) -> cell:setKeyRange(OutputCell, Min, Max) end, StartCell, EndCell, Cell)
 	end}
 	].
 
@@ -428,6 +438,55 @@ bindUnitOrSetHelper(Fun, Cell) ->
 	end),
 	cell:addOnRemove(OutputCell, RemoveFunc),
 	OutputCell.
+
+
+rangeHelper(OutputCell, SetRangeFunc, StartCell, EndCell, Cell) ->
+	%cell:makeSorted(outputCell)
+
+	UpdateRange = fun(Start, End) ->
+		if 
+			not((Start == undefined) or (End == undefined)) -> SetRangeFunc(Start, End);
+			(Start == undefined) and (End == undefined) -> cell:clearRange();
+			true -> nochange
+		end
+	end,
+
+	Intercept = cell:injectIntercept(OutputCell, fun(Message, {Start, End}) ->
+		case Message of
+			{startAdd, Val} ->
+				UpdateRange(Val, End),
+				{Val, End};
+			startRemove ->
+				UpdateRange(undefined, End),
+				{undefined, End};
+			{endAdd, Val} ->
+				UpdateRange(Start, Val),
+				{Start, Val};
+			endRemove ->
+				UpdateRange(Start, undefined),
+				{Start, undefined}
+		end
+	end, {undefined, undefined}),
+	
+	RemoveFunc1 = cell:injectFunc(StartCell, fun(Val) ->
+		intercept:sendIntercept(Intercept, {startAdd, Val}),
+		fun() -> intercept:sendIntercept(Intercept, startRemove) end
+	end),
+	
+	RemoveFunc2 = cell:injectFunc(EndCell, fun(Val) ->
+		intercept:sendIntercept(Intercept, {endAdd, Val}),
+		fun() -> intercept:sendIntercept(Intercept, endRemove) end
+	end),
+
+	RemoveFunc3 = cell:injectFunc(Cell, fun(Val) ->
+		cell:addLine(OutputCell, Val)
+	end),
+	
+	cell:addOnRemove(OutputCell, RemoveFunc1),
+	cell:addOnRemove(OutputCell, RemoveFunc2),
+	cell:addOnRemove(OutputCell, RemoveFunc3),
+	OutputCell.
+
 
 for(Max, Max, F) -> [F(Max)];
 for(I, Max, F) -> [F(I)|for(I+1, Max, F)].

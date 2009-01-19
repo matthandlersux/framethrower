@@ -33,6 +33,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 					% ?trace(Lambda),
 					evaluate( betaReduce(Lambda, Expr#cons.right) );
 				Left ->
+					% ?trace(Expr),
 					Type = type:get( Expr ),
 					% ?trace(Type),
 					BottomExpr = bottomOut(Expr),	
@@ -64,6 +65,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
 									env:nameAndStore(Cell);
 								NumStringBool ->
+									?trace(NumStringBool),
 									NumStringBool
 							end
 					end
@@ -82,6 +84,7 @@ evaluate(Expr) ->
 			Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
 			env:nameAndStore(Cell);
 		NumStringBool ->
+			?trace(NumStringBool),
 			NumStringBool
 	end.
 

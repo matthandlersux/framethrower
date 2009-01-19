@@ -66,7 +66,6 @@ parseEndCap(R, State) ->
 	#testWorld{startCaps=StartCaps, outMessages=OutMessages} = State,
 	Name = getAtt(name, R),
 	Expression = getAtt(expression, R),
-	
 	Answer = eval:evaluate(expr:customExprParse(Expression, StartCaps)),
 	
 	#exprCell{pid=EC} = Answer,
