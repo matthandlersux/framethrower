@@ -360,17 +360,18 @@ prefixTypeVars( Expr ) ->
 prefixTypeVars( Expr, Prefixer ) when is_record(Expr, cons) ->
 	Expr#cons{left = prefixTypeVars(Expr#cons.left, Prefixer), right = prefixTypeVars(Expr#cons.right, Prefixer) };
 prefixTypeVars( Expr, Prefixer ) when is_record(Expr, exprFun); is_record(Expr, exprCell)->
-	Prefixer ! {prefix, self(), Expr},
-	receive Expr1 -> Expr1 end;
+	Ref = make_ref(),
+	Prefixer ! {prefix, self(), Ref, Expr},
+	receive {Ref, Expr1} -> Expr1 end;
 prefixTypeVars( Expr, _ ) -> Expr.
 	
 prefixer(Num) ->
 	receive
-		{prefix, From, #exprFun{type = Type} = Expr} when is_record(Expr, exprFun) ->
-			From ! Expr#exprFun{type = shiftVars(Type, integer_to_list(Num) ) },
+		{prefix, From, Ref, #exprFun{type = Type} = Expr} when is_record(Expr, exprFun) ->
+			From ! {Ref, Expr#exprFun{type = shiftVars(Type, integer_to_list(Num) ) }},
 			prefixer(Num + 1);
-		{prefix, From, #exprCell{type = Type} = Expr} when is_record(Expr, exprCell) ->
-			From ! Expr#exprCell{type = shiftVars(Type, integer_to_list(Num) ) },
+		{prefix, From, Ref, #exprCell{type = Type} = Expr} when is_record(Expr, exprCell) ->
+			From ! {Ref, Expr#exprCell{type = shiftVars(Type, integer_to_list(Num) ) }},
 			prefixer(Num + 1);
 		_ ->
 			true

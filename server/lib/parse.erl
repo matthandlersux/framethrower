@@ -179,6 +179,9 @@ alphaNum() ->
 alphaNumSpace() ->
 	sat(fun isAlphaNumSpace/1).
 
+alphaNumPunc() ->
+	sat(fun isAlphaNumPunc/1).
+
 char(Char) ->
 	sat(isChar(Char)).
 
@@ -208,7 +211,7 @@ lit() ->
 
 ident() ->
 	?do(X, lower(),
-	?do(XS, many( alphaNum() ),
+	?do(XS, many( alphaNumPunc() ),
 	return([X|XS]))).
 	
 typ() ->
@@ -276,6 +279,8 @@ isEndOfString(_) -> false.
 isAlphaNum(Char) -> isLower(Char) orelse isUpper(Char) orelse isDigit(Char).
 
 isAlphaNumSpace(Char) -> isAlphaNum(Char) orelse isSpace(Char).
+
+isAlphaNumPunc(Char) -> isAlphaNum(Char) orelse Char =:= $. orelse Char =:= $~.
 
 isChar(Char) ->
 	fun(TestChar) -> Char =:= TestChar end. 
