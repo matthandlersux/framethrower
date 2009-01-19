@@ -13,6 +13,7 @@
 -record (envState, {
 	nameCounter,
 	globalTable,
+	globalTableByPid,
 	baseEnv
 }).
 
@@ -28,8 +29,12 @@ nameAndStore(CellExpr) ->
 getState() ->
 	gen_server:call(?MODULE, getState).
 
+	
+lookup(Pid) when is_pid(Pid) ->
+	gen_server:call(?MODULE, {lookupPid, Pid});
 lookup(Name) ->
 	gen_server:call(?MODULE, {lookup, Name}).
+
 
 getPrimitives() ->
 	BuildEnv = fun(#exprFun{function = Func, type = TypeString, name = Name} = Expr, {Suffix, Dict}) ->
@@ -63,15 +68,18 @@ addExpr({Name, ExprString}, Env) ->
 init([]) ->
 	process_flag(trap_exit, true),
 	%may want to change globalTable from dict to ETS table
-    {ok, #envState{nameCounter = 0, globalTable = dict:new(),baseEnv = createEnv()}}.
+    {ok, #envState{nameCounter = 0, globalTable = dict:new(), globalTableByPid = dict:new(), baseEnv = createEnv()}}.
 
 handle_call({nameAndStore, ExprCell}, From, State) ->
-	#envState{nameCounter = NameCounter, globalTable = GlobalTable} = State,
+	#envState{nameCounter = NameCounter, globalTable = GlobalTable, globalTableByPid = GlobalPidTable} = State,
 	NewNameCounter = NameCounter + 1,
 	Name = "server." ++ integer_to_list(NewNameCounter),
 	NewExprCell = ExprCell#exprCell{name=Name},
 	NewGlobalTable = dict:store(Name, NewExprCell, GlobalTable),
-	NewState = State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable},
+	%hack for name lookups
+	Pid = ExprCell#exprCell.pid,
+	NewGlobalPidTable = dict:store(Pid, NewExprCell, GlobalPidTable),
+	NewState = State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable, globalTableByPid = NewGlobalPidTable},
     {reply, NewExprCell, NewState};
 handle_call({lookup, Name}, From, State) ->
 	#envState{globalTable = GlobalTable, baseEnv = BaseEnv} = State,
@@ -88,6 +96,14 @@ handle_call({lookup, Name}, From, State) ->
 					_:_ -> notfound
 				end
 		end,
+    {reply, ExprCell, State};
+handle_call({lookupPid, Pid}, From, State) ->
+	#envState{globalTableByPid = GlobalTable, baseEnv = BaseEnv} = State,
+	ExprCell = 
+				try dict:fetch(Pid, GlobalTable)
+				catch
+					_:_ -> notfound
+				end,
     {reply, ExprCell, State};
 handle_call(getState, From, State) ->
     {reply, State, State};

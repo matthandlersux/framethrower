@@ -11,10 +11,11 @@
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
 
-get( String ) when is_list( String ) ->
-	type:get( expr:expr(String) );
+% get( String ) when is_list( String ) ->
+% 	type:get( expr:expr(String) );
 get( Expr ) ->
-	{Type, Constraints} = genConstraints( Expr ),
+	Expr1 = prefixTypeVars( Expr ),
+	{Type, Constraints} = genConstraints( Expr1 ),
 	% io:format("~p~n~n", [{Type, Constraints}]),
 	Subs = unify(Constraints),
 	substitute(Type, Subs).
@@ -114,7 +115,7 @@ getType({primitive, Type, _}, _) ->
 	end;
 getType( Expr, _ ) when is_boolean(Expr) -> type(bool);
 getType( Expr, _ ) when is_number(Expr) -> type(num);
-getType( Expr, _ ) -> type(string).
+getType( Expr, _ ) when is_list(Expr) -> type(string).
 
 
 %% 
@@ -343,3 +344,34 @@ isReactive(#type{type = typeApply, value = {#type{type = typeName, value = Val},
 		true -> false
 	end;
 isReactive(_) -> false.
+
+
+
+%% 
+%% prefixTypeVars(Expr)
+%% 
+
+prefixTypeVars( Expr ) ->
+	Prefixer = spawn(fun() -> prefixer(1) end),
+	Expr1 = prefixTypeVars( Expr, Prefixer),
+	Prefixer ! die,
+	Expr1.
+
+prefixTypeVars( Expr, Prefixer ) when is_record(Expr, cons) ->
+	Expr#cons{left = prefixTypeVars(Expr#cons.left, Prefixer), right = prefixTypeVars(Expr#cons.right, Prefixer) };
+prefixTypeVars( Expr, Prefixer ) when is_record(Expr, exprFun); is_record(Expr, exprCell)->
+	Prefixer ! {prefix, self(), Expr},
+	receive Expr1 -> Expr1 end;
+prefixTypeVars( Expr, _ ) -> Expr.
+	
+prefixer(Num) ->
+	receive
+		{prefix, From, #exprFun{type = Type} = Expr} when is_record(Expr, exprFun) ->
+			From ! Expr#exprFun{type = shiftVars(Type, integer_to_list(Num) ) },
+			prefixer(Num + 1);
+		{prefix, From, #exprCell{type = Type} = Expr} when is_record(Expr, exprCell) ->
+			From ! Expr#exprCell{type = shiftVars(Type, integer_to_list(Num) ) },
+			prefixer(Num + 1);
+		_ ->
+			true
+	end.

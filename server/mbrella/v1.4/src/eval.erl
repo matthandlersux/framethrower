@@ -5,6 +5,23 @@
 
 -include ("../include/scaffold.hrl").
 
+%% 
+%% Expr consists of:
+% 
+% cons
+% exprVar
+% exprFun
+% exprCell
+% string
+% bool
+% number
+%% 
+
+
+%% 
+%% evaluate:: Expr -> Expr
+%% 
+
 evaluate(Expr) when is_record(Expr, cons) ->
 	case Expr#cons.type of
 		lambda ->
@@ -53,13 +70,15 @@ evaluate(Expr) when is_record(Expr, cons) ->
 			end
 	end;
 evaluate(Expr) ->
-	Type = type:get( Expr ),
+	% here we can have any expr object...
 	BottomExpr = bottomOut(Expr),
 	case Expr of
 		X when is_function(X) ->
+			Type = type:get( Expr ),
 			%decide if it needs to be named
 			#exprFun{function = X, type = Type, bottom = BottomExpr};
 		Pid when is_pid(Pid) ->
+			Type = type:get( Expr ),
 			Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
 			env:nameAndStore(Cell);
 		NumStringBool ->
@@ -180,7 +199,7 @@ bottomOut( InExpr ) ->
 		fun( Expr ) when is_record(Expr, exprFun) ->
 				case Expr#exprFun.bottom of
 					undefined ->
-						{ok, Expr#exprFun.name};
+						{ok, Expr};
 					_ ->
 						{ok, Expr#exprFun.bottom}
 				end;

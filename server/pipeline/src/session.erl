@@ -1,6 +1,8 @@
 -module (session).
 -compile (export_all).
 
+-include ("../../mbrella/v1.4/include/scaffold.hrl").
+
 startManager() ->
 	Pid = spawn(fun() -> manager() end),
 	register(sessionManager, Pid).
@@ -129,9 +131,12 @@ to_atom(X) when is_list(X) ->
 		end                  
 	end,
 	case lists:all(Fun, X) of
-		true -> list_to_binary($" ++ X ++ $");
+		true -> list_to_binary([$"] ++ X ++ [$"]);
 		false -> X
 	end;
+to_atom(X) when is_pid(X) ->
+	#exprCell{name = Name} = env:lookup(X),
+	list_to_binary(Name);
 to_atom(X) -> X.
 
 
@@ -148,6 +153,7 @@ streamUntil(To, MsgQueue, Until) ->
 	MsgQueueToSend.
 
 stream(To, Updates, LastMessageId) ->
+	io:format("message in: ~p ~n~n", [Updates]),
 	To ! {updates, Updates, LastMessageId}.
 
 sessionId() ->
