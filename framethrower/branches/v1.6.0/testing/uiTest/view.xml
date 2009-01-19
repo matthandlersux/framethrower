@@ -9,6 +9,8 @@
 	
 	<f:derive name="test1" d="getInfonsAbout realLife" />
 	
+	<f:derive name="test2" d="length test1" />
+	
 	<!-- <f:derive name="rlname" d="getName realLife" /> -->
 	
 	<html:div>
@@ -16,6 +18,7 @@
 			<xsl:call-template name="prettyPrint">
 				<xsl:with-param name="node" select="$test1" />
 			</xsl:call-template>
+			<xsl:value-of select="$test2/@value" />
 		</html:div>
 		
 		<xsl:for-each select="$test1/*">

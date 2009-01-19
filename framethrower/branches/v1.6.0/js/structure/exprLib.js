@@ -154,7 +154,27 @@ var exprLib = {
 				chain: ["Cons:right"]
 			}
 		}
+	},
+	
+	length: {
+		type: "Set a -> Unit Number",
+		expr: "fold (x -> sum -> add sum 1) (x -> sum -> subtract sum 1) 0"
 	}
+	
+	/*,
+	
+	
+	
+	unfoldToEnd: {
+		type: "(a -> Unit a) -> a -> Unit a",
+		expr: "f -> x -> takeLast (unfoldMapInv (compose returnUnitSet f) x)",
+		where: {
+			takeLast: {
+				type: "Map Number a -> Unit a",
+				expr: 
+			}
+		}
+	}*/
 	
 
 };

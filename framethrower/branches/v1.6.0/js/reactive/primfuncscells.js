@@ -415,7 +415,8 @@ var primFuncs = function () {
 			}
 		},
 		fold : {
-			type : "(a -> b -> b) -> (b -> a -> a) -> b -> Set a -> Unit b",
+			//type : "(a -> b -> b) -> (b -> a -> a) -> b -> Set a -> Unit b",
+			type : "(a -> b -> b) -> (a -> b -> b) -> b -> Set a -> Unit b",
 			func : function (f, finv, init, cell) {
 				var outputCell = makeCell();
 				var cache = init;
@@ -427,7 +428,8 @@ var primFuncs = function () {
 					outputCell.addLine(cache);
 					return function () {
 						outputCell.removeLine(cache);
-						cache = applyFunc(applyFunc(finv, cache), val);
+						//cache = applyFunc(applyFunc(finv, cache), val);
+						cache = applyFunc(applyFunc(finv, val), cache);
 						outputCell.addLine(cache);	
 					};
 				});
