@@ -6,6 +6,7 @@
 -module(cell).
 
 -behaviour(gen_server).
+-include("../include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
@@ -21,7 +22,7 @@
 
 
 %% ====================================================================
-%% Cell data structure record
+%% Cell internal data structure record
 %% ====================================================================
 -record(cell, {funcs, dots, toKey, onRemoves=[], funcColor=0, intercept}).
 
@@ -42,37 +43,37 @@
 makeCell() -> 
 	ToKey = fun(X) -> X end,
 	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
-	Pid.
+	#exprCell{pid=Pid}.
 	
 makeCellMapInput() ->
 	ToKey = fun({Key,Val}) -> Key end,
 	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
-	Pid.
+	#exprCell{pid=Pid}.
 
-injectFunc(CellPid, Fun) ->
-	gen_server:call(CellPid, {injectFunc, Fun}).
+injectFunc(Cell, Fun) ->
+	gen_server:call(Cell#exprCell.pid, {injectFunc, Fun}).
 
-injectIntercept(CellPid, Fun, InitState) ->
-	gen_server:call(CellPid, {injectIntercept, Fun, InitState}).
+injectIntercept(Cell, Fun, InitState) ->
+	gen_server:call(Cell#exprCell.pid, {injectIntercept, Fun, InitState}).
 
-addOnRemove(CellPid, Fun) ->
-	gen_server:cast(CellPid, {addOnRemove, Fun}).
+addOnRemove(Cell, Fun) ->
+	gen_server:cast(Cell#exprCell.pid, {addOnRemove, Fun}).
 
-setKeyRange(CellPid, Start, End) ->
-	gen_server:cast(CellPid, {setKeyRange, Start, End}).
+setKeyRange(Cell, Start, End) ->
+	gen_server:cast(Cell#exprCell.pid, {setKeyRange, Start, End}).
 
 %% 
 %% addline:: CellPid -> a -> CleanupFun
 %% 
 
-addLine(CellPid, Value) ->
-	gen_server:call(CellPid, {addLine, Value}).
+addLine(Cell, Value) ->
+	gen_server:call(Cell#exprCell.pid, {addLine, Value}).
 
 %% 
 %% removeline:: CellPid -> a -> Atom
 %% 
-removeLine(CellPid, Value) ->
-	gen_server:cast(CellPid, {removeLine, Value}).
+removeLine(Cell, Value) ->
+	gen_server:cast(Cell#exprCell.pid, {removeLine, Value}).
 
 %% ====================================================================
 %% Server functions

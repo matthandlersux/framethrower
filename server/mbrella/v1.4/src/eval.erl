@@ -45,12 +45,12 @@ evaluate(Expr) when is_record(Expr, cons) ->
 								_ ->
 									F = evaluate( Left ), 
 									Input = evaluate( Expr#cons.right ),
-									Pid = applyFun( F, Input ),
-									Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
+									Result = applyFun( F, Input ),
+									Cell = Result#exprCell{type = Type, bottom = BottomExpr},
 									NamedCell = env:nameAndStore(Cell),
 									% this is correct - memoize:add returns an onRemove function
 									OnRemove = memoize:add( NormalExpr, NamedCell),
-									cell:addOnRemove(Pid, OnRemove),
+									cell:addOnRemove(NamedCell, OnRemove),
 									NamedCell
 							end;
 						false ->
@@ -62,11 +62,10 @@ evaluate(Expr) when is_record(Expr, cons) ->
 								X when is_function(X) ->
 									%decide if it needs to be named
 									#exprFun{function = X, type = Type, bottom = BottomExpr};
-								Pid when is_pid(Pid) ->
-									Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
+								Result when is_record(Result, exprCell) ->
+									Cell = Result#exprCell{type = Type, bottom = BottomExpr},
 									env:nameAndStore(Cell);
 								NumStringBool ->
-									?trace(NumStringBool),
 									NumStringBool
 							end
 					end
@@ -80,12 +79,11 @@ evaluate(Expr) ->
 			Type = type:get( Expr ),
 			%decide if it needs to be named
 			#exprFun{function = X, type = Type, bottom = BottomExpr};
-		Pid when is_pid(Pid) ->
+		Result when is_record(Result, exprCell) ->
 			Type = type:get( Expr ),
-			Cell = #exprCell{pid = Pid, type = Type, bottom = BottomExpr},
+			Cell = Result#exprCell{type = Type, bottom = BottomExpr},
 			env:nameAndStore(Cell);
 		NumStringBool ->
-			?trace(NumStringBool),
 			NumStringBool
 	end.
 
@@ -193,10 +191,7 @@ getAllVars( Expr ) ->
 %% 
 
 applyFun( #exprFun{function = Fun} = ExprFun, Expr ) when is_record(ExprFun, exprFun) ->
-	case Expr of
-		#exprCell{pid=Pid} -> Fun(Pid);
-		_ -> Fun(Expr)
-	end.
+	Fun(Expr).
 	
 bottomOut( InExpr ) -> 
 	LookForAndReplaceFun = 
@@ -217,10 +212,10 @@ bottomOut( InExpr ) ->
 		end,
 	mblib:traverse(InExpr, LookForAndReplaceFun).
 
-normalize( Expr ) -> 
+normalize( Expression ) -> 
 	NormFun = fun( Expr ) when is_record(Expr, exprFun) ->
 					{ok, Expr#exprFun{type = undefined, function = undefined, bottom = undefined}};
 				( Expr ) when is_record(Expr, exprCell) ->
 					{ok, Expr#exprCell{pid = undefined, type = undefined, bottom = undefined}}
 		end,
-	mblib:traverse(Expr, NormFun).
+	mblib:traverse(Expression, NormFun).

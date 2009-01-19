@@ -54,10 +54,14 @@ parseStartCap(R, State) ->
 	#testWorld{startCaps=StartCaps} = State,
 	SCTypeFirstWord = hd(string:tokens(Type, " ")),
 	SC = if
-		SCTypeFirstWord == "map" -> Cell = #exprCell{pid=cell:makeCellMapInput(), type=type:parse(Type)},
-									env:nameAndStore(Cell);
-		true -> Cell = #exprCell{pid=cell:makeCell(), type=type:parse(Type)},
-				env:nameAndStore(Cell)
+		SCTypeFirstWord == "map" -> 
+			Result = cell:makeCellMapInput(), 
+			Cell = Result#exprCell{type=type:parse(Type)},
+			env:nameAndStore(Cell);
+		true -> 
+			Result = cell:makeCell(),
+			Cell = Result#exprCell{type=type:parse(Type)},
+			env:nameAndStore(Cell)
 	end,
 	NewStartCaps = dict:store(Name, SC, StartCaps),
 	State#testWorld{startCaps=NewStartCaps}.
@@ -66,9 +70,8 @@ parseEndCap(R, State) ->
 	#testWorld{startCaps=StartCaps, outMessages=OutMessages} = State,
 	Name = getAtt(name, R),
 	Expression = getAtt(expression, R),
-	Answer = eval:evaluate(expr:customExprParse(Expression, StartCaps)),
-	
-	#exprCell{pid=EC} = Answer,
+	EC = eval:evaluate(expr:customExprParse(Expression, StartCaps)),
+
 	Self = self(),
 	cell:injectFunc(EC, fun(Val) -> 
 		Self ! {response, Name, {set, Val}},
@@ -100,17 +103,14 @@ extractMessage(R, State) when is_record(R, xmlElement) ->
 	#testWorld{startCaps=StartCaps} = State,
 	GetStartCap = fun() ->
 		SCName = getAtt(scname, R),
-		#exprCell{pid=Pid} = dict:fetch(SCName, StartCaps),
-		Pid
+		dict:fetch(SCName, StartCaps)
 	end,
 	Args = parseArgs(R),
 	Value = case Args of 
 		{scPatternMatch, Name} -> 
-			#exprCell{pid=Pid} = dict:fetch(Name, StartCaps),
-			Pid;
+			dict:fetch(Name, StartCaps);
 		{Key, {scPatternMatch, Name}} ->
-			#exprCell{pid=Pid} = dict:fetch(Name, StartCaps),
-			{Key, Pid};
+			{Key, dict:fetch(Name, StartCaps)};
 		{func, Name} ->
 			env:lookup(Name);
 		{Key, {func, Name}} ->

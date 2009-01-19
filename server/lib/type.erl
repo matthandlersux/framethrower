@@ -376,3 +376,32 @@ prefixer(Num) ->
 		_ ->
 			true
 	end.
+	
+	
+	
+bindVars(Explicit, Template, TypeVars) ->
+	if
+		Template#type.type == typeVar -> dict:store(Template#type.value, Explicit, TypeVars);
+		(Template#type.type == typeApply) or (Template#type.type == typeLambda) ->
+			{ELeft, ERight} = Explicit#type.value,
+			{TLeft, TRight} = Template#type.value,
+			NewTypeVars = bindVars(ELeft, TLeft, TypeVars),
+			bindVars(ERight, TRight, NewTypeVars);
+		true -> TypeVars
+	end.
+	
+build(Type, TypeVars) ->
+	case Type#type.type of
+		typeVar -> dict:fetch(Type#type.value, TypeVars);
+		typeName -> Type;
+		Kind -> 
+			{Left, Right} = Type#type.value,
+			#type{type=Kind, value={build(Left, TypeVars), build(Right, TypeVars)}}
+	end.
+	
+buildType(ExplicitType, TemplateTypeString, TypeToBuildString) ->
+	TemplateType = parse(TemplateTypeString),
+	TypeToBuild = parse(TypeToBuildString),
+	
+	TypeVars = bindVars(ExplicitType, TemplateType, dict:new()),
+	build(TypeToBuild, TypeVars).

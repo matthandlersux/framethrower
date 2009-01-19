@@ -323,14 +323,16 @@ primitives() ->
 	name = "invert",
 	type = "Map a (Set b) -> Map b (Set a)",
 	function = fun(Cell) ->
+		SetType = type:buildType(type:get(Cell), "Map a (Set b)", "Set a"),
 		OutputCell = cell:makeCellMapInput(),
 		BHashCell = cell:makeCell(),
 		Intercept = cell:injectIntercept(OutputCell, fun(Message, BHash) ->
 			case Message of
-				{bHashAdd, BVal} -> 
+				{bHashAdd, BVal} ->
 					NewCell = cell:makeCell(),
-					cell:addLine(OutputCell, {BVal, NewCell}),
-					dict:store(BVal, NewCell, BHash);
+					TypedCell = NewCell#exprCell{type=SetType},
+					cell:addLine(OutputCell, {BVal, TypedCell}),
+					dict:store(BVal, TypedCell, BHash);
 				{bHashRemove, BVal} ->
 					cell:removeLine(OutputCell, BVal),
 					dict:erase(BVal, BHash);
@@ -419,7 +421,6 @@ unfoldSetHelper(Val, Fun, OutputCell, Done) ->
 	end.
 
 unfoldMapHelper({Key, Val}, Fun, OutputCell, Done) ->
-	?trace(Val),
 	try dict:fetch(Key, Done)
 	catch _:_ ->
 		cell:addLine(OutputCell, {Key, Val}),
@@ -496,5 +497,4 @@ applyFun(Fun, Input) ->
 	eval:evaluate(#cons{type=apply, left=Fun, right=Input}).
 
 applyAndInject(Fun, Input, InjectedFun) ->
-	#exprCell{pid=Pid} = applyFun(Fun, Input),
-	cell:injectFunc(Pid, InjectedFun).
+	cell:injectFunc(applyFun(Fun, Input), InjectedFun).
