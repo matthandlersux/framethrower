@@ -81,6 +81,59 @@ loop(Req, DocRoot) ->
 							lists:foreach(ProcessQuery, Queries),
 							spit(Req, true)
 					end;
+				"action" ->
+					Data = Req:parse_post(),
+					Json = proplists:get_value("json", Data),
+					Struct = mochijson2:decode(Json),
+					SessionId = struct:get_value(<<"sessionId">>, Struct),
+					case session:lookup(SessionId) of
+						session_closed ->
+							spit(Req, {struct, [{"sessionClosed", true}] });
+						_SessionPid ->
+							Actions = struct:get_value(<<"actions">>, Struct),
+							ProcessActions = fun(Action, {Updates, Acc}) ->
+												Action = struct:get_value(<<"action">>, Action),
+												QueryId = struct:get_value(<<"queryId">>, Action),
+												case Action of
+													<<"create">> ->
+														Type = binary_to_list( struct:get_value(<<"type">>, Action) ),
+														Variable = struct:get_value(<<"variable">>, Action),
+														case object:create( Type) of
+															{ok, Name} ->
+																{ [actionUpdate(QueryId, Name) | Updates], [{Variable, Name} | Acc] };
+															{error, _Reason} ->
+																{ [actionUpdateError(QueryId) | Updates], [{Variable, error} | Acc]}
+														end;														
+													<<"intact">> ->
+														Variable = struct:get_value(<<"object">>, Action),
+														Object = case binary_to_list( Variable ) of
+																	"client." ++ _ ->
+																		case lists:keysearch(Variable, 1, Acc) of
+																			{value, {_, Name} } -> Name;
+																			_ -> error
+																		end;
+																	ObjectName -> 
+																		ObjectName
+																end,
+														if
+															Object =:= error ->
+																{ [actionUpdateError(QueryId) | Updates], Acc };
+															true ->
+																Property = struct:get_value(<<"property">>, Action),
+																Intact = struct:get_value(<<"intact">>, Action),
+																Key = struct:get_value(<<"key">>, Action),
+																case object:intact(Object, Property, Intact, Key) of
+																	ok ->
+																		{ [actionUpdate(QueryId) | Updates], Acc };
+																	{error, _Reason} ->
+																		{ [actionUpdateError(QueryId) | Updates], Acc }
+																end
+														end
+												end			
+										end,
+							{ActionUpdates, _} = lists:foldl(ProcessActions, {[], []}, Actions),
+							spit(Req, {struct, [{"actionUpdates", ActionUpdates}] } )
+					end;
                 _ ->
                     Req:not_found()
             end;
@@ -96,3 +149,12 @@ spit(Req, Json) ->
 
 get_option(Option, Options) ->
     {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
+
+actionUpdate(QueryId) ->
+	{struct, [{"queryId", QueryId}, {"success", true}]}.
+	
+actionUpdate(QueryId, Value) ->
+	{struct, [{"queryId", QueryId}, {"success", true}, {"value", Value}]}.
+
+actionUpdateError(QueryId) ->
+	{struct, [{"queryId", QueryId}, {"success", false}]}.
