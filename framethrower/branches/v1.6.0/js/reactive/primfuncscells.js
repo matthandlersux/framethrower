@@ -337,29 +337,120 @@ var primFuncs = function () {
 			}
 		},
 		
-		// TODO
 		reactiveNot: {
 			type: "Unit Null -> Unit Null",
 			func: function (cell) {
-				
+				var outputCell = makeCell();
+				outputCell.addLine(nullObject);
+				var removeFunc = cell.injectFunc(function (val) {
+					outputCell.removeLine(nullObject);
+					return function() {
+						outputCell.addLine(nullObject);
+					};
+				});
+				outputCell.addOnRemove(removeFunc);
+				return outputCell;
 			}
 		},
 		reactiveAnd: {
 			type: "Unit Null -> Unit Null -> Unit Null",
 			func: function (cell1, cell2) {
+				var bool1 = false;
+				var bool2 = false;
+				var isSet = false;
+				var outputCell = makeCell();
 				
+				function updateOutputCell() {
+					if (bool1 && bool2 && !isSet) {
+						outputCell.addLine(nullObject);
+						isSet = true;
+					} else if (isSet) {
+						outputCell.removeLine(nullObject);
+						isSet = false;
+					}
+				}
+				
+				var removeFunc1 = cell1.injectFunc(function (val) {
+					bool1 = true;
+					updateOutputCell();
+					return function () {
+						bool1 = false;
+						updateOutputCell();
+					};
+				});
+				
+				var removeFunc2 = cell2.injectFunc(function (val) {
+					bool2 = true;
+					updateOutputCell();
+					return function () {
+						bool2 = false;
+						updateOutputCell();
+					};
+				});
+				
+				outputCell.addOnRemove(removeFunc1);
+				outputCell.addOnRemove(removeFunc2);
+				return outputCell;
 			}
 		},
 		reactiveOr: {
 			type: "Unit Null -> Unit Null -> Unit Null",
 			func: function (cell1, cell2) {
-				
+				var bool1 = false;
+				var bool2 = false;
+				var isSet = false;
+				var outputCell = makeCell();
+
+				function updateOutputCell() {
+					if ((bool1 || bool2) && !isSet) {
+						outputCell.addLine(nullObject);
+						isSet = true;
+					} else if (!bool1 && !bool2 && isSet) {
+						outputCell.removeLine(nullObject);
+						isSet = false;
+					}
+				}
+
+				var removeFunc1 = cell1.injectFunc(function (val) {
+					bool1 = true;
+					updateOutputCell();
+					return function () {
+						bool1 = false;
+						updateOutputCell();
+					};
+				});
+
+				var removeFunc2 = cell2.injectFunc(function (val) {
+					bool2 = true;
+					updateOutputCell();
+					return function () {
+						bool2 = false;
+						updateOutputCell();
+					};
+				});
+
+				outputCell.addOnRemove(removeFunc1);
+				outputCell.addOnRemove(removeFunc2);
+				return outputCell;				
 			}
 		},
 		isEmpty: {
 			type: "Set a -> Unit Null",
 			func: function (cell) {
+				var outputCell = makeCell();
+				var count = 0;
+				outputCell.addLine(nullObject);
 				
+				var removeFunc = cell.injectFunc(function (val) {
+					if(count == 0) outputCell.addLine(nullObject);
+					count++;
+					return function() {
+						count--;
+						if(count == 0) outputCell.removeLine(nullObject);
+					};
+				});
+				outputCell.addOnRemove(removeFunc);
+				return outputCell;				
 			}
 		},
 		gate: {
@@ -367,23 +458,35 @@ var primFuncs = function () {
 			func: function (gatekeeper, passer) {
 				// if gatekeeper is set, send passer through
 				// if gatekeeper is empty, output is empty
-				
-			}
-		},
-		
-		// TODO: let's remove passThru
-	 	passThru : {
-			type : "(a -> Bool) -> a -> Unit a",
-			func : function (f, input) {
+				var bool1 = false;
+				var isSet = false;
 				var outputCell = makeCell();
-				if(applyFunc(f, input)) {
-					outputCell.addLine(input);
+				
+				function updateOutputCell() {
+					if (bool1 && !isSet) {
+						outputCell.addLine(nullObject);
+						isSet = true;
+					} else if (!bool && isSet) {
+						outputCell.removeLine(nullObject);
+						isSet = false;
+					}
 				}
+				
+				var removeFunc1 = gatekeeper.injectFunc(function (val) {
+					bool1 = true;
+					updateOutputCell();
+					return function () {
+						bool1 = false;
+						updateOutputCell();
+					};
+				});
+				
+				outputCell.addOnRemove(removeFunc1);
+				
 				return outputCell;
 			}
 		},
-		
-		
+				
 	 	any : {
 			type : "(a -> Unit Bool) -> Set a -> Unit Bool",
 			func : function (f, cell) {

@@ -48,7 +48,7 @@ function testFile(filename) {
 			return (boolAsString == 'true');
 		} else if (primName == 'func') {
 			var name = primNode.getAttribute('name');
-			return lookupTable[name];
+			return testWorld.testEnv.env(name);
 		}
 		else if (primName == 'sc') {
 			var name = primNode.getAttribute('name');
@@ -57,13 +57,15 @@ function testFile(filename) {
 					scPatternMatch : scPatternMatch,
 					callBack : function (inCap) {
 						testWorld.startCaps[name] = inCap;
-						lookupTable[name] = inCap;
+						testWorld.testEnv.add(name, inCap);
 					}
 				};
 			}
 			return testWorld.startCaps[name];
 		} else if (primName == 'undefined') {
 			return undefined;
+		} else if (primName == 'null') {
+			return nullObject;
 		}
 		//TODO: add other primitive types
 	}
@@ -84,7 +86,7 @@ function testFile(filename) {
 		testWorld.startCaps[scname].type = parseType(sctype);
 		
 		// make this more functional
-		lookupTable[scname] = testWorld.startCaps[scname];
+		testWorld.testEnv.add(scname, testWorld.startCaps[scname]);
 		return testWorld;
 	}
 
@@ -92,7 +94,7 @@ function testFile(filename) {
 		var endCapName = actionNode.getAttribute('name');
 		var expression = actionNode.getAttribute('expression');
 
-		var scFromExp = evaluate(parseExpr(expression));
+		var scFromExp = evaluate(parseExpr(expression, testWorld.testEnv.env));
 
 		testWorld.outMessages[endCapName] = [];
 
@@ -141,6 +143,11 @@ function testFile(filename) {
 		});
 		return testWorld;
 	}
+	
+	// hack for better test output for null objects
+	nullObject.toString = function() {
+		return "nullObj";
+	};
 	
 	function messageToString(message, ecName) {
 		if(message.value != undefined) {
@@ -199,7 +206,7 @@ function testFile(filename) {
 		var testNodes = xpath("test", xml);
 
 		forEach(testNodes, function (testNode) {
-			var testWorld = {startCaps:{}, endCaps:{}, outMessages:[], testOutput:""};
+			var testWorld = {startCaps:{}, endCaps:{}, outMessages:[], testOutput:"", testEnv:makeDynamicEnv(base.env)};
 			forEach(children(testNode), function (actionNode) {
 				var action = actionNode.nodeName;
 				if (action == 'startcap') {

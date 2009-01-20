@@ -851,22 +851,27 @@
 
 	</test>
 	
-	<test name='passThruTest1'>
-
-		<endcap name = 'ec' expression = 'passThru not false' />
+	<test name='reactiveNotTest1'>
+		<startcap name = 'sc' type = 'unit null' />
+		<endcap name = 'ec' expression = 'reactiveNot sc' />
 
 		<expectedmessages>
 			<set ecname = 'ec' >
-				<bool value='false'/>
+				<null />
 			</set>
 		</expectedmessages>
 
-		<endcap name = 'ec2' expression = 'passThru not true' />
+		<messages>
+			<set scname = 'sc'>
+				<null />
+			</set>
+		</messages>
 
 		<expectedmessages>
-			<none ecname = 'ec' />
+			<remove ecname = 'ec' >
+				<null />
+			</remove>
 		</expectedmessages>
-
 	</test>
 
 	<test name='buildMapTest1'>
