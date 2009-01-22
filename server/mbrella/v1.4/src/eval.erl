@@ -47,7 +47,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									Input = evaluate( Expr#cons.right ),
 									Result = applyFun( F, Input ),
 									Cell = Result#exprCell{type = Type, bottom = BottomExpr},
-									NamedCell = env:nameAndStore(Cell),
+									NamedCell = env:nameAndStoreCell(Cell),
 									% this is correct - memoize:add returns an onRemove function
 									OnRemove = memoize:add( NormalExpr, NamedCell),
 									cell:addOnRemove(NamedCell, OnRemove),
@@ -64,7 +64,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									#exprFun{function = X, type = Type, bottom = BottomExpr};
 								Result when is_record(Result, exprCell) ->
 									Cell = Result#exprCell{type = Type, bottom = BottomExpr},
-									env:nameAndStore(Cell);
+									env:nameAndStoreCell(Cell);
 								NumStringBool ->
 									NumStringBool
 							end
@@ -82,7 +82,7 @@ evaluate(Expr) ->
 		Result when is_record(Result, exprCell) ->
 			Type = type:get( Expr ),
 			Cell = Result#exprCell{type = Type, bottom = BottomExpr},
-			env:nameAndStore(Cell);
+			env:nameAndStoreCell(Cell);
 		NumStringBool ->
 			NumStringBool
 	end.

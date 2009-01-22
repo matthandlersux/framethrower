@@ -62,6 +62,12 @@ addOnRemove(Cell, Fun) ->
 setKeyRange(Cell, Start, End) ->
 	gen_server:cast(Cell#exprCell.pid, {setKeyRange, Start, End}).
 
+makeFuture(Value) ->
+	Type = type:get(Value),
+	Cell = (makeCell())#exprCell{type=Type},
+	addLine(Cell, Value),
+	Cell.
+
 %% 
 %% addline:: CellPid -> a -> CleanupFun
 %% 

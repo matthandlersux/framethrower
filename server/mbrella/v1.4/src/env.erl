@@ -3,7 +3,7 @@
 -behaviour(gen_server).
 -import(mblib, [curry/1]).
 -include ("../include/scaffold.hrl").
--export([start/0, stop/0, nameAndStore/1, lookup/1, getState/0]).
+-export([start/0, stop/0, nameAndStoreCell/1, nameAndStoreObj/1, lookup/1, addFun/3, getState/0]).
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -23,8 +23,11 @@ start() ->
 stop() ->
 	gen_server:call(?MODULE, stop).
 
-nameAndStore(CellExpr) ->
-	gen_server:call(?MODULE, {nameAndStore, CellExpr}).
+nameAndStoreCell(CellExpr) ->
+	gen_server:call(?MODULE, {nameAndStoreCell, CellExpr}).
+
+nameAndStoreObj(Obj) ->
+	gen_server:call(?MODULE, {nameAndStoreObj, Obj}).
 
 getState() ->
 	gen_server:call(?MODULE, getState).
@@ -35,6 +38,8 @@ lookup(Pid) when is_pid(Pid) ->
 lookup(Name) ->
 	gen_server:call(?MODULE, {lookup, Name}).
 
+addFun(Name, Type, Function) ->
+	gen_server:cast(?MODULE, {addFun, Name, Type, Function}).
 
 getPrimitives() ->
 	BuildEnv = fun(#exprFun{function = Func, type = TypeString, name = Name} = Expr, {Suffix, Dict}) ->
@@ -60,6 +65,7 @@ createEnv() ->
 
 addExpr({Name, ExprString}, Env) ->
 	dict:store(Name, expr:exprParse(ExprString), Env).	
+
 	
 %% ====================================================================
 %% Server functions
@@ -70,7 +76,7 @@ init([]) ->
 	%may want to change globalTable from dict to ETS table
     {ok, #envState{nameCounter = 0, globalTable = dict:new(), globalTableByPid = dict:new(), baseEnv = createEnv()}}.
 
-handle_call({nameAndStore, ExprCell}, From, State) ->
+handle_call({nameAndStoreCell, ExprCell}, From, State) ->
 	#envState{nameCounter = NameCounter, globalTable = GlobalTable, globalTableByPid = GlobalPidTable} = State,
 	NewNameCounter = NameCounter + 1,
 	Name = "server." ++ integer_to_list(NewNameCounter),
@@ -81,6 +87,14 @@ handle_call({nameAndStore, ExprCell}, From, State) ->
 	NewGlobalPidTable = dict:store(Pid, NewExprCell, GlobalPidTable),
 	NewState = State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable, globalTableByPid = NewGlobalPidTable},
     {reply, NewExprCell, NewState};
+handle_call({nameAndStoreObj, Obj}, From, State) ->
+	#envState{nameCounter = NameCounter, globalTable = GlobalTable} = State,
+	NewNameCounter = NameCounter + 1,
+	Name = "server." ++ integer_to_list(NewNameCounter),
+	NewObj = Obj#object{name=Name},
+	NewGlobalTable = dict:store(Name, NewObj, GlobalTable),
+	NewState = State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable},
+    {reply, NewObj, NewState};
 handle_call({lookup, Name}, From, State) ->
 	#envState{globalTable = GlobalTable, baseEnv = BaseEnv} = State,
 	ExprCell = 
@@ -111,7 +125,17 @@ handle_call(stop, From, State) ->
 	{stop, normal, stopped, State}.
 
 
-handle_cast(_, State) -> {noreply, State}.
+
+
+handle_cast({addFun, Name, Type, Function}, State) -> 
+	#envState{globalTable = GlobalTable, globalTableByPid = GlobalPidTable} = State,
+	NewExprFun = #exprFun{name=Name, type=Type, function=Function},
+	NewGlobalTable = dict:store(Name, NewExprFun, GlobalTable),
+	NewState = State#envState{globalTable = NewGlobalTable},
+	{noreply, NewState}.
+
+
+
 handle_info(_, State) -> {noreply, State}.
 terminate(Reason, State) -> ok.
 code_change(OldVsn, State, Extra) -> {ok, State}.

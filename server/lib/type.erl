@@ -107,6 +107,8 @@ getType( Expr, Env ) when is_record(Expr, exprVar) ->
 	end;
 getType( Expr, Env ) when is_record(Expr, exprCell) ->
 	Expr#exprCell.type;
+getType( Obj, Env ) when is_record(Obj, object) ->
+	Obj#object.type;
 getType({primitive, Type, _}, _) -> 
 	case Type of
 		bool -> type(bool);
@@ -405,3 +407,35 @@ buildType(ExplicitType, TemplateTypeString, TypeToBuildString) ->
 	
 	TypeVars = bindVars(ExplicitType, TemplateType, dict:new()),
 	build(TypeToBuild, TypeVars).
+	
+	
+
+compareHelper(Type1, Type2, Correspond12, Correspond21) ->
+	case Type1#type.type of
+		WrongType when not(WrongType == Type2#type.type) -> {false, Correspond12, Correspond21};
+		typeName -> {(Type1#type.value == Type2#type.value), Correspond12, Correspond21};
+		typeVar -> 
+			T1C12 = dict:fetch(Type1#type.value, Correspond12),
+			C12 = (not T1C12) orelse (T1C12 == Type2#type.value),
+			T2C21 = dict:fetch(Type2#type.value, Correspond21),
+			C21 = (not T2C21) orelse (T2C21 == Type1#type.value),
+			case (C12 and C21) of
+				true -> 
+					NewCorrespond12 = dict:store(Type1#type.value, Type2#type.value, Correspond12),
+					NewCorrespond21 = dict:store(Type2#type.value, Type1#type.value, Correspond21),
+					{true, NewCorrespond12, NewCorrespond21};
+				false -> {false, Correspond12, Correspond21}
+			end;
+		_ -> 
+			{Left1, Right1} = Type1#type.value,
+			{Left2, Right2} = Type2#type.value,
+			{Comp1, NewCorrespond12, NewCorrespond21} = CH1 = compareHelper(Left1, Left2, Correspond12, Correspond21),
+			case Comp1 of
+				true -> compareHelper(Right1, Right2, NewCorrespond12, NewCorrespond21);
+				false -> CH1
+			end
+	end.
+	
+compareTypes(Type1, Type2) ->
+	{Answer, _, _} = compareHelper(Type1, Type2, dict:new(), dict:new()),
+	Answer.
