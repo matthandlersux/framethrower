@@ -116,28 +116,10 @@ session([{LastMessageId, _}|_] = MsgQueue) ->
 
 wellFormedUpdate(Data, QueryId, Action) ->
 		case Data of
-			{Key, Value} -> Data1 = [{"key", to_atom(Key)},{"value", to_atom(Value)}];
-			_ -> Data1 = [{"key", to_atom(Data)}]
+			{Key, Value} -> Data1 = [{"key", mblib:to_atom(Key)},{"value", mblib:to_atom(Value)}];
+			_ -> Data1 = [{"key", mblib:to_atom(Data)}]
 		end,
 		{struct, [{"queryId",QueryId},{"action", Action}|Data1]}.
-
-to_atom(X) when is_integer(X) -> X1 = integer_to_list(X), list_to_binary(X1);
-to_atom(X) when is_boolean(X) -> list_to_binary(atom_to_list(X));
-to_atom(X) when is_list(X) ->
-	Fun = fun(XX) ->         
-		if XX < 0 -> false;  
-			XX > 255 -> false;
-			true -> true      
-		end                  
-	end,
-	case lists:all(Fun, X) of
-		true -> list_to_binary([$"] ++ X ++ [$"]);
-		false -> X
-	end;
-to_atom(X) when is_pid(X) ->
-	#exprCell{name = Name} = env:lookup(X),
-	list_to_binary(Name);
-to_atom(X) -> X.
 
 
 streamUntil(To, MsgQueue, Until) ->

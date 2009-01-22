@@ -153,3 +153,30 @@ curry(Func) ->
 	curry(Func,Arity, []).
 curry(Func, 0, Args) -> apply(Func, Args);
 curry(Func, Arity, Args) -> fun(Arg) -> curry(Func, Arity-1, Args ++ [Arg])	end.
+
+
+%% ====================================================
+%% 'stringify' function
+%% ====================================================
+
+to_atom(X) when is_integer(X) -> X1 = integer_to_list(X), list_to_binary(X1);
+to_atom(X) when is_boolean(X) -> list_to_binary(atom_to_list(X));
+to_atom(X) when is_list(X) ->
+	Fun = fun(XX) ->         
+		if XX < 0 -> false;  
+			XX > 255 -> false;
+			true -> true      
+		end                  
+	end,
+	case lists:all(Fun, X) of
+		true -> list_to_binary([$"] ++ X ++ [$"]);
+		false -> X
+	end;
+to_atom(X) when is_pid(X) ->
+	#exprCell{name = Name} = env:lookup(X),
+	list_to_binary(Name);
+to_atom(X) when is_record(X, exprCell) ->
+	list_to_binary(X#exprCell.name);
+to_atom(X) when is_record(X, object) ->
+	list_to_binary(X#object.name);	
+to_atom(X) -> X.
