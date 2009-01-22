@@ -1,6 +1,6 @@
 var evalCache = {};
 
-function evaluate(expr) {
+var evaluate = function(expr) {
 	/*
 	This function will evaluate an Expr
 	Another way of looking at it is getting rid of all top-level apply's in an Expr by doing the applications
@@ -38,7 +38,9 @@ function evaluate(expr) {
 			// we can do a beta reduction
 			fun = normalizeVariables(fun, "x");
 			input = normalizeVariables(input, "y");
-			return evaluate(betaReplace(fun.right, fun.left.value, input));
+			var ret = betaReplace(fun.right, fun.left.value, input);
+			ret.type = resultType; // optimization
+			return evaluate(ret);
 		} else {
 			// fun wasn't a lambda, and evaluate can't return an apply, so fun must be a Fun, so we can run it
 			
@@ -70,7 +72,15 @@ function evaluate(expr) {
 	} else {
 		return expr;
 	}
-}
+};
+
+
+
+
+
+
+
+
 
 function memoizeCell(exprString, cell) {
 	evalCache[exprString] = cell;

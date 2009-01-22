@@ -464,10 +464,10 @@ var primFuncs = function () {
 				
 				function updateOutputCell() {
 					if (bool1 && !isSet) {
-						outputCell.addLine(nullObject);
+						outputCell.addLine(passer);
 						isSet = true;
 					} else if (!bool && isSet) {
-						outputCell.removeLine(nullObject);
+						outputCell.removeLine(passer);
 						isSet = false;
 					}
 				}

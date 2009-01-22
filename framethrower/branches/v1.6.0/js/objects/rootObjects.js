@@ -13,6 +13,7 @@ rootObjects["shared.ont"] = objects.make("Object");
 
 rootObjects["shared.isA"] = objects.make("Object");
 rootObjects["shared.name"] = objects.make("Object");
+rootObjects["shared.relationTemplate"] = objects.make("Object");
 
 rootObjects["shared.type.type"] = objects.make("Object");
 rootObjects["shared.type.situation"] = objects.make("Object");

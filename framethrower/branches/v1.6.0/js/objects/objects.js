@@ -53,6 +53,12 @@ var classesToMake = {
 		},
 		memoize: ["string"]
 	},
+	"X.xml": {
+		inherit: "Object",
+		prop: {
+			"xml": "XML"
+		}
+	},
 	
 	// ====================================================
 	// UI

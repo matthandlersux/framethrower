@@ -287,4 +287,6 @@ function cloneNode(node) {
 	return clone;
 }
 
-
+function isXML(o) {
+	return !!o.nodeType;
+}

@@ -172,6 +172,11 @@ function genConstraints(expr, env, constraints) {
 			return vName -> (genConstraints on expr2 using env augmented with x::vName)
 	*/
 	
+	// optimization
+	if (expr.type) {
+		return freshenType(expr.type);
+	}
+	
 	if (expr.kind === "var") {
 		return getType(env(expr.value));
 	} else if (expr.kind === "exprApply") {
@@ -199,10 +204,81 @@ function genConstraints(expr, env, constraints) {
 	}
 }
 
+
+
+
+
+
+
+
 function unify(constraints) {
-	/* MUTATES: constraints
-	given constraints, returns subs or throws an error
-	*/
+	// MUTATES: constraints
+	//given constraints, returns subs or throws an error
+	
+	// TODO: make subs a hash, make it do the substitutions in subOnConstraints, then make imposeSubs only have to do one pass, also can do subOnConstraints stuff to constraints as they are gotten to.
+	// the idea is to reduce passes through the type tree (like an imposeSub or a hashed imposeSubs)
+	
+	
+	var subs = {};
+	var madeSub = false;
+	
+	function addSub(name, value) {
+		madeSub = true;
+		forEach(subs, function (expr, subName) {
+			subs[subName] = imposeSub(expr, name, value);
+		});
+		subs[name] = value;
+	}
+	
+	
+	while (constraints.length !== 0) {
+		var constraint = constraints.shift(); // take a constraint from the front of the list
+		
+		if (madeSub) {
+			constraint[0] = imposeSubs(constraint[0], subs);
+			constraint[1] = imposeSubs(constraint[1], subs);
+		}
+		
+		var left = constraint[0];
+		var right = constraint[1];
+		
+		if (left.kind === "typeName" && right.kind === "typeName") {
+			if (left.value !== right.value) {
+				debug.error("Type mismatch between `"+left.value+"` and `"+right.value+"`.");
+			}
+			// otherwise ignore
+		} else if (left.kind === "typeVar" && right.kind === "typeVar" && left.value === right.value) {
+			// ignore
+		} else if (left.kind === "typeVar" && !containsVar(right, left)) {
+			// add substitution
+			addSub(left.value, right);
+		} else if (right.kind === "typeVar" && !containsVar(left, right)) {
+			// add substitution
+			addSub(right.value, left);
+		} else if (left.kind === right.kind) {
+			// add two new constraints to the end of the list
+			constraints.push([left.left, right.left]);
+			constraints.push([left.right, right.right]);
+		} else {
+			debug.error("Type mismatch, unresolveable: `"+unparseType(left)+"` and `"+unparseType(right)+"`");
+		}
+	}
+	
+	return subs;
+}
+
+
+
+
+
+
+
+
+
+
+/*function unify(constraints) {
+	// MUTATES: constraints
+	//given constraints, returns subs or throws an error
 	
 	function subOnConstraints(name, value) {
 		forEach(constraints, function (constraint) {
@@ -210,6 +286,11 @@ function unify(constraints) {
 			constraint[1] = imposeSub(constraint[1], name, value);
 		});
 	}
+	
+	//debug.profile("constraints", constraints.length);
+	
+	// TODO: make subs a hash, make it do the substitutions in subOnConstraints, then make imposeSubs only have to do one pass, also can do subOnConstraints stuff to constraints as they are gotten to.
+	// the idea is to reduce passes through the type tree (like an imposeSub or a hashed imposeSubs)
 	
 	var subs = [];
 	
@@ -244,7 +325,7 @@ function unify(constraints) {
 	}
 	
 	return subs;
-}
+}*/
 
 function imposeSub(type, name, value) {
 	if (type.kind === "typeName") {
@@ -264,16 +345,54 @@ function imposeSub(type, name, value) {
 	}
 }
 
-function imposeSubs(type, subs) {
-	function helper(type, name, value) {
-
-	}
+/*function imposeSubs(type, subs) {
 	forEach(subs, function (sub) {
 		type = imposeSub(type, sub[0], sub[1]);
 	});
 	return type;
-}
+	
+	// var hash = {};
+	// forEach(subs, function (sb) {
+	// 	hash[sub[0]] = sub[1];
+	// });
+	// 
+	// if (type.kind === "typeName") {
+	// 	return type;
+	// } else if (type.kind === "typeVar") {
+	// 	var lookup = subs[type.value];
+	// 	if (lookup) {
+	// 		return lookup;
+	// 	} else {
+	// 		return type;
+	// 	}
+	// } else {
+	// 	return {
+	// 		kind: type.kind,
+	// 		left: imposeSub(type.left, name, value),
+	// 		right: imposeSub(type.right, name, value)
+	// 	};
+	// }
+}*/
 
+
+function imposeSubs(type, subs) {
+	if (type.kind === "typeName") {
+		return type;
+	} else if (type.kind === "typeVar") {
+		var lookup = subs[type.value];
+		if (lookup) {
+			return lookup;
+		} else {
+			return type;
+		}
+	} else {
+		return {
+			kind: type.kind,
+			left: imposeSubs(type.left, subs),
+			right: imposeSubs(type.right, subs)
+		};
+	}
+}
 
 
 

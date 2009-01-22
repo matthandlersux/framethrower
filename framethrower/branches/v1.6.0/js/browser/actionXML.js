@@ -119,6 +119,9 @@ function triggerAction(thunkEssence) {
 	function onXMLUpdate() {
 		var remaining = xpath(".//f:thunk", island);
 		if (remaining.length === 0) {
+			
+			console.dirxml(island);
+			
 			performActions(island.firstChild, emptyEnv);
 			unloadXML(island);
 		}

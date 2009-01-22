@@ -72,6 +72,6 @@ function xmlToExpr(xml, ids) {
 	} else if (nn === "f:map") {
 		// TODO
 	} else {
-		return xml;
+		return cloneNode(xml); // TODO: perhaps don't need cloneNode here
 	}
 }

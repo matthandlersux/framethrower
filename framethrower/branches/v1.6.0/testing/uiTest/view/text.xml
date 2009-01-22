@@ -1,0 +1,14 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="X.text" />
+	
+	<f:derive name="string" d="X.text:string focus" />
+	
+	<html:span class="text">
+		<xsl:value-of select="$string/@value" />
+	</html:span>
+</f:template>

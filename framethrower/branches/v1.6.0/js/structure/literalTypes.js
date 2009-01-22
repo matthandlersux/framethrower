@@ -12,6 +12,8 @@ nullObject = {
 // But also make sure to modify browser/desugar.xml write-select if adding new literals.
 // ============================================================================
 
+// TODO: add stuff to parseLiteral and unparseLiteral to deal with XML
+
 // String -> Literal
 function parseLiteral(s) {
 	if (/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/.test(s)) {
@@ -57,6 +59,10 @@ function xmlizeLiteral(expr) {
 		return {xml: setAttr(setAttr(createEl("f:literal"), "type", "Bool"), "value", expr), ids: {}};
 	} else if (expr === nullObject) {
 		return {xml: setAttr(setAttr(createEl("f:literal"), "type", "Null"), "value", "null"), ids: {}};
+	} else if (isXML(expr)) {
+		var xml = setAttr(createEl("f:literal"), "type", "XML");
+		appendChild(xml, cloneNode(expr));
+		return {xml: xml, ids: {}};
 	} else {
 		return undefined;
 	}
@@ -73,6 +79,8 @@ function unxmlizeLiteral(xml) {
 		return getAttr(xml, "value") === "true";			
 	} else if (type === "Null") {
 		return nullObject;
+	} else if (type === "XML") {
+		return cloneNode(xpath("*", xml)[0]); // TODO: perhaps don't need cloneNode here
 	}
 }
 

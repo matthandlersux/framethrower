@@ -82,6 +82,9 @@ function processThunks(node, pass) {
 	var thunks = xpath(".//f:thunk", node);
 	forEach(thunks, function (thunk) {
 		evalThunk(thunk);
+		// setTimeout(function () {
+		// 			evalThunk(thunk);
+		// 		}, 1);
 	});
 }
 

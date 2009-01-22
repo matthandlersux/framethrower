@@ -9,15 +9,28 @@ make an Ord type for generic ordering
 
 
 var exprLib = {
+	
+	// ========================================================================
+	// Basic utility
+	// ========================================================================
+	
 	identity: {
 		type: "a -> a",
 		expr: "x -> x"
+	},
+	swap: {
+		type: "(a -> b -> c) -> b -> a -> c",
+		expr: "f -> x -> y -> f y x"
 	},
 	/*compose: {
 		type: "(b -> c) -> (a -> b) -> (a -> c)",
 		expr: "f -> g -> x -> f (g x)"
 	},*/
 	
+	
+	// ========================================================================
+	// Monadic utility
+	// ========================================================================
 	
 	returnSet: {
 		type: "a -> Set a",
@@ -39,44 +52,61 @@ var exprLib = {
 		type: "Set (Set a) -> Set a",
 		expr: "bindSet identity"
 	},
-	
-	
-/*	upRight: {
-		type: "Object -> Set Object",
-		expr: "compose (mapSet Cons~Object) Object:upRight"
+	flattenUnitSet: {
+		type: "Unit (Set a) -> Set a",
+		expr: "compose flattenSet returnUnitSet"
 	},
-	upLeft: {
-		type: "Object -> Set Object",
-		expr: "compose (mapSet Cons~Object) Object:upLeft"
+	flattenSetUnit: {
+		type: "Set (Unit a) -> Set a",
+		expr: "compose flattenSet (mapSet returnUnitSet)"
 	},
 	
-	consWithRelation: {
-		type: "Set Object -> Set Object",
-		expr: "bindSet upRight"
+	
+	// ========================================================================
+	// Set utility
+	// ========================================================================
+	
+	passthru: {
+		type: "(a -> Unit Null) -> a -> Unit a",
+		expr: "pred -> x -> gate (pred x) x"
 	},
-	consWithArgument: {
-		type: "Set Object -> Set Object",
-		expr: "bindSet upLeft"
+	
+	filter: {
+		type: "(a -> Unit Null) -> Set a -> Set a",
+		expr: "pred -> bindSet (compose returnUnitSet (passthru pred))"
 	},
-*/	
+	
+	length: {
+		type: "Set a -> Unit Number",
+		expr: "fold (x -> sum -> add sum 1) (x -> sum -> subtract sum 1) 0"
+	},
 	
 	
+	// ========================================================================
+	// Map utility
+	// ========================================================================
 	
+	// I think we should consider making this one primitive, maybe as :: Set a -> Unit a
+	takeLast: {
+		type: "Map Number a -> Unit a",
+		expr: "m -> bindUnit ((swap getKey) m) ((mapUnit ((swap subtract) 1)) (length (keys m)))"
+	},
+	
+	unfoldMapInv: {
+		type: "(a -> Set a) -> a -> Map Number (Set a)",
+		expr: "f -> x -> invert (mapMapValue returnSet (unfoldMap f x))"
+	},
 
-	
 
-	
-/*	test1: {
-		type: "Set Object -> Set Object",
-		chain: ["Cons:right"]
-	},
-	
-	test2: {
-		type: "Set Object -> Set Cons",
-		expr: "bindSet (compose returnUnitSet Object~Cons)"
-	},
-*/	
 
+
+
+
+
+
+	// ========================================================================
+	// Getting properties of objects
+	// ========================================================================
 	
 	getOntProp: {
 		type: "Object -> Object -> Set Object",
@@ -110,9 +140,30 @@ var exprLib = {
 		}
 	},
 	
+	getRelationTemplate: {
+		type: "Object -> Set XML",
+		expr: "obj -> getXML (getOntProp shared.relationTemplate obj)",
+		where: {
+			getXML: {
+				type: "Set Object -> Set XML",
+				chain: ["X.xml:xml"]
+			}
+		}
+	},
+	
 	getTypes: {
 		type: "Object -> Set Object",
 		expr: "unfoldSet (getOntProp shared.isA)"
+	},
+
+
+	// ========================================================================
+	// Querying for infons
+	// ========================================================================
+
+	filterByTruth: {
+		type: "Set Cons -> Set Cons",
+		expr: "infons -> filter (Cons:truth) infons"
 	},
 	
 	getInfonsAbout: {
@@ -136,19 +187,25 @@ var exprLib = {
 		}
 	},
 	
-	unfoldMapInv: {
-		type: "(a -> Set a) -> a -> Map Number (Set a)",
-		expr: "f -> x -> invert (mapMapValue returnSet (unfoldMap f x))"
-	},
+
 	
-	getInfonArguments: {
-		type: "Cons -> Map Number (Unit Object)",
-		expr: "infon -> mapMapValue (compose takeOne downRight) (unfoldMapInv downLeft infon)",
+
+	
+	getConsComponents: {
+		type: "Cons -> Map Number (Set Cons)",
+		expr: "cons -> unfoldMapInv downLeft cons",
 		where: {
 			downLeft: {
 				type: "Cons -> Set Cons",
 				chain: ["Cons:left"]
-			},
+			}
+		}
+	},
+	
+	getInfonArguments: {
+		type: "Cons -> Map Number (Unit Object)",
+		expr: "infon -> mapMapValue (compose takeOne downRight) (getConsComponents infon)",
+		where: {
 			downRight: {
 				type: "Set Cons -> Set Object",
 				chain: ["Cons:right"]
@@ -156,25 +213,45 @@ var exprLib = {
 		}
 	},
 	
-	length: {
-		type: "Set a -> Unit Number",
-		expr: "fold (x -> sum -> add sum 1) (x -> sum -> subtract sum 1) 0"
-	}
 	
-	/*,
+	// unfoldToEnd: {
+	// 	type: "(a -> Unit a) -> a -> Unit a",
+	// 	expr: "f -> x -> takeOne (flattenUnitSet (takeLast (unfoldMapInv (compose returnUnitSet f) x)))",
+	// 	where: {
+	// 		takeLast: {
+	// 			type: "Map Number a -> Unit a",
+	// 			expr: "m -> bindUnit ((swap getKey) m) (length (keys m))"
+	// 		}
+	// 	}
+	// },
 	
+	// getInfonRelation: {
+	// 	type: "Cons -> Unit Object",
+	// 	expr: "infon -> finalLeft (flattenUnit ((mapUnit takeOne) (takeLast (getConsComponents infon))))",
+	// 	where: {
+	// 		finalLeft: {
+	// 			type: "Unit Cons -> Unit Object",
+	// 			chain: ["Cons:left"]
+	// 		}
+	// 	}
+	// },
 	
-	
-	unfoldToEnd: {
-		type: "(a -> Unit a) -> a -> Unit a",
-		expr: "f -> x -> takeLast (unfoldMapInv (compose returnUnitSet f) x)",
+	getInfonRelations: {
+		type: "Cons -> Set Object",
+		expr: "infon -> finalLeft (flattenSet (returnUnitSet (takeLast (getConsComponents infon))))",
 		where: {
-			takeLast: {
-				type: "Map Number a -> Unit a",
-				expr: 
+			finalLeft: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:left"]
 			}
 		}
-	}*/
+	}
+	
+	
+	
+	
+	
+	
 	
 
 };

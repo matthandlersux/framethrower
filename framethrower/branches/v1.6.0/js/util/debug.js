@@ -1,4 +1,6 @@
 var debug = (function () {
+	var runningTotals = {};
+	
 	return {
 		log: function (arg) {
 			console.log(arg);
@@ -20,6 +22,31 @@ var debug = (function () {
 				
 			}
 			throw arg;
+		},
+		
+		
+		
+		
+		profile: function (name, value) {
+			if (!runningTotals[name]) {
+				runningTotals[name] = {
+					max: -999999999999,
+					min: 999999999999,
+					average: 0,
+					count: 0,
+					dist: []
+				};
+			}
+			var r = runningTotals[name];
+			r.max = Math.max(r.max, value);
+			r.min = Math.min(r.min, value);
+			r.count++;
+			r.average = (r.average * (r.count - 1) + value) / r.count;
+			if (!r.dist[value]) r.dist[value] = 0;
+			r.dist[value]++;
+		},
+		getResults: function (name) {
+			return runningTotals[name];
 		}
 	};
 })();

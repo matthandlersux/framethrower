@@ -1,23 +1,7 @@
 @import url(reset.css);
 @import url(typography.css);
+@import url(view.css);
 
 
 
 
-
-.object {
-	color:#fff;
-	background-color:#666; /* default, but will be overwritten depending on the object's type */
-	padding:3px;
-	-moz-border-radius: 4px;
-}
-
-
-
-.prettyPrint {
-	font-family: monospace;
-}
-
-.prettyPrintIndent {
-	margin-left: 20px;
-}
