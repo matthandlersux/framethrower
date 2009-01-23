@@ -132,7 +132,7 @@ processActionList(Actions, Updates, Variables) ->
 processAction(<<"block">>, Action, Updates, OldVariables) ->
 	BlockVariables = struct:get_value(<<"variables">>, Action),
 	Actions = struct:get_value(<<"actions">>, Action),
-	Returned = processActionList(Actions, [], Variables),
+	Returned = processActionList(Actions, [], OldVariables),
 	NewVariables = lists:zip(BlockVariables, Returned),
 	{ Updates, [NewVariables | OldVariables]};	
 processAction(<<"create">>, Action, Updates, Variables) ->
