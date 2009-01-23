@@ -91,48 +91,9 @@ loop(Req, DocRoot) ->
 							spit(Req, {struct, [{"sessionClosed", true}] });
 						_SessionPid ->
 							Actions = struct:get_value(<<"actions">>, Struct),
-							ProcessActions = fun(Action, {Updates, Acc}) ->
-												Action = struct:get_value(<<"action">>, Action),
-												QueryId = struct:get_value(<<"queryId">>, Action),
-												case Action of
-													<<"create">> ->
-														Type = binary_to_list( struct:get_value(<<"type">>, Action) ),
-														Variable = struct:get_value(<<"variable">>, Action),
-														case object:create( Type) of
-															{ok, Name} ->
-																{ [actionUpdate(QueryId, Name) | Updates], [{Variable, Name} | Acc] };
-															{error, _Reason} ->
-																{ [actionUpdateError(QueryId) | Updates], [{Variable, error} | Acc]}
-														end;														
-													<<"intact">> ->
-														Variable = struct:get_value(<<"object">>, Action),
-														Object = case binary_to_list( Variable ) of
-																	"client." ++ _ ->
-																		case lists:keysearch(Variable, 1, Acc) of
-																			{value, {_, Name} } -> Name;
-																			_ -> error
-																		end;
-																	ObjectName -> 
-																		ObjectName
-																end,
-														if
-															Object =:= error ->
-																{ [actionUpdateError(QueryId) | Updates], Acc };
-															true ->
-																Property = struct:get_value(<<"property">>, Action),
-																Intact = struct:get_value(<<"intact">>, Action),
-																Key = struct:get_value(<<"key">>, Action),
-																case object:intact(Object, Property, Intact, Key) of
-																	ok ->
-																		{ [actionUpdate(QueryId) | Updates], Acc };
-																	{error, _Reason} ->
-																		{ [actionUpdateError(QueryId) | Updates], Acc }
-																end
-														end
-												end			
-										end,
-							{ActionUpdates, _} = lists:foldl(ProcessActions, {[], []}, Actions),
-							spit(Req, {struct, [{"actionUpdates", ActionUpdates}] } )
+							Returned = processActionList(Actions),
+							Success = lists:all(fun(X) -> X =/= error end, Returned),
+							spit(Req, {struct, [{"success", Success},{"returned", Returned}] } )
 					end;
                 _ ->
                     Req:not_found()
@@ -142,6 +103,120 @@ loop(Req, DocRoot) ->
     end.
 
 %% Internal API
+
+%% 
+%% processActionList takes a list of actions, runs each eaction on the server, stores results, and returns "server.#" cells
+%% processActionList:: List Action -> List String
+%% 
+
+processActionList(Actions) ->
+	processActionList(Actions, [], []).
+	
+processActionList(Actions, Updates, Variables) ->
+	ProcessActions = fun(Action, {UpdatesAccumulator, VariablesAccumulator}) ->
+						ActionType = struct:get_value(<<"action">>, Action),
+						processAction(ActionType, Action, UpdatesAccumulator, VariablesAccumulator)
+					end,
+	{ActionUpdates, _} = lists:foldl(ProcessActions, {Updates, Variables}, Actions),
+	lists:reverse(ActionUpdates).
+
+%%
+%% processAction is called bye processActionList to appropriately deal with an action sent to the server.
+%%	It's result is { [ReturnVariables], [{VariableName, CellName}] } which is made for lists:foldl/3
+%% processAction:: Action -> List Update -> List {String, String} -> { List Update, List {String, String} }
+%% 
+
+processAction(<<"block">>, Action, Updates, Variables) ->
+	Variables = struct:get_value(<<"variables">>, Action),
+	Actions = struct:get_value(<<"actions">>, Action),
+	Returned = processActionList(Actions, [], Variables),
+	NewVariables = lists:zip(Variables, Returned),
+	{ Updates, [NewVariables | Variables]};	
+processAction(<<"create">>, Action, Updates, Variables) ->
+	Type = binary_to_list( struct:get_value(<<"type">>, Action) ),
+	Variable = struct:get_value(<<"variable">>, Action),
+	Prop = struct:get_value(<<"prop">>, Action),
+	PropDict = propToDict(Prop, Variables),
+	case objects:create(Type, PropDict) of
+		{ok, Binding} ->
+			{ Updates, [{Variable, Binding} | Variables] };
+		{error, _Reason} ->
+			{ Updates, [{Variable, error} | Variables]}
+	end;
+processAction(<<"return">>, Action, Updates, Variables) ->
+	Variable = struct:get_value(<<"variable">>, Action),
+	case lists:keysearch(Variable, 1, Variables) of
+		{value, {_, Binding} } ->
+			{ [Binding|Updates], Variables};
+		_ -> 
+			{ ["error"|Updates], Variables}
+	end;
+processAction(ActionType, Action, Updates, Variables) when ActionType =:= <<"add">> orelse ActionType =:= <<"remove">> ->
+	Variable = struct:get_value(<<"object">>, Action),
+	Object = binaryScopeVarToCellName( Variable, Variables ),
+	if
+		Object =:= error ->
+			{ [error | Updates], Variables };
+		true ->
+			Property = binary_to_list( struct:get_value(<<"property">>, Action) ),
+			Key = binary_to_list( struct:get_value(<<"key">>, Action) ),
+			Value = struct:get_value(<<"value">>, Action),
+			if Value =:= undefined -> Data = Key; true -> Data = {Key, Value} end,
+			case ActionType of 
+				<<"add">> ->
+					case objects:add(Object, Property, Data) of
+						ok ->
+							{ Updates, Variables };
+						{error, _Reason} ->
+							{ [error | Updates], Variables }
+					end;
+				<<"remove">> ->
+					case objects:remove(Object, Property, Data) of
+						ok ->
+							{ Updates, Variables };
+						{error, _Reason} ->
+							{ [error | Updates], Variables }
+					end
+			end
+	end.
+
+%% 
+%% propToDict takes a json struct and returns a dictionary accordingly
+%% propToDict:: Struct -> Dict
+%% 
+
+propToDict(Props, Conversions) ->
+	propToDict(Props, Conversions, dict:new()).
+
+propToDict({struct, []}, _, Dict) -> Dict;
+propToDict({struct, [{Key, Value}|Props]}, Conversions, Dict) ->
+	propToDict({struct, Props}, Conversions, dict:store( binary_to_list(Key), binaryScopeVarToCellName( Value, Conversions ), Dict)).
+
+%% 
+%% binaryScopeVarToCellName:: Binary String -> List { Binary String, String } -> String
+%% 
+
+binaryScopeVarToCellName( BinaryVariable, Variables) when is_binary(BinaryVariable) ->
+	case binary_to_list( BinaryVariable ) of
+		"client." ++ _ ->
+			case lists:keysearch(BinaryVariable, 1, Variables) of
+				{value, {_, Name} } -> Name;
+				_ -> error
+			end;
+ 		"block." ++ _ ->
+			case lists:keysearch(BinaryVariable, 1, Variables) of
+				{value, {_, Name} } -> Name;
+				_ -> error
+			end;
+		ObjectName -> 
+			ObjectName
+	end.
+
+%% 
+%% spit has the side effect that the Json result is sent to the Request and then forwarded to the client that made the request
+%% spit:: Request -> JsonKeyName -> JsonKeyValue -> Json
+%% 
+
 spit(Req, ObName, ObValue) ->
 	Req:ok({"text/plain", [], [mochijson2:encode({struct, [{ObName, ObValue}] } )] } ).
 spit(Req, Json) ->
@@ -150,11 +225,11 @@ spit(Req, Json) ->
 get_option(Option, Options) ->
     {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
 
-actionUpdate(QueryId) ->
-	{struct, [{"queryId", QueryId}, {"success", true}]}.
-	
-actionUpdate(QueryId, Value) ->
-	{struct, [{"queryId", QueryId}, {"success", true}, {"value", Value}]}.
-
-actionUpdateError(QueryId) ->
-	{struct, [{"queryId", QueryId}, {"success", false}]}.
+% actionUpdate(QueryId) ->
+% 	{struct, [{"queryId", QueryId}, {"success", true}]}.
+% 	
+% actionUpdate(QueryId, Value) ->
+% 	{struct, [{"queryId", QueryId}, {"success", true}, {"value", Value}]}.
+% 
+% actionUpdateError(QueryId) ->
+% 	{struct, [{"queryId", QueryId}, {"success", false}]}.
