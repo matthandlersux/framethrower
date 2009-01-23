@@ -37,7 +37,7 @@ function myTest() {
 	// BROWSER: this is just to test from local files, will be removed
 	netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
 	
-	var url = "http://localhost:8000/newSession?dsfnosdofids";
+	var url = "http://clever.eversplosion.com:8000/newSession?dsfnosdofids";
 	
 	var req = new XMLHttpRequest();
 	req.open("POST", url, true);

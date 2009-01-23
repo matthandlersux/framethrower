@@ -78,7 +78,7 @@ var maxCalls = 12;
 
 
 var timeoutDefault = 30 * 1000; // 30 seconds
-var serverBaseUrl = "http://localhost:8000/";
+var serverBaseUrl = "http://clever.eversplosion.com:8000/";
 //var serverBaseUrl = "http://www.eversplosion.com/resources/servertest.php?";
 
 function xhr(url, post, callback, failCallback, timeout) {
