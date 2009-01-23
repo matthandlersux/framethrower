@@ -129,12 +129,14 @@ addProp(Name, PropName, TypeString) ->
 create(ClassName, Props) ->
 	gen_server:call(?MODULE, {create, ClassName, Props}).
 
-add(Object, Property, Key) ->
+add(ObjectString, Property, Key) ->
+	Object = env:lookup(ObjectString),
 	Prop = Object#object.prop,
 	Cell = dict:fetch(Property, Prop),
 	cell:addLine(Cell, Key).
 
-remove(Object, Property, Key) ->
+remove(ObjectString, Property, Key) ->
+	Object = env:lookup(ObjectString),
 	Prop = Object#object.prop,
 	Cell = dict:fetch(Property, Prop),
 	cell:removeLine(Cell, Key).

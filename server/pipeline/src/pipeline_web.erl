@@ -65,7 +65,7 @@ loop(Req, DocRoot) ->
 												Expr = struct:get_value(<<"expr">>, Query),
 												QueryId = struct:get_value(<<"queryId">>, Query),
 												% io:format("expr: ~p~nquery: ~p~n~n", [Expr, QueryId])
-												#exprCell{pid = Cell} = eval:evaluate( expr:exprParse( binary_to_list(Expr) ) ),
+												Cell = eval:evaluate( expr:exprParse( binary_to_list(Expr) ) ),
 												cell:injectFunc(Cell,  
 													fun(Val) ->
 														SessionPid ! {data, {QueryId, add, Val}},
