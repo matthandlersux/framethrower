@@ -129,12 +129,12 @@ processActionList(Actions, Updates, Variables) ->
 %% processAction:: Action -> List Update -> List {String, String} -> { List Update, List {String, String} }
 %% 
 
-processAction(<<"block">>, Action, Updates, Variables) ->
-	Variables = struct:get_value(<<"variables">>, Action),
+processAction(<<"block">>, Action, Updates, OldVariables) ->
+	BlockVariables = struct:get_value(<<"variables">>, Action),
 	Actions = struct:get_value(<<"actions">>, Action),
 	Returned = processActionList(Actions, [], Variables),
-	NewVariables = lists:zip(Variables, Returned),
-	{ Updates, [NewVariables | Variables]};	
+	NewVariables = lists:zip(BlockVariables, Returned),
+	{ Updates, [NewVariables | OldVariables]};	
 processAction(<<"create">>, Action, Updates, Variables) ->
 	Type = binary_to_list( struct:get_value(<<"type">>, Action) ),
 	Variable = struct:get_value(<<"variable">>, Action),
