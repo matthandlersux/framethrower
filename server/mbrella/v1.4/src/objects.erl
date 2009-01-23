@@ -127,19 +127,29 @@ addProp(Name, PropName, TypeString) ->
 	gen_server:cast(?MODULE, {addProp, Name, PropName, TypeString}).
 
 create(ClassName, Props) ->
-	gen_server:call(?MODULE, {create, ClassName, Props}).
+	try gen_server:call(?MODULE, {create, ClassName, Props}) of
+		#object{name=Name} -> {ok, Name}
+	catch
+		_:_ -> {error, objectCreationError}
+	end.
 
 add(ObjectString, Property, Key) ->
-	Object = env:lookup(ObjectString),
-	Prop = Object#object.prop,
-	Cell = dict:fetch(Property, Prop),
-	cell:addLine(Cell, Key).
+	try env:lookup(ObjectString) of
+		Object ->
+			Prop = Object#object.prop,
+			Cell = dict:fetch(Property, Prop),
+			cell:addLine(Cell, Key),
+			ok
+	catch
+		_:_ -> {error, objectStringNotFound}
+	end.
 
 remove(ObjectString, Property, Key) ->
 	Object = env:lookup(ObjectString),
 	Prop = Object#object.prop,
 	Cell = dict:fetch(Property, Prop),
-	cell:removeLine(Cell, Key).
+	cell:removeLine(Cell, Key),
+	ok.
 
 getBroadcaster(ClassName, MemoString) ->
 	gen_server:call(?MODULE, {getBroadcaster, ClassName, MemoString}).
