@@ -134,7 +134,7 @@ processAction(<<"block">>, Action, Updates, OldVariables) ->
 	Actions = struct:get_value(<<"actions">>, Action),
 	Returned = processActionList(Actions, [], OldVariables),
 	NewVariables = lists:zip(BlockVariables, Returned),
-	{ Updates, [NewVariables | OldVariables]};	
+	{ Updates, NewVariables ++ OldVariables};	
 processAction(<<"create">>, Action, Updates, Variables) ->
 	Type = binary_to_list( struct:get_value(<<"type">>, Action) ),
 	Variable = struct:get_value(<<"variable">>, Action),

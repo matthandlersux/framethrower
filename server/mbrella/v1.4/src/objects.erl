@@ -128,7 +128,7 @@ addProp(Name, PropName, TypeString) ->
 
 create(ClassName, Props) ->
 	try gen_server:call(?MODULE, {create, ClassName, Props}) of
-		#object{name=Name} -> {ok, Name}
+		Object -> {ok, Object}
 	catch
 		ErrorType:ErrorPattern -> 
 			?trace(ErrorType),
@@ -136,19 +136,13 @@ create(ClassName, Props) ->
 			{error, objectCreationError}
 	end.
 
-add(ObjectString, Property, Key) ->
-	try env:lookup(ObjectString) of
-		Object ->
-			Prop = Object#object.prop,
-			Cell = dict:fetch(Property, Prop),
-			cell:addLine(Cell, Key),
-			ok
-	catch
-		_:_ -> {error, objectStringNotFound}
-	end.
+add(Object, Property, Key) ->
+	Prop = Object#object.prop,
+	Cell = dict:fetch(Property, Prop),
+	cell:addLine(Cell, Key),
+	ok.
 
-remove(ObjectString, Property, Key) ->
-	Object = env:lookup(ObjectString),
+remove(Object, Property, Key) ->
 	Prop = Object#object.prop,
 	Cell = dict:fetch(Property, Prop),
 	cell:removeLine(Cell, Key),
