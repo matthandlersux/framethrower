@@ -274,7 +274,6 @@ var objects = (function (classesToMake) {
 				return c.memoTable[memoString].object;
 			}
 		}
-		
 		var type = {kind: "typeName", value: className};
 
 		var o = {

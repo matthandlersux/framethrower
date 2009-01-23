@@ -78,7 +78,7 @@ var maxCalls = 12;
 
 
 var timeoutDefault = 30 * 1000; // 30 seconds
-var serverBaseUrl = "http://24.218.127.46:8000/";
+var serverBaseUrl = "http://localhost:8000/";
 //var serverBaseUrl = "http://www.eversplosion.com/resources/servertest.php?";
 
 function xhr(url, post, callback, failCallback, timeout) {
@@ -146,10 +146,37 @@ function parseServerResponse(s, expectedType) {
 var session = (function () {
 	var sessionId = null;
 	var queriesToAsk = [];
+	var actionsToSend = [];
 	var nextQueryId = 1;
 	var lastMessageId = 0;
 	
 	var cells = {};
+	
+	function addActions(actions) {
+		if (!sessionId) {
+			newSession();
+		}
+		
+		actionsToSend = actionsToSend.concat(actions);
+	}
+	
+	function sendAllActions() {
+		if (actionsToSend.length > 0) {
+			var sending = actionsToSend;
+			actionsToSend = [];
+			var json = JSON.stringify({
+				sessionId: sessionId,
+				actions: sending
+			});
+			
+			xhr(serverBaseUrl+"action", json, function (text) {
+				
+			}, function () {
+				actionsToSend = actionsToSend.concat(sending);
+				sendAllActions();
+			});
+		}
+	}
 	
 	function addQuery(expr) {
 		if (!sessionId) {
@@ -204,13 +231,11 @@ var session = (function () {
 			
 			try {
 				var o = JSON.parse(text);
-				//console.log("json parsed to", o);
 				
 				if (o.sessionClosed) {
 					// TODO
 				} else {
 					lastMessageId = o.lastMessageId;
-
 					forEach(o.updates, function (update) {
 						//console.log("doing update", update, o.updates);
 						var cell = cells[update.queryId];
@@ -247,12 +272,15 @@ var session = (function () {
 			sessionId = o.sessionId;
 
 			askAllQueries();
+			sendAllActions();
 			if (!updaterRunning) startUpdater();
 		});
 	}
 	
 	return {
 		query: addQuery,
+		addActions: addActions,
+		flushActions: sendAllActions,
 		flush: askAllQueries,
 		debugCells: cells
 	};
