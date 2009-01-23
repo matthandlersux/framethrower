@@ -1,4 +1,4 @@
-%% @author author <author@example.com>
+%% @author author <author@example.com>
 %% @copyright YYYY author.
 
 %% @doc Web server for pipeline.
@@ -112,7 +112,8 @@ loop(Req, DocRoot) ->
 %% 
 
 processActionList(Actions) ->
-	processActionList(Actions, [], []).
+	Results = processActionList(Actions, [], []),
+	lists:map(fun(List) when is_list(List) -> list_to_binary(List); (List) -> List end, Results).
 	
 processActionList(Actions, Updates, Variables) ->
 	ProcessActions = fun(Action, {UpdatesAccumulator, VariablesAccumulator}) ->
@@ -152,7 +153,7 @@ processAction(<<"return">>, Action, Updates, Variables) ->
 		{value, {_, Binding} } ->
 			{ [Binding|Updates], Variables};
 		_ -> 
-			{ ["error"|Updates], Variables}
+			{ [error|Updates], Variables}
 	end;
 processAction(ActionType, Action, Updates, Variables) when ActionType =:= <<"add">> orelse ActionType =:= <<"remove">> ->
 	Variable = struct:get_value(<<"object">>, Action),
