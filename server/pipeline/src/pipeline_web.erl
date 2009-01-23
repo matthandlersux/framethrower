@@ -196,7 +196,8 @@ propToDict(Props, Conversions) ->
 
 propToDict({struct, []}, _, Dict) -> Dict;
 propToDict({struct, [{Key, Value}|Props]}, Conversions, Dict) ->
-	propToDict({struct, Props}, Conversions, dict:store( binary_to_list(Key), binaryScopeVarToCellName( Value, Conversions ), Dict)).
+	CellName = binaryScopeVarToCellName( Value, Conversions ),
+	propToDict({struct, Props}, Conversions, dict:store( binary_to_list(Key), env:lookup(binary_to_list(CellName)), Dict)).
 
 %% 
 %% binaryScopeVarToCellName:: Binary String -> List { Binary String, String } -> String
