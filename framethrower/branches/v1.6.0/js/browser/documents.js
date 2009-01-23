@@ -61,6 +61,9 @@ var documents = (function () {
 		},
 		preload: function (url) {
 			
+		},
+		debug: function () {
+			return urls;
 		}
 	};
 })();

@@ -442,11 +442,11 @@ var primFuncs = function () {
 				outputCell.addLine(nullObject);
 				
 				var removeFunc = cell.injectFunc(function (val) {
-					if(count == 0) outputCell.addLine(nullObject);
+					if (count === 0) outputCell.removeLine(nullObject);
 					count++;
 					return function() {
 						count--;
-						if(count == 0) outputCell.removeLine(nullObject);
+						if (count === 0) outputCell.addLine(nullObject);
 					};
 				});
 				outputCell.addOnRemove(removeFunc);

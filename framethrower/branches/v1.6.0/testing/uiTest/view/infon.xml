@@ -6,6 +6,7 @@
 	
 	<f:param name="focus" type="Cons" />
 	<f:derive name="infonArgs" d="getInfonArguments focus" />
+	<f:derive name="template" d="(bindSet getRelationTemplate) (getInfonRelations focus)" />
 	
 	<!-- <f:derive name="relations" d="getInfonRelations focus" /> -->
 	
@@ -13,7 +14,7 @@
 	<f:derive name="relations" d="getInfonRelations focus" />
 	<f:derive name="consComponents" d="getConsComponents focus" />
 	<f:derive name="last" d="takeLast consComponents" /> -->
-	<f:derive name="template" d="(bindSet getRelationTemplate) (getInfonRelations focus)" />
+
 	
 	<!-- Infon: <xsl:value-of select="$focus/@name" /><html:br /> -->
 	<!-- args:

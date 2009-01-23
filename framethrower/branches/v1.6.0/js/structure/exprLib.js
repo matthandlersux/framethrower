@@ -100,9 +100,15 @@ var exprLib = {
 
 
 
-
-
-
+	// ========================================================================
+	// Object/Cons utility
+	// ========================================================================
+	
+	filterByTruth: {
+		type: "Set Cons -> Set Cons",
+		expr: "infons -> filter (Cons:truth) infons"
+	},
+	
 
 	// ========================================================================
 	// Getting properties of objects
@@ -155,16 +161,39 @@ var exprLib = {
 		type: "Object -> Set Object",
 		expr: "unfoldSet (getOntProp shared.isA)"
 	},
+	
+	getObjectsIn: {
+		type: "Object -> Set Object",
+		expr: "parentSituation -> filter notCons (downRight (filterByTruth (upRight (Cons::lookup shared.in parentSituation))))",
+		where: {
+			upRight: {
+				type: "Unit Cons -> Set Cons",
+				chain: ["Object:upRight"]
+			},
+			downRight: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:right"]
+			},
+			notCons: {
+				type: "Object -> Unit Null",
+				expr: "obj -> isEmpty (returnUnitSet (Object~Cons obj))"
+			}
+		}
+	},
+	
+	notCons: {
+		type: "Object -> Unit Null",
+		expr: "obj -> isEmpty (returnUnitSet (Object~Cons obj))"
+	},
+	asCons: {
+		type: "Object -> Set Cons",
+		expr: "obj -> returnUnitSet (Object~Cons obj)"		
+	},
 
 
 	// ========================================================================
 	// Querying for infons
 	// ========================================================================
-
-	filterByTruth: {
-		type: "Set Cons -> Set Cons",
-		expr: "infons -> filter (Cons:truth) infons"
-	},
 	
 	getInfonsAbout: {
 		type: "Object -> Set Cons",
@@ -188,8 +217,9 @@ var exprLib = {
 	},
 	
 
-	
-
+	// ========================================================================
+	// Getting infon arguments, relation
+	// ========================================================================	
 	
 	getConsComponents: {
 		type: "Cons -> Map Number (Set Cons)",
@@ -212,6 +242,26 @@ var exprLib = {
 			}
 		}
 	},
+
+	getInfonRelations: {
+		type: "Cons -> Set Object",
+		expr: "infon -> finalLeft (flattenSet (returnUnitSet (takeLast (getConsComponents infon))))",
+		where: {
+			finalLeft: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:left"]
+			}
+		}
+	}
+
+
+
+
+
+
+
+
+
 	
 	
 	// unfoldToEnd: {
@@ -224,33 +274,6 @@ var exprLib = {
 	// 		}
 	// 	}
 	// },
-	
-	// getInfonRelation: {
-	// 	type: "Cons -> Unit Object",
-	// 	expr: "infon -> finalLeft (flattenUnit ((mapUnit takeOne) (takeLast (getConsComponents infon))))",
-	// 	where: {
-	// 		finalLeft: {
-	// 			type: "Unit Cons -> Unit Object",
-	// 			chain: ["Cons:left"]
-	// 		}
-	// 	}
-	// },
-	
-	getInfonRelations: {
-		type: "Cons -> Set Object",
-		expr: "infon -> finalLeft (flattenSet (returnUnitSet (takeLast (getConsComponents infon))))",
-		where: {
-			finalLeft: {
-				type: "Set Cons -> Set Object",
-				chain: ["Cons:left"]
-			}
-		}
-	}
-	
-	
-	
-	
-	
 	
 	
 

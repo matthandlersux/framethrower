@@ -36,6 +36,10 @@
 		<!-- <f:thunk url="view/view.xml">
 			<f:with-param name="focus" select="$realLife" />
 		</f:thunk> -->
+		
+		<f:thunk url="pane/objectsIn.xml">
+			<f:with-param name="focus" select="$realLife" />
+		</f:thunk>
 	</html:div>
 	
 	<f:include url="/xml/debug/prettyPrint.xml" />

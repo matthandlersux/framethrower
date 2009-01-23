@@ -281,11 +281,26 @@ var xmlTemplates = (function () {
 			if (urls[url]) {
 				callback(urls[url]);
 			} else {
-				makeTemplateFunFromUrl(url, callback);
+				//makeTemplateFunFromUrl(url, callback);
+				documents.withDoc(url, function (doc) {
+					if (!urls[url]) {
+						var name = getAttr(doc, "name");
+						var scope = {};
+						var newEnv = extendEnv(base.env, scope);
+						var fun = compileTemplate(doc, url)(newEnv);
+						scope[name] = fun;
+					
+						urls[url] = fun;
+					}
+					callback(urls[url]);
+				});
 			}
 		},
 		preload: function (url) {
 			
+		},
+		debug: function () {
+			return urls;
 		}
 	};
 })();

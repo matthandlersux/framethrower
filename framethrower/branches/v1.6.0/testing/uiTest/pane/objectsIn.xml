@@ -1,0 +1,18 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="Object" />
+	
+	<f:derive name="objectsIn" d="getObjectsIn focus" />
+
+	<xsl:for-each select="$objectsIn/*">
+		<f:thunk url="../view/object.xml">
+			<f:with-param name="focus" select="." />
+		</f:thunk>
+		<html:br />
+	</xsl:for-each>
+
+</f:template>
