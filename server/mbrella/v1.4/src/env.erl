@@ -98,13 +98,9 @@ handle_call({nameAndStoreObj, Obj}, From, State) ->
 handle_call({lookup, Name}, From, State) ->
 	#envState{globalTable = GlobalTable, baseEnv = BaseEnv} = State,
 	ExprCell = 
-		case string:substr(Name, 1, 7) of
-			"server." -> 
-				try dict:fetch(Name, GlobalTable)
-				catch
-					_:_ -> notfound
-				end;
-			_ ->
+		try dict:fetch(Name, GlobalTable)
+		catch
+			_:_ -> 
 				try dict:fetch(Name, BaseEnv)
 				catch
 					_:_ -> notfound
@@ -127,8 +123,9 @@ handle_call(stop, From, State) ->
 
 
 
-handle_cast({addFun, Name, Type, Function}, State) -> 
+handle_cast({addFun, Name, TypeString, Function}, State) -> 
 	#envState{globalTable = GlobalTable, globalTableByPid = GlobalPidTable} = State,
+	Type = type:parse(TypeString),
 	NewExprFun = #exprFun{name=Name, type=Type, function=Function},
 	NewGlobalTable = dict:store(Name, NewExprFun, GlobalTable),
 	NewState = State#envState{globalTable = NewGlobalTable},

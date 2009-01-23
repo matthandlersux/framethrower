@@ -258,11 +258,10 @@ addPropsToObject(Props, Obj, ObjClass, Classes) ->
 					dict:store(PropName, cell:makeFuture(PropValue), ObjProps)
 			end
 		end, Obj#object.prop, ObjClass#class.prop),
-	NewerObjProps = case ObjClass#class.inherit of
-		undefined -> NewObjProps;
-		_ -> addPropsToObject(Props, Obj, ObjClass#class.inherit, Classes)
-	end,
-	Obj#object{prop = NewerObjProps}.
+	case ObjClass#class.inherit of
+		undefined -> Obj#object{prop = NewObjProps};
+		_ -> addPropsToObject(Props, Obj#object{prop = NewObjProps}, ObjClass#class.inherit, Classes)
+	end.
 
 
 
@@ -305,7 +304,7 @@ handle_call({create, ClassName, Props}, From, State) ->
 
 	{NewObj, UpdatedState} = case MemoObject of
 		undefined ->
-			Type = #type{type=typeName, value=ClassName},
+			Type = #type{type=typeName, value=list_to_atom(ClassName)},
 			O = #object{origType = Type, type = Type},
 			OWithProps = addPropsToObject(Props, O, C, Classes),
 			NewO = env:nameAndStoreObj(OWithProps),

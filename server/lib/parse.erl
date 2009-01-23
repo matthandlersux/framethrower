@@ -210,13 +210,13 @@ lit() ->
 	% return([$"] ++ Literal ++ [$"])))).
 
 ident() ->
-	?do(X, lower(),
+	?do(X, letter(),
 	?do(XS, many( alphaNumPunc() ),
 	return([X|XS]))).
 	
 typ() ->
 	?do(X, upper(),
-	?do(XS, many( alphaNum() ),
+	?do(XS, many( alphaNumPunc() ),
 	return([X|XS]))).
 	
 typeW() ->
@@ -280,7 +280,7 @@ isAlphaNum(Char) -> isLower(Char) orelse isUpper(Char) orelse isDigit(Char).
 
 isAlphaNumSpace(Char) -> isAlphaNum(Char) orelse isSpace(Char).
 
-isAlphaNumPunc(Char) -> isAlphaNum(Char) orelse Char =:= $. orelse Char =:= $~.
+isAlphaNumPunc(Char) -> isAlphaNum(Char) orelse Char =:= $. orelse Char =:= $~ orelse Char =:= $:.
 
 isChar(Char) ->
 	fun(TestChar) -> Char =:= TestChar end. 
