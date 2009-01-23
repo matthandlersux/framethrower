@@ -141,8 +141,8 @@ processAction(<<"create">>, Action, Updates, Variables) ->
 	Prop = struct:get_value(<<"prop">>, Action),
 	PropDict = propToDict(Prop, Variables),
 	case objects:create(Type, PropDict) of
-		{ok, Binding} ->
-			{ Updates, [{Variable, Binding} | Variables] };
+		{ok, Object} ->
+			{ Updates, [{ Variable, mblib:to_atom(Object) } | Variables] };
 		{error, _Reason} ->
 			{ Updates, [{Variable, error} | Variables]}
 	end;
@@ -157,15 +157,17 @@ processAction(<<"return">>, Action, Updates, Variables) ->
 	end;
 processAction(ActionType, Action, Updates, Variables) when ActionType =:= <<"add">> orelse ActionType =:= <<"remove">> ->
 	Variable = struct:get_value(<<"object">>, Action),
-	Object = binaryScopeVarToCellName( Variable, Variables ),
+	ObjectName = binaryScopeVarToCellName( Variable, Variables ),
+	Object = env:lookup(ObjectName),
 	if
-		Object =:= error ->
+		ObjectName =:= error ->
 			{ [error | Updates], Variables };
 		true ->
 			Property = binary_to_list( struct:get_value(<<"property">>, Action) ),
-			Key = binary_to_list( struct:get_value(<<"key">>, Action) ),
-			Value = struct:get_value(<<"value">>, Action),
-			if Value =:= undefined -> Data = Key; true -> Data = {Key, Value} end,
+			KeyName = binaryScopeVarToCellName( struct:get_value(<<"key">>, Action), Variables),
+			Key = env:lookup(KeyName),
+			ValueName = struct:get_value(<<"value">>, Action),
+			if ValueName =:= undefined -> Data = Key; true -> Data = {Key, env:lookup( ValueName )} end,
 			case ActionType of 
 				<<"add">> ->
 					case objects:add(Object, Property, Data) of
