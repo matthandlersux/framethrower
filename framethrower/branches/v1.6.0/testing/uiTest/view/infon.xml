@@ -7,7 +7,7 @@
 	<f:param name="focus" type="Cons" />
 	<f:derive name="infonArgs" d="getInfonArguments focus" />
 	
-	<f:derive name="relations" d="getInfonRelations focus" />
+	<!-- <f:derive name="relations" d="getInfonRelations focus" /> -->
 	
 	<!-- <f:derive name="relation" d="getInfonRelation focus" />
 	<f:derive name="relations" d="getInfonRelations focus" />
@@ -19,8 +19,8 @@
 	<!-- args:
 	<xsl:call-template name="prettyPrint">
 		<xsl:with-param name="node" select="$infonArgs" />
-	</xsl:call-template>
-	relation:
+	</xsl:call-template>-->
+	<!-- relation:
 	<xsl:call-template name="prettyPrint">
 		<xsl:with-param name="node" select="$template" />
 	</xsl:call-template> -->
@@ -28,8 +28,8 @@
 	<!-- <f:thunk with-template="$viewRelation">
 		<f:with-param name="relation" select="$relation" />
 	</f:thunk> -->
-		
-	<xsl:variable name="rt" select="$template/f:literal/relationTemplate" />
+	
+	<xsl:variable name="rt" select="$template/f:literal/f:relationTemplate" />
 	<xsl:if test="$rt">
 		<xsl:call-template name="print">
 			<xsl:with-param name="relationTemplate" select="$rt" />
@@ -43,8 +43,8 @@
 		
 		<html:div style="display:table" class="infon">
 			<xsl:choose>
-				<xsl:when test="$relationTemplate/row">
-					<xsl:for-each select="$relationTemplate/row">
+				<xsl:when test="$relationTemplate/f:row">
+					<xsl:for-each select="$relationTemplate/f:row">
 						<html:div class="infonRow">
 							<xsl:call-template name="printRow">
 								<xsl:with-param name="row" select="." />
@@ -73,7 +73,7 @@
 			<xsl:for-each select="$row/node()">
 				<html:div class="infonCell">
 					<xsl:choose>
-						<xsl:when test="self::arg">
+						<xsl:when test="self::f:arg">
 							<xsl:variable name="argCount" select="count($infonArgs/f:entry)" />
 							<xsl:variable name="num" select="$argCount - @num + 1" />
 							<xsl:variable name="arg" select="$infonArgs/f:entry[$num]/f:value/*" />

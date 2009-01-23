@@ -180,8 +180,18 @@ function genConstraints(expr, env, constraints) {
 	if (expr.kind === "var") {
 		return getType(env(expr.value));
 	} else if (expr.kind === "exprApply") {
-		var funType = genConstraints(expr.left, env, constraints);
-		var inputType = genConstraints(expr.right, env, constraints);
+		var funType;
+		if (isEmpty(getFreeVariables(expr.left))) {
+			funType = freshenType(getType(expr.left));
+		} else {
+			funType = genConstraints(expr.left, env, constraints);
+		}
+		var inputType;
+		if (isEmpty(getFreeVariables(expr.right))) {
+			inputType = freshenType(getType(expr.right));
+		} else {
+			inputType = genConstraints(expr.right, env, constraints);
+		}
 		var freshType = makeFreshTypeVar();
 		constraints.push([funType, makeTypeLambda(inputType, freshType)]);
 		return freshType;
@@ -203,6 +213,35 @@ function genConstraints(expr, env, constraints) {
 		return containsVar(type.left, typeVar) || containsVar(type.right, typeVar);
 	}
 }
+
+
+
+
+
+
+
+function getFreeVariables(expr) {
+	if (expr.freeVariables) {
+		return expr.freeVariables;
+	} else {
+		if (expr.kind === "var") {
+			expr.freeVariables = {};
+			expr.freeVariables[expr.value] = true;
+			return expr.freeVariables;
+		} else if (expr.kind === "exprApply") {
+			expr.freeVariables = merge(getFreeVariables(expr.left), getFreeVariables(expr.right));
+			return expr.freeVariables;
+		} else if (expr.kind === "exprLambda") {
+			var right = getFreeVariables(expr.right);
+			expr.freeVariables = merge(right);
+			delete expr.freeVariables[expr.left.value];
+			return expr.freeVariables;
+		} else {
+			return {};
+		}
+	}
+}
+
 
 
 

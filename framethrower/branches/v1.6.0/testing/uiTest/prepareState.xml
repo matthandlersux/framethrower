@@ -11,6 +11,7 @@
 	<f:derive name="ont" d="shared.ont" />
 	<f:derive name="realLife" d="shared.realLife" />
 	<f:derive name="situationType" d="shared.type.situation" />
+	<f:derive name="entityType" d="shared.type.entity" />
 	<f:derive name="typeType" d="shared.type.type" />
 	
 	
@@ -49,43 +50,87 @@
 	<f:perform with-action="$relationTemplateObject">
 		<f:with-param name="object" select="$in" />
 		<f:with-param name="relTem">
-			<relationTemplate>
-				<row>in <arg num="1" /></row>
-				<row><arg num="2" /></row>
-			</relationTemplate>
+			<f:relationTemplate>
+				<f:row>in <f:arg num="1" /></f:row>
+				<f:row><f:arg num="2" /></f:row>
+			</f:relationTemplate>
 		</f:with-param>
 	</f:perform>
 	
 	<f:perform with-action="$relationTemplateObject">
 		<f:with-param name="object" select="$name" />
 		<f:with-param name="relTem">
-			<relationTemplate>
-				<arg num="1" /> has name <arg num="2" />
-			</relationTemplate>
+			<f:relationTemplate>
+				<f:arg num="1" /> has name <f:arg num="2" />
+			</f:relationTemplate>
 		</f:with-param>
 	</f:perform>
 	
 	<f:perform with-action="$relationTemplateObject">
 		<f:with-param name="object" select="$isA" />
 		<f:with-param name="relTem">
-			<relationTemplate>
-				<arg num="1" /> is a <arg num="2" />
-			</relationTemplate>
+			<f:relationTemplate>
+				<f:arg num="1" /> is a <f:arg num="2" />
+			</f:relationTemplate>
 		</f:with-param>
 	</f:perform>
 	
 	
 	
 	
+	<f:perform with-action="$makeNamedObject" name="sc">
+		<f:with-param name="name" select="'Sean Connery'" />
+		<f:with-param name="type" select="$entityType" />
+	</f:perform>
+	<f:perform with-action="$putObjectInSituation">
+		<f:with-param name="situation" select="$realLife" />
+		<f:with-param name="object" select="$sc" />
+	</f:perform>
+	
 	<f:perform with-action="$makeNamedObject" name="gfmov">
 		<f:with-param name="name" select="'Goldfinger'" />
 		<f:with-param name="type" select="$situationType" />
 	</f:perform>
-	
 	<f:perform with-action="$putObjectInSituation">
 		<f:with-param name="situation" select="$realLife" />
 		<f:with-param name="object" select="$gfmov" />
 	</f:perform>
+	
+	<f:perform with-action="$makeNamedObject" name="jb">
+		<f:with-param name="name" select="'James Bond'" />
+		<f:with-param name="type" select="$entityType" />
+	</f:perform>
+	<f:perform with-action="$putObjectInSituation">
+		<f:with-param name="situation" select="$gfmov" />
+		<f:with-param name="object" select="$jb" />
+	</f:perform>
+	
+	<f:create type="Object" name="performs" />
+	<f:perform with-action="$relationTemplateObject">
+		<f:with-param name="object" select="$performs" />
+		<f:with-param name="relTem">
+			<f:relationTemplate>
+				<f:arg num="1" /> performs <f:arg num="2" />
+			</f:relationTemplate>
+		</f:with-param>
+	</f:perform>
+	
+	<f:perform with-action="$makeInfon2" name="jbingfmov">
+		<f:with-param name="relation" select="$in" />
+		<f:with-param name="arg1" select="$gfmov" />
+		<f:with-param name="arg2" select="$jb" />
+	</f:perform>
+	<f:perform with-action="$makeInfon2" name="scperformsjb">
+		<f:with-param name="relation" select="$performs" />
+		<f:with-param name="arg1" select="$sc" />
+		<f:with-param name="arg2" select="$jbingfmov" />
+	</f:perform>
+	<f:perform with-action="$putObjectInSituation">
+		<f:with-param name="situation" select="$realLife" />
+		<f:with-param name="object" select="$scperformsjb" />
+	</f:perform>
+	
+	
 	
 	
 	<f:perform with-action="$initUI" />

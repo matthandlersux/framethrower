@@ -18,10 +18,10 @@ rootObjects["shared.relationTemplate"] = objects.make("Object");
 rootObjects["shared.type.type"] = objects.make("Object");
 rootObjects["shared.type.situation"] = objects.make("Object");
 rootObjects["shared.type.entity"] = objects.make("Object");
-rootObjects["shared.type.relation"] = objects.make("Object");
+rootObjects["shared.type.infon"] = objects.make("Object");
+rootObjects["shared.type.relation"] = objects.make("Object"); // this will itself be used as a binary relation to make relation types
 
 rootObjects["shared.realLife"] = objects.make("Object");
-
 
 
 
@@ -29,16 +29,9 @@ rootObjects["ui.prefs"] = objects.make("UI.prefs");
 
 
 
+//rootObjects["shared.thumbnailthumbnail"] = objects.make("Object");
+//rootObjects["debug.text"] = objects.make("X.text", {string:"hello world"});
 
-
-
-
-
-rootObjects["shared.thumbnailthumbnail"] = objects.make("Object");
-
-
-
-rootObjects["debug.text"] = objects.make("X.text", {string:"hello world"});
 
 
 
@@ -46,3 +39,12 @@ rootObjects["debug.text"] = objects.make("X.text", {string:"hello world"});
 forEach(rootObjects, function (v, k) {
 	base.add(k, v);
 });
+
+
+
+
+/*
+
+ui.prefs displayTypes can be put in by converting an object to a Map Number (Map Object XML)
+
+*/

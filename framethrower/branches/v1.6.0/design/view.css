@@ -13,7 +13,7 @@
 	display:table;
 	color:#fff;
 	background-color:rgba(0,0,0,.50);
-	padding:0px 0px 3px 0px;
+	padding:0px 1px 3px 1px;
 	-moz-border-radius:4px;
 	-webkit-border-radius: 4px;
 }
@@ -22,11 +22,12 @@
 }
 .infonCell {
 	display:table-cell;
-	padding:3px 3px 0px 3px;
+	padding:3px 2px 0px 2px;
+	vertical-align:middle;
 }
 .infonCellHolder {
 	display:table;
-	margin:auto auto;
+	margin:auto;
 }
 
 
