@@ -9,6 +9,8 @@
 
 -export([start/1, stop/0, loop/2]).
 
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+
 %% External API
 
 start(Options) ->
@@ -144,6 +146,7 @@ processAction(<<"create">>, Action, Updates, Variables) ->
 			{ Updates, [{Variable, error} | Variables]}
 	end;
 processAction(<<"return">>, Action, Updates, Variables) ->
+	?trace(Variables),
 	Variable = struct:get_value(<<"variable">>, Action),
 	case lists:keysearch(Variable, 1, Variables) of
 		{value, {_, Binding} } ->

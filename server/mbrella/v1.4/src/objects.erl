@@ -130,7 +130,10 @@ create(ClassName, Props) ->
 	try gen_server:call(?MODULE, {create, ClassName, Props}) of
 		#object{name=Name} -> {ok, Name}
 	catch
-		_:_ -> {error, objectCreationError}
+		ErrorType:ErrorPattern -> 
+			?trace(ErrorType),
+			?trace(ErrorPattern),
+			{error, objectCreationError}
 	end.
 
 add(ObjectString, Property, Key) ->
