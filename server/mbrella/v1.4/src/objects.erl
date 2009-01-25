@@ -198,9 +198,7 @@ inherits(SubClass, SuperClass) ->
 	end.
 
 
-%TODO make memoization stuff work
 makeMemoString(MemoValues) ->
-	?trace(MemoValues),
 	lists:foldl(fun(Value, Acc) ->
 		%% Why does to_atom return binary and not atom?
 		binary_to_list(mblib:to_atom(Value)) ++ "," ++ Acc
@@ -239,7 +237,7 @@ addPropsToObject(Props, Obj, ObjClass, Classes) ->
 			case type:isReactive(PropType) of
 				true ->
 					PropCell = (cell:makeCell())#exprCell{type=PropType},
-					dict:store(PropType, PropCell, ObjProps);
+					dict:store(PropName, PropCell, ObjProps);
 				false ->
 					InstanceValue = dict:fetch(PropName, Props),
 					InstanceType = type:get(InstanceValue),
