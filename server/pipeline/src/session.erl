@@ -1,18 +1,35 @@
+%% @author Matt Handler <matt.handler@gmail.com>
+%% @copyright 2009 author.
+
+%% @doc Session backend for pipeline.
+
 -module (session).
 -compile (export_all).
 
 -include ("../../mbrella/v1.4/include/scaffold.hrl").
 
+-export ([new/0, lookup/1, startManager/0]).
+
+%% @doc Starts the Session Manager which is responsible for keeping track of sessions
+%% 		and interfacing with the pipeline frontend
+%% @spec startManager() -> ok
+
 startManager() ->
 	Pid = spawn(fun() -> manager() end),
 	register(sessionManager, Pid).
+
+%% @doc Spawns a new session, registers it with the sessionManager, and returns the Pid
+%% @spec new() -> pid()
 
 new() ->
 	Pid = spawn(fun() -> session() end),
 	SessionId = sessionId(),
 	sessionManager ! {register, {SessionId, Pid}},
 	SessionId.
-	
+
+%% @doc Used to lookup a session's Pid from its name, this is a hack
+%% @spec lookup( string() ) -> pid()
+
 lookup(SessionId) ->
 	sessionManager ! {lookup, self(), SessionId},
 	receive Response -> Response end.
