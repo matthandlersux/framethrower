@@ -137,8 +137,8 @@ function parseServerResponse(s, expectedType) {
 	if (lit !== undefined) {
 		return lit;
 	} else {
-		// TODO
-		makeRemoteObject();
+		// TODO test this
+		return makeRemoteObject(s, expectedType);
 	}
 }
 
@@ -239,10 +239,19 @@ var session = (function () {
 					forEach(o.updates, function (update) {
 						//console.log("doing update", update, o.updates);
 						var cell = cells[update.queryId];
-						var keyType; // TODO
+						
+						var keyType; // TODO test this
 						var valueType;
-						var key = parseServerResponse(update.key);
-						var value = parseServerResponse(update.value);
+						var cellType = getType(cell);
+						if (cellType.left.kind === "typeApply") {
+							keyType = cellType.left.right;
+							valueType = cellType.right;
+						} else {
+							keyType = cellType.right;
+						}
+						
+						var key = parseServerResponse(update.key, keyType);
+						var value = parseServerResponse(update.value, valueType);
 						cell.control[update.action](key, value);
 					});
 					refreshScreen();
