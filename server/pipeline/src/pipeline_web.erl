@@ -87,7 +87,7 @@ loop(Req, DocRoot) ->
 									spit(Req, true)
 							catch 
 								ErrorType:Reason -> 
-									spit(Req, {struct, [{"errorType", ErrorType}, {"reason", list_to_binary(io_lib:format(Reason))}] })
+									spit(Req, {struct, [{"errorType", ErrorType}, {"reason", list_to_binary(io_lib:format("~p", [Reason]))}] })
 							end
 					end;
 				"action" ->
