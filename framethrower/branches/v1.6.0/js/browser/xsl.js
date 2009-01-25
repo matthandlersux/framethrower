@@ -13,7 +13,7 @@ function getVariables(xslNode) {
 			}
 		});
 	}
-	var selectAttributes = xpath(".//xsl:*/@select[contains(., '$')]", xslNode);
+	var selectAttributes = xpath(".//xsl:*/@*[local-name() = 'select' or local-name() = 'test'][contains(., '$')]", xslNode);
 	forEach(selectAttributes, function (att) {
 		extract(att.nodeValue, att);
 	});

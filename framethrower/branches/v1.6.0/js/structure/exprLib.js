@@ -161,43 +161,15 @@ var exprLib = {
 		type: "Object -> Set Object",
 		expr: "unfoldSet (getOntProp shared.isA)"
 	},
-	
-	getObjectsIn: {
-		type: "Object -> Set Object",
-		expr: "parentSituation -> filter notCons (downRight (filterByTruth (upRight (Cons::lookup shared.in parentSituation))))",
-		where: {
-			upRight: {
-				type: "Unit Cons -> Set Cons",
-				chain: ["Object:upRight"]
-			},
-			downRight: {
-				type: "Set Cons -> Set Object",
-				chain: ["Cons:right"]
-			},
-			notCons: {
-				type: "Object -> Unit Null",
-				expr: "obj -> isEmpty (returnUnitSet (Object~Cons obj))"
-			}
-		}
-	},
-	
-	notCons: {
-		type: "Object -> Unit Null",
-		expr: "obj -> isEmpty (returnUnitSet (Object~Cons obj))"
-	},
-	asCons: {
-		type: "Object -> Set Cons",
-		expr: "obj -> returnUnitSet (Object~Cons obj)"		
-	},
 
 
 	// ========================================================================
 	// Querying for infons
 	// ========================================================================
 	
-	getInfonsAbout: {
-		type: "Object -> Set Cons",
-		expr: "x -> bindSet (unfoldSet up) (Object:upLeft x)",
+	getAllInfonsAboveCons: {
+		type: "Cons -> Set Cons",
+		expr: "unfoldSet up",
 		where: {
 			up: {
 				type: "Cons -> Set Cons",
@@ -216,6 +188,48 @@ var exprLib = {
 		}
 	},
 	
+	getConsUsingIn: {
+		type: "Object -> Set Cons",
+		expr: "x -> upRight (Cons::lookup shared.in x)",
+		where: {
+			upRight: {
+				type: "Unit Cons -> Set Cons",
+				chain: ["Object:upRight"]
+			}
+		}
+	},
+
+
+	getInfonsAbout: {
+		type: "Object -> Set Cons",
+		expr: "x -> filterByTruth ((bindSet getAllInfonsAboveCons) (setDifference (Object:upLeft x) (returnUnitSet (Cons::lookup shared.in x))))"
+	},
+	
+	getInfonsIn: {
+		type: "Object -> Set Cons",
+		expr: "x -> filter (compose (compose reactiveNot isEmpty) downRight) (filterByTruth (getConsUsingIn x))",
+		where: {
+			downRight: {
+				type: "Cons -> Set Cons",
+				chain: ["Cons:right"]
+			}
+		}
+	},
+
+	getObjectsIn: {
+		type: "Object -> Set Object",
+		expr: "x -> filter notCons (downRight (filterByTruth (getConsUsingIn x)))",
+		where: {
+			downRight: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:right"]
+			},
+			notCons: {
+				type: "Object -> Unit Null",
+				expr: "obj -> isEmpty (returnUnitSet (Object~Cons obj))"
+			}
+		}
+	},	
 
 	// ========================================================================
 	// Getting infon arguments, relation

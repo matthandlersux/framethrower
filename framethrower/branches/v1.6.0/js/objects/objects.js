@@ -68,6 +68,12 @@ var classesToMake = {
 		prop: {
 			"typeDisplay": "Map Object String"
 		}
+	},
+	"UI.pane": {
+		prop: { // this will definitely change...
+			"tab": "Unit String", // objectsIn, infonsIn, about
+			"focus": "Unit Object"
+		}
 	}
 };
 

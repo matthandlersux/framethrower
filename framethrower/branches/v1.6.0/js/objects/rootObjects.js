@@ -29,6 +29,12 @@ rootObjects["ui.prefs"] = objects.make("UI.prefs");
 
 
 
+
+rootObjects["test.pane"] = objects.make("UI.pane");
+rootObjects["test.pane"].prop["focus"].control.add(rootObjects["shared.realLife"]);
+
+
+
 //rootObjects["shared.thumbnailthumbnail"] = objects.make("Object");
 //rootObjects["debug.text"] = objects.make("X.text", {string:"hello world"});
 

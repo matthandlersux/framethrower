@@ -3,7 +3,8 @@ var debug = (function () {
 	
 	return {
 		log: function (arg) {
-			console.log(arg);
+			//console.log(arg);
+			console.log.apply(console, arguments);
 		},
 		xml: function (xml) {
 			if (console && console.dirxml) {
