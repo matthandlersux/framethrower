@@ -158,7 +158,7 @@ loop(ExpectedMessages, FinishedMessages, State) ->
 					NewerState;
 				true -> loop(NewerExpectedMessages, NewFinishedMessages, NewerState)
 			end
-	after 1000 ->
+	after 100 ->
 		io:format("Test Timed Out~n", []),
 		lists:map(fun outputExpectedMessage/1, FinishedMessages),
 		lists:map(fun outputExpectedMessage/1, ExpectedMessages),
@@ -263,6 +263,7 @@ parsePrim(R) when is_record(R, xmlElement) ->
 	case R#xmlElement.name of
 		number -> list_to_integer(getAtt(value, R));
 		bool -> list_to_atom(getAtt(value, R));
+		null -> null;
 		func -> {func, getAtt(name, R)};
 		sc -> {scPatternMatch, getAtt(name, R)};
 		_ -> undefined
@@ -278,4 +279,4 @@ getAtt(Name, R) -> (hd(lists:filter(fFunc(Name), R#xmlElement.attributes)))#xmlA
 main() ->
 	%D = atom_to_list(hd(A)),
 	%parseAll(D).
-	parse("../../../shared/testing/currentTest.xml").
+	parse("../../../shared/testing/erlangTests.xml").

@@ -18,7 +18,16 @@
 }).
 
 start() ->
-	gen_server:start({local, ?MODULE}, ?MODULE, [], []).
+	gen_server:start({local, ?MODULE}, ?MODULE, [], []),
+	FuncExprs = [
+		%can't add these here because expr:expr needs to call env. 
+		%These will need to be expr:expr externally and then added to the environment.	
+		% {"plus1", "x -> add x 1"},
+		% {"plus2", "n -> add n 1"},
+		{"compose", "f -> g -> y -> f (g y)"}
+	],
+	lists:map(fun ({Name, ExprString}) -> addExpr(Name, expr:exprParse(ExprString)) end, FuncExprs),
+	ok.
 
 stop() ->
 	gen_server:call(?MODULE, stop).
@@ -44,6 +53,10 @@ lookup(Name) ->
 addFun(Name, Type, Function) ->
 	gen_server:cast(?MODULE, {addFun, Name, Type, Function}).
 
+addExpr(Name, Expr) ->
+	gen_server:cast(?MODULE, {addExpr, Name, Expr}).
+
+
 getPrimitives() ->
 	BuildEnv = fun(#exprFun{function = Func, type = TypeString, name = Name} = Expr, {Suffix, Dict}) ->
 			{Suffix + 1, dict:store(Name, Expr#exprFun{function=curry(Func),type = type:shiftVars( type:parse(TypeString), integer_to_list(Suffix) ++ "v")}, Dict)}
@@ -56,19 +69,7 @@ getPrimitives() ->
 	FinalDict.
 
 createEnv() ->
-	PrimEnv = getPrimitives(),
-	FuncExprs = [
-		%can't add these here because expr:expr needs to call env. 
-		%These will need to be expr:expr externally and then added to the environment.	
-		% {"plus1", "x -> add x 1"},
-		% {"plus2", "n -> add n 1"},
-		% {"compose", "f -> g -> y -> f (g y)"}
-	],
-	DefaultEnv = lists:foldl(fun addExpr/2, PrimEnv, FuncExprs).
-
-addExpr({Name, ExprString}, Env) ->
-	dict:store(Name, expr:exprParse(ExprString), Env).	
-
+	getPrimitives().
 	
 %% ====================================================================
 %% Server functions
@@ -131,6 +132,11 @@ handle_cast({addFun, Name, TypeString, Function}, State) ->
 	Type = type:parse(TypeString),
 	NewExprFun = #exprFun{name=Name, type=Type, function=Function},
 	NewGlobalTable = dict:store(Name, NewExprFun, GlobalTable),
+	NewState = State#envState{globalTable = NewGlobalTable},
+	{noreply, NewState};
+handle_cast({addExpr, Name, Expr}, State) -> 
+	#envState{globalTable = GlobalTable} = State,
+	NewGlobalTable = dict:store(Name, Expr, GlobalTable),
 	NewState = State#envState{globalTable = NewGlobalTable},
 	{noreply, NewState};
 handle_cast({store, Name, Obj}, State) ->

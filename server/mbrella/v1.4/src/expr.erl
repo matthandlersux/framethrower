@@ -2,7 +2,7 @@
 -compile(export_all).
 
 -import (parse, [choice/2, choice/1, literal/0, identifier/0, failure/0,
- 				boolean/0, natural/0, symbol/1, return/1, then/2, nest/3]).
+ 				boolean/0, null/0, natural/0, symbol/1, return/1, then/2, nest/3, alphaNum/0]).
 -include ("../include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
@@ -47,7 +47,7 @@ exprParse(String) ->
 	expr(parse(String)).
 expr(AST) when is_record(AST, cons) ->
 	{cons, AST#cons.type, expr(AST#cons.left), expr(AST#cons.right)};
-expr(AST) when AST =:= "true" orelse AST =:= "false" ->
+expr(AST) when AST =:= "true" orelse (AST =:= "false" orelse AST =:= "null") ->
 	list_to_atom(AST);
 expr(AST) when is_list(AST) ->
 	case is_string(AST) of
@@ -62,6 +62,8 @@ expr(AST) when is_list(AST) ->
 	end;
 expr({primitive, _, BoolStringNat}) ->
 	BoolStringNat;
+expr({primitive, null}) ->
+	null;	
 expr(AST) when is_number(AST) ->
 	AST;
 expr(AST) when is_boolean(AST) ->
@@ -128,12 +130,12 @@ primitive() ->
 		
 		?do(Ident, identifier(),
 			if
-				Ident =:= "true"; Ident =:= "false" -> failure();
+				Ident =:= "true"; Ident =:= "false"; Ident =:= "null" -> failure();
 				true -> return(Ident)
 			end),
 		
+		?do(Null, null(), return({primitive, null})),
 		?do(Bool, boolean(), return({primitive, bool, list_to_atom(Bool)})),
-		
 		?do(Nat, natural(),
 		return({primitive, nat, Nat})),
 		

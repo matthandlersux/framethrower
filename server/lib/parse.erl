@@ -172,6 +172,9 @@ bool() ->
 		string("true"),
 		string("false")
 	).
+	
+nul() ->
+	string("null").
 
 alphaNum() ->
 	sat(fun isAlphaNum/1).
@@ -257,6 +260,9 @@ literal() ->
 	
 boolean() ->
 	token( bool() ).
+
+null() ->
+	token( nul() ).
 
 %% ====================================================
 %% Char -> Bool functions

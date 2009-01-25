@@ -209,64 +209,187 @@ primitives() ->
 	type = "Unit Null -> Unit Null",
 	function = fun(Cell) ->
 		OutputCell = cell:makeCell(),
-		cell:addLine(OutputCell, obj:nullObj()),
+		cell:addLine(OutputCell, null),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			cell:removeLine(OutputCell, object:nullObj()),
-			fun () -> cell:addLine(OutputCell, object:nullObj()) end
+			cell:removeLine(OutputCell, null),
+			fun () -> cell:addLine(OutputCell, null) end
 			end),
 		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
-	
-	
-	
 	#exprFun{
-	name = "passThru",
-	type = "(a -> Bool) -> a -> Unit a",
-	function = fun(Fun, Input) ->
+	name = "reactiveAnd",
+	type = "Unit Null -> Unit Null -> Unit Null",
+	function = fun(Cell1, Cell2) ->
 		OutputCell = cell:makeCell(),
-		case applyFun(Fun, Input) of
-			true -> cell:addLine(OutputCell, Input);
-			_ -> false
+		UpdateOutputCell = fun (State) ->
+			{C1, C2, IsSet} = State,
+			if
+				C1 andalso C2 andalso (not IsSet) ->
+					cell:addLine(OutputCell, null),
+					{C1, C2, true};
+				IsSet ->
+					cell:removeLine(OutputCell, null),
+					{C1, C2, false};
+				true ->
+					State
+			end
 		end,
+		Intercept = cell:injectIntercept(OutputCell, fun(Message, State) ->
+			{C1, C2, IsSet} = State,
+			case Message of
+				{cell1val, Val} -> 
+					UpdateOutputCell({Val, C2, IsSet});
+				{cell2val, Val} ->
+					UpdateOutputCell({C1, Val, IsSet})
+			end
+		end, {false, false, false}),
+		RemoveFunc1 = cell:injectFunc(Cell1, fun(Val) ->
+			intercept:sendIntercept(Intercept, {cell1val, true}),
+			fun() -> intercept:sendIntercept(Intercept, {cell1val, false}) end
+		end),
+		RemoveFunc2 = cell:injectFunc(Cell2, fun(Val) ->
+			intercept:sendIntercept(Intercept, {cell2val, true}),
+			fun() -> intercept:sendIntercept(Intercept, {cell2val, false}) end
+		end),
+		
+		cell:addOnRemove(OutputCell, RemoveFunc1),
+		cell:addOnRemove(OutputCell, RemoveFunc2),
 		OutputCell
 	end},
 	#exprFun{
-	name = "any",
-	type = "(a -> Unit Bool) -> Set a -> Unit Bool",
-	function = fun(Fun, Cell) ->
+	name = "reactiveOr",
+	type = "Unit Null -> Unit Null -> Unit Null",
+	function = fun(Cell1, Cell2) ->
 		OutputCell = cell:makeCell(),
-		cell:addLine(OutputCell, false),
-		Intercept = cell:injectIntercept(OutputCell, fun(Message, Count) ->
-			case {Message, Count} of
-				{plus, 0} ->
-					cell:removeLine(OutputCell, false),
-					cell:addLine(OutputCell, true),
-					1;
-				{plus, Num} ->
-					Num + 1;
-				{minus, 1} ->
-					cell:removeLine(OutputCell, true),
-					cell:addLine(OutputCell, false),
-					0;
-				{minus, Num} ->
-					Num - 1
+		UpdateOutputCell = fun (State) ->
+			{C1, C2, IsSet} = State,
+			if
+				(C1 orelse C2) andalso (not IsSet) ->
+					cell:addLine(OutputCell, null),
+					{C1, C2, true};
+				(not C1) andalso (not C2) andalso IsSet ->
+					cell:removeLine(OutputCell, null),
+					{C1, C2, false};
+				true ->
+					State
+			end
+		end,
+		Intercept = cell:injectIntercept(OutputCell, fun(Message, State) ->
+			{C1, C2, IsSet} = State,
+			case Message of
+				{cell1val, Val} -> 
+					UpdateOutputCell({Val, C2, IsSet});
+				{cell2val, Val} ->
+					UpdateOutputCell({C1, Val, IsSet})
+			end
+		end, {false, false, false}),
+		RemoveFunc1 = cell:injectFunc(Cell1, fun(Val) ->
+			intercept:sendIntercept(Intercept, {cell1val, true}),
+			fun() -> intercept:sendIntercept(Intercept, {cell1val, false}) end
+		end),
+		RemoveFunc2 = cell:injectFunc(Cell2, fun(Val) ->
+			intercept:sendIntercept(Intercept, {cell2val, true}),
+			fun() -> intercept:sendIntercept(Intercept, {cell2val, false}) end
+		end),
+		
+		cell:addOnRemove(OutputCell, RemoveFunc1),
+		cell:addOnRemove(OutputCell, RemoveFunc2),
+		OutputCell
+	end},
+	
+	#exprFun{
+	name = "isEmpty",
+	type = "Set a -> Unit Null",
+	function = fun(Cell) ->
+		OutputCell = cell:makeCell(),
+		cell:addLine(OutputCell, null),
+		Intercept = cell:injectIntercept(OutputCell, fun(Message, State) ->
+			case Message of
+				{plus} -> 
+					case State of
+						0 -> cell:removeLine(OutputCell, null),
+							 1;
+						_ -> State+1
+					end;
+				{minus} ->
+					case State of
+						1 -> cell:addLine(OutputCell, null),
+							 0;
+						_ -> State-1
+					end
 			end
 		end, 0),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			applyAndInject(Fun, Val, fun(InnerVal) ->
-				case InnerVal of
-					true ->
-						intercept:sendIntercept(Intercept, plus),
-						fun() -> intercept:sendIntercept(Intercept, minus) end;
-					false ->
-						undefined
-				end
-			end)
+			intercept:sendIntercept(Intercept, plus),
+			fun() -> intercept:sendIntercept(Intercept, minus) end
+		end),
+		
+		cell:addOnRemove(OutputCell, RemoveFunc),
+		OutputCell
+	end},
+	
+	#exprFun{
+	name = "gate",
+	type = "Unit Null -> a -> Unit a",
+	function = fun(GateKeeper, Passer) ->
+		OutputCell = cell:makeCell(),
+		Intercept = cell:injectIntercept(OutputCell, fun(C1, IsSet) ->
+			if
+				C1 andalso (not IsSet) ->
+					cell:addLine(OutputCell, Passer),
+					true;
+				(not C1) andalso IsSet ->
+					cell:removeLine(OutputCell, Passer),
+					false;
+				true ->
+					IsSet
+			end
+		end, false),
+		RemoveFunc = cell:injectFunc(GateKeeper, fun(Val) ->
+			intercept:sendIntercept(Intercept, true),
+			fun() -> intercept:sendIntercept(Intercept, false) end
 		end),
 		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
+	
+	% #exprFun{
+	% name = "any",
+	% type = "(a -> Unit Bool) -> Set a -> Unit Bool",
+	% function = fun(Fun, Cell) ->
+	% 	OutputCell = cell:makeCell(),
+	% 	cell:addLine(OutputCell, false),
+	% 	Intercept = cell:injectIntercept(OutputCell, fun(Message, Count) ->
+	% 		case {Message, Count} of
+	% 			{plus, 0} ->
+	% 				cell:removeLine(OutputCell, false),
+	% 				cell:addLine(OutputCell, true),
+	% 				1;
+	% 			{plus, Num} ->
+	% 				Num + 1;
+	% 			{minus, 1} ->
+	% 				cell:removeLine(OutputCell, true),
+	% 				cell:addLine(OutputCell, false),
+	% 				0;
+	% 			{minus, Num} ->
+	% 				Num - 1
+	% 		end
+	% 	end, 0),
+	% 	RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+	% 		applyAndInject(Fun, Val, fun(InnerVal) ->
+	% 			case InnerVal of
+	% 				true ->
+	% 					intercept:sendIntercept(Intercept, plus),
+	% 					fun() -> intercept:sendIntercept(Intercept, minus) end;
+	% 				false ->
+	% 					undefined
+	% 			end
+	% 		end)
+	% 	end),
+	% 	cell:addOnRemove(OutputCell, RemoveFunc),
+	% 	OutputCell
+	% end},
 	#exprFun{
 	name = "fold",
 	type = "(a -> b -> b) -> (b -> a -> a) -> b -> Set a -> Unit b",
@@ -444,7 +567,7 @@ unfoldMapHelper({Key, Val}, Fun, OutputCell, Done) ->
 	catch _:_ ->
 		cell:addLine(OutputCell, {Key, Val}),
 		applyAndInject(Fun, Key, fun(InnerVal) ->
-			unfoldSetHelper({InnerVal, Val+1}, Fun, OutputCell, dict:store(Key, Key, Done))
+			unfoldMapHelper({InnerVal, Val+1}, Fun, OutputCell, dict:store(Key, Key, Done))
 		end)
 	end.
 
