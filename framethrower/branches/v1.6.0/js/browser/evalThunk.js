@@ -1,6 +1,7 @@
 function bootstrap(node, ids) {
 	if (!ids) ids = {};
 	processThunks(node, {baseUrl: "", ids: ids});
+	refreshScreen();
 }
 
 function evalThunk(thunkNode) {

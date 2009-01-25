@@ -311,6 +311,7 @@ var objects = (function (classesToMake) {
 		classDefs: classesToMake,
 		debug: classes,
 		inherits: function (subClassName, superClassName) {
+			// returns true if subClass (eg Cons) inherits from superClass (eg Object)
 			return (classes[subClassName] && classes[superClassName] && inherits(classes[subClassName], classes[superClassName]));
 		}
 	};

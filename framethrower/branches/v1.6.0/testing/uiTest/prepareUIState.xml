@@ -1,0 +1,26 @@
+<f:action name="prepareState"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:derive name="in" d="shared.in" />
+	<f:derive name="isA" d="shared.isA" />
+	<f:derive name="name" d="shared.name" />
+	
+	<f:derive name="ont" d="shared.ont" />
+	<f:derive name="realLife" d="shared.realLife" />
+	<f:derive name="situationType" d="shared.type.situation" />
+	<f:derive name="entityType" d="shared.type.entity" />
+	<f:derive name="typeType" d="shared.type.type" />
+
+	<f:derive name="prefs" d="ui.prefs" />
+	<f:derive name="situationType" d="shared.type.situation" />
+	<f:derive name="entityType" d="shared.type.entity" />
+	<f:derive name="relationType" d="shared.type.relation" />
+
+	<f:intact object="$prefs" property="typeDisplay" action="add" key="$situationType" value="'#2ae'" />
+	<f:intact object="$prefs" property="typeDisplay" action="add" key="$entityType" value="'#8c3'" />
+	<f:intact object="$prefs" property="typeDisplay" action="add" key="$relationType" value="'#e29'" />
+
+</f:action>

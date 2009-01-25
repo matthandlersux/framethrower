@@ -1,4 +1,4 @@
-function intact(object, property, action, params) {
+function intact(object, property, action, key, value) {
 	if (DEBUG) {
 		if (!object.prop[property]) {
 			debug.error("intact failed. Object does not have property `"+property+"`", object);
@@ -6,7 +6,7 @@ function intact(object, property, action, params) {
 	}
 	
 	// params has properties key and value, or just key
-	object.prop[property].control[action](params.key, params.value);
+	object.prop[property].control[action](key, value);
 }
 
 function createObject(type, properties) {
@@ -14,105 +14,19 @@ function createObject(type, properties) {
 	//console.log("createObject called", arguments);
 	
 	return objects.make(type, properties);
-	
-	// needs to return the created object
-	// return "This should be the created object";
 }
-
-
-function performActions(node, env, callback) {
-	if (!callback) callback = function () {};
-	
-	var children = [];
-	var ret = [];
-	
-	function addChildren(node) {
-		forEach(node.childNodes, function (child) {
-			var nn = child.nodeName;
-			if (nn === "f:result") {
-				addChildren(child);
-			} else if (nn === "f:return") {
-				ret.push(getAttr(child, "name"));
-			} else {
-				children.push(child);
-			}
-		});
-	}
-	addChildren(node);
-	
-	var i = -1;
-	function process(env) {
-		i++;
-		if (children[i]) {
-			performAction(children[i], env, process);
-		} else {
-			callback(map(ret, env));
-		}
-	}
-	process(env);
-}
-
-
-
-function performAction(node, env, callback) {
-	// performs an action node, callbacks with the new env
-	
-	var nn = node.nodeName;
-	if (nn === "f:let") {
-		// TODO: add support for multiple returns via commas in name
-		var name = getAttr(node, "name");
-		performActions(node, env, function (ret) {
-			if (name) {
-				callback(envAdd(env, name, ret[0]));
-			} else {
-				callback(env);
-			}
-		});
-	} else if (nn === "f:create") {
-		var te = node.custom.thunkEssence;
-		var name = getAttr(node, "name");
-		var type = getAttr(node, "type");
-		var properties = map(te.params, function (param) {
-			return getVar(param, env);
-		});
-		var newOb = createObject(type, properties);
-		callback(envAdd(env, name, newOb));
-	} else if (nn === "f:intact") {
-		var te = node.custom.thunkEssence;
-		var object = getVar(te.params["object"], env);
-		var property = getAttr(node, "property");
-		var action = getAttr(node, "action");
-		var params = map(te.params, function (param) {
-			return getVar(param, env);
-		});
-		intact(object, property, action, params);
-		callback(env);
-	} else {
-		debug.error("Unexpected action node", node);
-	}
-}
-
-function getVar(o, env) {
-	if (o.nodeType === 1 && o.nodeName === "f:var") {
-		return env(getAttr(o, "name"));
-	} else {
-		return o;
-	}
-}
-
-
 
 
 
 function extractVar(o) {
-	if (o.nodeType === 1 && o.nodeName === "f:var") {
+	if (o && o.nodeType === 1 && o.nodeName === "f:var") {
 		return {variable: getAttr(o, "name")};
 	} else {
 		return o;
 	}
 }
 function unextractVar(o, env) {
-	if (o.variable) {
+	if (o && o.variable) {
 		return env(o.variable);
 	} else {
 		return o;
@@ -129,7 +43,7 @@ function actionXMLToJS(node) {
 		var name = getAttr(node, "name");
 		return {
 			action: "block",
-			variables: [name],
+			variables: name ? [name] : [],
 			actions: map(children, actionXMLToJS)
 		};
 	} else if (nn === "f:create") {
@@ -150,19 +64,28 @@ function actionXMLToJS(node) {
 		var object = extractVar(te.params["object"]);
 		var property = getAttr(node, "property");
 		var action = getAttr(node, "action");
-		var params = map(te.params, function (param) {
-			return extractVar(param);
-		});
+		var key = extractVar(te.params["key"]);
+		var value = extractVar(te.params["value"]);
 		return {
 			action: action,
 			object: object,
 			property: property,
-			params: params
+			key: key,
+			value: value
 		};
 	} else if (nn === "f:return") {
 		return {
 			action: "return",
 			variable: getAttr(node, "name")
+		};
+	} else if (nn === "f:servercall") {
+		var te = node.custom.thunkEssence;
+		var variablesString = getAttr(node, "variables");
+		return {
+			action: "servercall",
+			method: getAttr(node, "method"),
+			variables: variablesString ? [variablesString] : [],
+			params: map(te.params, extractVar)
 		};
 	} else {
 		debug.error("Unexpected action node with name `"+nn+"`.", node);
@@ -171,34 +94,33 @@ function actionXMLToJS(node) {
 
 
 
-function performActionsJSLocal(actions, env) {
+function performActionsJSLocal(actions, env, ret) {
 	if (!env) env = makeDynamicEnv();
-	var ret = [];
+	if (!ret) ret = [];
 	
 	function unextract(o) {
 		return unextractVar(o, env.env);
 	}
 	
-	forEach(actions, function (actionjs) {
-		var action = actionjs.action;
-		if (action === "block") {
+	forEach(actions, function (action) {
+		if (action.action === "block") {
 			var newEnv = makeDynamicEnv(env.env);
-			var results = performActionsJSLocal(actionjs.actions, newEnv);
+			var results = performActionsJSLocal(action.actions, newEnv);
 			
 			var retNum = 0;
 			forEach(results, function (result) {
-				env.add(actionjs.variables[retNum], result);
+				env.add(action.variables[retNum], result);
 				retNum++;
 			});
-		} else if (action === "create") {
-			var res = createObject(actionjs.type, map(actionjs.prop, unextract));
-			if (actionjs.variable) {
-				env.add(actionjs.variable, res);
+		} else if (action.action === "create") {
+			var res = createObject(action.type, map(action.prop, unextract));
+			if (action.variable) {
+				env.add(action.variable, res);
 			}
-		} else if (action === "add" || action === "remove") {
-			intact(unextract(actionjs.object), actionjs.property, actionjs.action, map(actionjs.params, unextract));
-		} else if (action === "return") {
-			ret.push(env.env(actionjs.variable));
+		} else if (action.action === "add" || action.action === "remove") {
+			intact(unextract(action.object), action.property, action.action, unextract(action.key), unextract(action.value));
+		} else if (action.action === "return") {
+			ret.push(env.env(action.variable));
 		}
 	});
 	
@@ -207,8 +129,131 @@ function performActionsJSLocal(actions, env) {
 
 
 
+function performActionsJS(actions, callback, env, ret) {
+	if (!env) env = makeDynamicEnv();
+	if (!ret) ret = [];
+	
+	if (actions.length === 0) {
+		callback(ret);
+	} else {
+		var todo = [];
+		var cs = "neither";
+
+		while (actions.length > 0) {
+			var action = actions[0];
+			var actionCS = isClientOrServer(action);
+			if (actionCS === "neither") {
+				// do nothing
+			} else if (cs === "neither") {
+				cs = actionCS;
+			} else if (cs !== actionCS) {
+				break;
+			}
+			todo.push(actions.shift());
+			if (actionCS === "both") break;
+		}
+
+		if (cs === "client" || LOCAL) {
+			performActionsJSLocal(todo, env, ret);
+			performActionsJS(actions, callback, env, ret);
+		} else if (cs === "server") {
+			
+			
+			
+			
+			// TODO
+			
+			
+			
+			
+		} else if (cs === "both") {
+			var newEnv = makeDynamicEnv(env.env);
+			var action = todo[0];
+
+			function cb(results) {
+				var retNum = 0;
+				forEach(results, function (result) {
+					env.add(action.variables[retNum], result);
+					retNum++;
+				});
+				performActionsJS(actions, callback, env, ret);
+			}
+
+			performActionsJS(action.actions, cb, newEnv);
+		}
+	}
+}
 
 
+
+function tagActionsClientOrServer(actions, env, ret) {
+	// Mutates actions
+	
+	if (!env) env = makeDynamicEnv();
+	if (!ret) ret = [];
+	
+	forEach(actions, function (action) {
+		if (action.action === "block") {
+			var newEnv = makeDynamicEnv(env.env);
+			var results = tagActionsClientOrServer(action.actions, newEnv);
+			
+			var retNum = 0;
+			forEach(results, function (result) {
+				env.add(action.variables[retNum], result);
+				retNum++;
+			});
+		} else if (action.action === "create") {
+			// decide based on type
+			var type = action.type;
+			if (objects.inherits(type, "Object")) {
+				action.server = true;
+			}			
+			if (action.variable) {
+				env.add(action.variable, action.server ? true : false);
+			}
+		} else if (action.action === "add" || action.action === "remove") {
+			// decide based on type of object
+			var o = action.object;
+			if (o.variable) {
+				action.server = env.env(o.variable);
+			} else {
+				var type = getType(o).value;
+				if (objects.inherits(type, "Object")) {
+					action.server = true;
+				}
+			}
+		} else if (action.action === "return") {
+			ret.push(env.env(action.variable));
+		}
+	});
+	
+	return ret;
+}
+
+
+
+function isClientOrServer(action) {
+	// if (action.action === "servercall") {
+	// 		return "server";
+	// 	} else 
+	if (action.action === "return") {
+		return "neither";
+	} else if (action.action === "block") {
+		var ret = "neither";
+		forEach(action.actions, function (action) {
+			var cs = isClientOrServer(action);
+			if (ret === "neither") {
+				ret = cs;
+			} else if ((ret === "client" && cs === "server") || (ret === "server" && cs === "client")) {
+				ret = "both";
+			}
+		});
+		return ret;
+	} else {
+		if (action.server) return "server";
+		else return "client";
+	}
+}
 
 
 
@@ -220,22 +265,101 @@ function triggerAction(thunkEssence) {
 	appendChild(island, thunk);
 	
 	function onXMLUpdate() {
-		var remaining = xpath(".//f:thunk", island);
+		var remaining = xpath("descendant-or-self::f:thunk", island);
 		if (remaining.length === 0) {
 			
 			//console.dirxml(island);
-			console.log(actionXMLToJS(island.firstChild));
 			
 			//performActions(island.firstChild, emptyEnv);
 			
-			performActionsJSLocal(actionXMLToJS(island.firstChild));
+			//performActionsJSLocal(actionXMLToJS(island.firstChild));
 			
+			var actions = actionXMLToJS(island.firstChild);
+			tagActionsClientOrServer(actions);
+			
+			console.dir(actions);
+			
+			performActionsJS(actions, function (res) {
+				console.log("got result back", res);
+			});
+						
 			unloadXML(island);
 			
 			//console.profile();
 		}
 	}
 	
+	thunk.custom = {thunkEssence: thunkEssence, onXMLUpdate: onXMLUpdate};
+		
+	evalThunk(thunk);
+}
+
+
+
+
+function clientJSONToServerJSON(actions) {
+	function convert(o) {
+		if (o === undefined) {
+			return undefined;
+		} else if (o.variable) {
+			return o.variable;
+		} else {
+			return stringify(o);
+		}
+	}
+
+	return map(actions, function (action) {
+		if (action.action === "block") {
+			return {
+				action: "block",
+				variables: action.variables,
+				actions: clientJSONToServerJSON(action.actions)
+			};
+		} else if (action.action === "create") {
+			return {
+				action: "create",
+				type: action.type,
+				variable: action.variable,
+				prop: map(action.prop, convert)
+			};
+		} else if (action.action === "add" || action.action === "remove") {
+			return {
+				action: action.action,
+				object: convert(action.object),
+				property: action.property,
+				key: convert(action.key),
+				value: convert(action.value)
+			};
+		} else if (action.action === "return") {
+			return {
+				action: "return",
+				variable: action.variable
+			};
+		}
+	});
+}
+
+function renderJSONFromAction(url) {
+	var thunkEssence = {
+		url: url,
+		params: {}
+	};
+	var island = createEl("island");
+	var thunk = createEl("f:thunk");
+	appendChild(island, thunk);
+	
+	function onXMLUpdate() {
+		var remaining = xpath("descendant-or-self::f:thunk", island);
+		if (remaining.length === 0) {
+			var json = actionXMLToJS(island.firstChild);
+			
+			json = clientJSONToServerJSON(json);
+			
+			console.log(json);
+			console.log(JSON.stringify(json));
+		}
+	}
+
 	thunk.custom = {thunkEssence: thunkEssence, onXMLUpdate: onXMLUpdate};
 		
 	evalThunk(thunk);
