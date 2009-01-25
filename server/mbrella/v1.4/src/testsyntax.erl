@@ -278,4 +278,4 @@ getAtt(Name, R) -> (hd(lists:filter(fFunc(Name), R#xmlElement.attributes)))#xmlA
 main() ->
 	%D = atom_to_list(hd(A)),
 	%parseAll(D).
-	parse("../../../shared/testing/erlangTests.xml").
+	parse("../../../shared/testing/currentTest.xml").

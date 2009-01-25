@@ -99,8 +99,25 @@ classesToMake() ->
 		}
 	].
 
+makeRootObjects() ->
+	env:store("shared.in", objects:create("Object", dict:new())),
+	
+	env:store("shared.in", objects:create("Object", dict:new())),
+	env:store("shared.ont", objects:create("Object", dict:new())),
 
+	env:store("shared.isA", objects:create("Object", dict:new())),
+	env:store("shared.name", objects:create("Object", dict:new())),
+	env:store("shared.relationTemplate", objects:create("Object", dict:new())),
 
+	env:store("shared.type.type", objects:create("Object", dict:new())),
+	env:store("shared.type.situation", objects:create("Object", dict:new())),
+	env:store("shared.type.entity", objects:create("Object", dict:new())),
+	env:store("shared.type.infon", objects:create("Object", dict:new())),
+	env:store("shared.type.relation", objects:create("Object", dict:new())), %% this will itself be used as a binary relation to make relation types
+
+	env:store("shared.realLife", objects:create("Object", dict:new())),
+	ok.
+	
 %% ====================================================================
 %% External functions
 %% ====================================================================
@@ -115,6 +132,7 @@ start() ->
 			addProp(Name, PropName, TypeString)
 		end, Prop)
 	end, ClassesToMake),
+	makeRootObjects(),
 	Server.
 
 stop() ->

@@ -201,6 +201,25 @@ primitives() ->
 		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
+	%% ============================================================================
+	%% Null Type Functions
+	%% ============================================================================
+	#exprFun{
+	name = "reactiveNot",
+	type = "Unit Null -> Unit Null",
+	function = fun(Cell) ->
+		OutputCell = cell:makeCell(),
+		cell:addLine(OutputCell, obj:nullObj()),
+		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+			cell:removeLine(OutputCell, object:nullObj()),
+			fun () -> cell:addLine(OutputCell, object:nullObj()) end
+			end),
+		cell:addOnRemove(OutputCell, RemoveFunc),
+		OutputCell
+	end},
+	
+	
+	
 	#exprFun{
 	name = "passThru",
 	type = "(a -> Bool) -> a -> Unit a",

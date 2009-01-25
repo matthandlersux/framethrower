@@ -3,7 +3,7 @@
 -behaviour(gen_server).
 -import(mblib, [curry/1]).
 -include ("../include/scaffold.hrl").
--export([start/0, stop/0, nameAndStoreCell/1, nameAndStoreObj/1, lookup/1, addFun/3, getState/0]).
+-export([start/0, stop/0, nameAndStoreCell/1, nameAndStoreObj/1, store/2, lookup/1, addFun/3, getState/0]).
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -28,6 +28,9 @@ nameAndStoreCell(CellExpr) ->
 
 nameAndStoreObj(Obj) ->
 	gen_server:call(?MODULE, {nameAndStoreObj, Obj}).
+
+store(Name, Obj) ->
+	gen_server:cast(?MODULE, {store, Name, Obj}).
 
 getState() ->
 	gen_server:call(?MODULE, getState).
@@ -129,8 +132,12 @@ handle_cast({addFun, Name, TypeString, Function}, State) ->
 	NewExprFun = #exprFun{name=Name, type=Type, function=Function},
 	NewGlobalTable = dict:store(Name, NewExprFun, GlobalTable),
 	NewState = State#envState{globalTable = NewGlobalTable},
-	{noreply, NewState}.
-
+	{noreply, NewState};
+handle_cast({store, Name, Obj}, State) ->
+	#envState{globalTable = GlobalTable} = State,
+	NewGlobalTable = dict:store(Name, Obj, GlobalTable),
+	NewState = State#envState{globalTable = NewGlobalTable},
+    {noreply, NewState}.
 
 
 handle_info(_, State) -> {noreply, State}.
