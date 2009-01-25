@@ -89,7 +89,7 @@ nest(LeftMost, Parser, NestFun) ->
 nestList(Parser, String) ->
 	nestList(Parser, [], String).
 	
-nestList(Parser, Acc, String) ->
+nestList(Parser, Acc, String) -> 
 		case parse(Parser, String) of
 			[] -> [{Acc, String}];
 			[{H, Tail}] -> nestList(Parser, Acc ++ [H], Tail)

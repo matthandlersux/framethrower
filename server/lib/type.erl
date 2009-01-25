@@ -13,24 +13,46 @@
 
 % get( String ) when is_list( String ) ->
 % 	type:get( expr:expr(String) );
+
+%% ====================================================
+%% types
+%% ====================================================
+
+% Expr:
+% 	#cons |	#exprFun | #exprCell | #exprVar | String | Num | Bool
+% 	
+% Type:
+% 	#type
+% 	
+
+%% ====================================================
+%% external api
+%% ====================================================
+
+
+%% 
+%% get:: Expr -> Type | Error
+%% 
+
 get( Expr ) ->
 	Expr1 = prefixTypeVars( Expr ),
 	{Type, Constraints} = genConstraints( Expr1 ),
-	% io:format("~p~n~n", [{Type, Constraints}]),
 	Subs = unify(Constraints),
 	substitute(Type, Subs).
+
+%% 
+%% show:: String | Expr -> String
+%% 
 	
 show( String ) when is_list( String ) ->
 	show( expr:expr(String) );
 show( Expr ) ->
 	unparse( type:get(Expr) ).
 	
-%% ====================================================
-%% parser for parsing TypeStrings -> TypeExpressions
-%% ====================================================
+%% 
+%% parse:: String -> Type
+%% 
 
-
-	
 parse(String) ->
 	case parse:parse( control(), String) of
 		[{Result, []}] -> Result;
@@ -38,7 +60,12 @@ parse(String) ->
 		[] -> io:format("invalid input ~n", [])
 	end.
 
-	
+%% ====================================================
+%% Internal API
+%% ====================================================
+
+
+
 %% ====================================================
 %% type parser CFG
 %% ====================================================

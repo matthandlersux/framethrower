@@ -113,6 +113,7 @@ betaReduce1( Expr, Variable, Replace) when is_record(Expr, exprVar)->
 	end;
 betaReduce1( Expr, _, _ ) -> Expr.
 
+
 lambdaVarAdjust(LeftLambdaVars, RightAllVars, Expr) ->
 	% ?trace({LeftLambdaVars, RightAllVars}),
 	LambdaVars = lists:usort(LeftLambdaVars),

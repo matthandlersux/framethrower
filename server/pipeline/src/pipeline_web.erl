@@ -31,6 +31,8 @@ loop(Req, DocRoot) ->
 				"newSession" ->
 					SessionId = session:new(),
 					spit(Req, "sessionId", SessionId);
+				"test" ->
+					spit(Req, "test", list_to_binary(io_lib:format("~p", [catch erlang:error(test) ] )));
                 _ ->
                     Req:serve_file(Path, DocRoot)
             end;
@@ -80,8 +82,13 @@ loop(Req, DocRoot) ->
 													end												
 												)
 											end,
-							lists:foreach(ProcessQuery, Queries),
-							spit(Req, true)
+							try lists:foreach(ProcessQuery, Queries) of
+								_ -> 
+									spit(Req, true)
+							catch 
+								ErrorType:Reason -> 
+									spit(Req, {struct, [{"errorType", ErrorType}, {"reason", list_to_binary(io_lib:format(Reason))}] })
+							end
 					end;
 				"action" ->
 					Data = Req:parse_post(),
