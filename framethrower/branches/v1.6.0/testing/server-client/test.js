@@ -12,7 +12,7 @@ function initialize() {
 	//var test = makeRemoteObject("returnUnitSet (returnUnit 22)", parseType("Set Number"));
 	//var test = makeRemoteObject('returnUnit "hello world"', parseType("Unit String"));
 
-	var test = makeRemoteObject("Cons:left server.3", parseType("Future Object"));
+	var test = makeRemoteObject("Cons:left server.7", parseType("Future Object"));
 	cell = session.query(test);
 
 
