@@ -149,13 +149,13 @@ processAction(<<"create">>, Action, Updates, Variables) ->
 	Variable = struct:get_value(<<"variable">>, Action),
 	Prop = struct:get_value(<<"prop">>, Action),
 	PropDict = propToDict(Prop, Variables),
+
 	% if Variable already exists (we are in a block and it has been declared outside the block), remove it for replacing
 	Variables1 = lists:keydelete(Variable, 1, Variables),
-	case objects:create(Type, PropDict) of
-		{ok, Object} ->
-			{ Updates, [{ Variable, Object } | Variables1] };
-		{error, _Reason} ->
-			{ Updates, [{Variable, error} | Variables1]}
+	try objects:create(Type, PropDict) of
+		Object -> { Updates, [{ Variable, Object } | Variables1] }
+	catch
+		_:_ -> { Updates, [{Variable, error} | Variables1]}
 	end;
 % action:return is how bound variables get returned to the client
 processAction(<<"return">>, Action, Updates, Variables) ->
