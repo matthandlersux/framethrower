@@ -109,6 +109,9 @@
 		<xsl:param name="s" select="@select" />
 		<xsl:variable name="fc" select="substring($s, 1, 1)" />
 		<xsl:choose>
+			<xsl:when test="self::f:with-param and @as">
+				<f:literal type="{@as}" value="{{{$s}}}" />
+			</xsl:when>
 			<xsl:when test='$fc = "&#39;"'>
 				<f:literal type="String" value="{{{$s}}}" />
 			</xsl:when>

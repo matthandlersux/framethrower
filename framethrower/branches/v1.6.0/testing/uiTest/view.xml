@@ -6,8 +6,12 @@
 	
 	<f:derive name="realLife" d="shared.realLife" />
 	<f:derive name="pane" d="test.pane" />
+	<f:derive name="paneset" d="test.paneset" />
 	
-	<html:div>
+	
+	<f:thunk url="main/main.xml" />
+	
+	
 		<!-- <html:div>
 			<xsl:call-template name="prettyPrint">
 				<xsl:with-param name="node" select="$test1" />
@@ -15,11 +19,17 @@
 			<xsl:value-of select="$test2/@value" />
 		</html:div> -->
 
-		<html:div style="border:1px solid #000">
+		<!-- <html:div style="border:1px solid #000">
 			<f:thunk url="pane/pane.xml">
 				<f:with-param name="pane" select="$pane" />
 			</f:thunk>
-		</html:div>
+		</html:div> -->
+		
+		<!-- <f:thunk url="paneset/paneset.xml">
+			<f:with-param name="paneset" select="$paneset" />
+		</f:thunk> -->
+		
+		
 		
 		<!-- <html:h1>Infons <html:i>about</html:i> Real Life</html:h1>
 
@@ -38,8 +48,6 @@
 		<f:thunk url="pane/infonsIn.xml">
 			<f:with-param name="focus" select="$realLife" />
 		</f:thunk> -->
-		
-	</html:div>
 	
-	<f:include url="/xml/debug/prettyPrint.xml" />
+	<!-- <f:include url="/xml/debug/prettyPrint.xml" /> -->
 </f:template>

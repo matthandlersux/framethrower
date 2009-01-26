@@ -78,8 +78,12 @@ var maxCalls = 12;
 
 
 var timeoutDefault = 30 * 1000; // 30 seconds
-var serverBaseUrl = "http://localhost:8000/";
-//var serverBaseUrl = "http://www.eversplosion.com/resources/servertest.php?";
+
+if (!window.serverBaseUrl) {
+	window.serverBaseUrl = "http://clever.eversplosion.com:8000/";
+}
+
+
 
 function xhr(url, post, callback, failCallback, timeout) {
 	
@@ -115,7 +119,10 @@ function xhr(url, post, callback, failCallback, timeout) {
 		if (req.readyState == 4) {
 			clearTimeout(timer);
 		 	if (req.status == 200 || req.status == 0) {
+				
+				// debugging stuff:
 				console.log("called: "+url+"\nwith post: "+post+"\ngot response: "+req.responseText);
+				
 				callback(req.responseText);
 			} else {
 				fail();
@@ -152,31 +159,37 @@ var session = (function () {
 	
 	var cells = {};
 	
-	function addActions(actions) {
+	function addActions(actions, callback) {
 		if (!sessionId) {
 			newSession();
 		}
 		
-		actionsToSend = actionsToSend.concat(actions);
+		actionsToSend.push({
+			actions: actions,
+			callback: callback
+		});
+		sendAllActions();
 	}
-	
 	function sendAllActions() {
-		if (actionsToSend.length > 0) {
-			var sending = actionsToSend;
-			actionsToSend = [];
-			var json = JSON.stringify({
-				sessionId: sessionId,
-				actions: sending
-			});
-			
-			xhr(serverBaseUrl+"action", json, function (text) {
-				
-			}, function () {
-				actionsToSend = actionsToSend.concat(sending);
-				sendAllActions();
-			});
+		if (sessionId && sessionId !== "initializing") {
+			if (actionsToSend.length > 0) {
+				var sending = actionsToSend.shift();
+				var json = JSON.stringify({
+					sessionId: sessionId,
+					actions: sending.actions
+				});
+
+				xhr(serverBaseUrl+"action", json, function (response) {
+					// TODO
+					// call sending.callback
+
+					sendAllActions();
+				});
+			}
 		}
 	}
+	
+	
 	
 	function addQuery(expr) {
 		if (!sessionId) {
@@ -201,20 +214,22 @@ var session = (function () {
 	}
 	
 	function askAllQueries() {
-		if (queriesToAsk.length > 0) {
-			var asking = queriesToAsk;
-			queriesToAsk = [];
-			var json = JSON.stringify({
-				sessionId: sessionId,
-				queries: asking
-			});
+		if (sessionId && sessionId !== "initializing") {
+			if (queriesToAsk.length > 0) {
+				var asking = queriesToAsk;
+				queriesToAsk = [];
+				var json = JSON.stringify({
+					sessionId: sessionId,
+					queries: asking
+				});
 			
-			xhr(serverBaseUrl+"query", json, function (text) {
+				xhr(serverBaseUrl+"query", json, function (text) {
 				
-			}, function () {
-				queriesToAsk = queriesToAsk.concat(asking);
-				askAllQueries();
-			});
+				}, function () {
+					queriesToAsk = queriesToAsk.concat(asking);
+					askAllQueries();
+				});
+			}
 		}
 	}
 	
@@ -257,15 +272,10 @@ var session = (function () {
 					refreshScreen();
 				}
 				
-
-
-				
 			} catch (e) {
 				console.log("had an error", e, cells, cells["1"]);
 			}
 
-			
-			//console.log("starting updater again", "last message id", lastMessageId);
 			startUpdater();
 		});
 	}
@@ -274,9 +284,11 @@ var session = (function () {
 		sessionId = "initializing";
 		lastMessageId = 0;
 		nextQueryId = 1;
+		
 		// TODO: move all cells' expr's into queriesToAsk
+		// that is, do the right thing if you had a session, but it's now closed
+		
 		xhr(serverBaseUrl+"newSession", "", function (text) {
-			// console.log("newSession got back text: ", text);
 			var o = JSON.parse(text);
 			sessionId = o.sessionId;
 
@@ -289,7 +301,6 @@ var session = (function () {
 	return {
 		query: addQuery,
 		addActions: addActions,
-		flushActions: sendAllActions,
 		flush: askAllQueries,
 		debugCells: cells
 	};

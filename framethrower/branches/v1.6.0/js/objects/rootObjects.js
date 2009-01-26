@@ -25,13 +25,27 @@ rootObjects["shared.realLife"] = objects.make("Object");
 
 
 
+rootObjects["ui.ui"] = objects.make("UI.ui");
+
+
 rootObjects["ui.prefs"] = objects.make("UI.prefs");
 
 
 
 
-rootObjects["test.pane"] = objects.make("UI.pane");
+rootObjects["test.pane"] = objects.make("UI.pane.pane");
 rootObjects["test.pane"].prop["focus"].control.add(rootObjects["shared.realLife"]);
+
+var pane1 = rootObjects["test.pane"];
+var pane2 = objects.make("UI.pane.pane");
+pane2.prop["focus"].control.add(rootObjects["shared.type.entity"]);
+
+rootObjects["test.paneset"] = objects.make("UI.pane.set");
+rootObjects["test.paneset"].prop["panes"].control.add("b", objects.cast(pane1, "UI.pane"));
+rootObjects["test.paneset"].prop["panes"].control.add("bb", objects.cast(pane2, "UI.pane"));
+
+
+rootObjects["ui.main"] = objects.make("UI.main", {"pane": objects.cast(rootObjects["test.paneset"], "UI.pane")});
 
 
 
@@ -45,6 +59,14 @@ rootObjects["test.pane"].prop["focus"].control.add(rootObjects["shared.realLife"
 forEach(rootObjects, function (v, k) {
 	base.add(k, v);
 });
+
+
+
+
+
+
+
+
 
 
 

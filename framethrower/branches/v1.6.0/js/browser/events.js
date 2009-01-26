@@ -122,3 +122,49 @@
 	document.addEventListener("focus", focus, true);
 	document.addEventListener("change", change, true);
 })();
+
+
+
+(function () {
+	var ui = rootObjects["ui.ui"].prop;
+	
+	function resizeScreen(e) {
+		console.log("detected screen resize");
+		var screenWidth = window.innerWidth;
+		var screenHeight = window.innerHeight;
+		ui["screenWidth"].control.add(screenWidth);
+		ui["screenHeight"].control.add(screenHeight);
+		refreshScreen();
+	}
+	
+	window.addEventListener("resize", resizeScreen, true);
+	document.addEventListener("load", resizeScreen, true);
+})();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

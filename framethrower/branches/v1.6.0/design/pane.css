@@ -1,3 +1,21 @@
 li {
 	margin: 3px;
 }
+
+
+
+.paneset-vertical, .paneset-horizontal {
+	position:absolute;
+	top: 0px;
+	left: 0px;
+}
+
+.paneset-pane {
+	position:absolute;
+}
+
+.paneset-spacer {
+	position:absolute;
+	background-color: #ccc;
+}
+

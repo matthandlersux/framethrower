@@ -64,15 +64,43 @@ var classesToMake = {
 	// UI
 	// ====================================================
 	
+	"UI.ui": {
+		prop: {
+			"screenWidth": "Unit Number",
+			"screenHeight": "Unit Number"
+		}
+	},
+	
+	"UI.main": {
+		prop: {
+			"pane": "UI.pane"
+		}
+	},
+	
+	"UI.pane": {
+		prop: {
+
+		}
+	},
+	"UI.pane.set": {
+		inherit: "UI.pane",
+		prop: {
+			"panes": "Map String UI.pane"
+		}
+	},
+	"UI.pane.pane": {
+		inherit: "UI.pane",
+		prop: {
+			"tab": "Unit String", // objectsIn, infonsIn, about
+			"focus": "Unit Object"
+		}
+	},
+	
+	
+	
 	"UI.prefs": {
 		prop: {
 			"typeDisplay": "Map Object String"
-		}
-	},
-	"UI.pane": {
-		prop: { // this will definitely change...
-			"tab": "Unit String", // objectsIn, infonsIn, about
-			"focus": "Unit Object"
 		}
 	}
 };
@@ -281,7 +309,7 @@ var objects = (function (classesToMake) {
 			}
 		}
 		var type = {kind: "typeName", value: className};
-
+		
 		var o = {
 			kind: "object",
 			origType: type,
@@ -313,6 +341,13 @@ var objects = (function (classesToMake) {
 		inherits: function (subClassName, superClassName) {
 			// returns true if subClass (eg Cons) inherits from superClass (eg Object)
 			return (classes[subClassName] && classes[superClassName] && inherits(classes[subClassName], classes[superClassName]));
+		},
+		cast: function (obj, targetClassName) {
+			if (objects.inherits(getType(obj).value, targetClassName)) {
+				return makeCast(targetClassName)(obj);				
+			} else {
+				debug.error("Cannot convert object of type `" + getType(obj).value + "` to `" + targetClassName + "`.");
+			}
 		}
 	};
 })(classesToMake);

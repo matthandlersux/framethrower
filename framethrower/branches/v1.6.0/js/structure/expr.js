@@ -130,5 +130,6 @@ function betaReduce(expr) {
 }
 
 function normalizeExpr(expr) {
-	return normalizeVariables(betaReduce(normalizeVariables(expr)));
+	//return normalizeVariables(betaReduce(normalizeVariables(expr)));
+	return normalizeVariables(expr);
 }

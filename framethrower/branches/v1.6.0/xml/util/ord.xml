@@ -1,0 +1,34 @@
+<f:includes
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<xsl:template name="ord-bigger">
+		<xsl:param name="s" />
+		<xsl:value-of select="concat(substring($s, 1, string-length($s) - 1), 'bb')" />
+	</xsl:template>
+
+	<xsl:template name="ord-smaller">
+		<xsl:param name="s" />
+		<xsl:value-of select="concat(substring($s, 1, string-length($s) - 1), 'ab')" />
+	</xsl:template>
+
+	<xsl:template name="ord-between">
+		<xsl:param name="s1" />
+		<xsl:param name="s2" />
+		<xsl:choose>
+			<xsl:when test="string-length($s1) &gt; string-length($s2)">
+				<xsl:call-template name="ord-bigger">
+					<xsl:with-param name="s" select="$s1" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="ord-smaller">
+					<xsl:with-param name="s" select="$s2" />
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+</f:includes>

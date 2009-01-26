@@ -1,0 +1,139 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="paneset" type="UI.pane.set" />
+	<f:param name="width" type="Number" />
+	<f:param name="height" type="Number" />
+	
+	<f:derive name="panes" d="UI.pane.set:panes paneset" />
+	
+	<xsl:variable name="w" select="$width/@value" />
+	<xsl:variable name="h" select="$height/@value" />
+
+	<xsl:variable name="orientation" select="'horizontal'" />
+	
+	<xsl:variable name="total">
+		<xsl:choose>
+			<xsl:when test="$orientation = 'horizontal'">
+				<xsl:value-of select="$w" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="$h" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	
+	<xsl:variable name="minsize" select="400" />
+	<xsl:variable name="spacing" select="6" />
+	
+	<xsl:variable name="count" select="count($panes/f:entry)" />
+	
+	<xsl:variable name="defaultsize" select="floor(($total - (($count - 1) * $spacing)) div $count)" />
+	
+	
+	<html:div class="paneset-{$orientation}">
+		<xsl:call-template name="style">
+			<xsl:with-param name="width" select="$w" />
+			<xsl:with-param name="height" select="$h" />
+		</xsl:call-template>
+		
+		<xsl:for-each select="$panes/f:entry">
+			<xsl:variable name="width">
+				<xsl:choose>
+					<xsl:when test="$orientation = 'horizontal'"><xsl:value-of select="$defaultsize" /></xsl:when>
+					<xsl:otherwise><xsl:value-of select="$w" /></xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:variable name="height">
+				<xsl:choose>
+					<xsl:when test="$orientation = 'vertical'"><xsl:value-of select="$defaultsize" /></xsl:when>
+					<xsl:otherwise><xsl:value-of select="$h" /></xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:variable name="left">
+				<xsl:choose>
+					<xsl:when test="$orientation = 'horizontal'"><xsl:value-of select="($defaultsize + $spacing) * (position() - 1)" /></xsl:when>
+					<xsl:otherwise><xsl:value-of select="0" /></xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:variable name="top">
+				<xsl:choose>
+					<xsl:when test="$orientation = 'vertical'"><xsl:value-of select="($defaultsize + $spacing) * (position() - 1)" /></xsl:when>
+					<xsl:otherwise><xsl:value-of select="0" /></xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			
+			
+			<html:div class="paneset-pane">
+				<xsl:call-template name="style">
+					<xsl:with-param name="width" select="$width" />
+					<xsl:with-param name="height" select="$height" />
+					<xsl:with-param name="left" select="$left" />
+					<xsl:with-param name="top" select="$top" />
+				</xsl:call-template>
+				<f:thunk url="pane.xml">
+					<f:with-param name="pane" select="f:value/*" />
+					<f:with-param name="width" select="$width" as="Number" />
+					<f:with-param name="height" select="$height" as="Number" />
+				</f:thunk>
+			</html:div>
+
+			<xsl:if test="not(position() = last())">
+				<xsl:variable name="swidth">
+					<xsl:choose>
+						<xsl:when test="$orientation = 'horizontal'"><xsl:value-of select="$spacing" /></xsl:when>
+						<xsl:otherwise><xsl:value-of select="$w" /></xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				<xsl:variable name="sheight">
+					<xsl:choose>
+						<xsl:when test="$orientation = 'vertical'"><xsl:value-of select="$spacing" /></xsl:when>
+						<xsl:otherwise><xsl:value-of select="$h" /></xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				<xsl:variable name="sleft">
+					<xsl:choose>
+						<xsl:when test="$orientation = 'horizontal'"><xsl:value-of select="($defaultsize + $spacing) * position() - $spacing" /></xsl:when>
+						<xsl:otherwise><xsl:value-of select="0" /></xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				<xsl:variable name="stop">
+					<xsl:choose>
+						<xsl:when test="$orientation = 'vertical'"><xsl:value-of select="($defaultsize + $spacing) * position() - $spacing" /></xsl:when>
+						<xsl:otherwise><xsl:value-of select="0" /></xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				
+				<html:div class="paneset-spacer">
+					<xsl:call-template name="style">
+						<xsl:with-param name="width" select="$swidth" />
+						<xsl:with-param name="height" select="$sheight" />
+						<xsl:with-param name="left" select="$sleft" />
+						<xsl:with-param name="top" select="$stop" />
+					</xsl:call-template>
+				</html:div>
+			</xsl:if>
+		</xsl:for-each>
+	</html:div>
+	
+
+	<xsl:template name="style">
+		<xsl:param name="width" />
+		<xsl:param name="height" />
+		<xsl:param name="left" select="0" />
+		<xsl:param name="top" select="0" />
+		
+		<xsl:attribute name="style">
+			width: <xsl:value-of select="$width" />px;
+			height: <xsl:value-of select="$height" />px;
+			left: <xsl:value-of select="$left" />px;
+			top: <xsl:value-of select="$top" />px;			
+		</xsl:attribute>
+	</xsl:template>
+
+	
+	<!-- <f:include url="/xml/util/ord.xml" /> -->
+</f:template>

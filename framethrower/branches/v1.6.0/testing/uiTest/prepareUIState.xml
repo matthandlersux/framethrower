@@ -23,4 +23,5 @@
 	<f:intact object="$prefs" property="typeDisplay" action="add" key="$entityType" value="'#8c3'" />
 	<f:intact object="$prefs" property="typeDisplay" action="add" key="$relationType" value="'#e29'" />
 
+
 </f:action>

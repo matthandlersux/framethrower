@@ -20,6 +20,9 @@ function typeCheck(expr, type) {
 function makeCC(type) {
 	var cell;
 	var constructor = getTypeConstructor(type);
+	
+	// TODO: when adding an Object of the wrong type, we should cast the Object if possible instead of throwing a type error.
+	// This would be consistent with how when we create Objects, we cast any Objects being used as properties
 
 	
 	// TODO test these and throw errors on erroneous calls
