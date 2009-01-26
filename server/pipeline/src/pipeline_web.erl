@@ -127,6 +127,7 @@ loop(Req, DocRoot) ->
 processActionList(Actions) ->
 	Results = processActionList(Actions, [], []),
 	lists:map(fun(error) -> error; (ExprElement) -> mblib:exprElementToJson(ExprElement) end, Results).
+
 	
 processActionList(Actions, Updates, Variables) ->
 	ProcessActions = fun(Action, {UpdatesAccumulator, VariablesAccumulator}) ->
@@ -237,6 +238,10 @@ bindVarOrFormatExprElement(VariableOrCellName, Conversions) when is_binary(Varia
 			env:lookup(ObjectName);
 		"\"" ++ _ = String ->
 			bindVarOrFormatExprElement(String, null);
+		%TODO: this may be a hack
+		"true" -> true;
+		"false" -> false;
+		"null" -> null;
 		_ ->
 			case lists:keysearch(VariableOrCellName, 1, Conversions) of
 				{value, {_, Object} } -> Object;
@@ -245,7 +250,7 @@ bindVarOrFormatExprElement(VariableOrCellName, Conversions) when is_binary(Varia
 					error % this will be when we start sending functions
 			end
 	end;
-bindVarOrFormatExprElement(NumBool, _) when is_number(NumBool); is_boolean(NumBool) -> NumBool;
+bindVarOrFormatExprElement(NumBool, _) when is_number(NumBool); is_atom(NumBool); is_boolean(NumBool) -> NumBool;
 bindVarOrFormatExprElement([_|String], _) when is_list(String) -> lists:reverse( tl( lists:reverse(String) ) ).
 
 %% 
