@@ -162,9 +162,9 @@ handle_cast(unserialize, State) ->
 		tryMakeObject(ObjOrCell, Dependencies, CellDict) 
 	end, dict:new(), ?this(ets)),
 	
-	CellDict = ets:foldl(fun({Name, ObjOrCell}, Dict) -> 
+	CellDict = ets:foldl(fun({Name, ObjOrCell}, Acc) -> 
 		populateCells(ObjOrCell, CellDict)
-	end, dict:new(), ?this(ets)),
+	end, acc, ?this(ets)),
 	
 	
     {noreply, State};
@@ -172,7 +172,20 @@ handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
 
 
-tryMakeObject(A, B, C) -> A.
+tryMakeObject(Obj, Dependencies, CellDict) when is_record(Obj, object) -> 
+	PropsReady = dict:fold(fun(PropName, Property, AccBool) ->
+		NewBool = case Property of
+			ObjProp when is_record(ObjProp, object) ->
+				case env:lookup(ObjProp#object.name) of
+					notfound -> false;
+					_ -> true
+				end;
+			_ -> true
+		end,
+		AccBool andalso NewBool
+	end, Obj#object.prop),
+	Dependencies;
+tryMakeObject(_, Dependencies, _) -> Dependencies.
 
 populateCells(A, B) -> B.
 

@@ -149,8 +149,6 @@ create(ClassName, Props) ->
 		Object -> Object
 	catch
 		ErrorType:ErrorPattern -> 
-			?trace(ErrorType),
-			?trace(ErrorPattern),
 			{error, objectCreationError}
 	end.
 
@@ -262,7 +260,8 @@ addPropsToObject(Props, Obj, ObjClass, Classes) ->
 						true -> InstanceValue;
 						false ->
 							PropTypeString = atom_to_list(PropType#type.value),
-							SubClass = dict:fetch(InstanceType#type.value, Classes),
+							InstanceTypeString = atom_to_list(InstanceType#type.value),
+							SubClass = dict:fetch(InstanceTypeString, Classes),
 							SuperClass = dict:fetch(PropTypeString, Classes),
 							Inherits = ((InstanceType#type.type == typeName) and (PropType#type.type == typeName) and inherits(SubClass, SuperClass)),
 							if
