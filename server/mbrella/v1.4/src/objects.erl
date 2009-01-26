@@ -145,14 +145,7 @@ addProp(Name, PropName, TypeString) ->
 	gen_server:cast(?MODULE, {addProp, Name, PropName, TypeString}).
 
 create(ClassName, Props) ->
-	try gen_server:call(?MODULE, {create, ClassName, Props}) of
-		Object -> {ok, Object}
-	catch
-		ErrorType:ErrorPattern -> 
-			?trace(ErrorType),
-			?trace(ErrorPattern),
-			{error, objectCreationError}
-	end.
+	gen_server:call(?MODULE, {create, ClassName, Props}).
 
 add(Object, Property, Key) ->
 	Prop = Object#object.prop,

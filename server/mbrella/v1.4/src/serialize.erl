@@ -12,7 +12,9 @@
 % syntactic sugar babbbyyy
 -define (ob(Field), mblib:getVal(Ob, Field)).
 -define (this(Field), State#?MODULE.Field).
--define (TABFILE, "data/serialize.ets").
+
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+%-define (TABFILE, "data/serialize.ets").
 
 %% --------------------------------------------------------------------
 %% Include files
@@ -35,7 +37,6 @@
 %% External functions
 %% ====================================================================
 
-start() -> start_link(empty).
 start(FileName) -> start_link(FileName).
 start_link(FileName) ->
 	case gen_server:start_link({local, ?MODULE}, ?MODULE, [FileName], []) of
@@ -45,13 +46,14 @@ start_link(FileName) ->
 
 serializeEnv() ->
 	EnvDict = env:getAllAsDict(),
-	AddIfObj = fun(_, ObjOrCell) ->
-		case ObjOrCell of
+	AddIfObj = fun(_, ObjOrCellOrFunc) ->
+		case ObjOrCellOrFunc of
 			Obj when is_record(Obj, object) -> serializeObj(Obj, dict:new());
-			Cell when is_record(Cell, exprCell) -> noSideEffect
+			_ -> noSideEffect
 		end
 	end,
 	dict:map(AddIfObj, EnvDict),
+	gen_server:cast(?MODULE, write),
 	ok.
 
 serializeObj(Obj, InProcess) ->
@@ -59,7 +61,8 @@ serializeObj(Obj, InProcess) ->
 	NewInProcess = dict:store(ObjName, true, InProcess),
 	NewProp = dict:map(fun (_, Property) -> serializeProp(Property, NewInProcess) end, Obj#object.prop),
 	NewObj = Obj#object{prop = NewProp},
-	gen_server:cast(?MODULE, {add, ObjName, NewObj}).
+	gen_server:cast(?MODULE, {add, ObjName, NewObj}),
+	ObjName.
 	
 serializeCell(Cell, InProcess) ->
 	Name = Cell#exprCell.name,	
@@ -83,7 +86,10 @@ serializeProp(Property, InProcess) when is_record(Property, object) ->
 		_ -> PropName
 	end;
 serializeProp(Property, InProcess) ->
-	mblib:exprElementToJson(Property).
+	binary_to_list(mblib:exprElementToJson(Property)).
+	
+getStateList() ->
+	gen_server:call(?MODULE, getStateList).
 	
 die() ->
 	gen_server:cast(?MODULE, {terminate, killed}).
@@ -101,11 +107,11 @@ die() ->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([FileName]) ->
-	case ets:file2tab(FileName) of
+	State = case ets:file2tab(FileName) of
 		{ok, Table} ->
-			State = #serialize{ets = Table};
+			#serialize{ets = Table, file = FileName};
 		{error, _Reason} ->
-			State = #serialize{}
+			#serialize{file = FileName}
 	end,
     {ok, State}.
 
@@ -119,14 +125,14 @@ init([FileName]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({get, Expr}, From, State) ->
-	case ets:lookup(?this(ets), Expr) of
-		[{_, Reply}] ->
-			good;
-		[] -> 
-			Reply = key_does_not_exist
-	end,
-    {reply, Reply, State}.
+handle_call(getStateList, From, State) ->
+	% case ets:lookup(?this(ets), Expr) of
+	% 	[{_, Reply}] ->
+	% 		good;
+	% 	[] -> 
+	% 		Reply = key_does_not_exist
+	% end,
+    {reply, ets:tab2list(?this(ets)), State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -138,8 +144,8 @@ handle_call({get, Expr}, From, State) ->
 handle_cast({add, Name, Elem}, State) ->
 	ets:insert(?this(ets), {Name, Elem}),
     {noreply, State};
-handle_cast({remove, Expr}, State) ->
-	ets:delete(?this(ets), Expr),
+handle_cast(write, State) ->
+	ets:tab2file(?this(ets), ?this(file)),
     {noreply, State};
 handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
@@ -160,7 +166,7 @@ handle_info(Info, State) ->
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
 terminate(Reason, State) ->
-	ets:tab2file(?this(ets), ?TABFILE),
+	ets:tab2file(?this(ets), ?this(file)),
 	%ets:delete(?this(ets)),
     ok.
 

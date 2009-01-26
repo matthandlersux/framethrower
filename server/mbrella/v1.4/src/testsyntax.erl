@@ -56,12 +56,10 @@ parseStartCap(R, State) ->
 	SC = if
 		SCTypeFirstWord == "map" -> 
 			Result = cell:makeCellMapInput(), 
-			Cell = Result#exprCell{type=type:parse(Type)},
-			env:nameAndStoreCell(Cell);
+			Result#exprCell{type=type:parse(Type)};
 		true -> 
 			Result = cell:makeCell(),
-			Cell = Result#exprCell{type=type:parse(Type)},
-			env:nameAndStoreCell(Cell)
+			Result#exprCell{type=type:parse(Type)}
 	end,
 	NewStartCaps = dict:store(Name, SC, StartCaps),
 	State#testWorld{startCaps=NewStartCaps}.

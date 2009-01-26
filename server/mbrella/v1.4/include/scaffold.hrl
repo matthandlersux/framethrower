@@ -111,5 +111,6 @@
 }).
 
 -record (serialize, {
-	ets = ets:new(serializeTable, [])
+	ets = ets:new(serializeTable, []),
+	file
 }).

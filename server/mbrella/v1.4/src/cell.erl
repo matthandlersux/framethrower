@@ -43,12 +43,14 @@
 makeCell() -> 
 	ToKey = fun(X) -> X end,
 	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
-	#exprCell{pid=Pid}.
+	NewCell = #exprCell{pid=Pid},
+	env:nameAndStoreCell(NewCell).
 	
 makeCellMapInput() ->
 	ToKey = fun({Key,Val}) -> Key end,
 	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
-	#exprCell{pid=Pid}.
+	NewCell = #exprCell{pid=Pid},
+	env:nameAndStoreCell(NewCell).
 
 injectFunc(Cell, Fun) ->
 	gen_server:call(Cell#exprCell.pid, {injectFunc, Fun}).
