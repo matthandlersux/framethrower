@@ -67,7 +67,7 @@
 	name,
 	origType,
 	type,
-	prop=dict:new()
+	prop = dict:new()
 	}).
 	
 %% ====================================================
@@ -110,17 +110,6 @@
 	ets = ets:new(momoizeTable, [])
 }).
 
-% %% ====================================================
-% %% type records
-% %% ====================================================
-% 
-% -record (constraint, {
-% 	type, % equals, lambda
-% 	left,
-% 	right
-% }).
-% 
-% -record (type, {
-% 	type, % typeFun: X -> Y | typeVar: a | typeName: Set
-% 	value
-% }).
+-record (serialize, {
+	ets = ets:new(momoizeTable, [])
+}).

@@ -8,7 +8,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
-
+-define (this(Field), State#envState.Field).
 
 -record (envState, {
 	nameCounter,
@@ -81,40 +81,36 @@ init([]) ->
     {ok, #envState{nameCounter = 0, globalTable = dict:new(), globalTableByPid = dict:new(), baseEnv = createEnv()}}.
 
 handle_call({nameAndStoreCell, ExprCell}, From, State) ->
-	#envState{nameCounter = NameCounter, globalTable = GlobalTable, globalTableByPid = GlobalPidTable} = State,
-	NewNameCounter = NameCounter + 1,
+	NewNameCounter = ?this(nameCounter) + 1,
 	Name = "server." ++ integer_to_list(NewNameCounter),
 	NewExprCell = ExprCell#exprCell{name=Name},
-	NewGlobalTable = dict:store(Name, NewExprCell, GlobalTable),
+	NewGlobalTable = dict:store(Name, NewExprCell, ?this(globalTable)),
 	%hack for name lookups
 	Pid = ExprCell#exprCell.pid,
-	NewGlobalPidTable = dict:store(Pid, NewExprCell, GlobalPidTable),
-	NewState = State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable, globalTableByPid = NewGlobalPidTable},
-    {reply, NewExprCell, NewState};
+	NewGlobalPidTable = dict:store(Pid, NewExprCell, ?this(globalTableByPid)),
+    {reply, NewExprCell, State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable, globalTableByPid = NewGlobalPidTable}};
 handle_call({nameAndStoreObj, Obj}, From, State) ->
 	#envState{nameCounter = NameCounter, globalTable = GlobalTable} = State,
-	NewNameCounter = NameCounter + 1,
+	NewNameCounter = ?this(nameCounter) + 1,
 	Name = "server." ++ integer_to_list(NewNameCounter),
 	NewObj = Obj#object{name=Name},
-	NewGlobalTable = dict:store(Name, NewObj, GlobalTable),
-	NewState = State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable},
-    {reply, NewObj, NewState};
+	NewGlobalTable = dict:store(Name, NewObj, ?this(globalTable)),
+    {reply, NewObj, State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable}};
 handle_call({lookup, Name}, From, State) ->
-	#envState{globalTable = GlobalTable, baseEnv = BaseEnv} = State,
 	ExprCell = 
-		try dict:fetch(Name, GlobalTable)
+		try dict:fetch(Name, ?this(globalTable))
 		catch
 			_:_ -> 
-				try dict:fetch(Name, BaseEnv)
+				try dict:fetch(Name, ?this(baseEnv))
 				catch
 					_:_ -> notfound
 				end
 		end,
     {reply, ExprCell, State};
+%lookupPid is part of the hack mentioned above
 handle_call({lookupPid, Pid}, From, State) ->
-	#envState{globalTableByPid = GlobalTable, baseEnv = BaseEnv} = State,
 	ExprCell = 
-				try dict:fetch(Pid, GlobalTable)
+				try dict:fetch(Pid, ?this(globalTableByPid) )
 				catch
 					_:_ -> notfound
 				end,
@@ -130,20 +126,15 @@ handle_call(stop, From, State) ->
 handle_cast({addFun, Name, TypeString, Function}, State) -> 
 	#envState{globalTable = GlobalTable, globalTableByPid = GlobalPidTable} = State,
 	Type = type:parse(TypeString),
-	NewExprFun = #exprFun{name=Name, type=Type, function=Function},
-	NewGlobalTable = dict:store(Name, NewExprFun, GlobalTable),
-	NewState = State#envState{globalTable = NewGlobalTable},
-	{noreply, NewState};
+	NewExprFun = #exprFun{name = Name, type = Type, function = Function},
+	NewGlobalTable = dict:store(Name, NewExprFun, ?this(globalTable) ),
+	{noreply, State#envState{globalTable = NewGlobalTable}};
 handle_cast({addExpr, Name, Expr}, State) -> 
-	#envState{globalTable = GlobalTable} = State,
-	NewGlobalTable = dict:store(Name, Expr, GlobalTable),
-	NewState = State#envState{globalTable = NewGlobalTable},
-	{noreply, NewState};
+	NewGlobalTable = dict:store(Name, Expr, ?this(globalTable) ),
+	{noreply, State#envState{globalTable = NewGlobalTable} };
 handle_cast({store, Name, Obj}, State) ->
-	#envState{globalTable = GlobalTable} = State,
-	NewGlobalTable = dict:store(Name, Obj, GlobalTable),
-	NewState = State#envState{globalTable = NewGlobalTable},
-    {noreply, NewState}.
+	NewGlobalTable = dict:store(Name, Obj, ?this(globalTable) ),
+    {noreply, State#envState{globalTable = NewGlobalTable} }.
 
 
 handle_info(_, State) -> {noreply, State}.

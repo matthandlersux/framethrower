@@ -4,7 +4,7 @@
 %%%
 %%% Created : Fri Dec 19 13:24:05 EST 2008
 %%% -------------------------------------------------------------------
--module(memoize).
+-module(serialize).
 
 -behaviour(gen_server).
 
@@ -12,7 +12,7 @@
 % syntactic sugar babbbyyy
 -define (ob(Field), mblib:getVal(Ob, Field)).
 -define (this(Field), State#?MODULE.Field).
--define (TABFILE, "data/memoize.ets").
+-define (TABFILE, "data/serialize.ets").
 
 %% --------------------------------------------------------------------
 %% Include files
@@ -70,13 +70,12 @@ die() ->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
-	% case ets:file2tab(?TABFILE) of
-	% 	{ok, Table} ->
-	% 		State = #memoize{ets = Table};
-	% 	{error, _Reason} ->
-	% 		State = #memoize{}
-	% end,
-	State = #memoize{},
+	case ets:file2tab(?TABFILE) of
+		{ok, Table} ->
+			State = #serialize{ets = Table};
+		{error, _Reason} ->
+			State = #serialize{}
+	end,
     {ok, State}.
 
 %% --------------------------------------------------------------------
@@ -130,8 +129,8 @@ handle_info(Info, State) ->
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
 terminate(Reason, State) ->
-	%ets:tab2file(?this(ets), ?TABFILE),
-	ets:delete(?this(ets)),
+	ets:tab2file(?this(ets), ?TABFILE),
+	%ets:delete(?this(ets)),
     ok.
 
 %% --------------------------------------------------------------------
