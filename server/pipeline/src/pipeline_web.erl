@@ -101,9 +101,14 @@ loop(Req, DocRoot) ->
 							spit(Req, {struct, [{"sessionClosed", true}] });
 						_SessionPid ->
 							Actions = struct:get_value(<<"actions">>, Struct),
-							Returned = processActionList(Actions),
-							Success = lists:all(fun(X) -> X =/= error end, Returned),
-							spit(Req, {struct, [{"success", Success},{"returned", Returned}] } )
+							try processActionList(Actions) of
+								Returned ->
+									Success = lists:all(fun(X) -> X =/= error end, Returned),
+									spit(Req, {struct, [{"success", Success},{"returned", Returned}] } )
+							catch
+								ErrorType:Reason ->
+									spit(Req, {struct, [{"errorType", ErrorType}, {"reason", list_to_binary(io_lib:format("~p", [Reason]))}] })
+							end
 					end;
                 _ ->
                     Req:not_found()
@@ -148,14 +153,15 @@ processAction(<<"create">>, Action, Updates, Variables) ->
 	Type = binary_to_list( struct:get_value(<<"type">>, Action) ),
 	Variable = struct:get_value(<<"variable">>, Action),
 	Prop = struct:get_value(<<"prop">>, Action),
-	PropDict = propToDict(Prop, Variables),
-
 	% if Variable already exists (we are in a block and it has been declared outside the block), remove it for replacing
 	Variables1 = lists:keydelete(Variable, 1, Variables),
-	try objects:create(Type, PropDict) of
-		Object -> { Updates, [{ Variable, Object } | Variables1] }
-	catch
-		_:_ -> { Updates, [{Variable, error} | Variables1]}
+	PropDict = propToDict(Prop, Variables),
+	case objects:create(Type, PropDict) of
+		{error, Reason} ->
+			throw({objectscreate_returned_error, Reason, PropDict}),
+			{ Updates, [{Variable, error} | Variables1]};
+		Object ->
+			{ Updates, [{ Variable, Object } | Variables1] }
 	end;
 % action:return is how bound variables get returned to the client
 processAction(<<"return">>, Action, Updates, Variables) ->
@@ -164,6 +170,7 @@ processAction(<<"return">>, Action, Updates, Variables) ->
 		{value, {_, Binding} } ->
 			{ [Binding|Updates], Variables};
 		_ -> 
+			throw({return_variable_unbound, Variable}),
 			{ [error|Updates], Variables}
 	end;
 % action:add|remove doesn't affect the state of the response to client unless there is an error
@@ -183,14 +190,16 @@ processAction(ActionType, Action, Updates, Variables) when ActionType =:= <<"add
 					case objects:add(Object, Property, Data) of
 						ok ->
 							{ Updates, Variables };
-						{error, _Reason} ->
+						{error, Reason} ->
+							throw({objectsadd_returned_error, Reason}),
 							{ [error | Updates], Variables }
 					end;
 				<<"remove">> ->
 					case objects:remove(Object, Property, Data) of
 						ok ->
 							{ Updates, Variables };
-						{error, _Reason} ->
+						{error, Reason} ->
+							throw({objectsadd_returned_error, Reason}),
 							{ [error | Updates], Variables }
 					end
 			end
@@ -220,18 +229,24 @@ propToDict({struct, [{BinaryKey, VarOrExprElement}|Props]}, Conversions, Dict) -
 %% 
 
 bindVarOrFormatExprElement(VariableOrCellName, Conversions) when is_binary(VariableOrCellName) ->
+	% ?trace(binary_to_list(VariableOrCellName)),
 	case binary_to_list(VariableOrCellName) of
 		"server." ++ _ = ObjectName ->
 			env:lookup(ObjectName);
 		"shared." ++ _ = ObjectName ->
 			env:lookup(ObjectName);
+		"\"" ++ _ = String ->
+			bindVarOrFormatExprElement(String, null);
 		_ ->
 			case lists:keysearch(VariableOrCellName, 1, Conversions) of
 				{value, {_, Object} } -> Object;
-				_ -> error % this will be when we start sending functions
+				_ -> 
+					throw({variable_not_found, VariableOrCellName}),
+					error % this will be when we start sending functions
 			end
 	end;
-bindVarOrFormatExprElement(NumStringBool, _) -> NumStringBool.
+bindVarOrFormatExprElement(NumBool, _) when is_number(NumBool); is_boolean(NumBool) -> NumBool;
+bindVarOrFormatExprElement([_|String], _) when is_list(String) -> lists:reverse( tl( lists:reverse(String) ) ).
 
 %% 
 %% binaryScopeVarToCellName:: Binary String -> List { Binary String, String } -> String
