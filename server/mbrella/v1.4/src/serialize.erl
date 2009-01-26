@@ -172,38 +172,42 @@ handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
 
 
+tryMakeObject(A, B, C) -> A.
+
+populateCells(A, B) -> B.
+
 unserializeProp(ObjOrCell, Dependencies) ->
 	case ObjOrCell of
 		Obj when is_record(Obj, object) ->
 			unserializeObj(Obj, Dependencies);
-		Cell when is_record(Cell, cell) ->
-			unserializeCell(Cell, Dependencies);
+		Cell when is_record(Cell, exprCell) ->
+			unserializeCell(Cell, Dependencies)
 	end.
 
 
-makeCells(Cell, CellDict) when is_record(Cell, cell) ->
+makeCells(Cell, CellDict) when is_record(Cell, exprCell) ->
 	NewCell = case type:isMap(Cell#exprCell.type) of
 		true -> cell:makeCellMapInput();
-		false -> cell:makeCell();
+		false -> cell:makeCell()
 	end,
-	dict:store(Cell#exprCell.name, NewCell, CellDict);
+	dict:store(Cell#exprCell.name, NewCell, CellDict).
+
 unserializeCells(_, CellDict) -> CellDict.
 
 unserializeObjs(Obj, Dependencies) when is_record(Obj, object) ->
-	
-	;
+	Dependencies;
 unserializeObjs(Obj, Dependencies) ->
-	Dependencies
+	Dependencies.
 
 unserializeObj(Obj, Dependencies) ->
 	Prop = Obj#object.prop,
-	NewProp = dict:map(fun(_, Property) -> unserializeProp(Property) end, Prop),
+	NewProp = dict:map(fun(_, Property) -> Property end, Prop),
 	NewObj = Obj#object{prop = NewProp},
 	env:store(Obj#object.name, NewObj),
 	NewObj.
 	
 unserializeCell(Cell, UpdateFuncs) ->
-	.
+	Cell.
 
 
 %% --------------------------------------------------------------------
