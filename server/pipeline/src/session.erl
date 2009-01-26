@@ -99,10 +99,6 @@ session([{LastMessageId, _}|_] = MsgQueue) ->
 				LastMessageId =:= LastMessageId2 ->
 					receive
 						{data, {QueryId, Action, Data}} ->
-							% case Data of
-							% 	{Key, Value} -> Data1 = [{"key", <<Key>>},{"value",<<Value>>}];
-							% 	_ -> Data1 = [{"key", Data}]
-							% end,
 							Struct = [ wellFormedUpdate(Data, QueryId, Action) ],
 							stream(From, Struct, LastMessageId + 1),
 							session([{LastMessageId + 1, Struct}])
@@ -115,11 +111,6 @@ session([{LastMessageId, _}|_] = MsgQueue) ->
 					session(MsgQueue)
 			end;
 		{data, {QueryId, Action, Data}} ->
-			% case Data of
-			% 	{Key, Value} -> Data1 = [{"key", <<Key>>},{"value", <<Value>>}];
-			% 	_ -> Data1 = [{"key", Data}]
-			% end,
-			% Struct = {struct, [{"queryId",QueryId},{"action", Action}|Data1]},
 			Struct = wellFormedUpdate(Data, QueryId, Action),
 			session([{LastMessageId + 1, Struct}|MsgQueue])
 	after
@@ -131,10 +122,17 @@ session([{LastMessageId, _}|_] = MsgQueue) ->
 %% utilities
 %% ====================================================
 
+
+%% 
+%% wellFormedUpdate takes a message from a cell and converts it to the proper form for mochijson2 to encode
+%%		and send it to the client
+%% wellFormedUpdate:: {ExprElement, ExprElement} | ExprElement -> Number -> String -> Struct
+%% 
+
 wellFormedUpdate(Data, QueryId, Action) ->
 		case Data of
-			{Key, Value} -> Data1 = [{"key", mblib:to_atom(Key)},{"value", mblib:to_atom(Value)}];
-			_ -> Data1 = [{"key", mblib:to_atom(Data)}]
+			{Key, Value} -> Data1 = [{"key", mblib:exprElementToJson(Key)},{"value", mblib:exprElementToJson(Value)}];
+			_ -> Data1 = [{"key", mblib:exprElementToJson(Data)}]
 		end,
 		{struct, [{"queryId",QueryId},{"action", Action}|Data1]}.
 

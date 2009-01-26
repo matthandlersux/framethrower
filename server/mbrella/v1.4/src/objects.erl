@@ -216,10 +216,9 @@ inherits(SubClass, SuperClass) ->
 	end.
 
 
-makeMemoString(MemoValues) ->
+ÅmakeMemoString(MemoValues) ->
 	lists:foldl(fun(Value, Acc) ->
-		%% Why does to_atom return binary and not atom?
-		binary_to_list(mblib:to_atom(Value)) ++ "," ++ Acc
+		binary_to_list(mblib:exprElementToJson(Value)) ++ "," ++ Acc
 	end, "", MemoValues).
 
 

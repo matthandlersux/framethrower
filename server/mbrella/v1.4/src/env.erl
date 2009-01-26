@@ -98,7 +98,8 @@ handle_call({lookup, Name}, From, State) ->
 			_:_ -> 
 				try dict:fetch(Name, ?this(baseEnv))
 				catch
-					_:_ -> notfound
+					_:_ -> 
+						notfound
 				end
 		end,
     {reply, ExprCell, State};

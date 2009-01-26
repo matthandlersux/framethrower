@@ -159,9 +159,15 @@ curry(Func, Arity, Args) -> fun(Arg) -> curry(Func, Arity-1, Args ++ [Arg])	end.
 %% 'stringify' function
 %% ====================================================
 
-to_atom(X) when is_integer(X) -> X1 = integer_to_list(X), list_to_binary(X1);
-to_atom(X) when is_boolean(X) -> list_to_binary(atom_to_list(X));
-to_atom(X) when is_list(X) ->
+%% 
+%% exprElementToJson:: ExprElement -> JSON
+%%		ExprElement:: Number | Bool | String | ExprCell | Object (later will be adding any evaluated Expr)
+%% 
+
+
+exprElementToJson(X) when is_integer(X) -> X1 = integer_to_list(X), list_to_binary(X1);
+exprElementToJson(X) when is_boolean(X) -> list_to_binary(atom_to_list(X));
+exprElementToJson(X) when is_list(X) ->
 	Fun = fun(XX) ->         
 		if XX < 0 -> false;  
 			XX > 255 -> false;
@@ -172,11 +178,11 @@ to_atom(X) when is_list(X) ->
 		true -> list_to_binary([$"] ++ X ++ [$"]);
 		false -> X
 	end;
-to_atom(X) when is_pid(X) ->
+exprElementToJson(X) when is_pid(X) ->
 	#exprCell{name = Name} = env:lookup(X),
 	list_to_binary(Name);
-to_atom(X) when is_record(X, exprCell) ->
+exprElementToJson(X) when is_record(X, exprCell) ->
 	list_to_binary(X#exprCell.name);
-to_atom(X) when is_record(X, object) ->
+exprElementToJson(X) when is_record(X, object) ->
 	list_to_binary(X#object.name);	
-to_atom(X) -> X.
+exprElementToJson(X) -> X.
