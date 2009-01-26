@@ -32,7 +32,8 @@ loop(Req, DocRoot) ->
 					SessionId = session:new(),
 					spit(Req, "sessionId", SessionId);
 				"test" ->
-					spit(Req, "test", list_to_binary(io_lib:format("~p", [catch erlang:error(test) ] )));
+					% spit(Req, "test", list_to_binary(io_lib:format("~p", [catch erlang:error(test) ] )));
+					spit(Req, {struct, [{<<"test">>, value}]});
                 _ ->
                     Req:serve_file(Path, DocRoot)
             end;
@@ -120,7 +121,7 @@ loop(Req, DocRoot) ->
 
 processActionList(Actions) ->
 	Results = processActionList(Actions, [], []),
-	lists:map(fun(List) when is_list(List) -> list_to_binary(List); (List) -> List end, Results).
+	lists:map(fun(error) -> error; (ExprElement) -> mblib:exprElementToJson(ExprElement) end, Results).
 	
 processActionList(Actions, Updates, Variables) ->
 	ProcessActions = fun(Action, {UpdatesAccumulator, VariablesAccumulator}) ->
@@ -141,18 +142,22 @@ processAction(<<"block">>, Action, Updates, OldVariables) ->
 	Actions = struct:get_value(<<"actions">>, Action),
 	Returned = processActionList(Actions, [], OldVariables),
 	NewVariables = lists:zip(BlockVariables, Returned),
-	{ Updates, NewVariables ++ OldVariables};	
+	{ Updates, NewVariables ++ OldVariables};
+% action:create is how variables get bound to objects
 processAction(<<"create">>, Action, Updates, Variables) ->
 	Type = binary_to_list( struct:get_value(<<"type">>, Action) ),
 	Variable = struct:get_value(<<"variable">>, Action),
 	Prop = struct:get_value(<<"prop">>, Action),
 	PropDict = propToDict(Prop, Variables),
+	% if Variable already exists (we are in a block and it has been declared outside the block), remove it for replacing
+	Variables1 = lists:keydelete(Variable, 1, Variables),
 	case objects:create(Type, PropDict) of
 		{ok, Object} ->
-			{ Updates, [{ Variable, mblib:to_atom(Object) } | Variables] };
+			{ Updates, [{ Variable, Object } | Variables1] };
 		{error, _Reason} ->
-			{ Updates, [{Variable, error} | Variables]}
+			{ Updates, [{Variable, error} | Variables1]}
 	end;
+% action:return is how bound variables get returned to the client
 processAction(<<"return">>, Action, Updates, Variables) ->
 	Variable = struct:get_value(<<"variable">>, Action),
 	case lists:keysearch(Variable, 1, Variables) of
@@ -161,19 +166,18 @@ processAction(<<"return">>, Action, Updates, Variables) ->
 		_ -> 
 			{ [error|Updates], Variables}
 	end;
+% action:add|remove doesn't affect the state of the response to client unless there is an error
 processAction(ActionType, Action, Updates, Variables) when ActionType =:= <<"add">> orelse ActionType =:= <<"remove">> ->
 	Variable = struct:get_value(<<"object">>, Action),
-	ObjectName = binaryScopeVarToCellName( Variable, Variables ),
-	Object = env:lookup(ObjectName),
+	Object = bindVarOrFormatExprElement( Variable, Variables ),
 	if
-		ObjectName =:= error ->
+		Object =:= error; Object =:= notfound ->
 			{ [error | Updates], Variables };
 		true ->
 			Property = binary_to_list( struct:get_value(<<"property">>, Action) ),
-			KeyName = binaryScopeVarToCellName( struct:get_value(<<"key">>, Action), Variables),
-			Key = env:lookup(KeyName),
+			Key = bindVarOrFormatExprElement( struct:get_value(<<"key">>, Action), Variables),
 			ValueName = struct:get_value(<<"value">>, Action),
-			if ValueName =:= undefined -> Data = Key; true -> Data = {Key, env:lookup( ValueName )} end,
+			if ValueName =:= undefined -> Data = Key; true -> Data = {Key, bindVarOrFormatExprElement( ValueName, Variables ) } end,
 			case ActionType of 
 				<<"add">> ->
 					case objects:add(Object, Property, Data) of
@@ -201,29 +205,53 @@ propToDict(Props, Conversions) ->
 	propToDict(Props, Conversions, dict:new()).
 
 propToDict({struct, []}, _, Dict) -> Dict;
-propToDict({struct, [{Key, Value}|Props]}, Conversions, Dict) ->
-	CellName = binaryScopeVarToCellName( Value, Conversions ),
-	propToDict({struct, Props}, Conversions, dict:store( binary_to_list(Key), env:lookup(binary_to_list(CellName)), Dict)).
+propToDict({struct, [{BinaryKey, VarOrExprElement}|Props]}, Conversions, Dict) ->
+	Key = binary_to_list(BinaryKey),
+	Value = bindVarOrFormatExprElement(VarOrExprElement, Conversions),
+	propToDict({struct, Props}, Conversions, dict:store(Key, Value, Dict)).
+
+% propToDict({struct, []}, _, Dict) -> Dict;
+% propToDict({struct, [{Key, Value}|Props]}, Conversions, Dict) ->
+% 	CellName = binaryScopeVarToCellName( Value, Conversions ),
+% 	propToDict({struct, Props}, Conversions, dict:store( binary_to_list(Key), env:lookup(binary_to_list(CellName)), Dict)).
+
+%% 
+%% bindVarOrFormatExprElement:: Variable | ExprEelement -> List {Variable, ExprElement} -> Number | String | Bool | Object
+%% 
+
+bindVarOrFormatExprElement(VariableOrCellName, Conversions) when is_binary(VariableOrCellName) ->
+	case binary_to_list(VariableOrCellName) of
+		"server." ++ _ = ObjectName ->
+			env:lookup(ObjectName);
+		"shared." ++ _ = ObjectName ->
+			env:lookup(ObjectName);
+		_ ->
+			case lists:keysearch(VariableOrCellName, 1, Conversions) of
+				{value, {_, Object} } -> Object;
+				_ -> error % this will be when we start sending functions
+			end
+	end;
+bindVarOrFormatExprElement(NumStringBool, _) -> NumStringBool.
 
 %% 
 %% binaryScopeVarToCellName:: Binary String -> List { Binary String, String } -> String
 %% 
-
-binaryScopeVarToCellName( BinaryVariable, Variables) when is_binary(BinaryVariable) ->
-	case binary_to_list( BinaryVariable ) of
-		"client." ++ _ ->
-			case lists:keysearch(BinaryVariable, 1, Variables) of
-				{value, {_, Name} } -> Name;
-				_ -> error
-			end;
- 		"block." ++ _ ->
-			case lists:keysearch(BinaryVariable, 1, Variables) of
-				{value, {_, Name} } -> Name;
-				_ -> error
-			end;
-		ObjectName -> 
-			ObjectName
-	end.
+% 
+% binaryScopeVarToCellName( BinaryVariable, Variables) when is_binary(BinaryVariable) ->
+% 	case binary_to_list( BinaryVariable ) of
+% 		"client." ++ _ ->
+% 			case lists:keysearch(BinaryVariable, 1, Variables) of
+% 				{value, {_, Name} } -> Name;
+% 				_ -> error
+% 			end;
+%  		"block." ++ _ ->
+% 			case lists:keysearch(BinaryVariable, 1, Variables) of
+% 				{value, {_, Name} } -> Name;
+% 				_ -> error
+% 			end;
+% 		ObjectName -> 
+% 			ObjectName
+% 	end.
 
 %% 
 %% spit has the side effect that the Json result is sent to the Request and then forwarded to the client that made the request
