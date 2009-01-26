@@ -13,7 +13,6 @@
 -record (envState, {
 	nameCounter,
 	globalTable,
-	globalTableByPid,
 	baseEnv
 }).
 
@@ -44,9 +43,9 @@ store(Name, Obj) ->
 getState() ->
 	gen_server:call(?MODULE, getState).
 
-	
-lookup(Pid) when is_pid(Pid) ->
-	gen_server:call(?MODULE, {lookupPid, Pid});
+getAllAsDict() ->
+	gen_server:call(?MODULE, getAllAsDict).
+
 lookup(Name) ->
 	gen_server:call(?MODULE, {lookup, Name}).
 
@@ -78,19 +77,15 @@ createEnv() ->
 init([]) ->
 	process_flag(trap_exit, true),
 	%may want to change globalTable from dict to ETS table
-    {ok, #envState{nameCounter = 0, globalTable = dict:new(), globalTableByPid = dict:new(), baseEnv = createEnv()}}.
+    {ok, #envState{nameCounter = 0, globalTable = dict:new(), baseEnv = createEnv()}}.
 
 handle_call({nameAndStoreCell, ExprCell}, From, State) ->
 	NewNameCounter = ?this(nameCounter) + 1,
 	Name = "server." ++ integer_to_list(NewNameCounter),
 	NewExprCell = ExprCell#exprCell{name=Name},
 	NewGlobalTable = dict:store(Name, NewExprCell, ?this(globalTable)),
-	%hack for name lookups
-	Pid = ExprCell#exprCell.pid,
-	NewGlobalPidTable = dict:store(Pid, NewExprCell, ?this(globalTableByPid)),
-    {reply, NewExprCell, State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable, globalTableByPid = NewGlobalPidTable}};
+    {reply, NewExprCell, State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable}};
 handle_call({nameAndStoreObj, Obj}, From, State) ->
-	#envState{nameCounter = NameCounter, globalTable = GlobalTable} = State,
 	NewNameCounter = ?this(nameCounter) + 1,
 	Name = "server." ++ integer_to_list(NewNameCounter),
 	NewObj = Obj#object{name=Name},
@@ -107,14 +102,8 @@ handle_call({lookup, Name}, From, State) ->
 				end
 		end,
     {reply, ExprCell, State};
-%lookupPid is part of the hack mentioned above
-handle_call({lookupPid, Pid}, From, State) ->
-	ExprCell = 
-				try dict:fetch(Pid, ?this(globalTableByPid) )
-				catch
-					_:_ -> notfound
-				end,
-    {reply, ExprCell, State};
+handle_call(getAllAsDict, From, State) ->
+    {reply, ?this(globalTable), State};
 handle_call(getState, From, State) ->
     {reply, State, State};
 handle_call(stop, From, State) ->
@@ -124,7 +113,7 @@ handle_call(stop, From, State) ->
 
 
 handle_cast({addFun, Name, TypeString, Function}, State) -> 
-	#envState{globalTable = GlobalTable, globalTableByPid = GlobalPidTable} = State,
+	#envState{globalTable = GlobalTable} = State,
 	Type = type:parse(TypeString),
 	NewExprFun = #exprFun{name = Name, type = Type, function = Function},
 	NewGlobalTable = dict:store(Name, NewExprFun, ?this(globalTable) ),

@@ -62,6 +62,9 @@ addOnRemove(Cell, Fun) ->
 setKeyRange(Cell, Start, End) ->
 	gen_server:cast(Cell#exprCell.pid, {setKeyRange, Start, End}).
 
+getStateArray(Cell) ->
+	gen_server:call(Cell#exprCell.pid, getStateArray).
+
 %% 
 %% makeFuture:: Expr -> Cell
 %% 
@@ -141,7 +144,15 @@ handle_call({injectFunc, Fun}, From, State) ->
 handle_call({injectIntercept, Fun, IntState}, From, State) ->
 	Intercept = intercept:makeIntercept(Fun, IntState),
 	NewState = State#cell{intercept=Intercept},
-    {reply, Intercept, NewState}.
+    {reply, Intercept, NewState};
+handle_call(getStateArray, From, State) ->
+	Dots = State#cell.dots,
+	SortedDict = rangedict:toSortedDict(Dots),
+	ResultArray = sorteddict:fold(fun(Key, Dot, Acc) -> 
+		{dot, _, Val, _} = Dot,
+		[Val|Acc]
+	end, [], SortedDict),
+	{reply, ResultArray, State}.
 
 
 %% --------------------------------------------------------------------
@@ -194,11 +205,8 @@ handle_cast({setKeyRange, Start, End}, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_info({data, Data}, State) ->
-	handle_cast({data, Data}, State),
-    {noreply, State};
-handle_info({get, state}, State) ->
-	{reply, State, State}.
+handle_info(_, State) ->
+    {noreply, State}.
 
 %% --------------------------------------------------------------------
 %% Function: terminate/2

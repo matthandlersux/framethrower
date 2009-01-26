@@ -1,5 +1,5 @@
 <tests>
-	<test name='sortedFoldTest1'>
+	<!-- <test name='sortedFoldTest1'>
 		<startcap name='sc' type='set number' />
 		<messages>
 			<set scname = 'sc'>
@@ -51,7 +51,7 @@
 			</set>
 		</expectedmessages>
 		
-	</test>
+	</test> -->
 	
 	<test name='rangeByKeyTest1'>
 		<startcap name='startCell' type='unit number' />
@@ -817,7 +817,7 @@
 
 	</test>
 
-	<test name='anyTest1'>
+	<!-- <test name='anyTest1'>
 		<startcap name='sc' type='Set Bool' />
 
 		<endcap name = 'ec' expression = 'any (compose returnUnit (equal false)) sc' />
@@ -849,7 +849,7 @@
 			</set>
 		</expectedmessages>
 
-	</test>
+	</test> -->
 	
 	<test name='reactiveNotTest1'>
 		<startcap name = 'sc' type = 'unit null' />
@@ -901,5 +901,124 @@
 		</expectedmessages>
 
 	</test>
+	<test name='reactiveNotTest1'>
 
+		<endcap name = 'ec' expression = 'reactiveNot (returnUnit null)' />
+		<endcap name = 'ec2' expression = 'reactiveNot (reactiveNot (returnUnit null))' />
+
+		<expectedmessages>
+			<none ecname = 'ec' />
+			<set ecname = 'ec2' >
+				<null />
+			</set>
+		</expectedmessages>
+
+	</test>
+
+	<test name='reactiveAndTest1'>
+
+		<startcap name = 'sc' type = 'unit null' />
+
+		<endcap name = 'ec' expression = 'reactiveAnd sc (returnUnit null)' />
+
+		<expectedmessages>
+			<none ecname = 'ec' />
+		</expectedmessages>
+
+		<messages>
+			<set scname = 'sc'>
+				<null />
+			</set>
+		</messages>
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<null />
+			</set>
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'sc'>
+				<null />
+			</remove>
+		</messages>
+		
+		<expectedmessages>
+			<remove ecname = 'ec' >
+				<null />
+			</remove>
+		</expectedmessages>
+	</test>
+
+	<test name='reactiveOrTest1'>
+
+		<startcap name = 'sc' type = 'unit null' />
+		<startcap name = 'sc2' type = 'unit null' />
+
+		<endcap name = 'ec' expression = 'reactiveOr sc sc2' />
+
+		<expectedmessages>
+			<none ecname = 'ec' />
+		</expectedmessages>
+
+		<messages>
+			<set scname = 'sc'>
+				<null />
+			</set>
+		</messages>
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<null />
+			</set>
+		</expectedmessages>
+		
+		<messages>
+			<set scname = 'sc2' >
+				<null />
+			</set>
+			<remove scname = 'sc'>
+				<null />
+			</remove>
+		</messages>
+		
+		<expectedmessages>
+			<none ecname = 'ec' />
+		</expectedmessages>
+	</test>
+
+	<test name='gateTest1'>
+
+		<startcap name = 'sc' type = 'unit null' />
+
+		<endcap name = 'ec' expression = 'gate sc 7' />
+
+		<expectedmessages>
+			<none ecname = 'ec' />
+		</expectedmessages>
+
+		<messages>
+			<set scname = 'sc'>
+				<null />
+			</set>
+		</messages>
+
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value='7' />
+			</set>
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'sc'>
+				<null />
+			</remove>
+		</messages>
+		
+		<expectedmessages>
+			<remove ecname = 'ec'>
+				<number value='7'/>
+			</remove>
+		</expectedmessages>
+	</test>
 </tests>

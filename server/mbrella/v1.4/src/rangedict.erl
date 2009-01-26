@@ -69,7 +69,8 @@ clearRange(OldRange, OnAdd, OnRemove) ->
 	updateRange(NewRange, OldRange, OnAdd, OnRemove),
 	NewRange.
 	
-
+toSortedDict(Range) ->
+	Range#range.dict.
 
 %% pass through the needed sorteddict functions
 

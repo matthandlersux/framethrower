@@ -22,7 +22,7 @@
 
 %% --------------------------------------------------------------------
 %% External exports
--export([add/2, get/1, start/0]).
+-export([start/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -35,24 +35,55 @@
 %% External functions
 %% ====================================================================
 
-start() -> start_link().
-start_link() ->
-	case gen_server:start_link({local, ?MODULE}, ?MODULE, [], []) of
+start() -> start_link(empty).
+start(FileName) -> start_link(FileName).
+start_link(FileName) ->
+	case gen_server:start_link({local, ?MODULE}, ?MODULE, [FileName], []) of
 		{ok, Pid} -> Pid;
 		Else -> Else
 	end.
-	
-add( BottomExpr, Cell ) -> 
-	gen_server:cast(?MODULE, {add, BottomExpr, Cell}),
-	fun() -> erlang:apply(?MODULE, remove, [BottomExpr] ) end.
 
-remove( BottomExpr ) -> 
-	gen_server:cast(?MODULE, {remove, BottomExpr} ).
+serializeEnv() ->
+	EnvDict = env:getAllAsDict(),
+	AddIfObj = fun(_, ObjOrCell) ->
+		case ObjOrCell of
+			Obj when is_record(Obj, object) -> serializeObj(Obj, dict:new());
+			Cell when is_record(Cell, exprCell) -> noSideEffect
+		end
+	end,
+	dict:map(AddIfObj, EnvDict),
+	ok.
+
+serializeObj(Obj, InProcess) ->
+	ObjName = Obj#object.name,
+	NewInProcess = dict:store(ObjName, true, InProcess),
+	NewProp = dict:map(fun (_, Property) -> serializeProp(Property, NewInProcess) end, Obj#object.prop),
+	NewObj = Obj#object{prop = NewProp},
+	gen_server:cast(?MODULE, {add, ObjName, NewObj}).
 	
-% ets:select can be used to get an expression with variable parameters... like
-% 	a {lambda, apply, etc..} nesting with some variable parameters
-get( BottomExpr ) -> 
-	gen_server:call(?MODULE, {get, BottomExpr}).
+serializeCell(Cell, InProcess) ->
+	Name = Cell#exprCell.name,	
+	NewInProcess = dict:store(Name, true, InProcess),
+	StateArray = cell:getStateArray(Cell),
+	NewStateArray = lists:map(fun(Prop) -> serializeProp(Prop, NewInProcess) end, StateArray),
+	NewCell = Cell#exprCell{pid=NewStateArray},
+	gen_server:cast(?MODULE, {add, Name, NewCell}),
+	Name.
+
+serializeProp(Property, InProcess) when is_record(Property, exprCell) ->
+	PropName = Property#exprCell.name,
+	case dict:find(PropName, InProcess) of
+		error -> serializeCell(Property, InProcess);
+		_ -> PropName
+	end;
+serializeProp(Property, InProcess) when is_record(Property, object) ->
+	PropName = Property#object.name,
+	case dict:find(PropName, InProcess) of
+		error -> serializeObj(Property, InProcess);
+		_ -> PropName
+	end;
+serializeProp(Property, InProcess) ->
+	mblib:exprElementToJson(Property).
 	
 die() ->
 	gen_server:cast(?MODULE, {terminate, killed}).
@@ -69,8 +100,8 @@ die() ->
 %%          ignore               |
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
-init([]) ->
-	case ets:file2tab(?TABFILE) of
+init([FileName]) ->
+	case ets:file2tab(FileName) of
 		{ok, Table} ->
 			State = #serialize{ets = Table};
 		{error, _Reason} ->
@@ -104,8 +135,8 @@ handle_call({get, Expr}, From, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_cast({add, Expr, Cell}, State) ->
-	ets:insert(?this(ets), {Expr, Cell}),
+handle_cast({add, Name, Elem}, State) ->
+	ets:insert(?this(ets), {Name, Elem}),
     {noreply, State};
 handle_cast({remove, Expr}, State) ->
 	ets:delete(?this(ets), Expr),

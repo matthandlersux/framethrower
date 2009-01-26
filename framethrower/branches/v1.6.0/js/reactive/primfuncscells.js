@@ -336,7 +336,9 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
-		
+		// ============================================================================
+		// Null Type Functions
+		// ============================================================================
 		reactiveNot: {
 			type: "Unit Null -> Unit Null",
 			func: function (cell) {
@@ -466,7 +468,7 @@ var primFuncs = function () {
 					if (bool1 && !isSet) {
 						outputCell.addLine(passer);
 						isSet = true;
-					} else if (!bool && isSet) {
+					} else if (!bool1 && isSet) {
 						outputCell.removeLine(passer);
 						isSet = false;
 					}
@@ -487,36 +489,36 @@ var primFuncs = function () {
 			}
 		},
 				
-	 	any : {
-			type : "(a -> Unit Bool) -> Set a -> Unit Bool",
-			func : function (f, cell) {
-				var outputCell = makeCell();
-				var count = 0;
-				outputCell.addLine(false);
-
-				var removeFunc = cell.injectFunc(function (val) {
-					return applyAndInject(f, val, function (innerVal) {
-						if (innerVal) {
-							if (count == 0) {
-								outputCell.removeLine(false);
-								outputCell.addLine(true);
-							}
-							count++;
-							return function () {
-								count--;
-								if (count == 0) {
-									outputCell.removeLine(true);
-									outputCell.addLine(false);
-								}
-							};
-						}
-					});
-				});				
-				outputCell.addOnRemove(removeFunc);
-				
-				return outputCell;
-			}
-		},
+		// 	 	any : {
+		// 	type : "(a -> Unit Bool) -> Set a -> Unit Bool",
+		// 	func : function (f, cell) {
+		// 		var outputCell = makeCell();
+		// 		var count = 0;
+		// 		outputCell.addLine(false);
+		// 
+		// 		var removeFunc = cell.injectFunc(function (val) {
+		// 			return applyAndInject(f, val, function (innerVal) {
+		// 				if (innerVal) {
+		// 					if (count == 0) {
+		// 						outputCell.removeLine(false);
+		// 						outputCell.addLine(true);
+		// 					}
+		// 					count++;
+		// 					return function () {
+		// 						count--;
+		// 						if (count == 0) {
+		// 							outputCell.removeLine(true);
+		// 							outputCell.addLine(false);
+		// 						}
+		// 					};
+		// 				}
+		// 			});
+		// 		});				
+		// 		outputCell.addOnRemove(removeFunc);
+		// 		
+		// 		return outputCell;
+		// 	}
+		// },
 		fold : {
 			//type : "(a -> b -> b) -> (b -> a -> a) -> b -> Set a -> Unit b",
 			type : "(a -> b -> b) -> (a -> b -> b) -> b -> Set a -> Unit b",
@@ -714,76 +716,77 @@ var primFuncs = function () {
 				var outputCell = makeCellAssocInput();
 				return rangeHelper(outputCell, outputCell.setPosRange, startCell, endCell, cell);
 			}
-		},
-		sortedFold : {
-			type : "Bool -> (a -> b -> b) -> b -> Set a -> Unit b",
-			func : function (ascending, f, init, cell) {
-				var outputCell = makeCell();
-				var cache = [];
-				cell.makeSorted();
-				var lastRemoveFunc = outputCell.addLine(init);
-
-				var removeFunc = cell.injectFunc(function (val) {					
-					var index = cell.getIndex(val);
-					if (index < cache.length) {
-						cache[index].removeFunc();
-					} else {
-						lastRemoveFunc();
-					}
-					var newCell = makeCell();
-					var cellRemoveFunc;
-					
-					if (index > 0) {
-						cellRemoveFunc = cache[index-1].cell.injectFunc(function (innerVal) {
-							return newCell.addLine(applyFunc(applyFunc(f, val), innerVal));
-						});
-					} else {
-						cellRemoveFunc = newCell.addLine(applyFunc(applyFunc(f, val), init));
-					}
-					cache.splice(index, 0, {cell:newCell, val:val, removeFunc:cellRemoveFunc});
-					if (index < cache.length - 1) {
-						cache[index+1].removeFunc = cache[index].cell.injectFunc(function (innerVal) {
-							return cache[index+1].cell.addLine(applyFunc(applyFunc(f, cache[index+1].val), innerVal));
-						});
-					} else {
-						lastRemoveFunc = cache[index].cell.injectFunc(function (innerVal) {
-							return outputCell.addLine(innerVal);
-						});
-					}
-
-					return function () {
-						var remIndex = cell.getIndex(val);
-						cache[remIndex].removeFunc();
-						if(remIndex < cache.length -1) {
-							cache[remIndex+1].removeFunc();
-						} else {
-							lastRemoveFunc();
-						}
-						cache.splice(remIndex, 1);
-						if (remIndex > 0) {
-							if (remIndex < cache.length) {
-								cache[remIndex].removeFunc = cache[remIndex-1].cell.injectFunc(function (innerVal) {
-									return cache[remIndex].cell.addLine(applyFunc(applyFunc(f, cache[remIndex].val), innerVal));
-								});
-							} else {
-								lastRemoveFunc = cache[remIndex-1].cell.injectFunc(function (innerVal) {
-									return outputCell.addLine(innerVal);
-								});
-							}
-						} else {
-							if (remIndex < cache.length) {
-								cache[remIndex].removeFunc = cache[remIndex].cell.addLine(applyFunc(cache[remIndex].val, init));
-							} else {
-								lastRemoveFunc = outputCell.addLine(init);
-							}
-						}
-					};
-				});
-				outputCell.addOnRemove(removeFunc);
-
-				return outputCell;
-			}
 		}
+		// Not Implemented on Server Side
+		// sortedFold : {
+		// 	type : "Bool -> (a -> b -> b) -> b -> Set a -> Unit b",
+		// 	func : function (ascending, f, init, cell) {
+		// 		var outputCell = makeCell();
+		// 		var cache = [];
+		// 		cell.makeSorted();
+		// 		var lastRemoveFunc = outputCell.addLine(init);
+		// 
+		// 		var removeFunc = cell.injectFunc(function (val) {					
+		// 			var index = cell.getIndex(val);
+		// 			if (index < cache.length) {
+		// 				cache[index].removeFunc();
+		// 			} else {
+		// 				lastRemoveFunc();
+		// 			}
+		// 			var newCell = makeCell();
+		// 			var cellRemoveFunc;
+		// 			
+		// 			if (index > 0) {
+		// 				cellRemoveFunc = cache[index-1].cell.injectFunc(function (innerVal) {
+		// 					return newCell.addLine(applyFunc(applyFunc(f, val), innerVal));
+		// 				});
+		// 			} else {
+		// 				cellRemoveFunc = newCell.addLine(applyFunc(applyFunc(f, val), init));
+		// 			}
+		// 			cache.splice(index, 0, {cell:newCell, val:val, removeFunc:cellRemoveFunc});
+		// 			if (index < cache.length - 1) {
+		// 				cache[index+1].removeFunc = cache[index].cell.injectFunc(function (innerVal) {
+		// 					return cache[index+1].cell.addLine(applyFunc(applyFunc(f, cache[index+1].val), innerVal));
+		// 				});
+		// 			} else {
+		// 				lastRemoveFunc = cache[index].cell.injectFunc(function (innerVal) {
+		// 					return outputCell.addLine(innerVal);
+		// 				});
+		// 			}
+		// 
+		// 			return function () {
+		// 				var remIndex = cell.getIndex(val);
+		// 				cache[remIndex].removeFunc();
+		// 				if(remIndex < cache.length -1) {
+		// 					cache[remIndex+1].removeFunc();
+		// 				} else {
+		// 					lastRemoveFunc();
+		// 				}
+		// 				cache.splice(remIndex, 1);
+		// 				if (remIndex > 0) {
+		// 					if (remIndex < cache.length) {
+		// 						cache[remIndex].removeFunc = cache[remIndex-1].cell.injectFunc(function (innerVal) {
+		// 							return cache[remIndex].cell.addLine(applyFunc(applyFunc(f, cache[remIndex].val), innerVal));
+		// 						});
+		// 					} else {
+		// 						lastRemoveFunc = cache[remIndex-1].cell.injectFunc(function (innerVal) {
+		// 							return outputCell.addLine(innerVal);
+		// 						});
+		// 					}
+		// 				} else {
+		// 					if (remIndex < cache.length) {
+		// 						cache[remIndex].removeFunc = cache[remIndex].cell.addLine(applyFunc(cache[remIndex].val, init));
+		// 					} else {
+		// 						lastRemoveFunc = outputCell.addLine(init);
+		// 					}
+		// 				}
+		// 			};
+		// 		});
+		// 		outputCell.addOnRemove(removeFunc);
+		// 
+		// 		return outputCell;
+		// 	}
+		//}
 	};
 }();
 

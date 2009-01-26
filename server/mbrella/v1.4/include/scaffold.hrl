@@ -107,9 +107,9 @@
 %% ====================================================
 
 -record (memoize, {
-	ets = ets:new(momoizeTable, [])
+	ets = ets:new(memoizeTable, [])
 }).
 
 -record (serialize, {
-	ets = ets:new(momoizeTable, [])
+	ets = ets:new(serializeTable, [])
 }).
