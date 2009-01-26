@@ -377,7 +377,9 @@ isReactive(#type{type = typeApply, value = {#type{type = typeName, value = Val},
 	end;
 isReactive(_) -> false.
 
-
+isMap(#type{type = typeApply, value = {#type{type = typeName, value = 'Map'}, _}}) ->
+	true;
+isMap(_) -> false.
 
 %% 
 %% prefixTypeVars(Expr)

@@ -87,7 +87,12 @@ serializeProp(Property, InProcess) when is_record(Property, object) ->
 	end;
 serializeProp(Property, InProcess) ->
 	binary_to_list(mblib:exprElementToJson(Property)).
-	
+
+
+unserialize() ->
+	gen_server:cast(?MODULE, unserialize).
+
+
 getStateList() ->
 	gen_server:call(?MODULE, getStateList).
 	
@@ -147,8 +152,59 @@ handle_cast({add, Name, Elem}, State) ->
 handle_cast(write, State) ->
 	ets:tab2file(?this(ets), ?this(file)),
     {noreply, State};
+handle_cast(unserialize, State) ->
+	CellDict = ets:foldl(fun({Name, ObjOrCell}, Dict) -> 
+		makeCells(ObjOrCell, Dict)
+	end, dict:new(), ?this(ets)),
+	
+	
+	EmptyDependencies = ets:foldl(fun({Name, ObjOrCell}, Dependencies) -> 
+		tryMakeObject(ObjOrCell, Dependencies, CellDict) 
+	end, dict:new(), ?this(ets)),
+	
+	CellDict = ets:foldl(fun({Name, ObjOrCell}, Dict) -> 
+		populateCells(ObjOrCell, CellDict)
+	end, dict:new(), ?this(ets)),
+	
+	
+    {noreply, State};
 handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
+
+
+unserializeProp(ObjOrCell, Dependencies) ->
+	case ObjOrCell of
+		Obj when is_record(Obj, object) ->
+			unserializeObj(Obj, Dependencies);
+		Cell when is_record(Cell, cell) ->
+			unserializeCell(Cell, Dependencies);
+	end.
+
+
+makeCells(Cell, CellDict) when is_record(Cell, cell) ->
+	NewCell = case type:isMap(Cell#exprCell.type) of
+		true -> cell:makeCellMapInput();
+		false -> cell:makeCell();
+	end,
+	dict:store(Cell#exprCell.name, NewCell, CellDict);
+unserializeCells(_, CellDict) -> CellDict.
+
+unserializeObjs(Obj, Dependencies) when is_record(Obj, object) ->
+	
+	;
+unserializeObjs(Obj, Dependencies) ->
+	Dependencies
+
+unserializeObj(Obj, Dependencies) ->
+	Prop = Obj#object.prop,
+	NewProp = dict:map(fun(_, Property) -> unserializeProp(Property) end, Prop),
+	NewObj = Obj#object{prop = NewProp},
+	env:store(Obj#object.name, NewObj),
+	NewObj.
+	
+unserializeCell(Cell, UpdateFuncs) ->
+	.
+
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2
