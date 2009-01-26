@@ -216,7 +216,7 @@ inherits(SubClass, SuperClass) ->
 	end.
 
 
-ÅmakeMemoString(MemoValues) ->
+makeMemoString(MemoValues) ->
 	lists:foldl(fun(Value, Acc) ->
 		binary_to_list(mblib:exprElementToJson(Value)) ++ "," ++ Acc
 	end, "", MemoValues).
