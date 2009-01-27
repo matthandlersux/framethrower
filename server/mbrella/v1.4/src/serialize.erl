@@ -37,9 +37,10 @@
 %% External functions
 %% ====================================================================
 
-start(FileName) -> start_link(FileName).
+start(FileName) -> 
+	start_link(FileName).
 start_link(FileName) ->
-	case gen_server:start_link({local, ?MODULE}, ?MODULE, [FileName], []) of
+	case gen_server:start({local, ?MODULE}, ?MODULE, [FileName], []) of
 		{ok, Pid} -> Pid;
 		Else -> Else
 	end.
@@ -48,12 +49,16 @@ serializeEnv() ->
 	EnvDict = env:getAllAsDict(),
 	AddIfObj = fun(_, ObjOrCellOrFunc, InProcess) ->
 		case ObjOrCellOrFunc of
-			Obj when is_record(Obj, object) -> serializeObj(Obj, InProcess);
+			Obj when is_record(Obj, object) -> 
+				{_, NewInProcess} = serializeObj(Obj, InProcess),
+				NewInProcess;
 			_ -> InProcess
 		end
 	end,
 	dict:fold(AddIfObj, dict:new(), EnvDict),
-	gen_server:cast(?MODULE, write),
+	?trace("Writing"),
+	Response = gen_server:cast(?MODULE, write),
+	?trace(Response),
 	ok.
 
 serializeObj(Obj, InProcess) ->
@@ -63,7 +68,7 @@ serializeObj(Obj, InProcess) ->
 		{NewProperty, NewInnerInProcess} = serializeProp(Property, InnerInProcess),
 		NewProp = dict:store(PropName, NewProperty, InnerProp),
 		{NewProp, NewInnerInProcess}
-	end, NewInProcess, Obj#object.prop),
+	end, {dict:new(), NewInProcess}, Obj#object.prop),
 	NewObj = Obj#object{prop = UpdatedProp},
 	gen_server:cast(?MODULE, {add, ObjName, NewObj}),
 	{ObjName, UpdatedInProcess}.
@@ -72,25 +77,29 @@ serializeCell(Cell, InProcess) ->
 	Name = Cell#exprCell.name,	
 	NewInProcess = dict:store(Name, true, InProcess),
 	StateArray = cell:getStateArray(Cell),
-	NewStateArray = lists:map(fun(Prop) -> serializeProp(Prop, NewInProcess) end, StateArray),
-	NewCell = Cell#exprCell{pid=NewStateArray},
+	{UpdatedStateArray, UpdatedInProcess} = lists:foldl(fun(Property, {InnerStateArray, InnerInProcess}) -> 
+		{NewProperty, NewInnerInProcess} = serializeProp(Property, InnerInProcess),
+		NewStateArray = [NewProperty|InnerStateArray],
+		{NewStateArray, NewInnerInProcess}
+	end, {[], NewInProcess}, StateArray),
+	NewCell = Cell#exprCell{pid=UpdatedStateArray},
 	gen_server:cast(?MODULE, {add, Name, NewCell}),
-	Name.
+	{Name, UpdatedInProcess}.
 
 serializeProp(Property, InProcess) when is_record(Property, exprCell) ->
 	PropName = Property#exprCell.name,
 	case dict:find(PropName, InProcess) of
 		error -> serializeCell(Property, InProcess);
-		_ -> PropName
+		_ -> {PropName, InProcess}
 	end;
 serializeProp(Property, InProcess) when is_record(Property, object) ->
 	PropName = Property#object.name,
 	case dict:find(PropName, InProcess) of
 		error -> serializeObj(Property, InProcess);
-		_ -> PropName
+		_ -> {PropName, InProcess}
 	end;
 serializeProp(Property, InProcess) ->
-	binary_to_list(mblib:exprElementToJson(Property)).
+	{binary_to_list(mblib:exprElementToJson(Property)), InProcess}.
 
 
 unserialize() ->
@@ -116,6 +125,7 @@ die() ->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([FileName]) ->
+	process_flag(trap_exit, true),
 	State = case ets:file2tab(FileName) of
 		{ok, Table} ->
 			#serialize{ets = Table, file = FileName};

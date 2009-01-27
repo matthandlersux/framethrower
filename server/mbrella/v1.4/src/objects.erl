@@ -133,11 +133,13 @@ start() ->
 	Server = gen_server:start({local, ?MODULE}, ?MODULE, [], []),
 	%TODO: make classes and add properties
 	ClassesToMake = classesToMake(),
-	lists:map(fun (#classToMake{name = Name, inherit = Inherit, prop = Prop, memoize = Memoize}) ->
+	lists:map(fun (ClassDef) ->
+		#classToMake{name = Name, inherit = Inherit, prop = Prop, memoize = Memoize} = ClassDef,
 		makeClass(Name, Inherit, Memoize),
 		lists:map(fun ({PropName, TypeString}) ->
 			addProp(Name, PropName, TypeString)
-		end, Prop)
+		end, Prop),
+		addMemoLookup(ClassDef)
 	end, ClassesToMake),
 	makeRootObjects(),
 	Server.
@@ -240,7 +242,7 @@ addMemoLookup(ClassDef) ->
 		Memoize ->
 			FuncName = ClassName ++ "::lookup",
 			TypeStrings = lists:foldl(fun(PropName, Acc) -> 
-				PropType = dict:fetch(PropName, ClassDef#classToMake.prop),
+				{_, {_,PropType}} = lists:keysearch(PropName, 1, ClassDef#classToMake.prop),
 				Acc ++ "(" ++ PropType ++ ") -> "
 			end, "", Memoize),
 			FuncType = TypeStrings ++ "Unit " ++ ClassName,
@@ -354,11 +356,15 @@ handle_call({getBroadcaster, ClassName, MemoString}, From, State) ->
 	Classes = State#state.classes,
 	C = dict:fetch(ClassName, Classes),
 	MemoTable = C#class.memoTable,
-	NewMemoTable = case dict:find(MemoString, MemoTable) of
-		error -> dict:store(MemoString, (C#class.makeMemoEntry)(), MemoTable);
-		_ -> MemoTable
+	case dict:find(MemoString, MemoTable) of
+		error -> 
+			MemoEntry = (C#class.makeMemoEntry)(),
+			NewMemoTable = dict:store(MemoString, MemoEntry, MemoTable);
+		Entry -> 
+			MemoEntry = Entry,
+			NewMemoTable = MemoTable
 	end,
-	Broadcaster = NewMemoTable#memoEntry.broadcaster,
+	Broadcaster = MemoEntry#memoEntry.broadcaster,
 	NewC = C#class{memoTable = NewMemoTable},
 	NewClasses = dict:store(ClassName, NewC, Classes),
 	NewState = State#state{classes=NewClasses},
