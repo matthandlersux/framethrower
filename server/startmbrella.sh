@@ -18,14 +18,14 @@ help() {
 
 echo "usage: "
 echo ""
-echo " mbrella -i|--interactive 				puts you in the erlang shell with the system"
-echo " mbrella -d|--daemon						starts the mbrella as a daemon, outside of ssh (if connected to server)"
+echo " mbrella -i|--interactive       puts you in the erlang shell with the system"
+echo " mbrella -d|--daemon            starts the mbrella as a daemon, outside of ssh (if connected to server)"
 echo ""
 echo ""
 echo " extra flags: "
 echo ""
-echo " -s|--serialize 							serialized server state file location"
-echo " -h|--help 								print this message"
+echo " -s|--serialize                 serialized server state file location"
+echo " -h|--help                      print this message"
 
 exit 1
 }
