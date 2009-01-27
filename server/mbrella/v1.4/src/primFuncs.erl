@@ -168,27 +168,11 @@ primitives() ->
 		OutputCell
 	end},
 	#exprFun{
-	name = "x2",
-	type = "Number -> Set Number",
-	function = fun(Val) ->
-		OutputCell = cell:makeCell(),
-		cell:addLine(OutputCell, Val*2),
-		OutputCell
-	end},
-	#exprFun{
 	name = "oneToMap",
 	type = "Number -> Number -> Map Number Number",
 	function = fun(Val1, Val2) ->
 		OutputCell = cell:makeCellMapInput(),
 		for(1, Val1, fun(X) -> cell:addLine(OutputCell, {X, Val2}) end),
-		OutputCell
-	end},
-	#exprFun{
-	name = "x2ToMap",
-	type = "Number -> Number -> Map Number Number",
-	function = fun(Val1, Val2) ->
-		OutputCell = cell:makeCellMapInput(),
-		cell:addLine(OutputCell, {Val1*2, Val2}),
 		OutputCell
 	end},
 	#exprFun{
