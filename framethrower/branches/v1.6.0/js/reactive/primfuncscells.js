@@ -298,15 +298,6 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
-		// Just for Testing!!
-		x2 : {
-			type : "Number -> Set Number",
-			func : function (val1) {
-				var outputCell = makeCell();
-				outputCell.addLine(val1 * 2);
-				return outputCell;
-			}
-		},
 		oneToMap : {
 			type : "Number -> Number -> Map Number Number",
 			func : function (val1, val2) {
@@ -314,14 +305,6 @@ var primFuncs = function () {
 				for(var i=1; i<= val1; i++) {
 					outputCell.addLine({key:i, val:val2});
 				}
-				return outputCell;
-			}
-		},
-		x2ToMap : {
-			type : "Number -> Number -> Map Number Number",
-			func : function (val1, val2) {
-				var outputCell = makeCellMapInput();
-				outputCell.addLine({key:val1*2, val:val2});
 				return outputCell;
 			}
 		},
