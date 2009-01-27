@@ -247,6 +247,8 @@ bindVarOrFormatExprElement(VariableOrCellName, Conversions) when is_binary(Varia
 		"true" -> true;
 		"false" -> false;
 		"null" -> null;
+		"<" ++ _ = XML ->
+			XML;
 		_ ->
 			case lists:keysearch(VariableOrCellName, 1, Conversions) of
 				{value, {_, Object} } -> Object;
