@@ -87,6 +87,13 @@ classesToMake() ->
 			],
 			memoize = ["string"]
 		},
+		#classToMake{
+			name = "X.xml",
+			inherit = "Object",
+			prop = [
+				{"xml", "XML"}
+			]
+		},
 
 		%% ====================================================
 		%% UI
