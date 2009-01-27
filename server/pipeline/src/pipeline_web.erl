@@ -66,7 +66,7 @@ loop(Req, DocRoot) ->
 							spit(Req, {struct, [{"sessionClosed", true}] });
 						SessionPid ->
 							Queries = struct:get_value(<<"queries">>, Struct),
-							ProcessQuery = fun( Query ) ->
+							ProcessQuery = fun( Query, Accumulator ) ->
 												Expr = struct:get_value(<<"expr">>, Query),
 												QueryId = struct:get_value(<<"queryId">>, Query),
 												% io:format("expr: ~p~nquery: ~p~n~n", [Expr, QueryId])
@@ -81,13 +81,16 @@ loop(Req, DocRoot) ->
 															end
 														end
 													end												
-												)
+												),
+												[{struct, [{"type", list_to_binary(type:unparse( type:getType(Cell) ))}]}|Accumulator]
 											end,
-							try lists:foreach(ProcessQuery, Queries) of
-								_ -> 
-									spit(Req, true)
+							% try lists:foreach(ProcessQuery, Queries) of
+							try lists:foldl(ProcessQuery, [], Queries) of
+								ResponseTypes -> 
+									spit(Req, ResponseTypes)
 							catch 
 								ErrorType:Reason -> 
+									?trace(Reason),
 									spit(Req, {struct, [{"errorType", ErrorType}, {"reason", list_to_binary(io_lib:format("~p", [Reason]))}] })
 							end
 					end;
