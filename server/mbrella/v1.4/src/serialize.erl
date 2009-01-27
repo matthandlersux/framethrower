@@ -46,23 +46,27 @@ start_link(FileName) ->
 
 serializeEnv() ->
 	EnvDict = env:getAllAsDict(),
-	AddIfObj = fun(_, ObjOrCellOrFunc) ->
+	AddIfObj = fun(_, ObjOrCellOrFunc, InProcess) ->
 		case ObjOrCellOrFunc of
-			Obj when is_record(Obj, object) -> serializeObj(Obj, dict:new());
-			_ -> noSideEffect
+			Obj when is_record(Obj, object) -> serializeObj(Obj, InProcess);
+			_ -> InProcess
 		end
 	end,
-	dict:map(AddIfObj, EnvDict),
+	dict:fold(AddIfObj, dict:new(), EnvDict),
 	gen_server:cast(?MODULE, write),
 	ok.
 
 serializeObj(Obj, InProcess) ->
 	ObjName = Obj#object.name,
 	NewInProcess = dict:store(ObjName, true, InProcess),
-	NewProp = dict:map(fun (_, Property) -> serializeProp(Property, NewInProcess) end, Obj#object.prop),
-	NewObj = Obj#object{prop = NewProp},
+	{UpdatedProp, UpdatedInProcess} = dict:fold(fun (PropName, Property, {InnerProp, InnerInProcess}) ->
+		{NewProperty, NewInnerInProcess} = serializeProp(Property, InnerInProcess),
+		NewProp = dict:store(PropName, NewProperty, InnerProp),
+		{NewProp, NewInnerInProcess}
+	end, NewInProcess, Obj#object.prop),
+	NewObj = Obj#object{prop = UpdatedProp},
 	gen_server:cast(?MODULE, {add, ObjName, NewObj}),
-	ObjName.
+	{ObjName, UpdatedInProcess}.
 	
 serializeCell(Cell, InProcess) ->
 	Name = Cell#exprCell.name,	
