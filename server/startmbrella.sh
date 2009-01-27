@@ -9,7 +9,7 @@ adddirs="-pa $PWD/$webappname/ebin $PWD/$webappname/deps/*/ebin $PWD/mbrella/v1.
 boot="-boot start_sasl"
 startapp="-s $webappname"
 #default is interactive
-conf="-config $PWD/$webappname/errorlog.config";
+conf="-config errorlog";
 #place servers that need to be started here
 
 #====functions=====
@@ -38,13 +38,13 @@ while [ $# -gt 0 ]
 	shift;
 	case $arg in
 		-i|--interactive)
-			conf="-config $PWD/$webappname/errorlog";
+			conf="-config errorlog";
 			daemon="";;
 		-d|--daemon)
 			daemon="-detached";
-			conf="-config $PWD/$webappname/errorlognotty";;
+			conf="-config errorlognotty";;
 		-s|--serialize)
-			serialize="serialize:start($1), ";;
+			serialize="serialize:start(\"${1}\")";;
 		-h|--help)
 			help;;
 		*)
@@ -60,4 +60,4 @@ commonflags="$conf $sname $adddirs $boot $startapp $eval"
 
 #=====execute=====
 cd `dirname $0`
-exec $erl $commonflags
+eval "exec $erl $commonflags"
