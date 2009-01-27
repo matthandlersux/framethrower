@@ -5,13 +5,13 @@ function initialize() {
 	//cell = session.query(test);
 	
 	
-	var expr = parseExpr("Cons::lookup shared.in shared.realLife");
-	var expr2 = parseExpr("Object:upLeft shared.realLife");
+	var expr = parseExpr("mapUnit Cons~Object (Cons::lookup shared.name shared.realLife)");
+	
+	console.log("expr should be of type:", unparseType(getType(expr)));
 	
 	//console.log("remote", getRemote(expr));
 	
 	cell = evaluate(expr);
-	cell2 = evaluate(expr2);
 	
 	session.flush();
 	
