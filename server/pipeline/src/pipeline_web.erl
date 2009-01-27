@@ -107,6 +107,7 @@ loop(Req, DocRoot) ->
 									spit(Req, {struct, [{"success", Success},{"returned", Returned}] } )
 							catch
 								ErrorType:Reason ->
+									?trace({ErrorType, Reason}),
 									spit(Req, {struct, [{"errorType", ErrorType}, {"reason", list_to_binary(io_lib:format("~p", [Reason]))}] })
 							end
 					end;
@@ -147,7 +148,11 @@ processAction(<<"block">>, Action, Updates, OldVariables) ->
 	BlockVariables = struct:get_value(<<"variables">>, Action),
 	Actions = struct:get_value(<<"actions">>, Action),
 	Returned = processActionList(Actions, [], OldVariables),
-	NewVariables = lists:zip(BlockVariables, Returned),
+	NewVariables = try lists:zip(BlockVariables, Returned)
+				catch 
+					_:_ ->
+						throw({insufficient_returned_variables, {expected, BlockVariables}, {got, Returned}})
+				end,
 	{ Updates, NewVariables ++ OldVariables};
 % action:create is how variables get bound to objects
 processAction(<<"create">>, Action, Updates, Variables) ->
