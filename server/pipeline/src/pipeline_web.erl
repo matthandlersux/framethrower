@@ -87,7 +87,7 @@ loop(Req, DocRoot) ->
 							% try lists:foreach(ProcessQuery, Queries) of
 							try lists:foldl(ProcessQuery, [], Queries) of
 								ResponseTypes -> 
-									spit(Req, ResponseTypes)
+									spit(Req, lists:reverse(ResponseTypes))
 							catch 
 								ErrorType:Reason -> 
 									?trace(Reason),
