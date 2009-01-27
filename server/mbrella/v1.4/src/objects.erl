@@ -224,7 +224,7 @@ inherits(SubClass, SuperClass) ->
 
 
 makeMemoString(MemoValues) ->
-	lists:foldl(fun(Value, Acc) ->
+	lists:foldr(fun(Value, Acc) ->
 		binary_to_list(mblib:exprElementToJson(Value)) ++ "," ++ Acc
 	end, "", MemoValues).
 
@@ -232,7 +232,7 @@ makeMemoString(MemoValues) ->
 makeRecursiveFunc(ListFunc, 0, AccList) -> ListFunc(AccList);
 makeRecursiveFunc(ListFunc, ArgNum, AccList) ->
 	fun(Arg) ->
-		makeRecursiveFunc(ListFunc, ArgNum - 1, [Arg | AccList])
+		makeRecursiveFunc(ListFunc, ArgNum - 1, AccList ++ [Arg])
 	end.
 
 addMemoLookup(ClassDef) ->
@@ -360,7 +360,7 @@ handle_call({getBroadcaster, ClassName, MemoString}, From, State) ->
 		error -> 
 			MemoEntry = (C#class.makeMemoEntry)(),
 			NewMemoTable = dict:store(MemoString, MemoEntry, MemoTable);
-		Entry -> 
+		{ok, Entry} -> 
 			MemoEntry = Entry,
 			NewMemoTable = MemoTable
 	end,
