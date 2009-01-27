@@ -200,7 +200,7 @@ makeCast(TargetClassName) ->
 	fun (Obj) -> 
 		#object{
 			origType = Obj#object.origType,
-			type = #type{type = typeName, value = TargetClassName},
+			type = #type{type = typeName, value = list_to_atom(TargetClassName)},
 			prop = Obj#object.prop
 		}
 	end.
