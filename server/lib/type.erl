@@ -146,6 +146,7 @@ getType({primitive, null}, _) -> type(null);
 getType( Expr, _ ) when is_boolean(Expr) -> type(bool);
 getType( null, _ ) -> type(null);
 getType( Expr, _ ) when is_number(Expr) -> type(num);
+getType( "<" ++ _ = XML, _) when is_list(XML) -> type(xml);
 getType( Expr, _ ) when is_list(Expr) -> type(string).
 
 
@@ -198,7 +199,8 @@ genConstraints(Expr, Prefix, Env) ->
 type(bool) -> {type, typeName, 'Bool'};
 type(null) -> {type, typeName, 'Null'};
 type(num) -> {type, typeName, 'Number'};
-type(string) -> {type, typeName, 'String'}.
+type(string) -> {type, typeName, 'String'};
+type(xml) -> {type, typeName, 'XML'}.
 
 type(typeVar, Val) -> {type, typeVar, Val};
 type(typeFun, String) -> String.
