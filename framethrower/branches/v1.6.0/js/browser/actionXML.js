@@ -188,6 +188,7 @@ function performActionsJS(actions, callback, env, ret) {
 
 function tagActionsClientOrServer(actions, env, ret) {
 	// Mutates actions
+	// tags actions with .server=true if they create or change an object that inherits from Object
 	
 	if (!env) env = makeDynamicEnv();
 	if (!ret) ret = [];

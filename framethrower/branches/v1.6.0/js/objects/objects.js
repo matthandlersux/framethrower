@@ -33,6 +33,14 @@ var classesToMake = {
 		memoize: ["left", "right"]
 	},
 	
+	"Core.relationType": {
+		inherit: "Object",
+		prop: {
+			"input": "Map Number Object",
+			"output": "Object"
+		}
+	},
+	
 	// ====================================================
 	// External Representations
 	// ====================================================
