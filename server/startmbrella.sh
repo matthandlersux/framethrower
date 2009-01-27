@@ -25,7 +25,9 @@ echo ""
 echo " extra flags: "
 echo ""
 echo " -s|--serialize 							serialized server state file location"
+echo " -h|--help 								print this message"
 
+exit 1
 }
 
 #=====interpret input=====
@@ -43,6 +45,8 @@ while [ $# -gt 0 ]
 			conf="-config $PWD/$webappname/errorlognotty";;
 		-s|--serialize)
 			serialize="serialize:start($1), ";;
+		-h|--help)
+			help;;
 		*)
 			help
 	esac
