@@ -147,7 +147,7 @@
 				
 		<f:create type="Object" name="object" />
 
-		<f:perform with-action="$nameObject" name="nameObject">
+		<f:perform with-action="$nameObject">
 			<f:with-param name="object" select="$object" />
 			<f:with-param name="name" select="$name" />
 		</f:perform>

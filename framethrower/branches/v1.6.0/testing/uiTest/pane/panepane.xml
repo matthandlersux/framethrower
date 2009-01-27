@@ -9,6 +9,8 @@
 	<f:derive name="tab" d="UI.pane.pane:tab pane" />
 	<f:derive name="focus" d="UI.pane.pane:focus pane" />
 
+	<f:derive name="propertiesState" d="UI.pane.pane:propertiesState pane" />
+
 	<xsl:if test="$focus">
 		<html:div>
 			<f:thunk url="../view/object.xml">
@@ -37,6 +39,13 @@
 				</f:on>
 				About
 			</html:span>
+			 | 
+			<html:span>
+				<f:on event="click" with-action="$selectTab">
+					<f:with-param name="tab" select="'properties'" />
+				</f:on>
+				Properties
+			</html:span>
 		</html:div>
 		
 		<html:hr />
@@ -55,6 +64,12 @@
 			<xsl:when test="$tab/@value = 'about'">
 				<f:thunk url="about.xml">
 					<f:with-param name="focus" select="$focus" />
+				</f:thunk>
+			</xsl:when>
+			<xsl:when test="$tab/@value = 'properties'">
+				<f:thunk url="properties.xml">
+					<f:with-param name="focus" select="$focus" />
+					<f:with-param name="propertiesState" select="$propertiesState" />
 				</f:thunk>
 			</xsl:when>
 			<xsl:otherwise>

@@ -1,0 +1,70 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="Object" />
+	<f:param name="propertiesState" type="UI.propertiesState" />
+	
+	<f:derive name="name" d="getName focus" />
+	<f:derive name="types" d="getTypes focus" />
+
+	<f:derive name="editName" d="UI.propertiesState:editName propertiesState" />
+	
+	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
+	
+	<html:table class="properties">
+		<html:tr>
+			<html:th>Name</html:th>
+			<html:td>
+				<xsl:choose>
+					<xsl:when test="not($name/*) or $editName">
+						<html:form>
+							<html:input name="newName" type="text" value="{$name/*/@value}" />
+							<html:span>
+								<f:on event="click" with-action="$changeName">
+									<f:with-param-browser name="newName" form="newName" />
+								</f:on>
+								[confirm]
+							</html:span>
+						</html:form>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="$name/*/@value" />
+						<html:span>
+							<f:on event="click" with-action="$eName" />
+							[edit]
+						</html:span>
+					</xsl:otherwise>
+				</xsl:choose>
+			</html:td>
+		</html:tr>
+	</html:table>
+	
+	<f:action name="eName">
+		<f:intact object="$propertiesState" action="add" property="editName" key="null" />
+	</f:action>
+	
+	<f:action name="changeName">
+		<f:param name="newName" type="String" />
+		
+		<f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" />
+		
+		<!-- remove old name(s) -->
+		<xsl:for-each select="$ontInfons/*">
+			<f:intact object="." action="remove" property="truth" key="null" />
+		</xsl:for-each>
+		
+		<f:perform with-action="$nameObject" name="nameObject">
+			<f:with-param name="object" select="$focus" />
+			<f:with-param name="name" select="$newName" />
+		</f:perform>
+		
+		<f:intact object="$propertiesState" action="remove" property="editName" key="null" />
+		
+	</f:action>
+	
+	<f:include url="/xml/util/actions.xml" />
+	
+</f:template>

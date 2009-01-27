@@ -25,11 +25,13 @@ function getRemote(expr) {
 	if (typeOf(expr) !== "object") {
 		return 0;
 	} else {
-		if (!expr.remote) {
+		if (expr.remote === undefined) {
 			if (expr.kind === "var") {
 				expr.remote = 0;
 			} else if (expr.kind === "exprLambda" || expr.kind === "exprApply") {
-				expr.remote =  Math.max(expr.left, expr.right);
+				expr.remote =  Math.max(getRemote(expr.left), getRemote(expr.right));
+			} else if (expr === getExpr(expr)) {
+				expr.remote = 2;
 			} else {
 				expr.remote = getRemote(getExpr(expr));
 			}
@@ -51,13 +53,13 @@ function makeRemoteObject(name, type) {
 function queryExpr(expr) {
 	// TODO
 	
-	var type = getType(expr);
-	var cell = makeCC(type);
+	//var type = getType(expr);
+	//var cell = makeCC(type);
 	
 	// TODO make it not persist, and proper onRemove handler to tell the server to stop updating
 	
 	
-	return cell;
+	//return cell;
 }
 
 

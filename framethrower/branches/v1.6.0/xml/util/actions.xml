@@ -1,0 +1,155 @@
+<f:includes
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:action name="makeNamedObject">
+		<f:param name="name" type="String" />
+		<f:param name="type" type="Object" />
+			
+		<f:create type="Object" name="object" />
+
+		<f:perform with-action="$nameObject" name="nameObject">
+			<f:with-param name="object" select="$object" />
+			<f:with-param name="name" select="$name" />
+		</f:perform>
+		<f:perform with-action="$typeObject">
+			<f:with-param name="object" select="$object" />
+			<f:with-param name="type" select="$type" />
+		</f:perform>
+	
+		<f:return name="object" />
+	</f:action>
+
+	<f:action name="nameObject">
+		<f:param name="object" type="Object" />
+		<f:param name="name" type="String" />
+	
+		<f:derive name="nameRel" d="shared.name" />
+	
+		<f:create type="X.text" name="nameText">
+			<f:with-param name="string" select="$name" />
+		</f:create>
+	
+		<f:perform with-action="$makeOntProperty">
+			<f:with-param name="relation" select="$nameRel" />
+			<f:with-param name="arg1" select="$object" />
+			<f:with-param name="arg2" select="$nameText" />
+		</f:perform>
+	</f:action>
+
+	<f:action name="relationTemplateObject">
+		<f:param name="object" type="Object" />
+		<f:param name="relTem" type="XML" />
+	
+		<f:derive name="relTemRel" d="shared.relationTemplate" />
+	
+		<f:create type="X.xml" name="xml">
+			<f:with-param name="xml" select="$relTem" />
+		</f:create>
+	
+		<f:perform with-action="$makeOntProperty">
+			<f:with-param name="relation" select="$relTemRel" />
+			<f:with-param name="arg1" select="$object" />
+			<f:with-param name="arg2" select="$xml" />
+		</f:perform>
+	</f:action>
+
+
+
+	<f:action name="typeObject">
+		<f:param name="object" type="Object" />
+		<f:param name="type" type="Object" />
+	
+		<f:derive name="isA" d="shared.isA" />
+	
+		<f:perform with-action="$makeOntProperty">
+			<f:with-param name="relation" select="$isA" />
+			<f:with-param name="arg1" select="$object" />
+			<f:with-param name="arg2" select="$type" />
+		</f:perform>
+	</f:action>
+
+
+
+	<f:action name="makeOntProperty">
+		<f:param name="relation" type="Object" />
+		<f:param name="arg1" type="Object" />
+		<f:param name="arg2" type="Object" />
+	
+		<f:perform with-action="$makeInfon2" name="infon">
+			<f:with-param name="relation" select="$relation" />
+			<f:with-param name="arg1" select="$arg1" />
+			<f:with-param name="arg2" select="$arg2" />
+		</f:perform>
+	
+		<f:perform with-action="$makeTrueInOnt">
+			<f:with-param name="infon" select="$infon" />
+		</f:perform>
+	</f:action>
+
+
+
+	<f:action name="makeTrueInOnt">
+		<f:param name="infon" type="Cons" />
+		<f:derive name="ont" d="shared.ont" />
+	
+		<f:perform with-action="$putObjectInSituation">
+			<f:with-param name="object" select="$infon" />
+			<f:with-param name="situation" select="$ont" />
+		</f:perform>
+	</f:action>
+
+
+
+
+	<f:action name="putObjectInSituation">
+		<f:param name="object" type="Object" />
+		<f:param name="situation" type="Object" />
+		<f:derive name="in" d="shared.in" />
+	
+		<f:perform with-action="$makeInfon2" name="infon">
+			<f:with-param name="relation" select="$in" />
+			<f:with-param name="arg1" select="$situation" />
+			<f:with-param name="arg2" select="$object" />
+		</f:perform>
+		<f:intact object="$infon" property="truth" action="add" key="null" />
+	</f:action>
+
+
+
+	<f:action name="makeInfon2">
+		<f:param name="relation" type="Object" />
+		<f:param name="arg1" type="Object" />
+		<f:param name="arg2" type="Object" />		
+	
+		<f:perform with-action="$makeCons" name="cons1">
+			<f:with-param name="left" select="$relation" />
+			<f:with-param name="right" select="$arg1" />
+		</f:perform>
+
+		<f:perform with-action="$makeCons" name="cons2">
+			<f:with-param name="left" select="$cons1" />
+			<f:with-param name="right" select="$arg2" />
+		</f:perform>
+	
+		<f:return name="cons2" />
+	</f:action>	
+
+	<f:action name="makeCons">
+		<f:param name="left" type="Object" />
+		<f:param name="right" type="Object" />
+	
+		<f:create type="Cons" name="cons">
+			<f:with-param name="left" select="$left" />
+			<f:with-param name="right" select="$right" />
+		</f:create>
+	
+		<f:intact object="$left" property="upRight" action="add" key="$cons" />
+		<f:intact object="$right" property="upLeft" action="add" key="$cons" />
+	
+		<f:return name="cons" />
+	</f:action>
+
+</f:includes>

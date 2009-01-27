@@ -24,8 +24,10 @@ var evaluate = function(expr) {
 		}
 		
 		if (getRemote(expr) === 1) {
-			var ret = queryExpr(expr);
+			//var ret = queryExpr(expr);
+			var ret = session.query(expr);
 			memoizeCell(resultExprStringified, ret);
+			return ret;
 		}
 	}
 	
@@ -99,3 +101,16 @@ function evaluateAndInject(expr, func) {
 	return e.injectFunc(func);
 }
 
+
+
+
+// profiling
+
+function getEvalCacheSizeXML() {
+	var v = values(evalCache);
+	var count = 0;
+	forEach(v, function (c) {
+		if (getType(c).right.value === "XML") count++;
+	});
+	return count;
+}

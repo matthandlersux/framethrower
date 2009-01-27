@@ -61,6 +61,11 @@ var exprLib = {
 		expr: "compose flattenSet (mapSet returnUnitSet)"
 	},
 	
+	mapBinaryUnit: {
+		type: "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
+		expr: "f -> compose (compose bindUnit reactiveApply) (mapUnit f)"
+	},
+	
 	
 	// ========================================================================
 	// Set utility
@@ -106,17 +111,52 @@ var exprLib = {
 	
 	filterByTruth: {
 		type: "Set Cons -> Set Cons",
-		expr: "infons -> filter (Cons:truth) infons"
+		expr: "filter Cons:truth"
 	},
+	
+	getObjectInOnt: {
+		type: "Object -> Unit Cons",
+		expr: "obj -> (bindUnit ((swap Cons::lookup) obj)) inOnt",
+		where: {
+			inOnt: {
+				type: "Unit Object",
+				expr: "(mapUnit Cons~Object) (Cons::lookup shared.in shared.ont)"
+			}
+		}
+	},
+	
+	filterByTruthInOnt: {
+		type: "Set Cons -> Set Cons",
+		expr: "infons -> filter (infon -> reactiveNot (isEmpty (filterByTruth (returnUnitSet (ontInfon infon))))) infons",
+		where: {
+			ontInfon: {
+				type: "Cons -> Unit Cons",
+				expr: "infon -> getObjectInOnt (Cons~Object infon)"
+			}
+		}
+	},
+	
+
 	
 
 	// ========================================================================
 	// Getting properties of objects
 	// ========================================================================
 	
+	getOntInfons: {
+		type: "Object -> Object -> Set Cons",
+		expr: "rel -> obj -> helper (Cons::lookup rel obj)",
+		where: {
+			helper: {
+				type: "Unit Cons -> Set Cons",
+				chain: ["Object:upRight"]
+			}
+		}
+	},
+	
 	getOntProp: {
 		type: "Object -> Object -> Set Object",
-		expr: "rel -> obj -> infonsToObjects (getInfons rel obj)", // TODO: filter here for truth in the ont layer
+		expr: "rel -> obj -> infonsToObjects (filterByTruthInOnt (getInfons rel obj))", // TODO: filter here for truth in the ont layer
 		where: {
 			getInfons: {
 				type: "Object -> Object -> Set Cons",

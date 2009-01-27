@@ -92,7 +92,15 @@ var classesToMake = {
 		inherit: "UI.pane",
 		prop: {
 			"tab": "Unit String", // objectsIn, infonsIn, about
-			"focus": "Unit Object"
+			"focus": "Unit Object",
+			"propertiesState": "UI.propertiesState"
+		},
+		makeNew: ["propertiesState"]
+	},
+	
+	"UI.propertiesState": {
+		prop: {
+			"editName": "Unit Null"
 		}
 	},
 	
@@ -113,12 +121,14 @@ var objects = (function (classesToMake) {
 	// Making classes
 	// ====================================================
 	
-	function makeClass(name, inherit, memoize) {
+	function makeClass(name, inherit, memoize, makeNew) {
+		// TODO: make this just take a name and classDef instead of passing in inherit, memoize, makeNew, etc.
 		var cast = makeCast(name);
 		classes[name] = {
 			name: name,
 			prop: {},
 			inherit: inherit && classes[inherit],
+			makeNew: makeNew,
 			memoize: memoize,
 			memoTable: {},
 			makeMemoEntry: function () {
@@ -154,12 +164,20 @@ var objects = (function (classesToMake) {
 
 	function makeCast(targetClassName) {
 		return function (obj) {
-			return {
-				kind: obj.kind,
-				origType: obj.origType,
-				type: {kind: "typeName", value: targetClassName},
-				prop: obj.prop
-			};
+			if (obj.remote === 1) {
+				debug.error("Trying to cast a remote object, if you see this then we need to fix this...");
+			}
+			
+			if (!obj.as[targetClassName]) {
+				obj.as[targetClassName] = {
+					kind: obj.kind,
+					origType: obj.origType,
+					type: {kind: "typeName", value: targetClassName},
+					prop: obj.prop,
+					as: obj.as
+				};
+			}
+			return obj.as[targetClassName];
 		};
 	}
 
@@ -244,7 +262,7 @@ var objects = (function (classesToMake) {
 	
 	// make the classes
 	forEach(classesToMake, function (classDef, name) {
-		makeClass(name, classDef.inherit, classDef.memoize);
+		makeClass(name, classDef.inherit, classDef.memoize, classDef.makeNew);
 	});
 	
 	// add the properties
@@ -300,6 +318,13 @@ var objects = (function (classesToMake) {
 				if (props[propName] === undefined) {
 					debug.error("Property `"+propName+"` needs to be specified for memoizing when creating an object of type `"+className+"`");
 				}
+				
+				var instanceType = getType(props[propName]);
+				var propType = c.prop[propName];
+				
+				if (!compareTypes(instanceType, propType) && instanceType.kind === "typeName" && propType.kind === "typeName" && inherits(classes[instanceType.value], classes[propType.value])) {
+					return classes[propType.value].castUp(props[propName]);
+				}
 				return props[propName];
 			});
 			memoString = makeMemoString(memoValues);
@@ -308,14 +333,23 @@ var objects = (function (classesToMake) {
 				return c.memoTable[memoString].object;
 			}
 		}
+		
+		if (c.makeNew) {
+			forEach(c.makeNew, function (propName) {
+				props[propName] = makeObject(c.prop[propName].value, {});
+			});
+		}
+		
 		var type = {kind: "typeName", value: className};
 		
 		var o = {
 			kind: "object",
 			origType: type,
 			type: type,
-			prop: {}
+			prop: {},
+			as: {} // TODO: find a new mechanism for as and origType
 		};
+		o.as[className] = o;
 
 		addPropsToObject(props, o, classes[className]);
 

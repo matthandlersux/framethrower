@@ -23,6 +23,7 @@ function evalThunk(thunkNode) {
 			e = makeApply(e, thunksParam);
 		});
 		
+		
 		var custom = thunkNode.custom;
 		
 		var removeFunc = evaluateAndInject(e, function (xmlids) {
@@ -36,7 +37,13 @@ function evalThunk(thunkNode) {
 				top.custom.onXMLUpdate();
 			}
 		});
-		custom.removeFunc = removeFunc;
+		
+		if (thunkNode.custom === null) {
+			// thunk has been unloaded, so remove updater
+			removeFunc();
+		} else {
+			custom.removeFunc = removeFunc;
+		}
 	}
 	
 	if (thunkEssence.url) {
@@ -93,6 +100,14 @@ function compareThunkEssences(te1, te2) {
 			return stringify(param) === stringify(te1.params[name]);
 		})
 	);
+}
+
+function copyThunkEssence(te) {
+	return {
+		url: te.url,
+		template: te.template,
+		params: map(te.params, function (x) {return x;})
+	};
 }
 
 

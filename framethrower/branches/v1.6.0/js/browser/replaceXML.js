@@ -67,7 +67,7 @@ function processThunks(node, pass) {
 	// bootstrap uses this method with pass = {baseUrl: "", ids: {}}
 	
 	// first, tag thunkEssence on any bindings, or actions that need it (f:on, f:create, f:intact, f:servercall)
-	var nodesNeedingTagging = xpath("descendant-or-self::*[self::f:thunk or self::f:on or self::f:create or self::f:intact or self::f:servercall]", node);
+	var nodesNeedingTagging = xpath("descendant-or-self::*[self::f:thunk or self::f:on or self::f:create or self::f:intact]", node);
 	forEach(nodesNeedingTagging, function (node) {
 		tagThunkEssence(node, pass.baseUrl, pass.ids);
 	});
@@ -195,15 +195,15 @@ function insertBefore(parentNode, newNode, node) {
 
 
 function unloadXML(node) {
-	var concerns = xpath(".//f:on | .//f:result", node);
+	var concerns = xpath("descendant-or-self::*[self::f:thunk or self::f:on or self::f:create or self::f:intact]", node);
 	forEach(concerns, unloadXMLNode);
 }
 
 function unloadXMLNode(node) {
 	// call remove function on active thunks
-	if (node.custom.removeFunc) {
+	if (node.custom && node.custom.removeFunc) {
 		node.custom.removeFunc();
 	}
 	// null out custom property (for garbage collection)
-	delete node.custom;	
+	node.custom = null;
 }

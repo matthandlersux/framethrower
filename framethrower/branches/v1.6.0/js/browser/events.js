@@ -22,7 +22,28 @@
 		var fon = xpath("ancestor-or-self::*/f:on[@event='" + eventName + "'][1]", target);
 		
 		if (fon.length > 0) {
-			triggerAction(fon[0].custom.thunkEssence);
+			fon = fon[0];
+			var te = copyThunkEssence(fon.custom.thunkEssence);
+			
+			var browserParams = xpath("f:with-param-browser", fon);
+			var form;
+			forEach(browserParams, function (browserParam) {
+				if (getAttr(browserParam, "form")) {
+					if (!form) {
+						form = xpath("ancestor-or-self::html:form[1]", fon);
+						if (form.length === 0) {
+							debug.error("f:on has a f:with-param-browser needing a form, but there's no form", fon);
+						}
+						form = form[0];
+					}
+					
+					var el = form.elements[getAttr(browserParam, "form")];
+					te.params[getAttr(browserParam, "name")] = el.value;
+				}
+			});
+			
+			
+			triggerAction(te);
 			refreshScreen();
 		}
 	}
@@ -129,7 +150,7 @@
 	var ui = rootObjects["ui.ui"].prop;
 	
 	function resizeScreen(e) {
-		console.log("detected screen resize");
+		//console.log("detected screen resize");
 		var screenWidth = window.innerWidth;
 		var screenHeight = window.innerHeight;
 		ui["screenWidth"].control.add(screenWidth);

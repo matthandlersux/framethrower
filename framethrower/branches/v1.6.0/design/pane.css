@@ -19,3 +19,13 @@ li {
 	background-color: #ccc;
 }
 
+
+
+.properties td, th {
+	padding: 5px;
+}
+.properties th {
+	text-align: right;
+	font-weight: bold;
+}
+

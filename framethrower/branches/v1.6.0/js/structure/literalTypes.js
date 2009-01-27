@@ -3,7 +3,7 @@
 nullObject = {
 	kind: "null",
 	type: parseType("Null"),
-	name: "Null"
+	name: "null"
 };
 
 
@@ -25,6 +25,8 @@ function parseLiteral(s) {
 		// matches a string
 		var sub = s.substring(1, s.length - 2);
 		return sub.replace(/\\(["\\])/g, "$1");
+	} else if (/^</.test(s)) {
+		return unserializeXML(s);
 	} else if (s === "true") {
 		return true;
 	} else if (s === "false") {
@@ -43,6 +45,8 @@ function unparseLiteral(expr) {
 		return '"' + expr.replace(/(["\\])/g, "\\$1") + '"';
 	} else if (t === "boolean" || t === "number") {
 		return expr.toString();
+	} else if (expr.nodeType) {
+		return serializeXML(expr);
 	} else {
 		return undefined;
 	}

@@ -8,61 +8,54 @@
 
 var rootObjects = {};
 
-rootObjects["shared.in"] = objects.make("Object");
-rootObjects["shared.ont"] = objects.make("Object");
-
-rootObjects["shared.isA"] = objects.make("Object");
-rootObjects["shared.name"] = objects.make("Object");
-rootObjects["shared.relationTemplate"] = objects.make("Object");
-
-rootObjects["shared.type.type"] = objects.make("Object");
-rootObjects["shared.type.situation"] = objects.make("Object");
-rootObjects["shared.type.entity"] = objects.make("Object");
-rootObjects["shared.type.infon"] = objects.make("Object");
-rootObjects["shared.type.relation"] = objects.make("Object"); // this will itself be used as a binary relation to make relation types
-
-rootObjects["shared.realLife"] = objects.make("Object");
-
-
-
-rootObjects["ui.ui"] = objects.make("UI.ui");
-
-
-rootObjects["ui.prefs"] = objects.make("UI.prefs");
-
-
-
-
-rootObjects["test.pane"] = objects.make("UI.pane.pane");
-rootObjects["test.pane"].prop["focus"].control.add(rootObjects["shared.realLife"]);
-
-var pane1 = rootObjects["test.pane"];
-var pane2 = objects.make("UI.pane.pane");
-pane2.prop["focus"].control.add(rootObjects["shared.type.entity"]);
-
-rootObjects["test.paneset"] = objects.make("UI.pane.set");
-rootObjects["test.paneset"].prop["panes"].control.add("b", objects.cast(pane1, "UI.pane"));
-rootObjects["test.paneset"].prop["panes"].control.add("bb", objects.cast(pane2, "UI.pane"));
-
-
-rootObjects["ui.main"] = objects.make("UI.main", {"pane": objects.cast(rootObjects["test.paneset"], "UI.pane")});
-
-
-
-//rootObjects["shared.thumbnailthumbnail"] = objects.make("Object");
-//rootObjects["debug.text"] = objects.make("X.text", {string:"hello world"});
-
-
-
-
-// add them to the base environment
-forEach(rootObjects, function (v, k) {
-	base.add(k, v);
-});
-
-
-
-
+(function () {
+	function m(name, className, props) {
+		if (!className) className = "Object";
+		
+		if (!LOCAL && name.substr(0, 7) === "shared.") {
+			rootObjects[name] = makeRemoteObject(name, parseType(className));
+		} else {
+			rootObjects[name] = objects.make(className, props);
+			rootObjects[name].name = name;
+		}
+		
+		base.add(name, rootObjects[name]);
+	}
+	
+	m("shared.in");
+	m("shared.ont");
+	
+	m("shared.isA");
+	m("shared.name");
+	m("shared.relationTemplate");
+	
+	m("shared.type.type");
+	m("shared.type.situation");
+	m("shared.type.entity");
+	m("shared.type.infon");
+	m("shared.type.relation");  // this will itself be used as a binary relation to make relation types
+	
+	m("shared.realLife");
+	
+	
+	m("ui.ui", "UI.ui");
+	
+	m("ui.prefs", "UI.prefs");
+	
+	
+	m("test.pane", "UI.pane.pane");
+	rootObjects["test.pane"].prop["focus"].control.add(rootObjects["shared.realLife"]);
+	
+	m("test.pane2", "UI.pane.pane");
+	rootObjects["test.pane2"].prop["focus"].control.add(rootObjects["shared.type.entity"]);
+	
+	m("test.paneset", "UI.pane.set");
+	rootObjects["test.paneset"].prop["panes"].control.add("b", objects.cast(rootObjects["test.pane"], "UI.pane"));
+	rootObjects["test.paneset"].prop["panes"].control.add("bb", objects.cast(rootObjects["test.pane2"], "UI.pane"));
+	
+	m("ui.main", "UI.main", {"pane": objects.cast(rootObjects["test.paneset"], "UI.pane")});
+	
+})();
 
 
 

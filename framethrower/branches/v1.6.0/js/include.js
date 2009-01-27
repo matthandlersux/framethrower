@@ -26,6 +26,8 @@
 		"js/reactive/ranges.js",
 		"js/reactive/controlledCell.js",
 		
+		"js/remote/remote.js",
+		
 		"js/objects/objects.js",
 		"js/objects/rootObjects.js",
 		
@@ -38,9 +40,7 @@
 		"js/browser/evalThunk.js",
 		"js/browser/replaceXML.js",
 		"js/browser/actionXML.js",
-		"js/browser/events.js",
-		
-		"js/remote/remote.js"
+		"js/browser/events.js"
 		
 	];
 	

@@ -13,12 +13,12 @@ function getVariables(xslNode) {
 			}
 		});
 	}
-	var selectAttributes = xpath(".//xsl:*/@*[local-name() = 'select' or local-name() = 'test'][contains(., '$')]", xslNode);
+	var selectAttributes = xpath("descendant-or-self::xsl:*/@*[local-name() = 'select' or local-name() = 'test'][contains(., '$')]", xslNode);
 	forEach(selectAttributes, function (att) {
 		extract(att.nodeValue, att);
 	});
 	
-	var curlyAttributes = xpath(".//*/@*[contains(., '{')]", xslNode);
+	var curlyAttributes = xpath("descendant-or-self::*/@*[contains(., '{')]", xslNode);
 	forEach(curlyAttributes, function (att) {
 		forEachRegexp(att.nodeValue, /{[^}]*}/g, function (s) {
 			extract(s, att);
@@ -30,7 +30,7 @@ function getVariables(xslNode) {
 
 // returns a list of template names that are called in some XSL (via <xsl:call-template name="XXX" />)
 function getCallTemplates(xslNode) {
-	var temps = xpath(".//xsl:call-template/@name", xslNode);
+	var temps = xpath("descendant-or-self::xsl:call-template/@name", xslNode);
 	return map(temps, function (att) {
 		return att.nodeValue;
 	});

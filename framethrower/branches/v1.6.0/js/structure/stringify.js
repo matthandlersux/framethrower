@@ -27,7 +27,17 @@ function unparseExpr(expr) {
 	return unparse(helper(expr));
 }
 
-var stringify = unparseExpr;
+//var stringify = unparseExpr;
+function stringify(expr) {
+	if (typeof expr === "object") {
+		if (!expr.name) {
+			expr.name = unparseExpr(expr);
+		}
+		return expr.name;
+	} else {
+		return unparseExpr(expr);
+	}
+}
 
 function getExpr(o) {
 	/*

@@ -264,28 +264,31 @@ function triggerAction(thunkEssence) {
 	var thunk = createEl("f:thunk");
 	appendChild(island, thunk);
 	
+	var done = false;
+	
 	function onXMLUpdate() {
 		var remaining = xpath("descendant-or-self::f:thunk", island);
-		if (remaining.length === 0) {
-			
+		if (remaining.length === 0 && !done) {
+
 			//console.dirxml(island);
-			
-			//performActions(island.firstChild, emptyEnv);
-			
-			//performActionsJSLocal(actionXMLToJS(island.firstChild));
-			
+
 			var actions = actionXMLToJS(island.firstChild);
+			unloadXML(island);
+			done = true;
+
 			tagActionsClientOrServer(actions);
-			
+
 			//console.dir(actions);
-			
+
 			performActionsJS(actions, function (res) {
 				console.log("got result back", res);
 			});
-						
-			unloadXML(island);
-			
+
+
+
 			//console.profile();
+			
+
 		}
 	}
 	

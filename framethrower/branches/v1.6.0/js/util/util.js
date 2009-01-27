@@ -205,35 +205,3 @@ function capFirst(s) {
 
 
 
-
-
-//http://w3future.com/weblog/2006/02/#tailCallEliminationInJavascript
-Function.prototype.tailCallOptimized = function()
-{
-  var g = this;
-  return function()
-  {
-    for (var caller = arguments.callee.caller; caller; caller = caller.caller)
-      if (caller == arguments.callee)
-        throw {tailCallArgs: arguments, tailCallThis: this};
-      
-    var args = arguments;
-    var me   = this;
-    while (true)
-    {
-      try
-      {
-        return g.apply(me, args);
-      }
-      catch(e)
-      {
-        if (!e.tailCallArgs)
-          throw e;
-          
-        args = e.tailCallArgs;
-        me   = e.tailCallThis;
-      }
-    }
-  };
-};
-

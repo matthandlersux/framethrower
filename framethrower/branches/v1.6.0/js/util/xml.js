@@ -239,6 +239,12 @@ function serializeXML(xml) {
 	var s = new XMLSerializer();
 	return s.serializeToString(xml);
 }
+function unserializeXML(s) {
+	var parser = new DOMParser();
+	var ret = parser.parseFromString(s, "text/xml").firstChild;
+	document.adoptNode(ret);
+	return ret;
+}
 
 
 
