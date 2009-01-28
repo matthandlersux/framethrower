@@ -203,11 +203,11 @@ makeCast(TargetClassName) ->
 		}
 	end.
 
-makeCastDown(Cast, TargetClass, Classes) ->
+makeCastDown(Cast, TargetClassName, Classes) ->
 	fun (Obj) ->
 		OutputCell = cell:makeCell(),
 		TypeString = atom_to_list((Obj#object.origType)#type.value),
-		Inherits = inherits(dict:fetch(TypeString, Classes), TargetClass),
+		Inherits = inherits(dict:fetch(TypeString, Classes), dict:fetch(TargetClassName, Classes)),
 		if Inherits ->
 			cell:addLine(OutputCell, Cast(Obj))
 		end,
@@ -394,7 +394,8 @@ handle_cast({makeClass, Name, Inherit, Memoize}, State) ->
 		end,
 		castUp = Cast
 	},
-	CastDown = 	makeCastDown(Cast, NewClassWithoutCastDown, Classes),
+	TempClasses = dict:store(Name, NewClassWithoutCastDown, Classes),
+	CastDown = 	makeCastDown(Cast, Name, TempClasses),
 	NewClass = NewClassWithoutCastDown#class{castDown = CastDown},
 	makeCasts(NewClass#class.inherit, NewClass),
 	NewClasses = dict:store(Name, NewClass, Classes),
