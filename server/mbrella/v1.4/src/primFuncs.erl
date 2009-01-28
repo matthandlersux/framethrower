@@ -18,6 +18,14 @@ primitives() ->
 		OutputCell
 	end},
 	#exprFun{
+	name = "returnFuture",
+	type = "a -> Future a",
+	function = fun(Val) ->
+		OutputCell = cell:makeCell(),
+		cell:addLine(OutputCell, Val),
+		OutputCell
+	end},	
+	#exprFun{
 	name = "returnUnitSet",
 	type = "Unit a -> Set a",
 	function = fun(Cell) ->
@@ -34,6 +42,16 @@ primitives() ->
 		OutputCell = cell:makeCellMapInput(),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
 			cell:addLine(OutputCell, {Key, Val}) end),
+		cell:addOnRemove(OutputCell, RemoveFunc),
+		OutputCell
+	end},
+	#exprFun{
+	name = "returnFutureUnit",
+	type = "Future a -> Unit a",
+	function = fun(Cell) ->
+		OutputCell = cell:makeCell(),
+		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+			cell:addLine(OutputCell, Val) end),
 		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
