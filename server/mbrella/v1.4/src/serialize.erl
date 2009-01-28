@@ -56,9 +56,7 @@ serializeEnv() ->
 		end
 	end,
 	dict:fold(AddIfObj, dict:new(), EnvDict),
-	?trace("Writing"),
 	Response = gen_server:cast(?MODULE, write),
-	?trace(Response),
 	ok.
 
 serializeObj(Obj, InProcess) ->
@@ -171,12 +169,11 @@ handle_cast(unserialize, State) ->
 		makeCells(ObjOrCell, Dict)
 	end, dict:new(), ?this(ets)),
 	
-	
 	EmptyDependencies = ets:foldl(fun({Name, ObjOrCell}, Dependencies) -> 
 		tryMakeObject(ObjOrCell, Dependencies, CellDict) 
 	end, dict:new(), ?this(ets)),
 	
-	CellDict = ets:foldl(fun({Name, ObjOrCell}, Acc) -> 
+	ets:foldl(fun({Name, ObjOrCell}, Acc) -> 
 		populateCells(ObjOrCell, CellDict)
 	end, acc, ?this(ets)),
 	
@@ -188,54 +185,79 @@ handle_cast({terminate, Reason}, State) ->
 
 tryMakeObject(Obj, Dependencies, CellDict) when is_record(Obj, object) -> 
 	PropsReady = dict:fold(fun(PropName, Property, AccBool) ->
-		NewBool = case Property of
-			ObjProp when is_record(ObjProp, object) ->
-				case env:lookup(ObjProp#object.name) of
-					notfound -> false;
+		case AccBool of
+			{false, _} -> AccBool;
+			true ->
+				case Property of
+					ObjProp when is_record(ObjProp, object) ->
+						case env:lookup(ObjProp#object.name) of
+							notfound -> {false, ObjProp#object.name};
+							_ -> true
+						end;
 					_ -> true
-				end;
-			_ -> true
-		end,
-		AccBool andalso NewBool
-	end, Obj#object.prop),
-	Dependencies;
+				end
+		end
+	end, true, Obj#object.prop),
+	UpdatedDependencies = case PropsReady of
+		true -> 
+			NewProp = dict:map(fun(PropName, Property) ->
+				unserializeProp(Property, CellDict)
+			end, Obj#object.prop),
+			NewObj = Obj#object{prop = NewProp},
+			env:store(NewObj#object.name, NewObj),
+			Deps = case dict:find(NewObj#object.name, Dependencies) of
+				error -> [];
+				DepList -> DepList
+			end,
+			FewerDependencies = dict:erase(NewObj#object.name, Dependencies),
+			lists:foldl(fun(Dep, InnerDependencies) -> 
+				tryMakeObject(Dep, InnerDependencies, CellDict)
+			end, FewerDependencies, Deps);
+		{false, DependName} ->
+			CurDepList = case dict:find(DependName, Dependencies) of
+				error -> [];
+				DepList -> DepList
+			end,
+			NewDepList = [Obj|CurDepList],
+			dict:store(DependName, NewDepList, Dependencies)
+	end,
+	UpdatedDependencies;
 tryMakeObject(_, Dependencies, _) -> Dependencies.
 
-populateCells(A, B) -> B.
+populateCells(Cell, CellDict) when is_record(Cell, exprCell) -> 
+	StateList = Cell#exprCell.pid,
+	NewCell = dict:fetch(Cell#exprCell.name, CellDict),
+	NewProp = lists:map(fun(KeyOrKeyVal) ->
+		Restored = case KeyOrKeyVal of
+			{Key, Val} -> {unserializeProp(Key, CellDict), unserializeProp(Val, CellDict)};
+			Key -> unserializeProp(Key, CellDict)
+		end,
+		cell:addLine(NewCell, Restored)
+	end, StateList);
+populateCells(_,_) -> nosideeffect.
 
-unserializeProp(ObjOrCell, Dependencies) ->
-	case ObjOrCell of
-		Obj when is_record(Obj, object) ->
-			unserializeObj(Obj, Dependencies);
-		Cell when is_record(Cell, exprCell) ->
-			unserializeCell(Cell, Dependencies)
+
+unserializeProp(Property, CellDict) ->
+	case Property of
+		ObjProp when is_record(ObjProp, object) ->
+			case env:lookup(ObjProp#object.name) of
+				notfound -> error;
+				Obj -> Obj
+			end;
+		CellProp when is_record(CellProp, exprCell) ->
+			dict:fetch(CellProp#exprCell.name, CellDict);
+		Other -> Other
 	end.
-
 
 makeCells(Cell, CellDict) when is_record(Cell, exprCell) ->
 	NewCell = case type:isMap(Cell#exprCell.type) of
 		true -> cell:makeCellMapInput();
 		false -> cell:makeCell()
 	end,
-	dict:store(Cell#exprCell.name, NewCell, CellDict).
-
-unserializeCells(_, CellDict) -> CellDict.
-
-unserializeObjs(Obj, Dependencies) when is_record(Obj, object) ->
-	Dependencies;
-unserializeObjs(Obj, Dependencies) ->
-	Dependencies.
-
-unserializeObj(Obj, Dependencies) ->
-	Prop = Obj#object.prop,
-	NewProp = dict:map(fun(_, Property) -> Property end, Prop),
-	NewObj = Obj#object{prop = NewProp},
-	env:store(Obj#object.name, NewObj),
-	NewObj.
-	
-unserializeCell(Cell, UpdateFuncs) ->
-	Cell.
-
+	TypedCell = NewCell#exprCell{type=Cell#exprCell.type, bottom=Cell#exprCell.bottom},
+	cell:update(TypedCell),
+	dict:store(Cell#exprCell.name, TypedCell, CellDict);
+makeCells(_, CellDict) -> CellDict.
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2

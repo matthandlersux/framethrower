@@ -15,7 +15,7 @@
 %-export([injectFunc/2]).
 
 %% gen_server callbacks
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3, update/1]).
 
 %%For now, export all
 -compile(export_all).
@@ -45,6 +45,10 @@ makeCell() ->
 	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
 	NewCell = #exprCell{pid=Pid},
 	env:nameAndStoreCell(NewCell).
+
+update(Cell) ->
+	Name = Cell#exprCell.name,
+	env:store(Name, Cell).
 	
 makeCellMapInput() ->
 	ToKey = fun({Key,Val}) -> Key end,

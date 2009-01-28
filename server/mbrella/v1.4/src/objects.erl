@@ -264,6 +264,7 @@ addPropsToObject(Props, Obj, ObjClass, Classes) ->
 			case type:isReactive(PropType) of
 				true ->
 					PropCell = (cell:makeCell())#exprCell{type=PropType},
+					cell:update(PropCell),
 					dict:store(PropName, PropCell, ObjProps);
 				false ->
 					InstanceValue = dict:fetch(PropName, Props),
