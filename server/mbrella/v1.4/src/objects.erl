@@ -203,11 +203,11 @@ makeCast(TargetClassName) ->
 		}
 	end.
 
-makeCastDown(Cast, TargetClassName, Classes) ->
+makeCastDown(Cast, TargetClass, Classes) ->
 	fun (Obj) ->
 		OutputCell = cell:makeCell(),
 		TypeString = atom_to_list((Obj#object.origType)#type.value),
-		Inherits = inherits(dict:fetch(TypeString, Classes), dict:fetch(TargetClassName, Classes)),
+		Inherits = inherits(dict:fetch(TypeString, Classes), TargetClass),
 		if Inherits ->
 			cell:addLine(OutputCell, Cast(Obj))
 		end,
@@ -380,7 +380,7 @@ handle_call({getBroadcaster, ClassName, MemoString}, From, State) ->
 handle_cast({makeClass, Name, Inherit, Memoize}, State) ->
 	#state{classes=Classes} = State,
 	Cast = makeCast(Name),
-	NewClass = #class{
+	NewClassWithoutCastDown = #class{
 		name = Name, 
 		inherit = case Inherit of 
 			undefined -> undefined;
@@ -392,9 +392,10 @@ handle_cast({makeClass, Name, Inherit, Memoize}, State) ->
 			NewMemoEntry = #memoEntry{broadcaster = Broadcaster},
 			NewMemoEntry
 		end,
-		castUp = Cast,
-		castDown = makeCastDown(Cast, Name, Classes)
+		castUp = Cast
 	},
+	CastDown = 	makeCastDown(Cast, NewClassWithoutCastDown, Classes),
+	NewClass = NewClassWithoutCastDown#class{castDown = CastDown},
 	makeCasts(NewClass#class.inherit, NewClass),
 	NewClasses = dict:store(Name, NewClass, Classes),
 	NewState = #state{classes=NewClasses},
