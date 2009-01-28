@@ -113,6 +113,20 @@ var classesToMake = {
 	},
 	
 	
+	"UI.objectIP": {
+		prop: {
+			"object": "Unit Object"
+		}
+	},
+	"UI.consIP": {
+		inherit: "UI.objectIP",
+		prop: {
+			left: "Unit UI.objectIP",
+			right: "Unit UI.objectIP"
+		}
+	},
+	
+	
 	
 	"UI.prefs": {
 		prop: {

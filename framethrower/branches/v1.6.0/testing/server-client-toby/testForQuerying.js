@@ -18,14 +18,20 @@ function initialize() {
 	
 	//var expr = parseExpr("(mapUnit (compose returnFutureUnit Cons:right)) (Cons::lookup shared.name shared.realLife)");
 	
+	// testing variable shadowing:
+	// var expr = parseExpr("(bindSet -> returnUnit bindSet) shared.realLife");
+	
 	
 	//var expr = parseExpr("oldGetOntProp shared.name shared.realLife");
+
+	//var expr = parseExpr("oldGetName shared.realLife");
 	
 	// ===== Doesn't Work =====
 	
 	
+	var expr = parseExpr("getName shared.realLife");
 	
-	var expr = parseExpr("oldGetName shared.realLife");
+	
 	
 	
 	
