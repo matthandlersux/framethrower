@@ -5,7 +5,8 @@ erl="erl"
 webappname="pipeline"
 webappdir="./$webappname"
 sname="-sname $webappname"
-adddirs="-pa $PWD/$webappname/ebin $PWD/$webappname/deps/*/ebin $PWD/mbrella/v1.4/ebin $PWD/lib/"
+mbrellaversion="v1.4"
+adddirs="-pa $PWD/$webappname/ebin $PWD/$webappname/deps/*/ebin $PWD/mbrella/${mbrellaversion}/ebin $PWD/lib/"
 boot="-boot start_sasl"
 startapp="-s $webappname"
 #default is interactive
@@ -26,6 +27,7 @@ echo " extra flags: "
 echo ""
 echo " -s|--serialize                 serialized server state file location"
 echo " -h|--help                      print this message"
+echo " --noconfig                     do not use a config file for sasl"
 
 exit 1
 }
@@ -45,6 +47,8 @@ while [ $# -gt 0 ]
 			conf="-config errorlognotty";;
 		-s|--serialize)
 			serialize="serialize:start(\"${1}\")";;
+		--noconfig)
+			conf="";;
 		-h|--help)
 			help;;
 		*)

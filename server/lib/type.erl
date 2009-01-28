@@ -316,7 +316,7 @@ shiftVars(Anything, _) ->
 	
 
 %% 
-%% unparse:: AST -> {String, [Variables]}
+%% unparse:: Type -> {String, [Variables]}
 %% 
 unparse(AST) when is_list(AST) ->
 	unparse(AST, []);

@@ -84,14 +84,17 @@ loop(Req, DocRoot) ->
 												),
 												[{struct, [{"type", list_to_binary(type:unparse( type:getType(Cell) ))}]}|Accumulator]
 											end,
-							% try lists:foreach(ProcessQuery, Queries) of
 							try lists:foldl(ProcessQuery, [], Queries) of
 								ResponseTypes -> 
 									spit(Req, lists:reverse(ResponseTypes))
 							catch 
 								ErrorType:Reason -> 
-									?trace(Reason),
-									spit(Req, {struct, [{"errorType", ErrorType}, {"reason", list_to_binary(io_lib:format("~p", [Reason]))}] })
+									spit(Req, {struct, [
+										{"errorType", ErrorType}, 
+										{"reason", 
+											list_to_binary(io_lib:format("~p", [{Reason, erlang:get_stacktrace()}]))
+										}
+									] })
 							end
 					end;
 				"action" ->
@@ -109,9 +112,13 @@ loop(Req, DocRoot) ->
 									Success = lists:all(fun(X) -> X =/= error end, Returned),
 									spit(Req, {struct, [{"success", Success},{"returned", Returned}] } )
 							catch
-								ErrorType:Reason ->
-									?trace({ErrorType, Reason}),
-									spit(Req, {struct, [{"errorType", ErrorType}, {"reason", list_to_binary(io_lib:format("~p", [Reason]))}] })
+								ErrorType:Reason -> 
+									spit(Req, {struct, [
+										{"errorType", ErrorType}, 
+										{"reason", 
+											list_to_binary(io_lib:format("~p", [{Reason, erlang:get_stacktrace()}]))
+										}
+									] })
 							end
 					end;
                 _ ->

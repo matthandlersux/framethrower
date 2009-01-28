@@ -75,7 +75,8 @@ expr(ParsedString, LambdaEnv) when is_list(ParsedString) ->
 				notfound ->
 					case env:lookup(ParsedString) of
 						notfound ->
-							#exprVar{value = ParsedString};
+							% #exprVar{value = ParsedString};
+							throw({variable_not_in_environment, [{variable, ParsedString}, {lambda_variables, dict:fetch_keys(LambdaEnv)}]});
 						Expr -> Expr
 					end;
 				ExprVar ->
