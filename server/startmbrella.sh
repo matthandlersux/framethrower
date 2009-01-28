@@ -56,7 +56,7 @@ while [ $# -gt 0 ]
 	esac
 done
 
-eval='-eval "session:startManager(),memoize:start(),env:start(),objects:start()."'
+eval='-eval "session:startManager(),memoize:start(),env:start(),objects:start(),mblib:bootJsonScript()."'
 # eval='-eval "memoize:start()."'
 commonflags="$conf $sname $adddirs $boot $startapp $eval"
 
@@ -65,3 +65,4 @@ commonflags="$conf $sname $adddirs $boot $startapp $eval"
 #=====execute=====
 cd `dirname $0`
 eval "exec $erl $commonflags"
+# proc_open("eval exec $erl $commonflags", array(), something)
