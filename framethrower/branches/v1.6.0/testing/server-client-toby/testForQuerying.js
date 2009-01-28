@@ -1,11 +1,37 @@
 var cell, cell2;
 
 function initialize() {
-	//var test = makeRemoteObject("Object:upLeft shared.realLife", parseType("Set Cons"));
-	//cell = session.query(test);
+	
+	// ===== Works =====
+	
+	//var expr = parseExpr("Object:upLeft shared.realLife");
+	
+	//var expr = parseExpr("mapUnit (compose Object:upLeft Cons~Object) (Cons::lookup shared.name shared.realLife)");
+	//var expr = parseExpr("bindUnit (compose returnUnit Cons~Object) (Cons::lookup shared.name shared.realLife)");
+	
+	//var expr = parseExpr("(x1 -> bindUnit ((f -> g -> x -> f (g x)) returnUnit x1)) Cons~Object (Cons::lookup shared.name shared.realLife)");
+	//var expr = parseExpr("(x1 -> bindUnit ((x2 -> x3 -> x4 -> x2 (x3 x4)) returnUnit x1)) Cons~Object (Cons::lookup shared.name shared.realLife)");
+	
+	//var expr = parseExpr("getOntInfons shared.name shared.realLife");
+	
+	//var expr = parseExpr("(mapUnit (Cons:right)) (Cons::lookup shared.name shared.realLife)");
+	
+	//var expr = parseExpr("(mapUnit (compose returnFutureUnit Cons:right)) (Cons::lookup shared.name shared.realLife)");
 	
 	
-	var expr = parseExpr("mapUnit Cons~Object (Cons::lookup shared.name shared.realLife)");
+	//var expr = parseExpr("oldGetOntProp shared.name shared.realLife");
+	
+	// ===== Doesn't Work =====
+	
+	
+	
+	var expr = parseExpr("oldGetName shared.realLife");
+	
+	
+	
+	
+	//var expr = makeRemoteObject("thisDoesntExist", parseType("Unit Cons"));
+	//expr = makeApply(parseExpr("returnUnit"), expr);
 	
 	console.log("expr should be of type:", unparseType(getType(expr)));
 	

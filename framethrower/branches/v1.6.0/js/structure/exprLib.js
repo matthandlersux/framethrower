@@ -154,20 +154,20 @@ var exprLib = {
 		}
 	},
 	
+	oldGetOntProp: {
+		type: "Object -> Object -> Set Object",
+		expr: "rel -> obj -> infonsToObjects (getOntInfons rel obj)",
+		where: {
+			infonsToObjects: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:right"]
+			}
+		}
+	},
 	getOntProp: {
 		type: "Object -> Object -> Set Object",
-		expr: "rel -> obj -> infonsToObjects (filterByTruthInOnt (getInfons rel obj))", // TODO: filter here for truth in the ont layer
+		expr: "rel -> obj -> infonsToObjects (filterByTruthInOnt (getOntInfons rel obj))",
 		where: {
-			getInfons: {
-				type: "Object -> Object -> Set Cons",
-				expr: "rel -> obj -> helper (Cons::lookup rel obj)",
-				where: {
-					helper: {
-						type: "Unit Cons -> Set Cons",
-						chain: ["Object:upRight"]
-					}
-				}
-			},
 			infonsToObjects: {
 				type: "Set Cons -> Set Object",
 				chain: ["Cons:right"]
@@ -175,6 +175,17 @@ var exprLib = {
 		}
 	},
 	
+	
+	oldGetName: {
+		type: "Object -> Set String",
+		expr: "obj -> getStrings (oldGetOntProp shared.name obj)",
+		where: {
+			getStrings: {
+				type: "Set Object -> Set String",
+				chain: ["X.text:string"]
+			}
+		}
+	},
 	getName: {
 		type: "Object -> Set String",
 		expr: "obj -> getStrings (getOntProp shared.name obj)",
