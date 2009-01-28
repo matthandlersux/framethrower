@@ -206,7 +206,8 @@ makeCast(TargetClassName) ->
 makeCastDown(Cast, TargetClassName, Classes) ->
 	fun (Obj) ->
 		OutputCell = cell:makeCell(),
-		Inherits = inherits(dict:fetch((Obj#object.origType)#type.value, Classes), dict:fetch(TargetClassName, Classes)),
+		TypeString = atom_to_list((Obj#object.origType)#type.value),
+		Inherits = inherits(dict:fetch(TypeString, Classes), dict:fetch(TargetClassName, Classes)),
 		if Inherits ->
 			cell:addLine(OutputCell, Cast(Obj))
 		end,
