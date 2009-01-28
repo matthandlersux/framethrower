@@ -197,19 +197,23 @@ makeCasts(SuperClass, TargetClass) ->
 	makeCasts(SuperClass#class.inherit, TargetClass).
 
 makeCast(TargetClassName) ->
-	fun (Obj) -> 
-		Obj#object{
-			type = #type{type = typeName, value = list_to_atom(TargetClassName)}
-		}
+	fun (Obj) ->
+		CastingDict = Obj#object.castingDict,
+		CastedObjName = dict:fetch(TargetClassName, CastingDict),
+		Answer = env:lookup(CastedObjName),
+		Answer
 	end.
 
 makeCastDown(Cast, TargetClassName, Classes) ->
 	fun (Obj) ->
 		OutputCell = cell:makeCell(),
-		TypeString = atom_to_list((Obj#object.origType)#type.value),
-		Inherits = inherits(dict:fetch(TypeString, Classes), dict:fetch(TargetClassName, Classes)),
-		if Inherits ->
-			cell:addLine(OutputCell, Cast(Obj))
+		CastingDict = Obj#object.castingDict,
+		case dict:find(TargetClassName, CastingDict) of
+			error ->
+				nothing;
+			{ok, CastedObjName} -> 
+				CastedObj = env:lookup(CastedObjName),
+				cell:addLine(OutputCell, CastedObj)
 		end,
 		OutputCell
 	end.
@@ -285,6 +289,18 @@ addPropsToObject(Props, Obj, ObjClass, Classes) ->
 		_ -> addPropsToObject(Props, Obj#object{prop = NewObjProps}, ObjClass#class.inherit, Classes)
 	end.
 
+%make dict of className to correctly typed copies of Obj for each inherited class, adding to env when made
+makeInheritedCopies(Obj, Classes) ->
+	ClassName = atom_to_list((Obj#object.type)#type.value),
+	case (dict:fetch(ClassName, Classes))#class.inherit of
+		undefined -> dict:new();
+		UpClass ->
+			UpClassName = UpClass#class.name,
+			NewCopy = Obj#object{type = #type{type=typeName, value=list_to_atom(UpClassName)}},
+			NewerCopy = env:nameAndStoreObj(NewCopy),
+			Dict = makeInheritedCopies(NewerCopy, Classes),
+			dict:store(UpClassName, NewerCopy, Dict)
+	end.
 
 
 %% ====================================================================
@@ -323,13 +339,33 @@ handle_call({create, ClassName, Props}, From, State) ->
 			end,
 			{MemoS, MemoO}
 	end,
-
 	{NewObj, UpdatedState} = case MemoObject of
 		undefined ->
 			Type = #type{type=typeName, value=list_to_atom(ClassName)},
-			O = #object{origType = Type, type = Type},
+			O = #object{type = Type},
 			OWithProps = addPropsToObject(Props, O, C, Classes),
-			NewO = env:nameAndStoreObj(OWithProps),
+
+			%add this obj to env
+			NamedO = env:nameAndStoreObj(OWithProps),
+			
+			%make dict of copies of this obj for each inherited class, adding to env when made
+			%also include original in the dict
+			InheritCopies = makeInheritedCopies(NamedO, Classes),
+			Copies = dict:store(ClassName, NamedO, InheritCopies),
+			
+			%add dict of copy names to each copy and this obj, and update each obj in env
+			CopyNames = dict:map(fun(_, Copy) ->
+				Copy#object.name
+			end, Copies),
+			
+			CopiesWithDict = dict:map(fun(CopyClassName, Copy) ->
+				CopyName = Copy#object.name,
+				CopyWithDict = Copy#object{castingDict = CopyNames},
+				env:store(CopyName, CopyWithDict),
+				CopyWithDict
+			end, Copies),
+			
+			NewO = dict:fetch(ClassName, CopiesWithDict),
 			case Memoize of
 				undefined -> {NewO, State};
 				_ ->

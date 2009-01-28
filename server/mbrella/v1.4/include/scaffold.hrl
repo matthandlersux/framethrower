@@ -65,9 +65,9 @@
 
 -record (object, {
 	name,
-	origType,
 	type,
-	prop = dict:new()
+	prop = dict:new(),
+	castingDict
 	}).
 	
 %% ====================================================
