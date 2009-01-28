@@ -524,13 +524,8 @@
 		</messages>
 	
 		<endcap name = 'ec' expression = 'bindMap oneToMap sc' />
-		<endcap name = 'ec2' expression = 'bindMap x2ToMap sc' />
 		
 		<expectedmessages>
-			<set ecname = 'ec2' >
-				<number value = '8' />
-				<number value = '1' />
-			</set>
 			<set ecname = 'ec' >
 				<number value = '1' />
 				<number value = '1' />
@@ -557,10 +552,6 @@
 		</messages>
 	
 		<expectedmessages>
-			<set ecname = 'ec2' >
-				<number value = '12' />
-				<number value = '2' />
-			</set>
 			<set ecname = 'ec' >
 				<number value = '5' />
 				<number value = '2' />
@@ -583,9 +574,6 @@
 			</remove>
 			<remove ecname = 'ec' >
 				<number value = '6' />
-			</remove>
-			<remove ecname = 'ec2' >
-				<number value = '12' />
 			</remove>
 		</expectedmessages>
 
@@ -786,32 +774,6 @@
 			</set>
 			<set ecname = 'ec2' >
 				<number value = '5' />
-			</set>
-		</expectedmessages>
-
-		<messages>
-			<remove scname ='sc'>
-				<func name='oneTo' />
-			</remove>
-			<set scname ='sc'>
-				<func name='x2' />
-			</set>
-		</messages>
-
-		<expectedmessages>
-			<remove ecname = 'ec' >
-				<sc name = 'resultCap' />
-			</remove>
-			<set ecname = 'ec' >
-				<sc name = 'resultCap2' />
-			</set>
-		</expectedmessages>
-
-		<endcap name = 'ec3' expression = 'resultCap2' />
-		
-		<expectedmessages>
-			<set ecname = 'ec3' >
-				<number value = '10' />
 			</set>
 		</expectedmessages>
 
