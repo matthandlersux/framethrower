@@ -41,35 +41,106 @@ customExpr(AST, _) when is_boolean(AST) ->
 customExpr(AST, _) ->
 	AST.
 
-
+%% 
+%% exprParse takes a string and returns and expression, an expression can then be fed into eval:evaluate
+%% exprParse:: String -> Expr
+%%		Expr:: exprFun | exprCell | cons | String | Number | Bool | null
+%% 
 
 exprParse(String) ->
-	expr(parse(String)).
-expr(AST) when is_record(AST, cons) ->
-	{cons, AST#cons.type, expr(AST#cons.left), expr(AST#cons.right)};
-expr(AST) when AST =:= "true" orelse (AST =:= "false" orelse AST =:= "null") ->
-	list_to_atom(AST);
-expr(AST) when is_list(AST) ->
-	case is_string(AST) of
+	expr( parse(String), dict:new() ).
+expr( ParsedString, LambdaEnv ) when is_record(ParsedString, cons) ->
+	case ParsedString#cons.type of
+		lambda ->
+			ConsLeftExpr = 
+			if
+				is_list( ParsedString#cons.left ) -> 
+					ExprVar = #exprVar{value = ParsedString#cons.left},
+					LambdaEnv1 = lambdaVarStore(ExprVar#exprVar.value, ExprVar, LambdaEnv),
+					ExprVar;
+				true -> 
+					LambdaEnv1 = LambdaEnv,
+					expr( ParsedString#cons.left, LambdaEnv )
+			end,
+			{cons, ParsedString#cons.type, ConsLeftExpr, expr(ParsedString#cons.right, LambdaEnv1)};
+		apply ->
+			{cons, ParsedString#cons.type, expr(ParsedString#cons.left, LambdaEnv), expr(ParsedString#cons.right, LambdaEnv)}
+	end;
+expr(ParsedString, _) when ParsedString =:= "true" orelse (ParsedString =:= "false" orelse ParsedString =:= "null") ->
+	list_to_atom(ParsedString);
+expr(ParsedString, LambdaEnv) when is_list(ParsedString) ->
+	case is_string(ParsedString) of
 		true -> 
-			case env:lookup(AST) of
+			case lambdaVarLookup(ParsedString, LambdaEnv) of
 				notfound ->
-					#exprVar{value = AST};
-				Expr -> Expr
+					case env:lookup(ParsedString) of
+						notfound ->
+							#exprVar{value = ParsedString};
+						Expr -> Expr
+					end;
+				ExprVar ->
+					ExprVar
 			end;
 		false ->
-			exit(AST)
+			exit(ParsedString)
 	end;
-expr({primitive, _, BoolStringNat}) ->
+expr({primitive, _, BoolStringNat}, _) ->
 	BoolStringNat;
-expr({primitive, null}) ->
+expr({primitive, null}, _) ->
 	null;	
-expr(AST) when is_number(AST) ->
-	AST;
-expr(AST) when is_boolean(AST) ->
-	AST;
-expr(AST) ->
-	AST.
+expr(ParsedString, _) when is_number(ParsedString) ->
+	ParsedString;
+expr(ParsedString, _) when is_boolean(ParsedString) ->
+	ParsedString;
+expr(ParsedString, _) ->
+	ParsedString.
+
+
+%% 
+%% abstracted out for no reason code prettiness really...
+%% 
+
+lambdaVarLookup(String, Dict) ->
+	try dict:fetch(String, Dict) 
+	catch 
+		_:_ -> notfound
+	end.
+	
+lambdaVarStore(Key, Value, Dict) ->
+	dict:store(Key, Value, Dict).
+
+%% 
+%% old version of exprParse
+%% 
+% 
+% 
+% exprParse(String) ->
+% 	expr(parse(String)).
+% expr(AST) when is_record(AST, cons) ->
+% 	{cons, AST#cons.type, expr(AST#cons.left), expr(AST#cons.right)};
+% expr(AST) when AST =:= "true" orelse (AST =:= "false" orelse AST =:= "null") ->
+% 	list_to_atom(AST);
+% expr(AST) when is_list(AST) ->
+% 	case is_string(AST) of
+% 		true -> 
+% 			case env:lookup(AST) of
+% 				notfound ->
+% 					#exprVar{value = AST};
+% 				Expr -> Expr
+% 			end;
+% 		false ->
+% 			exit(AST)
+% 	end;
+% expr({primitive, _, BoolStringNat}) ->
+% 	BoolStringNat;
+% expr({primitive, null}) ->
+% 	null;	
+% expr(AST) when is_number(AST) ->
+% 	AST;
+% expr(AST) when is_boolean(AST) ->
+% 	AST;
+% expr(AST) ->
+% 	AST.
 	
 %% ====================================================
 %% parser
