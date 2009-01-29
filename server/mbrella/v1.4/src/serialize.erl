@@ -165,89 +165,27 @@ handle_cast(write, State) ->
 	ets:tab2file(?this(ets), ?this(file)),
     {noreply, State};
 handle_cast(unserialize, State) ->
+	%unserialize all cells
 	CellDict = ets:foldl(fun({Name, ObjOrCell}, Dict) -> 
 		makeCells(ObjOrCell, Dict)
 	end, dict:new(), ?this(ets)),
-	
-	EmptyDependencies = ets:foldl(fun({Name, ObjOrCell}, Dependencies) -> 
-		tryMakeObject(ObjOrCell, Dependencies, CellDict) 
-	end, dict:new(), ?this(ets)),
-	
+	%unserialize all objects, leaving old casting tables
+	{EmptyDependencies, NewObjectDict} = ets:foldl(fun({Name, ObjOrCell}, {Dependencies, ObjectDict}) -> 
+		tryMakeObject(ObjOrCell, Dependencies, CellDict, ObjectDict) 
+	end, {dict:new(), dict:new()}, ?this(ets)),
+	%map casting tables to new object names, and update objects in env
 	ets:foldl(fun({Name, ObjOrCell}, Acc) -> 
-		populateCells(ObjOrCell, CellDict)
+		mapCastingDict(ObjOrCell, NewObjectDict)
+	end, acc, ?this(ets)),
+	%add objects/cells/primitives to all cells
+	ets:foldl(fun({Name, ObjOrCell}, Acc) -> 
+		populateCells(ObjOrCell, CellDict, NewObjectDict)
 	end, acc, ?this(ets)),
 	
 	
     {noreply, State};
 handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
-
-
-tryMakeObject(Obj, Dependencies, CellDict) when is_record(Obj, object) -> 
-	PropsReady = dict:fold(fun(PropName, Property, AccBool) ->
-		case AccBool of
-			{false, _} -> AccBool;
-			true ->
-				case Property of
-					ObjProp when is_record(ObjProp, object) ->
-						case env:lookup(ObjProp#object.name) of
-							notfound -> {false, ObjProp#object.name};
-							_ -> true
-						end;
-					_ -> true
-				end
-		end
-	end, true, Obj#object.prop),
-	UpdatedDependencies = case PropsReady of
-		true -> 
-			NewProp = dict:map(fun(PropName, Property) ->
-				unserializeProp(Property, CellDict)
-			end, Obj#object.prop),
-			NewObj = Obj#object{prop = NewProp},
-			env:store(NewObj#object.name, NewObj),
-			Deps = case dict:find(NewObj#object.name, Dependencies) of
-				error -> [];
-				DepList -> DepList
-			end,
-			FewerDependencies = dict:erase(NewObj#object.name, Dependencies),
-			lists:foldl(fun(Dep, InnerDependencies) -> 
-				tryMakeObject(Dep, InnerDependencies, CellDict)
-			end, FewerDependencies, Deps);
-		{false, DependName} ->
-			CurDepList = case dict:find(DependName, Dependencies) of
-				error -> [];
-				DepList -> DepList
-			end,
-			NewDepList = [Obj|CurDepList],
-			dict:store(DependName, NewDepList, Dependencies)
-	end,
-	UpdatedDependencies;
-tryMakeObject(_, Dependencies, _) -> Dependencies.
-
-populateCells(Cell, CellDict) when is_record(Cell, exprCell) -> 
-	StateList = Cell#exprCell.pid,
-	NewCell = dict:fetch(Cell#exprCell.name, CellDict),
-	NewProp = lists:map(fun(KeyOrKeyVal) ->
-		Restored = case KeyOrKeyVal of
-			{Key, Val} -> {unserializeProp(Key, CellDict), unserializeProp(Val, CellDict)};
-			Key -> unserializeProp(Key, CellDict)
-		end,
-		cell:addLine(NewCell, Restored)
-	end, StateList);
-populateCells(_,_) -> nosideeffect.
-
-
-unserializeProp(Property, CellDict) ->
-	case Property of
-		ObjProp when is_record(ObjProp, object) ->
-			case env:lookup(ObjProp#object.name) of
-				notfound -> error;
-				Obj -> Obj
-			end;
-		CellProp when is_record(CellProp, exprCell) ->
-			dict:fetch(CellProp#exprCell.name, CellDict);
-		Other -> Other
-	end.
 
 makeCells(Cell, CellDict) when is_record(Cell, exprCell) ->
 	NewCell = case type:isMap(Cell#exprCell.type) of
@@ -258,6 +196,80 @@ makeCells(Cell, CellDict) when is_record(Cell, exprCell) ->
 	cell:update(TypedCell),
 	dict:store(Cell#exprCell.name, TypedCell, CellDict);
 makeCells(_, CellDict) -> CellDict.
+
+tryMakeObject(Obj, Dependencies, CellDict, ObjectDict) when is_record(Obj, object) -> 
+	PropsReady = dict:fold(fun(PropName, Property, AccBool) ->
+		case AccBool of
+			{false, _} -> AccBool;
+			true ->
+				case Property of
+					ObjProp when is_record(ObjProp, object) ->
+						case dict:find(ObjProp#object.name, ObjectDict) of
+							error -> {false, ObjProp#object.name};
+							_ -> true
+						end;
+					_ -> true
+				end
+		end
+	end, true, Obj#object.prop),
+	case PropsReady of
+		true -> 
+			NewProp = dict:map(fun(PropName, Property) ->
+				unserializeProp(Property, CellDict, ObjectDict)
+			end, Obj#object.prop),
+			NewObj = env:nameAndStoreObj(Obj#object{prop = NewProp}),
+			NewObjectDict = dict:store(Obj#object.name, NewObj, ObjectDict),
+			Deps = case dict:find(Obj#object.name, Dependencies) of
+				error -> [];
+				DepList -> DepList
+			end,
+			FewerDependencies = dict:erase(Obj#object.name, Dependencies),
+			lists:foldl(fun(Dep, {InnerDependencies, InnerObjectDict}) -> 
+				tryMakeObject(Dep, InnerDependencies, CellDict, InnerObjectDict)
+			end, {FewerDependencies, NewObjectDict}, Deps);
+		{false, DependName} ->
+			CurDepList = case dict:find(DependName, Dependencies) of
+				error -> [];
+				DepList -> DepList
+			end,
+			NewDepList = [Obj|CurDepList],
+			NewDependencies = dict:store(DependName, NewDepList, Dependencies),
+			{NewDependencies, ObjectDict}
+	end;
+tryMakeObject(_, Dependencies, _, ObjectDict) -> {Dependencies, ObjectDict}.
+
+mapCastingDict(Obj, ObjectDict) when is_record(Obj, object) ->
+	CastingDict = Obj#object.castingDict,
+	NewCastingDict = dict:map(fun(_, ObjName) ->
+		NewObj = dict:fetch(Obj#object.name, ObjectDict),
+		NewObj#object.name
+	end, CastingDict),
+	UpdatedObj = Obj#object{castingDict = NewCastingDict},
+	env:store(UpdatedObj#object.name, UpdatedObj);
+mapCastingDict(_, _) -> nosideeffect.	
+
+populateCells(Cell, CellDict, ObjectDict) when is_record(Cell, exprCell) -> 
+	StateList = Cell#exprCell.pid,
+	NewCell = dict:fetch(Cell#exprCell.name, CellDict),
+	NewProp = lists:map(fun(KeyOrKeyVal) ->
+		Restored = case KeyOrKeyVal of
+			{Key, Val} -> {unserializeProp(Key, CellDict, ObjectDict), unserializeProp(Val, CellDict, ObjectDict)};
+			Key -> unserializeProp(Key, CellDict, ObjectDict)
+		end,
+		cell:addLine(NewCell, Restored)
+	end, StateList);
+populateCells(_,_,_) -> nosideeffect.
+
+
+unserializeProp(Property, CellDict, ObjectDict) ->
+	case Property of
+		ObjProp when is_record(ObjProp, object) ->
+			dict:fetch(ObjProp#object.name, ObjectDict);
+		CellProp when is_record(CellProp, exprCell) ->
+			dict:fetch(CellProp#exprCell.name, CellDict);
+		Other -> Other
+	end.
+
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2
@@ -275,7 +287,7 @@ handle_info(Info, State) ->
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
 terminate(Reason, State) ->
-	ets:tab2file(?this(ets), ?this(file)),
+	%ets:tab2file(?this(ets), ?this(file)),
 	%ets:delete(?this(ets)),
     ok.
 
