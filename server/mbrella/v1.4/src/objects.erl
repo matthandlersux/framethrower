@@ -176,6 +176,8 @@ remove(Object, Property, Key) ->
 getBroadcaster(ClassName, MemoString) ->
 	gen_server:call(?MODULE, {getBroadcaster, ClassName, MemoString}).
 
+addToMemoTable(Obj, Prop) ->
+	gen_server:cast(?MODULE, {addToMemoTable, Obj, Prop}).
 
 %% ====================================================================
 %% Internal functions
@@ -454,8 +456,39 @@ handle_cast({addProp, Name, PropName, TypeString}, State) ->
 	end,
 	env:addFun(GetFuncName, FuncType, GetFunc),
 	NewState = State#state{classes=NewClasses},
-	{noreply, NewState}.
-
+	{noreply, NewState};
+handle_cast({addToMemoTable, Obj, Props}, State) ->
+	Classes = State#state.classes,
+	ClassName = atom_to_list((Obj#object.type)#type.value),
+	C = dict:fetch(ClassName, Classes),
+	Memoize = C#class.memoize,
+	MemoString = case Memoize of
+		undefined -> undefined;
+		_ ->
+			MemoValues = lists:map(fun(PropName) ->
+				dict:fetch(PropName, Props)
+			end, Memoize),
+			makeMemoString(MemoValues)
+	end,		
+	UpdatedState = case Memoize of
+		undefined -> State;
+		_ ->
+			NewMemoTable = case dict:find(MemoString, C#class.memoTable) of
+				error -> dict:store(MemoString, (C#class.makeMemoEntry)(), C#class.memoTable);
+				_ -> C#class.memoTable
+			end,
+			Entry = dict:fetch(MemoString, NewMemoTable),
+			NewEntry = Entry#memoEntry{object=Obj},
+			NewerMemoTable = dict:store(MemoString, NewEntry, NewMemoTable),
+			NewC = C#class{memoTable = NewerMemoTable},
+			NewClasses = dict:store(ClassName, NewC, Classes),
+			NewState = State#state{classes=NewClasses},
+			
+			Broadcaster = NewEntry#memoEntry.broadcaster,
+			cell:addLine(Broadcaster, Obj),
+			NewState
+	end,
+	{noreply, UpdatedState}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2

@@ -21,6 +21,7 @@
 %% --------------------------------------------------------------------
 
 -include ("../include/scaffold.hrl").
+-include ("../../../lib/ast.hrl").
 
 %% --------------------------------------------------------------------
 %% External exports
@@ -181,6 +182,10 @@ handle_cast(unserialize, State) ->
 	ets:foldl(fun({Name, ObjOrCell}, Acc) -> 
 		populateCells(ObjOrCell, CellDict, NewObjectDict)
 	end, acc, ?this(ets)),
+	%add objects to memoTables
+	dict:map(fun(Name, Obj) -> 
+		memoizeObject(Obj)
+	end, NewObjectDict),
 	
 	
     {noreply, State};
@@ -270,6 +275,21 @@ unserializeProp(Property, CellDict, ObjectDict) ->
 		Other -> Other
 	end.
 
+memoizeObject(Obj) ->
+	Prop = Obj#object.prop,
+	NewProp = dict:map(fun(_, Property) ->
+		case Property of
+			Cell when is_record(Cell, exprCell) ->
+				case atom_to_list((Cell#exprCell.type)#type.value) of
+					"Future" ->
+						[Val] = cell:getStateList(Property),
+						Val;
+					_ -> Property
+				end;
+			_ -> Property
+		end
+	end, Prop),
+	objects:addToMemoTable(Obj, NewProp).
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2
