@@ -308,13 +308,13 @@ primitives() ->
 		cell:addLine(OutputCell, null),
 		Intercept = cell:injectIntercept(OutputCell, fun(Message, State) ->
 			case Message of
-				{plus} -> 
+				plus -> 
 					case State of
 						0 -> cell:removeLine(OutputCell, null),
 							 1;
 						_ -> State+1
 					end;
-				{minus} ->
+				minus ->
 					case State of
 						1 -> cell:addLine(OutputCell, null),
 							 0;

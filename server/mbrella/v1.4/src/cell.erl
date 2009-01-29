@@ -76,8 +76,10 @@ getStateArray(Cell) ->
 %% 
 
 makeFuture(Value) ->
-	Type = type:get(Value),
-	Cell = (makeCell())#exprCell{type=Type},
+	TypeString = type:unparse(type:get(Value)),
+	FutureType = type:parse("Future " ++ TypeString),
+	Cell = (makeCell())#exprCell{type=FutureType},
+	update(Cell),
 	addLine(Cell, Value),
 	Cell.
 

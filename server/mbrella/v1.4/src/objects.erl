@@ -258,38 +258,54 @@ addMemoLookup(ClassDef) ->
 			env:addFun(FuncName, FuncType, Func)
 	end.
 
+castPropsUpIfNeeded(Props, ObjClass, Classes) ->
+	NewObjProps = dict:map(fun (PropName, PropType) ->
+		case type:isReactive(PropType) of
+			true ->
+				reactive;
+			false ->
+				InstanceValue = dict:fetch(PropName, Props),
+				InstanceType = type:get(InstanceValue),
+				case type:compareTypes(InstanceType, PropType) of
+					true -> InstanceValue;
+					false ->
+						PropTypeString = atom_to_list(PropType#type.value),
+						InstanceTypeString = atom_to_list(InstanceType#type.value),
+						SubClass = dict:fetch(InstanceTypeString, Classes),
+						SuperClass = dict:fetch(PropTypeString, Classes),
+						Inherits = ((InstanceType#type.type == typeName) and (PropType#type.type == typeName) and inherits(SubClass, SuperClass)),
+						case Inherits of
+							true -> (SuperClass#class.castUp)(InstanceValue);
+							false -> ?trace("Property Type Mismatch")
+						end
+				end
+		end
+	end, ObjClass#class.prop),
+	case ObjClass#class.inherit of
+		undefined -> NewObjProps;
+		_ -> 
+			InheritedProps = castPropsUpIfNeeded(Props, ObjClass#class.inherit, Classes),
+			dict:merge(fun(_,V1,_)->V1 end, InheritedProps, NewObjProps)
+	end.
 
-
-addPropsToObject(Props, Obj, ObjClass, Classes) ->
-	NewObjProps = dict:fold(
-		fun (PropName, PropType, ObjProps) ->
+makeFutureProps(Props, ObjClass, Classes) ->
+	NewObjProps = dict:map(
+		fun (PropName, PropType) ->
 			case type:isReactive(PropType) of
 				true ->
 					PropCell = (cell:makeCell())#exprCell{type=PropType},
 					cell:update(PropCell),
-					dict:store(PropName, PropCell, ObjProps);
+					PropCell;
 				false ->
-					InstanceValue = dict:fetch(PropName, Props),
-					InstanceType = type:get(InstanceValue),
-					PropValue = case type:compareTypes(InstanceType, PropType) of
-						true -> InstanceValue;
-						false ->
-							PropTypeString = atom_to_list(PropType#type.value),
-							InstanceTypeString = atom_to_list(InstanceType#type.value),
-							SubClass = dict:fetch(InstanceTypeString, Classes),
-							SuperClass = dict:fetch(PropTypeString, Classes),
-							Inherits = ((InstanceType#type.type == typeName) and (PropType#type.type == typeName) and inherits(SubClass, SuperClass)),
-							if
-								Inherits -> (SuperClass#class.castUp)(dict:fetch(PropName, Props));
-								true -> ?trace("Property Type Mismatch")
-							end
-					end,
-					dict:store(PropName, cell:makeFuture(PropValue), ObjProps)
+					PropValue = dict:fetch(PropName, Props),
+					cell:makeFuture(PropValue)
 			end
-		end, Obj#object.prop, ObjClass#class.prop),
+		end, ObjClass#class.prop),
 	case ObjClass#class.inherit of
-		undefined -> Obj#object{prop = NewObjProps};
-		_ -> addPropsToObject(Props, Obj#object{prop = NewObjProps}, ObjClass#class.inherit, Classes)
+		undefined -> NewObjProps;
+		_ -> 
+			InheritedProps = makeFutureProps(Props, ObjClass#class.inherit, Classes),
+			dict:merge(fun(_,V1,_)->V1 end, InheritedProps, NewObjProps)
 	end.
 
 %make dict of className to correctly typed copies of Obj for each inherited class, adding to env when made
@@ -324,9 +340,10 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({create, ClassName, Props}, From, State) ->
+handle_call({create, ClassName, PropDict}, From, State) ->
 	Classes = State#state.classes,
 	C = dict:fetch(ClassName, Classes),
+	Props = castPropsUpIfNeeded(PropDict, C, Classes),
 	Memoize = C#class.memoize,
 	{MemoString, MemoObject} = case Memoize of
 		undefined -> {undefined, undefined};
@@ -346,8 +363,9 @@ handle_call({create, ClassName, Props}, From, State) ->
 		undefined ->
 			Type = #type{type=typeName, value=list_to_atom(ClassName)},
 			O = #object{type = Type},
-			OWithProps = addPropsToObject(Props, O, C, Classes),
-
+			NewProps = makeFutureProps(Props, C, Classes),
+			OWithProps = O#object{prop = NewProps},
+			
 			%add this obj to env
 			NamedO = env:nameAndStoreObj(OWithProps),
 			
