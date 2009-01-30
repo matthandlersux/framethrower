@@ -56,7 +56,7 @@
 			<f:intact object="." action="remove" property="truth" key="null" />
 		</xsl:for-each>
 		
-		<f:perform with-action="$nameObject" name="nameObject">
+		<f:perform with-action="$nameObject">
 			<f:with-param name="object" select="$focus" />
 			<f:with-param name="name" select="$newName" />
 		</f:perform>

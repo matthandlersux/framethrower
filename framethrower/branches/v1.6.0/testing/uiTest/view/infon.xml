@@ -48,6 +48,10 @@
 		</f:thunk>
 	</f:template>
 	
+	<!-- <xsl:call-template name="prettyPrint">
+		<xsl:with-param name="node" select="$infonArgs" />
+	</xsl:call-template> -->
+	
 
 	<f:include url="util/printInfon.xml" />
 	

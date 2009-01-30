@@ -40,6 +40,8 @@ function getRemote(expr) {
 	}
 }
 
+var debugRemoteObjects = {};
+
 function makeRemoteObject(name, type) {
 	var o = {
 		kind: "remoteObject",
@@ -47,6 +49,7 @@ function makeRemoteObject(name, type) {
 		name: name,
 		type: type
 	};
+	debugRemoteObjects[name] = o;
 	return o;
 }
 
@@ -96,7 +99,7 @@ function xhr(url, post, callback, failCallback, timeout) {
 	// }
 	
 	// BROWSER: this is just to test from local files, will be removed
-	netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+	if (window.netscape) netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
 	
 	if (!timeout) timeout = timeoutDefault;
 	
@@ -184,6 +187,7 @@ var session = (function () {
 				xhr(serverBaseUrl+"action", json, function (response) {
 					// TODO
 					// call sending.callback
+					sending.callback(); // TODO fill this with correct variables or whatever
 
 					sendAllActions();
 				});
@@ -246,7 +250,7 @@ var session = (function () {
 		xhr(serverBaseUrl+"pipeline", json, function (text) {
 			console.log("updater got a message", text);
 			
-			try {
+			// try {
 				var o = JSON.parse(text);
 				
 				if (o.sessionClosed) {
@@ -276,9 +280,9 @@ var session = (function () {
 					refreshScreen();
 				}
 				
-			} catch (e) {
-				console.log("had an error", e, cells, cells["1"]);
-			}
+			// } catch (e) {
+			// 	console.log("had an error", e, cells, cells["1"]);
+			// }
 
 			startUpdater();
 		});

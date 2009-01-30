@@ -33,8 +33,9 @@ function initialize() {
 	
 	//var expr = parseExpr("getTypes shared.realLife");
 	
-	var expr = parseExpr("getRelationTemplate shared.in");
+	//var expr = parseExpr("getRelationTemplate shared.in");
 	
+	var expr = parseExpr("takeOne (Object:upLeft shared.realLife)");
 	
 	
 	

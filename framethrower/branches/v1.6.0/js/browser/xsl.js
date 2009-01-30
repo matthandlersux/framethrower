@@ -223,6 +223,60 @@ function compileTemplate(templateNode, url) {
 			cell.addOnRemove(function () {
 				delete dirtyThunks[stringify(cell)]; // remove itself from dirtyThunks
 			});
+			
+			
+			function listenToCell(c) {
+				// TODO: at some point we need to do a total audit on whether things get removed correctly w.r.t. cells and injected functions
+				
+				// returns a function to stop listening to the cell
+				c = evaluate(c);
+				var childRemovers = [];
+				
+				var removeFunc = c.injectFunc(function (x) {
+					makeDirty();
+					if (x && x.key !== undefined && x.val !== undefined) {
+						// we have a Map entry
+						var entryNums = [];
+						
+						if (isReactive(getType(x.key)) && !x.key.params) {
+							var keyRemover = listenToCell(x.key);
+							entryNums.push(childRemovers.length);
+							childRemovers.push(keyRemover);
+						}
+						if (isReactive(getType(x.val)) && !x.val.params) {
+							var valRemover = listenToCell(x.val);
+							entryNums.push(childRemovers.length);
+							childRemovers.push(valRemover);
+						}
+						return function () {
+							makeDirty();
+							forEach(entryNums, function (entryNum) {
+								childRemovers[entryNum]();
+								childRemovers[entryNum] = null;
+							});
+						};
+					} else {
+						var entryNum;
+						if (isReactive(getType(x)) && !x.params) {
+							entryNum = childRemovers.length;
+							childRemovers.push(listenToCell(x));
+						}
+						return function () {
+							makeDirty();
+							if (entryNum) {
+								childRemovers[entryNum]();
+								childRemovers[entryNum] = null;
+							}
+						};
+					}
+				});
+				return function () {
+					forEach(childRemovers, function (childRemover) {
+						if (childRemover) childRemover();
+					});
+					removeFunc();
+				};
+			}
 
 
 			forEach(p, function (expr, name) {
@@ -231,9 +285,23 @@ function compileTemplate(templateNode, url) {
 
 				// if the result is a startCap (dynamic), inject makeDirty function
 				var t = getType(result);
-				if (t.kind === "typeApply") {
-					var removeFunc = result.injectFunc(makeDirty);
+				if (isReactive(t) && !expr.params) {
+
+					var removeFunc = listenToCell(result);
 					cell.addOnRemove(removeFunc);
+					
+					// var removeFunc = result.injectFunc(function (x) {
+					// 	makeDirty();
+					// 	if (x && x.key && x.val) {
+					// 		// we have a Map entry
+					// 	} else {
+					// 		
+					// 	}
+					// 	return function () {
+					// 		
+					// 	};
+					// });
+					// cell.addOnRemove(removeFunc);
 				}
 			});
 

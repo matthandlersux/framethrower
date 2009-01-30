@@ -3,10 +3,16 @@ function exprToXML(expr, type) {
 	if (lit !== undefined) {
 		return lit;
 	} else {
-		if (expr.kind === "startCap" && !expr.params) {
+		if (!type) type = getType(expr);
+		
+		if (isReactive(expr.type) && !expr.params) {
 			// Note: the !expr.params is for excluding parameter-less templates which otherwise look like StartCap's (not Fun's)
 			
-			if (!type) type = getType(expr);
+			if (expr.kind === "remoteObject") {
+				expr = evaluate(expr);
+				setTimeout(session.flush,0);
+			}
+			
 			var constructor = getTypeConstructor(type);
 			
 			expr.makeSorted();

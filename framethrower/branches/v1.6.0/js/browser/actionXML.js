@@ -158,8 +158,17 @@ function performActionsJS(actions, callback, env, ret) {
 			performActionsJS(actions, callback, env, ret);
 		} else if (cs === "server") {
 			
+			var json = clientJSONToServerJSON(todo);
+			console.log("Sending actions to server", json);
 			
+			session.addActions(json, function (results) {
+				// TODO add variables to environment, to ret...
+				console.log("Got response from actions", results);
+				
+				performActionsJS(actions, callback, env, ret);
+			});
 			
+			//session.addActions();
 			
 			// TODO
 			
