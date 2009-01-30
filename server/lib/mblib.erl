@@ -103,6 +103,7 @@ catchElements(Vars) ->
 	receive
 		{add, Var} ->
 			catchElements(Vars ++ [Var]);
+		%Andrew: I changed this to take a Ref because eval was receiving interceptor messages
 		{return, Pid, Ref} ->
 			Pid ! {Ref, Vars}
 	end.

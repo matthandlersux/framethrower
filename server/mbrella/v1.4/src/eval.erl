@@ -166,6 +166,7 @@ dontCollide(Variable, AllVars, Suffix) ->
 	end.
 
 getLambdaVars( Expr ) ->
+	%TODO: catcherElements is very unfunctional, may want to change.
 	Catcher = mblib:catchElements(),
 	LookForLambda =
 		fun( #cons{type = lambda, left = Variable, right = RightExpr} = Expr1 ) when is_record(Expr1, cons) ->

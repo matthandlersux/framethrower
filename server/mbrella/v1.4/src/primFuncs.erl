@@ -159,7 +159,7 @@ primitives() ->
 						_ -> Cache
 					end		
 			end
-		end, dict:new()),
+		end, undefined),
 		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
 			intercept:sendIntercept(Intercept, {add, Val}),
 			fun() -> intercept:sendIntercept(Intercept, {remove, Val}) end
