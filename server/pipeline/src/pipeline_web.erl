@@ -110,7 +110,8 @@ loop(Req, DocRoot) ->
 							try processActionList(Actions) of
 								{Returned, Created} ->
 									Success = lists:all(fun(X) -> X =/= error end, Returned),
-									spit(Req, {struct, [{"success", Success},{"returned", Returned},{"created", Created}] } )
+									CreatedStruct = {struct, Created},
+									spit(Req, {struct, [{"success", Success},{"returned", Returned},{"created", CreatedStruct}] } )
 							catch
 								ErrorType:Reason -> 
 									spit(Req, {struct, [
@@ -139,7 +140,7 @@ processActionList(Actions) ->
 	{Results, Variables} = processActionList(Actions, [], []),
 	JsonResults = lists:map(fun(error) -> error; (ExprElement) -> mblib:exprElementToJson(ExprElement) end, Results),
 	JsonVariables = lists:map(fun({Error,error}) -> {Error,error}; ({Name,ExprElement}) ->
-		{struct, [{mblib:exprElementToJson(Name), mblib:exprElementToJson(ExprElement)}] }
+		{mblib:exprElementToJson(Name),mblib:exprElementToJson(ExprElement)}
 	end, Variables),
 	{JsonResults, JsonVariables}.
 
