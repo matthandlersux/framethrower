@@ -29,8 +29,9 @@ function initialize() {
 	// ===== Doesn't Work =====
 	
 	
-	var expr = parseExpr("getName shared.realLife");
+	//var expr = parseExpr("getName shared.realLife");
 	
+	var expr = parseExpr("getTypes shared.realLife");
 	
 	
 	

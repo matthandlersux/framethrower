@@ -38,6 +38,8 @@ function evalThunk(thunkNode) {
 			}
 		});
 		
+		session.flush();
+		
 		if (thunkNode.custom === null) {
 			// thunk has been unloaded, so remove updater
 			removeFunc();

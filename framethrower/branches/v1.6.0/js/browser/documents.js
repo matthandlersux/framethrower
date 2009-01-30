@@ -2,7 +2,10 @@ if (window.ROOTDIR === undefined) window.ROOTDIR = "";
 
 function asyncRequest(url, callback) {
 	var req = new XMLHttpRequest();
+	
 	req.open("GET", url, true);
+
+	
 	req.onreadystatechange = function () {
 		if (req.readyState == 4) {
 		 	if (req.status == 200 || req.status == 0) {
@@ -12,7 +15,11 @@ function asyncRequest(url, callback) {
 			}
 		}
 	};
-	req.send(null);
+	try {
+		req.send(null);
+	} catch (e) {
+		debug.error("Unable to open url `"+url+"`");
+	}
 }
 
 
@@ -29,7 +36,7 @@ var documents = (function () {
 					callbacks[url] = [callback];
 					asyncRequest(ROOTDIR+url, function (req) {
 						var xml = req.responseXML.firstChild;
-						var xmlIncludes = xpath("f:include", xml);
+						var xmlIncludes = xpath("descendant-or-self::f:include", xml);
 						
 						var funcs = [];
 						forEach(xmlIncludes, function (include) {

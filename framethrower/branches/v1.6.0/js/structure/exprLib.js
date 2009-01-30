@@ -296,6 +296,16 @@ var exprLib = {
 			}
 		}
 	},
+	getConsIPComponents: {
+		type: "UI.consIP -> Map Number (Set UI.consIP)",
+		expr: "consIP -> unfoldMapInv downLeft consIP",
+		where: {
+			downLeft: {
+				type: "UI.consIP -> Set UI.consIP",
+				chain: ["UI.consIP:left"]
+			}
+		}
+	},
 	
 	getInfonArguments: {
 		type: "Cons -> Map Number (Unit Object)",
@@ -307,6 +317,16 @@ var exprLib = {
 			}
 		}
 	},
+	getInfonIPArguments: {
+		type: "UI.consIP -> Map Number (Unit UI.objectIP)",
+		expr: "infon -> mapMapValue (compose takeOne downRight) (getConsIPComponents infon)",
+		where: {
+			downRight: {
+				type: "Set UI.consIP -> Set UI.objectIP",
+				chain: ["UI.consIP:right"]
+			}
+		}
+	},
 
 	getInfonRelations: {
 		type: "Cons -> Set Object",
@@ -315,6 +335,28 @@ var exprLib = {
 			finalLeft: {
 				type: "Set Cons -> Set Object",
 				chain: ["Cons:left"]
+			}
+		}
+	},
+	getInfonIPRelations: {
+		type: "UI.consIP -> Set UI.objectIP",
+		expr: "infon -> finalLeft (flattenSet (returnUnitSet (takeLast (getConsIPComponents infon))))",
+		where: {
+			finalLeft: {
+				type: "Set UI.consIP -> Set UI.objectIP",
+				chain: ["UI.consIP:left"]
+			}
+		}
+	},
+	
+	
+	getRelationTypeComponents: {
+		type: "Cons -> Map Number (Set Cons)",
+		expr: "cons -> unfoldMapInv downRight cons",
+		where: {
+			downRight: {
+				type: "Cons -> Set Cons",
+				chain: ["Cons:right"]
 			}
 		}
 	}

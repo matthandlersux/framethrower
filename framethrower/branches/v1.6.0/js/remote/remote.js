@@ -89,11 +89,11 @@ if (!window.serverBaseUrl) {
 
 function xhr(url, post, callback, failCallback, timeout) {
 	
-	maxCalls--;
-	if (maxCalls <= 0) {
-		console.error("Max calls exceeded");
-		return;
-	}
+	// maxCalls--;
+	// if (maxCalls <= 0) {
+	// 	console.error("Max calls exceeded");
+	// 	return;
+	// }
 	
 	// BROWSER: this is just to test from local files, will be removed
 	netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
@@ -251,6 +251,8 @@ var session = (function () {
 				
 				if (o.sessionClosed) {
 					// TODO
+					debug.error("SESSION CLOSED!");
+					return;
 				} else {
 					lastMessageId = o.lastMessageId;
 					forEach(o.updates, function (update) {

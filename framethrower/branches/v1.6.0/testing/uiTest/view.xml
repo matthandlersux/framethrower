@@ -9,7 +9,16 @@
 	<f:derive name="paneset" d="test.paneset" />
 	
 	
-	<f:thunk url="main/main.xml" />
+	<f:derive name="testConsIP" d="UI.consIP~UI.objectIP test.consIP" />
+	<f:derive name="infonType" d="shared.type.infon" />
+	
+
+	<f:thunk url="view/infonIP.xml">
+		<f:with-param name="focus" select="$testConsIP" />
+		<f:with-param name="expectedType" select="$infonType" />
+	</f:thunk>
+	
+	<!-- <f:thunk url="main/main.xml" /> -->
 	
 	
 		<!-- <html:div>

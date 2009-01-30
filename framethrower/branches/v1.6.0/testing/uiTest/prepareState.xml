@@ -16,6 +16,18 @@
 	<f:derive name="typeType" d="shared.type.type" />
 	
 	
+	
+	<f:perform with-action="$nameObject">
+		<f:with-param name="object" select="$situationType" />
+		<f:with-param name="name" select="'Situation'" />
+	</f:perform>
+	<f:perform with-action="$nameObject">
+		<f:with-param name="object" select="$entityType" />
+		<f:with-param name="name" select="'Entity'" />
+	</f:perform>
+	
+	
+	
 	<f:perform with-action="$nameObject">
 		<f:with-param name="object" select="$realLife" />
 		<f:with-param name="name" select="'Real Life'" />

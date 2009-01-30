@@ -33,13 +33,13 @@ var classesToMake = {
 		memoize: ["left", "right"]
 	},
 	
-	"Core.relationType": {
-		inherit: "Object",
-		prop: {
-			"input": "Map Number Object",
-			"output": "Object"
-		}
-	},
+	// "Core.relationType": {
+	// 	inherit: "Object",
+	// 	prop: {
+	// 		"input": "Map Number Object",
+	// 		"output": "Object"
+	// 	}
+	// },
 	
 	// ====================================================
 	// External Representations
@@ -121,8 +121,8 @@ var classesToMake = {
 	"UI.consIP": {
 		inherit: "UI.objectIP",
 		prop: {
-			left: "Unit UI.objectIP",
-			right: "Unit UI.objectIP"
+			left: "UI.objectIP",
+			right: "UI.objectIP"
 		}
 	},
 	

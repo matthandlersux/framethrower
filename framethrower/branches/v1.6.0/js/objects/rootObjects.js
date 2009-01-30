@@ -55,6 +55,21 @@ var rootObjects = {};
 	
 	m("ui.main", "UI.main", {"pane": objects.cast(rootObjects["test.paneset"], "UI.pane")});
 	
+	
+	
+	//m("test.consIP", "UI.consIP");
+	m("test.objectIP1", "UI.objectIP");
+	m("test.objectIP2", "UI.objectIP");
+	m("test.objectIP3", "UI.objectIP");
+	
+	rootObjects["test.objectIP1"].prop["object"].control.add(rootObjects["shared.in"]);
+	
+	
+	m("test.consIP2", "UI.consIP", {left: rootObjects["test.objectIP1"], right: rootObjects["test.objectIP2"]});
+	m("test.consIP", "UI.consIP", {left: rootObjects["test.consIP2"], right: rootObjects["test.objectIP3"]});
+	//rootObjects["test.consIP"].prop["left"].control.add(rootObjects["shared.in"]);
+	//rootObjects["test.consIP"].prop["right"].control.add(rootObjects["shared.realLife"]);
+	
 })();
 
 

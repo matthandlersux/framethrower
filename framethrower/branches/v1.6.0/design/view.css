@@ -1,10 +1,17 @@
-.object {
+.object, .objectDrop {
 	color:#fff;
 	background-color:#666; /* default, but will be overwritten depending on the object's type */
 	padding:0px 3px;
 	line-height:140%;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
+}
+
+.objectDrop {
+	border: 2px dotted;
+	background-color:rgba(0,0,0,.5);
+	font-family: Candara;
+	color:#ddd;
 }
 
 

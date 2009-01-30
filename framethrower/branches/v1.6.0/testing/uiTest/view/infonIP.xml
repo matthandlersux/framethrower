@@ -1,0 +1,91 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="UI.objectIP" />
+	<f:param name="expectedType" type="Object" />
+
+	<f:derive name="object" d="UI.objectIP:object focus" />
+	<f:derive name="asConsIP" d="UI.objectIP~UI.consIP focus" />
+	<f:derive name="infonType" d="shared.type.infon" />
+	
+	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
+	
+	<f:derive name="typeName" d="getName expectedType" />
+
+	
+	<xsl:variable name="expectInfon" select="$expectedType/@name = $infonType/@name" />
+	<xsl:variable name="empty" select="not($object) and not($asConsIP)" />
+	
+	<xsl:choose>
+		<xsl:when test="$empty and $expectInfon">
+			Select Relation.
+		</xsl:when>
+		<xsl:when test="$empty and not($expectInfon)">
+			<xsl:variable name="color" select="$typeDisplay/f:entry[f:key/f:o/@name = $expectedType/@name][1]/f:value/f:literal/@value" />
+			
+			<html:div class="objectDrop">
+				<xsl:attribute name="style">
+					border-color: <xsl:value-of select="$color" />;
+				</xsl:attribute>
+				
+				<xsl:value-of select="$typeName/*/@value" />
+			
+			</html:div>
+		</xsl:when>
+		<xsl:when test="$expectInfon and $asConsIP">
+			<f:thunk with-template="$printCons">
+				<f:with-param name="consIP" select="$asConsIP" />
+			</f:thunk>
+		</xsl:when>
+		<xsl:when test="not($empty) and not($expectInfon)">
+			
+		</xsl:when>
+		<xsl:otherwise>
+			ERROR.
+		</xsl:otherwise>
+	</xsl:choose>
+
+	<f:template name="printCons">
+		<f:param name="consIP" type="UI.consIP" />
+		
+		<f:derive name="entityType" d="shared.type.entity" />
+		
+		<f:derive name="infonArgs" d="getInfonIPArguments consIP" />
+		<f:derive name="template" d="(compose (bindSet getRelationTemplate) (bindSet (compose returnUnitSet UI.objectIP:object))) (getInfonIPRelations consIP)" />
+		
+		<html:div>Cons In Progress</html:div>
+		
+		<xsl:variable name="rt" select="$template/f:literal/f:relationTemplate" />
+		<xsl:if test="$rt">
+			<xsl:call-template name="print">
+				<xsl:with-param name="relationTemplate" select="$rt" />
+				<xsl:with-param name="infonArgs" select="$infonArgs" />
+				<xsl:with-param name="argTemplate" select="$printArg" />
+			</xsl:call-template>
+		</xsl:if>
+		
+		<f:template name="printArg">
+			<f:param name="focus" type="UI.objectIP" />
+			<f:param name="num" type="Number" />
+			
+			<f:thunk url="infonIP.xml">
+				<f:with-param name="focus" select="$focus" />
+				<f:with-param name="expectedType" select="$entityType" />
+			</f:thunk>
+		</f:template>
+
+
+		<f:include url="util/printInfon.xml" />
+		
+		<f:include url="/xml/debug/prettyPrint.xml" />
+	</f:template>
+	
+	<f:template name="printObject">
+		
+		<html:div>Object Here</html:div>
+	</f:template>
+	
+</f:template>
