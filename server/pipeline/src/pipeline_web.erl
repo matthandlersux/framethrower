@@ -108,9 +108,9 @@ loop(Req, DocRoot) ->
 						_SessionPid ->
 							Actions = struct:get_value(<<"actions">>, Struct),
 							try processActionList(Actions) of
-								Returned ->
+								{Returned, Created} ->
 									Success = lists:all(fun(X) -> X =/= error end, Returned),
-									spit(Req, {struct, [{"success", Success},{"returned", Returned}] } )
+									spit(Req, {struct, [{"success", Success},{"returned", Returned},{"created", Created}] } )
 							catch
 								ErrorType:Reason -> 
 									spit(Req, {struct, [
@@ -136,8 +136,12 @@ loop(Req, DocRoot) ->
 %% 
 
 processActionList(Actions) ->
-	Results = processActionList(Actions, [], []),
-	lists:map(fun(error) -> error; (ExprElement) -> mblib:exprElementToJson(ExprElement) end, Results).
+	{Results, Variables} = processActionList(Actions, [], []),
+	JsonResults = lists:map(fun(error) -> error; (ExprElement) -> mblib:exprElementToJson(ExprElement) end, Results),
+	JsonVariables = lists:map(fun({Error,error}) -> {Error,error}; ({Name,ExprElement}) ->
+		{struct, [{mblib:exprElementToJson(Name), mblib:exprElementToJson(ExprElement)}] }
+	end, Variables),
+	{JsonResults, JsonVariables}.
 
 	
 processActionList(Actions, Updates, Variables) ->
@@ -145,8 +149,8 @@ processActionList(Actions, Updates, Variables) ->
 						ActionType = struct:get_value(<<"action">>, Action),
 						processAction(ActionType, Action, UpdatesAccumulator, VariablesAccumulator)
 					end,
-	{ActionUpdates, _} = lists:foldl(ProcessActions, {Updates, Variables}, Actions),
-	lists:reverse(ActionUpdates).
+	{ActionUpdates, ReturnVariables} = lists:foldl(ProcessActions, {Updates, Variables}, Actions),
+	{lists:reverse(ActionUpdates), ReturnVariables}.
 
 %%
 %% processAction is called bye processActionList to appropriately deal with an action sent to the server.
@@ -157,7 +161,7 @@ processActionList(Actions, Updates, Variables) ->
 processAction(<<"block">>, Action, Updates, OldVariables) ->
 	BlockVariables = struct:get_value(<<"variables">>, Action),
 	Actions = struct:get_value(<<"actions">>, Action),
-	Returned = processActionList(Actions, [], OldVariables),
+	{Returned,_} = processActionList(Actions, [], OldVariables),
 	NewVariables = try lists:zip(BlockVariables, Returned)
 				catch 
 					_:_ ->

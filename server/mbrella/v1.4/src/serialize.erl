@@ -47,7 +47,7 @@ start_link(FileName) ->
 	end.
 
 serializeEnv() ->
-	EnvDict = env:getAllAsDict(),
+	EnvDict = env:getStateDict(),
 	AddIfObj = fun(_, ObjOrCellOrFunc, InProcess) ->
 		case ObjOrCellOrFunc of
 			Obj when is_record(Obj, object) -> 
