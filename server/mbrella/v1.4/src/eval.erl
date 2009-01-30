@@ -173,8 +173,9 @@ getLambdaVars( Expr ) ->
 			{next, mblib:recordKeysToIndex(cons, [right])}
 		end,
 	mblib:traverse( Expr, LookForLambda ),
-	Catcher ! {return, self()},
-	receive X -> X end.
+	Ref = make_ref(),
+	Catcher ! {return, self(), Ref},
+	receive {Ref, X} -> X end.
 
 getAllVars( Expr ) ->
 	Catcher = mblib:catchElements(),
@@ -184,8 +185,10 @@ getAllVars( Expr ) ->
 			{ok, Expr1}
 		end,
 	mblib:traverse( Expr, LookForVars ),
-	Catcher ! {return, self()},
-	receive X -> X end.
+	
+	Ref = make_ref(),	
+	Catcher ! {return, self(), Ref},
+	receive {Ref, X} -> X end.
 
 %% 
 %% take a primitave/created function and apply it to the right hand side object

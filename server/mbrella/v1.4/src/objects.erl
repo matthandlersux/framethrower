@@ -107,22 +107,22 @@ classesToMake() ->
 	].
 
 makeRootObjects() ->
-	env:store("shared.in", objects:create("Object", dict:new())),
-	
-	env:store("shared.in", objects:create("Object", dict:new())),
-	env:store("shared.ont", objects:create("Object", dict:new())),
+	objects:createWithName("Object", dict:new(), "shared.in"),
 
-	env:store("shared.isA", objects:create("Object", dict:new())),
-	env:store("shared.name", objects:create("Object", dict:new())),
-	env:store("shared.relationTemplate", objects:create("Object", dict:new())),
+	objects:createWithName("Object", dict:new(), "shared.ont"),
 
-	env:store("shared.type.type", objects:create("Object", dict:new())),
-	env:store("shared.type.situation", objects:create("Object", dict:new())),
-	env:store("shared.type.entity", objects:create("Object", dict:new())),
-	env:store("shared.type.infon", objects:create("Object", dict:new())),
-	env:store("shared.type.relation", objects:create("Object", dict:new())), %% this will itself be used as a binary relation to make relation types
+	objects:createWithName("Object", dict:new(), "shared.isA"),
+	objects:createWithName("Object", dict:new(), "shared.name"),
+	objects:createWithName("Object", dict:new(), "shared.relationTemplate"),
 
-	env:store("shared.realLife", objects:create("Object", dict:new())),
+	objects:createWithName("Object", dict:new(), "shared.type.type"),
+	objects:createWithName("Object", dict:new(), "shared.type.situation"),
+	objects:createWithName("Object", dict:new(), "shared.type.entity"),
+	objects:createWithName("Object", dict:new(), "shared.type.infon"),
+	%% this will itself be used as a binary relation to make relation types
+	objects:createWithName("Object", dict:new(), "shared.type.relation"), 
+
+	objects:createWithName("Object", dict:new(), "shared.realLife"),
 	ok.
 	
 %% ====================================================================
@@ -153,8 +153,16 @@ makeClass(Name, Inherit, Memoize) ->
 addProp(Name, PropName, TypeString) ->
 	gen_server:cast(?MODULE, {addProp, Name, PropName, TypeString}).
 
+createWithName(ClassName, Props, Name) ->
+	try gen_server:call(?MODULE, {create, ClassName, Props, Name}) of
+		Object -> Object
+	catch
+		ErrorType:ErrorPattern -> 
+			{error, objectCreationError}
+	end.	
+
 create(ClassName, Props) ->
-	try gen_server:call(?MODULE, {create, ClassName, Props}) of
+	try gen_server:call(?MODULE, {create, ClassName, Props, noname}) of
 		Object -> Object
 	catch
 		ErrorType:ErrorPattern -> 
@@ -340,7 +348,7 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({create, ClassName, PropDict}, From, State) ->
+handle_call({create, ClassName, PropDict, InName}, From, State) ->
 	Classes = State#state.classes,
 	C = dict:fetch(ClassName, Classes),
 	Props = castPropsUpIfNeeded(PropDict, C, Classes),
@@ -367,7 +375,12 @@ handle_call({create, ClassName, PropDict}, From, State) ->
 			OWithProps = O#object{prop = NewProps},
 			
 			%add this obj to env
-			NamedO = env:nameAndStoreObj(OWithProps),
+			NamedO = case InName of
+				noname -> env:nameAndStoreObj(OWithProps);
+				_ -> 
+					env:store(InName, OWithProps),
+					OWithProps#object{name=InName}
+			end,
 			
 			%make dict of copies of this obj for each inherited class, adding to env when made
 			%also include original in the dict

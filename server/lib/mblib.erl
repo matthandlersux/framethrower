@@ -103,8 +103,8 @@ catchElements(Vars) ->
 	receive
 		{add, Var} ->
 			catchElements(Vars ++ [Var]);
-		{return, Pid} ->
-			Pid ! Vars
+		{return, Pid, Ref} ->
+			Pid ! {Ref, Vars}
 	end.
 
 %% ====================================================
@@ -176,7 +176,11 @@ exprElementToJson(X) when is_list(X) ->
 		end                  
 	end,
 	case lists:all(Fun, X) of
-		true -> list_to_binary([$"] ++ X ++ [$"]);
+		true -> 
+			case X of
+				[$<|_] -> list_to_binary(X);
+				_ -> list_to_binary([$"] ++ X ++ [$"])
+			end;
 		false -> X
 	end;
 exprElementToJson(X) when is_pid(X) ->

@@ -132,6 +132,41 @@ primitives() ->
 		cell:addOnRemove(OutputCell, RemoveFunc2),
 		OutputCell
 	end},
+	#exprFun{
+	name = "takeOne",
+	type = "Set a -> Unit a",
+	function = fun(Cell) ->
+		OutputCell = cell:makeCell(),
+		Intercept = cell:injectIntercept(OutputCell, fun(Message, Cache) ->
+			case Message of
+				{add, Val} -> 
+					case Cache of
+						undefined -> 
+							cell:addLine(OutputCell, Val),
+							Val;
+						_ -> Cache
+					end;
+				{remove, Val} ->
+					case Cache of
+						Val ->
+							cell:removeLine(OutputCell, Val),
+							case cell:getStateArray(Cell) of
+								[First|_] -> 
+									cell:addLine(OutputCell, First),
+									First;
+								[] -> undefined
+							end;
+						_ -> Cache
+					end		
+			end
+		end, dict:new()),
+		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+			intercept:sendIntercept(Intercept, {add, Val}),
+			fun() -> intercept:sendIntercept(Intercept, {remove, Val}) end
+		end),
+		cell:addOnRemove(OutputCell, RemoveFunc),
+		OutputCell
+	end},	
 	%% ============================================================================
 	%% Bool utility functions
 	%% ============================================================================
@@ -535,7 +570,7 @@ primitives() ->
 	#exprFun{
 	name = "keys",
 	type = "Map a b -> Set a",
-	function = fun(Fun, Cell) ->
+	function = fun(Cell) ->
 		OutputCell = cell:makeCell(),
 		RemoveFunc = cell:injectFunc(Cell, fun({Key, Val}) ->
 			cell:addLine(OutputCell, Key)
