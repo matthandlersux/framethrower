@@ -38,7 +38,7 @@ function evalThunk(thunkNode) {
 			}
 		});
 		
-		session.flush();
+		setTimeout(session.flush, 0);
 		
 		if (thunkNode.custom === null) {
 			// thunk has been unloaded, so remove updater

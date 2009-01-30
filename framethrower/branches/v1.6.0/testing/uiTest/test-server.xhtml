@@ -8,15 +8,15 @@
     xmlns:svg="http://www.w3.org/2000/svg">
 
 <head>
-<title>UI Testing</title>
+<title>UI Testing - Server</title>
 
 <link rel="stylesheet" href="../../design/style.css" type="text/css" media="screen" title="no title" charset="utf-8" />
 
 <script>
 var ROOTDIR = "../../";
 var DEBUG = true;
-var LOCAL = true;
-//var LOCAL = false;
+//var LOCAL = true;
+var LOCAL = false;
 
 var INCLUDES=["test.js"];
 var ONLOAD="initialize()";
@@ -28,17 +28,17 @@ var ONLOAD="initialize()";
 </head>
 
 <body>
-		<f:thunk>
-			<f:with-template url="testing/uiTest/view.xml" />
-		</f:thunk>
-		
 		<!-- <f:thunk>
-			<f:with-template url="testing/uiTest/main/main.xml" />
+			<f:with-template url="testing/uiTest/view.xml" />
 		</f:thunk> -->
 		
-		<f:on event="load">
+		<f:thunk>
+			<f:with-template url="testing/uiTest/main/main.xml" />
+		</f:thunk>
+		
+		<!-- <f:on event="load">
 			<f:with-template url="testing/uiTest/prepareState.xml" />
-		</f:on>
+		</f:on> -->
 		
 		<f:on event="load">
 			<f:with-template url="testing/uiTest/prepareUIState.xml" />

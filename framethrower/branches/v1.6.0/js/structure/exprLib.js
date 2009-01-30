@@ -60,6 +60,10 @@ var exprLib = {
 		type: "Set (Unit a) -> Set a",
 		expr: "compose flattenSet (mapSet returnUnitSet)"
 	},
+	bindUnitSet: {
+		type: "(a -> Unit b) -> Set a -> Set b",
+		expr: "f -> bindSet (compose returnUnitSet f)"
+	},
 	
 	mapBinaryUnit: {
 		type: "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
@@ -359,7 +363,29 @@ var exprLib = {
 				chain: ["Cons:right"]
 			}
 		}
+	},
+	getRelationTypeInputs: {
+		type: "Cons -> Map Number (Unit Object)",
+		expr: "rt -> mapMapValue (compose takeOne down) (getRelationTypeComponents rt)",
+		where: {
+			down: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:left", "Cons:right"]				
+			}
+		}
+	},
+	getRelationTypeOutputs: {
+		type: "Cons -> Set Object",
+		expr: "rt -> finalRight (flattenSet (returnUnitSet (takeLast (getConsComponents rt))))",
+		where: {
+			finalRight: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:right"]
+			}
+		}
 	}
+	
+	
 
 
 

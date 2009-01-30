@@ -53,7 +53,7 @@
 							<xsl:if test="$arg">
 								<f:thunk with-template="$argTemplate">
 									<f:with-param name="focus" select="$arg" />
-									<f:with-param name="num" select="$num" as="Number" />
+									<f:with-param name="num" select="@num" as="Number" />
 								</f:thunk>
 							</xsl:if>
 						</xsl:when>

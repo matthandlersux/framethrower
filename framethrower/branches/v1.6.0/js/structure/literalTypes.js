@@ -23,7 +23,7 @@ function parseLiteral(s) {
 		return +s;
 	} else if (/^".*"$/.test(s)) {
 		// matches a string
-		var sub = s.substring(1, s.length - 2);
+		var sub = s.substring(1, s.length - 1);
 		return sub.replace(/\\(["\\])/g, "$1");
 	} else if (/^</.test(s)) {
 		return unserializeXML(s);

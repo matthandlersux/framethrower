@@ -29,6 +29,7 @@
 			<html:div class="objectDrop">
 				<xsl:attribute name="style">
 					border-color: <xsl:value-of select="$color" />;
+					color: <xsl:value-of select="$color" />;
 				</xsl:attribute>
 				
 				<xsl:value-of select="$typeName/*/@value" />
@@ -54,7 +55,11 @@
 		<f:derive name="entityType" d="shared.type.entity" />
 		
 		<f:derive name="infonArgs" d="getInfonIPArguments consIP" />
-		<f:derive name="template" d="(compose (bindSet getRelationTemplate) (bindSet (compose returnUnitSet UI.objectIP:object))) (getInfonIPRelations consIP)" />
+		<f:derive name="template" d="(compose (bindSet getRelationTemplate) (bindUnitSet UI.objectIP:object)) (getInfonIPRelations consIP)" />
+		
+		<f:derive name="rtInputs" d="mapSet getRelationTypeInputs (bindUnitSet Object~Cons (bindSet getTypes (bindUnitSet UI.objectIP:object (getInfonIPRelations consIP))))" />
+		
+		
 		
 		<html:div>Cons In Progress</html:div>
 		
@@ -71,11 +76,17 @@
 			<f:param name="focus" type="UI.objectIP" />
 			<f:param name="num" type="Number" />
 			
+			<xsl:variable name="type" select="$rtInputs/f:map[1]/f:entry[position() = $num/@value]/f:value/*" />
+			
 			<f:thunk url="infonIP.xml">
 				<f:with-param name="focus" select="$focus" />
-				<f:with-param name="expectedType" select="$entityType" />
+				<f:with-param name="expectedType" select="$type" />
 			</f:thunk>
 		</f:template>
+		
+		<!-- <xsl:call-template name="prettyPrint">
+			<xsl:with-param name="node" select="$rtInputs" />
+		</xsl:call-template> -->
 
 
 		<f:include url="util/printInfon.xml" />

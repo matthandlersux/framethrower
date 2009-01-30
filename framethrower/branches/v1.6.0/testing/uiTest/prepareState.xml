@@ -69,6 +69,15 @@
 			</f:relationTemplate>
 		</f:with-param>
 	</f:perform>
+	<f:perform with-action="$makeRelationType2" name="situationToEntityToInfon">
+		<f:with-param name="input1" select="$situationType" />
+		<f:with-param name="input2" select="$entityType" />
+		<f:with-param name="output" select="$infonType" />
+	</f:perform>
+	<f:perform with-action="$typeObject">
+		<f:with-param name="object" select="$in" />
+		<f:with-param name="type" select="$situationToEntityToInfon" />
+	</f:perform>
 	
 	<f:perform with-action="$relationTemplateObject">
 		<f:with-param name="object" select="$name" />
