@@ -40,6 +40,7 @@ function makeBaseCell (toKey) {
 	
 	//if cell is of type Unit a or Set a, f is a function that takes one argument key::a
 	//if cell is of type Map a b, f is a function that takes one javascript object: {key::a, val::b}
+	//f(k) or f{key=k,val=v}) returns a callback function that will be called when k is removed from the Unit/Set/Map
 	cell.injectFunc = function (f) {
 		var id = funcColor++;
 		funcs.set(id, f);
