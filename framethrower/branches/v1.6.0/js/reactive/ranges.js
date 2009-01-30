@@ -22,13 +22,13 @@ function makeRangedSet(onAdd, onRemove) {
 	
 	var removeRange = function (range) {
 		forCustomRange(range, function(dot, key) {
-			onRemove(key);
+			onRemove(dot);
 		});
 	};
 	
 	var addRange = function (range) {
 		forCustomRange(range, function(dot, key) {
-			onAdd(dot.val);
+			onAdd(dot);
 		});
 	};
 	

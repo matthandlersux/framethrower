@@ -4,15 +4,15 @@ function makeBaseCell (toKey) {
 	var onRemoves = [];
 	var funcColor = 0; //counter for coloring injected functions
 
-	var onAdd = function (val) {
+	var onAdd = function (dot) {
 		funcs.forEach(function (func, id) {
-			addLineResponse(val, func, id);
+			addLineResponse(dot, func, id);
 		});
 	};
 
-	var onRemove = function(key) {
+	var onRemove = function(dot) {
 		funcs.forEach(function (func, id) {
-			removeLineResponse(key, id);
+			removeLineResponse(dot, id);
 		});
 	};
 
@@ -38,12 +38,14 @@ function makeBaseCell (toKey) {
 		dots.makeSorted();
 	};
 	
+	//if cell is of type Unit a or Set a, f is a function that takes one argument key::a
+	//if cell is of type Map a b, f is a function that takes one javascript object: {key::a, val::b}
 	cell.injectFunc = function (f) {
 		var id = funcColor++;
 		funcs.set(id, f);
 		dots.forRange(function (dot, key) {
 			if(dot.num > 0) {
-				addLineResponse(dot.val, f, id);
+				addLineResponse(dot, f, id);
 			}
 		});
 		
@@ -59,7 +61,7 @@ function makeBaseCell (toKey) {
 	cell.removeFunc = function (id) {
 		funcs.remove(id);
 		dots.forRange(function (dot, key) {
-			removeLineResponse(key, id);
+			removeLineResponse(dot, id);
 		});
 		if (funcs.isEmpty() && !cell.persist) {
 			forEach(onRemoves, function(onRemove) {
@@ -74,9 +76,10 @@ function makeBaseCell (toKey) {
 		if (dot !== undefined && dot.num != 0) {
 			dot.num++;
 		} else {
-			dots.set(key, {val:value, num:1, lines:makeObjectHash()});
+			dot = {val:value, num:1, lines:makeObjectHash()};
+			dots.set(key, dot);
 			if (dots.inRange(key)) {
-				onAdd(value);
+				onAdd(dot);
 			}
 		}
 		return function () {
@@ -89,23 +92,23 @@ function makeBaseCell (toKey) {
 		if(dot != undefined) {
 			dot.num--;
 			if(dot.num == 0) {
-				if (dots.inRange(key)) {
-					onRemove(key);
-				}
 				dots.remove(key);
+				if (dots.inRange(key)) {
+					onRemove(dot);
+				}
 			}
 		}
 	};
 	
-	var addLineResponse = function (value, func, id) {
+	var addLineResponse = function (dot, func, id) {
+		var value = dot.val;
 		var onRemove = func(value);
 		if (onRemove !== undefined) {
 			dots.get(toKey(value)).lines.set(id, onRemove);
 		}
 	};
 	
-	var removeLineResponse = function (key, id) {
-		var dot = dots.get(key);
+	var removeLineResponse = function (dot, id) {
 		if (dot !== undefined) {
 			var removeFunc = dot.lines.get(id);
 			if (removeFunc) {
@@ -135,6 +138,6 @@ function makeCellMapInput() {
 	var toKey = function (value) {
 		return value.key;
 	};
-		
+
 	return makeBaseCell(toKey);
 }

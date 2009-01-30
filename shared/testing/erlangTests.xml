@@ -741,7 +741,7 @@
 	</test>
 
 	<test name='reactiveApplyTest1'>
-		<startcap name='sc' type='unit (Number -> Set Number)' />
+		<startcap name='sc' type='Unit (Number -> Set Number)' />
 
 		<endcap name = 'ec' expression = 'reactiveApply sc 5' />
 
@@ -778,6 +778,43 @@
 		</expectedmessages>
 
 	</test>
+
+	<test name='takeOneTest1'>
+		<startcap name='sc' type='Set Number' />
+
+		<endcap name = 'ec' expression = 'takeOne sc' />
+
+		<messages>
+			<set scname = 'sc'>
+				<number value='2' />
+			</set>
+			<set scname = 'sc'>
+				<number value='4' />
+			</set>
+		</messages>
+		
+		<expectedmessages>
+			<set ecname = 'ec' >
+				<number value = '2' />
+			</set>
+		</expectedmessages>
+		
+		<messages>
+			<remove scname = 'sc'>
+				<number value='2' />
+			</remove>
+		</messages>
+		
+		<expectedmessages>
+			<remove ecname = 'ec'>
+				<number value='2' />
+			</remove>
+			<set ecname = 'ec' >
+				<number value = '4' />
+			</set>
+		</expectedmessages>
+	</test>
+
 
 	<!-- <test name='anyTest1'>
 		<startcap name='sc' type='Set Bool' />
