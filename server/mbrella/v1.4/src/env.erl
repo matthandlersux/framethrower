@@ -88,7 +88,7 @@ handle_call({lookup, Name}, _, State) ->
 	BaseCell = dict:find(Name, ?this(baseEnv)),
 	GlobalCell = case BaseCell of
 		error -> dict:find(Name, ?this(globalTable));
-		{ok, Answer} -> Answer
+		Answer -> Answer
 	end,
 	ExprCell = case GlobalCell of
 		error -> notfound;
