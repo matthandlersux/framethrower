@@ -96,9 +96,15 @@ var exprLib = {
 	// ========================================================================
 	
 	// I think we should consider making this one primitive, maybe as :: Set a -> Unit a
-	takeLast: {
-		type: "Map Number a -> Unit a",
-		expr: "m -> bindUnit ((swap getKey) m) ((mapUnit ((swap subtract) 1)) (length (keys m)))"
+	// Andrew made this a primFunc. Not yet implemented on server. 
+	takeLastVal: {
+	 	type: "Map a b -> Unit b",
+	 	expr: "m -> bindUnit ((swap getKey) m) (takeLast (keys m))"
+	},
+	
+	takeLastKey: {
+		type: "Map a b -> Unit a",
+		expr: "m -> takeLast (keys m)"
 	},
 	
 	unfoldMapInv: {
@@ -334,7 +340,7 @@ var exprLib = {
 
 	getInfonRelations: {
 		type: "Cons -> Set Object",
-		expr: "infon -> finalLeft (flattenSet (returnUnitSet (takeLast (getConsComponents infon))))",
+		expr: "infon -> finalLeft (flattenSet (returnUnitSet (takeLastVal (getConsComponents infon))))",
 		where: {
 			finalLeft: {
 				type: "Set Cons -> Set Object",
@@ -344,7 +350,7 @@ var exprLib = {
 	},
 	getInfonIPRelations: {
 		type: "UI.consIP -> Set UI.objectIP",
-		expr: "infon -> finalLeft (flattenSet (returnUnitSet (takeLast (getConsIPComponents infon))))",
+		expr: "infon -> finalLeft (flattenSet (returnUnitSet (takeLastVal (getConsIPComponents infon))))",
 		where: {
 			finalLeft: {
 				type: "Set UI.consIP -> Set UI.objectIP",
@@ -376,32 +382,43 @@ var exprLib = {
 	},
 	getRelationTypeOutputs: {
 		type: "Cons -> Set Object",
-		expr: "rt -> finalRight (flattenSet (returnUnitSet (takeLast (getConsComponents rt))))",
+		expr: "rt -> finalRight (flattenSet (returnUnitSet (takeLastVal (getConsComponents rt))))",
 		where: {
 			finalRight: {
 				type: "Set Cons -> Set Object",
 				chain: ["Cons:right"]
 			}
 		}
+	},
+
+	getMainPaneSet: {
+		type: "UI.main -> Unit UI.pane.set",
+		expr: "main -> paneSet main",
+		where: {
+			paneSet: {
+				type: "UI.main -> Unit UI.pane.set",
+				chain: ["UI.main:pane"]
+			}
+		}
+	},
+	
+	getMainPanes: {
+		type: "Unit UI.pane.set -> Map String UI.pane",
+		expr: "paneSet -> bindMap (num -> pane -> panes pane) (returnUnitMap \"test\" paneSet)",
+		where: {
+			panes: {
+				type: "UI.pane.set -> Map String UI.pane",
+				chain: ["UI.pane.set:panes"]
+			}
+		}
 	}
-	
-	
-
-
-
-
-
-
-
-
-
 	
 	
 	// unfoldToEnd: {
 	// 	type: "(a -> Unit a) -> a -> Unit a",
-	// 	expr: "f -> x -> takeOne (flattenUnitSet (takeLast (unfoldMapInv (compose returnUnitSet f) x)))",
+	// 	expr: "f -> x -> takeOne (flattenUnitSet (takeLastVal (unfoldMapInv (compose returnUnitSet f) x)))",
 	// 	where: {
-	// 		takeLast: {
+	// 		takeLastVal: {
 	// 			type: "Map Number a -> Unit a",
 	// 			expr: "m -> bindUnit ((swap getKey) m) (length (keys m))"
 	// 		}

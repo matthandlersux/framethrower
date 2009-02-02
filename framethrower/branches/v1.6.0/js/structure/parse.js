@@ -24,12 +24,13 @@ function parse(s) {
 			if (!quoting) {
 				if (token === '"') {
 					quoting = true;
-					qs = [];
+					qs = ['"'];
 				} else {
 					ret.push(token);
 				}
 			} else {
 				if (token === '"' && !prevBS) {
+					qs.push(token);
 					ret.push(qs.join(""));
 					quoting = false;
 				} else {

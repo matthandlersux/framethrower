@@ -699,6 +699,31 @@ var primFuncs = function () {
 				var outputCell = makeCellAssocInput();
 				return rangeHelper(outputCell, outputCell.setPosRange, startCell, endCell, cell);
 			}
+		},
+		takeLast : {
+			type : "Set a -> Unit a",
+			func : function (cell) {
+				cell.makeSorted();
+				var outputCell = makeCell();
+				var cache;
+				function update() {
+					var state = cell.getState();
+					var last = state[state.length-1];
+					if(cache !== last) {
+						if (cache !== undefined) outputCell.removeLine(cache);
+						cache = last;
+						outputCell.addLine(cache);
+					}					
+				}
+				update();
+				
+				var removeFunc = cell.injectFunc(function (val) {
+					update();
+					return update;
+				});
+				outputCell.addOnRemove(removeFunc);
+				return outputCell;
+			}
 		}
 		// Not Implemented on Server Side
 		// sortedFold : {

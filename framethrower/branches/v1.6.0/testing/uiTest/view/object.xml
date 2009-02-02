@@ -23,5 +23,36 @@
 				<html:i>Untitled</html:i>
 			</xsl:otherwise>
 		</xsl:choose>
+		<f:on event="click" with-action="$openPane" />
 	</html:span>
+	
+	<f:action name="openPane">
+		<f:derive name="mainPaneSet" d="getMainPaneSet ui.main" />
+		<f:derive name="mainPanes" d="getMainPanes mainPaneSet" />
+		<f:derive name="lastPaneKey" d="takeLastKey mainPanes" />
+		<xsl:variable name="newKey">
+			<xsl:call-template name="ord-bigger">
+				<xsl:with-param name="s" select="$lastPaneKey/@value" />
+			</xsl:call-template>
+		</xsl:variable>
+
+		<f:create type="UI.pane.pane" name="newPane" />
+		<f:intact object="$newPane" action="add" property="focus" key="$focus" />
+		
+		<f:intact object="$mainPaneSet" action="add" property="panes" value="$newPane">
+			<f:with-param name="key" select="$newKey" as="String" />
+		</f:intact>
+	</f:action>
+
+<!--
+	<xsl:template name="ord-bigger">
+		<xsl:param name="s" />
+		<xsl:value-of select="concat(substring($s, 1, string-length($s) - 1), 'bb')" />
+	</xsl:template>
+-->	
+	<!-- 
+		rootObjects["test.paneset"].prop["panes"].control.add("bb", objects.cast(rootObjects["test.pane2"], "UI.pane"));
+		rootObjects["test.pane2"].prop["focus"].control.add(rootObjects["shared.type.entity"]); 
+	-->
+	<f:include url="/xml/util/ord.xml" />
 </f:template>

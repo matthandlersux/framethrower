@@ -6,7 +6,8 @@ function intact(object, property, action, key, value) {
 	}
 	
 	// params has properties key and value, or just key
-	object.prop[property].control[action](key, value);
+	objects.actOnProp(property, object, action, key, value);
+	//object.prop[property].control[action](key, value);
 }
 
 function createObject(type, properties) {

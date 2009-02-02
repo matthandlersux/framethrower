@@ -311,6 +311,52 @@ var objects = (function (classesToMake) {
 	// Making objects
 	// ====================================================
 	
+	function actOnProp(propName, object, action, key, value) {
+		var objClass = classes[object.type.value];
+		var castedValue;
+		if (action === 'add') {
+			castedValue = castIfNeeded(propName, object, objClass, key, value);
+			object.prop[propName].control[action](castedValue.key, castedValue.val);
+		} else {
+			object.prop[propName].control[action](key, value);
+		}
+	}
+
+	function compareAndCast(instanceValue, propType) {
+		var instanceType = getType(instanceValue);
+		if (compareTypes(instanceType, propType)) {
+			return instanceValue;
+		} else if (instanceType.kind === "typeName" && propType.kind === "typeName" && inherits(classes[instanceType.value], classes[propType.value])) {
+			return classes[propType.value].castUp(instanceValue);
+		} else {
+			debug.error("Property type mismatch: `"+ unparseType(instanceType) +"` and `"+unparseType(propType)+"`");
+		}
+	}
+
+	function castIfNeeded(propName, obj, objClass, instanceKey, instanceValue) {		
+		var reactiveType = objClass.prop[propName];
+		if (reactiveType !== undefined) {
+			var constructor = getTypeConstructor(reactiveType);
+			if (constructor === "Map"){
+				var propType1 = reactiveType.left.right;
+				var val1 = compareAndCast(instanceKey, propType1);
+				var propType2 = reactiveType.right;
+				var val2 = compareAndCast(instanceValue, propType2);
+				return {key:val1, val:val2};
+			} else {
+				var propType = reactiveType.right;
+				return {key:compareAndCast(instanceKey, propType)};
+			}
+		} else {
+			if (objClass.inherit) {
+				return castIfNeeded(propName, obj, objClass.inherit, instanceKey, instanceValue);
+			} else {
+				debug.error("Property not found: `"+ propName);
+			}
+		}
+	}
+
+	
 	function addPropsToObject(props, obj, objClass) {
 		forEach(objClass.prop, function (propType, propName) {
 			var instanceValue = props[propName];
@@ -403,6 +449,7 @@ var objects = (function (classesToMake) {
 	
 	return {
 		make: makeObject,
+		actOnProp: actOnProp,
 		classDefs: classesToMake,
 		debug: classes,
 		inherits: function (subClassName, superClassName) {
