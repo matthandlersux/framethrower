@@ -587,6 +587,37 @@ primitives() ->
 	function = fun(StartCell, EndCell, Cell) ->
 		OutputCell = cell:makeCell(),
 		rangeHelper(OutputCell, fun(Min, Max) -> cell:setKeyRange(OutputCell, Min, Max) end, StartCell, EndCell, Cell)
+	end},
+	#exprFun{
+	name = "takeLast",
+	type = "Set a -> Unit a",
+	function = fun(Cell) ->
+		OutputCell = cell:makeCell(),
+		Intercept = cell:injectIntercept(OutputCell, fun(Message, Cache) ->
+			case Message of
+				change -> 
+					StateArray = cell:getStateArray(Cell),
+					Last = lists:last(StateArray),
+					case Cache of
+						Last -> 
+							Last;
+						undefined ->
+							cell:addLine(OutputCell, Last),
+							Last;
+						_ ->
+							cell:removeLine(OutputCell, Cache),
+							cell:addLine(OutputCell, Last),
+							Last
+					end
+			end
+		end, undefined),
+		intercept:sendIntercept(Intercept, change),
+		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+			intercept:sendIntercept(Intercept, change),
+			fun() -> intercept:sendIntercept(Intercept, change) end
+		end),
+		cell:addOnRemove(OutputCell, RemoveFunc),
+		OutputCell
 	end}
 	].
 
