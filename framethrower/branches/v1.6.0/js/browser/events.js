@@ -28,6 +28,7 @@
 			var browserParams = xpath("f:with-param-browser", fon);
 			var form;
 			forEach(browserParams, function (browserParam) {
+				var name = getAttr(browserParam, "name");
 				if (getAttr(browserParam, "form")) {
 					if (!form) {
 						form = xpath("ancestor-or-self::html:form[1]", fon);
@@ -38,7 +39,14 @@
 					}
 					
 					var el = form.elements[getAttr(browserParam, "form")];
-					te.params[getAttr(browserParam, "name")] = el.value;
+					te.params[name] = el.value;
+				} else if (getAttr(browserParam, "prop")) {
+					var prop = getAttr(browserParam, "prop");
+					if (prop === "mouseX") {
+						te.params[name] = mouseDownPos[0]; // TODO change this to mouseCurrentPos
+					} else if (prop === "mouseY") {
+						te.params[name] = mouseDownPos[1];
+					} // TODO: add more here...
 				}
 			});
 			
@@ -69,6 +77,7 @@
 	var mouseIsDown = false;
 	var mouseIsDragging = false;
 	var mouseDownPos = [0,0];
+	var mouseCurrentPos = [0,0]; // TODO fill this in everywhere below...
 	
 	function mousedown(e) {
 		mouseIsDown = copyEvent(e);

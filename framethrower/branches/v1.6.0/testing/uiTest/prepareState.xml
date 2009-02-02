@@ -13,6 +13,7 @@
 	<f:derive name="situationType" d="shared.type.situation" />
 	<f:derive name="entityType" d="shared.type.entity" />
 	<f:derive name="infonType" d="shared.type.infon" />
+	<f:derive name="polyA" d="shared.type.poly.a" />
 	<f:derive name="typeType" d="shared.type.type" />
 	
 	
@@ -69,14 +70,14 @@
 			</f:relationTemplate>
 		</f:with-param>
 	</f:perform>
-	<f:perform with-action="$makeRelationType2" name="situationToEntityToInfon">
+	<f:perform with-action="$makeRelationType2" name="situationToAToA">
 		<f:with-param name="input1" select="$situationType" />
-		<f:with-param name="input2" select="$entityType" />
-		<f:with-param name="output" select="$infonType" />
+		<f:with-param name="input2" select="$polyA" />
+		<f:with-param name="output" select="$polyA" />
 	</f:perform>
 	<f:perform with-action="$typeObject">
 		<f:with-param name="object" select="$in" />
-		<f:with-param name="type" select="$situationToEntityToInfon" />
+		<f:with-param name="type" select="$situationToAToA" />
 	</f:perform>
 	
 	<f:perform with-action="$relationTemplateObject">

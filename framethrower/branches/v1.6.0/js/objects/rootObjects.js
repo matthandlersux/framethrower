@@ -3,8 +3,6 @@
 // ==================================================================
 
 // these are predefined objects, objects that the client and server both know about
-// I imagine these will be replaced with remote objects on the server
-// the r. stands for root
 
 var rootObjects = {};
 
@@ -34,6 +32,8 @@ var rootObjects = {};
 	m("shared.type.entity");
 	m("shared.type.infon");
 	m("shared.type.relation");  // this will itself be used as a binary relation to make relation types
+	m("shared.type.poly.a"); // unknown how we want to do polymorphic types.
+							// For now, we only allow one polymorphic type per relation type and it has to be the output. For example: in :: Situation -> a -> a
 	
 	m("shared.realLife");
 	

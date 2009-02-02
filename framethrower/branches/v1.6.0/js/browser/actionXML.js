@@ -161,18 +161,17 @@ function performActionsJS(actions, callback, env, ret) {
 			var json = clientJSONToServerJSON(todo);
 			console.log("Sending actions to server", json);
 			
-			session.addActions(json, function (results) {
-				// TODO add variables to environment, to ret...
-				console.log("Got response from actions", results);
+			session.addActions(json, function (created, returned) {
+				console.log("Got response from actions", created, returned);
+				
+				forEach(created, function (serverName, varName) {
+					// TODO: have to make remoteObjects, have to be the right type...
+				});
+				
+				// TODO: ret
 				
 				performActionsJS(actions, callback, env, ret);
 			});
-			
-			//session.addActions();
-			
-			// TODO
-			
-			
 			
 			
 		} else if (cs === "both") {

@@ -81,7 +81,18 @@ var classesToMake = {
 	
 	"UI.main": {
 		prop: {
-			"pane": "UI.pane"
+			"pane": "UI.pane",
+			"popup": "Unit UI.popup"
+		}
+	},
+	
+	"UI.popup": {
+		prop: {
+			"x": "Number",
+			"y": "Number",
+			"width": "Number",
+			"height": "Number",
+			"content": "Unit JS"
 		}
 	},
 	
@@ -302,11 +313,11 @@ var objects = (function (classesToMake) {
 	
 	function addPropsToObject(props, obj, objClass) {
 		forEach(objClass.prop, function (propType, propName) {
-			if (isReactive(propType)) {
+			var instanceValue = props[propName];
+			if (isReactive(propType) && instanceValue === undefined) {
 				// fill in with an empty controlled cell
 				obj.prop[propName] = makeCC(propType);
 			} else {
-				var instanceValue = props[propName];
 				if (instanceValue === undefined) {
 					debug.error("Error making object of type `"+objClass.name+"`. Property `"+propName+"` needs to be defined.");
 				}

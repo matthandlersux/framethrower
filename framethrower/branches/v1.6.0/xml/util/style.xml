@@ -1,0 +1,22 @@
+<f:includes
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<xsl:template name="style">
+		<xsl:param name="position" select="'absolute'" />
+		<xsl:param name="width" />
+		<xsl:param name="height" />
+		<xsl:param name="left" select="0" />
+		<xsl:param name="top" select="0" />
+	
+		<xsl:attribute name="style">
+			position: <xsl:value-of select="$position" />;
+			width: <xsl:value-of select="$width" />px;
+			height: <xsl:value-of select="$height" />px;
+			left: <xsl:value-of select="$left" />px;
+			top: <xsl:value-of select="$top" />px;			
+		</xsl:attribute>
+	</xsl:template>
+</f:includes>

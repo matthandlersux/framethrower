@@ -53,7 +53,7 @@
 		
 		<!-- remove old name(s) -->
 		<xsl:for-each select="$ontInfons/*">
-			<f:intact object="." action="remove" property="truth" key="null" />
+			<f:intact object="." action="remove" property="truth" key="null" /> <!-- TODO shouldn't need a key -->
 		</xsl:for-each>
 		
 		<f:perform with-action="$nameObject">
@@ -61,7 +61,7 @@
 			<f:with-param name="name" select="$newName" />
 		</f:perform>
 		
-		<f:intact object="$propertiesState" action="remove" property="editName" key="null" />
+		<f:intact object="$propertiesState" action="remove" property="editName" key="null" /> <!-- TODO shouldn't need a key -->
 		
 	</f:action>
 	

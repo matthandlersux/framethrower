@@ -6,17 +6,41 @@
 	
 	<f:derive name="main" d="ui.main" />
 	<f:derive name="pane" d="UI.main:pane ui.main" />
+	<f:derive name="popup" d="UI.main:popup ui.main" />
+	
 	<f:derive name="screenWidth" d="UI.ui:screenWidth ui.ui" />
 	<f:derive name="screenHeight" d="UI.ui:screenHeight ui.ui" />
 
 	<xsl:if test="$screenWidth and $screenHeight">
-		<f:thunk url="../pane/pane.xml">
+		<!-- <f:thunk url="../paneset/pane.xml">
 			<f:with-param name="pane" select="$pane" />
 			<f:with-param name="width" select="$screenWidth" />
 			<f:with-param name="height" select="$screenHeight" />
-		</f:thunk>
-	</xsl:if>
+		</f:thunk> -->
+		
+		<f:thunk url="../view.xml" />
 
+
+		<xsl:if test="$popup">
+			<html:div class="popupbg">
+				<xsl:call-template name="style">
+					<xsl:with-param name="width" select="$screenWidth/@value" />
+					<xsl:with-param name="height" select="$screenHeight/@value" />
+				</xsl:call-template>
+				<f:on event="click" with-action="$hidePopup" />
+			</html:div>
+			<f:thunk url="popup.xml">
+				<f:with-param name="popup" select="$popup" />
+				<f:with-param name="width" select="$screenWidth" />
+				<f:with-param name="height" select="$screenHeight" />			
+			</f:thunk>
+		</xsl:if>
+		
+	</xsl:if>
 	
-	<!-- <f:include url="/xml/util/ord.xml" /> -->
+	<f:action name="hidePopup">
+		<f:intact object="$main" action="remove" property="popup" />
+	</f:action>
+	
+	<f:include url="/xml/util/style.xml" />
 </f:template>

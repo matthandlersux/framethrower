@@ -1,0 +1,31 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="popup" type="UI.popup" />
+	<f:param name="width" type="Number" />
+	<f:param name="height" type="Number" />
+	
+	
+	<f:derive name="px" d="UI.popup:x popup" />
+	<f:derive name="py" d="UI.popup:y popup" />
+	<f:derive name="pwidth" d="UI.popup:width popup" />
+	<f:derive name="pheight" d="UI.popup:height popup" />
+	<f:derive name="content" d="UI.popup:content popup" />
+	
+	<html:div class="popup">
+		<xsl:call-template name="style">
+			<xsl:with-param name="left" select="$px/@value" />
+			<xsl:with-param name="top" select="$py/@value" />
+			<xsl:with-param name="width" select="$pwidth/@value" />
+			<xsl:with-param name="height" select="$pheight/@value" />
+		</xsl:call-template>
+		popup here.
+		
+		<f:thunk with-template="$content" />
+	</html:div>
+	
+	<f:include url="/xml/util/style.xml" />
+</f:template>

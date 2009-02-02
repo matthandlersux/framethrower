@@ -1,0 +1,29 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="pane" type="UI.pane" />
+	<f:param name="width" type="Number" />
+	<f:param name="height" type="Number" />
+	
+	<f:derive name="asSet" d="UI.pane~UI.pane.set pane" />
+	<f:derive name="asPane" d="UI.pane~UI.pane.pane pane" />
+	
+	<xsl:choose>
+		<xsl:when test="$asSet">
+			<f:thunk url="set.xml">
+				<f:with-param name="width" select="$width" />
+				<f:with-param name="height" select="$height" />
+				<f:with-param name="paneset" select="$asSet" />
+			</f:thunk>
+		</xsl:when>
+		<xsl:when test="$asPane">
+			<f:thunk url="../pane/pane.xml">
+				<f:with-param name="pane" select="$asPane" />
+			</f:thunk>
+		</xsl:when>
+	</xsl:choose>
+	
+</f:template>

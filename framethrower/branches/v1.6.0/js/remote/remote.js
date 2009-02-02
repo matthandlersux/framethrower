@@ -185,10 +185,11 @@ var session = (function () {
 				});
 
 				xhr(serverBaseUrl+"action", json, function (response) {
-					// TODO
-					// call sending.callback
-					sending.callback(); // TODO fill this with correct variables or whatever
-
+					// TODO fill this with correct variables or whatever
+					if (sending.callback) {
+						sending.callback(response.created, response.returned); 
+					}
+					
 					sendAllActions();
 				});
 			}
@@ -249,6 +250,8 @@ var session = (function () {
 		console.log("I'm pipelining", json);
 		xhr(serverBaseUrl+"pipeline", json, function (text) {
 			console.log("updater got a message", text);
+			
+			// TODO if text is blank, treat this as session closed
 			
 			// try {
 				var o = JSON.parse(text);

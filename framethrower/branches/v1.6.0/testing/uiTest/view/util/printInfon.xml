@@ -11,7 +11,7 @@
 		
 
 	
-		<html:div style="display:table" class="infon">
+		<html:div class="infon">
 			<xsl:choose>
 				<xsl:when test="$relationTemplate/f:row">
 					<xsl:for-each select="$relationTemplate/f:row">
