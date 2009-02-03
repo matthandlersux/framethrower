@@ -137,7 +137,7 @@ function compileTemplate(templateNode, url) {
 		return {name: name, parsed: parse(d)};
 	});
 	
-	var templates = xpath("f:template|f:action", templateNode);
+	var templates = xpath("(f:template|f:action)", templateNode);
 	templates = map(templates, function (template) {
 		var name = getAttr(template, "name");
 		return {name: name, compiled: compileTemplate(template, url)};
@@ -290,18 +290,6 @@ function compileTemplate(templateNode, url) {
 					var removeFunc = listenToCell(result);
 					cell.addOnRemove(removeFunc);
 					
-					// var removeFunc = result.injectFunc(function (x) {
-					// 	makeDirty();
-					// 	if (x && x.key && x.val) {
-					// 		// we have a Map entry
-					// 	} else {
-					// 		
-					// 	}
-					// 	return function () {
-					// 		
-					// 	};
-					// });
-					// cell.addOnRemove(removeFunc);
 				}
 			});
 

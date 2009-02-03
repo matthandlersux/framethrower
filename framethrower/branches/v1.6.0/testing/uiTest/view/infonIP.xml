@@ -9,6 +9,7 @@
 
 	<f:derive name="object" d="UI.consIP:object focus" />
 	<f:derive name="left" d="UI.consIP:left focus" />
+	<f:derive name="right" d="UI.consIP:right focus" />
 	<!-- <f:derive name="asConsIP" d="UI.objectIP~UI.consIP focus" /> -->
 	
 	<f:derive name="infonType" d="shared.type.infon" />
@@ -53,26 +54,70 @@
 								color: <xsl:value-of select="$color" />;
 							</xsl:attribute>
 							<xsl:value-of select="$typeName/*/@value" />
+							<!-- <xsl:value-of select="$focus/@name" /> -->
 						</html:div>
 					</xsl:when>
-					<xsl:otherwise>
-						PRINT OBJECT
-					</xsl:otherwise>
+					<xsl:when test="$object">
+						<f:thunk url="objectNoClick.xml">
+							<f:with-param name="focus" select="$object" />
+						</f:thunk>
+					</xsl:when>
+					<xsl:when test="$left and $right">
+						<f:thunk with-template="$printCons" />
+					</xsl:when>
 				</xsl:choose>
 			</html:div>
 		</xsl:otherwise>
 	</xsl:choose>
 	
+	<f:include url="/xml/util/uiActions.xml" />
+	
+	<f:template name="wrapInContext">
+		<html:div>
+			<f:on event="click" with-action="$wrap" />
+			[Wrap in context]
+		</html:div>
+		<f:action name="wrap">
+			<f:derive name="sharedIn" d="shared.in" />
+			<f:create type="UI.consIP" name="temp" />
+			<xsl:if test="$object">
+				<f:intact object="$temp" action="add" property="object" key="$object" />
+			</xsl:if>
+			<xsl:if test="$left and $right">
+				<f:intact object="$temp" action="add" property="left" key="$left" />
+				<f:intact object="$temp" action="add" property="right" key="$right" />
+			</xsl:if>
+			
+			<f:create type="UI.consIP" name="in" />
+			<f:intact object="$in" action="add" property="object" key="$sharedIn" />
+			
+			<f:create type="UI.consIP" name="sit" />
+			<f:create type="UI.consIP" name="cons" />
+			<f:intact object="$cons" action="add" property="left" key="$in" />
+			<f:intact object="$cons" action="add" property="right" key="$sit" />
+			
+			<f:intact object="$focus" action="add" property="left" key="$cons" />
+			<f:intact object="$focus" action="add" property="right" key="$temp" />
+			<f:intact object="$focus" action="remove" property="object" />
+			
+			<f:perform with-action="$hidePopup" />
+		</f:action>
+	</f:template>
+	
+	
 	
 	<f:template name="relationPopup">
 		<f:derive name="relations" d="filterRelations (getObjectsIn shared.ont)" />
+		
+		<f:thunk with-template="$wrapInContext" />
+		
 		<xsl:for-each select="$relations/*">
 			<html:div>
 				<f:on event="click" with-action="$selectRelation">
 					<f:with-param name="relation" select="." />
 				</f:on>
 				
-				<f:thunk url="object.xml">
+				<f:thunk url="objectNoClick.xml">
 					<f:with-param name="focus" select="." />
 				</f:thunk>
 			</html:div>
@@ -98,9 +143,8 @@
 				<f:with-param name="key"><f:var name="c1" /></f:with-param>
 			</f:intact>
 			
-			<f:intact action="add" property="right" object="$focus">
-				<f:with-param name="key"><f:var name="o1" /></f:with-param>
-			</f:intact>
+			<f:create type="UI.consIP" name="o0" />
+			<f:intact action="add" property="right" object="$focus" key="$o0" />
 				
 			<f:perform with-action="$hidePopup" />
 			
@@ -148,13 +192,25 @@
 	<f:template name="objectPopup">
 		<f:derive name="objects" d="getObjectsOfType expectedType" />
 		
+		<f:thunk with-template="$wrapInContext" />
+		
 		<xsl:for-each select="$objects/*">
 			<html:div>
-				<f:thunk url="object.xml">
+				<f:on event="click" with-action="$selectObject">
+					<f:with-param name="object" select="." />
+				</f:on>
+				<f:thunk url="objectNoClick.xml">
 					<f:with-param name="focus" select="." />
 				</f:thunk>
 			</html:div>
 		</xsl:for-each>
+		<f:action name="selectObject">
+			<f:param name="object" type="Object" />
+			
+			<f:intact action="add" property="object" object="$focus" key="$object" />
+				
+			<f:perform with-action="$hidePopup" />
+		</f:action>
 	</f:template>
 	<f:action name="showObjectPopup">
 		<f:param name="x" type="Number" />
@@ -169,10 +225,12 @@
 		</f:perform>
 	</f:action>
 	
+
+	
 	
 
 	
-	<f:include url="/xml/util/uiActions.xml" />
+
 
 
 
@@ -193,10 +251,6 @@
 		<xsl:variable name="rt" select="$template/f:literal/f:relationTemplate" />
 		<xsl:if test="$rt">
 			<html:span>
-				<f:on event="click" with-action="$showRelationPopup">
-					<f:with-param-browser name="x" prop="mouseX" />
-					<f:with-param-browser name="y" prop="mouseY" />
-				</f:on>
 				<xsl:call-template name="print">
 					<xsl:with-param name="relationTemplate" select="$rt" />
 					<xsl:with-param name="infonArgs" select="$infonArgs" />
@@ -246,9 +300,9 @@
 	
 	
 	
-	<f:template name="printObject">
+	<!-- <f:template name="printObject">
 		
 		<html:div>Object Here</html:div>
-	</f:template>
+	</f:template> -->
 	
 </f:template>

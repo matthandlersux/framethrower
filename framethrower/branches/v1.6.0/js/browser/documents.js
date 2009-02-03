@@ -44,9 +44,13 @@ var documents = (function () {
 							funcs.push(function (callback) {
 								documents.withDoc(includeUrl, function (doc) {
 									forEach(xpath("*", doc), function (x) {
-										var imported = xml.ownerDocument.importNode(x, true);
-										xml.appendChild(imported); // BROWSER
+										//var imported = xml.ownerDocument.importNode(x, true);
+										//xml.appendChild(imported); // BROWSER
+										var imported = include.ownerDocument.importNode(x, true);
+										include.parentNode.insertBefore(imported, include);
+										//include.parentNode.replaceChild(imported, include);
 									});
+									include.parentNode.removeChild(include);
 									callback();
 								});
 							});
