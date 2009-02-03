@@ -138,10 +138,12 @@ loop(Req, DocRoot) ->
 
 processActionList(Actions) ->
 	{Results, Variables} = processActionList(Actions, [], []),
-	JsonResults = lists:map(fun(error) -> error; (ExprElement) -> mblib:exprElementToJson(ExprElement) end, Results),
+	JsonResults = lists:map(fun(error) -> error; (ExprElement) ->
+		[mblib:exprElementToJson(ExprElement), mblib:exprElementToJson(type:unparse(ExprElement#object.type))]
+	end, Results),
 	JsonVariables = lists:map(fun({Error,error}) -> {Error,error}; ({Name,ExprElement}) ->
-		{mblib:exprElementToJson(Name),mblib:exprElementToJson(ExprElement)}
-	end, Variables),
+		{mblib:exprElementToJson(Name),[mblib:exprElementToJson(ExprElement), mblib:exprElementToJson(type:unparse(ExprElement#object.type))]}
+	end, Variables),	
 	{JsonResults, JsonVariables}.
 
 	
