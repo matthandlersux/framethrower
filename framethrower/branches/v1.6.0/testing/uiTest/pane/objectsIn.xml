@@ -6,8 +6,38 @@
 	
 	<f:param name="focus" type="Object" />
 	<f:param name="clickAction" type="a -> Unit JS" />
+	<f:param name="pane" type="UI.pane.pane" />
+	
+	<f:derive name="addingObject" d="UI.pane.pane:addingObject pane" />
+	<f:derive name="propertiesState" d="UI.pane.pane:addingObjectPropertiesState pane" />
 	
 	<f:derive name="set" d="getObjectsIn focus" />
+
+	<html:div>
+		<xsl:choose>
+			<xsl:when test="$addingObject">
+				<html:span>
+					Set New Object Properties:
+				</html:span>
+				<f:thunk url="properties.xml">
+					<f:with-param name="focus" select="$addingObject" />
+					<f:with-param name="propertiesState" select="$propertiesState" />
+				</f:thunk>
+				
+				<html:span>
+					Confirm
+					<f:on event="click" with-action="$doneAddObject" />
+				</html:span>
+				<html:hr />
+			</xsl:when>
+			<xsl:otherwise>
+				<html:div>
+					<b>+</b> ADD OBJECT
+					<f:on event="click" with-action="$addObject" />
+				</html:div>
+			</xsl:otherwise>
+		</xsl:choose>
+	</html:div>
 
 	<html:ul>
 		<xsl:for-each select="$set/*">
@@ -20,4 +50,21 @@
 		</xsl:for-each>
 	</html:ul>
 
+	<f:action name="addObject">
+		<f:create type="Object" name="newObj" />
+		<f:intact object="$pane" action="add" property="addingObject" key="$newObj" />
+	</f:action>
+
+	<f:include url="/xml/util/actions.xml" />
+	
+	<f:action name="doneAddObject">
+		<xsl:if test="$addingObject">
+			<f:perform with-action="$putObjectInSituation">
+				<f:with-param name="situation" select="$focus" />
+				<f:with-param name="object" select="$addingObject" />
+			</f:perform>
+			<f:intact object="$pane" action="remove" property="addingObject" key="$addingObject" />
+		</xsl:if>
+	</f:action>
+	
 </f:template>

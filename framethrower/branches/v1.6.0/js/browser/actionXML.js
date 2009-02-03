@@ -167,6 +167,7 @@ function performActionsJS(actions, callback, env, ret) {
 			
 			session.addActions(json, function (created, returned) {
 				console.log("Got response from actions", created, returned);
+				console.dir(created);
 				
 				forEach(created, function (serverName, varName) {
 					// TODO: have to make remoteObjects, have to be the right type...

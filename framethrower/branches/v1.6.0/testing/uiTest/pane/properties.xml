@@ -13,8 +13,10 @@
 	<f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" />
 
 	<f:derive name="editName" d="UI.propertiesState:editName propertiesState" />
-	
 	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
+	
+	<f:derive name="focustype" d="takeOne (getOntProp shared.isA focus)" />
+	<f:derive name="typeInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.isA focus))" />
 	
 	<html:table class="properties">
 		<html:tr>
@@ -43,6 +45,25 @@
 				</xsl:choose>
 			</html:td>
 		</html:tr>
+		<html:tr>
+			<html:th>Type</html:th>
+			<html:td>
+				<xsl:choose>
+					<xsl:when test="$focustype">
+						<f:thunk url="../view/objectNoClick.xml">
+							<f:with-param name="focus" select="$focustype" />
+						</f:thunk>
+					</xsl:when>
+					<xsl:otherwise>
+						[Choose Type]
+					</xsl:otherwise>
+				</xsl:choose>
+				<f:on event="click" with-action="$showTypePopup">
+					<f:with-param-browser name="x" prop="mouseX" />
+					<f:with-param-browser name="y" prop="mouseY" />
+				</f:on>
+			</html:td>
+		</html:tr>
 	</html:table>
 	
 	<f:action name="eName">
@@ -67,7 +88,53 @@
 		<f:intact object="$propertiesState" action="remove" property="editName" key="null" /> <!-- TODO shouldn't need a key -->
 		
 	</f:action>
+
+
+
+	<f:template name="typePopup">
+		<f:derive name="objects" d="getObjectsOfType shared.type.type" />
+
+		<xsl:for-each select="$objects/*">
+			<html:div>
+				<f:on event="click" with-action="$selectType">
+					<f:with-param name="selectedType" select="." />
+				</f:on>
+				<f:thunk url="../view/objectNoClick.xml">
+					<f:with-param name="focus" select="." />
+				</f:thunk>
+			</html:div>
+		</xsl:for-each>
+		<f:action name="selectType">
+			<f:param name="selectedType" type="Object" />
+
+			<xsl:for-each select="$typeInfons/*">
+				<f:intact object="." action="remove" property="truth" key="null" /> <!-- TODO shouldn't need a key -->
+			</xsl:for-each>
+			
+			<f:perform with-action="$typeObject">
+				<f:with-param name="object" select="$focus" />
+				<f:with-param name="type" select="$selectedType" />
+			</f:perform>
+				
+			<f:perform with-action="$hidePopup" />
+		</f:action>
+	</f:template>
 	
+	<f:action name="showTypePopup">
+		<f:param name="x" type="Number" />
+		<f:param name="y" type="Number" />
+		
+		<f:perform with-action="$showPopup">
+			<f:with-param name="x" select="$x" />
+			<f:with-param name="y" select="$y" />
+			<f:with-param name="width" select="300" as="Number" />
+			<f:with-param name="height" select="300" as="Number" />
+			<f:with-param name="content" select="$typePopup" />
+		</f:perform>
+	</f:action>
+
+
+	<f:include url="/xml/util/uiActions.xml" />
 	<f:include url="/xml/util/actions.xml" />
 	
 </f:template>

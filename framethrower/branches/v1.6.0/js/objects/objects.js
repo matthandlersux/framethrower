@@ -110,11 +110,13 @@ var classesToMake = {
 	"UI.pane.pane": {
 		inherit: "UI.pane",
 		prop: {
-			"tab": "Unit String", // objectsIn, infonsIn, about
+			"tab": "Unit String", // objectsIn, addingObj, infonsIn, about
 			"focus": "Unit Object",
-			"propertiesState": "UI.propertiesState"
+			"propertiesState": "UI.propertiesState",
+			"addingObject": "Unit Object",
+			"addingObjectPropertiesState": "UI.propertiesState"
 		},
-		makeNew: ["propertiesState"]
+		makeNew: ["propertiesState", "addingObjectPropertiesState"]
 	},
 	
 	"UI.propertiesState": {

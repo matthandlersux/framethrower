@@ -26,7 +26,10 @@
 		<f:with-param name="object" select="$entityType" />
 		<f:with-param name="name" select="'Entity'" />
 	</f:perform>
-	
+	<f:perform with-action="$typeObject">
+		<f:with-param name="object" select="$entityType" />
+		<f:with-param name="type" select="$typeType" />
+	</f:perform>
 	
 	
 	<f:perform with-action="$nameObject">

@@ -62,6 +62,7 @@
 			<xsl:when test="$tab/@value = 'objectsIn'">
 				<f:thunk url="objectsIn.xml">
 					<f:with-param name="focus" select="$focus" />
+					<f:with-param name="pane" select="$pane" />
 					<f:with-param name="clickAction" select="$openPane" />
 				</f:thunk>
 			</xsl:when>
@@ -98,6 +99,7 @@
 	<f:action name="noAction">
 		<f:param name="focus" type="Object" />
 	</f:action>
+	
 	
 	<f:include url="/xml/util/ord.xml" />
 	<!-- <f:include url="/xml/debug/prettyPrint.xml" /> -->
