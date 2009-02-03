@@ -32,7 +32,7 @@ getDebugHTML(Name, BaseURL) ->
 		end, "", StateArray)
 	end,
 
-	GetCastingHtml = fun (CastingDict) ->
+	GetCastingHTML = fun (CastingDict) ->
 		dict:fold(fun(ClassName, Object, Acc) ->
 			Acc ++ ClassName ++ ": " ++ GetElemHtml(Object) ++ "<br />"
 		end, "", CastingDict)
