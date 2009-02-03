@@ -15,30 +15,32 @@
 
 	<f:include url="/xml/util/consIP.xml" />
 
-	<html:ul>
-		<xsl:for-each select="$set/*">
-			<html:li>
+	<xsl:for-each select="$set/*">
+		<html:div class="entry">
+			<html:div class="entry-cell">
 				<f:thunk url="../view/infon.xml">
 					<f:with-param name="focus" select="." />
 					<f:with-param name="clickAction" select="$clickAction" />
 				</f:thunk>
-			</html:li>
-		</xsl:for-each>
-		<xsl:for-each select="$newInfons/*">
-			<html:li>
+			</html:div>
+		</html:div>
+	</xsl:for-each>
+	<xsl:for-each select="$newInfons/*">
+		<html:div class="entry">
+			<html:div class="entry-cell">
 				<f:thunk url="../view/infonIP.xml">
 					<f:with-param name="focus" select="." />
 					<f:with-param name="expectedType" select="$infonType" />
 				</f:thunk>
-				<html:div>
-					<f:on event="click" with-action="$addConsIP">
-						<f:with-param name="consIP" select="." />
-					</f:on>
-					[Confirm Add]
-				</html:div>
-			</html:li>
-		</xsl:for-each>
-	</html:ul>
+			</html:div>
+			<html:div class="entry-cell">
+				<f:on event="click" with-action="$addConsIP">
+					<f:with-param name="consIP" select="." />
+				</f:on>
+				[Confirm Add]
+			</html:div>
+		</html:div>
+	</xsl:for-each>
 	
 	<html:div>
 		<f:on event="click" with-action="$newInfon" />

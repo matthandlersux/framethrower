@@ -6,6 +6,7 @@
 	line-height:140%;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
+	cursor: pointer;
 }
 
 .objectDrop {
@@ -14,6 +15,7 @@
 	font-family: Candara;
 	font-style: italic;
 	color:#ddd;
+	cursor: pointer;
 }
 
 

@@ -164,16 +164,16 @@ var exprLib = {
 		}
 	},
 	
-	oldGetOntProp: {
-		type: "Object -> Object -> Set Object",
-		expr: "rel -> obj -> infonsToObjects (getOntInfons rel obj)",
-		where: {
-			infonsToObjects: {
-				type: "Set Cons -> Set Object",
-				chain: ["Cons:right"]
-			}
-		}
-	},
+	// oldGetOntProp: {
+	// 	type: "Object -> Object -> Set Object",
+	// 	expr: "rel -> obj -> infonsToObjects (getOntInfons rel obj)",
+	// 	where: {
+	// 		infonsToObjects: {
+	// 			type: "Set Cons -> Set Object",
+	// 			chain: ["Cons:right"]
+	// 		}
+	// 	}
+	// },
 	getOntProp: {
 		type: "Object -> Object -> Set Object",
 		expr: "rel -> obj -> infonsToObjects (filterByTruthInOnt (getOntInfons rel obj))",
@@ -186,16 +186,16 @@ var exprLib = {
 	},
 	
 	
-	oldGetName: {
-		type: "Object -> Set String",
-		expr: "obj -> getStrings (oldGetOntProp shared.name obj)",
-		where: {
-			getStrings: {
-				type: "Set Object -> Set String",
-				chain: ["X.text:string"]
-			}
-		}
-	},
+	// oldGetName: {
+	// 	type: "Object -> Set String",
+	// 	expr: "obj -> getStrings (oldGetOntProp shared.name obj)",
+	// 	where: {
+	// 		getStrings: {
+	// 			type: "Set Object -> Set String",
+	// 			chain: ["X.text:string"]
+	// 		}
+	// 	}
+	// },
 	getName: {
 		type: "Object -> Set String",
 		expr: "obj -> getStrings (getOntProp shared.name obj)",

@@ -51,3 +51,11 @@ var debug = (function () {
 		}
 	};
 })();
+
+
+
+function testExpr(exprString) {
+	var a = evaluate(parseExpr(exprString));
+	session.flush();
+	setTimeout(function () {console.log(a.getState());}, 1000);
+}
