@@ -122,7 +122,8 @@ makeRootObjects() ->
 	%% this will itself be used as a binary relation to make relation types
 	objects:createWithName("Object", dict:new(), "shared.type.relation"), 
 
-	objects:createWithName("Object", dict:new(), "shared.realLife"),
+	objects:createWithName("Object", dict:new(), "shared.type.poly.a"),
+	objects:createWithName("Object", dict:new(), "shared.realLife"),	
 	ok.
 	
 %% ====================================================================
