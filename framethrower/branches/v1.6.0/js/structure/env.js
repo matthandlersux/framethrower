@@ -50,6 +50,9 @@ function makeDynamicEnv(inherit) {
 			} else {
 				return value;
 			}
+		},
+		debug: function () {
+			return lookup;
 		}
 	};
 }

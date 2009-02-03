@@ -12,6 +12,7 @@ li {
 
 .paneset-pane {
 	position:absolute;
+	overflow: auto;
 }
 
 .paneset-spacer {

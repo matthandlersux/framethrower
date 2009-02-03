@@ -62,12 +62,14 @@ function bruteReplace(node, replacer, pass) {
 	return replacer;
 }
 
+var tagCustomXpath = "descendant-or-self::*[self::f:thunk or self::f:on or self::f:create or self::f:intact]";
+
 function processThunks(node, pass) {
 	// note: all new XML must be processed by this function
 	// bootstrap uses this method with pass = {baseUrl: "", ids: {}}
 	
 	// first, tag thunkEssence on any bindings, or actions that need it (f:on, f:create, f:intact, f:servercall)
-	var nodesNeedingTagging = xpath("descendant-or-self::*[self::f:thunk or self::f:on or self::f:create or self::f:intact]", node);
+	var nodesNeedingTagging = xpath(tagCustomXpath, node);
 	forEach(nodesNeedingTagging, function (node) {
 		tagThunkEssence(node, pass.baseUrl, pass.ids);
 	});
@@ -195,7 +197,7 @@ function insertBefore(parentNode, newNode, node) {
 
 
 function unloadXML(node) {
-	var concerns = xpath("descendant-or-self::*[self::f:thunk or self::f:on or self::f:create or self::f:intact]", node);
+	var concerns = xpath(tagCustomXpath, node);
 	forEach(concerns, unloadXMLNode);
 }
 

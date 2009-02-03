@@ -239,61 +239,105 @@
 
 	<f:template name="printCons">
 		<f:derive name="infonArgs" d="getInfonIPArguments focus" />
-		<f:derive name="template" d="(compose (bindSet getRelationTemplate) (bindUnitSet UI.consIP:object)) (getInfonIPRelations focus)" />
+		<f:derive name="relationSet" d="bindUnitSet UI.consIP:object (getInfonIPRelations focus)" />
 		
-		<f:derive name="rtInputs" d="mapSet getRelationTypeInputs (bindUnitSet Object~Cons (bindSet getTypes (bindUnitSet UI.consIP:object (getInfonIPRelations focus))))" />
 		
+	<!-- 		<f:derive name="template" d="(compose (bindSet getRelationTemplate) (bindUnitSet UI.consIP:object)) (getInfonIPRelations focus)" />
+			
+			<f:derive name="rtInputs" d="mapSet getRelationTypeInputs (bindUnitSet Object~Cons (bindSet getTypes (bindUnitSet UI.consIP:object (getInfonIPRelations focus))))" />
+		 -->	
 		<f:derive name="polyA" d="shared.type.poly.a" />
 		
+		<!-- <xsl:call-template name="prettyPrint">
+			<xsl:with-param name="node" select="$relationSet" />
+		</xsl:call-template> -->
 		
-		<!-- <html:div>Cons In Progress</html:div> -->
-		
-		<xsl:variable name="rt" select="$template/f:literal/f:relationTemplate" />
-		<xsl:if test="$rt">
-			<html:span>
-				<xsl:call-template name="print">
-					<xsl:with-param name="relationTemplate" select="$rt" />
-					<xsl:with-param name="infonArgs" select="$infonArgs" />
-					<xsl:with-param name="argTemplate" select="$printArg" />
-				</xsl:call-template>
-			</html:span>
+		<xsl:if test="$relationSet/*">
+			<f:thunk with-template="$helper">
+				<f:with-param name="relation" select="$relationSet/*[1]" />
+			</f:thunk>
 		</xsl:if>
 		
-		<f:template name="printArg">
-			<f:param name="focus" type="UI.consIP" />
-			<f:param name="num" type="Number" />
+		
+		<f:template name="helper">
+			<f:param name="relation" type="Object" />
 			
-			<xsl:variable name="type">
+			<f:derive name="template" d="getRelationTemplate relation" />
+			<f:derive name="rtInputs" d="mapSet getRelationTypeInputs (bindUnitSet Object~Cons (getTypes relation))" />
+		
+			<!-- <html:div>Cons In Progress</html:div> -->
+		
+			<xsl:variable name="rt" select="$template/f:literal/f:relationTemplate" />
+			<xsl:if test="$rt">
+				<html:span>
+					<xsl:call-template name="print">
+						<xsl:with-param name="relationTemplate" select="$rt" />
+						<xsl:with-param name="infonArgs" select="$infonArgs" />
+						<xsl:with-param name="argTemplate" select="$printArg" />
+					</xsl:call-template>
+				</html:span>
+			</xsl:if>
+		
+			<f:template name="printArg">
+				<f:param name="focus" type="UI.consIP" />
+				<f:param name="num" type="Number" />
+			
 				<xsl:variable name="t" select="$rtInputs/f:map[1]/f:entry[position() = $num/@value]/f:value/*" />
-				<xsl:choose>
-					<xsl:when test="$t/@name = $polyA/@name">
-						<xsl:copy-of select="$expectedType" />
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:copy-of select="$t" />
-					</xsl:otherwise>
-				</xsl:choose>
-			</xsl:variable>
+				<xsl:if test="$t">
+					<xsl:choose>
+						<xsl:when test="$t/@name = $polyA/@name">
+							<f:thunk url="infonIP.xml">
+								<f:with-param name="focus" select="$focus" />
+								<f:with-param name="expectedType" select="$expectedType" />
+							</f:thunk>
+						</xsl:when>
+						<xsl:otherwise>
+							<f:thunk url="infonIP.xml">
+								<f:with-param name="focus" select="$focus" />
+								<f:with-param name="expectedType" select="$t" />
+							</f:thunk>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:if>
 			
+				<!-- <xsl:variable name="type">
+					<xsl:variable name="t" select="$rtInputs/f:map[1]/f:entry[position() = $num/@value]/f:value/*" />
+					<xsl:choose>
+						<xsl:when test="$t/@name = $polyA/@name">
+							<xsl:copy-of select="$expectedType" />
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:copy-of select="$t" />
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
 			
-			<f:thunk url="infonIP.xml">
-				<f:with-param name="focus" select="$focus" />
-				<f:with-param name="expectedType" select="$type" />
-			</f:thunk>
+				<xsl:if test="$type">
+					<f:thunk url="infonIP.xml">
+						<f:with-param name="focus" select="$focus" />
+						<f:with-param name="expectedType" select="$type" />
+					</f:thunk>
+				</xsl:if> -->
+			</f:template>
+
+			<!-- <xsl:call-template name="prettyPrint">
+				<xsl:with-param name="node" select="$template" />
+			</xsl:call-template>
+
+			<xsl:call-template name="prettyPrint">
+				<xsl:with-param name="node" select="$infonArgs" />
+			</xsl:call-template>
+		
+			<xsl:call-template name="prettyPrint">
+				<xsl:with-param name="node" select="$rtInputs" />
+			</xsl:call-template> -->
+		
 		</f:template>
-
-		<!-- <xsl:call-template name="prettyPrint">
-			<xsl:with-param name="node" select="$infonArgs" />
-		</xsl:call-template> -->
 		
-		<!-- <xsl:call-template name="prettyPrint">
-			<xsl:with-param name="node" select="$rtInputs" />
-		</xsl:call-template> -->
-
-
 		<f:include url="util/printInfon.xml" />
-		
+	
 		<f:include url="/xml/debug/prettyPrint.xml" />
+		
 	</f:template>
 	
 	

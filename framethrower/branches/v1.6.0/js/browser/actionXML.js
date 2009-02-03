@@ -163,17 +163,21 @@ function performActionsJS(actions, callback, env, ret) {
 		} else if (cs === "server") {
 			
 			var json = clientJSONToServerJSON(todo);
-			console.log("Sending actions to server", json);
+			//console.log("Sending actions to server", json);
 			
 			session.addActions(json, function (created, returned) {
-				console.log("Got response from actions", created, returned);
-				console.dir(created);
+				//console.log("Got response from actions", created, returned);
+				//console.dir(created);
 				
-				forEach(created, function (serverName, varName) {
-					// TODO: have to make remoteObjects, have to be the right type...
+				forEach(created, function (serverNameAndType, varName) {
+					env.add(varName, makeRemoteObject(serverNameAndType[0], parseType(JSON.parse(serverNameAndType[1]))));
 				});
 				
+				
 				// TODO: ret
+				if (returned.length > 0) {
+					debug.error("We haven't implemented returned yet! (line 179 actionXML.js)");
+				}
 				
 				performActionsJS(actions, callback, env, ret);
 			});
@@ -296,6 +300,7 @@ function triggerAction(thunkEssence) {
 
 			performActionsJS(actions, function (res) {
 				console.log("got result back", res);
+				refreshScreen(); // TODO: this is probably not an optimal place for a refreshScreen
 			});
 
 

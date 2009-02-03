@@ -70,12 +70,14 @@
 				<f:thunk url="infonsIn.xml">
 					<f:with-param name="focus" select="$focus" />
 					<f:with-param name="clickAction" select="$openPane" />
+					<f:with-param name="pane" select="$pane" />
 				</f:thunk>
 			</xsl:when>
 			<xsl:when test="$tab/@value = 'about'">
 				<f:thunk url="about.xml">
 					<f:with-param name="focus" select="$focus" />
 					<f:with-param name="clickAction" select="$openPane" />
+					<f:with-param name="pane" select="$pane" />
 				</f:thunk>
 			</xsl:when>
 			<xsl:when test="$tab/@value = 'properties'">

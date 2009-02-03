@@ -113,6 +113,8 @@ var classesToMake = {
 			"tab": "Unit String", // objectsIn, addingObj, infonsIn, about
 			"focus": "Unit Object",
 			"propertiesState": "UI.propertiesState",
+			"aboutNewInfons": "Set UI.consIP",
+			"infonsInNewInfons": "Set UI.consIP",
 			"addingObject": "Unit Object",
 			"addingObjectPropertiesState": "UI.propertiesState"
 		},
