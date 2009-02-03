@@ -291,7 +291,7 @@ function triggerAction(thunkEssence) {
 
 			tagActionsClientOrServer(actions);
 
-			// console.dir(actions);
+			console.dir(actions);
 
 			performActionsJS(actions, function (res) {
 				console.log("got result back", res);

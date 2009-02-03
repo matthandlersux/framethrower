@@ -9,6 +9,8 @@
 	
 	<f:derive name="name" d="getName focus" />
 	<f:derive name="types" d="getTypes focus" />
+	
+	<f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" />
 
 	<f:derive name="editName" d="UI.propertiesState:editName propertiesState" />
 	
@@ -18,6 +20,7 @@
 		<html:tr>
 			<html:th>Name</html:th>
 			<html:td>
+				<xsl:if test="$ontInfons" />
 				<xsl:choose>
 					<xsl:when test="not($name/*) or $editName">
 						<html:form>
@@ -49,7 +52,7 @@
 	<f:action name="changeName">
 		<f:param name="newName" type="String" />
 		
-		<f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" />
+		<!-- <f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" /> -->
 		
 		<!-- remove old name(s) -->
 		<xsl:for-each select="$ontInfons/*">

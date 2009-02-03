@@ -30,7 +30,7 @@
 		<f:with-param name="relation" select="$relation" />
 	</f:thunk> -->
 	
-	<xsl:value-of select="$focus/@name" />
+	<!-- <xsl:value-of select="$focus/@name" /> -->
 	
 	<xsl:variable name="rt" select="$template/f:literal/f:relationTemplate" />
 	<xsl:if test="$rt">

@@ -126,7 +126,7 @@ function xhr(url, post, callback, failCallback, timeout) {
 		 	if (req.status == 200 || req.status == 0) {
 				
 				// debugging stuff:
-				console.log("called: "+url+"\nwith post: "+post+"\ngot response: "+req.responseText);
+				//console.log("called: "+url+"\nwith post: "+post+"\ngot response: "+req.responseText);
 				
 				callback(req.responseText);
 			} else {
