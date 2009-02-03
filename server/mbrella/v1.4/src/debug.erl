@@ -33,8 +33,8 @@ getDebugHTML(Name, BaseURL) ->
 	end,
 
 	GetCastingHTML = fun (CastingDict) ->
-		dict:fold(fun(ClassName, Object, Acc) ->
-			Acc ++ ClassName ++ ": " ++ GetElemHtml(Object) ++ "<br />"
+		dict:fold(fun(ClassName, ObjectString, Acc) ->
+			Acc ++ ClassName ++ ": " ++ GetElemHtml(env:lookup(ObjectString)) ++ "<br />"
 		end, "", CastingDict)
 	end,
 	
