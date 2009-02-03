@@ -434,7 +434,7 @@ var exprLib = {
 		}
 	},
 	
-	getMainPanes: {
+	getPanes: {
 		type: "Unit UI.pane.set -> Map String UI.pane",
 		expr: "paneSet -> bindMap (num -> pane -> panes pane) (returnUnitMap \"test\" paneSet)",
 		where: {

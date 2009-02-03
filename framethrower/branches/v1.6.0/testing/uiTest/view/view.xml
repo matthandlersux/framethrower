@@ -5,6 +5,7 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
 	<f:param name="focus" type="Object" />
+	<f:param name="clickAction" type="a -> Unit JS" />
 	
 	<f:derive name="asCons" d="Object~Cons focus" />
 	<f:derive name="asText" d="Object~X.text focus" />
@@ -13,6 +14,7 @@
 		<xsl:when test="$asCons">
 			<f:thunk url="infon.xml">
 				<f:with-param name="focus" select="$asCons" />
+				<f:with-param name="clickAction" select="$clickAction" />
 			</f:thunk>
 		</xsl:when>
 		<xsl:when test="$asText">
@@ -23,6 +25,7 @@
 		<xsl:otherwise>
 			<f:thunk url="object.xml">
 				<f:with-param name="focus" select="$focus" />
+				<f:with-param name="clickAction" select="$clickAction" />
 			</f:thunk>
 		</xsl:otherwise>
 	</xsl:choose>

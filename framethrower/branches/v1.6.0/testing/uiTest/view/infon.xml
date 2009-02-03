@@ -5,6 +5,7 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
 	<f:param name="focus" type="Cons" />
+	<f:param name="clickAction" type="a -> Unit JS" />
 	<f:derive name="infonArgs" d="getInfonArguments focus" />
 	<f:derive name="template" d="(bindSet getRelationTemplate) (getInfonRelations focus)" />
 	
@@ -47,6 +48,7 @@
 		
 		<f:thunk url="view.xml">
 			<f:with-param name="focus" select="$focus" />
+			<f:with-param name="clickAction" select="$clickAction" />
 		</f:thunk>
 	</f:template>
 	

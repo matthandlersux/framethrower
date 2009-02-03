@@ -4,6 +4,7 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
+	<f:param name="openPane" type="a -> Unit JS" />
 	<f:param name="closePane" type="Unit JS" />
 	<f:param name="pane" type="UI.pane" />
 	<f:param name="width" type="Number" />
@@ -23,6 +24,7 @@
 		<xsl:when test="$asPane">
 			<f:thunk url="../pane/pane.xml">
 				<f:with-param name="pane" select="$asPane" />
+				<f:with-param name="openPane" select="$openPane" />
 				<f:with-param name="closePane" select="$closePane" />
 			</f:thunk>
 		</xsl:when>

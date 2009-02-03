@@ -5,6 +5,7 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
 	<f:param name="focus" type="Object" />
+	<f:param name="clickAction" type="a -> Unit JS" />
 	
 	<f:derive name="set" d="getInfonsAbout focus" />
 
@@ -13,6 +14,7 @@
 			<html:li>
 				<f:thunk url="../view/infon.xml">
 					<f:with-param name="focus" select="." />
+					<f:with-param name="clickAction" select="$clickAction" />
 				</f:thunk>
 			</html:li>
 		</xsl:for-each>

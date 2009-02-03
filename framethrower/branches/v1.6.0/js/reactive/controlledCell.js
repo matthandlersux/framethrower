@@ -79,6 +79,16 @@ function makeCC(type) {
 			add: function (k, v) {
 				typeCheck(k, type.left.right);
 				typeCheck(v, type.right);
+				
+				//TODO: make this more efficient
+				var state = cell.getState();
+				var length = state.length;
+				for (var i = 0; i < length; i++) {
+					if (state[i].key === k) {
+						cell.removeLine(k);
+						break;
+					}
+				}				
 				cell.addLine({key: k, val: v});
 			},
 			remove: function (k) {

@@ -5,6 +5,7 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
 	<f:param name="focus" type="Object" />
+	<f:param name="clickAction" type="a -> Unit JS" />
 	<f:derive name="name" d="getName focus" />
 	<f:derive name="types" d="getTypes focus" />
 	<f:derive name="isRelation" d="filterRelations (returnSet focus)" />
@@ -18,7 +19,7 @@
 				<xsl:otherwise>
 					<xsl:value-of select="$typeDisplay/f:entry[f:key/f:o/@name = $types/f:o/@name][1]/f:value/f:literal/@value" />
 				</xsl:otherwise>
-			</xsl:choose> 
+			</xsl:choose>
 		</xsl:variable>
 		
 		<xsl:attribute name="style">background-color: <xsl:value-of select="$color" /></xsl:attribute>
@@ -31,36 +32,10 @@
 				<html:i>Untitled</html:i>
 			</xsl:otherwise>
 		</xsl:choose>
-		<f:on event="click" with-action="$openPane" />
-	</html:div>
-	
-	<f:action name="openPane">
-		<f:derive name="mainPaneSet" d="getMainPaneSet ui.main" />
-		<f:derive name="mainPanes" d="getMainPanes mainPaneSet" />
-		<f:derive name="lastPaneKey" d="takeLastKey mainPanes" />
-		<xsl:variable name="newKey">
-			<xsl:call-template name="ord-bigger">
-				<xsl:with-param name="s" select="$lastPaneKey/@value" />
-			</xsl:call-template>
-		</xsl:variable>
-
-		<f:create type="UI.pane.pane" name="newPane" />
-		<f:intact object="$newPane" action="add" property="focus" key="$focus" />
 		
-		<f:intact object="$mainPaneSet" action="add" property="panes" value="$newPane">
-			<f:with-param name="key" select="$newKey" as="String" />
-		</f:intact>
-	</f:action>
+		<f:on event="click" with-action="$clickAction">
+			<f:with-param name="focus" select="$focus" />
+		</f:on>
+	</html:div>
 
-<!--
-	<xsl:template name="ord-bigger">
-		<xsl:param name="s" />
-		<xsl:value-of select="concat(substring($s, 1, string-length($s) - 1), 'bb')" />
-	</xsl:template>
--->	
-	<!-- 
-		rootObjects["test.paneset"].prop["panes"].control.add("bb", objects.cast(rootObjects["test.pane2"], "UI.pane"));
-		rootObjects["test.pane2"].prop["focus"].control.add(rootObjects["shared.type.entity"]); 
-	-->
-	<f:include url="/xml/util/ord.xml" />
 </f:template>

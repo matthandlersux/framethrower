@@ -128,7 +128,8 @@
 		<f:param name="height" type="Number" />
 		
 		<f:thunk url="pane.xml">
-			<f:with-param name="closePane" select="$closePane" />			
+			<f:with-param name="closePane" select="$closePane" />
+			<f:with-param name="openPane" select="$openPane" />
 			<f:with-param name="pane" select="$pane" />
 			<f:with-param name="width" select="$width" />
 			<f:with-param name="height" select="$height" />
@@ -137,6 +138,23 @@
 		<f:action name="closePane">
 			<f:derive name="mainPaneSet" d="getMainPaneSet ui.main" />
 			<f:intact object="$mainPaneSet" action="remove" property="panes" key="$key" />
+		</f:action>
+		
+		<f:action name="openPane">
+			<f:param name="focus" type="Object" />
+			<f:derive name="lastPaneKey" d="takeLastKey (UI.pane.set:panes paneset)" />
+			<xsl:variable name="newKey">
+				<xsl:call-template name="ord-bigger">
+					<xsl:with-param name="s" select="$lastPaneKey/@value" />
+				</xsl:call-template>
+			</xsl:variable>
+
+			<f:create type="UI.pane.pane" name="newPane" />
+			<f:intact object="$newPane" action="add" property="focus" key="$focus" />
+
+			<f:intact object="$paneset" action="add" property="panes" value="$newPane">
+				<f:with-param name="key" select="$newKey" as="String" />
+			</f:intact>
 		</f:action>
 	</f:template>
 

@@ -14,6 +14,7 @@
 	<xsl:if test="$screenWidth and $screenHeight">
 		<f:thunk url="../paneset/pane.xml">
 			<f:with-param name="closePane" select="$closeTopPane" />
+			<f:with-param name="openPane" select="$openTopPane" />
 			<f:with-param name="pane" select="$pane" />
 			<f:with-param name="width" select="$screenWidth" />
 			<f:with-param name="height" select="$screenHeight" />
@@ -40,6 +41,9 @@
 	</xsl:if>
 	
 	<f:action name="closeTopPane" />
+	<f:action name="openTopPane">
+		<f:param name="focus" type="Object" />
+	</f:action>
 	
 	<f:include url="/xml/util/uiActions.xml" />
 	<f:include url="/xml/util/style.xml" />
