@@ -34,6 +34,19 @@ loop(Req, DocRoot) ->
 				"test" ->
 					% spit(Req, "test", list_to_binary(io_lib:format("~p", [catch erlang:error(test) ] )));
 					spit(Req, {struct, [{<<"test">>, value}]});
+				"debug" ->
+					Data = Req:parse_qs(),
+					Name = proplists:get_value("name", Data),
+					if
+						Name =:= undefined -> Req:ok({"text/html", [], [ debug:httpSearchPage() ]});
+						true ->
+							case debug:getDebugHTML(Name, "/debug?name=") of
+								notfound ->
+									Req:ok({"text/plain", [], [ Name ++ " was not found on the server." ] });
+								HTML ->
+									Req:ok({"text/html", [], [ "<html>" ++ HTML ++ "</html>"]})
+							end
+					end;
                 _ ->
                     Req:serve_file(Path, DocRoot)
             end;

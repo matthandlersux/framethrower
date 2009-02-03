@@ -11,10 +11,10 @@ getDebugHTML(Name, BaseURL) ->
 		case Elem of
 			Cell when is_record(Cell, exprCell) ->
 				Id = binary_to_list(mblib:exprElementToJson(Elem)),
-				"<a href=\"" ++ BaseURL ++ Id ++ ">" ++ "Cell: " ++ Id ++ "</a>";
+				"<a href=\"" ++ BaseURL ++ Id ++ "\">" ++ "Cell: " ++ Id ++ "</a>";
 			Object when is_record(Object, object) ->
 				Id = binary_to_list(mblib:exprElementToJson(Elem)),
-				"<a href=\"" ++ BaseURL ++ Id ++ ">" ++ "Object: " ++ Id ++ "</a>";
+				"<a href=\"" ++ BaseURL ++ Id ++ "\">" ++ "Object: " ++ Id ++ "</a>";
 			Other ->
 				binary_to_list(mblib:exprElementToJson(Elem))
 		end
@@ -40,7 +40,20 @@ getDebugHTML(Name, BaseURL) ->
 		Cell when is_record(Cell, exprCell) ->
 			Name ++ ": Cell <br />" ++ 
 			"Type: " ++ type:unparse(Cell#exprCell.type) ++"<br />" ++
-			"State: " ++ GetStateArrayHTML(cell:getStateArray(Cell)) ++ "<br />"
+			"State: " ++ GetStateArrayHTML(cell:getStateArray(Cell)) ++ "<br />";
+		notfound ->
+			notfound
 	end.
 	
 
+httpSearchPage() ->
+	"
+	<html>
+	<body>
+		<form method='get' action='debug'>
+			<input type='text' name='name' />
+			<input type='submit' />
+		</form>
+	<body>
+	</html>
+	".
