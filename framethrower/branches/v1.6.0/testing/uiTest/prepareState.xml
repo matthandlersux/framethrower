@@ -129,6 +129,10 @@
 	</f:perform>
 	
 	<f:create type="Object" name="performs" />
+	<f:perform with-action="$nameObject">
+		<f:with-param name="object" select="$performs" />
+		<f:with-param name="name" select="'Performs'" />
+	</f:perform>
 	<f:perform with-action="$relationTemplateObject">
 		<f:with-param name="object" select="$performs" />
 		<f:with-param name="relTem">
@@ -145,6 +149,10 @@
 	<f:perform with-action="$typeObject">
 		<f:with-param name="object" select="$performs" />
 		<f:with-param name="type" select="$entityToEntityToInfon" />
+	</f:perform>
+	<f:perform with-action="$putObjectInSituation">
+		<f:with-param name="situation" select="$ont" />
+		<f:with-param name="object" select="$performs" />
 	</f:perform>
 	
 	

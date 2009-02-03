@@ -113,6 +113,9 @@ function performActionsJSLocal(actions, env, ret) {
 				env.add(action.variables[retNum], result);
 				retNum++;
 			});
+			if (retNum !== action.variables.length) {
+				console.warn("Block doesn't have the right amount of variables", action);
+			}
 		} else if (action.action === "create") {
 			var res = createObject(action.type, map(action.prop, unextract));
 			if (action.variable) {
@@ -288,7 +291,7 @@ function triggerAction(thunkEssence) {
 
 			tagActionsClientOrServer(actions);
 
-			//console.dir(actions);
+			// console.dir(actions);
 
 			performActionsJS(actions, function (res) {
 				console.log("got result back", res);

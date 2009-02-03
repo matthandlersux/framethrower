@@ -1,4 +1,5 @@
 .object, .objectDrop {
+	display: table-cell;
 	color:#fff;
 	background-color:#666; /* default, but will be overwritten depending on the object's type */
 	padding:0px 3px;

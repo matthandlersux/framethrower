@@ -22,7 +22,6 @@
 			<xsl:with-param name="width" select="$pwidth/@value" />
 			<xsl:with-param name="height" select="$pheight/@value" />
 		</xsl:call-template>
-		popup here.
 		
 		<f:thunk with-template="$content" />
 	</html:div>

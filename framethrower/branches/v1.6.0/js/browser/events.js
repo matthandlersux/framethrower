@@ -19,7 +19,7 @@
 	function processEvent(eventName, e, eventParams) {
 		var target = e.target;
 		
-		var fon = xpath("ancestor-or-self::*/f:on[@event='" + eventName + "'][1]", target);
+		var fon = xpath("(ancestor-or-self::*/f:on[@event='" + eventName + "'])[last()]", target);
 		
 		if (fon.length > 0) {
 			fon = fon[0];

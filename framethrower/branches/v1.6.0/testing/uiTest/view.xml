@@ -9,7 +9,7 @@
 	<f:derive name="paneset" d="test.paneset" />
 	
 	
-	<f:derive name="testConsIP" d="UI.consIP~UI.objectIP test.consIP" />
+	<f:derive name="testConsIP" d="test.consIP" />
 	<f:derive name="infonType" d="shared.type.infon" />
 	
 

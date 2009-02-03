@@ -185,6 +185,8 @@ var session = (function () {
 				});
 
 				xhr(serverBaseUrl+"action", json, function (response) {
+					response = JSON.parse(response);
+					
 					// TODO fill this with correct variables or whatever
 					if (sending.callback) {
 						sending.callback(response.created, response.returned); 

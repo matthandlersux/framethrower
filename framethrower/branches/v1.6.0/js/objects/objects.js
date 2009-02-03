@@ -124,16 +124,26 @@ var classesToMake = {
 	},
 	
 	
-	"UI.objectIP": {
-		prop: {
-			"object": "Unit Object"
-		}
-	},
+	// "UI.objectIP": {
+	// 	prop: {
+	// 		"object": "Unit Object",
+	// 		"consIP": "Unit UI.consIP"
+	// 	}
+	// },
+	// "UI.consIP": {
+	// 	//inherit: "UI.objectIP",
+	// 	prop: {
+	// 		left: "UI.objectIP",
+	// 		right: "UI.objectIP"
+	// 	},
+	// 	makeNew: ["left", "right"]
+	// },
+	
 	"UI.consIP": {
-		inherit: "UI.objectIP",
 		prop: {
-			left: "UI.objectIP",
-			right: "UI.objectIP"
+			"object": "Unit Object",
+			"left": "Unit UI.consIP",
+			"right": "Unit UI.consIP"
 		}
 	},
 	
@@ -415,7 +425,9 @@ var objects = (function (classesToMake) {
 		
 		if (c.makeNew) {
 			forEach(c.makeNew, function (propName) {
-				props[propName] = makeObject(c.prop[propName].value, {});
+				if (props[propName] === undefined) {
+					props[propName] = makeObject(c.prop[propName].value, {});					
+				}
 			});
 		}
 		

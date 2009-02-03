@@ -58,15 +58,21 @@ var rootObjects = {};
 	
 	
 	//m("test.consIP", "UI.consIP");
-	m("test.objectIP1", "UI.objectIP");
-	m("test.objectIP2", "UI.objectIP");
-	m("test.objectIP3", "UI.objectIP");
+	m("test.objectIP1", "UI.consIP");
+	m("test.objectIP2", "UI.consIP");
+	m("test.objectIP3", "UI.consIP");
 	
 	rootObjects["test.objectIP1"].prop["object"].control.add(rootObjects["shared.in"]);
 	
+	m("test.consIP2", "UI.consIP");
+	rootObjects["test.consIP2"].prop["left"].control.add(rootObjects["test.objectIP1"]);
+	rootObjects["test.consIP2"].prop["right"].control.add(rootObjects["test.objectIP2"]);
 	
-	m("test.consIP2", "UI.consIP", {left: rootObjects["test.objectIP1"], right: rootObjects["test.objectIP2"]});
-	m("test.consIP", "UI.consIP", {left: rootObjects["test.consIP2"], right: rootObjects["test.objectIP3"]});
+	m("test.consIP", "UI.consIP");
+	rootObjects["test.consIP"].prop["left"].control.add(rootObjects["test.consIP2"]);
+	rootObjects["test.consIP"].prop["right"].control.add(rootObjects["test.objectIP3"]);
+	
+	
 	//rootObjects["test.consIP"].prop["left"].control.add(rootObjects["shared.in"]);
 	//rootObjects["test.consIP"].prop["right"].control.add(rootObjects["shared.realLife"]);
 	

@@ -38,9 +38,6 @@
 		
 	</xsl:if>
 	
-	<f:action name="hidePopup">
-		<f:intact object="$main" action="remove" property="popup" />
-	</f:action>
-	
+	<f:include url="/xml/util/uiActions.xml" />
 	<f:include url="/xml/util/style.xml" />
 </f:template>

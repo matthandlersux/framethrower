@@ -290,7 +290,36 @@ var exprLib = {
 				expr: "obj -> isEmpty (returnUnitSet (Object~Cons obj))"
 			}
 		}
-	},	
+	},
+	
+	// this is a temporary one probably... (should filter for truth if we leave it in)
+	getAllNamedObjects: {
+		type: "Set Object",
+		expr: "upRightLeft shared.name",
+		where: {
+			upRightLeft: {
+				type: "Object -> Set Object",
+				chain: ["Object:upRight", "Cons:right"]
+			}
+		}
+	},
+	getObjectsOfType: {
+		type: "Object -> Set Object",
+		expr: "type -> move type",
+		where: {
+			move: {
+				type: "Object -> Set Object",
+				chain: ["Object:upLeft", "Cons:left", "Cons:right"]
+			}
+		}
+	},
+	
+	
+	
+	filterRelations: {
+		type: "Set Object -> Set Object",
+		expr: "filter (x -> (compose reactiveNot isEmpty) (bindUnitSet Object~Cons (getTypes x)))"
+	},
 
 	// ========================================================================
 	// Getting infon arguments, relation
@@ -328,11 +357,11 @@ var exprLib = {
 		}
 	},
 	getInfonIPArguments: {
-		type: "UI.consIP -> Map Number (Unit UI.objectIP)",
+		type: "UI.consIP -> Map Number (Unit UI.consIP)",
 		expr: "infon -> mapMapValue (compose takeOne downRight) (getConsIPComponents infon)",
 		where: {
 			downRight: {
-				type: "Set UI.consIP -> Set UI.objectIP",
+				type: "Set UI.consIP -> Set UI.consIP",
 				chain: ["UI.consIP:right"]
 			}
 		}
@@ -349,16 +378,19 @@ var exprLib = {
 		}
 	},
 	getInfonIPRelations: {
-		type: "UI.consIP -> Set UI.objectIP",
-		expr: "infon -> finalLeft (flattenSet (returnUnitSet (takeLastVal (getConsIPComponents infon))))",
+		type: "UI.consIP -> Set UI.consIP",
+		expr: "infon -> (flattenSet (returnUnitSet (takeLastVal (getConsIPComponents infon))))",
 		where: {
 			finalLeft: {
-				type: "Set UI.consIP -> Set UI.objectIP",
+				type: "Set UI.consIP -> Set UI.consIP",
 				chain: ["UI.consIP:left"]
 			}
 		}
 	},
 	
+	// ========================================================================
+	// Relation Types
+	// ========================================================================
 	
 	getRelationTypeComponents: {
 		type: "Cons -> Map Number (Set Cons)",

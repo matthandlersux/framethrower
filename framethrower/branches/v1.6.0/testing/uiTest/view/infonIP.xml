@@ -4,102 +4,209 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
-	<f:param name="focus" type="UI.objectIP" />
+	<f:param name="focus" type="UI.consIP" />
 	<f:param name="expectedType" type="Object" />
 
-	<f:derive name="object" d="UI.objectIP:object focus" />
-	<f:derive name="asConsIP" d="UI.objectIP~UI.consIP focus" />
+	<f:derive name="object" d="UI.consIP:object focus" />
+	<f:derive name="left" d="UI.consIP:left focus" />
+	<!-- <f:derive name="asConsIP" d="UI.objectIP~UI.consIP focus" /> -->
+	
 	<f:derive name="infonType" d="shared.type.infon" />
-	
 	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
-	
 	<f:derive name="typeName" d="getName expectedType" />
 
 	
 	<xsl:variable name="expectInfon" select="$expectedType/@name = $infonType/@name" />
-	<xsl:variable name="empty" select="not($object) and not($asConsIP)" />
+	<xsl:variable name="empty" select="not($object) and not($left)" />
 	
 	<xsl:choose>
-		<xsl:when test="$empty and $expectInfon">
-			<html:div class="infon"><html:div class="infonCell">
+		<xsl:when test="$expectInfon">
+			<html:div>
 				<f:on event="click" with-action="$showRelationPopup">
 					<f:with-param-browser name="x" prop="mouseX" />
 					<f:with-param-browser name="y" prop="mouseY" />
 				</f:on>
-				[Select Relation]
-			</html:div></html:div>
-		</xsl:when>
-		<xsl:when test="$empty and not($expectInfon)">
-			<xsl:variable name="color" select="$typeDisplay/f:entry[f:key/f:o/@name = $expectedType/@name][1]/f:value/f:literal/@value" />
-			
-			<html:div class="objectDrop">
-				<xsl:attribute name="style">
-					border-color: <xsl:value-of select="$color" />;
-					color: <xsl:value-of select="$color" />;
-				</xsl:attribute>
-				
-				<xsl:value-of select="$typeName/*/@value" />
-			
+				<xsl:choose>
+					<xsl:when test="$empty">
+						<html:div class="infon"><html:div class="infonCell">
+							[Select Relation]
+						</html:div></html:div>
+					</xsl:when>
+					<xsl:otherwise>
+						<f:thunk with-template="$printCons" />
+					</xsl:otherwise>
+				</xsl:choose>
 			</html:div>
 		</xsl:when>
-		<xsl:when test="$expectInfon and $asConsIP">
-			<f:thunk with-template="$printCons">
-				<f:with-param name="consIP" select="$asConsIP" />
-			</f:thunk>
-		</xsl:when>
-		<xsl:when test="not($empty) and not($expectInfon)">
-			
-		</xsl:when>
 		<xsl:otherwise>
-			ERROR.
+			<html:div>
+				<f:on event="click" with-action="$showObjectPopup">
+					<f:with-param-browser name="x" prop="mouseX" />
+					<f:with-param-browser name="y" prop="mouseY" />
+				</f:on>
+				<xsl:choose>
+					<xsl:when test="$empty">
+						<xsl:variable name="color" select="$typeDisplay/f:entry[f:key/f:o/@name = $expectedType/@name][1]/f:value/f:literal/@value" />
+						<html:div class="objectDrop">
+							<xsl:attribute name="style">
+								border-color: <xsl:value-of select="$color" />;
+								color: <xsl:value-of select="$color" />;
+							</xsl:attribute>
+							<xsl:value-of select="$typeName/*/@value" />
+						</html:div>
+					</xsl:when>
+					<xsl:otherwise>
+						PRINT OBJECT
+					</xsl:otherwise>
+				</xsl:choose>
+			</html:div>
 		</xsl:otherwise>
 	</xsl:choose>
 	
-	<f:template name="relationPopup">
-		<html:div>
-			This is a popup!
-		</html:div>
-	</f:template>
 	
+	<f:template name="relationPopup">
+		<f:derive name="relations" d="filterRelations (getObjectsIn shared.ont)" />
+		<xsl:for-each select="$relations/*">
+			<html:div>
+				<f:on event="click" with-action="$selectRelation">
+					<f:with-param name="relation" select="." />
+				</f:on>
+				
+				<f:thunk url="object.xml">
+					<f:with-param name="focus" select="." />
+				</f:thunk>
+			</html:div>
+			<f:thunk with-template="$selectRelation">
+				<f:with-param name="relation" select="." />
+			</f:thunk>
+		</xsl:for-each>
+		<f:action name="selectRelation">
+			<f:param name="relation" type="Object" />
+			<f:derive name="argCount" d="(mapSet (compose (compose length keys) getRelationTypeComponents)) (bindUnitSet Object~Cons (getTypes relation))" />
+			
+			<!-- <xsl:value-of select="$argCount/*[1]/@value" /> -->
+			
+			<f:create name="left" type="UI.consIP" />
+			<f:intact object="$left" action="add" property="object" key="$relation" />
+			
+			<xsl:call-template name="makeConsIP">
+				<xsl:with-param name="num" select="$argCount/*[1]/@value - 1" />
+				<xsl:with-param name="left" select="$left" />
+			</xsl:call-template>
+			
+			<f:intact action="add" property="left" object="$focus">
+				<f:with-param name="key"><f:var name="c1" /></f:with-param>
+			</f:intact>
+			
+			<f:intact action="add" property="right" object="$focus">
+				<f:with-param name="key"><f:var name="o1" /></f:with-param>
+			</f:intact>
+				
+			<f:perform with-action="$hidePopup" />
+			
+			<xsl:template name="makeConsIP">
+				<xsl:param name="num" />
+				<xsl:param name="left" />
+				
+				<f:create type="UI.consIP" name="o{$num}" />
+				<f:create type="UI.consIP" name="c{$num}" />
+				
+				<f:intact action="add" property="left" key="$left">
+					<f:with-param name="object"><f:var name="c{$num}" /></f:with-param>
+				</f:intact>
+				<f:intact action="add" property="right">
+					<f:with-param name="object"><f:var name="c{$num}" /></f:with-param>
+					<f:with-param name="key"><f:var name="o{$num}" /></f:with-param>
+				</f:intact>
+				
+				<xsl:if test="$num &gt; 1">
+					<xsl:call-template name="makeConsIP">
+						<xsl:with-param name="num" select="$num - 1" />
+						<xsl:with-param name="left">
+							<f:var name="c{$num}" />
+						</xsl:with-param>
+					</xsl:call-template>
+				</xsl:if>
+			</xsl:template>
+			
+			
+		</f:action>
+	</f:template>
 	<f:action name="showRelationPopup">
 		<f:param name="x" type="Number" />
 		<f:param name="y" type="Number" />
-		<f:derive name="main" d="ui.main" />
-		<f:create type="UI.popup" name="popup">
+		
+		<f:perform with-action="$showPopup">
 			<f:with-param name="x" select="$x" />
 			<f:with-param name="y" select="$y" />
 			<f:with-param name="width" select="300" as="Number" />
 			<f:with-param name="height" select="300" as="Number" />
 			<f:with-param name="content" select="$relationPopup" />
-		</f:create>
-		<f:intact object="$main" property="popup" action="add" key="$popup" />
+		</f:perform>
 	</f:action>
+	
+	<f:template name="objectPopup">
+		<f:derive name="objects" d="getObjectsOfType expectedType" />
+		
+		<xsl:for-each select="$objects/*">
+			<html:div>
+				<f:thunk url="object.xml">
+					<f:with-param name="focus" select="." />
+				</f:thunk>
+			</html:div>
+		</xsl:for-each>
+	</f:template>
+	<f:action name="showObjectPopup">
+		<f:param name="x" type="Number" />
+		<f:param name="y" type="Number" />
+		
+		<f:perform with-action="$showPopup">
+			<f:with-param name="x" select="$x" />
+			<f:with-param name="y" select="$y" />
+			<f:with-param name="width" select="300" as="Number" />
+			<f:with-param name="height" select="300" as="Number" />
+			<f:with-param name="content" select="$objectPopup" />
+		</f:perform>
+	</f:action>
+	
+	
+
+	
+	<f:include url="/xml/util/uiActions.xml" />
+
+
+
+
 
 
 	<f:template name="printCons">
-		<f:param name="consIP" type="UI.consIP" />
+		<f:derive name="infonArgs" d="getInfonIPArguments focus" />
+		<f:derive name="template" d="(compose (bindSet getRelationTemplate) (bindUnitSet UI.consIP:object)) (getInfonIPRelations focus)" />
 		
-		<f:derive name="infonArgs" d="getInfonIPArguments consIP" />
-		<f:derive name="template" d="(compose (bindSet getRelationTemplate) (bindUnitSet UI.objectIP:object)) (getInfonIPRelations consIP)" />
-		
-		<f:derive name="rtInputs" d="mapSet getRelationTypeInputs (bindUnitSet Object~Cons (bindSet getTypes (bindUnitSet UI.objectIP:object (getInfonIPRelations consIP))))" />
+		<f:derive name="rtInputs" d="mapSet getRelationTypeInputs (bindUnitSet Object~Cons (bindSet getTypes (bindUnitSet UI.consIP:object (getInfonIPRelations focus))))" />
 		
 		<f:derive name="polyA" d="shared.type.poly.a" />
 		
 		
-		<html:div>Cons In Progress</html:div>
+		<!-- <html:div>Cons In Progress</html:div> -->
 		
 		<xsl:variable name="rt" select="$template/f:literal/f:relationTemplate" />
 		<xsl:if test="$rt">
-			<xsl:call-template name="print">
-				<xsl:with-param name="relationTemplate" select="$rt" />
-				<xsl:with-param name="infonArgs" select="$infonArgs" />
-				<xsl:with-param name="argTemplate" select="$printArg" />
-			</xsl:call-template>
+			<html:span>
+				<f:on event="click" with-action="$showRelationPopup">
+					<f:with-param-browser name="x" prop="mouseX" />
+					<f:with-param-browser name="y" prop="mouseY" />
+				</f:on>
+				<xsl:call-template name="print">
+					<xsl:with-param name="relationTemplate" select="$rt" />
+					<xsl:with-param name="infonArgs" select="$infonArgs" />
+					<xsl:with-param name="argTemplate" select="$printArg" />
+				</xsl:call-template>
+			</html:span>
 		</xsl:if>
 		
 		<f:template name="printArg">
-			<f:param name="focus" type="UI.objectIP" />
+			<f:param name="focus" type="UI.consIP" />
 			<f:param name="num" type="Number" />
 			
 			<xsl:variable name="type">
@@ -120,6 +227,10 @@
 				<f:with-param name="expectedType" select="$type" />
 			</f:thunk>
 		</f:template>
+
+		<!-- <xsl:call-template name="prettyPrint">
+			<xsl:with-param name="node" select="$infonArgs" />
+		</xsl:call-template> -->
 		
 		<!-- <xsl:call-template name="prettyPrint">
 			<xsl:with-param name="node" select="$rtInputs" />
@@ -130,6 +241,10 @@
 		
 		<f:include url="/xml/debug/prettyPrint.xml" />
 	</f:template>
+	
+	
+	
+	
 	
 	<f:template name="printObject">
 		
