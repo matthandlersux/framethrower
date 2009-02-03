@@ -74,7 +74,8 @@
 					<xsl:with-param name="left" select="$left" />
 					<xsl:with-param name="top" select="$top" />
 				</xsl:call-template>
-				<f:thunk url="pane.xml">
+				<f:thunk with-template="$innerPane">
+					<f:with-param name="key" select="f:key/*" />
 					<f:with-param name="pane" select="f:value/*" />
 					<f:with-param name="width" select="$width" as="Number" />
 					<f:with-param name="height" select="$height" as="Number" />
@@ -118,8 +119,26 @@
 			</xsl:if>
 		</xsl:for-each>
 	</html:div>
-	
 
+
+	<f:template name="innerPane">
+		<f:param name="key" type="String" />
+		<f:param name="pane" type="UI.pane" />
+		<f:param name="width" type="Number" />
+		<f:param name="height" type="Number" />
+		
+		<f:thunk url="pane.xml">
+			<f:with-param name="closePane" select="$closePane" />			
+			<f:with-param name="pane" select="$pane" />
+			<f:with-param name="width" select="$width" />
+			<f:with-param name="height" select="$height" />
+		</f:thunk>
+		
+		<f:action name="closePane">
+			<f:derive name="mainPaneSet" d="getMainPaneSet ui.main" />
+			<f:intact object="$mainPaneSet" action="remove" property="panes" key="$key" />
+		</f:action>
+	</f:template>
 
 	<f:include url="/xml/util/style.xml" />
 	

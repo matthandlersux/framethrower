@@ -79,7 +79,6 @@ function makeCC(type) {
 			add: function (k, v) {
 				typeCheck(k, type.left.right);
 				typeCheck(v, type.right);
-				cell.removeLine(k);
 				cell.addLine({key: k, val: v});
 			},
 			remove: function (k) {

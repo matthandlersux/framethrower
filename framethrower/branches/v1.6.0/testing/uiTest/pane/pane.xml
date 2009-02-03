@@ -5,7 +5,7 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
 	<f:param name="pane" type="UI.pane.pane" />
-	
+	<f:param name="closePane" type="Unit JS" />
 	<f:derive name="tab" d="UI.pane.pane:tab pane" />
 	<f:derive name="focus" d="UI.pane.pane:focus pane" />
 
@@ -16,6 +16,11 @@
 			<f:thunk url="../view/object.xml">
 				<f:with-param name="focus" select="$focus" />
 			</f:thunk>
+		</html:div>
+
+		<html:div>
+			X
+			<f:on event="click" with-action="$closePane" />
 		</html:div>
 		
 		<html:div>

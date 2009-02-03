@@ -324,6 +324,7 @@ var objects = (function (classesToMake) {
 	function actOnProp(propName, object, action, key, value) {
 		var objClass = classes[object.type.value];
 		var castedValue;
+		
 		if (action === 'add') {
 			castedValue = castIfNeeded(propName, object, objClass, key, value);
 			object.prop[propName].control[action](castedValue.key, castedValue.val);
