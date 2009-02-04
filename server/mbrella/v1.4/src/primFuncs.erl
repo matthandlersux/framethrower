@@ -429,7 +429,7 @@ primitives() ->
 	% end},
 	#exprFun{
 	name = "fold",
-	type = "(a -> b -> b) -> (b -> a -> a) -> b -> Set a -> Unit b",
+	type = "(a -> b -> b) -> (a -> b -> b) -> b -> Set a -> Unit b",
 	function = fun(Fun, FunInv, Init, Cell) ->
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, Init),
@@ -442,7 +442,7 @@ primitives() ->
 					NewCache;
 				{minus, Val} ->
 					cell:removeLine(OutputCell, Cache),
-					NewCache = applyFun(applyFun(FunInv, Cache), Val),
+					NewCache = applyFun(applyFun(FunInv, Val), Cache),
 					cell:addLine(OutputCell, NewCache),
 					NewCache
 			end
