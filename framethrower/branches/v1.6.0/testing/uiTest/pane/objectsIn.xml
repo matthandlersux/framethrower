@@ -39,16 +39,21 @@
 		</xsl:choose>
 	</html:div>
 
-	<html:ul>
-		<xsl:for-each select="$set/*">
-			<html:li>
+	<xsl:for-each select="$set/*">
+		<html:div class="entry">
+			<html:div class="entry-cell">
 				<f:thunk url="../view/object.xml">
 					<f:with-param name="focus" select="." />
 					<f:with-param name="clickAction" select="$clickAction" />
 				</f:thunk>
-			</html:li>
-		</xsl:for-each>
-	</html:ul>
+			</html:div>
+			<html:div class="entry-cell">
+				<f:thunk with-template="$removeButton">
+					<f:with-param name="object" select="." />
+				</f:thunk>
+			</html:div>
+		</html:div>
+	</xsl:for-each>
 
 	<f:action name="addObject">
 		<f:create type="Object" name="newObj" />
@@ -66,5 +71,21 @@
 			<f:intact object="$pane" action="remove" property="addingObject" key="$addingObject" />
 		</xsl:if>
 	</f:action>
+	
+	
+	<f:template name="removeButton">
+		<f:param name="object" type="Object" />
+		<f:derive name="inOntObj" d="getObjectInSit object focus" />
+		<html:div>
+			remove
+			<f:on event="click" with-action="$removeObject" />
+		</html:div>
+
+		<f:action name="removeObject">
+			<!-- TODO shouldn't need a key -->
+			<f:intact object="$inOntObj" action="remove" property="truth" key="null" />
+		</f:action>
+	</f:template>
+	
 	
 </f:template>

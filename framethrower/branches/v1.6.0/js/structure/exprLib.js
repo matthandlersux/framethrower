@@ -135,6 +135,17 @@ var exprLib = {
 		}
 	},
 	
+	getObjectInSit: {
+		type: "Object -> Object -> Unit Cons",
+		expr: "obj -> sit -> (bindUnit ((swap Cons::lookup) obj)) (inSit sit)",
+		where: {
+			inSit: {
+				type: "Object -> Unit Object",
+				expr: "sit -> (mapUnit Cons~Object) (Cons::lookup shared.in sit)"
+			}
+		}
+	},
+	
 	filterByTruthInOnt: {
 		type: "Set Cons -> Set Cons",
 		expr: "infons -> filter (infon -> reactiveNot (isEmpty (filterByTruth (returnUnitSet (ontInfon infon))))) infons",
