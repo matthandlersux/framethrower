@@ -143,7 +143,12 @@
 	function change(e) {
 		processEvent("change", e, {value:e.target.value});
 	}
-	
+	function submit(e) {
+		var tmp = currentFocus;
+		currentFocus=false;
+		tmp.blur();
+		dont(e);
+	}
 	
 	function dont(e) {
 		e.preventDefault();
@@ -158,6 +163,7 @@
 	document.addEventListener("blur", blur, true);
 	document.addEventListener("focus", focus, true);
 	document.addEventListener("change", change, true);
+	document.addEventListener("submit", submit, true);
 })();
 
 
