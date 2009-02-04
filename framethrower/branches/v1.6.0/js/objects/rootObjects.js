@@ -47,11 +47,11 @@ var rootObjects = {};
 	rootObjects["test.pane"].prop["focus"].control.add(rootObjects["shared.realLife"]);
 	
 	m("test.pane2", "UI.pane.pane");
-	rootObjects["test.pane2"].prop["focus"].control.add(rootObjects["shared.type.entity"]);
+	//rootObjects["test.pane2"].prop["focus"].control.add(rootObjects["shared.type.entity"]);
 	
 	m("test.paneset", "UI.pane.set");
 	rootObjects["test.paneset"].prop["panes"].control.add("b", objects.cast(rootObjects["test.pane"], "UI.pane"));
-	rootObjects["test.paneset"].prop["panes"].control.add("bb", objects.cast(rootObjects["test.pane2"], "UI.pane"));
+	//rootObjects["test.paneset"].prop["panes"].control.add("bb", objects.cast(rootObjects["test.pane2"], "UI.pane"));
 	
 	m("ui.main", "UI.main", {"pane": objects.cast(rootObjects["test.paneset"], "UI.pane")});
 	
