@@ -113,7 +113,9 @@ function xhr(url, post, callback, failCallback, timeout) {
 			failCallback();
 		} else {
 			// retry
-			xhr(url, post, callback, failCallback, timeout);
+			setTimeout(function () {
+				xhr(url, post, callback, failCallback, timeout);
+			}, 1);
 		}
 	}
 	
@@ -300,7 +302,7 @@ var session = (function () {
 			// 	console.log("had an error", e, cells, cells["1"]);
 			// }
 
-			startUpdater();
+			setTimeout(startUpdater, 1);
 		});
 	}
 	

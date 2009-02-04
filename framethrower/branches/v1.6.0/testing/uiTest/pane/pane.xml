@@ -15,52 +15,58 @@
 	<f:derive name="propertiesState" d="UI.pane.pane:propertiesState pane" />
 
 	<xsl:if test="$focus">
-		<html:div>
-			<html:span>
+		<html:div class="titlebar">
+			<html:div class="titlebar-focus">
 				<f:thunk url="../view/object.xml">
 					<f:with-param name="focus" select="$focus" />
 					<f:with-param name="clickAction" select="$noAction" />
 				</f:thunk>
-			</html:span>
-			<html:span>
-				X
-				<f:on event="click" with-action="$closePane" />
-			</html:span>
+			</html:div>
+			<html:div class="titlebar-buttons">
+				<html:div class="titlebar-close">
+					<f:on event="click" with-action="$closePane" />
+				</html:div>
+			</html:div>
+			
 		</html:div>
 		
-		<html:div>
+		
+		<html:div class="tabs">
 			<xsl:if test="$focustype/*[1]/@name = 'shared.type.situation'">
-				<html:span>
+				<html:div class="tab">
 					<f:on event="click" with-action="$selectTab">
 						<f:with-param name="tab" select="'objectsIn'" />
 					</f:on>
-					[Children]
-				</html:span>
-				 | 
-				<html:span>
+					<html:div class="tab-children">
+						Children
+					</html:div>
+				</html:div>
+				<html:div class="tab">
 					<f:on event="click" with-action="$selectTab">
 						<f:with-param name="tab" select="'infonsIn'" />
 					</f:on>
-					[Infons in]
-				</html:span>
-				 | 
+					<html:div class="tab-infonsIn">
+						Infons in
+					</html:div>
+				</html:div>
 			</xsl:if>
-			<html:span>
+			<html:div class="tab">
 				<f:on event="click" with-action="$selectTab">
 					<f:with-param name="tab" select="'about'" />
 				</f:on>
-				[About]
-			</html:span>
-			 | 
-			<html:span>
+				<html:div class="tab-about">
+					About
+				</html:div>
+			</html:div>
+			<html:div class="tab">
 				<f:on event="click" with-action="$selectTab">
 					<f:with-param name="tab" select="'properties'" />
 				</f:on>
-				[Properties]
-			</html:span>
+				<html:div class="tab-artifacts">
+					Artifacts
+				</html:div>
+			</html:div>
 		</html:div>
-		
-		<html:hr />
 
 		<xsl:choose>
 			<xsl:when test="$tab/@value = 'objectsIn'">

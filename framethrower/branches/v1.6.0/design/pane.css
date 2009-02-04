@@ -19,6 +19,54 @@
 
 
 
+
+
+
+.titlebar {
+	background-color:#eee;
+}
+.titlebar-focus {
+	padding: 3px;
+}
+.titlebar-buttons {
+	float:right;
+	padding: 3px;
+}
+.titlebar-close {
+	background-image: url(images/close.png);
+	width: 15px;
+	height: 15px;
+}
+
+.tabs {
+	background-color:#eee;
+}
+.tab {
+	background-color:#fff;
+	display: inline;
+	border: 1px solid #ccc;
+}
+
+.tab-children {
+	
+}
+.tab-infonsIn {
+	
+}
+.tab-about {
+	
+}
+.tab-artifacts {
+	
+}
+
+
+
+
+/* ==================================
+Within pane
+================================== */
+
 .properties td, th {
 	padding: 5px;
 }
