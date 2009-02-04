@@ -36,9 +36,9 @@
 						</f:on>
 						<html:div class="tab-children">
 							Children
-							<!-- <f:thunk with-template="$childCount">
+							<f:thunk with-template="$childCount">
 								<f:with-param name="focus" select="$focus" />
-							</f:thunk> -->
+							</f:thunk>
 						</html:div>
 					</html:div>
 					<html:div class="tab">
@@ -48,9 +48,9 @@
 						<html:div class="tab-infonsIn">
 							<html:div class="icon" />
 							Infons in
-							<!-- <f:thunk with-template="$infonCount">
+							<f:thunk with-template="$infonCount">
 								<f:with-param name="focus" select="$focus" />
-							</f:thunk> -->
+							</f:thunk>
 						</html:div>
 					</html:div>
 				</xsl:if>
@@ -61,9 +61,9 @@
 					<html:div class="tab-about">
 						<html:div class="icon" />
 						About
-						<!-- <f:thunk with-template="$aboutCount">
+						<f:thunk with-template="$aboutCount">
 							<f:with-param name="focus" select="$focus" />
-						</f:thunk> -->
+						</f:thunk>
 					</html:div>
 				</html:div>
 				<html:div class="tab">
