@@ -12,8 +12,12 @@
 	<f:derive name="propertiesState" d="UI.pane.pane:addingObjectPropertiesState pane" />
 	
 	<f:derive name="set" d="getObjectsIn focus" />
-
+	
+	<f:on event="dragEnd" with-action="$dropObject" /> <!-- TODO: this probably shouldn't be out here at this level -->
+	
 	<html:div>
+		
+		
 		<xsl:choose>
 			<xsl:when test="$addingObject">
 				<html:span>
@@ -24,17 +28,17 @@
 					<f:with-param name="propertiesState" select="$propertiesState" />
 				</f:thunk>
 				
-				<html:span>
+				<html:button>
 					Confirm
 					<f:on event="click" with-action="$doneAddObject" />
-				</html:span>
+				</html:button>
 				<html:hr />
 			</xsl:when>
 			<xsl:otherwise>
-				<html:div>
-					<b>+</b> ADD OBJECT
+				<html:button>
+					Add Object
 					<f:on event="click" with-action="$addObject" />
-				</html:div>
+				</html:button>
 			</xsl:otherwise>
 		</xsl:choose>
 	</html:div>
@@ -76,10 +80,10 @@
 	<f:template name="removeButton">
 		<f:param name="object" type="Object" />
 		<f:derive name="inOntObj" d="getObjectInSit object focus" />
-		<html:div>
-			remove
+		<html:button>
+			Remove
 			<f:on event="click" with-action="$removeObject" />
-		</html:div>
+		</html:button>
 
 		<f:action name="removeObject">
 			<!-- TODO shouldn't need a key -->
@@ -87,5 +91,29 @@
 		</f:action>
 	</f:template>
 	
+	
+	
+	
+	<f:include url="/xml/util/uiActions.xml" />
+	<f:include url="/xml/util/actions.xml" />
+	
+	<f:action name="dropObject">
+		<f:derive name="droppedObject" d="bindUnit (compose returnFutureUnit UI.dragging:object) (UI.main:dragging ui.main)" />
+		
+		<xsl:if test="$droppedObject">
+			<f:perform with-action="$putObjectInSituation">
+				<f:with-param name="object" select="$droppedObject" />
+				<f:with-param name="situation" select="$focus" />
+			</f:perform>
+
+			<f:perform with-action="$stopDragging" />
+		</xsl:if>
+		
+		<!-- <f:consolelog>
+			<xsl:copy-of select="$droppedObject" />
+		</f:consolelog> -->
+	</f:action>
+	
+
 	
 </f:template>

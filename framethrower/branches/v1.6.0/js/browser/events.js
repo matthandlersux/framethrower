@@ -116,7 +116,7 @@
 			if (xdiff*xdiff + ydiff*ydiff >= dragRadius*dragRadius) {
 				//console.log(mouseDownPos,e.clientX,e.clientY);
 				mouseIsDragging = true;
-				processEvent("dragStart", e);
+				processEvent("dragStart", mouseIsDown);
 			}
 		}
 		if (mouseIsDragging) {

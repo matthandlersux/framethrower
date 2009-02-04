@@ -52,7 +52,7 @@
 	
 	<html:div>
 		<f:on event="click" with-action="$newInfon" />
-		[Add New Infon]
+		<html:button>Add New Infon</html:button>
 	</html:div>
 	
 	

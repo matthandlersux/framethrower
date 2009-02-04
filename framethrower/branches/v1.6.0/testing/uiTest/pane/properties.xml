@@ -38,10 +38,10 @@
 					</xsl:when>
 					<xsl:otherwise>
 						<xsl:value-of select="$name/*/@value" />
-						<html:span>
+						<html:button style="margin-left: 20px;">
 							<f:on event="click" with-action="$eName" />
-							[edit]
-						</html:span>
+							Edit
+						</html:button>
 					</xsl:otherwise>
 				</xsl:choose>
 			</html:td>

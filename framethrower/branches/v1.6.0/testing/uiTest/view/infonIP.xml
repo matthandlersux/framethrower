@@ -30,7 +30,7 @@
 				<xsl:choose>
 					<xsl:when test="$empty">
 						<html:div class="infon"><html:div class="infonCell">
-							[Select Relation]
+							<html:button>Select Relation</html:button>
 						</html:div></html:div>
 					</xsl:when>
 					<xsl:otherwise>
@@ -76,7 +76,7 @@
 	<f:template name="wrapInContext">
 		<html:div>
 			<f:on event="click" with-action="$wrap" />
-			[Wrap in context]
+			<html:button>Wrap in context</html:button>
 		</html:div>
 		<f:action name="wrap">
 			<f:derive name="sharedIn" d="shared.in" />
@@ -113,7 +113,7 @@
 		<f:thunk with-template="$wrapInContext" />
 		
 		<xsl:for-each select="$relations/*">
-			<html:div>
+			<html:div class="entry">
 				<f:on event="click" with-action="$selectRelation">
 					<f:with-param name="relation" select="." />
 				</f:on>
@@ -196,7 +196,7 @@
 		<f:thunk with-template="$wrapInContext" />
 		
 		<xsl:for-each select="$objects/*">
-			<html:div>
+			<html:div class="entry">
 				<f:on event="click" with-action="$selectObject">
 					<f:with-param name="object" select="." />
 				</f:on>
