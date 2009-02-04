@@ -8,21 +8,24 @@
 	<f:param name="propertiesState" type="UI.propertiesState" />
 	
 	<f:derive name="name" d="getName focus" />
-	<f:derive name="types" d="getTypes focus" />
 	
 	<f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" />
 
 	<f:derive name="editName" d="UI.propertiesState:editName propertiesState" />
 	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
 	
-	<f:derive name="focustype" d="takeOne (getOntProp shared.isA focus)" />
+	<f:derive name="focustypes" d="getOntProp shared.isA focus" />
 	<f:derive name="typeInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.isA focus))" />
+	
+	<!-- These are a total hack -->
+	<xsl:if test="$ontInfons" />
+	<xsl:if test="$typeInfons" />
 	
 	<html:table class="properties">
 		<html:tr>
 			<html:th>Name</html:th>
 			<html:td>
-				<xsl:if test="$ontInfons" />
+
 				<xsl:choose>
 					<xsl:when test="not($name/*) or $editName">
 						<html:form>
@@ -49,9 +52,9 @@
 			<html:th>Type</html:th>
 			<html:td>
 				<xsl:choose>
-					<xsl:when test="$focustype">
+					<xsl:when test="$focustypes/*">
 						<f:thunk url="../view/objectNoClick.xml">
-							<f:with-param name="focus" select="$focustype" />
+							<f:with-param name="focus" select="$focustypes/*[1]" />
 						</f:thunk>
 					</xsl:when>
 					<xsl:otherwise>

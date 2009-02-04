@@ -9,7 +9,9 @@
 	<f:param name="openPane" type="a -> Unit JS" />
 	<f:derive name="tab" d="UI.pane.pane:tab pane" />
 	<f:derive name="focus" d="UI.pane.pane:focus pane" />
-
+	
+	<f:derive name="focustype" d="bindSet (getOntProp shared.isA) (returnUnitSet focus)" />
+	
 	<f:derive name="propertiesState" d="UI.pane.pane:propertiesState pane" />
 
 	<xsl:if test="$focus">
@@ -27,20 +29,22 @@
 		</html:div>
 		
 		<html:div>
-			<html:span>
-				<f:on event="click" with-action="$selectTab">
-					<f:with-param name="tab" select="'objectsIn'" />
-				</f:on>
-				[Children]
-			</html:span>
-			 | 
-			<html:span>
-				<f:on event="click" with-action="$selectTab">
-					<f:with-param name="tab" select="'infonsIn'" />
-				</f:on>
-				[Infons in]
-			</html:span>
-			 | 
+			<xsl:if test="$focustype/*[1]/@name = 'shared.type.situation'">
+				<html:span>
+					<f:on event="click" with-action="$selectTab">
+						<f:with-param name="tab" select="'objectsIn'" />
+					</f:on>
+					[Children]
+				</html:span>
+				 | 
+				<html:span>
+					<f:on event="click" with-action="$selectTab">
+						<f:with-param name="tab" select="'infonsIn'" />
+					</f:on>
+					[Infons in]
+				</html:span>
+				 | 
+			</xsl:if>
 			<html:span>
 				<f:on event="click" with-action="$selectTab">
 					<f:with-param name="tab" select="'about'" />
