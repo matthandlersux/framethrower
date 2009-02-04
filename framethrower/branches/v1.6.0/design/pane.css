@@ -23,41 +23,71 @@
 
 
 .titlebar {
-	background-color:#eee;
+background-color:#EEEEEE;
 }
 .titlebar-focus {
-	padding: 3px;
+padding:3px;
 }
 .titlebar-buttons {
-	float:right;
-	padding: 3px;
+position:absolute;
+right:5px;
+top:5px;
 }
 .titlebar-close {
-	background-image: url(images/close.png);
-	width: 15px;
-	height: 15px;
+background-image:url(images/close.png);
+height:15px;
+width:15px;
 }
-
 .tabs {
-	background-color:#eee;
+background-color:#EEEEEE;
+padding-bottom:3px;
+padding-top:4px;
+display:table-row;
 }
 .tab {
-	background-color:#fff;
-	display: inline;
-	border: 1px solid #ccc;
+background-color:#FFFFFF;
+border:1px solid #CCCCCC;
+display:table-cell;
+padding:6px;
+cursor:pointer;
+border-left:0px;
 }
-
+.tab-children, .tab-infonsIn, .tab-about, .tab-artifacts {
+padding:0 4px 0 18px;
+}
 .tab-children {
-	
+background:transparent url(images/children.png) no-repeat scroll left center;
 }
 .tab-infonsIn {
-	
+padding-left:0;
+display:table-row;
 }
 .tab-about {
-	
+padding-left:0;
+display:table-row;
 }
 .tab-artifacts {
-	
+background:transparent url(images/artifacts.png) no-repeat scroll left center;
+}
+.tab-infonsIn .icon {
+-moz-border-radius-bottomleft:8px;
+-moz-border-radius-bottomright:8px;
+-moz-border-radius-topleft:8px;
+-moz-border-radius-topright:8px;
+background-image:url(images/infonsIn.png);
+display:table-cell;
+height:15px;
+width:15px;
+}
+.tab-about .icon {
+-moz-border-radius-bottomleft:8px;
+-moz-border-radius-bottomright:8px;
+-moz-border-radius-topleft:8px;
+-moz-border-radius-topright:8px;
+background-image:url(images/infonsabout.png);
+display:table-cell;
+height:15px;
+width:15px;
 }
 
 

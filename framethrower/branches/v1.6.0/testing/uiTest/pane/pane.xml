@@ -28,54 +28,49 @@
 				</html:div>
 			</html:div>
 			
-		</html:div>
-		
-		
-		<html:div class="tabs">
-			<xsl:if test="$focustype/*[1]/@name = 'shared.type.situation'">
+			<html:div class="tabs">
+				<xsl:if test="$focustype/*[1]/@name = 'shared.type.situation'">
+					<html:div class="tab" selected="true">
+						<f:on event="click" with-action="$selectTab">
+							<f:with-param name="tab" select="'objectsIn'" />
+						</f:on>
+						<html:div class="tab-children">
+							Children
+						</html:div>
+					</html:div>
+					<html:div class="tab">
+						<f:on event="click" with-action="$selectTab">
+							<f:with-param name="tab" select="'infonsIn'" />
+						</f:on>
+						<html:div class="tab-infonsIn">
+							<html:div class="icon" />
+							Infons in
+						</html:div>
+					</html:div>
+				</xsl:if>
 				<html:div class="tab">
 					<f:on event="click" with-action="$selectTab">
-						<f:with-param name="tab" select="'objectsIn'" />
+						<f:with-param name="tab" select="'about'" />
 					</f:on>
-					<html:div class="tab-children">
-						Children
-						<f:thunk with-template="$childCount">
-							<f:with-param name="focus" select="$focus" />
-						</f:thunk>
+					<html:div class="tab-about">
+						<html:div class="icon" />
+						About
 					</html:div>
 				</html:div>
 				<html:div class="tab">
 					<f:on event="click" with-action="$selectTab">
-						<f:with-param name="tab" select="'infonsIn'" />
+						<f:with-param name="tab" select="'properties'" />
 					</f:on>
-					<html:div class="tab-infonsIn">
-						Infons in
-						<f:thunk with-template="$infonCount">
-							<f:with-param name="focus" select="$focus" />
-						</f:thunk>
+					<html:div class="tab-artifacts">
+						Artifacts
 					</html:div>
 				</html:div>
-			</xsl:if>
-			<html:div class="tab">
-				<f:on event="click" with-action="$selectTab">
-					<f:with-param name="tab" select="'about'" />
-				</f:on>
-				<html:div class="tab-about">
-					About
-					<f:thunk with-template="$aboutCount">
-						<f:with-param name="focus" select="$focus" />
-					</f:thunk>
-				</html:div>
 			</html:div>
-			<html:div class="tab">
-				<f:on event="click" with-action="$selectTab">
-					<f:with-param name="tab" select="'properties'" />
-				</f:on>
-				<html:div class="tab-artifacts">
-					Artifacts
-				</html:div>
-			</html:div>
+			
 		</html:div>
+		
+		
+
 
 		<xsl:choose>
 			<xsl:when test="$tab/@value = 'objectsIn'">
@@ -121,29 +116,6 @@
 		<f:param name="focus" type="Object" />
 	</f:action>
 	
-	<f:template name="childCount">
-		<f:param name="focus" type="Object" />
-		<f:derive name="count" d="length (getObjectsIn focus)" />
-		<html:div>
-			(<xsl:value-of select="$count/@value" />)
-		</html:div>
-	</f:template>
-	
-	<f:template name="infonCount">
-		<f:param name="focus" type="Object" />
-		<f:derive name="count" d="length (getInfonsIn focus)" />
-		<html:div>
-			(<xsl:value-of select="$count/@value" />)
-		</html:div>
-	</f:template>
-	
-	<f:template name="aboutCount">
-		<f:param name="focus" type="Object" />
-		<f:derive name="count" d="length (getInfonsAbout focus)" />
-		<html:div>
-			(<xsl:value-of select="$count/@value" />)
-		</html:div>
-	</f:template>
 	
 	<f:include url="/xml/util/ord.xml" />
 	<!-- <f:include url="/xml/debug/prettyPrint.xml" /> -->
