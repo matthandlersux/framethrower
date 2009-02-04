@@ -34,10 +34,18 @@
 				</f:thunk>
 			</html:div>
 			<html:div class="entry-cell">
-				<f:on event="click" with-action="$addConsIP">
-					<f:with-param name="consIP" select="." />
-				</f:on>
-				[Confirm Add]
+				<html:div>
+					<f:on event="click" with-action="$addConsIP">
+						<f:with-param name="consIP" select="." />
+					</f:on>
+					<html:button>Confirm</html:button>
+				</html:div>
+				<html:div>
+					<f:on event="click" with-action="$cancelConsIP">
+						<f:with-param name="consIP" select="." />
+					</f:on>
+					<html:button>Cancel</html:button>
+				</html:div>
 			</html:div>
 		</html:div>
 	</xsl:for-each>
@@ -54,6 +62,10 @@
 			<f:with-param name="consIP" select="$consIP" />
 		</f:perform>
 		<f:intact object="$cons" action="add" property="truth" key="null" />
+		<f:intact object="$pane" action="remove" property="infonsInNewInfons" key="$consIP" />
+	</f:action>
+	<f:action name="cancelConsIP">
+		<f:param name="consIP" type="UI.consIP" />
 		<f:intact object="$pane" action="remove" property="infonsInNewInfons" key="$consIP" />
 	</f:action>
 	

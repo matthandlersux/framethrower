@@ -31,5 +31,15 @@
 				<html:i>Untitled</html:i>
 			</xsl:otherwise>
 		</xsl:choose>
+
+		<f:on event="dragStart" with-action="$drag" />
 	</html:div>
+
+	<f:action name="drag">
+		<f:derive name="main" d="ui.main" />
+		<f:create name="dragging" type="UI.dragging">
+			<f:with-param name="object" select="$focus" />
+		</f:create>
+		<f:intact object="$main" action="add" property="dragging" key="$dragging" />
+	</f:action>
 </f:template>

@@ -7,38 +7,69 @@
 	<f:derive name="main" d="ui.main" />
 	<f:derive name="pane" d="UI.main:pane ui.main" />
 	<f:derive name="popup" d="UI.main:popup ui.main" />
+	<f:derive name="dragging" d="UI.main:dragging ui.main" />
 	
 	<f:derive name="screenWidth" d="UI.ui:screenWidth ui.ui" />
 	<f:derive name="screenHeight" d="UI.ui:screenHeight ui.ui" />
 
 	<xsl:if test="$screenWidth and $screenHeight">
-		<f:thunk url="../paneset/pane.xml">
-			<f:with-param name="closePane" select="$closeTopPane" />
-			<f:with-param name="openPane" select="$openTopPane" />
-			<f:with-param name="pane" select="$pane" />
-			<f:with-param name="width" select="$screenWidth" />
-			<f:with-param name="height" select="$screenHeight" />
-		</f:thunk>
+		<html:div>
+			<xsl:if test="$dragging">
+				<xsl:attribute name="class">dragging</xsl:attribute>
+			</xsl:if>
 		
-		<!-- <f:thunk url="../view.xml" /> -->
-
-
-		<xsl:if test="$popup">
-			<html:div class="popupbg">
-				<xsl:call-template name="style">
-					<xsl:with-param name="width" select="$screenWidth/@value" />
-					<xsl:with-param name="height" select="$screenHeight/@value" />
-				</xsl:call-template>
-				<f:on event="click" with-action="$hidePopup" />
-			</html:div>
-			<f:thunk url="popup.xml">
-				<f:with-param name="popup" select="$popup" />
+			<f:thunk url="../paneset/pane.xml">
+				<f:with-param name="closePane" select="$closeTopPane" />
+				<f:with-param name="openPane" select="$openTopPane" />
+				<f:with-param name="pane" select="$pane" />
 				<f:with-param name="width" select="$screenWidth" />
-				<f:with-param name="height" select="$screenHeight" />			
+				<f:with-param name="height" select="$screenHeight" />
 			</f:thunk>
-		</xsl:if>
 		
+			<!-- <f:thunk url="../view.xml" /> -->
+		
+			<f:on event="dragEnd" with-action="$stopDragging" />
+
+			<xsl:if test="$popup">
+				<html:div class="popupbg">
+					<xsl:call-template name="style">
+						<xsl:with-param name="width" select="$screenWidth/@value" />
+						<xsl:with-param name="height" select="$screenHeight/@value" />
+					</xsl:call-template>
+					<f:on event="click" with-action="$hidePopup" />
+				</html:div>
+				<f:thunk url="popup.xml">
+					<f:with-param name="popup" select="$popup" />
+					<f:with-param name="width" select="$screenWidth" />
+					<f:with-param name="height" select="$screenHeight" />			
+				</f:thunk>
+			</xsl:if>
+		
+			<xsl:if test="$dragging">
+				<f:thunk with-template="$drawDragger">
+					<f:with-param name="dragging" select="$dragging" />
+				</f:thunk>
+			</xsl:if>
+		
+		</html:div>
 	</xsl:if>
+	
+	<f:template name="drawDragger">
+		<f:param name="dragging" type="UI.dragging" />
+		<f:derive name="object" d="UI.dragging:object dragging" />
+		<f:derive name="mouseX" d="UI.ui:mouseX ui.ui" />
+		<f:derive name="mouseY" d="UI.ui:mouseY ui.ui" />
+		<html:div>
+			<xsl:call-template name="style">
+				<xsl:with-param name="left" select="$mouseX/@value + 5" />
+				<xsl:with-param name="top" select="$mouseY/@value + 2" />
+			</xsl:call-template>
+			
+			<f:thunk url="../view/objectNoClick.xml">
+				<f:with-param name="focus" select="$object" />
+			</f:thunk>
+		</html:div>
+	</f:template>
 	
 	<f:action name="closeTopPane" />
 	<f:action name="openTopPane">

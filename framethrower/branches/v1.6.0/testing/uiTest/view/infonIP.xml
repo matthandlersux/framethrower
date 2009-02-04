@@ -45,6 +45,7 @@
 					<f:with-param-browser name="x" prop="mouseX" />
 					<f:with-param-browser name="y" prop="mouseY" />
 				</f:on>
+				<f:on event="dragEnd" with-action="$dropObject" />
 				<xsl:choose>
 					<xsl:when test="$empty">
 						<xsl:variable name="color" select="$typeDisplay/f:entry[f:key/f:o/@name = $expectedType/@name][1]/f:value/f:literal/@value" />
@@ -227,7 +228,18 @@
 	
 
 	
-	
+	<f:action name="dropObject">
+		<f:derive name="droppedObject" d="bindUnit (compose returnFutureUnit UI.dragging:object) (UI.main:dragging ui.main)" />
+		
+		<xsl:if test="$droppedObject">
+			<f:intact object="$focus" action="add" property="object" key="$droppedObject" />
+			<f:perform with-action="$stopDragging" />
+		</xsl:if>
+		
+		<!-- <f:consolelog>
+			<xsl:copy-of select="$droppedObject" />
+		</f:consolelog> -->
+	</f:action>
 
 	
 

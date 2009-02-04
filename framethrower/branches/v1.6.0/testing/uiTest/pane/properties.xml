@@ -29,13 +29,11 @@
 				<xsl:choose>
 					<xsl:when test="not($name/*) or $editName">
 						<html:form>
-							<html:input name="newName" type="text" value="{$name/*/@value}" />
-							<html:span>
-								<f:on event="click" with-action="$changeName">
+							<html:input name="newName" type="text" value="{$name/*/@value}">
+								<f:on event="manualblur" with-action="$changeName">
 									<f:with-param-browser name="newName" form="newName" />
 								</f:on>
-								[confirm]
-							</html:span>
+							</html:input>
 						</html:form>
 					</xsl:when>
 					<xsl:otherwise>

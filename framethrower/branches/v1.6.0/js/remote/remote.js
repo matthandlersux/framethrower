@@ -272,19 +272,22 @@ var session = (function () {
 						//console.log("doing update", update, o.updates);
 						var cell = cells[update.queryId];
 						
-						var keyType; // TODO test this
-						var valueType;
-						var cellType = getType(cell);
-						if (cellType.left.kind === "typeApply") {
-							keyType = cellType.left.right;
-							valueType = cellType.right;
-						} else {
-							keyType = cellType.right;
+						if (cell !== undefined) { // TODO do i need this?
+							var keyType; // TODO test this
+							var valueType;
+							var cellType = getType(cell);
+							if (cellType.left.kind === "typeApply") {
+								keyType = cellType.left.right;
+								valueType = cellType.right;
+							} else {
+								keyType = cellType.right;
+							}
+
+							var key = parseServerResponse(update.key, keyType);
+							var value = parseServerResponse(update.value, valueType);
+							cell.control[update.action](key, value);
 						}
-						
-						var key = parseServerResponse(update.key, keyType);
-						var value = parseServerResponse(update.value, valueType);
-						cell.control[update.action](key, value);
+
 					});
 					refreshScreen();
 				}

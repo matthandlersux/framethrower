@@ -19,7 +19,14 @@
 	function processEvent(eventName, e, eventParams) {
 		var target = e.target;
 		
-		var fon = xpath("(ancestor-or-self::*/f:on[@event='" + eventName + "'])[last()]", target);
+		// var fon = xpath("(ancestor-or-self::*/f:on[@event='" + eventName + "'])[last()]", target);
+		// 
+		// var test = xpath("(ancestor-or-self::*/f:on[@event='" + eventName + "'])", target);
+		// if (test.length > 1) {
+		// 	console.log("multiple targets", test);
+		// }
+		
+		var fon = xpath("ancestor-or-self::*[f:on/@event='" + eventName + "'][1]/f:on[@event='" + eventName + "']", target);
 		
 		if (fon.length > 0) {
 			fon = fon[0];
@@ -88,7 +95,7 @@
 			currentFocus=false;
 			tmp.blur();
 		}		
-		if (e.target.localName != 'input') {
+		if (e.target.localName !== "input" && e.target.localName !== "button") {
 			dont(e);
 		}
 	}
@@ -167,8 +174,16 @@
 		refreshScreen();
 	}
 	
+	function mousemove(e) {
+		ui["mouseX"].control.add(e.clientX);
+		ui["mouseY"].control.add(e.clientY);
+		refreshScreen();
+	}
+	
 	window.addEventListener("resize", resizeScreen, true);
 	document.addEventListener("load", resizeScreen, true);
+	
+	document.addEventListener("mousemove", mousemove, true);
 })();
 
 

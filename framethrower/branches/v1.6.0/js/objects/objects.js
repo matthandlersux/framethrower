@@ -75,14 +75,17 @@ var classesToMake = {
 	"UI.ui": {
 		prop: {
 			"screenWidth": "Unit Number",
-			"screenHeight": "Unit Number"
+			"screenHeight": "Unit Number",
+			"mouseX": "Unit Number",
+			"mouseY": "Unit Number"
 		}
 	},
 	
 	"UI.main": {
 		prop: {
 			"pane": "UI.pane",
-			"popup": "Unit UI.popup"
+			"popup": "Unit UI.popup",
+			"dragging": "Unit UI.dragging"
 		}
 	},
 	
@@ -93,6 +96,12 @@ var classesToMake = {
 			"width": "Number",
 			"height": "Number",
 			"content": "Unit JS"
+		}
+	},
+	
+	"UI.dragging": { // this will have more stuff eventually...
+		prop: {
+			"object": "Object"
 		}
 	},
 	

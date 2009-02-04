@@ -28,5 +28,10 @@
 		<f:derive name="main" d="ui.main" />
 		<f:intact object="$main" action="remove" property="popup" />
 	</f:action>
+	
+	<f:action name="stopDragging">
+		<f:derive name="main" d="ui.main" />
+		<f:intact object="$main" action="remove" property="dragging" />
+	</f:action>
 
 </f:includes>
