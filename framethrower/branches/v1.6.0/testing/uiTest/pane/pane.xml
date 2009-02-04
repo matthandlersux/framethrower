@@ -39,6 +39,9 @@
 					</f:on>
 					<html:div class="tab-children">
 						Children
+						<f:thunk with-template="$childCount">
+							<f:with-param name="focus" select="$focus" />
+						</f:thunk>
 					</html:div>
 				</html:div>
 				<html:div class="tab">
@@ -47,6 +50,9 @@
 					</f:on>
 					<html:div class="tab-infonsIn">
 						Infons in
+						<f:thunk with-template="$infonCount">
+							<f:with-param name="focus" select="$focus" />
+						</f:thunk>
 					</html:div>
 				</html:div>
 			</xsl:if>
@@ -56,6 +62,9 @@
 				</f:on>
 				<html:div class="tab-about">
 					About
+					<f:thunk with-template="$aboutCount">
+						<f:with-param name="focus" select="$focus" />
+					</f:thunk>
 				</html:div>
 			</html:div>
 			<html:div class="tab">
@@ -112,6 +121,29 @@
 		<f:param name="focus" type="Object" />
 	</f:action>
 	
+	<f:template name="childCount">
+		<f:param name="focus" type="Object" />
+		<f:derive name="count" d="length (getObjectsIn focus)" />
+		<html:div>
+			(<xsl:value-of select="$count/@value" />)
+		</html:div>
+	</f:template>
+	
+	<f:template name="infonCount">
+		<f:param name="focus" type="Object" />
+		<f:derive name="count" d="length (getInfonsIn focus)" />
+		<html:div>
+			(<xsl:value-of select="$count/@value" />)
+		</html:div>
+	</f:template>
+	
+	<f:template name="aboutCount">
+		<f:param name="focus" type="Object" />
+		<f:derive name="count" d="length (getInfonsAbout focus)" />
+		<html:div>
+			(<xsl:value-of select="$count/@value" />)
+		</html:div>
+	</f:template>
 	
 	<f:include url="/xml/util/ord.xml" />
 	<!-- <f:include url="/xml/debug/prettyPrint.xml" /> -->
