@@ -146,7 +146,8 @@ streamUntil(To, MsgQueue, Until) ->
 	end,
 	[{LastMessageId, _}|_] = MsgQueueToSend = lists:takewhile(Predicate, MsgQueue),
 	{_, Updates} = lists:unzip(MsgQueueToSend),
-	stream(To, Updates, LastMessageId),
+	ReverseUpdates = lists:reverse(Updates),
+	stream(To, ReverseUpdates, LastMessageId),
 	MsgQueueToSend.
 
 stream(To, Updates, LastMessageId) ->
