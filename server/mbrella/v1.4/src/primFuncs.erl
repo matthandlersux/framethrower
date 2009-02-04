@@ -623,7 +623,7 @@ primitives() ->
 
 unfoldSetHelper(Val, Fun, OutputCell, Done) ->
 	try dict:fetch(Val, Done) of
-		Found -> fun() -> noSideEffect end.
+		Found -> fun() -> noSideEffect end
 	catch _:_ ->
 		applyAndInject(Fun, Val, fun(InnerVal) ->
 			unfoldSetHelper(InnerVal, Fun, OutputCell, dict:store(Val, Val, Done))
