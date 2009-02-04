@@ -99,7 +99,11 @@ function xhr(url, post, callback, failCallback, timeout) {
 	// }
 	
 	// BROWSER: this is just to test from local files, will be removed
-	if (window.netscape) netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+	if (window.netscape){
+		try {
+			netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+		} catch (err){}
+	}
 	
 	if (!timeout) timeout = timeoutDefault;
 	
