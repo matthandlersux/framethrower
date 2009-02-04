@@ -632,12 +632,13 @@ unfoldSetHelper(Val, Fun, OutputCell, Done) ->
 	end.
 
 unfoldMapHelper({Key, Val}, Fun, OutputCell, Done) ->
-	try dict:fetch(Key, Done)
+	try dict:fetch(Key, Done) of
+		Found -> fun() -> noSideEffect end
 	catch _:_ ->
-		cell:addLine(OutputCell, {Key, Val}),
 		applyAndInject(Fun, Key, fun(InnerVal) ->
 			unfoldMapHelper({InnerVal, Val+1}, Fun, OutputCell, dict:store(Key, Key, Done))
-		end)
+		end),
+		cell:addLine(OutputCell, {Key, Val})
 	end.
 
 
