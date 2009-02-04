@@ -90,13 +90,12 @@ init([]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call({get, Expr}, From, State) ->
-	% case ets:lookup(?this(ets), Expr) of
-	% 	[{_, Reply}] ->
-	% 		good;
-	% 	[] -> 
-	% 		Reply = key_does_not_exist
-	% end,
-	Reply = key_does_not_exist,
+	case ets:lookup(?this(ets), Expr) of
+		[{_, Reply}] ->
+			good;
+		[] -> 
+			Reply = key_does_not_exist
+	end,
     {reply, Reply, State}.
 
 %% --------------------------------------------------------------------
