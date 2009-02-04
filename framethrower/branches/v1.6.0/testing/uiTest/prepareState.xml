@@ -158,6 +158,65 @@
 		<f:with-param name="object" select="$performs" />
 	</f:perform>
 	
+	<f:create type="Object" name="believes" />
+	<f:perform with-action="$nameObject">
+		<f:with-param name="object" select="$believes" />
+		<f:with-param name="name" select="'Believes'" />
+	</f:perform>
+	<f:perform with-action="$relationTemplateObject">
+		<f:with-param name="object" select="$believes" />
+		<f:with-param name="relTem">
+			<f:relationTemplate>
+				<f:arg num="1" /> believes <f:arg num="2" />
+			</f:relationTemplate>
+		</f:with-param>
+	</f:perform>
+	<f:perform with-action="$makeRelationType2" name="entityToSituationToInfon">
+		<f:with-param name="input1" select="$entityType" />
+		<f:with-param name="input2" select="$situationType" />
+		<f:with-param name="output" select="$infonType" />
+	</f:perform>
+	<f:perform with-action="$typeObject">
+		<f:with-param name="object" select="$believes" />
+		<f:with-param name="type" select="$entityToSituationToInfon" />
+	</f:perform>
+	<f:perform with-action="$putObjectInSituation">
+		<f:with-param name="situation" select="$ont" />
+		<f:with-param name="object" select="$believes" />
+	</f:perform>
+	
+	<f:create type="Object" name="gives" />
+	<f:perform with-action="$nameObject">
+		<f:with-param name="object" select="$gives" />
+		<f:with-param name="name" select="'Gives ... to'" />
+	</f:perform>
+	<f:perform with-action="$relationTemplateObject">
+		<f:with-param name="object" select="$gives" />
+		<f:with-param name="relTem">
+			<f:relationTemplate>
+				<f:arg num="1" /> gives <f:arg num="2" /> to <f:arg num="3" />
+			</f:relationTemplate>
+		</f:with-param>
+	</f:perform>
+	<f:perform with-action="$makeRelationType3" name="entityToEntityToEntityToInfon">
+		<f:with-param name="input1" select="$entityType" />
+		<f:with-param name="input2" select="$entityType" />
+		<f:with-param name="input3" select="$entityType" />
+		<f:with-param name="output" select="$infonType" />
+	</f:perform>
+	<f:perform with-action="$typeObject">
+		<f:with-param name="object" select="$gives" />
+		<f:with-param name="type" select="$entityToEntityToEntityToInfon" />
+	</f:perform>
+	<f:perform with-action="$putObjectInSituation">
+		<f:with-param name="situation" select="$ont" />
+		<f:with-param name="object" select="$gives" />
+	</f:perform>
+	
+	
+	
+	
+	
 	
 	<f:perform with-action="$makeInfon2" name="jbingfmov">
 		<f:with-param name="relation" select="$in" />
@@ -177,7 +236,28 @@
 	
 	
 	
-	
+
+
+	<f:action name="makeRelationType3">
+		<f:param name="input1" type="Object" />
+		<f:param name="input2" type="Object" />
+		<f:param name="input3" type="Object" />
+		<f:param name="output" type="Object" />
+		
+		<f:perform with-action="$makeRelationType" name="rt1">
+			<f:with-param name="input" select="$input3" />
+			<f:with-param name="output" select="$output" />
+		</f:perform>
+		<f:perform with-action="$makeRelationType" name="rt2">
+			<f:with-param name="input" select="$input2" />
+			<f:with-param name="output" select="$rt1" />
+		</f:perform>
+		<f:perform with-action="$makeRelationType" name="rt3">
+			<f:with-param name="input" select="$input1" />
+			<f:with-param name="output" select="$rt2" />
+		</f:perform>
+		<f:return name="rt3" />
+	</f:action>	
 	
 	<f:action name="makeRelationType2">
 		<f:param name="input1" type="Object" />

@@ -96,7 +96,7 @@
 		<f:derive name="objects" d="getObjectsOfType shared.type.type" />
 
 		<xsl:for-each select="$objects/*">
-			<html:div>
+			<html:div class="entry">
 				<f:on event="click" with-action="$selectType">
 					<f:with-param name="selectedType" select="." />
 				</f:on>
