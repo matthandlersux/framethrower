@@ -67,6 +67,10 @@ loop(Req, DocRoot) ->
 							JsonOut = {struct, [{"updates", Updates},{"lastMessageId", LastMessageId2}]};
 						JsonOut ->
 							JsonOut
+					after 
+						45000 ->
+							% ?trace({no_response_for_pipeline, SessionId, LastMessageId}),
+							JsonOut = {struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]}
 					end,
 					spit(Req, JsonOut);
 				"query" ->
