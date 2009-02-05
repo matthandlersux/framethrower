@@ -438,7 +438,9 @@ handle_call({getBroadcaster, ClassName, MemoString}, From, State) ->
 	NewC = C#class{memoTable = NewMemoTable},
 	NewClasses = dict:store(ClassName, NewC, Classes),
 	NewState = State#state{classes=NewClasses},
-	{reply, Broadcaster, NewState}.
+	{reply, Broadcaster, NewState};
+handle_call(stop, _, State) ->
+	{stop, normal, stopped, State}.
 
 
 %% --------------------------------------------------------------------
