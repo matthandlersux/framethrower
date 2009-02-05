@@ -33,7 +33,6 @@ exit 1
 }
 
 #=====interpret input=====
-
 while [ $# -gt 0 ] 
 	do
 	arg=$1
@@ -46,9 +45,12 @@ while [ $# -gt 0 ]
 			daemon="-detached";
 			conf="-config errorlognotty";;
 		-s|--serialize)
-			serialize="serialize:start(\"${1}\")";;
+			serialize="serialize:start(\\\"$1\\\"),";
+			shift;;
 		--noconfig)
 			conf="";;
+		-b|--bootJson)
+			bootscript='mblib:bootJsonScript( ),';;
 		-h|--help)
 			help;;
 		*)
@@ -56,7 +58,7 @@ while [ $# -gt 0 ]
 	esac
 done
 
-eval='-eval "session:startManager(),memoize:start(),env:start(),objects:start(),mblib:bootJsonScript()."'
+eval='-eval "'${serialize}${bootscript}'session:startManager(),memoize:start(),env:start(),objects:start()."'
 # eval='-eval "memoize:start()."'
 commonflags="$conf $sname $adddirs $boot $startapp $eval"
 
@@ -64,5 +66,6 @@ commonflags="$conf $sname $adddirs $boot $startapp $eval"
 
 #=====execute=====
 cd `dirname $0`
+# echo "exec $erl $commonflags"
 eval "exec $erl $commonflags"
 # proc_open("eval exec $erl $commonflags", array(), something)
