@@ -3,7 +3,7 @@ function exprToXML(expr, type) {
 	if (lit !== undefined) {
 		return lit;
 	} else {
-		if (!type) type = getType(expr);
+		if (!type) type = getType(expr); // the type passed in is just an optimization
 		
 		if (isReactive(expr.type) && !expr.params) {
 			// Note: the !expr.params is for excluding parameter-less templates which otherwise look like StartCap's (not Fun's)
@@ -33,12 +33,20 @@ function exprToXML(expr, type) {
 				}
 			} else if (constructor === "Set") {
 				xml = createEl("f:set");
+				var name = stringify(expr);
+				setAttr(xml, "name", name);
+				ids[name] = expr;
+				
 				var entryType = type.right;
 				forEach(state, function (entry) {
 					append(xml, exprToXML(entry, entryType));
 				});
 			} else if (constructor === "Map") {
 				xml = createEl("f:map");
+				var name = stringify(expr);
+				setAttr(xml, "name", name);
+				ids[name] = expr;
+				
 				var keyType = type.left.right;
 				var valueType = type.right;
 				forEach(state, function (entry) {
@@ -70,7 +78,7 @@ function xmlToExpr(xml, ids) {
 	
 	if (nn === "f:literal") {
 		return unxmlizeLiteral(xml);
-	} else if (nn === "f:o") {
+	} else if (nn === "f:o" || nn === "f:set" || nn === "f:map") {
 		var id = getAttr(xml, "name");
 		return ids[id];
 	} else if (nn === "f:set") {

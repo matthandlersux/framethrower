@@ -1,0 +1,34 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="infons" type="Set Cons" />
+	<f:param name="clickAction" type="a -> Unit JS" />
+
+	<xsl:for-each select="$infons/*">
+		<html:div class="entry">
+			<html:div class="entry-cell">
+				<f:thunk url="../view/infon.xml">
+					<f:with-param name="focus" select="." />
+					<f:with-param name="clickAction" select="$clickAction" />
+				</f:thunk>
+			</html:div>
+			<html:div class="entry-cell">
+				<html:div>
+					<f:on event="click" with-action="$removeInfon">
+						<f:with-param name="infon" select="." />
+					</f:on>
+					<html:button>Remove</html:button>
+				</html:div>
+			</html:div>
+		</html:div>
+	</xsl:for-each>
+	
+	<f:action name="removeInfon">
+		<f:param name="infon" type="Cons" />
+		<f:intact object="$infon" action="remove" property="truth" key="null" />
+	</f:action>
+
+</f:template>

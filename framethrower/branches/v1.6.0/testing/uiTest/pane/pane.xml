@@ -15,104 +15,120 @@
 	<f:derive name="propertiesState" d="UI.pane.pane:propertiesState pane" />
 
 	<xsl:if test="$focus">
-		<html:div class="titlebar">
-			<html:div class="titlebar-focus">
-				<f:thunk url="../view/object.xml">
-					<f:with-param name="focus" select="$focus" />
-					<f:with-param name="clickAction" select="$noAction" />
-				</f:thunk>
-			</html:div>
-			<html:div class="titlebar-buttons">
-				<html:div class="titlebar-close">
-					<f:on event="click" with-action="$closePane" />
+		<html:div class="pane">
+			<html:div class="titlebar">
+				<html:div class="titlebar-focus">
+					<f:thunk url="../view/object.xml">
+						<f:with-param name="focus" select="$focus" />
+						<f:with-param name="clickAction" select="$noAction" />
+					</f:thunk>
 				</html:div>
-			</html:div>
+				<html:div class="titlebar-buttons">
+					<html:div class="titlebar-close">
+						<f:on event="click" with-action="$closePane" />
+					</html:div>
+				</html:div>
 			
-			<html:div class="tabs">
-				<xsl:if test="$focustype/*[1]/@name = 'shared.type.situation'">
-					<html:div class="tab" selected="true">
+				<html:div class="tabs">
+					<xsl:if test="$focustype/*[1]/@name = 'shared.type.situation'">
+						<html:div class="tab">
+							<xsl:if test="$tab/@value = 'objectsIn'">
+								<xsl:attribute name="selected">true</xsl:attribute>
+							</xsl:if>
+							<f:on event="click" with-action="$selectTab">
+								<f:with-param name="tab" select="'objectsIn'" />
+							</f:on>
+							<html:div class="tab-children">
+								Children
+								<f:thunk with-template="$childCount">
+									<f:with-param name="focus" select="$focus" />
+								</f:thunk>
+							</html:div>
+						</html:div>
+						<html:div class="tab">
+							<xsl:if test="$tab/@value = 'infonsIn'">
+								<xsl:attribute name="selected">true</xsl:attribute>
+							</xsl:if>
+							<f:on event="click" with-action="$selectTab">
+								<f:with-param name="tab" select="'infonsIn'" />
+							</f:on>
+							<html:div class="tab-infonsIn">
+								<html:div class="icon" />
+								Infons in
+								<f:thunk with-template="$infonCount">
+									<f:with-param name="focus" select="$focus" />
+								</f:thunk>
+							</html:div>
+						</html:div>
+					</xsl:if>
+					<html:div class="tab">
+						<xsl:if test="$tab/@value = 'about'">
+							<xsl:attribute name="selected">true</xsl:attribute>
+						</xsl:if>
 						<f:on event="click" with-action="$selectTab">
-							<f:with-param name="tab" select="'objectsIn'" />
+							<f:with-param name="tab" select="'about'" />
 						</f:on>
-						<html:div class="tab-children">
-							Children
-							<f:thunk with-template="$childCount">
+						<html:div class="tab-about">
+							<html:div class="icon" />
+							About
+							<f:thunk with-template="$aboutCount">
 								<f:with-param name="focus" select="$focus" />
 							</f:thunk>
 						</html:div>
 					</html:div>
 					<html:div class="tab">
+						<xsl:if test="$tab/@value = 'properties'">
+							<xsl:attribute name="selected">true</xsl:attribute>
+						</xsl:if>
 						<f:on event="click" with-action="$selectTab">
-							<f:with-param name="tab" select="'infonsIn'" />
+							<f:with-param name="tab" select="'properties'" />
 						</f:on>
-						<html:div class="tab-infonsIn">
-							<html:div class="icon" />
-							Infons in
-							<f:thunk with-template="$infonCount">
-								<f:with-param name="focus" select="$focus" />
-							</f:thunk>
+						<html:div class="tab-artifacts">
+							Artifacts
 						</html:div>
 					</html:div>
-				</xsl:if>
-				<html:div class="tab">
-					<f:on event="click" with-action="$selectTab">
-						<f:with-param name="tab" select="'about'" />
-					</f:on>
-					<html:div class="tab-about">
-						<html:div class="icon" />
-						About
-						<f:thunk with-template="$aboutCount">
+				</html:div>
+			
+			</html:div>
+		
+		
+
+			<html:div class="pane-content">
+				<xsl:choose>
+					<xsl:when test="$tab/@value = 'objectsIn'">
+						<f:thunk url="objectsIn.xml">
 							<f:with-param name="focus" select="$focus" />
+							<f:with-param name="pane" select="$pane" />
+							<f:with-param name="clickAction" select="$openPane" />
 						</f:thunk>
-					</html:div>
-				</html:div>
-				<html:div class="tab">
-					<f:on event="click" with-action="$selectTab">
-						<f:with-param name="tab" select="'properties'" />
-					</f:on>
-					<html:div class="tab-artifacts">
-						Artifacts
-					</html:div>
-				</html:div>
+					</xsl:when>
+					<xsl:when test="$tab/@value = 'infonsIn'">
+						<f:thunk url="infonsIn.xml">
+							<f:with-param name="focus" select="$focus" />
+							<f:with-param name="clickAction" select="$openPane" />
+							<f:with-param name="pane" select="$pane" />
+						</f:thunk>
+					</xsl:when>
+					<xsl:when test="$tab/@value = 'about'">
+						<f:thunk url="about.xml">
+							<f:with-param name="focus" select="$focus" />
+							<f:with-param name="clickAction" select="$openPane" />
+							<f:with-param name="pane" select="$pane" />
+						</f:thunk>
+					</xsl:when>
+					<xsl:when test="$tab/@value = 'properties'">
+						<f:thunk url="properties.xml">
+							<f:with-param name="focus" select="$focus" />
+							<f:with-param name="propertiesState" select="$propertiesState" />
+						</f:thunk>
+					</xsl:when>
+					<xsl:otherwise>
+	
+					</xsl:otherwise>
+				</xsl:choose>
 			</html:div>
 			
 		</html:div>
-		
-		
-
-
-		<xsl:choose>
-			<xsl:when test="$tab/@value = 'objectsIn'">
-				<f:thunk url="objectsIn.xml">
-					<f:with-param name="focus" select="$focus" />
-					<f:with-param name="pane" select="$pane" />
-					<f:with-param name="clickAction" select="$openPane" />
-				</f:thunk>
-			</xsl:when>
-			<xsl:when test="$tab/@value = 'infonsIn'">
-				<f:thunk url="infonsIn.xml">
-					<f:with-param name="focus" select="$focus" />
-					<f:with-param name="clickAction" select="$openPane" />
-					<f:with-param name="pane" select="$pane" />
-				</f:thunk>
-			</xsl:when>
-			<xsl:when test="$tab/@value = 'about'">
-				<f:thunk url="about.xml">
-					<f:with-param name="focus" select="$focus" />
-					<f:with-param name="clickAction" select="$openPane" />
-					<f:with-param name="pane" select="$pane" />
-				</f:thunk>
-			</xsl:when>
-			<xsl:when test="$tab/@value = 'properties'">
-				<f:thunk url="properties.xml">
-					<f:with-param name="focus" select="$focus" />
-					<f:with-param name="propertiesState" select="$propertiesState" />
-				</f:thunk>
-			</xsl:when>
-			<xsl:otherwise>
-	
-			</xsl:otherwise>
-		</xsl:choose>
 	</xsl:if>
 	
 	<f:action name="selectTab">

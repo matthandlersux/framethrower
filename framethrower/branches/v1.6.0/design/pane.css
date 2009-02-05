@@ -1,4 +1,6 @@
-
+/* ==================================
+Pane Set
+================================== */
 
 
 .paneset-vertical, .paneset-horizontal {
@@ -9,7 +11,7 @@
 
 .paneset-pane {
 	position:absolute;
-	overflow: auto;
+	overflow: hidden;
 }
 
 .paneset-spacer {
@@ -18,75 +20,81 @@
 }
 
 
+/* ==================================
+Pane itself
+================================== */
 
-
-
+.pane {
+/*	background-color:yellow;*/
+}
+.pane-content {
+	padding-top:4px;
+	border: 1px solid #666;
+	overflow: auto;
+}
 
 .titlebar {
-background-color:#EEEEEE;
-margin-bottom:4px;
+	background-color:#EEEEEE;
 }
 .titlebar-focus {
-padding:3px;
+	padding:3px;
 }
 .titlebar-buttons {
-position:absolute;
-right:5px;
-top:5px;
+	position:absolute;
+	right:5px;
+	top:5px;
 }
 .titlebar-close {
-background-image:url(images/close.png);
-height:15px;
-width:15px;
-cursor:pointer;
+	background-image:url(images/close.png);
+	height:15px;
+	width:15px;
+	cursor:pointer;
 }
 .tabs {
-background-color:#EEEEEE;
-padding-bottom:3px;
-padding-top:4px;
-display:table-row;
+	position:relative;
+	top:1px;
 }
 .tab {
-background-color:#FFFFFF;
-border:1px solid #CCCCCC;
-display:table-cell;
-cursor:pointer;
-border-left:0px;
-line-height:200%;
+	background-color:#FFFFFF;
+	border:1px solid #CCCCCC;
+	border-bottom-color: #666;
+	display:table-cell;
+	cursor:pointer;
+	line-height:200%;
+}
+.tab[selected=true] {
+	border:1px solid #666;
+	border-bottom-color:#fff;
 }
 .tab-children, .tab-infonsIn, .tab-about, .tab-artifacts {
-padding:0px 10px 0 24px;
+	padding:0px 10px 0 24px;
 }
 .tab-children {
-background:transparent url(images/children.png) no-repeat scroll 6px center;
+	background:transparent url(images/children.png) no-repeat scroll 6px center;
 }
 .tab-infonsIn {
-padding-left:0;
+	padding-left:0;
 }
 .tab-about {
-padding-left:0;
+	padding-left:0;
 }
 .tab-artifacts {
-background:transparent url(images/artifacts.png) no-repeat scroll 6px center;
+	background:transparent url(images/artifacts.png) no-repeat scroll 6px center;
+}
+.tab-infonsIn .icon, .tab-about .icon {
+	-moz-border-radius:8px;
+	-webkit-border-radius:8px;
+	
+	float:left;
+	height:15px;
+	width:15px;
+	margin: 6px;
 }
 .tab-infonsIn .icon {
--moz-border-radius:8px;
--webkit-border-radius:8px;
-background-image:url(images/infonsin.png);
-
-float:left;
-height:15px;
-width:15px;
-margin: 6px;
+	background-image:url(images/infonsin.png);
 }
 .tab-about .icon {
--moz-border-radius:8px;
--webkit-border-radius:8px;
-background-image:url(images/infonsabout.png);
-float:left;
-height:15px;
-width:15px;
-margin:6px;
+	background-image:url(images/infonsabout.png);
 }
 
 

@@ -14,17 +14,13 @@
 	<f:derive name="infonType" d="shared.type.infon" />
 
 	<f:include url="/xml/util/consIP.xml" />
-
-	<xsl:for-each select="$set/*">
-		<html:div class="entry">
-			<html:div class="entry-cell">
-				<f:thunk url="../view/infon.xml">
-					<f:with-param name="focus" select="." />
-					<f:with-param name="clickAction" select="$clickAction" />
-				</f:thunk>
-			</html:div>
-		</html:div>
-	</xsl:for-each>
+	
+	
+	<f:thunk url="../entries/infons.xml">
+		<f:with-param name="infons" select="$set" />
+		<f:with-param name="clickAction" select="$clickAction" />
+	</f:thunk>
+	
 	<xsl:for-each select="$newInfons/*">
 		<html:div class="entry">
 			<html:div class="entry-cell">
@@ -54,6 +50,7 @@
 		<f:on event="click" with-action="$newInfon" />
 		<html:button>Add New Infon</html:button>
 	</html:div>
+	
 	
 	
 	<f:action name="addConsIP">
