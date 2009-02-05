@@ -25,8 +25,10 @@ echo ""
 echo ""
 echo " extra flags: "
 echo ""
-echo " -s|--serialize                 serialized server state file location"
+echo " -s|--serialize                 serialized server state file location (default: none)"
+echo "                                    ex: \"-s mbrella/v1.4/data/serialize.ets\" "
 echo " -h|--help                      print this message"
+echo " -b|--bootJson                  run bootJSON script against the server upon startup (default: off)"
 echo " --noconfig                     do not use a config file for sasl"
 
 exit 1
