@@ -8,6 +8,8 @@
 
 -include ("../../mbrella/v1.4/include/scaffold.hrl").
 
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+
 -export ([new/0, lookup/1, startManager/0]).
 
 %% @doc Starts the Session Manager which is responsible for keeping track of sessions
@@ -111,8 +113,12 @@ session([{LastMessageId, _}|_] = MsgQueue) ->
 					session(MsgQueue)
 			end;
 		{data, {QueryId, Action, Data}} ->
+			?trace(QueryId),
 			Struct = wellFormedUpdate(Data, QueryId, Action),
-			session([{LastMessageId + 1, Struct}|MsgQueue])
+			session([{LastMessageId + 1, Struct}|MsgQueue]);
+		{done, QueryId} ->
+			?trace(QueryId),
+			session(MsgQueue)
 	after
 		120000 ->
 			exit(timed_out)
@@ -151,7 +157,7 @@ streamUntil(To, MsgQueue, Until) ->
 	MsgQueueToSend.
 
 stream(To, Updates, LastMessageId) ->
-	io:format("message in: ~p ~n~n", [Updates]),
+	%io:format("message in: ~p ~n~n", [Updates]),
 	To ! {updates, Updates, LastMessageId}.
 
 sessionId() ->

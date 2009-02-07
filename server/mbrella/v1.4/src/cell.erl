@@ -25,7 +25,9 @@
 %% ====================================================================
 %% Cell internal data structure record
 %% ====================================================================
--record(cellState, {funcs, dots, toKey, onRemoves=[], funcColor=0, intercept}).
+-record(cellState, {funcs, dots, toKey, onRemoves=[], funcColor=0, intercept, done=true, doneResponse}).
+-record(onRemove, {function, cell, id, done}).
+-record(func, {function, outputCellOrInt}).
 
 %% ====================================================
 %% Types
@@ -58,13 +60,60 @@ makeCellMapInput() ->
 	env:nameAndStoreCell(NewCell).
 
 injectFunc(Cell, Fun) ->
-	gen_server:call(Cell#exprCell.pid, {injectFunc, Fun}).
+	Id = gen_server:call(Cell#exprCell.pid, {injectFunc, Fun}),
+	#onRemove{
+		function=fun()-> removeFunc(Cell, Id) end, 
+		cell=Cell,
+		id=Id, 
+		done=false
+	}.
+
+injectDoneResponse(Cell, Fun) ->
+	gen_server:cast(Cell#exprCell.pid, {injectDoneResponse, Fun}).
+	
+injectFunc(Cell, OutputCellOrInt, Fun) ->
+	{Id, OnRemove} = gen_server:call(Cell#exprCell.pid, {injectFuncOnRemove, OutputCellOrInt, Cell}),
+	gen_server:cast(Cell#exprCell.pid, {injectFunc, OutputCellOrInt, Fun, Cell, Id}),
+	OnRemove.
+
+injectFuncs(OutputCellOrInt, CellFuncs) ->
+	CellFuncIds = lists:map(fun({Cell, Fun}) ->
+		{Id, _} = gen_server:call(Cell#exprCell.pid, {injectFuncOnRemove, OutputCellOrInt, Cell}),
+		{Cell, Fun, Id}
+	end, CellFuncs),
+	lists:map(fun({Cell, Fun, Id}) ->
+		gen_server:cast(Cell#exprCell.pid, {injectFunc, OutputCellOrInt, Fun, Cell, Id})
+	end, CellFuncIds),
+	ok.
+
+removeFunc(Cell, Id) ->
+	gen_server:cast(Cell#exprCell.pid, {removeFunc, Id}).
 
 injectIntercept(Cell, Fun, InitState) ->
-	gen_server:call(Cell#exprCell.pid, {injectIntercept, Fun, InitState}).
+	gen_server:call(Cell#exprCell.pid, {injectIntercept, Fun, InitState, Cell}).
 
-addOnRemove(Cell, Fun) ->
-	gen_server:cast(Cell#exprCell.pid, {addOnRemove, Fun}).
+done(Cell) ->
+	gen_server:cast(Cell#exprCell.pid, {done, Cell}).
+
+done(Cell, DoneCell, Id) ->
+	gen_server:cast(Cell#exprCell.pid, {done, DoneCell, Id, Cell}).
+
+getState(Cell) ->
+	gen_server:call(Cell#exprCell.pid, getState).
+
+%FunOrOnRemove can be a function, or #onRemove
+%#onRemove will also be used as dependencies, so this cell can know when it has received all current updates
+addOnRemove(Cell, FunOrOnRemove) ->
+	OnRemove = case FunOrOnRemove of
+		OnRemRecord when is_record(OnRemRecord, onRemove) -> 
+			OnRemRecord;
+		Function -> 
+			#onRemove{
+				function=Function,
+				done=true
+			}
+	end,
+	gen_server:cast(Cell#exprCell.pid, {addOnRemove, OnRemove}).
 
 setKeyRange(Cell, Start, End) ->
 	gen_server:cast(Cell#exprCell.pid, {setKeyRange, Start, End}).
@@ -107,26 +156,28 @@ addLineResponse(Dot, Fun, Id) ->
 	OnRemove = Fun(Value),
 	case OnRemove of
 		undefined -> Dot;
-		F -> {dot, Num, Value, dict:store(Id, OnRemove, Lines)}
+		OnRemRecord when is_record(OnRemRecord, onRemove) ->
+			{dot, Num, Value, dict:store(Id, OnRemRecord#onRemove.function, Lines)};
+		F -> {dot, Num, Value, dict:store(Id, F, Lines)}
 	end.
 
 removeLineResponse(Dot, Id) ->
 	{dot, Num, Value, Lines} = Dot,
-	NewLines = try dict:fetch(Id, Lines) of
-		OnRemove -> OnRemove(),
-					dict:erase(Id, Lines)
-	catch
-		_:_ -> Lines
+	NewLines = case dict:find(Id, Lines) of
+		{ok, Function} ->
+			Function(),
+			dict:erase(Id, Lines);
+		error -> Lines
 	end,
 	{dot, Num, Value, NewLines}.
 
 onAdd(Dot, Funcs) ->
-	AddFolder = fun(Id, Fun, CurDot) -> 
-		addLineResponse(CurDot, Fun, Id) end,
+	AddFolder = fun(Id, Func, CurDot) -> 
+		addLineResponse(CurDot, Func#func.function, Id) end,
 	dict:fold(AddFolder, Dot, Funcs).
 
 onRemove(Dot, Funcs) ->
-	RemoveFolder = fun(Id, Fun) -> 
+	RemoveFolder = fun(Id, _) -> 
 		removeLineResponse(Dot, Id) end,
 	dict:map(RemoveFolder, Funcs),
 	{ok}.
@@ -178,14 +229,22 @@ handle_call({addLine, Value}, From, State) ->
     {reply, CallBack, NewState};
 handle_call({injectFunc, Fun}, From, State) ->
 	Id = ?this(funcColor),
-	NewFuncs = dict:store(Id, Fun, ?this(funcs)),
+	NewFuncs = dict:store(Id, #func{function=Fun}, ?this(funcs)),
 	NewDots = rangedict:map(fun(Key, Dot) -> addLineResponse(Dot, Fun, Id) end, ?this(dots)),
 	NewState = State#cellState{funcColor=Id+1, funcs=NewFuncs, dots=NewDots},
-	Self = self(),
-    CallBack = fun() -> gen_server:cast(Self, {removeFunc, Id}) end,
-    {reply, CallBack, NewState};
-handle_call({injectIntercept, Fun, IntState}, From, State) ->
-	Intercept = intercept:makeIntercept(Fun, IntState),
+    {reply, Id, NewState};
+handle_call({injectFuncOnRemove, OutputCellOrInt, Cell}, _, State) ->
+	Id = ?this(funcColor),
+	OnRemove = #onRemove{function=fun()-> removeFunc(Cell, Id) end, cell=Cell, id=Id, done=false},
+	case OutputCellOrInt of
+		OutputCell when is_record(OutputCell, exprCell) -> addOnRemove(OutputCell, OnRemove);
+		%TODO: make Intercept a record for consistancy with Cell
+		Intercept when is_pid(Intercept) -> intercept:addOnRemove(Intercept, OnRemove)
+	end,
+	NewState = State#cellState{funcColor=Id+1},
+	{reply, {Id, OnRemove}, NewState};
+handle_call({injectIntercept, Fun, IntState, Cell}, From, State) ->
+	Intercept = intercept:makeIntercept(Fun, IntState, Cell),
 	NewState = State#cellState{intercept=Intercept},
     {reply, Intercept, NewState};
 handle_call(getStateArray, From, State) ->
@@ -194,8 +253,9 @@ handle_call(getStateArray, From, State) ->
 		{dot, _, Val, _} = Dot,
 		[Val|Acc]
 	end, [], SortedDict),
-	{reply, ResultArray, State}.
-
+	{reply, ResultArray, State};
+handle_call(getState, From, State) ->
+	{reply, State, State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -220,11 +280,95 @@ handle_cast({removeFunc, Id}, State) ->
 	NewFuncs = dict:erase(Id, ?this(funcs)),
 	NewDots = rangedict:map(fun(Key, Dot) -> removeLineResponse(Dot, Id) end, ?this(dots)),
 	NewState = State#cellState{funcs=NewFuncs, dots=NewDots},
-	%TODO: destroy this cell if Funcs is empty?
+	case dict:size(NewFuncs) of
+		0 ->
+			%TODO: destroy this cell, for now we just remove all functions that are informing this cell
+			nosideeffect;
+			% lists:map(fun(OnRemove) ->
+			% 	(OnRemove#onRemove.function)()
+			% end, ?this(onRemoves));
+		_ -> nosideeffect
+	end,
     {noreply, NewState};
-handle_cast({addOnRemove, Fun}, State) ->
-	NewState = State#cellState{onRemoves=[Fun | ?this(onRemoves)]},
+handle_cast({addOnRemove, OnRemove}, State) ->
+	NewState = State#cellState{onRemoves=[OnRemove | ?this(onRemoves)]},
+	DoneState = case OnRemove#onRemove.done of
+		false -> NewState#cellState{done=false};
+		true -> NewState
+	end,
+    {noreply, DoneState};
+handle_cast({injectFunc, OutputCellOrInt, Fun, Cell, Id}, State) ->
+	NewFuncs = dict:store(Id, #func{function=Fun, outputCellOrInt=OutputCellOrInt}, ?this(funcs)),
+	NewDots = rangedict:map(fun(Key, Dot) -> addLineResponse(Dot, Fun, Id) end, ?this(dots)),
+	NewState = State#cellState{funcs=NewFuncs, dots=NewDots},
+	case ?this(done) of
+		true -> 
+			case OutputCellOrInt of
+				OutputCell when is_record(OutputCell, exprCell) -> done(OutputCell, Cell, Id);
+				Intercept when is_pid(Intercept) -> intercept:done(Intercept, Cell, Id)
+			end;
+		false -> 
+			nosideeffect
+	end,
     {noreply, NewState};
+handle_cast({done, DoneCell, Id, Cell}, State) ->
+	NewState = case ?this(done) of
+		true -> State;
+		false ->
+			NewOnRemoves = lists:map(fun(OnRemove) ->
+				if 
+					(not (OnRemove#onRemove.cell == undefined)) andalso ((OnRemove#onRemove.cell)#exprCell.name == DoneCell#exprCell.name) andalso (OnRemove#onRemove.id == Id) ->
+						OnRemove#onRemove{done=true};
+					true -> 
+						OnRemove
+				end
+			end, ?this(onRemoves)),
+			AllDone = lists:foldl(fun(OnRemove, Acc) ->
+				Acc andalso OnRemove#onRemove.done
+			end, true, NewOnRemoves),
+			case AllDone of
+				true ->
+					case ?this(doneResponse) of
+						undefined -> nosideeffect;
+						Function -> Function()
+					end,
+					dict:map(fun(FuncId, Func) ->
+						case Func#func.outputCellOrInt of
+							undefined -> nosideeffect;
+							OutputCell when is_record(OutputCell, exprCell) -> done(OutputCell, Cell, FuncId);
+							Intercept when is_pid(Intercept) -> intercept:done(Intercept, Cell, FuncId)
+						end
+					end, ?this(funcs));
+				false -> nosideeffect
+			end,
+			State#cellState{onRemoves=NewOnRemoves, done=AllDone}
+	end,
+    {noreply, NewState};
+handle_cast({done, Cell}, State) ->
+	NewState = case ?this(done) of
+		true -> State;
+		false ->
+			case ?this(doneResponse) of
+				undefined -> nosideeffect;
+				Function -> Function()
+			end,
+			dict:map(fun(FuncId, Func) ->
+				case Func#func.outputCellOrInt of
+					undefined -> nosideeffect;
+					OutputCell when is_record(OutputCell, exprCell) -> done(OutputCell, Cell, FuncId);
+					Intercept when is_pid(Intercept) -> intercept:done(Intercept, Cell, FuncId)
+				end
+			end, ?this(funcs)),
+			State#cellState{done=true}
+	end,
+    {noreply, NewState};
+handle_cast({injectDoneResponse, Fun}, State) ->
+	NewState = State#cellState{doneResponse = Fun},
+	case ?this(done) of
+		true -> Fun();
+		_ -> nosideeffect
+	end,
+	{noreply, NewState};
 handle_cast({setKeyRange, Start, End}, State) ->
 	OnAdd = fun(Val) ->
 		onAdd(Val, ?this(funcs))

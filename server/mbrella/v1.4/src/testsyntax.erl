@@ -162,8 +162,8 @@ loop(ExpectedMessages, FinishedMessages, State) ->
 			end
 	after 100 ->
 		io:format("Test Timed Out~n", []),
-		lists:map(fun outputExpectedMessage/1, FinishedMessages),
-		lists:map(fun outputExpectedMessage/1, ExpectedMessages),
+		lists:map(fun(Elem) -> outputExpectedMessage(Elem) end, FinishedMessages),
+		lists:map(fun(Elem) -> outputExpectedMessage(Elem) end, ExpectedMessages),
 		State
 	end.
 	
@@ -234,10 +234,13 @@ updateState(_, State) ->
 outputExpectedMessage({ECName, MessageToCheck, {true, Output}}) ->
 	{Control, Message} = Output,
 	io:format("~p~n", [Message]);
-outputExpectedMessage({ECName, {none, _}, _}) ->
+outputExpectedMessage({ECName, {none, _}, {false, undefined}}) ->
 	io:format("No message Expected at endCap: ~p~n", [ECName]);
 outputExpectedMessage({ECName, MessageToCheck, {false, Output}}) ->
-	io:format("~p~n", [Output]).
+	io:format("~p~n", [Output]);
+outputExpectedMessage({ECName, {none, _}, _}) ->
+	io:format("No message Expected at endCap: ~p~n", [ECName]).
+
 	
 
 toString(Value) ->

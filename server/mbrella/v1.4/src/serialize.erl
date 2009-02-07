@@ -207,6 +207,7 @@ makeCells(Cell, CellDict) when is_record(Cell, exprCell) ->
 		true -> cell:makeCellMapInput();
 		false -> cell:makeCell()
 	end,
+	cell:done(NewCell),
 	TypedCell = NewCell#exprCell{type=Cell#exprCell.type, bottom=Cell#exprCell.bottom},
 	cell:update(TypedCell),
 	dict:store(Cell#exprCell.name, TypedCell#exprCell.name, CellDict);

@@ -218,6 +218,7 @@ makeCast(TargetClassName) ->
 makeCastDown(Cast, TargetClassName, Classes) ->
 	fun (Obj) ->
 		OutputCell = cell:makeCell(),
+		cell:done(OutputCell),
 		CastingDict = Obj#object.castingDict,
 		case dict:find(TargetClassName, CastingDict) of
 			error ->
@@ -303,11 +304,14 @@ makeFutureProps(Props, ObjClass, Classes) ->
 			case type:isReactive(PropType) of
 				true ->
 					PropCell = (cell:makeCell())#exprCell{type=PropType},
+					cell:done(PropCell),
 					cell:update(PropCell),
 					PropCell;
 				false ->
 					PropValue = dict:fetch(PropName, Props),
-					cell:makeFuture(PropValue)
+					FutureCell = cell:makeFuture(PropValue),
+					cell:done(FutureCell),
+					FutureCell
 			end
 		end, ObjClass#class.prop),
 	case ObjClass#class.inherit of
@@ -462,6 +466,7 @@ handle_cast({makeClass, Name, Inherit, Memoize}, State) ->
 		memoize = Memoize,
 		makeMemoEntry = fun() ->
 			Broadcaster = (cell:makeCell())#exprCell{type=type:parse("Unit " ++ Name)},
+			cell:done(Broadcaster),
 			NewMemoEntry = #memoEntry{broadcaster = Broadcaster},
 			NewMemoEntry
 		end,

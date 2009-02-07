@@ -99,6 +99,11 @@ loop(Req, DocRoot) ->
 														end
 													end												
 												),
+												cell:injectDoneResponse(Cell,
+													fun() ->
+														SessionPid ! {done, QueryId}
+													end												
+												),
 												[{struct, [{"type", list_to_binary(type:unparse( type:getType(Cell) ))}]}|Accumulator]
 											end,
 							try lists:foldl(ProcessQuery, [], Queries) of

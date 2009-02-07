@@ -30,9 +30,9 @@ primitives() ->
 	type = "Unit a -> Set a",
 	function = fun(Cell) ->
 		OutputCell = cell:makeCell(),
-		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			cell:addLine(OutputCell, Val) end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
+		cell:injectFunc(Cell, OutputCell, fun(Val) ->
+			cell:addLine(OutputCell, Val) 
+		end),
 		OutputCell
 	end},
 	#exprFun{
@@ -40,9 +40,9 @@ primitives() ->
 	type = "a -> Unit b -> Map a b",
 	function = fun(Key, Cell) ->
 		OutputCell = cell:makeCellMapInput(),
-		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			cell:addLine(OutputCell, {Key, Val}) end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
+		cell:injectFunc(Cell, OutputCell, fun(Val) ->
+			cell:addLine(OutputCell, {Key, Val})
+		end),
 		OutputCell
 	end},
 	#exprFun{
@@ -50,9 +50,9 @@ primitives() ->
 	type = "Future a -> Unit a",
 	function = fun(Cell) ->
 		OutputCell = cell:makeCell(),
-		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			cell:addLine(OutputCell, Val) end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
+		cell:injectFunc(Cell, OutputCell, fun(Val) ->
+			cell:addLine(OutputCell, Val)
+		end),
 		OutputCell
 	end},
 	#exprFun{
@@ -68,12 +68,11 @@ primitives() ->
 	type = "(a -> b -> Map a c) -> Map a b -> Map a c",
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCellMapInput(),
-		RemoveFunc = cell:injectFunc(Cell, fun({Key,Val}) ->
-			applyAndInject(applyFun(Fun, Key), Val, fun(InnerVal) ->
+		cell:injectFunc(Cell, OutputCell, fun({Key,Val}) ->
+			applyAndInject(applyFun(Fun, Key), Val, OutputCell, fun(InnerVal) ->
 				cell:addLine(OutputCell, InnerVal) end
 			)
 		end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
 	%% ============================================================================
@@ -84,14 +83,9 @@ primitives() ->
 	type = "Set a -> Set a -> Set a",
 	function = fun(Cell1, Cell2) ->
 		OutputCell = cell:makeCell(),
-		RemoveFunc1 = cell:injectFunc(Cell1, fun(Val) ->
-			cell:addLine(OutputCell, Val) end
-		),
-		RemoveFunc2 = cell:injectFunc(Cell2, fun(Val) ->
-			cell:addLine(OutputCell, Val) end
-		),
-		cell:addOnRemove(OutputCell, RemoveFunc1),
-		cell:addOnRemove(OutputCell, RemoveFunc2),
+		cell:injectFuncs(OutputCell, [
+			{Cell1, fun(Val) -> cell:addLine(OutputCell, Val) end},
+			{Cell2, fun(Val) ->	cell:addLine(OutputCell, Val) end}]),
 		OutputCell
 	end},
 	#exprFun{
@@ -119,17 +113,14 @@ primitives() ->
 					dict:store(Val, NewEntry, State)
 			end
 		end, dict:new()),
-		RemoveFunc1 = cell:injectFunc(Cell1, fun(Val) ->
+		cell:injectFuncs(Intercept, [{Cell1, fun(Val) ->
 			intercept:sendIntercept(Intercept, {plus, Val}),
 			fun() -> intercept:sendIntercept(Intercept, {minus, Val}) end
-		end),
-		RemoveFunc2 = cell:injectFunc(Cell2, fun(Val) ->
+		end},
+		{Cell2, fun(Val) ->
 			intercept:sendIntercept(Intercept, {minus, Val}),
 			fun() -> intercept:sendIntercept(Intercept, {plus, Val}) end
-		end),
-		
-		cell:addOnRemove(OutputCell, RemoveFunc1),
-		cell:addOnRemove(OutputCell, RemoveFunc2),
+		end}]),
 		OutputCell
 	end},
 	#exprFun{
@@ -160,11 +151,10 @@ primitives() ->
 					end		
 			end
 		end, undefined),
-		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+		cell:injectFunc(Cell, Intercept, fun(Val) ->
 			intercept:sendIntercept(Intercept, {add, Val}),
 			fun() -> intercept:sendIntercept(Intercept, {remove, Val}) end
 		end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},	
 	%% ============================================================================
@@ -233,9 +223,9 @@ primitives() ->
 	type = "Unit (a -> b) -> a -> Unit b",
 	function = fun(Cell, Input) ->
 		OutputCell = cell:makeCell(),
-		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-			cell:addLine(OutputCell, applyFun(Val, Input)) end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
+		cell:injectFunc(Cell, OutputCell, fun(Val) ->
+			cell:addLine(OutputCell, applyFun(Val, Input))
+		end),
 		OutputCell
 	end},
 	%% ============================================================================
@@ -247,11 +237,10 @@ primitives() ->
 	function = fun(Cell) ->
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, null),
-		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+		cell:injectFunc(Cell, OutputCell, fun(Val) ->
 			cell:removeLine(OutputCell, null),
 			fun () -> cell:addLine(OutputCell, null) end
-			end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
+		end),
 		OutputCell
 	end},
 	#exprFun{
@@ -281,17 +270,14 @@ primitives() ->
 					UpdateOutputCell({C1, Val, IsSet})
 			end
 		end, {false, false, false}),
-		RemoveFunc1 = cell:injectFunc(Cell1, fun(Val) ->
+		cell:injectFuncs(Intercept, [{Cell1, fun(Val) ->
 			intercept:sendIntercept(Intercept, {cell1val, true}),
 			fun() -> intercept:sendIntercept(Intercept, {cell1val, false}) end
-		end),
-		RemoveFunc2 = cell:injectFunc(Cell2, fun(Val) ->
+		end},
+		{Cell2, fun(Val) ->
 			intercept:sendIntercept(Intercept, {cell2val, true}),
 			fun() -> intercept:sendIntercept(Intercept, {cell2val, false}) end
-		end),
-		
-		cell:addOnRemove(OutputCell, RemoveFunc1),
-		cell:addOnRemove(OutputCell, RemoveFunc2),
+		end}]),
 		OutputCell
 	end},
 	#exprFun{
@@ -321,20 +307,16 @@ primitives() ->
 					UpdateOutputCell({C1, Val, IsSet})
 			end
 		end, {false, false, false}),
-		RemoveFunc1 = cell:injectFunc(Cell1, fun(Val) ->
+		cell:injectFuncs(Intercept, [{Cell1, fun(Val) ->
 			intercept:sendIntercept(Intercept, {cell1val, true}),
 			fun() -> intercept:sendIntercept(Intercept, {cell1val, false}) end
-		end),
-		RemoveFunc2 = cell:injectFunc(Cell2, fun(Val) ->
+		end},
+		{Cell2, fun(Val) ->
 			intercept:sendIntercept(Intercept, {cell2val, true}),
 			fun() -> intercept:sendIntercept(Intercept, {cell2val, false}) end
-		end),
-		
-		cell:addOnRemove(OutputCell, RemoveFunc1),
-		cell:addOnRemove(OutputCell, RemoveFunc2),
+		end}]),
 		OutputCell
 	end},
-	
 	#exprFun{
 	name = "isEmpty",
 	type = "Set a -> Unit Null",
@@ -357,12 +339,10 @@ primitives() ->
 					end
 			end
 		end, 0),
-		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+		cell:injectFunc(Cell, Intercept, fun(Val) ->
 			intercept:sendIntercept(Intercept, plus),
 			fun() -> intercept:sendIntercept(Intercept, minus) end
 		end),
-		
-		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
 	
@@ -383,11 +363,10 @@ primitives() ->
 					IsSet
 			end
 		end, false),
-		RemoveFunc = cell:injectFunc(GateKeeper, fun(Val) ->
+		cell:injectFunc(GateKeeper, Intercept, fun(Val) ->
 			intercept:sendIntercept(Intercept, true),
 			fun() -> intercept:sendIntercept(Intercept, false) end
 		end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
 	
@@ -413,7 +392,7 @@ primitives() ->
 	% 				Num - 1
 	% 		end
 	% 	end, 0),
-	% 	RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+	% 	cell:injectFunc(Cell, OutputCell, fun(Val) ->
 	% 		applyAndInject(Fun, Val, fun(InnerVal) ->
 	% 			case InnerVal of
 	% 				true ->
@@ -424,7 +403,6 @@ primitives() ->
 	% 			end
 	% 		end)
 	% 	end),
-	% 	cell:addOnRemove(OutputCell, RemoveFunc),
 	% 	OutputCell
 	% end},
 	#exprFun{
@@ -447,11 +425,10 @@ primitives() ->
 					NewCache
 			end
 		end, Init),
-		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+		cell:injectFunc(Cell, Intercept, fun(Val) ->
 			intercept:sendIntercept(Intercept, {plus, Val}),
 			fun() -> intercept:sendIntercept(Intercept, {minus, Val}) end
 		end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
 	#exprFun{
@@ -478,11 +455,10 @@ primitives() ->
 	type = "(a -> b) -> Set a -> Map a b",
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCellMapInput(),
-		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+		cell:injectFunc(Cell, OutputCell, fun(Val) ->
 			Result = applyFun(Fun, Val),
 			cell:addLine(OutputCell, {Val, Result})
 		end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
 	%%REMOVE THIS LATER... JUST FOR TESTING
@@ -491,11 +467,10 @@ primitives() ->
 	type = "Set (Set a) -> Set a",
 	function = fun(Cell) ->
 		OutputCell = cell:makeCell(),
-		RemoveFunc = cell:injectFunc(Cell, fun(InnerCell) ->
-			cell:injectFunc(InnerCell, fun(Val) ->
+		cell:injectFunc(Cell, OutputCell, fun(InnerCell) ->
+			cell:injectFunc(InnerCell, OutputCell, fun(Val) ->
 				cell:addLine(OutputCell, Val) end)
 		end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
 	#exprFun{
@@ -523,12 +498,12 @@ primitives() ->
 					BHash
 			end
 		end, dict:new()),
-		RemoveFunc1 = cell:injectFunc(BHashCell, fun(BVal) ->
+		cell:injectFuncs(Intercept, [{BHashCell, fun(BVal) ->
 			intercept:sendIntercept(Intercept, {bHashAdd, BVal}),
 			fun() -> intercept:sendIntercept(Intercept, {bHashRemove, BVal}) end
-		end),
-		RemoveFunc2 = cell:injectFunc(Cell, fun({Key, Val}) ->
-			cell:injectFunc(Val, fun(InnerVal) ->
+		end},
+		{Cell, fun({Key, Val}) ->
+			cell:injectFunc(Val, OutputCell, fun(InnerVal) ->
 				OnRemove1 = cell:addLine(BHashCell, InnerVal),
 				intercept:sendIntercept(Intercept, {addInnerLine, InnerVal, Key}),
 				fun() ->
@@ -536,9 +511,7 @@ primitives() ->
 					OnRemove1()
 				end
 			end)
-		end),
-		cell:addOnRemove(OutputCell, RemoveFunc1),
-		cell:addOnRemove(OutputCell, RemoveFunc2),
+		end}]),
 		OutputCell
 	end},
 	#exprFun{
@@ -546,11 +519,10 @@ primitives() ->
 	type = "(a -> b) -> Map c a -> Map c b",
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCellMapInput(),
-		RemoveFunc = cell:injectFunc(Cell, fun({Key, Val}) ->
+		cell:injectFunc(Cell, OutputCell, fun({Key, Val}) ->
 			Result = applyFun(Fun, Val),
 			cell:addLine(OutputCell, {Key, Result})
 		end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
 	#exprFun{
@@ -558,13 +530,12 @@ primitives() ->
 	type = "a -> Map a b -> Unit b",
 	function = fun(GetKey, Cell) ->
 		OutputCell = cell:makeCell(),
-		RemoveFunc = cell:injectFunc(Cell, fun(KeyVal) ->
+		cell:injectFunc(Cell, OutputCell, fun(KeyVal) ->
 			case KeyVal of
 				{GetKey, Val} -> cell:addLine(OutputCell, Val);
 				_ -> undefined
 			end
 		end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
 	#exprFun{
@@ -572,10 +543,9 @@ primitives() ->
 	type = "Map a b -> Set a",
 	function = fun(Cell) ->
 		OutputCell = cell:makeCell(),
-		RemoveFunc = cell:injectFunc(Cell, fun({Key, Val}) ->
+		cell:injectFunc(Cell, OutputCell, fun({Key, Val}) ->
 			cell:addLine(OutputCell, Key)
 		end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end},
 	%% ============================================================================
@@ -597,26 +567,33 @@ primitives() ->
 			case Message of
 				change -> 
 					StateArray = cell:getStateArray(Cell),
-					Last = lists:last(StateArray),
-					case Cache of
-						Last -> 
-							Last;
-						undefined ->
-							cell:addLine(OutputCell, Last),
-							Last;
+					case length(StateArray) of
+						0 -> 
+							case Cache of
+								undefined -> undefined;
+								_ -> cell:removeLine(OutputCell, Cache)
+							end;
 						_ ->
-							cell:removeLine(OutputCell, Cache),
-							cell:addLine(OutputCell, Last),
-							Last
+							Last = lists:last(StateArray),
+							case Cache of
+								Last -> 
+									Last;
+								undefined ->
+									cell:addLine(OutputCell, Last),
+									Last;
+								_ ->
+									cell:removeLine(OutputCell, Cache),
+									cell:addLine(OutputCell, Last),
+									Last
+							end
 					end
 			end
 		end, undefined),
 		intercept:sendIntercept(Intercept, change),
-		RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
+		cell:injectFunc(Cell, Intercept, fun(Val) ->
 			intercept:sendIntercept(Intercept, change),
 			fun() -> intercept:sendIntercept(Intercept, change) end
 		end),
-		cell:addOnRemove(OutputCell, RemoveFunc),
 		OutputCell
 	end}
 	].
@@ -625,7 +602,7 @@ unfoldSetHelper(Val, Fun, OutputCell, Done) ->
 	try dict:fetch(Val, Done) of
 		Found -> fun() -> noSideEffect end
 	catch _:_ ->
-		applyAndInject(Fun, Val, fun(InnerVal) ->
+		applyAndInject(Fun, Val, OutputCell, fun(InnerVal) ->
 			unfoldSetHelper(InnerVal, Fun, OutputCell, dict:store(Val, Val, Done))
 		end),
 		cell:addLine(OutputCell, Val)
@@ -635,7 +612,7 @@ unfoldMapHelper({Key, Val}, Fun, OutputCell, Done) ->
 	try dict:fetch(Key, Done) of
 		Found -> fun() -> noSideEffect end
 	catch _:_ ->
-		applyAndInject(Fun, Key, fun(InnerVal) ->
+		applyAndInject(Fun, Key, OutputCell, fun(InnerVal) ->
 			unfoldMapHelper({InnerVal, Val+1}, Fun, OutputCell, dict:store(Key, Key, Done))
 		end),
 		cell:addLine(OutputCell, {Key, Val})
@@ -644,12 +621,11 @@ unfoldMapHelper({Key, Val}, Fun, OutputCell, Done) ->
 
 bindUnitOrSetHelper(Fun, Cell) ->
 	OutputCell = cell:makeCell(),
-	RemoveFunc = cell:injectFunc(Cell, fun(Val) ->
-		applyAndInject(Fun, Val, fun(InnerVal) ->
+	cell:injectFunc(Cell, OutputCell, fun(Val) ->
+		applyAndInject(Fun, Val, OutputCell, fun(InnerVal) ->
 			cell:addLine(OutputCell, InnerVal) end
 		)
 	end),
-	cell:addOnRemove(OutputCell, RemoveFunc),
 	OutputCell.
 
 
@@ -681,23 +657,17 @@ rangeHelper(OutputCell, SetRangeFunc, StartCell, EndCell, Cell) ->
 		end
 	end, {undefined, undefined}),
 	
-	RemoveFunc1 = cell:injectFunc(StartCell, fun(Val) ->
+	cell:injectFuncs(Intercept, [{StartCell, fun(Val) ->
 		intercept:sendIntercept(Intercept, {startAdd, Val}),
 		fun() -> intercept:sendIntercept(Intercept, startRemove) end
-	end),
-	
-	RemoveFunc2 = cell:injectFunc(EndCell, fun(Val) ->
+	end},
+	{EndCell, fun(Val) ->
 		intercept:sendIntercept(Intercept, {endAdd, Val}),
 		fun() -> intercept:sendIntercept(Intercept, endRemove) end
-	end),
-
-	RemoveFunc3 = cell:injectFunc(Cell, fun(Val) ->
+	end},
+	{Cell, fun(Val) ->
 		cell:addLine(OutputCell, Val)
-	end),
-	
-	cell:addOnRemove(OutputCell, RemoveFunc1),
-	cell:addOnRemove(OutputCell, RemoveFunc2),
-	cell:addOnRemove(OutputCell, RemoveFunc3),
+	end}]),
 	OutputCell.
 
 
@@ -708,5 +678,5 @@ for(I, Max, F) -> [F(I)|for(I+1, Max, F)].
 applyFun(Fun, Input) ->
 	eval:evaluate(#cons{type=apply, left=Fun, right=Input}).
 
-applyAndInject(Fun, Input, InjectedFun) ->
-	cell:injectFunc(applyFun(Fun, Input), InjectedFun).
+applyAndInject(Fun, Input, OutputCell, InjectedFun) ->
+	cell:injectFunc(applyFun(Fun, Input), OutputCell, InjectedFun).
