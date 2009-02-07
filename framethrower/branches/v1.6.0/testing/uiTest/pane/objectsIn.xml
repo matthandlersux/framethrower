@@ -46,9 +46,9 @@
 	<xsl:for-each select="$set/*">
 		<html:div class="entry">
 			<html:div class="entry-cell">
-				<f:thunk url="../view/object.xml">
+				<f:thunk url="../view2/viewPlus.xml">
 					<f:with-param name="focus" select="." />
-					<f:with-param name="clickAction" select="$clickAction" />
+					<f:with-param name="extra" select="$extra" />
 				</f:thunk>
 			</html:div>
 			<html:div class="entry-cell">
@@ -58,6 +58,16 @@
 			</html:div>
 		</html:div>
 	</xsl:for-each>
+	
+	<f:template name="extra">
+		<f:param name="focus" type="Object" />
+		<f:on event="click" with-action="$clickAction">
+			<f:with-param name="focus" select="$focus" />
+		</f:on>
+	</f:template>
+	
+	
+	
 
 	<f:action name="addObject">
 		<f:create type="Object" name="newObj" />

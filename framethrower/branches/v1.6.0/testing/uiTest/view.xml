@@ -9,14 +9,23 @@
 	<f:derive name="paneset" d="test.paneset" />
 	
 	
-	<f:derive name="testConsIP" d="test.consIP" />
-	<f:derive name="infonType" d="shared.type.infon" />
+	<!-- <f:derive name="testConsIP" d="test.consIP" />
+	<f:derive name="infonType" d="shared.type.infon" /> -->
+	
+	
+	<f:derive name="pic" d="X.picture~Object test.picture" />
+	
+	<f:thunk url="view/picture.xml">
+		<f:with-param name="focus" select="$pic" />
+		<f:with-param name="width" select="200" as="Number" />
+		<f:with-param name="height" select="200" as="Number" />
+	</f:thunk>
 	
 
-	<f:thunk url="view/infonIP.xml">
+	<!-- <f:thunk url="view/infonIP.xml">
 		<f:with-param name="focus" select="$testConsIP" />
 		<f:with-param name="expectedType" select="$infonType" />
-	</f:thunk>
+	</f:thunk> -->
 	
 	<!-- <f:thunk url="main/main.xml" /> -->
 	

@@ -11,60 +11,28 @@
 	<f:derive name="set" d="getInfonsAbout focus" />
 	
 	<f:derive name="newInfons" d="UI.pane.pane:aboutNewInfons pane" />
-	<f:derive name="infonType" d="shared.type.infon" />
-
-	<f:include url="/xml/util/consIP.xml" />
 
 
 	<f:thunk url="../entries/infons.xml">
 		<f:with-param name="infons" select="$set" />
 		<f:with-param name="clickAction" select="$clickAction" />
 	</f:thunk>
-
-	<xsl:for-each select="$newInfons/*">
-		<html:div class="entry">
-			<html:div class="entry-cell">
-				<f:thunk url="../view/infonIP.xml">
-					<f:with-param name="focus" select="." />
-					<f:with-param name="expectedType" select="$infonType" />
-				</f:thunk>
-			</html:div>
-			<html:div class="entry-cell">
-				<html:div>
-					<f:on event="click" with-action="$addConsIP">
-						<f:with-param name="consIP" select="." />
-					</f:on>
-					<html:button>Confirm</html:button>
-				</html:div>
-				<html:div>
-					<f:on event="click" with-action="$cancelConsIP">
-						<f:with-param name="consIP" select="." />
-					</f:on>
-					<html:button>Cancel</html:button>
-				</html:div>
-			</html:div>
-		</html:div>
-	</xsl:for-each>
-	
-	<html:div>
-		<f:on event="click" with-action="$newInfon" />
-		<html:button>Add New Infon</html:button>
-	</html:div>
 	
 	
-	<f:action name="addConsIP">
-		<f:param name="consIP" type="UI.consIP" />
-		<f:perform with-action="$consIPToCons" name="cons">
-			<f:with-param name="consIP" select="$consIP" />
-		</f:perform>
-		<f:intact object="$cons" action="add" property="truth" key="null" />
-		<f:intact object="$pane" action="remove" property="aboutNewInfons" key="$consIP" />
-	</f:action>
+	<f:thunk url="../entries/infonIPs.xml">
+		<f:with-param name="infonIPs" select="$newInfons" />
+		<f:with-param name="cancelConsIP" select="$cancelConsIP" />
+	</f:thunk>
 	<f:action name="cancelConsIP">
 		<f:param name="consIP" type="UI.consIP" />
 		<f:intact object="$pane" action="remove" property="aboutNewInfons" key="$consIP" />
 	</f:action>
-	
+
+
+	<html:div>
+		<f:on event="click" with-action="$newInfon" />
+		<html:button>Add New Infon</html:button>
+	</html:div>
 	<f:action name="newInfon">
 		<f:derive name="sharedIn" d="shared.in" />
 		

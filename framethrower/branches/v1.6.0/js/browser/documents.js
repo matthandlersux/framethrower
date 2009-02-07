@@ -35,6 +35,9 @@ var documents = (function () {
 				if (!callbacks[url]) {
 					callbacks[url] = [callback];
 					asyncRequest(ROOTDIR+url, function (req) {
+						if (!req.responseXML) {
+							debug.error("Invalid XML: "+url);
+						}
 						var xml = req.responseXML.firstChild;
 						var xmlIncludes = xpath("descendant-or-self::f:include", xml);
 						

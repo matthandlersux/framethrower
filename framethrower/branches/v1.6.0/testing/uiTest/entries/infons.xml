@@ -10,9 +10,12 @@
 	<xsl:for-each select="$infons/*">
 		<html:div class="entry">
 			<html:div class="entry-cell">
-				<f:thunk url="../view/infon.xml">
+				<!-- <f:thunk url="../view/infon.xml">
 					<f:with-param name="focus" select="." />
 					<f:with-param name="clickAction" select="$clickAction" />
+				</f:thunk> -->
+				<f:thunk with-template="$t">
+					<f:with-param name="infon" select="." />
 				</f:thunk>
 			</html:div>
 			<html:div class="entry-cell">
@@ -25,6 +28,23 @@
 			</html:div>
 		</html:div>
 	</xsl:for-each>
+	
+	<f:template name="t">
+		<f:param name="infon" type="Cons" />
+		<f:derive name="infonCon" d="Cons~Object infon" />
+		
+		<f:thunk url="../view2/viewPlus.xml">
+			<f:with-param name="focus" select="$infonCon" />
+			<f:with-param name="extra" select="$extra" />
+		</f:thunk>
+	</f:template>
+	
+	<f:template name="extra">
+		<f:param name="focus" type="Object" />
+		<f:on event="click" with-action="$clickAction">
+			<f:with-param name="focus" select="$focus" />
+		</f:on>
+	</f:template>
 	
 	<f:action name="removeInfon">
 		<f:param name="infon" type="Cons" />

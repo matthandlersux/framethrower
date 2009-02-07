@@ -26,6 +26,7 @@ var rootObjects = {};
 	m("shared.isA");
 	m("shared.name");
 	m("shared.relationTemplate");
+	m("shared.picture.crop");
 	
 	m("shared.type.type");
 	m("shared.type.situation");
@@ -75,6 +76,10 @@ var rootObjects = {};
 	
 	//rootObjects["test.consIP"].prop["left"].control.add(rootObjects["shared.in"]);
 	//rootObjects["test.consIP"].prop["right"].control.add(rootObjects["shared.realLife"]);
+	
+	
+	m("test.picture", "X.picture", {"width": 2448, "height": 3264, "url": "https://private.eversplosion.com/files/photos/yangIMG_1007.jpg"});
+	
 	
 })();
 

@@ -65,7 +65,7 @@
 				<xsl:with-param name="top" select="$mouseY/@value + 2" />
 			</xsl:call-template>
 			
-			<f:thunk url="../view/objectNoClick.xml">
+			<f:thunk url="../view2/object.xml">
 				<f:with-param name="focus" select="$object" />
 			</f:thunk>
 		</html:div>

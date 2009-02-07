@@ -51,7 +51,7 @@
 			<html:td>
 				<xsl:choose>
 					<xsl:when test="$focustypes/*">
-						<f:thunk url="../view/objectNoClick.xml">
+						<f:thunk url="../view2/object.xml">
 							<f:with-param name="focus" select="$focustypes/*[1]" />
 						</f:thunk>
 					</xsl:when>
@@ -100,7 +100,7 @@
 				<f:on event="click" with-action="$selectType">
 					<f:with-param name="selectedType" select="." />
 				</f:on>
-				<f:thunk url="../view/objectNoClick.xml">
+				<f:thunk url="../view2/object.xml">
 					<f:with-param name="focus" select="." />
 				</f:thunk>
 			</html:div>

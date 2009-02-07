@@ -1,0 +1,68 @@
+<f:includes
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<xsl:template name="print">
+		<xsl:param name="relationTemplate" />
+		<xsl:param name="infonArgs" />
+		<xsl:param name="argTemplate" />
+		
+
+	
+		<html:div class="infon">
+			<xsl:choose>
+				<xsl:when test="$relationTemplate/f:row">
+					<xsl:for-each select="$relationTemplate/f:row">
+						<html:div class="infonRow">
+							<xsl:call-template name="printRow">
+								<xsl:with-param name="row" select="." />
+								<xsl:with-param name="infonArgs" select="$infonArgs" />
+								<xsl:with-param name="argTemplate" select="$argTemplate" />
+							</xsl:call-template>
+						</html:div>
+					</xsl:for-each>
+				</xsl:when>
+				<xsl:otherwise>
+					<html:div class="infonRow">
+						<xsl:call-template name="printRow">
+							<xsl:with-param name="row" select="$relationTemplate" />
+							<xsl:with-param name="infonArgs" select="$infonArgs" />
+							<xsl:with-param name="argTemplate" select="$argTemplate" />
+						</xsl:call-template>
+					</html:div>
+				</xsl:otherwise>
+			</xsl:choose>
+		</html:div>
+	</xsl:template>
+
+	<xsl:template name="printRow">
+		<xsl:param name="row" />
+		<xsl:param name="infonArgs" />
+		<xsl:param name="argTemplate" />
+	
+		<html:div class="infonCellHolder">
+			<xsl:for-each select="$row/node()">
+				<html:div class="infonCell">
+					<xsl:choose>
+						<xsl:when test="self::f:arg">
+							<xsl:variable name="argCount" select="count($infonArgs/f:entry[f:value/*])" />
+							<xsl:variable name="num" select="$argCount - @num + 1" />
+							<xsl:variable name="arg" select="$infonArgs/f:entry[$num]/f:value/*" />
+							<xsl:if test="$arg">
+								<f:thunk with-template="$argTemplate">
+									<f:with-param name="focus" select="$arg" />
+									<f:with-param name="num" select="@num" as="Number" />
+								</f:thunk>
+							</xsl:if>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:value-of select="." />
+						</xsl:otherwise>
+					</xsl:choose>
+				</html:div>
+			</xsl:for-each>
+		</html:div>
+	</xsl:template>
+</f:includes>

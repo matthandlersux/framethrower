@@ -1,0 +1,32 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="Object" />
+	<f:param name="recurse" type="a -> Unit JS" />
+	
+	<f:derive name="asCons" d="Object~Cons focus" />
+	<f:derive name="asText" d="Object~X.text focus" />
+	
+	<xsl:choose>
+		<xsl:when test="$asCons">
+			<f:thunk url="infon.xml">
+				<f:with-param name="focus" select="$asCons" />
+				<f:with-param name="recurse" select="$recurse" />
+			</f:thunk>
+		</xsl:when>
+		<xsl:when test="$asText">
+			<f:thunk url="text.xml">
+				<f:with-param name="focus" select="$asText" />
+			</f:thunk>
+		</xsl:when>
+		<xsl:otherwise>
+			<f:thunk url="object.xml">
+				<f:with-param name="focus" select="$focus" />
+			</f:thunk>
+		</xsl:otherwise>
+	</xsl:choose>
+	
+</f:template>

@@ -26,10 +26,12 @@
 		// 	console.log("multiple targets", test);
 		// }
 		
-		var fon = xpath("ancestor-or-self::*[f:on/@event='" + eventName + "'][1]/f:on[@event='" + eventName + "']", target);
+		
+		// note the hackery here
+		var fon = xpath("ancestor-or-self::*[f:on/@event='" + eventName + "' or f:result/f:on/@event='" + eventName + "' or f:result/f:result/f:on/@event='" + eventName + "'][1]", target);
 		
 		if (fon.length > 0) {
-			fon = fon[0];
+			fon = xpath("f:on[@event='" + eventName + "'] | f:result/f:on[@event='" + eventName + "'] | f:result/f:result/f:on[@event='" + eventName + "']", fon[0])[0];
 			var te = copyThunkEssence(fon.custom.thunkEssence);
 			
 			var browserParams = xpath("f:with-param-browser", fon);

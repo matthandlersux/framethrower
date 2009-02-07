@@ -59,7 +59,7 @@
 						</html:div>
 					</xsl:when>
 					<xsl:when test="$object">
-						<f:thunk url="objectNoClick.xml">
+						<f:thunk url="object.xml">
 							<f:with-param name="focus" select="$object" />
 						</f:thunk>
 					</xsl:when>
@@ -118,7 +118,7 @@
 					<f:with-param name="relation" select="." />
 				</f:on>
 				
-				<f:thunk url="objectNoClick.xml">
+				<f:thunk url="object.xml">
 					<f:with-param name="focus" select="." />
 				</f:thunk>
 			</html:div>
@@ -200,7 +200,7 @@
 				<f:on event="click" with-action="$selectObject">
 					<f:with-param name="object" select="." />
 				</f:on>
-				<f:thunk url="objectNoClick.xml">
+				<f:thunk url="object.xml">
 					<f:with-param name="focus" select="." />
 				</f:thunk>
 			</html:div>

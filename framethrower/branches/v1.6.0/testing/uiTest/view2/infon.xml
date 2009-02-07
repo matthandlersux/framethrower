@@ -1,0 +1,35 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="Cons" />
+	<f:param name="recurse" type="a -> Unit JS" />
+	
+	<f:derive name="infonArgs" d="getInfonArguments focus" />
+	<f:derive name="template" d="(bindSet getRelationTemplate) (getInfonRelations focus)" />
+	
+	
+	<xsl:variable name="rt" select="$template/f:literal/f:relationTemplate" />
+	<xsl:if test="$rt">
+		<xsl:call-template name="print">
+			<xsl:with-param name="relationTemplate" select="$rt" />
+			<xsl:with-param name="infonArgs" select="$infonArgs" />
+			<xsl:with-param name="argTemplate" select="$printArg" />
+		</xsl:call-template>
+	</xsl:if>
+	
+	<f:template name="printArg">
+		<f:param name="focus" type="Object" />
+		<f:param name="num" type="Number" />
+		
+		<f:thunk with-template="$recurse">
+			<f:with-param name="focus" select="$focus" />
+			<f:with-param name="recurse" select="$recurse" />
+		</f:thunk>
+	</f:template>
+	
+
+	<f:include url="util/printInfon.xml" />
+</f:template>

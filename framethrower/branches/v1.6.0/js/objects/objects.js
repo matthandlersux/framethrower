@@ -54,6 +54,23 @@ var classesToMake = {
 			"duration": "Number"
 		}
 	},
+	"X.picture": {
+		inherit: "Object",
+		prop: {
+			"url": "String",
+			"width": "Number",
+			"height": "Number"
+		}
+	},
+	"X.picture.crop": {
+		inherit: "Object",
+		prop: {
+			"x": "Number",
+			"y": "Number",
+			"width": "Number",
+			"height": "Number"
+		}
+	},
 	"X.text": {
 		inherit: "Object",
 		prop: {
