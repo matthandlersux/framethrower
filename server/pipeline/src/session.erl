@@ -11,6 +11,7 @@
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
 -export ([new/0, lookup/1, startManager/0]).
+-define (pipelineBufferTime, 50).
 
 %% @doc Starts the Session Manager which is responsible for keeping track of sessions
 %% 		and interfacing with the pipeline frontend
@@ -68,7 +69,7 @@ manager(State) ->
 		{pipeline, From, {SessionId, LastMessageId}} ->
 			case ets:lookup(State, SessionId) of
 				[{_, Pid}] ->
-					Pid ! {pipeline, From, LastMessageId};
+					spawn( fun() -> timer:sleep(?pipelineBufferTime), Pid ! {pipeline, From, LastMessageId} end);
 				[] ->
 					From ! {struct, [{"sessionClosed", true}] }
 			end,
@@ -87,6 +88,9 @@ manager(State) ->
 			io:format("Session Manager Received: ~p~n~n", [Any]),
 			manager(State)
 	end.
+
+% perhaps dont do the second part of rcv statement and just have the switch be part of the state:
+%	listening for pipeline msg, get msg, switch to stream mode, process inbox, after 0, switch back
 
 session() ->
 	session([{0, null}]).
@@ -113,11 +117,11 @@ session([{LastMessageId, _}|_] = MsgQueue) ->
 					session(MsgQueue)
 			end;
 		{data, {QueryId, Action, Data}} ->
-			?trace(QueryId),
+			% ?trace(QueryId),
 			Struct = wellFormedUpdate(Data, QueryId, Action),
 			session([{LastMessageId + 1, Struct}|MsgQueue]);
 		{done, QueryId} ->
-			?trace(QueryId),
+			% ?trace(QueryId),
 			session(MsgQueue)
 	after
 		120000 ->

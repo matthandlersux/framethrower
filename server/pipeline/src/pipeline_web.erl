@@ -7,7 +7,7 @@
 -author('author <author@example.com>').
 -include ("../../mbrella/v1.4/include/scaffold.hrl").
 
--export([start/1, stop/0, loop/2]).
+-export([start/1, stop/0, loop/2, processActionList/1]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
@@ -47,6 +47,23 @@ loop(Req, DocRoot) ->
 									Req:ok({"text/html", [], [ "<html>" ++ HTML ++ "</html>"]})
 							end
 					end;
+				"responseTimeSVG" ->
+					Data = Req:parse_qs(),
+					SessionId = proplists:get_value("sessionId", Data),
+					if
+						SessionId =:= undefined -> Req:ok({"text/html", [], [ responseTime:searchPage() ]});
+						true ->
+							case responseTime:get( SessionId ) of
+								responseTime_off ->
+									Req:ok({ "test/plain", [], [ "responseTime server is off" ] });
+								[] ->
+									Req:ok({ "text/plain", [], [ SessionId ++ " has no information." ] });
+								String -> 
+									Req:ok({ "image/svg+xml", [], [ String ] })
+								% InOutList ->
+								% 	Req:ok({ "text/plain", [], [ io_lib:format("~p", [InOutList]) ]})
+							end
+					end;
                 _ ->
                     Req:serve_file(Path, DocRoot)
             end;
@@ -54,6 +71,8 @@ loop(Req, DocRoot) ->
             case Path of
 				"newSession" ->
 					SessionId = session:new(),
+					% responseTime:in(SessionId, newSession, now() ),
+					% responseTime:out(SessionId, newSession, now() ),
 					spit(Req, "sessionId", SessionId);
 				"pipeline" ->
 					Data = Req:parse_post(),
@@ -61,9 +80,11 @@ loop(Req, DocRoot) ->
 					Struct = mochijson2:decode(Json),
 					LastMessageId = struct:get_value(<<"lastMessageId">>, Struct),
 					SessionId = struct:get_value(<<"sessionId">>, Struct),
+					responseTime:in(SessionId, pipeline, null, now() ),
 					sessionManager ! {pipeline, self(), {SessionId, LastMessageId}},
 					receive 
 						{updates, Updates, LastMessageId2} ->
+							responseTime:updatesOut(SessionId, pipeline, Updates),
 							JsonOut = {struct, [{"updates", Updates},{"lastMessageId", LastMessageId2}]};
 						JsonOut ->
 							JsonOut
@@ -86,7 +107,7 @@ loop(Req, DocRoot) ->
 							ProcessQuery = fun( Query, Accumulator ) ->
 												Expr = struct:get_value(<<"expr">>, Query),
 												QueryId = struct:get_value(<<"queryId">>, Query),
-												% io:format("expr: ~p~nquery: ~p~n~n", [Expr, QueryId])
+												responseTime:in(SessionId, 'query', QueryId, now() ),
 												Cell = eval:evaluate( expr:exprParse( binary_to_list(Expr) ) ),
 												cell:injectFunc(Cell,  
 													fun(Val) ->
@@ -124,6 +145,7 @@ loop(Req, DocRoot) ->
 					Json = proplists:get_value("json", Data),
 					Struct = mochijson2:decode(Json),
 					SessionId = struct:get_value(<<"sessionId">>, Struct),
+					% responseTime:in(SessionId, action, now() ),
 					case session:lookup(SessionId) of
 						session_closed ->
 							spit(Req, {struct, [{"sessionClosed", true}] });
@@ -133,6 +155,7 @@ loop(Req, DocRoot) ->
 								{Returned, Created} ->
 									Success = lists:all(fun(X) -> X =/= error end, Returned),
 									CreatedStruct = {struct, Created},
+									% responseTime:out(SessionId, action, now() ),
 									spit(Req, {struct, [{"success", Success},{"returned", Returned},{"created", CreatedStruct}] } )
 							catch
 								ErrorType:Reason -> 
