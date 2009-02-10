@@ -109,7 +109,10 @@ loop(Req, DocRoot) ->
 												QueryId = struct:get_value(<<"queryId">>, Query),
 												responseTime:in(SessionId, 'query', QueryId, now() ),
 												Cell = eval:evaluate( expr:exprParse( binary_to_list(Expr) ) ),
-												cell:injectFunc(Cell,  
+												cell:injectFunc(Cell, 
+													fun() ->
+														SessionPid ! {done, QueryId}
+													end,
 													fun(Val) ->
 														SessionPid ! {data, {QueryId, add, Val}},
 														fun() -> 
@@ -119,11 +122,6 @@ loop(Req, DocRoot) ->
 															end
 														end
 													end
-												),
-												cell:injectDoneResponse(Cell,
-													fun() ->
-														SessionPid ! {done, QueryId}
-													end												
 												),
 												[{struct, [{"type", list_to_binary(type:unparse( type:getType(Cell) ))}]}|Accumulator]
 											end,
