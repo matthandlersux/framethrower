@@ -7,6 +7,7 @@
 	<f:param name="focus" type="Object" />
 	
 	<f:derive name="name" d="getName focus" />
+	<f:derive name="thumbnail" d="getOntProp shared.thumbnail focus" />
 	<f:derive name="types" d="getTypes focus" />
 	<f:derive name="isRelation" d="filterRelations (returnSet focus)" />
 	
@@ -24,6 +25,14 @@
 		
 		<xsl:attribute name="style">background-color: <xsl:value-of select="$color" /></xsl:attribute>
 		
+		<xsl:if test="$thumbnail/*">
+			<f:thunk url="picture.xml">
+				<f:with-param name="focus" select="$thumbnail/*[1]" />
+				<f:with-param name="width" select="30" />
+				<f:with-param name="height" select="30" />
+			</f:thunk>
+		</xsl:if>
+		
 		<xsl:choose>
 			<xsl:when test="$name/*">
 				<xsl:value-of select="$name/*/@value" />				
@@ -33,14 +42,8 @@
 			</xsl:otherwise>
 		</xsl:choose>
 
-		<f:on event="dragStart" with-action="$drag" />
+
 	</html:div>
 
-	<f:action name="drag">
-		<f:derive name="main" d="ui.main" />
-		<f:create name="dragging" type="UI.dragging">
-			<f:with-param name="object" select="$focus" />
-		</f:create>
-		<f:intact object="$main" action="add" property="dragging" key="$dragging" />
-	</f:action>
+
 </f:template>

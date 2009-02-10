@@ -129,7 +129,7 @@
 		
 		<f:thunk url="pane.xml">
 			<f:with-param name="closePane" select="$closePane" />
-			<f:with-param name="openPane" select="$openPane" />
+			<f:with-param name="newPane" select="$newPane" />
 			<f:with-param name="pane" select="$pane" />
 			<f:with-param name="width" select="$width" />
 			<f:with-param name="height" select="$height" />
@@ -140,7 +140,7 @@
 			<f:intact object="$mainPaneSet" action="remove" property="panes" key="$key" />
 		</f:action>
 		
-		<f:action name="openPane">
+		<f:action name="newPane">
 			<f:param name="focus" type="Object" />
 			<f:derive name="lastPaneKey" d="takeLastKey (UI.pane.set:panes paneset)" />
 			<xsl:variable name="newKey">

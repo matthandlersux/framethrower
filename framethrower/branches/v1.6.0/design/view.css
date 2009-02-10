@@ -8,6 +8,10 @@
 	-webkit-border-radius: 4px;
 	cursor: pointer;
 }
+.object img {
+    vertical-align: middle;
+    margin: 2px 2px 2px 1px;
+}
 
 .objectDrop {
 	border: 2px dotted;

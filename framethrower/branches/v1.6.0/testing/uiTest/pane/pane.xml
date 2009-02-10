@@ -6,7 +6,7 @@
 	
 	<f:param name="pane" type="UI.pane.pane" />
 	<f:param name="closePane" type="Unit JS" />
-	<f:param name="openPane" type="a -> Unit JS" />
+	<f:param name="newPane" type="a -> Unit JS" />
 	<f:derive name="tab" d="UI.pane.pane:tab pane" />
 	<f:derive name="focus" d="UI.pane.pane:focus pane" />
 	
@@ -18,8 +18,9 @@
 		<html:div class="pane">
 			<html:div class="titlebar">
 				<html:div class="titlebar-focus">
-					<f:thunk url="../view2/object.xml">
+					<f:thunk url="../view2/viewPlus.xml">
 						<f:with-param name="focus" select="$focus" />
+						<f:with-param name="extra" select="$blankTemplate" />
 					</f:thunk>
 				</html:div>
 				<html:div class="titlebar-buttons">
@@ -98,20 +99,20 @@
 						<f:thunk url="objectsIn.xml">
 							<f:with-param name="focus" select="$focus" />
 							<f:with-param name="pane" select="$pane" />
-							<f:with-param name="clickAction" select="$openPane" />
+							<f:with-param name="newPane" select="$newPane" />
 						</f:thunk>
 					</xsl:when>
 					<xsl:when test="$tab/@value = 'infonsIn'">
 						<f:thunk url="infonsIn.xml">
 							<f:with-param name="focus" select="$focus" />
-							<f:with-param name="clickAction" select="$openPane" />
+							<f:with-param name="newPane" select="$newPane" />
 							<f:with-param name="pane" select="$pane" />
 						</f:thunk>
 					</xsl:when>
 					<xsl:when test="$tab/@value = 'about'">
 						<f:thunk url="about.xml">
 							<f:with-param name="focus" select="$focus" />
-							<f:with-param name="clickAction" select="$openPane" />
+							<f:with-param name="newPane" select="$newPane" />
 							<f:with-param name="pane" select="$pane" />
 						</f:thunk>
 					</xsl:when>
@@ -160,6 +161,9 @@
 		</html:span>
 	</f:template>
 	
+	<f:template name="blankTemplate">
+		<f:param name="focus" type="Object" />
+	</f:template>
 	
 	<f:include url="/xml/util/ord.xml" />
 	<!-- <f:include url="/xml/debug/prettyPrint.xml" /> -->

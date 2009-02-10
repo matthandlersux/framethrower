@@ -26,6 +26,8 @@ var rootObjects = {};
 	m("shared.isA");
 	m("shared.name");
 	m("shared.relationTemplate");
+	m("shared.thumbnail");
+	
 	m("shared.picture.crop");
 	
 	m("shared.type.type");

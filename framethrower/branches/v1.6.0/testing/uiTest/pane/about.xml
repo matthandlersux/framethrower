@@ -5,17 +5,17 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
 	<f:param name="focus" type="Object" />
-	<f:param name="clickAction" type="a -> Unit JS" />
+	<f:param name="newPane" type="a -> Unit JS" />
 	<f:param name="pane" type="UI.pane.pane" />
 	
-	<f:derive name="set" d="getInfonsAbout focus" />
+	<f:derive name="set" d="mapSet Cons~Object (getInfonsAbout focus)" />
 	
 	<f:derive name="newInfons" d="UI.pane.pane:aboutNewInfons pane" />
 
 
 	<f:thunk url="../entries/infons.xml">
 		<f:with-param name="infons" select="$set" />
-		<f:with-param name="clickAction" select="$clickAction" />
+		<f:with-param name="newPane" select="$newPane" />
 	</f:thunk>
 	
 	

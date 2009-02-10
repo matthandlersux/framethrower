@@ -5,7 +5,7 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
 	<f:param name="focus" type="Object" />
-	<f:param name="clickAction" type="a -> Unit JS" />
+	<f:param name="newPane" type="a -> Unit JS" />
 	<f:param name="pane" type="UI.pane.pane" />
 	
 	<f:derive name="addingObject" d="UI.pane.pane:addingObject pane" />
@@ -61,9 +61,17 @@
 	
 	<f:template name="extra">
 		<f:param name="focus" type="Object" />
-		<f:on event="click" with-action="$clickAction">
+		<f:on event="click" with-action="$newPane">
 			<f:with-param name="focus" select="$focus" />
 		</f:on>
+		<f:on event="dragStart" with-action="$drag" />
+		<f:action name="drag">
+			<f:derive name="main" d="ui.main" />
+			<f:create name="dragging" type="UI.dragging">
+				<f:with-param name="object" select="$focus" />
+			</f:create>
+			<f:intact object="$main" action="add" property="dragging" key="$dragging" />
+		</f:action>
 	</f:template>
 	
 	

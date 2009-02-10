@@ -236,6 +236,21 @@
 	
 	
 	
+	<f:perform with-action="$makeNamedObject" name="charlene">
+		<f:with-param name="name" select="'Charlene'" />
+		<f:with-param name="type" select="$entityType" />
+	</f:perform>
+	<f:perform with-action="$putObjectInSituation">
+		<f:with-param name="situation" select="$realLife" />
+		<f:with-param name="object" select="$charlene" />
+	</f:perform>
+	<f:perform with-action="$thumbnailObject">
+		<f:with-param name="object" select="$charlene" />
+		<f:with-param name="url" select="'https://private.eversplosion.com/files/photos/yangIMG_1007.jpg'" />
+		<f:with-param name="width" select="2448" />
+		<f:with-param name="height" select="3264" />
+	</f:perform>
+	
 
 
 	<f:action name="makeRelationType3">

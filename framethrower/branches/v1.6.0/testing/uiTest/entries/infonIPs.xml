@@ -12,7 +12,7 @@
 	<xsl:for-each select="$infonIPs/*">
 		<html:div class="entry">
 			<html:div class="entry-cell">
-				<f:thunk url="../view/infonIP.xml">
+				<f:thunk url="../view2/infonIP.xml">
 					<f:with-param name="focus" select="." />
 					<f:with-param name="expectedType" select="$infonType" />
 				</f:thunk>

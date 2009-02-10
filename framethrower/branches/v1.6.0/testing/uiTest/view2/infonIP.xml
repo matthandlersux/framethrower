@@ -55,7 +55,6 @@
 								color: <xsl:value-of select="$color" />;
 							</xsl:attribute>
 							<xsl:value-of select="$typeName/*/@value" />
-							<!-- <xsl:value-of select="$focus/@name" /> -->
 						</html:div>
 					</xsl:when>
 					<xsl:when test="$object">
@@ -130,7 +129,6 @@
 			<f:param name="relation" type="Object" />
 			<f:derive name="argCount" d="(mapSet (compose (compose length keys) getRelationTypeComponents)) (bindUnitSet Object~Cons (getTypes relation))" />
 			
-			<!-- <xsl:value-of select="$argCount/*[1]/@value" /> -->
 			
 			<f:create name="left" type="UI.consIP" />
 			<f:intact object="$left" action="add" property="object" key="$relation" />
@@ -264,7 +262,6 @@
 			<f:derive name="template" d="getRelationTemplate relation" />
 			<f:derive name="rtInputs" d="mapSet getRelationTypeInputs (bindUnitSet Object~Cons (getTypes relation))" />
 		
-			<!-- <html:div>Cons In Progress</html:div> -->
 		
 			<xsl:variable name="rt" select="$template/f:literal/f:relationTemplate" />
 			<xsl:if test="$rt">
@@ -298,6 +295,7 @@
 						</xsl:otherwise>
 					</xsl:choose>
 				</xsl:if>
+			</f:template>
 		
 		</f:template>
 		
@@ -307,5 +305,5 @@
 		
 	</f:template>
 	
-	
+
 </f:template>

@@ -4,19 +4,19 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
-	<f:param name="infons" type="Set Cons" />
-	<f:param name="clickAction" type="a -> Unit JS" />
+	<f:param name="infons" type="Set Object" />
+	<f:param name="newPane" type="a -> Unit JS" />
 
 	<xsl:for-each select="$infons/*">
 		<html:div class="entry">
 			<html:div class="entry-cell">
-				<!-- <f:thunk url="../view/infon.xml">
+				<f:thunk url="../view2/viewPlus.xml">
 					<f:with-param name="focus" select="." />
-					<f:with-param name="clickAction" select="$clickAction" />
-				</f:thunk> -->
-				<f:thunk with-template="$t">
-					<f:with-param name="infon" select="." />
+					<f:with-param name="extra" select="$extra" />
 				</f:thunk>
+				<!-- <f:thunk with-template="$t">
+					<f:with-param name="infon" select="." />
+				</f:thunk> -->
 			</html:div>
 			<html:div class="entry-cell">
 				<html:div>
@@ -29,7 +29,7 @@
 		</html:div>
 	</xsl:for-each>
 	
-	<f:template name="t">
+	<!-- <f:template name="t">
 		<f:param name="infon" type="Cons" />
 		<f:derive name="infonCon" d="Cons~Object infon" />
 		
@@ -37,13 +37,21 @@
 			<f:with-param name="focus" select="$infonCon" />
 			<f:with-param name="extra" select="$extra" />
 		</f:thunk>
-	</f:template>
+	</f:template> -->
 	
 	<f:template name="extra">
 		<f:param name="focus" type="Object" />
-		<f:on event="click" with-action="$clickAction">
+		<f:on event="click" with-action="$newPane">
 			<f:with-param name="focus" select="$focus" />
 		</f:on>
+		<f:on event="dragStart" with-action="$drag" />
+		<f:action name="drag">
+			<f:derive name="main" d="ui.main" />
+			<f:create name="dragging" type="UI.dragging">
+				<f:with-param name="object" select="$focus" />
+			</f:create>
+			<f:intact object="$main" action="add" property="dragging" key="$dragging" />
+		</f:action>
 	</f:template>
 	
 	<f:action name="removeInfon">

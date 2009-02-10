@@ -38,6 +38,27 @@
 			<f:with-param name="arg2" select="$nameText" />
 		</f:perform>
 	</f:action>
+	
+	<f:action name="thumbnailObject">
+		<f:param name="object" type="Object" />
+		<f:param name="url" type="String" />
+		<f:param name="width" type="Number" />
+		<f:param name="height" type="Number" />
+	
+		<f:derive name="thumbnailRel" d="shared.thumbnail" />
+	
+		<f:create type="X.picture" name="pic">
+			<f:with-param name="url" select="$url" />
+			<f:with-param name="width" select="$width" />
+			<f:with-param name="height" select="$height" />
+		</f:create>
+	
+		<f:perform with-action="$makeOntProperty">
+			<f:with-param name="relation" select="$thumbnailRel" />
+			<f:with-param name="arg1" select="$object" />
+			<f:with-param name="arg2" select="$pic" />
+		</f:perform>
+	</f:action>
 
 	<f:action name="relationTemplateObject">
 		<f:param name="object" type="Object" />

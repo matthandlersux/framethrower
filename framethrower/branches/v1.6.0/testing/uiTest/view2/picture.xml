@@ -8,22 +8,46 @@
 	<f:param name="width" type="Number" />
 	<f:param name="height" type="Number" />
 	
-	<f:derive name="asPicture" d="Object~X.picture focus" />
-	<f:derive name="asCons" d="Object~Cons focus" />
+	<f:thunk with-template="$print">
+		<f:with-param name="focus" select="$focus" />
+		<f:with-param name="transform"><f:transform /></f:with-param>
+	</f:thunk>
+	
 
-	<xsl:choose>
-		<xsl:when test="$asPicture">
-			<f:thunk with-template="$printPicture">
-				<f:with-param name="picture" select="$asPicture" />
-			</f:thunk>
-		</xsl:when>
-		<xsl:otherwise>
-			
-		</xsl:otherwise>
-	</xsl:choose>
+	
+	<f:template name="print">
+		<f:param name="focus" type="Object" />
+		<f:param name="transform" type="XML" />
+		
+		<f:derive name="asPicture" d="Object~X.picture focus" />
+		<f:derive name="asCons" d="Object~Cons focus" />
+
+		<xsl:choose>
+			<xsl:when test="$asPicture">
+				<f:thunk with-template="$printPicture">
+					<f:with-param name="picture" select="$asPicture" />
+					<f:with-param name="transform" select="$transform" />
+				</f:thunk>
+			</xsl:when>
+			<xsl:when test="$asCons">
+
+			</xsl:when>
+			<xsl:otherwise>
+
+			</xsl:otherwise>
+		</xsl:choose>
+	</f:template>
+	
+	<!-- <f:template name="printCons">
+		<f:param name="picture" type="Cons" />
+		<f:param name="transform" type="XML" />
+		<f:derive name="crop" d="" />
+		<f:derive name="pic" d="" />
+	</f:template> -->
 	
 	<f:template name="printPicture">
 		<f:param name="picture" type="X.picture" />
+		<f:param name="transform" type="XML" />
 		
 		<f:derive name="url" d="X.picture:url picture" />
 		<f:derive name="pw" d="X.picture:width picture" />

@@ -20,7 +20,7 @@
 		
 			<f:thunk url="../paneset/pane.xml">
 				<f:with-param name="closePane" select="$closeTopPane" />
-				<f:with-param name="openPane" select="$openTopPane" />
+				<f:with-param name="newPane" select="$newTopPane" />
 				<f:with-param name="pane" select="$pane" />
 				<f:with-param name="width" select="$screenWidth" />
 				<f:with-param name="height" select="$screenHeight" />
@@ -72,7 +72,7 @@
 	</f:template>
 	
 	<f:action name="closeTopPane" />
-	<f:action name="openTopPane">
+	<f:action name="newTopPane">
 		<f:param name="focus" type="Object" />
 	</f:action>
 	

@@ -132,4 +132,35 @@
 		</xsl:choose>
 	</xsl:template>
 	
+	
+	
+	
+	
+	<xsl:template match="f:each">
+		<xsl:element name="xsl:for-each" namespace="{$xslns}">
+			<xsl:attribute name="select"><xsl:value-of select="@select" />/*</xsl:attribute>
+			
+			<xsl:choose>
+				<xsl:when test="@value">
+					<xsl:element name="xsl:variable" namespace="{$xslns}">
+						<xsl:attribute name="name"><xsl:value-of select="@key" /></xsl:attribute>
+						<xsl:attribute name="select">f:key/*</xsl:attribute>
+					</xsl:element>
+					<xsl:element name="xsl:variable" namespace="{$xslns}">
+						<xsl:attribute name="name"><xsl:value-of select="@value" /></xsl:attribute>
+						<xsl:attribute name="select">f:value/*</xsl:attribute>
+					</xsl:element>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:element name="xsl:variable" namespace="{$xslns}">
+						<xsl:attribute name="name"><xsl:value-of select="@key" /></xsl:attribute>
+						<xsl:attribute name="select">.</xsl:attribute>
+					</xsl:element>
+				</xsl:otherwise>
+			</xsl:choose>
+			
+			<xsl:apply-templates select="node()" />
+		</xsl:element>
+	</xsl:template>
+	
 </xsl:stylesheet>
