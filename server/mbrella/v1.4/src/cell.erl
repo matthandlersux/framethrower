@@ -241,8 +241,10 @@ handle_call({addLine, Value, CellName}, From, State) ->
     {reply, CallBack, NewState};
 handle_call({injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}, _, State) ->
 	Id = ?this(funcColor),
-	OnRemove = #onRemove{
-		function = fun() -> removeFunc(Cell, Id) end, cell=Cell, id=Id, done=false},
+	OnRemove = case OutputCellOrIntOrFunc of
+		Function when is_function(Function) -> fun() -> removeFunc(Cell, Id) end;
+		_ -> #onRemove{function = fun() -> removeFunc(Cell, Id) end, cell=Cell, id=Id, done=false}
+	end,
 	case OutputCellOrIntOrFunc of
 		OutputCell when is_record(OutputCell, exprCell) -> addOnRemove(OutputCell, OnRemove);
 		%TODO: make Intercept a record for consistancy with Cell
