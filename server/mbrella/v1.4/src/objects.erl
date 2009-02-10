@@ -218,14 +218,14 @@ makeCast(TargetClassName) ->
 makeCastDown(Cast, TargetClassName, Classes) ->
 	fun (Obj) ->
 		OutputCell = cell:makeCell(),
-		cell:done(OutputCell),
 		CastingDict = Obj#object.castingDict,
 		case dict:find(TargetClassName, CastingDict) of
 			error ->
-				nothing;
+				cell:done(OutputCell);
 			{ok, CastedObjName} -> 
 				CastedObj = env:lookup(CastedObjName),
-				cell:addLine(OutputCell, CastedObj)
+				cell:addLine(OutputCell, CastedObj),
+				cell:done(OutputCell)
 		end,
 		OutputCell
 	end.
@@ -309,9 +309,7 @@ makeFutureProps(Props, ObjClass, Classes) ->
 					PropCell;
 				false ->
 					PropValue = dict:fetch(PropName, Props),
-					FutureCell = cell:makeFuture(PropValue),
-					cell:done(FutureCell),
-					FutureCell
+					cell:makeFuture(PropValue)
 			end
 		end, ObjClass#class.prop),
 	case ObjClass#class.inherit of

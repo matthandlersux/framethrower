@@ -168,7 +168,7 @@ curry(Func, Arity, Args) -> fun(Arg) -> curry(Func, Arity-1, Args ++ [Arg])	end.
 
 exprElementToJson(X) when is_integer(X) -> X1 = integer_to_list(X), list_to_binary(X1);
 exprElementToJson(X) when is_boolean(X) -> list_to_binary(atom_to_list(X));
-exprElementToJson(null) -> list_to_binary(atom_to_list(null));
+exprElementToJson(X) when is_atom(X) -> list_to_binary(atom_to_list(X));
 exprElementToJson(X) when is_list(X) ->
 	Fun = fun(XX) ->         
 		if XX < 0 -> false;  

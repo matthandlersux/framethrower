@@ -15,6 +15,7 @@ primitives() ->
 	function = fun(Val) ->
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, Val),
+		cell:done(OutputCell),
 		OutputCell
 	end},
 	#exprFun{
@@ -23,6 +24,7 @@ primitives() ->
 	function = fun(Val) ->
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, Val),
+		cell:done(OutputCell),
 		OutputCell
 	end},	
 	#exprFun{
@@ -208,6 +210,7 @@ primitives() ->
 	function = fun(Val) ->
 		OutputCell = cell:makeCell(),
 		for(1, Val, fun(X) -> cell:addLine(OutputCell, X) end),
+		cell:done(OutputCell),
 		OutputCell
 	end},
 	#exprFun{
@@ -216,6 +219,7 @@ primitives() ->
 	function = fun(Val1, Val2) ->
 		OutputCell = cell:makeCellMapInput(),
 		for(1, Val1, fun(X) -> cell:addLine(OutputCell, {X, Val2}) end),
+		cell:done(OutputCell),
 		OutputCell
 	end},
 	#exprFun{
@@ -479,12 +483,16 @@ primitives() ->
 	function = fun(Cell) ->
 		SetType = type:buildType(type:get(Cell), "Map a (Set b)", "Set a"),
 		OutputCell = cell:makeCellMapInput(),
+		BType = type:buildType(type:get(Cell), "Map a (Set b)", "b"),
 		BHashCell = cell:makeCell(),
+		TypedBHashCell = BHashCell#exprCell{type=type:parse("Set " ++ type:unparse(BType))},
+		cell:update(TypedBHashCell),
 		Intercept = cell:injectIntercept(OutputCell, fun(Message, BHash) ->
 			case Message of
 				{bHashAdd, BVal} ->
 					NewCell = cell:makeCell(),
 					TypedCell = NewCell#exprCell{type=SetType},
+					cell:update(TypedCell),
 					cell:addLine(OutputCell, {BVal, TypedCell}),
 					dict:store(BVal, TypedCell, BHash);
 				{bHashRemove, BVal} ->
@@ -495,15 +503,23 @@ primitives() ->
 					BHash;
 				{removeInnerLine, InnerVal, Key} ->
 					cell:removeLine(dict:fetch(InnerVal, BHash), Key),
+					BHash;
+				done ->
+					dict:map(fun(BVal, BCell) -> cell:done(BCell) end, BHash),
 					BHash
 			end
 		end, dict:new()),
-		cell:injectFuncs(Intercept, [{BHashCell, fun(BVal) ->
+		
+		cell:injectDoneResponse(BHashCell, fun() ->
+			intercept:sendIntercept(Intercept, done)
+		end),
+		cell:injectFuncs(Intercept, [
+		{BHashCell, fun(BVal) ->
 			intercept:sendIntercept(Intercept, {bHashAdd, BVal}),
 			fun() -> intercept:sendIntercept(Intercept, {bHashRemove, BVal}) end
 		end},
 		{Cell, fun({Key, Val}) ->
-			cell:injectFunc(Val, OutputCell, fun(InnerVal) ->
+			cell:injectFunc(Val, BHashCell, fun(InnerVal) ->
 				OnRemove1 = cell:addLine(BHashCell, InnerVal),
 				intercept:sendIntercept(Intercept, {addInnerLine, InnerVal, Key}),
 				fun() ->

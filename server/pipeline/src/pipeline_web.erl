@@ -118,7 +118,7 @@ loop(Req, DocRoot) ->
 																_ -> SessionPid ! {data, {QueryId, remove, Val}}
 															end
 														end
-													end												
+													end
 												),
 												cell:injectDoneResponse(Cell,
 													fun() ->

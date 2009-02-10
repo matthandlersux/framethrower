@@ -19,7 +19,7 @@
 %% ====================================================================
 %% Intercept internal data structure record
 %% ====================================================================
--record(interceptState, {function, state, ownerCell, onRemoves=[], done=true}).
+-record(interceptState, {function, state, ownerCell}).
 -record(onRemove, {function, cell, id, done}).
 
 %% ====================================================================
@@ -48,9 +48,15 @@ addOnRemove(IntPid, FunOrOnRemove) ->
 	end,
 	gen_server:cast(IntPid, {addOnRemove, OnRemove}).
 
+removeDependency(IntPid, Cell, Id) ->
+	gen_server:cast(IntPid, {removeDependency, Cell, Id}).	
+
 done(IntPid, DoneCell, Id) ->
 	gen_server:cast(IntPid, {done, DoneCell, Id}).
 
+getState(IntPid) ->
+	gen_server:call(IntPid, getState).
+	
 %% ====================================================================
 %% Server functions
 %% ====================================================================
@@ -68,43 +74,21 @@ init([Fun, State, OwnerCell]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call(Message, From, State) ->
-    {noreply, State}.
+handle_call(getState, From, State) ->
+    {reply, State, State}.
 
 handle_cast({sendIntercept, Value}, State) ->
 	NewState = State#interceptState{state=(?this(function))(Value, ?this(state))},
 	{noreply, NewState};
 handle_cast({addOnRemove, OnRemove}, State) ->
-	NewState = State#interceptState{onRemoves=[OnRemove | ?this(onRemoves)]},
-	DoneState = case OnRemove#onRemove.done of
-		false -> NewState#interceptState{done=false};
-		true -> NewState
-	end,
 	cell:addOnRemove(?this(ownerCell), OnRemove),
-    {noreply, DoneState};
+    {noreply, State};
+handle_cast({removeDependency, Cell, Id}, State) ->
+	cell:removeDependency(?this(ownerCell), Cell, Id),
+	{noreply, State};
 handle_cast({done, DoneCell, Id}, State) ->
-	NewState = case ?this(done) of
-		true -> State;
-		false ->
-			NewOnRemoves = lists:map(fun(OnRemove) ->
-				if
-					(not (OnRemove#onRemove.cell == undefined)) andalso ((OnRemove#onRemove.cell)#exprCell.name == DoneCell#exprCell.name) andalso (OnRemove#onRemove.id == Id) ->
-						OnRemove#onRemove{done=true};
-					true -> 
-						OnRemove
-				end
-			end, ?this(onRemoves)),
-			AllDone = lists:foldl(fun(OnRemove, Acc) ->
-				Acc andalso OnRemove#onRemove.done
-			end, true, NewOnRemoves),
-			case AllDone of
-				true ->
-					cell:done(?this(ownerCell), DoneCell, Id);
-				false -> nosideeffect
-			end,
-			State#interceptState{onRemoves=NewOnRemoves, done=AllDone}
-	end,
-    {noreply, NewState}.
+	cell:done(?this(ownerCell), DoneCell, Id),
+    {noreply, State}.
 
 
 handle_info(_, State) -> {noreply, State}.
