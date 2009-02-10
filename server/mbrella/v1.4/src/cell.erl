@@ -223,10 +223,6 @@ init([ToKey]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call({addLine, Value, CellName}, From, State) ->
-	case ?this(done) of
-		true -> ?trace("Adding to already done");
-		_ -> nosideeffect
-	end,
 	Key = (?this(toKey))(Value),
 	Dot = try rangedict:fetch(Key, ?this(dots)) of
 		{dot, Num, Val, Lines} -> {dot, Num+1, Val, Lines}
