@@ -55,7 +55,7 @@ loop(Req, DocRoot) ->
 						true ->
 							case responseTime:get( SessionId ) of
 								responseTime_off ->
-									Req:ok({ "test/plain", [], [ "responseTime server is off" ] });
+									Req:ok({ "text/plain", [], [ "responseTime server is off" ] });
 								[] ->
 									Req:ok({ "text/plain", [], [ SessionId ++ " has no information." ] });
 								String -> 
@@ -63,6 +63,19 @@ loop(Req, DocRoot) ->
 								% InOutList ->
 								% 	Req:ok({ "text/plain", [], [ io_lib:format("~p", [InOutList]) ]})
 							end
+					end;
+				"serialize" ->
+					Data = Req:parse_qs(),
+					{Username, Password} = mblib:pump(["username", "password"], 
+												fun(Element) -> proplists:get_value(Element, Data) end),
+					if 
+						Username =:= "echostorm", Password =:= "build7twenty" ->
+							try serialize:serializeEnv() of
+								ok -> Req:ok({ "text/plain", [], [ "server state serialized successfully." ]})
+							catch _:_ -> Req:ok({ "text/plain", [], [ "error, serialize screwed up (andrews fault)." ]})
+							end;
+						true ->
+							Req:ok({ "text/plain", [], [ "invalid username/password." ]})
 					end;
                 _ ->
                     Req:serve_file(Path, DocRoot)
@@ -104,30 +117,32 @@ loop(Req, DocRoot) ->
 							spit(Req, {struct, [{"sessionClosed", true}] });
 						SessionPid ->
 							Queries = struct:get_value(<<"queries">>, Struct),
-							ProcessQuery = fun( Query, Accumulator ) ->
+							ProcessQuery = fun( Query ) ->
 												Expr = struct:get_value(<<"expr">>, Query),
 												QueryId = struct:get_value(<<"queryId">>, Query),
 												responseTime:in(SessionId, 'query', QueryId, now() ),
-												Cell = eval:evaluate( expr:exprParse( binary_to_list(Expr) ) ),
-												cell:injectFunc(Cell, 
-													fun() ->
-														SessionPid ! {done, QueryId}
-													end,
-													fun(Val) ->
-														SessionPid ! {data, {QueryId, add, Val}},
-														fun() -> 
-															case Val of
-																{Key,_} -> SessionPid ! {data, {QueryId, remove, Key}};
-																_ -> SessionPid ! {data, {QueryId, remove, Val}}
+												EvalInjectFun = fun() ->
+													Cell = eval:evaluate( expr:exprParse( binary_to_list(Expr) ) ),
+													% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
+													cell:injectFunc(Cell, 
+														fun() ->
+															SessionPid ! {done, QueryId}
+														end,
+														fun(Val) ->
+															SessionPid ! {data, {QueryId, add, Val}},
+															fun() -> 
+																case Val of
+																	{Key,_} -> SessionPid ! {data, {QueryId, remove, Key}};
+																	_ -> SessionPid ! {data, {QueryId, remove, Val}}
+																end
 															end
 														end
-													end
-												),
-												[{struct, [{"type", list_to_binary(type:unparse( type:getType(Cell) ))}]}|Accumulator]
+													)
+												end,
+												session:inject(SessionPid, QueryId, EvalInjectFun)
 											end,
-							try lists:foldl(ProcessQuery, [], Queries) of
-								ResponseTypes -> 
-									spit(Req, lists:reverse(ResponseTypes))
+							try lists:foreach( ProcessQuery, Queries) of
+								ok -> spit(Req, true)
 							catch 
 								ErrorType:Reason -> 
 									spit(Req, {struct, [

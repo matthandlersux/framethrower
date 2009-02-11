@@ -134,7 +134,7 @@ dataListToSVG(List) ->
 	svgWrap( Header ++ OutPut, 110 * length(GroupedList), 400 ).
 
 dataListToSVG1([], _, _) -> [];
-dataListToSVG1([{_, InOut, Action, Id, Seconds}|T], XMark, {Min, Range}) ->
+dataListToSVG1([{_, InOut, Action, _Id, Seconds}|T], XMark, {Min, Range}) ->
 	XOffset = 110 * XMark,
 	Blue = "blue",
 	Red = "red",
@@ -145,8 +145,8 @@ dataListToSVG1([{_, InOut, Action, Id, Seconds}|T], XMark, {Min, Range}) ->
 	Scale = 400,
 	YOffset = 50,
 	if
-		InOut =:= in -> Color = Blue, ColorOffset = 0;
-		true -> Color = Red, ColorOffset = 50
+		InOut =:= in -> Color = Blue;
+		true -> Color = Red
 	end,
 	if
 		Action =:= 'query' -> Position = Pos1;

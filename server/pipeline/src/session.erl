@@ -9,9 +9,20 @@
 -include ("../../mbrella/v1.4/include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
-
--export ([new/0, lookup/1, startManager/0]).
+-define (this(Field), State#?MODULE.Field).
 -define (pipelineBufferTime, 50).
+
+
+-export ([new/0, lookup/1, startManager/0, inject/3]).
+
+%% ====================================================
+%% TYPES
+%% ====================================================
+
+
+%% ====================================================
+%% External API
+%% ====================================================
 
 %% @doc Starts the Session Manager which is responsible for keeping track of sessions
 %% 		and interfacing with the pipeline frontend
@@ -36,6 +47,13 @@ new() ->
 lookup(SessionId) ->
 	sessionManager ! {lookup, self(), SessionId},
 	receive Response -> Response end.
+	
+inject( SessionPid, QueryId, Fun ) ->
+	SessionPid ! {inject, QueryId, Fun}.
+	
+%% ====================================================
+%% Internal API
+%% ====================================================
 	
 manager() ->
 	process_flag(trap_exit, true),
@@ -89,43 +107,114 @@ manager(State) ->
 			manager(State)
 	end.
 
-% perhaps dont do the second part of rcv statement and just have the switch be part of the state:
-%	listening for pipeline msg, get msg, switch to stream mode, process inbox, after 0, switch back
-
+%% 
+%% session is a process that acts as the intermediary between server and client, it keeps track of cleanupFunctions
+%%		and also makes sure that messages from "open" queries don't get sent to the client until the query is done via
+%%		the msgQueue process
+%%
+%% 		session dies after 2 minutes of inactivity 
+%% 
+	
 session() ->
-	session([{0, null}]).
-session([{LastMessageId, _}|_] = MsgQueue) ->
+	session( #session{} ).
+session( State ) ->
 	receive 
-		{pipeline, From, LastMessageId2} ->
-			% io:format("pid=~p~n", [self()]),
-			if
-				LastMessageId > LastMessageId2 ->
-					MsgQueue2 = streamUntil(From, MsgQueue, LastMessageId2),
-					session(MsgQueue2);
-				LastMessageId =:= LastMessageId2 ->
-					receive
-						{data, {QueryId, Action, Data}} ->
-							Struct = [ wellFormedUpdate(Data, QueryId, Action) ],
-							stream(From, Struct, LastMessageId + 1),
-							session([{LastMessageId + 1, Struct}])
-					after 
-						30000 ->
-							session([{LastMessageId, null}])
-					end;
-				true ->
-					io:format("Session error ~n~n", []),
-					session(MsgQueue)
+		{pipeline, From, ClientLastMessageId} ->
+			?this(msgQueue) ! {pipeline, From, ClientLastMessageId},
+			session( State );
+		{data, {QueryId, _Action, _Data} = Msg} ->
+			case dict:is_key(QueryId, ?this(openQueries) ) of
+				true -> 
+					session( State#session{ openQueries = dict:append(QueryId, Msg, ?this(openQueries) ) } );
+				false ->
+					?this(msgQueue) ! { data, Msg },
+					session( State )
 			end;
-		{data, {QueryId, Action, Data}} ->
-			% ?trace(QueryId),
-			Struct = wellFormedUpdate(Data, QueryId, Action),
-			session([{LastMessageId + 1, Struct}|MsgQueue]);
 		{done, QueryId} ->
-			% ?trace(QueryId),
-			session(MsgQueue)
+			try dict:fetch(QueryId, ?this(openQueries) ) of
+				[] ->
+					session( State#session{ openQueries = dict:erase( QueryId, ?this(openQueries) ) } );
+				Msgs -> 
+					% NOTE: dict:append places new elements at the end of the list, but they get reversed by the foldl in msgQueue()
+					% add done message to the list
+					?this(msgQueue) ! {dataList, Msgs},
+					%?this(msgQueue) ! {data, DoneMsg},
+					session( State#session{ openQueries = dict:erase( QueryId, ?this(openQueries) ) } )
+			catch 
+				_:_ -> 
+					io:format("queryId not found in session, perhaps already finished?~n", []),
+					session( State )
+			end;
+		{inject, QueryId, InjectFun } ->
+			session(
+				State#session{
+					openQueries = dict:store(QueryId, [], ?this(openQueries)),
+					cleanup = [InjectFun()|?this(cleanup)] }
+				);
+		{'EXIT', From, Reason} ->
+			?trace({"process crapped out :(", From, Reason}),
+			session( State )
 	after
 		120000 ->
+			case ?this(cleanup) of
+				[] -> true;
+				_ -> 
+					lists:foreach( fun(Fun) -> Fun() end, ?this(cleanup) )
+			end,
 			exit(timed_out)
+	end.
+
+%% 
+%% msgQueue is a process that holds only the messages that are ready to be delivered to the client
+%%		it switches between on and off, on being when there is a client with the /pipeline page open
+%% 
+
+msgQueue() ->
+	spawn_link( fun() -> msgQueueLoop( [{0, null}], off ) end).
+
+msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, off ) ->
+	receive
+		{data, {QueryId, Action, Data}} ->
+			Struct = wellFormedUpdate(Data, QueryId, Action),
+			msgQueueLoop( [{LastMessageId + 1, Struct}|MsgQueue], off);
+		{dataList, Msgs} ->
+			Msgs1 = lists:foldl( 
+						fun({Q, A, D}, [{L,_}|_] = Acc) -> 
+							Struct = wellFormedUpdate(D, Q, A),
+							[{L + 1, Struct}|Acc]
+						end,
+						MsgQueue, Msgs),
+			msgQueueLoop( Msgs1, off);
+		{pipeline, To, ClientLastMessageId} ->
+			msgQueueLoop( MsgQueue, {To, ClientLastMessageId})
+	end;
+msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, {To, ClientLastMessageId}) ->
+	if
+		LastMessageId > ClientLastMessageId ->
+			MsgQueue2 = streamUntil(To, MsgQueue, ClientLastMessageId),
+			msgQueueLoop( MsgQueue2, off );
+		LastMessageId =:= ClientLastMessageId ->
+			receive
+				{data, {QueryId, Action, Data}} ->
+					Struct = wellFormedUpdate(Data, QueryId, Action),
+					stream(To, Struct, LastMessageId + 1),
+					msgQueueLoop( [{LastMessageId + 1, Struct}], off);
+				{dataList, Msgs} ->
+					Updates = lists:foldl( 
+								fun({Q, A, D}, [{L,_}|_] = Acc) -> 
+									Struct = wellFormedUpdate(D, Q, A),
+									[{L + 1, Struct}|Acc]
+								end,
+								MsgQueue, Msgs),
+					MsgQueue1 = streamUntil(To, Updates, 0),
+					msgQueueLoop( MsgQueue1, off )
+			after
+				30000 ->
+					msgQueueLoop( MsgQueue, off)
+			end;
+		true ->
+			?trace("Session error"),
+			msgQueueLoop( MsgQueue, off )
 	end.
 	
 %% ====================================================
@@ -146,6 +235,9 @@ wellFormedUpdate(Data, QueryId, Action) ->
 		end,
 		{struct, [{"queryId",QueryId},{"action", Action}|Data1]}.
 
+%% 
+%% streamUntil:: Pid -> {Number, Struct}
+%% 
 
 streamUntil(To, MsgQueue, Until) ->
 	Predicate = fun({Id, _}) ->
@@ -160,9 +252,18 @@ streamUntil(To, MsgQueue, Until) ->
 	stream(To, ReverseUpdates, LastMessageId),
 	MsgQueueToSend.
 
+%% 
+%% stream:: Pid -> List Struct -> Number -> Tuple
+%% 
+stream(To, Updates, LastMessageId) when is_tuple(Updates) ->
+	stream(To, [Updates], LastMessageId);
 stream(To, Updates, LastMessageId) ->
-	%io:format("message in: ~p ~n~n", [Updates]),
 	To ! {updates, Updates, LastMessageId}.
+
+%% 
+%% sessionId:: SessionName
+%%		creates a new session and returns the name
+%% 
 
 sessionId() ->
 	sessionManager ! {newId, self()},
