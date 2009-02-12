@@ -652,8 +652,8 @@ rangeHelper(OutputCell, SetRangeFunc, StartCell, EndCell, Cell) ->
 
 	UpdateRange = fun(Start, End) ->
 		if 
-			not((Start == undefined) or (End == undefined)) -> SetRangeFunc(Start, End);
-			(Start == undefined) and (End == undefined) -> cell:clearRange();
+			not((Start =:= undefined) orelse (End =:= undefined)) -> SetRangeFunc(Start, End);
+			(Start =:= undefined) andalso (End =:= undefined) -> cell:clearRange();
 			true -> nochange
 		end
 	end,

@@ -329,7 +329,7 @@ handle_cast({injectFunc, OutputCellOrIntOrFunc, Fun, Cell, Id}, State) ->
 handle_cast({removeDependency, InputCell, InputId, Cell}, State) ->
 	NewOnRemoves = lists:filter(fun(OnRemove) ->
 		if 
-			(not (OnRemove#onRemove.cell == undefined)) andalso ((OnRemove#onRemove.cell)#exprCell.name == InputCell#exprCell.name) andalso (OnRemove#onRemove.id == InputId) ->
+			(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#exprCell.name =:= InputCell#exprCell.name) andalso (OnRemove#onRemove.id =:= InputId) ->
 				false;
 			true -> 
 				true
@@ -347,7 +347,7 @@ handle_cast({done, DoneCell, Id, Cell}, State) ->
 		false ->
 			NewOnRemoves = lists:map(fun(OnRemove) ->
 				if 
-					(not (OnRemove#onRemove.cell == undefined)) andalso ((OnRemove#onRemove.cell)#exprCell.name == DoneCell#exprCell.name) andalso (OnRemove#onRemove.id == Id) ->
+					(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#exprCell.name =:= DoneCell#exprCell.name) andalso (OnRemove#onRemove.id =:= Id) ->
 						OnRemove#onRemove{done=true};
 					true -> 
 						OnRemove
