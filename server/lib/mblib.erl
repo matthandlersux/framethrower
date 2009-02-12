@@ -74,6 +74,24 @@ replaceElement( Expr, ElementList, ApplyFun) ->
 %% Utilities
 %% ====================================================
 
+%% 
+%% pump:: List a -> (a -> b) -> Tuple b
+%%
+%% 		ex: 
+% Username = proplists:get_value("username", Data),
+% Password = proplists:get_value("password", Data),
+% 
+% transforms to
+% 
+% {Username, Password} = pump(["username", "password"], fun(X) -> proplists:get_value(X, Data) end),
+%% 
+pump(List, Fun) when is_function(Fun, 1) ->
+	list_to_tuple( pumpList(List, Fun) ).
+
+pumpList([], _) -> [];
+pumpList([H|T], Fun) ->
+	[Fun(H)|pumpList(T, Fun)].
+
 %% MaybeStore for exprVars from type.erl
 %% 
 %% maybeStore:: Expr -> FreshVariable -> Env -> Env
@@ -202,28 +220,33 @@ bootJsonScript() ->
 	spawn( fun() -> bootJsonScriptLoop() end ).
 	
 bootJsonScriptLoop() ->
-	case inets:start() of
-		ok ->
-			receive
-			after 2000 ->
-					case http:request(post, {"http://localhost:8000/newSession", [], "application/x-www-form-urlencoded", "x=nothing"}, [], []) of
-						{ok, {_, _, "{" ++ SessionId}} ->
-							{ok, JSONBinary} = file:read_file("lib/bootJSON"),
-						    {ok, _} = http:request(
-								post,
-								{
-									"http://localhost:8000/action",
-									[],
-									"application/x-www-form-urlencoded",
-									"json={\"actions\":" ++ binary_to_list(JSONBinary) ++ ", " ++ SessionId
-								},
-								[],
-								[]
-							);
-						_ -> erlang:error(couldnt_load_boot_json)
-					end
-			end;
-		_ -> erlang:error(couldnt_load_boot_json)
+	SessionId = session:new(),
+	{ok, JSONBinary} = file:read_file("lib/bootJSON"),
+	try pipeline_web:processActionList( mochijson2:decode( binary_to_list( JSONBinary ) ) )
+	catch E:R -> io:format("~p", [{error_running_bootJSON, E,R}])
 	end,
-	inets:stop(),
+	% case inets:start() of
+	% 	ok ->
+	% 		receive
+	% 		after 2000 ->
+	% 				case http:request("http://localhost:8000/newSession") of
+	% 					{ok, {_, _, "{" ++ SessionId}} ->
+	% 						{ok, JSONBinary} = file:read_file("lib/bootJSON"),
+	% 					    {ok, _} = http:request(
+	% 							post,
+	% 							{
+	% 								"http://localhost:8000/action",
+	% 								[],
+	% 								"application/x-www-form-urlencoded",
+	% 								"json={\"actions\":" ++ binary_to_list(JSONBinary) ++ ", " ++ SessionId
+	% 							},
+	% 							[],
+	% 							[]
+	% 						);
+	% 					_ -> erlang:error(couldnt_load_boot_json)
+	% 				end
+	% 		end;
+	% 	_ -> erlang:error(couldnt_start_inets)
+	% end,
+	% inets:stop(),
 	bootedJSONScript.

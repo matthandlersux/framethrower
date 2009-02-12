@@ -136,9 +136,7 @@ session( State ) ->
 					session( State#session{ openQueries = dict:erase( QueryId, ?this(openQueries) ) } );
 				Msgs -> 
 					% NOTE: dict:append places new elements at the end of the list, but they get reversed by the foldl in msgQueue()
-					% add done message to the list
 					?this(msgQueue) ! {dataList, Msgs ++ [{QueryId, done}]},
-					%?this(msgQueue) ! {data, DoneMsg},
 					session( State#session{ openQueries = dict:erase( QueryId, ?this(openQueries) ) } )
 			catch 
 				_:_ -> 

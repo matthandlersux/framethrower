@@ -27,6 +27,7 @@ echo " extra flags: "
 echo ""
 echo " -s|--serialize                 serialized server state file location (default: none)"
 echo "                                    ex: \"-s mbrella/v1.4/data/serialize.ets\" "
+echo " -r|--responsetime              turn on responseTime server for debugging server-client message passing"
 echo " -h|--help                      print this message"
 echo " -b|--bootJson                  run bootJSON script against the server upon startup (default: off)"
 echo " --noconfig                     do not use a config file for sasl"
@@ -52,7 +53,9 @@ while [ $# -gt 0 ]
 		--noconfig)
 			conf="";;
 		-b|--bootJson)
-			bootscript='mblib:bootJsonScript( ),';;
+			bootscript=',mblib:bootJsonScript( )';;
+		-r|--responsetime)
+			responsetime=',responseTime:start( )';;
 		-h|--help)
 			help;;
 		*)
@@ -60,7 +63,7 @@ while [ $# -gt 0 ]
 	esac
 done
 
-eval='-eval "'${serialize}${bootscript}'session:startManager(),memoize:start(),env:start(),objects:start()."'
+eval='-eval "'${serialize}'session:startManager(),memoize:start(),env:start(),objects:start()'${responsetime}${bootscript}'."'
 # eval='-eval "memoize:start()."'
 commonflags="$conf $sname $adddirs $boot $startapp $eval"
 
