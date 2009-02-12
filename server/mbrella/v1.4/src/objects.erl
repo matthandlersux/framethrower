@@ -88,6 +88,25 @@ classesToMake() ->
 			memoize = ["string"]
 		},
 		#classToMake{
+			name = "X.picture",
+			inherit = "Object",
+			prop = [
+				{"url", "String"},
+				{"width", "Number"},
+				{"height", "Number"}
+			]
+		},
+		#classToMake{
+			name = "X.picture.crop",
+			inherit = "Object",
+			prop = [
+				{"x", "Number"},
+				{"y", "Number"},
+				{"width", "Number"},
+				{"height", "Number"}
+			]
+		},		
+		#classToMake{
 			name = "X.xml",
 			inherit = "Object",
 			prop = [
