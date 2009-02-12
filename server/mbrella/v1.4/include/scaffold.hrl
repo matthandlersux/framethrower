@@ -114,3 +114,14 @@
 	ets = ets:new(serializeTable, []),
 	file
 }).
+
+%% ====================================================
+%% session records
+%% ====================================================
+
+-record (session, {
+	msgQueue = session:msgQueue(),
+	openQueries = dict:new(),
+	cleanup = [],
+	lastMessageId = 0}
+).
