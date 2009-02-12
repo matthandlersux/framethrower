@@ -115,6 +115,9 @@ makeRootObjects() ->
 	objects:createWithName("Object", dict:new(), "shared.name"),
 	objects:createWithName("Object", dict:new(), "shared.relationTemplate"),
 
+	objects:createWithName("Object", dict:new(), "shared.thumbnail"),
+	objects:createWithName("Object", dict:new(), "shared.picture.crop"),
+
 	objects:createWithName("Object", dict:new(), "shared.type.type"),
 	objects:createWithName("Object", dict:new(), "shared.type.situation"),
 	objects:createWithName("Object", dict:new(), "shared.type.entity"),
