@@ -137,7 +137,7 @@ session( State ) ->
 				Msgs -> 
 					% NOTE: dict:append places new elements at the end of the list, but they get reversed by the foldl in msgQueue()
 					% add done message to the list
-					?this(msgQueue) ! {dataList, Msgs},
+					?this(msgQueue) ! {dataList, Msgs ++ [{QueryId, done}]},
 					%?this(msgQueue) ! {data, DoneMsg},
 					session( State#session{ openQueries = dict:erase( QueryId, ?this(openQueries) ) } )
 			catch 
@@ -181,6 +181,9 @@ msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, off ) ->
 			Msgs1 = lists:foldl( 
 						fun({Q, A, D}, [{L,_}|_] = Acc) -> 
 							Struct = wellFormedUpdate(D, Q, A),
+							[{L + 1, Struct}|Acc];
+						({Q, A}, [{L,_}|_] = Acc) -> 
+							Struct = wellFormedUpdate(Q, A),
 							[{L + 1, Struct}|Acc]
 						end,
 						MsgQueue, Msgs),
@@ -203,6 +206,9 @@ msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, {To, ClientLastMessageId}) ->
 					Updates = lists:foldl( 
 								fun({Q, A, D}, [{L,_}|_] = Acc) -> 
 									Struct = wellFormedUpdate(D, Q, A),
+									[{L + 1, Struct}|Acc];
+								({Q, A}, [{L,_}|_] = Acc) -> 
+									Struct = wellFormedUpdate(Q, A),
 									[{L + 1, Struct}|Acc]
 								end,
 								MsgQueue, Msgs),
@@ -228,12 +234,15 @@ msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, {To, ClientLastMessageId}) ->
 %% wellFormedUpdate:: {ExprElement, ExprElement} | ExprElement -> Number -> String -> Struct
 %% 
 
+wellFormedUpdate(QueryId, Action) ->
+	{struct, [{"queryId",QueryId},{"action", Action}]}.
+	
 wellFormedUpdate(Data, QueryId, Action) ->
-		case Data of
-			{Key, Value} -> Data1 = [{"key", mblib:exprElementToJson(Key)},{"value", mblib:exprElementToJson(Value)}];
-			_ -> Data1 = [{"key", mblib:exprElementToJson(Data)}]
-		end,
-		{struct, [{"queryId",QueryId},{"action", Action}|Data1]}.
+	case Data of
+		{Key, Value} -> Data1 = [{"key", mblib:exprElementToJson(Key)},{"value", mblib:exprElementToJson(Value)}];
+		_ -> Data1 = [{"key", mblib:exprElementToJson(Data)}]
+	end,
+	{struct, [{"queryId",QueryId},{"action", Action}|Data1]}.
 
 %% 
 %% streamUntil:: Pid -> {Number, Struct}
