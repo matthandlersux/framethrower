@@ -132,8 +132,6 @@ session( State ) ->
 			end;
 		{done, QueryId} ->
 			try dict:fetch(QueryId, ?this(openQueries) ) of
-				[] ->
-					session( State#session{ openQueries = dict:erase( QueryId, ?this(openQueries) ) } );
 				Msgs -> 
 					% NOTE: dict:append places new elements at the end of the list, but they get reversed by the foldl in msgQueue()
 					?this(msgQueue) ! {dataList, Msgs ++ [{QueryId, done}]},
