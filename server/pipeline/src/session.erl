@@ -188,6 +188,7 @@ msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, off ) ->
 			msgQueueLoop( MsgQueue, {To, ClientLastMessageId})
 	end;
 msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, {To, ClientLastMessageId}) ->
+	% ?trace({"serverId", LastMessageId, "clientLastHeardId", ClientLastMessageId}),
 	if
 		LastMessageId > ClientLastMessageId ->
 			MsgQueue2 = streamUntil(To, MsgQueue, ClientLastMessageId),
@@ -208,7 +209,7 @@ msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, {To, ClientLastMessageId}) ->
 									[{L + 1, Struct}|Acc]
 								end,
 								MsgQueue, Msgs),
-					MsgQueue1 = streamUntil(To, Updates, 0),
+					MsgQueue1 = streamUntil(To, Updates, ClientLastMessageId),
 					msgQueueLoop( MsgQueue1, off )
 			after
 				30000 ->
@@ -255,6 +256,8 @@ streamUntil(To, MsgQueue, Until) ->
 	{_, Updates} = lists:unzip(MsgQueueToSend),
 	ReverseUpdates = lists:reverse(Updates),
 	stream(To, ReverseUpdates, LastMessageId),
+	% ?trace({MsgQueue, Until}),
+	% ?trace(MsgQueueToSend),
 	MsgQueueToSend.
 
 %% 
