@@ -275,7 +275,7 @@ var session = (function () {
 				} else {
 					lastMessageId = o.lastMessageId;
 					forEach(o.updates, function (update) {
-						console.log("doing update", update, o.updates);
+						//console.log("doing update", update, o.updates);
 						var cell = cells[update.queryId];
 						
 						if (cell !== undefined) { // TODO do i need this?
