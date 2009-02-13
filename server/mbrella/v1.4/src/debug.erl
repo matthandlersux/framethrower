@@ -6,9 +6,9 @@
 
 -compile(export_all).
 
--record(cellState, {funcs, dots, toKey, onRemoves=[], funcColor=0, intercept, done=true, doneResponse}).
+-record(cellState, {funcs, dots, toKey, onRemoves=[], funcColor=0, intercept, done=false}).
 -record(onRemove, {function, cell, id, done}).
--record(func, {function, outputCellOrInt}).
+-record(func, {function, outputCellOrIntOrFunc}).
 -record(interceptState, {function, state, ownerCell}).
 
 toList(X) when is_list(X) -> X;
@@ -63,7 +63,7 @@ getDebugHTML(Name, BaseURL) ->
 	GetDependersHTML = fun (CellState) ->
 		Funcs = CellState#cellState.funcs,
 		dict:fold(fun(Id, Func, Acc) ->
-			Acc ++ "FuncId: " ++ toList(Id) ++ ", OutputCellOrInt: " ++ GetElemHtml(Func#func.outputCellOrInt) ++ "<br />"
+			Acc ++ "FuncId: " ++ toList(Id) ++ ", OutputCellOrInt: " ++ GetElemHtml(Func#func.outputCellOrIntOrFunc) ++ "<br />"
 		end, "", Funcs)
 	end,
 
