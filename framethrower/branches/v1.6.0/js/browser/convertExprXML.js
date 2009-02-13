@@ -9,6 +9,7 @@ function exprToXML(expr, type) {
 			// Note: the !expr.params is for excluding parameter-less templates which otherwise look like StartCap's (not Fun's)
 			
 			if (expr.kind === "remoteObject") {
+				//TODO: can this be removed?
 				expr = evaluate(expr);
 				setTimeout(session.flush,0);
 			}

@@ -7,6 +7,7 @@ function makeFuture(value) {
 	var type = getType(value);
 	var cell = makeCC(makeTypeApply(makeTypeName("Future"), type));
 	cell.control.add(value);
+	cell.setDone();
 	return cell;
 }
 

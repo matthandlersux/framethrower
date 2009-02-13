@@ -1,12 +1,18 @@
 function makeBaseCell (toKey) {
-	var cell = {kind: "startCap", remote: 2};
+	var cell = {kind: "startCap", remote: 2, name: localIds()};
 	var funcs = makeObjectHash();
-	var onRemoves = [];
+	var onRemoves = makeObjectHash();
 	var funcColor = 0; //counter for coloring injected functions
+	cell.isDone = false;
+
+	cell.onRemoves = onRemoves;
+
+	//temp debug functions
+	cell.getFuncs = function(){return funcs;};
 
 	var onAdd = function (dot) {
 		funcs.forEach(function (func, id) {
-			addLineResponse(dot, func, id);
+			addLineResponse(dot, func.func, id);
 		});
 	};
 
@@ -38,35 +44,140 @@ function makeBaseCell (toKey) {
 		dots.makeSorted();
 	};
 	
-	//if cell is of type Unit a or Set a, f is a function that takes one argument key::a
-	//if cell is of type Map a b, f is a function that takes one javascript object: {key::a, val::b}
-	//f(k) or f{key=k,val=v}) returns a callback function that will be called when k is removed from the Unit/Set/Map
-	cell.injectFunc = function (f) {
+	
+	
+	cell.injectFuncOnRemove = function (depender) {
 		var id = funcColor++;
-		funcs.set(id, f);
+		var onRemove = {
+			func:function () {
+				cell.removeFunc(id);
+			},
+			cell:cell,
+			id:id,
+			done:false
+		};
+		if (depender.addOnRemove) {
+			depender.addOnRemove(onRemove);
+		}
+		return onRemove;
+	};
+	
+	cell.injectFuncHelper = function (depender, f, id) {
+		funcs.set(id, {func:f, depender:depender});		
 		dots.forRange(function (dot, key) {
 			if(dot.num > 0) {
 				addLineResponse(dot, f, id);
 			}
 		});
-		
-		return function () {
-			cell.removeFunc(id);
-		};
+		if (cell.isDone) {
+			if (depender.done) {
+				depender.done(cell, id);
+			} else {
+				//depender is a function
+				depender();
+			}
+		}
 	};
 	
+	//if cell is of type Unit a or Set a, f is a function that takes one argument key::a
+	//if cell is of type Map a b, f is a function that takes one javascript object: {key::a, val::b}
+	//f(k) or f{key=k,val=v}) returns a callback function that will be called when k is removed from the Unit/Set/Map
+	cell.injectFunc = function (depender, f) {
+		var onRemove = cell.injectFuncOnRemove(depender);
+		var id = onRemove.id;
+		cell.injectFuncHelper(depender, f, id);
+		return onRemove;
+	};
+	
+	injectFuncs = function (depender, cellFuncs) {
+		forEach(cellFuncs, function (cellFunc) {
+			var onRemove = cellFunc.cell.injectFuncOnRemove(depender);
+			cellFunc.id = onRemove.id;
+		});
+		forEach(cellFuncs, function (cellFuncId) {
+			cellFuncId.cell.injectFuncHelper(depender, cellFuncId.f, cellFuncId.id);
+		});
+	};
+		
+	
 	cell.addOnRemove = function (onRemove) {
-		onRemoves.push(onRemove);
+		if (onRemove.cell) {
+			onRemoves.set(onRemove.cell.name + "," + onRemove.id, onRemove);
+		} else {
+			onRemoves.set(onRemove, onRemove);
+		}
+		if (onRemove.done == false) {
+			cell.isDone = false;
+		}
 	};
 	
 	cell.removeFunc = function (id) {
+		var depender = funcs.get(id).depender;
+		if (depender.removeDependency) {
+			depender.removeDependency(cell, id);
+		}
 		funcs.remove(id);
 		dots.forRange(function (dot, key) {
 			removeLineResponse(dot, id);
 		});
 		if (funcs.isEmpty() && !cell.persist) {
-			forEach(onRemoves, function(onRemove) {
-				onRemove();
+			onRemoves.forEach(function(onRemove) {
+				if (onRemove.func) {
+					onRemove.func();
+				} else {
+					onRemove();
+				}
+			});
+		}
+	};
+
+	function checkDone() {
+		var allDone = true;
+		onRemoves.forEach(function(onRemove, key) {
+			if (onRemove.done !== undefined) {
+				allDone = allDone && onRemove.done;
+			}
+		});
+		if (allDone) {
+			cell.isDone = true;
+			funcs.forEach(function(func, funcId) {
+				if (func.depender) {
+					if (func.depender.done) {
+						func.depender.done(cell, funcId);
+					} else {
+						func.depender();
+					}
+				}
+			});
+		}
+	};
+
+	cell.removeDependency = function (inputCell, inputId) {
+		onRemoves.remove(inputCell.name + "," + inputId);
+		checkDone();
+	};
+
+	cell.done = function (doneCell, id) {
+		if (!cell.isDone) {
+			var onRemove = onRemoves.get(doneCell.name + "," + id);
+			if (onRemove) {
+				onRemove.done = true;
+			}
+			checkDone();
+		}
+	};
+
+	cell.setDone = function () {
+		if (!cell.isDone) {
+			cell.isDone = true;
+			funcs.forEach(function(func, funcId) {
+				if (func.depender) {
+					if (func.depender.done) {
+						func.depender.done(cell, funcId);
+					} else {
+						func.depender();
+					}
+				}
 			});
 		}
 	};
@@ -105,7 +216,11 @@ function makeBaseCell (toKey) {
 		var value = dot.val;
 		var onRemove = func(value);
 		if (onRemove !== undefined) {
-			dots.get(toKey(value)).lines.set(id, onRemove);
+			if (onRemove.func) {
+				dots.get(toKey(value)).lines.set(id, onRemove.func);
+			} else {
+				dots.get(toKey(value)).lines.set(id, onRemove);
+			}
 		}
 	};
 	

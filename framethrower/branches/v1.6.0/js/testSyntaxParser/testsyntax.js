@@ -98,7 +98,11 @@ function testFile(filename) {
 
 		testWorld.outMessages[endCapName] = [];
 
-		scFromExp.injectFunc(function(keyVal) {
+		var doneResponse = function() {
+			debug.log("DONE Message from: " + endCapName);
+		};
+
+		scFromExp.injectFunc(doneResponse, function(keyVal) {
 			if(keyVal.key != undefined && keyVal.val != undefined) {
 				testWorld.outMessages[endCapName].push({action:'set', key:keyVal.key, value:keyVal.val});
 			} else {
@@ -207,6 +211,8 @@ function testFile(filename) {
 
 		forEach(testNodes, function (testNode) {
 			var testWorld = {startCaps:{}, endCaps:{}, outMessages:[], testOutput:"", testEnv:makeDynamicEnv(base.env)};
+			var testName = testNode.getAttribute("name");
+			console.log("Test", testName, "starting.");
 			forEach(children(testNode), function (actionNode) {
 				var action = actionNode.nodeName;
 				if (action == 'startcap') {
@@ -221,9 +227,11 @@ function testFile(filename) {
 					testWorld = parseRemoveCap(actionNode, testWorld);
 				}
 			});
-			var testName = testNode.getAttribute("name");
 			console.log("Test", testName, "complete. Results: ");
 			console.log(testWorld.testOutput);
+			forEach(testWorld.startCaps, function(startCap) {
+				startCap.setDone();
+			});
 		});
 	}
 

@@ -205,8 +205,10 @@ var objects = (function (classesToMake) {
 			memoize: memoize,
 			memoTable: {},
 			makeMemoEntry: function () {
+				var broadcaster = makeCC(parseType("Unit "+name));
+				broadcaster.setDone();
 				return {
-					broadcaster: makeCC(parseType("Unit "+name))
+					broadcaster: broadcaster
 				};
 			},
 			castUp: cast,
@@ -261,6 +263,7 @@ var objects = (function (classesToMake) {
 			if (inherits(classes[obj.origType.value], classes[targetClassName])) {
 				outputCell.addLine(cast(obj));
 			}
+			outputCell.setDone();
 			return outputCell;
 		};
 	}
@@ -404,6 +407,7 @@ var objects = (function (classesToMake) {
 			if (isReactive(propType) && instanceValue === undefined) {
 				// fill in with an empty controlled cell
 				obj.prop[propName] = makeCC(propType);
+				obj.prop[propName].setDone();
 			} else {
 				if (instanceValue === undefined) {
 					debug.error("Error making object of type `"+objClass.name+"`. Property `"+propName+"` needs to be defined.");

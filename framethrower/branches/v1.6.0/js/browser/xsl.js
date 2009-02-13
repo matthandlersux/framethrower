@@ -182,9 +182,10 @@ function compileTemplate(templateNode, url) {
 				scope[template.name] = template.compiled(newEnv);
 			});
 		
-		
+			var done = false;
 		
 			var cell = makeCell();
+			cell.setDone();
 			cell.type = unitJS;
 
 			// put all dependent bindings (that is, the varNames that the xsl depends on) from the newEnv in a hash
@@ -195,24 +196,27 @@ function compileTemplate(templateNode, url) {
 
 			var state = false;
 			function update() {
-				if (state) {
-					cell.removeLine(state);
-				}
+				if (done) {
+					if (state) {
+						cell.removeLine(state);
+					}
 
-				var pxml = {};
-				var ids = {};
-				forEach(p, function (paramExpr, paramName) {
-					var convert = exprToXML(paramExpr);
+					var pxml = {};
+					var ids = {};
+					forEach(p, function (paramExpr, paramName) {
+						var convert = exprToXML(paramExpr);
 					
-					pxml[paramName] = convert.xml;
-					mergeInto(convert.ids, ids);
-				});
+						pxml[paramName] = convert.xml;
+						mergeInto(convert.ids, ids);
+					});
 
-				var resultXML = runXSL(compiledXSL, pxml);
+					var resultXML = runXSL(compiledXSL, pxml);
 				
-				state = {xml: resultXML, ids: ids};
-				cell.addLine(state);
-				delete dirtyThunks[stringify(cell)];
+					state = {xml: resultXML, ids: ids};
+					cell.addLine(state);
+					delete dirtyThunks[stringify(cell)];
+				}
+				return done;
 			}
 
 
@@ -230,9 +234,12 @@ function compileTemplate(templateNode, url) {
 				
 				// returns a function to stop listening to the cell
 				c = evaluate(c);
+				
+				setTimeout(session.flush,0);
+				
 				var childRemovers = [];
 				
-				var removeFunc = c.injectFunc(function (x) {
+				var removeFunc = c.injectFunc(cell, function (x) {
 					makeDirty();
 					if (x && x.key !== undefined && x.val !== undefined) {
 						// we have a Map entry
@@ -274,27 +281,30 @@ function compileTemplate(templateNode, url) {
 					forEach(childRemovers, function (childRemover) {
 						if (childRemover) childRemover();
 					});
-					removeFunc();
+					removeFunc.func();
 				};
 			}
 
 
 			forEach(p, function (expr, name) {
 				var result = evaluate(expr);
+				
 				p[name] = result;
 
 				// if the result is a startCap (dynamic), inject makeDirty function
 				var t = getType(result);
 				if (isReactive(t) && !expr.params) {
-
 					var removeFunc = listenToCell(result);
 					cell.addOnRemove(removeFunc);
-					
 				}
 			});
 
+			cell.injectFunc(
+				function() {
+					done = true;
+					update();
+				}, function(){});
 			update();
-
 			return cell;
 		}, params.length);
 		
@@ -372,8 +382,9 @@ var dirtyThunks = {}; // a hash of XMLTemplate application update functions
 function refreshScreen() {
 	var hadUpdate = false;
 	forEach(dirtyThunks, function (f) {
-		f();
-		hadUpdate = true;
+		if(f()) {
+			hadUpdate = true;
+		}
 	});
 	// run it again here to account for <f:on event="load"> actions triggering
 	if (hadUpdate) {

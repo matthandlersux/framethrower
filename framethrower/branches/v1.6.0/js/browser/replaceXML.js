@@ -40,7 +40,7 @@ function replaceXML(node, replacer, pass, firstRun) {
 			replaceChildren(node, replacer, pass);
 			return node;			
 		} else {
-			return bruteReplace(node, replacer, pass);
+			return bruteReplace(node, replacer, pass, firstRun);
 		}
 	}
 }
@@ -48,8 +48,10 @@ function replaceXML(node, replacer, pass, firstRun) {
 
 
 
-function bruteReplace(node, replacer, pass) {
-	unloadXML(node);
+function bruteReplace(node, replacer, pass, firstRun) {
+	if (!firstRun) {
+		unloadXML(node);
+	}
 	
 	// clone the replacer node
 	replacer = cloneNode(replacer);

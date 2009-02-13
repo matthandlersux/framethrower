@@ -96,9 +96,9 @@ function memoizeCell(exprString, cell) {
 
 
 
-function evaluateAndInject(expr, func) {
+function evaluateAndInject(expr, depender, func) {
 	var e = evaluate(expr);
-	return e.injectFunc(func);
+	return e.injectFunc(depender, func);
 }
 
 

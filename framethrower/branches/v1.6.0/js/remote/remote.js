@@ -275,7 +275,7 @@ var session = (function () {
 				} else {
 					lastMessageId = o.lastMessageId;
 					forEach(o.updates, function (update) {
-						//console.log("doing update", update, o.updates);
+						console.log("doing update", update, o.updates);
 						var cell = cells[update.queryId];
 						
 						if (cell !== undefined) { // TODO do i need this?
@@ -289,9 +289,13 @@ var session = (function () {
 								keyType = cellType.right;
 							}
 
-							var key = parseServerResponse(update.key, keyType);
-							var value = parseServerResponse(update.value, valueType);
-							cell.control[update.action](key, value);
+							if (update.action == "done") {
+								cell.setDone();
+							} else {
+								var key = parseServerResponse(update.key, keyType);
+								var value = parseServerResponse(update.value, valueType);
+								cell.control[update.action](key, value);
+							}
 						}
 
 					});

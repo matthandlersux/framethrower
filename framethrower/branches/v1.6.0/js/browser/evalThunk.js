@@ -26,18 +26,27 @@ function evalThunk(thunkNode) {
 		
 		var custom = thunkNode.custom;
 		
-		var removeFunc = evaluateAndInject(e, function (xmlids) {
+		//TODO:make doneResponse do something interesting
+		var todo = [];
+		var ecell = evaluate(e);
+		
+		var doneResponse = function(){
+			//thunkNode.custom.done = true;
+		};
+
+		var removeFunc = ecell.injectFunc(doneResponse, function (xmlids) {
 			thunkNode = replaceXML(thunkNode, xmlids.xml, {baseUrl: xt.url, ids: xmlids.ids}, true);
-			
+
 			thunkNode.custom = custom;
-			
+
 			var top = xpath("ancestor-or-self::f:result[last()]", thunkNode)[0]; // TODO: might want to revisit this
-			
+
 			if (top.custom && top.custom.onXMLUpdate) {
 				top.custom.onXMLUpdate();
 			}
 		});
-		
+		removeFunc = removeFunc.func;
+
 		setTimeout(session.flush, 0);
 		
 		if (thunkNode.custom === null) {
