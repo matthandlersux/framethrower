@@ -311,7 +311,7 @@ function triggerAction(thunkEssence) {
 		}
 	}
 	
-	thunk.custom = {thunkEssence: thunkEssence, onXMLUpdate: onXMLUpdate};
+	thunk.custom = {thunkEssence: thunkEssence, onXMLUpdate: onXMLUpdate, isAction: true};
 		
 	evalThunk(thunk);
 }

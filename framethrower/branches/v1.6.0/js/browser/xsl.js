@@ -196,27 +196,24 @@ function compileTemplate(templateNode, url) {
 
 			var state = false;
 			function update() {
-				if (done) {
-					if (state) {
-						cell.removeLine(state);
-					}
-
-					var pxml = {};
-					var ids = {};
-					forEach(p, function (paramExpr, paramName) {
-						var convert = exprToXML(paramExpr);
-					
-						pxml[paramName] = convert.xml;
-						mergeInto(convert.ids, ids);
-					});
-
-					var resultXML = runXSL(compiledXSL, pxml);
-				
-					state = {xml: resultXML, ids: ids};
-					cell.addLine(state);
-					delete dirtyThunks[stringify(cell)];
+				if (state) {
+					cell.removeLine(state);
 				}
-				return done;
+
+				var pxml = {};
+				var ids = {};
+				forEach(p, function (paramExpr, paramName) {
+					var convert = exprToXML(paramExpr);
+				
+					pxml[paramName] = convert.xml;
+					mergeInto(convert.ids, ids);
+				});
+
+				var resultXML = runXSL(compiledXSL, pxml);
+			
+				state = {xml: resultXML, ids: ids};
+				cell.addLine(state);
+				delete dirtyThunks[stringify(cell)];
 			}
 
 
@@ -302,7 +299,6 @@ function compileTemplate(templateNode, url) {
 			cell.injectFunc(
 				function() {
 					done = true;
-					update();
 				}, function(){});
 			update();
 			return cell;
@@ -382,9 +378,8 @@ var dirtyThunks = {}; // a hash of XMLTemplate application update functions
 function refreshScreen() {
 	var hadUpdate = false;
 	forEach(dirtyThunks, function (f) {
-		if(f()) {
-			hadUpdate = true;
-		}
+		hadUpdate = true;
+		f();
 	});
 	// run it again here to account for <f:on event="load"> actions triggering
 	if (hadUpdate) {

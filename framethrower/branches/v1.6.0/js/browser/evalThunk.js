@@ -30,7 +30,11 @@ function evalThunk(thunkNode) {
 		var todo = [];
 		var ecell = evaluate(e);
 		
-		var doneResponse = function(){
+		var doneResponse = function() {
+			var top = xpath("ancestor-or-self::f:result[last()]", thunkNode)[0]; // TODO: might want to revisit this
+			if (top.custom && top.custom.isAction && top.custom.onXMLUpdate) {
+				top.custom.onXMLUpdate();
+			}
 			//thunkNode.custom.done = true;
 		};
 
@@ -41,7 +45,7 @@ function evalThunk(thunkNode) {
 
 			var top = xpath("ancestor-or-self::f:result[last()]", thunkNode)[0]; // TODO: might want to revisit this
 
-			if (top.custom && top.custom.onXMLUpdate) {
+			if (top.custom && top.custom.onXMLUpdate && !top.custom.isAction) {
 				top.custom.onXMLUpdate();
 			}
 		});

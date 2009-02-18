@@ -9,17 +9,14 @@
 	
 	<f:derive name="name" d="getName focus" />
 	
-	<f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" />
-
 	<f:derive name="editName" d="UI.propertiesState:editName propertiesState" />
 	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
 	
 	<f:derive name="focustypes" d="getOntProp shared.isA focus" />
-	<f:derive name="typeInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.isA focus))" />
 	
 	<!-- These are a total hack -->
-	<xsl:if test="$ontInfons" />
-	<xsl:if test="$typeInfons" />
+	<!-- <xsl:if test="$ontInfons" /> -->
+	<!-- <xsl:if test="$typeInfons" /> -->
 	
 	<html:table class="properties">
 		<html:tr>
@@ -73,8 +70,7 @@
 	
 	<f:action name="changeName">
 		<f:param name="newName" type="String" />
-		
-		<!-- <f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" /> -->
+		<f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" />
 		
 		<!-- remove old name(s) -->
 		<xsl:for-each select="$ontInfons/*">
@@ -94,6 +90,7 @@
 
 	<f:template name="typePopup">
 		<f:derive name="objects" d="getObjectsOfType shared.type.type" />
+		<f:derive name="typeInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.isA focus))" />
 
 		<xsl:for-each select="$objects/*">
 			<html:div class="entry">
