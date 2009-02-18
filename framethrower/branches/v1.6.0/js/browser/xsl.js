@@ -298,7 +298,7 @@ function compileTemplate(templateNode, url) {
 
 			cell.injectFunc(
 				function() {
-					done = true;
+					update();
 				}, function(){});
 			update();
 			return cell;

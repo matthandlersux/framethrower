@@ -31,11 +31,11 @@ function evalThunk(thunkNode) {
 		var ecell = evaluate(e);
 		
 		var doneResponse = function() {
-			var top = xpath("ancestor-or-self::f:result[last()]", thunkNode)[0]; // TODO: might want to revisit this
-			if (top.custom && top.custom.isAction && top.custom.onXMLUpdate) {
-				top.custom.onXMLUpdate();
+			//this depends on update in xsl.js being called before this function, which relies on a cell performing its done response functions in the order they were injected
+			//TODO: make this less of a hack
+			if (thunkNode.custom && thunkNode.custom.isAction && thunkNode.custom.onXMLUpdate) {
+				thunkNode.custom.onXMLUpdate();
 			}
-			//thunkNode.custom.done = true;
 		};
 
 		var removeFunc = ecell.injectFunc(doneResponse, function (xmlids) {
