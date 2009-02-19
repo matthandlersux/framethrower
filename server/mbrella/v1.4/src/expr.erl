@@ -240,3 +240,58 @@ is_string(String) ->
 	
 normalize( Expr ) -> nyi.
 
+
+%% 
+%% this is in semi working order... however the parenthesis may need to be adjusted still
+%% unparse:: Type -> {String, [Variables]}
+%% 
+unparse(Expr) ->
+	{String, _} = unparse(Expr, []),
+	String.
+
+unparse([], _) -> ok;
+unparse(#cons{type = apply, left = L, right = R}, Variables) ->
+	{LHS, Vars1} = unparse(L, Variables),
+	{RHS, Vars2} = unparse(R, Vars1),
+	case L of 
+		#cons{type = lambda} ->
+			LHS1 = "(" ++ LHS ++ ")";
+		_ ->
+			LHS1 = LHS
+	end,
+	case R of 
+		#cons{type = lambda} ->
+			{LHS1 ++ " (" ++ RHS ++ ")", Vars2};
+		#cons{type = apply} ->
+			{LHS1 ++ " (" ++ RHS ++ ")", Vars2};
+		#exprFun{name = undefined} ->
+			{LHS1 ++ " (" ++ RHS ++ ")", Vars2};
+		_ ->
+			{LHS1 ++ " " ++ RHS, Vars2}
+	end;
+unparse(#cons{type = lambda, left = L, right = R}, Variables) ->
+	{LHS, Vars1} = unparse(L, Variables),
+	{RHS, Vars2} = unparse(R, Vars1),
+	case L of 
+		#cons{type = lambda} ->
+			{"(" ++ LHS ++ ") -> " ++ RHS, Vars2};
+		_ ->
+			{LHS ++ " -> " ++ RHS, Vars2}
+	end;
+unparse(#exprFun{name = undefined, bottom = Bottom}, Variables) ->
+	unparse(Bottom, Variables);	
+unparse(#exprFun{name = Name}, Variables) ->
+	{Name, Variables};
+unparse(#object{name = Name}, Variables) ->
+	{Name, Variables};
+unparse(#exprVar{value = Value}, Variables) ->
+	{Value, Variables};
+unparse(String, Variables) when is_list(String) ->
+	{String, Variables};
+unparse(Bool, Variables) when is_boolean(Bool) ->
+	{atom_to_list(Bool), Variables};
+unparse(null, Variables) ->
+	{atom_to_list(null), Variables};
+unparse(Number, Variables) ->
+	{integer_to_list(Number), Variables}.
+
