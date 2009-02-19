@@ -12,6 +12,7 @@
 -record(interceptState, {function, state, ownerCell}).
 
 toList(X) when is_list(X) -> X;
+toList(X) when is_function(X) -> "function";
 toList(X) -> binary_to_list(mblib:exprElementToJson(X)).
 
 getDebugHTML(Name, BaseURL) ->
@@ -63,8 +64,12 @@ getDebugHTML(Name, BaseURL) ->
 	GetDependersHTML = fun (CellState) ->
 		Funcs = CellState#cellState.funcs,
 		dict:fold(fun(Id, Func, Acc) ->
-			Acc ++ "FuncId: " ++ toList(Id) ++ ", OutputCellOrInt: " ++ GetElemHtml(Func#func.outputCellOrIntOrFunc) ++ "<br />"
+			Acc ++ "FuncId: " ++ toList(Id) ++ ", OutputCellOrIntOrFunc: " ++ GetElemHtml(Func#func.outputCellOrIntOrFunc) ++ "<br />"
 		end, "", Funcs)
+	end,
+
+	GetBottomExprHTML = fun (Bottom) ->
+		expr:unparse(Bottom)
 	end,
 
 	case env:lookup(Name) of
@@ -79,7 +84,8 @@ getDebugHTML(Name, BaseURL) ->
 			"State: " ++ GetStateArrayHTML(cell:getStateArray(Cell)) ++ "<br />" ++ 
 			"Done: " ++ toList((cell:getState(Cell))#cellState.done) ++ "<br /><br />" ++
 			"Dependencies: " ++ GetDependenciesHTML(cell:getState(Cell)) ++ "<br />" ++
-			"Dependers: " ++ GetDependersHTML(cell:getState(Cell)) ++ "<br />";
+			"Dependers: " ++ GetDependersHTML(cell:getState(Cell)) ++ "<br /><br />" ++
+			"Bottom Expr: " ++ GetBottomExprHTML(Cell#exprCell.bottom) ++ "<br />";
 		notfound ->
 			notfound
 	end.

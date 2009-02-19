@@ -75,15 +75,18 @@ parseEndCap(R, State) ->
 	EC = eval:evaluate(expr:customExprParse(Expression, StartCaps)),
 
 	Self = self(),
-	cell:injectFunc(EC, fun(Val) -> 
-		Self ! {response, Name, {set, Val}},
-		fun() -> 
-			case Val of
-				{K,V} -> Self ! {response, Name, {remove, K}};
-				_ -> Self ! {response, Name, {remove, Val}}
+	cell:injectFunc(EC, 
+		fun() -> nodoneresponse end,
+		fun(Val) -> 
+			Self ! {response, Name, {set, Val}},
+			fun() -> 
+				case Val of
+					{K,V} -> Self ! {response, Name, {remove, K}};
+					_ -> Self ! {response, Name, {remove, Val}}
+				end
 			end
 		end
-	end),
+	),
 	State#testWorld{outMessages=dict:store(Name, [], OutMessages)}.
 	
 %private helper function

@@ -223,6 +223,10 @@ init([ToKey]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call({addLine, Value, CellName}, From, State) ->
+	case ?this(done) of
+		true -> ?trace(CellName);
+		_ -> nosideeffect
+	end,
 	Key = (?this(toKey))(Value),
 	Dot = try rangedict:fetch(Key, ?this(dots)) of
 		{dot, Num, Val, Lines} -> {dot, Num+1, Val, Lines}
@@ -274,7 +278,7 @@ handle_call(getState, From, State) ->
 handle_cast({removeLine, Value}, State) ->
 	NewDots = try rangedict:fetch(Value, ?this(dots)) of
 		{dot, Num, Val, Lines} = Dot -> 
-			if Num == 1 -> onRemove(Dot, ?this(funcs)),
+			if Num =< 1 -> onRemove(Dot, ?this(funcs)),
 						   rangedict:erase(Value, ?this(dots));
 			   true -> rangedict:store(Value, {dot, Num-1, Val, Lines}, ?this(dots))
 			end

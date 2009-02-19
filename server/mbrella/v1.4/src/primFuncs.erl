@@ -510,18 +510,6 @@ primitives() ->
 			end
 		end, dict:new()),
 		
-		cell:injectFunc(Cell, Intercept, fun({Key, Val}) ->
-			cell:injectFunc(Val, BHashCell, fun(InnerVal) ->
-				OnRemove1 = cell:addLine(BHashCell, InnerVal),
-				intercept:sendIntercept(Intercept, {addInnerLine, InnerVal, Key}),
-				fun() ->
-					intercept:sendIntercept(Intercept, {removeInnerLine, InnerVal, Key}),
-					OnRemove1()
-				end
-			end)
-		end),
-		%this is to make Intercept depend on BHashCell for being 'done' 
-		cell:injectFunc(BHashCell, Intercept, fun(BVal) -> nosideeffect end),
 		cell:injectFunc(BHashCell, 
 			fun() ->
 				intercept:sendIntercept(Intercept, done)
@@ -530,6 +518,25 @@ primitives() ->
 				intercept:sendIntercept(Intercept, {bHashAdd, BVal}),
 				fun() -> intercept:sendIntercept(Intercept, {bHashRemove, BVal}) end
 			end),
+
+		cell:injectFuncs(Intercept, [{BHashCell, fun(BVal) -> 
+			%this is to make Intercept depend on BHashCell for being 'done' 
+			fun() -> nosideeffect end 
+		end},
+		{Cell, fun({Key, Val}) ->
+			cell:injectFunc(Val, BHashCell, fun(InnerVal) ->
+				OnRemove1 = cell:addLine(BHashCell, InnerVal),
+				intercept:sendIntercept(Intercept, {addInnerLine, InnerVal, Key}),
+				fun() ->
+					intercept:sendIntercept(Intercept, {removeInnerLine, InnerVal, Key}),
+					OnRemove1()
+				end
+			end)
+		end}]),
+		cell:injectFunc(Cell, BHashCell, fun(Val) -> 
+			%this is to make BHashCell depend on Cell for being 'done' 
+			fun() -> nosideeffect end 
+		end),
 		OutputCell
 	end},
 	#exprFun{
