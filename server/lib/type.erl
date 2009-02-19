@@ -342,11 +342,19 @@ unparse(#type{type = typeFun, value = {L, R} }, Variables) ->
 unparse(#type{type = typeApply, value = {L, R} }, Variables) ->
 	{String, Vars} = unparse(L, Variables),
 	{String2, Vars2} = unparse(R, Variables ++ Vars),
+	case L of
+		#type{type = typeFun} ->
+			LHS = "(" ++ String ++ ")";
+		_ -> 
+			LHS = String
+	end,
 	case R of
 		#type{type = typeApply} ->
-			{String ++ " (" ++ String2 ++ ")", Vars2};
+			{LHS ++ " (" ++ String2 ++ ")", Vars2};
+		#type{type = typeFun} ->
+			{LHS ++ " (" ++ String2 ++ ")", Vars2};
 		_ ->
-			{String ++ " " ++ String2, Vars2}
+			{LHS ++ " " ++ String2, Vars2}
 	end;
 unparse(#type{type = typeName, value = Value}, Variables) ->
 	unparse(atom_to_list(Value), Variables);
