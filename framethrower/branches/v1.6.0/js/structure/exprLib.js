@@ -434,6 +434,11 @@ var exprLib = {
 		}
 	},
 
+	getPropMap: {
+		type: "Map a b -> (b -> Unit c) -> Map a c",
+		expr: "panes -> getter -> bindMap (key -> val -> returnUnitMap key (getter val)) panes"
+	},
+
 	getMainPaneSet: {
 		type: "UI.main -> Unit UI.pane.set",
 		expr: "main -> paneSet main",

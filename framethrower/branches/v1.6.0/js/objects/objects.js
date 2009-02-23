@@ -124,7 +124,8 @@ var classesToMake = {
 	
 	"UI.pane": {
 		prop: {
-
+			"width": "Unit Number",
+			"height": "Unit Number"
 		}
 	},
 	"UI.pane.set": {

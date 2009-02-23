@@ -48,16 +48,29 @@ var rootObjects = {};
 	
 	m("test.pane", "UI.pane.pane");
 	rootObjects["test.pane"].prop["focus"].control.add(rootObjects["shared.realLife"]);
-	
-	m("test.pane2", "UI.pane.pane");
+	objects.cast(rootObjects["test.pane"], "UI.pane").prop["width"].control.add(200);	
+
 	//rootObjects["test.pane2"].prop["focus"].control.add(rootObjects["shared.type.entity"]);
 	
 	m("test.paneset", "UI.pane.set");
 	rootObjects["test.paneset"].prop["panes"].control.add("b", objects.cast(rootObjects["test.pane"], "UI.pane"));
+	
 	//rootObjects["test.paneset"].prop["panes"].control.add("bb", objects.cast(rootObjects["test.pane2"], "UI.pane"));
-	
+
 	m("ui.main", "UI.main", {"pane": objects.cast(rootObjects["test.paneset"], "UI.pane")});
+
+	// m("test.paneset2", "UI.pane.set");
+	// rootObjects["test.paneset"].prop["panes"].control.add("bb", objects.cast(rootObjects["test.paneset2"], "UI.pane"));
 	
+	m("test.pane2", "UI.pane.pane");
+	rootObjects["test.pane2"].prop["focus"].control.add(rootObjects["shared.realLife"]);
+	
+	m("test.pane3", "UI.pane.pane");
+	rootObjects["test.pane3"].prop["focus"].control.add(rootObjects["shared.realLife"]);
+	objects.cast(rootObjects["test.pane3"], "UI.pane").prop["width"].control.add(460);
+
+//	rootObjects["test.paneset"].prop["panes"].control.add("bb", objects.cast(rootObjects["test.pane2"], "UI.pane"));
+	rootObjects["test.paneset"].prop["panes"].control.add("bbb", objects.cast(rootObjects["test.pane3"], "UI.pane"));
 	
 	
 	//m("test.consIP", "UI.consIP");

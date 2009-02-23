@@ -9,7 +9,9 @@
 	<f:param name="height" type="Number" />
 	
 	<f:derive name="panes" d="UI.pane.set:panes paneset" />
-	
+	<f:derive name="paneWidths" d="getPropMap panes UI.pane:width" />
+	<f:derive name="paneHeights" d="getPropMap panes UI.pane:height" />
+		
 	<xsl:variable name="w" select="$width/@value" />
 	<xsl:variable name="h" select="$height/@value" />
 
@@ -31,7 +33,17 @@
 	
 	<xsl:variable name="count" select="count($panes/f:entry)" />
 	
-	<xsl:variable name="defaultsize" select="floor(($total - (($count - 1) * $spacing)) div $count)" />
+	<xsl:variable name="customWidthTotal" select="sum($paneWidths/f:entry/f:value/f:literal/@value)" />
+	<xsl:variable name="customWidthCount" select="count($paneWidths/f:entry)" />
+	<xsl:variable name="defaultWidth">
+		<xsl:choose><xsl:when test="$count = $customWidthCount">0</xsl:when>
+			<xsl:otherwise><xsl:value-of select="floor(($total - $customWidthTotal - (($count - 1) * $spacing)) div ($count - $customWidthCount))" /></xsl:otherwise></xsl:choose></xsl:variable>
+	
+	<xsl:variable name="customHeightTotal" select="sum($paneHeights/f:entry/f:value/f:literal/@value)" />
+	<xsl:variable name="customHeightCount" select="count($paneHeights/f:entry)" />
+	<xsl:variable name="defaultHeight">
+		<xsl:choose><xsl:when test="$count = $customHeightCount">0</xsl:when>
+			<xsl:otherwise><xsl:value-of select="floor(($total - $customHeightTotal - (($count - 1) * $spacing)) div ($count - $customHeightCount))" /></xsl:otherwise></xsl:choose></xsl:variable>
 	
 	
 	<html:div class="paneset-{$orientation}">
@@ -41,27 +53,56 @@
 		</xsl:call-template>
 		
 		<xsl:for-each select="$panes/f:entry">
+			<xsl:variable name = "currentKey" select="f:key/f:literal/@value" />
 			<xsl:variable name="width">
 				<xsl:choose>
-					<xsl:when test="$orientation = 'horizontal'"><xsl:value-of select="$defaultsize" /></xsl:when>
+					<xsl:when test="$orientation = 'horizontal'">
+						<xsl:choose>
+							<xsl:when test="$paneWidths/f:entry/f:key/f:literal/@value = $currentKey">
+								<xsl:value-of select="$paneWidths/f:entry[f:key/f:literal/@value = $currentKey]/f:value/f:literal/@value" />
+							</xsl:when>
+							<xsl:otherwise><xsl:value-of select="$defaultWidth" /></xsl:otherwise>
+						</xsl:choose>
+					</xsl:when>
 					<xsl:otherwise><xsl:value-of select="$w" /></xsl:otherwise>
 				</xsl:choose>
 			</xsl:variable>
 			<xsl:variable name="height">
 				<xsl:choose>
-					<xsl:when test="$orientation = 'vertical'"><xsl:value-of select="$defaultsize" /></xsl:when>
+					<xsl:when test="$orientation = 'vertical'">
+						<xsl:choose>
+							<xsl:when test="$paneHeights/f:entry/f:key/f:literal/@value = $currentKey">
+								<xsl:value-of select="$paneHeights/f:entry[f:key/f:literal/@value = $currentKey]/f:value/f:literal/@value" />
+							</xsl:when>
+							<xsl:otherwise><xsl:value-of select="$defaultHeight" /></xsl:otherwise>
+						</xsl:choose>
+					</xsl:when>
 					<xsl:otherwise><xsl:value-of select="$h" /></xsl:otherwise>
 				</xsl:choose>
 			</xsl:variable>
+			
+			<xsl:variable name="keysSoFar" select="preceding-sibling::*/f:key" />
+			<xsl:variable name="countSoFar" select="count($keysSoFar)" />
+			
 			<xsl:variable name="left">
 				<xsl:choose>
-					<xsl:when test="$orientation = 'horizontal'"><xsl:value-of select="($defaultsize + $spacing) * (position() - 1)" /></xsl:when>
+					<xsl:when test="$orientation = 'horizontal'">
+						<xsl:variable name="customWidthCountSoFar" select="count($paneWidths/f:entry[f:key/f:literal/@value = $keysSoFar/f:literal/@value])" />
+						<xsl:variable name="customWidthSoFar" select="sum($paneWidths/f:entry[f:key/f:literal/@value = $keysSoFar/f:literal/@value]/f:value/f:literal/@value)">
+						</xsl:variable>						
+						<xsl:value-of select="($defaultWidth + $spacing) * ($countSoFar - $customWidthCountSoFar) + $customWidthSoFar + $spacing * $customWidthCountSoFar" />
+					</xsl:when>
 					<xsl:otherwise><xsl:value-of select="0" /></xsl:otherwise>
 				</xsl:choose>
 			</xsl:variable>
+						
 			<xsl:variable name="top">
 				<xsl:choose>
-					<xsl:when test="$orientation = 'vertical'"><xsl:value-of select="($defaultsize + $spacing) * (position() - 1)" /></xsl:when>
+					<xsl:when test="$orientation = 'vertical'">
+						<xsl:variable name="customHeightCountSoFar" select="count($paneHeights/f:entry[f:key/f:literal/@value = $keysSoFar/f:literal/@value])" />
+						<xsl:variable name="customHeightSoFar" select="sum($paneHeights/f:entry[f:key/f:literal/@value = $keysSoFar/f:literal/@value]/f:value/f:literal/@value)" />
+						<xsl:value-of select="($defaultHeight + $spacing) * ($countSoFar - $customHeightCountSoFar) + $customHeightSoFar + $spacing * $customHeightCountSoFar" />
+					</xsl:when>
 					<xsl:otherwise><xsl:value-of select="0" /></xsl:otherwise>
 				</xsl:choose>
 			</xsl:variable>
@@ -74,12 +115,14 @@
 					<xsl:with-param name="left" select="$left" />
 					<xsl:with-param name="top" select="$top" />
 				</xsl:call-template>
+				
 				<f:thunk with-template="$innerPane">
 					<f:with-param name="key" select="f:key/*" />
 					<f:with-param name="pane" select="f:value/*" />
 					<f:with-param name="width" select="$width" as="Number" />
 					<f:with-param name="height" select="$height" as="Number" />
 				</f:thunk>
+				
 			</html:div>
 
 			<xsl:if test="not(position() = last())">
@@ -97,13 +140,13 @@
 				</xsl:variable>
 				<xsl:variable name="sleft">
 					<xsl:choose>
-						<xsl:when test="$orientation = 'horizontal'"><xsl:value-of select="($defaultsize + $spacing) * position() - $spacing" /></xsl:when>
+						<xsl:when test="$orientation = 'horizontal'"><xsl:value-of select="$left + $width" /></xsl:when>
 						<xsl:otherwise><xsl:value-of select="0" /></xsl:otherwise>
 					</xsl:choose>
 				</xsl:variable>
 				<xsl:variable name="stop">
 					<xsl:choose>
-						<xsl:when test="$orientation = 'vertical'"><xsl:value-of select="($defaultsize + $spacing) * position() - $spacing" /></xsl:when>
+						<xsl:when test="$orientation = 'vertical'"><xsl:value-of select="$top + $height" /></xsl:when>
 						<xsl:otherwise><xsl:value-of select="0" /></xsl:otherwise>
 					</xsl:choose>
 				</xsl:variable>
@@ -158,7 +201,8 @@
 		</f:action>
 	</f:template>
 
-	<f:include url="/xml/util/style.xml" />
-	
+	<f:include url="/xml/util/style.xml" />	
 	<f:include url="/xml/util/ord.xml" />
+	
+	<f:include url="/xml/debug/prettyPrint.xml" />
 </f:template>
