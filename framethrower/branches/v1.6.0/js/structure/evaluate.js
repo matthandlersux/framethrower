@@ -1,6 +1,6 @@
 var evalCache = {};
 
-var evaluate = function(expr) {
+function evaluate2(expr) {
 	/*
 	This function will evaluate an Expr
 	Another way of looking at it is getting rid of all top-level apply's in an Expr by doing the applications
@@ -74,7 +74,10 @@ var evaluate = function(expr) {
 	} else {
 		return expr;
 	}
-};
+}
+
+
+var evaluate = evaluate2; // this total misdirection is because the new firebug doesn't like to run a function called "evaluate" in the console (!!!)
 
 
 

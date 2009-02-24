@@ -38,13 +38,17 @@ function addFun(name, typeString, f, numArguments) {
 	}*/
 	fun = curry(f, numArguments);
 	
-	base.add(name, {
+	var exprFun = {
 		kind: "fun",
 		name: name,
 		type: type,
 		fun: fun,
 		remote: 0
-	});
+	};
+	
+	base.add(name, exprFun);
+	
+	return exprFun;
 }
 
 

@@ -10,23 +10,49 @@
 	<f:derive name="asCons" d="Object~Cons focus" />
 	<f:derive name="asText" d="Object~X.text focus" />
 	
-	<xsl:choose>
-		<xsl:when test="$asCons">
+	<f:pattern>
+		<f:match test="$asCons">
 			<f:thunk url="infon.xml">
 				<f:with-param name="focus" select="$asCons" />
 				<f:with-param name="recurse" select="$recurse" />
 			</f:thunk>
-		</xsl:when>
-		<xsl:when test="$asText">
+		</f:match>
+		<f:match test="$asText">
 			<f:thunk url="text.xml">
 				<f:with-param name="focus" select="$asText" />
+				<f:with-param name="recurse" select="$recurse" />
 			</f:thunk>
-		</xsl:when>
-		<xsl:otherwise>
+		</f:match>
+		<f:otherwise>
 			<f:thunk url="object.xml">
 				<f:with-param name="focus" select="$focus" />
 			</f:thunk>
-		</xsl:otherwise>
-	</xsl:choose>
+		</f:otherwise>
+	</f:pattern>
+	
+	
+	<!-- <f:choose>
+		<f:when test="$asCons">
+			<f:each select="$asCons">
+				<f:thunk url="infon.xml">
+					<f:with-param name="focus" select="$asCons" />
+					<f:with-param name="recurse" select="$recurse" />
+				</f:thunk>
+			</f:each>
+		</f:when>
+		<f:when test="$asText">
+			<f:each select="$asText">
+				<f:thunk url="text.xml">
+					<f:with-param name="focus" select="$asText" />
+					<f:with-param name="recurse" select="$recurse" />
+				</f:thunk>
+			</f:each>
+		</f:when>
+		<f:otherwise>
+			<f:thunk url="object.xml">
+				<f:with-param name="focus" select="$focus" />
+			</f:thunk>
+		</f:otherwise>
+	</f:choose> -->
 	
 </f:template>

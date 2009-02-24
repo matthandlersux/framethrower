@@ -495,6 +495,63 @@ var objects = (function (classesToMake) {
 		return o;
 	}
 	
+	
+	// TODO:
+	//  Decide if we even want this.
+	//	Have Andrew audit this, add to server. Add any necessary remove things?
+	
+	// var propertiesType = parseType("Properties");
+	// var gsp = addFun("getStaticProperties", "a -> Future Properties", function (o) {
+	// 	var outputCell = makeCell();
+	// 	
+	// 	function output(value) {
+	// 		outputCell.addLine({
+	// 			kind: "properties",
+	// 			type: propertiesType,
+	// 			value: value
+	// 		});
+	// 	}
+	// 	
+	// 	if (o.kind === "object") {
+	// 		var className = o.origType.value;
+	// 		// cast to lowest level
+	// 		o = o.as[className];
+	// 
+	// 		var ret = {
+	// 			object: o,
+	// 			type: className,
+	// 			prop: {}
+	// 		};
+	// 		var prop = classes[className].prop;
+	// 		
+	// 		var propCount = 1;
+	// 		function checkDone() {
+	// 			if (propCount === 0) output(ret);
+	// 		}
+	// 		
+	// 		forEach(prop, function (propType, propName) {
+	// 			if (!isReactive(propType)) {
+	// 				propCount++;
+	// 				var propValue = o.prop[propName].getState()[0];
+	// 				evaluateAndInject(makeApply(gsp, propValue), function (childProps) {
+	// 					ret.prop[propName] = childProps;
+	// 					propCount--;
+	// 					checkDone();
+	// 				});
+	// 			}
+	// 		});
+	// 		propCount--;
+	// 		checkDone();
+	// 	} else {
+	// 		output(o);
+	// 	}
+	// 	
+	// 	return outputCell;
+	// });
+	
+	
+	
+	
 	return {
 		make: makeObject,
 		actOnProp: actOnProp,
@@ -510,6 +567,9 @@ var objects = (function (classesToMake) {
 			} else {
 				debug.error("Cannot convert object of type `" + getType(obj).value + "` to `" + targetClassName + "`.");
 			}
+		},
+		isClass: function (className) {
+			return !!classes[className];
 		}
 	};
 })(classesToMake);

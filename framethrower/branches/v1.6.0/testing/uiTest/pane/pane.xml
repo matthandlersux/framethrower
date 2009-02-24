@@ -14,7 +14,8 @@
 	
 	<f:derive name="propertiesState" d="UI.pane.pane:propertiesState pane" />
 
-	<xsl:if test="$focus">
+	<f:each select="$focus">
+		<xsl:variable name="tab" select="$tab/*" /> <!-- TODO fix this -->
 		<html:div class="pane">
 			<html:div class="titlebar">
 				<html:div class="titlebar-focus">
@@ -117,10 +118,12 @@
 						</f:thunk>
 					</xsl:when>
 					<xsl:when test="$tab/@value = 'properties'">
-						<f:thunk url="properties.xml">
-							<f:with-param name="focus" select="$focus" />
-							<f:with-param name="propertiesState" select="$propertiesState" />
-						</f:thunk>
+						<f:each select="$propertiesState">
+							<f:thunk url="properties.xml">
+								<f:with-param name="focus" select="$focus" />
+								<f:with-param name="propertiesState" select="$propertiesState" />
+							</f:thunk>
+						</f:each>
 					</xsl:when>
 					<xsl:otherwise>
 	
@@ -129,7 +132,7 @@
 			</html:div>
 			
 		</html:div>
-	</xsl:if>
+	</f:each>
 	
 	<f:action name="selectTab">
 		<f:param name="tab" type="String" />
@@ -140,25 +143,31 @@
 	<f:template name="childCount">
 		<f:param name="focus" type="Object" />
 		<f:derive name="count" d="length (getObjectsIn focus)" />
-		<html:span>
-			(<xsl:value-of select="$count/@value" />)
-		</html:span>
+		<f:each select="$count">
+			<html:span>
+				(<xsl:value-of select="$count/@value" />)
+			</html:span>
+		</f:each>
 	</f:template>
 
 	<f:template name="infonCount">
 		<f:param name="focus" type="Object" />
 		<f:derive name="count" d="length (getInfonsIn focus)" />
-		<html:span>
-			(<xsl:value-of select="$count/@value" />)
-		</html:span>
+		<f:each select="$count">
+			<html:span>
+				(<xsl:value-of select="$count/@value" />)
+			</html:span>
+		</f:each>
 	</f:template>
 	
 	<f:template name="aboutCount">
 		<f:param name="focus" type="Object" />
 		<f:derive name="count" d="length (getInfonsAbout focus)" />
-		<html:span>
-			(<xsl:value-of select="$count/@value" />)
-		</html:span>
+		<f:each select="$count">
+			<html:span>
+				(<xsl:value-of select="$count/@value" />)
+			</html:span>
+		</f:each>
 	</f:template>
 	
 	<f:template name="blankTemplate">

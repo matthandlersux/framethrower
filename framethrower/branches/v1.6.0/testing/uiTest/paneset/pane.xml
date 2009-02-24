@@ -13,21 +13,19 @@
 	<f:derive name="asSet" d="UI.pane~UI.pane.set pane" />
 	<f:derive name="asPane" d="UI.pane~UI.pane.pane pane" />
 	
-	<xsl:choose>
-		<xsl:when test="$asSet">
-			<f:thunk url="set.xml">
-				<f:with-param name="width" select="$width" />
-				<f:with-param name="height" select="$height" />
-				<f:with-param name="paneset" select="$asSet" />
-			</f:thunk>
-		</xsl:when>
-		<xsl:when test="$asPane">
-			<f:thunk url="../pane/pane.xml">
-				<f:with-param name="pane" select="$asPane" />
-				<f:with-param name="newPane" select="$newPane" />
-				<f:with-param name="closePane" select="$closePane" />
-			</f:thunk>
-		</xsl:when>
-	</xsl:choose>
+	<f:each select="$asSet">
+		<f:thunk url="set.xml">
+			<f:with-param name="width" select="$width" />
+			<f:with-param name="height" select="$height" />
+			<f:with-param name="paneset" select="$asSet" />
+		</f:thunk>
+	</f:each>
+	<f:each select="$asPane">
+		<f:thunk url="../pane/pane.xml">
+			<f:with-param name="pane" select="$asPane" />
+			<f:with-param name="newPane" select="$newPane" />
+			<f:with-param name="closePane" select="$closePane" />
+		</f:thunk>
+	</f:each>
 		
 </f:template>

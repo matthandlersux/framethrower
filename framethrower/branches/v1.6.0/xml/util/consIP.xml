@@ -35,40 +35,42 @@
 		<f:derive name="right" d="UI.consIP:right consIP" />
 		<f:derive name="leftAsObject" d="bindUnit UI.consIP:object left" />
 		<f:derive name="rightAsObject" d="bindUnit UI.consIP:object right" />
+
+		<f:each select="$left"><f:each select="$right">
+			<xsl:if test="not($leftAsObject/*)">
+				<f:perform with-action="$consIPToCons" name="leftR">
+					<f:with-param name="consIP" select="$left" />
+				</f:perform>
+			</xsl:if>
 		
-		<xsl:if test="not($leftAsObject)">
-			<f:perform with-action="$consIPToCons" name="leftR">
-				<f:with-param name="consIP" select="$left" />
+			<xsl:if test="not($rightAsObject/*)">
+				<f:perform with-action="$consIPToCons" name="rightR">
+					<f:with-param name="consIP" select="$right" />
+				</f:perform>
+			</xsl:if>
+		
+			<f:perform with-action="$makeCons" name="cons">
+				<xsl:choose>
+					<xsl:when test="$leftAsObject/*">
+						<f:with-param name="left" select="$leftAsObject/*" />
+					</xsl:when>
+					<xsl:otherwise>
+						<f:with-param name="left"><f:var name="leftR" /></f:with-param>
+					</xsl:otherwise>
+				</xsl:choose>
+				<xsl:choose>
+					<xsl:when test="$rightAsObject/*">
+						<f:with-param name="right" select="$rightAsObject/*" />
+					</xsl:when>
+					<xsl:otherwise>
+						<f:with-param name="right"><f:var name="rightR" /></f:with-param>
+					</xsl:otherwise>
+				</xsl:choose>
 			</f:perform>
-		</xsl:if>
 		
-		<xsl:if test="not($rightAsObject)">
-			<f:perform with-action="$consIPToCons" name="rightR">
-				<f:with-param name="consIP" select="$right" />
-			</f:perform>
-		</xsl:if>
-		
-		<f:perform with-action="$makeCons" name="cons">
-			<xsl:choose>
-				<xsl:when test="$leftAsObject">
-					<f:with-param name="left" select="$leftAsObject" />
-				</xsl:when>
-				<xsl:otherwise>
-					<f:with-param name="left"><f:var name="leftR" /></f:with-param>
-				</xsl:otherwise>
-			</xsl:choose>
-			<xsl:choose>
-				<xsl:when test="$rightAsObject">
-					<f:with-param name="right" select="$rightAsObject" />
-				</xsl:when>
-				<xsl:otherwise>
-					<f:with-param name="right"><f:var name="rightR" /></f:with-param>
-				</xsl:otherwise>
-			</xsl:choose>
-		</f:perform>
-		
-		<f:return name="cons" />
-		
+			<f:return name="cons" />
+
+		</f:each></f:each>
 	</f:action>
 
 </f:includes>

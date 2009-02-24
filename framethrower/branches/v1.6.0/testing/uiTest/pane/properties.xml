@@ -24,7 +24,7 @@
 			<html:td>
 
 				<xsl:choose>
-					<xsl:when test="not($name/*) or $editName">
+					<xsl:when test="not($name/*) or $editName/*">
 						<html:form>
 							<html:input name="newName" type="text" value="{$name/*/@value}">
 								<f:on event="manualblur" with-action="$changeName">
@@ -73,9 +73,9 @@
 		<f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" />
 		
 		<!-- remove old name(s) -->
-		<xsl:for-each select="$ontInfons/*">
-			<f:intact object="." action="remove" property="truth" key="null" /> <!-- TODO shouldn't need a key -->
-		</xsl:for-each>
+		<f:each select="$ontInfons" key="ontInfon">
+			<f:intact object="$ontInfon" action="remove" property="truth" key="null" /> <!-- TODO shouldn't need a key -->
+		</f:each>
 		
 		<f:perform with-action="$nameObject">
 			<f:with-param name="object" select="$focus" />
@@ -92,22 +92,22 @@
 		<f:derive name="objects" d="getObjectsOfType shared.type.type" />
 		<f:derive name="typeInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.isA focus))" />
 
-		<xsl:for-each select="$objects/*">
+		<f:each select="$objects" key="object">
 			<html:div class="entry">
 				<f:on event="click" with-action="$selectType">
-					<f:with-param name="selectedType" select="." />
+					<f:with-param name="selectedType" select="$object" />
 				</f:on>
 				<f:thunk url="../view2/object.xml">
-					<f:with-param name="focus" select="." />
+					<f:with-param name="focus" select="$object" />
 				</f:thunk>
 			</html:div>
-		</xsl:for-each>
+		</f:each>
 		<f:action name="selectType">
 			<f:param name="selectedType" type="Object" />
 
-			<xsl:for-each select="$typeInfons/*">
-				<f:intact object="." action="remove" property="truth" key="null" /> <!-- TODO shouldn't need a key -->
-			</xsl:for-each>
+			<f:each select="$typeInfons" key="typeInfon">
+				<f:intact object="$typeInfon" action="remove" property="truth" key="null" /> <!-- TODO shouldn't need a key -->
+			</f:each>
 			
 			<f:perform with-action="$typeObject">
 				<f:with-param name="object" select="$focus" />

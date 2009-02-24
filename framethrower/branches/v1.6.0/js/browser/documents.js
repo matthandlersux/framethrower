@@ -73,8 +73,21 @@ var documents = (function () {
 				}
 			}
 		},
-		preload: function (url) {
-			
+		preload: function (url, callback) {
+			documents.withDoc(url, function (doc) {
+				serverAdviceFromUrl(url);
+				var urlNodes = xpath(".//f:thunk[@url] | .//f:with-template[@url]", doc);
+				var funcs = [];
+				forEach(urlNodes, function (urlNode) {
+					var templateUrl = urlToAbs(url, getAttr(urlNode, "url"));
+					if (!urls[templateUrl]) {
+						funcs.push(function (callback) {
+							documents.preload(templateUrl, callback);
+						});
+					}
+				});
+				parallelCallback(funcs, callback);
+			});
 		},
 		debug: function () {
 			return urls;
@@ -82,7 +95,8 @@ var documents = (function () {
 	};
 })();
 
-
+// first argument is an array of functions, each of which takes a single parameter, a callback that is called when the function is "done".
+// second argument is a callback. All funcs are executed and wait until they're all done, then this callback is called.
 function parallelCallback(funcs, callback) {
 	var count = funcs.length;
 	if (count === 0) {

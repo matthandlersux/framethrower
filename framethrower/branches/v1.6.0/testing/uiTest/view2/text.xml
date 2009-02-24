@@ -9,6 +9,8 @@
 	<f:derive name="string" d="X.text:string focus" />
 	
 	<html:span class="text">
-		<xsl:value-of select="$string/@value" />
+		<f:each select="$string">
+			<xsl:value-of select="$string/@value" />
+		</f:each>
 	</html:span>
 </f:template>

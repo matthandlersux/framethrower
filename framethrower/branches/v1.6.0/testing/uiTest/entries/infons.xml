@@ -7,13 +7,16 @@
 	<f:param name="infons" type="Set Object" />
 	<f:param name="newPane" type="a -> Unit JS" />
 
-	<xsl:for-each select="$infons/*">
+	<f:each select="$infons" key="infon">
 		<html:div class="entry">
 			<html:div class="entry-cell">
 				<f:thunk url="../view2/viewPlus.xml">
-					<f:with-param name="focus" select="." />
+					<f:with-param name="focus" select="$infon" />
 					<f:with-param name="extra" select="$extra" />
 				</f:thunk>
+				<!-- <f:thunk url="../view3/view.xml">
+					<f:with-param name="focus" select="$infon" />
+				</f:thunk> -->
 				<!-- <f:thunk with-template="$t">
 					<f:with-param name="infon" select="." />
 				</f:thunk> -->
@@ -21,13 +24,13 @@
 			<html:div class="entry-cell">
 				<html:div>
 					<f:on event="click" with-action="$removeInfon">
-						<f:with-param name="infon" select="." />
+						<f:with-param name="infon" select="$infon" />
 					</f:on>
 					<html:button>Remove</html:button>
 				</html:div>
 			</html:div>
 		</html:div>
-	</xsl:for-each>
+	</f:each>
 	
 	<!-- <f:template name="t">
 		<f:param name="infon" type="Cons" />

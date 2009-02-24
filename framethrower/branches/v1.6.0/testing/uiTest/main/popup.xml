@@ -19,39 +19,41 @@
 	<xsl:variable name="h" select="floor($height/@value div 2)" />
 	
 	<!-- The following works the way the mac context menu seems to work -->
-	
-	<xsl:variable name="left">
-		<xsl:choose>
-			<xsl:when test="$px/@value + $w &gt; $width/@value">
-				<xsl:value-of select="$width/@value - $w" />
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:value-of select="$px/@value" />
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:variable>
-	
-	<xsl:variable name="top">
-		<xsl:choose>
-			<xsl:when test="$py/@value + $h &gt; $height/@value">
-				<xsl:value-of select="$py/@value - $h" />
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:value-of select="$py/@value" />
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:variable>
-	
-	<html:div class="popup">
-		<xsl:call-template name="style">
-			<xsl:with-param name="left" select="$left" />
-			<xsl:with-param name="top" select="$top" />
-			<xsl:with-param name="width" select="$w" />
-			<xsl:with-param name="height" select="$h" />
-		</xsl:call-template>
-		
-		<f:thunk with-template="$content" />
-	</html:div>
+
+	<f:each select="$px"><f:each select="$py"><f:each select="$content">
+		<xsl:variable name="left">
+			<xsl:choose>
+				<xsl:when test="$px/@value + $w &gt; $width/@value">
+					<xsl:value-of select="$width/@value - $w" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="$px/@value" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:variable name="top">
+			<xsl:choose>
+				<xsl:when test="$py/@value + $h &gt; $height/@value">
+					<xsl:value-of select="$py/@value - $h" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="$py/@value" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<html:div class="popup">
+			<xsl:call-template name="style">
+				<xsl:with-param name="left" select="$left" />
+				<xsl:with-param name="top" select="$top" />
+				<xsl:with-param name="width" select="$w" />
+				<xsl:with-param name="height" select="$h" />
+			</xsl:call-template>
+
+			<f:thunk with-template="$content" />
+		</html:div>
+	</f:each></f:each></f:each>
 	
 	<f:include url="/xml/util/style.xml" />
 </f:template>

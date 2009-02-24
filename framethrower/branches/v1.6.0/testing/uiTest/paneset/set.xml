@@ -52,7 +52,7 @@
 			<xsl:with-param name="height" select="$h" />
 		</xsl:call-template>
 		
-		<xsl:for-each select="$panes/f:entry">
+		<f:each select="$panes" key="key" value="value">
 			<xsl:variable name = "currentKey" select="f:key/f:literal/@value" />
 			<xsl:variable name="width">
 				<xsl:choose>
@@ -117,8 +117,8 @@
 				</xsl:call-template>
 				
 				<f:thunk with-template="$innerPane">
-					<f:with-param name="key" select="f:key/*" />
-					<f:with-param name="pane" select="f:value/*" />
+					<f:with-param name="key" select="$key" />
+					<f:with-param name="pane" select="$value" />
 					<f:with-param name="width" select="$width" as="Number" />
 					<f:with-param name="height" select="$height" as="Number" />
 				</f:thunk>
@@ -160,7 +160,7 @@
 					</xsl:call-template>
 				</html:div>
 			</xsl:if>
-		</xsl:for-each>
+		</f:each>
 	</html:div>
 
 
@@ -179,8 +179,7 @@
 		</f:thunk>
 		
 		<f:action name="closePane">
-			<f:derive name="mainPaneSet" d="getMainPaneSet ui.main" />
-			<f:intact object="$mainPaneSet" action="remove" property="panes" key="$key" />
+			<f:intact object="$paneset" action="remove" property="panes" key="$key" />
 		</f:action>
 		
 		<f:action name="newPane">

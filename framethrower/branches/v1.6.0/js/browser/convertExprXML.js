@@ -27,11 +27,22 @@ function exprToXML(expr, type) {
 			}
 			
 			if (constructor === "Unit" || constructor === "Future") {
-				if (state.length === 0) {
-					xml = document.createDocumentFragment();
-				} else {
-					return exprToXML(state[0], type.right);
-				}
+				xml = createEl("f:unit");
+				var name = stringify(expr);
+				setAttr(xml, "name", name);
+				ids[name] = expr;
+				
+				var entryType = type.right;
+				forEach(state, function (entry) {
+					append(xml, exprToXML(entry, entryType));
+				});
+				
+				
+				// if (state.length === 0) {
+				// 	xml = document.createDocumentFragment();
+				// } else {
+				// 	return exprToXML(state[0], type.right);
+				// }
 			} else if (constructor === "Set") {
 				xml = createEl("f:set");
 				var name = stringify(expr);
@@ -78,7 +89,7 @@ function xmlToExpr(xml, ids) {
 	var nn = xml.nodeName;
 	
 	if (nn === "f:literal") {
-		return unxmlizeLiteral(xml);
+		return unxmlizeLiteral(xml, ids);
 	} else if (nn === "f:o" || nn === "f:set" || nn === "f:map") {
 		var id = getAttr(xml, "name");
 		return ids[id];
@@ -86,6 +97,8 @@ function xmlToExpr(xml, ids) {
 		// TODO
 	} else if (nn === "f:map") {
 		// TODO
+	} else if (nn === "f:unit") {
+		debug.error("Not supposed to hit a f:unit..."); // TODO remove this
 	} else {
 		return cloneNode(xml); // TODO: perhaps don't need cloneNode here
 	}

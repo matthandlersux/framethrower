@@ -8,19 +8,18 @@
     xmlns:svg="http://www.w3.org/2000/svg">
 
 <head>
-<title>UI Testing - Server</title>
+<title>UI Testing</title>
 
 <link rel="stylesheet" href="../../design/style.css" type="text/css" media="screen" title="no title" charset="utf-8" />
 
 <script>
 var ROOTDIR = "../../";
 var DEBUG = true;
-//var LOCAL = true;
 var LOCAL = false;
+//var LOCAL = false;
 
 //var serverBaseUrl = "http://clever.eversplosion.com:8000/";
 //var serverBaseUrl = "http://localhost:8000/";
-var serverBaseUrl = "http://littleguy.eversplosion.com:8000/";
 
 var INCLUDES=["test.js"];
 var ONLOAD="initialize()";
@@ -36,17 +35,17 @@ var ONLOAD="initialize()";
 			<f:with-template url="testing/uiTest/view.xml" />
 		</f:thunk> -->
 		
-		<f:thunk>
+		<!-- <f:thunk>
 			<f:with-template url="testing/uiTest/main/main.xml" />
 		</f:thunk>
 		
-		<!-- <f:on event="load">
+		<f:on event="load">
 			<f:with-template url="testing/uiTest/prepareState.xml" />
-		</f:on> -->
+		</f:on>
 		
 		<f:on event="load">
 			<f:with-template url="testing/uiTest/prepareUIState.xml" />
-		</f:on>
+		</f:on> -->
 	
 </body>
 

@@ -4,7 +4,8 @@ An environment (env) is a function from strings to values. It is intended to sto
 
 // here are two useful environments:
 var emptyEnv = function (s) {
-	debug.error("Not found in environment: `"+s+"`");
+	//debug.error("Not found in environment: `"+s+"`");
+	throw "Not found in environment: `"+s+"`";
 };
 
 var falseEnv = function (s) {
@@ -33,6 +34,16 @@ function extendEnv(parentEnv, hash) {
 			return lookup;
 		}
 	};
+}
+
+
+function isInEnv(env, key) {
+	try {
+		env(key);
+		return true;
+	} catch (e) {
+		return false;
+	}
 }
 
 

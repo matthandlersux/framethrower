@@ -22,20 +22,13 @@
 		<f:derive name="asPicture" d="Object~X.picture focus" />
 		<f:derive name="asCons" d="Object~Cons focus" />
 
-		<xsl:choose>
-			<xsl:when test="$asPicture">
-				<f:thunk with-template="$printPicture">
-					<f:with-param name="picture" select="$asPicture" />
-					<f:with-param name="transform" select="$transform" />
-				</f:thunk>
-			</xsl:when>
-			<xsl:when test="$asCons">
+		<f:each select="$asPicture">
+			<f:thunk with-template="$printPicture">
+				<f:with-param name="picture" select="$asPicture" />
+				<f:with-param name="transform" select="$transform" />
+			</f:thunk>
+		</f:each>
 
-			</xsl:when>
-			<xsl:otherwise>
-
-			</xsl:otherwise>
-		</xsl:choose>
 	</f:template>
 	
 	<!-- <f:template name="printCons">
@@ -53,24 +46,28 @@
 		<f:derive name="pw" d="X.picture:width picture" />
 		<f:derive name="ph" d="X.picture:height picture" />
 		
-		<xsl:variable name="ratio" select="$width/@value div $height/@value" />
-		<xsl:variable name="pratio" select="$pw/@value div $ph/@value" />
+		<f:each select="$url"><f:each select="$pw"><f:each select="$ph">
 		
-		<xsl:variable name="mult">
-			<xsl:choose>
-				<xsl:when test="$ratio &gt; $pratio">
-					<xsl:value-of select="$height/@value div $ph/@value" />
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="$width/@value div $pw/@value" />
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:variable>
+			<xsl:variable name="ratio" select="$width/@value div $height/@value" />
+			<xsl:variable name="pratio" select="$pw/@value div $ph/@value" />
 		
-		<xsl:variable name="w" select="round($mult * $pw/@value)" />
-		<xsl:variable name="h" select="round($mult * $ph/@value)" />
+			<xsl:variable name="mult">
+				<xsl:choose>
+					<xsl:when test="$ratio &gt; $pratio">
+						<xsl:value-of select="$height/@value div $ph/@value" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="$width/@value div $pw/@value" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
 		
-		<html:img src="{$url/@value}" width="{$w}" height="{$h}" />
+			<xsl:variable name="w" select="round($mult * $pw/@value)" />
+			<xsl:variable name="h" select="round($mult * $ph/@value)" />
+		
+			<html:img src="{$url/@value}" width="{$w}" height="{$h}" />
+		
+		</f:each></f:each></f:each>
 	</f:template>
 	
 </f:template>

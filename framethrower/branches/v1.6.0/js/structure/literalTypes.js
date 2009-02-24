@@ -67,13 +67,32 @@ function xmlizeLiteral(expr) {
 		var xml = setAttr(createEl("f:literal"), "type", "XML");
 		appendChild(xml, cloneNode(expr));
 		return {xml: xml, ids: {}};
+	} else if (expr.kind === "properties") {
+		var xml = setAttr(createEl("f:literal"), "type", "Properties");
+		var ids = {};
+		function append(parentNode, child) {
+			appendChild(parentNode, child.xml);
+			mergeInto(child.ids, ids);
+		}
+		
+		var objectXML = setAttr(createEl("f:object"), "type", expr.value.type);
+		append(objectXML, exprToXML(expr.value.object));
+		appendChild(xml, objectXML);
+		
+		forEach(expr.value.prop, function (p, propName) {
+			var propXML = setAttr(createEl("f:prop"), "name", propName);
+			append(propXML, exprToXML(p));
+			appendChild(xml, propXML);
+		});
+		
+		return {xml: xml, ids: ids};		
 	} else {
 		return undefined;
 	}
 }
 
 // XML -> Literal
-function unxmlizeLiteral(xml) {
+function unxmlizeLiteral(xml, ids) {
 	var type = getAttr(xml, "type");
 	if (type === "Number") {
 		return +getAttr(xml, "value");			
@@ -85,6 +104,22 @@ function unxmlizeLiteral(xml) {
 		return nullObject;
 	} else if (type === "XML") {
 		return cloneNode(xpath("*", xml)[0]); // TODO: perhaps don't need cloneNode here
+	} else if (type === "Properties") {
+		var ret = {
+			kind: "properties",
+			type: parseType("Properties"),
+			value: {
+				prop: {}
+			}
+		};
+		var objectXML = xpath("f:object", xml)[0];
+		ret.value.type = getAttr(objectXML, "type");
+		ret.value.object = xmlToExpr(objectXML.firstChild, ids);
+		var propXMLs = xpath("f:prop", xml);
+		forEach(propXMLs, function (propXML) {
+			ret.value.prop[getAttr(propXML, "name")] = xmlToExpr(propXML.firstChild, ids);
+		});
+		return ret;
 	}
 }
 

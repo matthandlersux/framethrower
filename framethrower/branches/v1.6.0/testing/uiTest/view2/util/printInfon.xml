@@ -47,9 +47,9 @@
 				<html:div class="infonCell">
 					<xsl:choose>
 						<xsl:when test="self::f:arg">
-							<xsl:variable name="argCount" select="count($infonArgs/f:entry[f:value/*])" />
+							<xsl:variable name="argCount" select="count($infonArgs/f:entry[f:value/*/*])" />
 							<xsl:variable name="num" select="$argCount - @num + 1" />
-							<xsl:variable name="arg" select="$infonArgs/f:entry[$num]/f:value/*" />
+							<xsl:variable name="arg" select="$infonArgs/f:entry[$num]/f:value/*/*" />
 							<xsl:if test="$arg">
 								<f:thunk with-template="$argTemplate">
 									<f:with-param name="focus" select="$arg" />

@@ -10,17 +10,17 @@
 	
 	<f:derive name="asPicture" d="Object~X.picture focus" />
 	<f:derive name="asCons" d="Object~Cons focus" />
-
-	<xsl:choose>
-		<xsl:when test="$asPicture">
+	
+	<f:pattern>
+		<f:match test="$asPicture">
 			<f:thunk with-template="$printPicture">
 				<f:with-param name="picture" select="$asPicture" />
 			</f:thunk>
-		</xsl:when>
-		<xsl:otherwise>
+		</f:match>
+		<f:otherwise>
 			
-		</xsl:otherwise>
-	</xsl:choose>
+		</f:otherwise>
+	</f:pattern>
 	
 	<f:template name="printPicture">
 		<f:param name="picture" type="X.picture" />

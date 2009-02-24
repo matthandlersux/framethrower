@@ -25,13 +25,13 @@
 		
 		<xsl:attribute name="style">background-color: <xsl:value-of select="$color" /></xsl:attribute>
 		
-		<xsl:if test="$thumbnail/*">
+		<f:each select="$thumbnail" position="1">
 			<f:thunk url="picture.xml">
-				<f:with-param name="focus" select="$thumbnail/*[1]" />
+				<f:with-param name="focus" select="$thumbnail" />
 				<f:with-param name="width" select="30" />
 				<f:with-param name="height" select="30" />
 			</f:thunk>
-		</xsl:if>
+		</f:each>
 		
 		<xsl:choose>
 			<xsl:when test="$name/*">

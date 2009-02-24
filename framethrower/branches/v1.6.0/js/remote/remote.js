@@ -40,6 +40,25 @@ function getRemote(expr) {
 	}
 }
 
+function getRemoteType(type) {
+	if (type.kind === "typeName") {
+		if (objects.inherits(type.value, "Object")) {
+			return 1;
+		} else if (objects.isClass(type.value) || type.value === "JS") {
+			return 2;
+		} else {
+			return 0;
+		}
+	} else if (type.kind === "typeVar") {
+		return 0;
+	} else {
+		return Math.max(getRemoteType(type.left), getRemoteType(type.right));
+	}
+}
+
+
+
+
 var debugRemoteObjects = {};
 
 function makeRemoteObject(name, type) {

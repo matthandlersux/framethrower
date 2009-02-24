@@ -1,0 +1,34 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="Object" />
+	
+	<f:derive name="sp" d="getStaticProperties focus" />
+	
+	<f:each select="$sp">
+		<f:thunk with-template="$print">
+			<f:with-param name="properties" select="$sp" />
+		</f:thunk>
+	</f:each>
+	
+
+	
+	
+	
+	
+	<f:template name="print">
+		<f:param name="properties" type="Properties" />
+		
+		<xsl:call-template name="prettyPrint">
+			<xsl:with-param name="node" select="$properties" />
+		</xsl:call-template>
+	</f:template>
+	
+	
+	
+	<f:include url="/xml/debug/prettyPrint.xml" />
+	
+</f:template>

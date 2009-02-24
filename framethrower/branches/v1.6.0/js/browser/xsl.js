@@ -35,6 +35,7 @@ function getCallTemplates(xslNode) {
 		return att.nodeValue;
 	});
 }
+// takes a list of template names and an xml node to start looking for them and returns an array of XML nodes (xsl:template's)
 function fetchCalledTemplates(names, start, templates) {
 	if (!templates) templates = [];
 	forEach(names, function (name) {
@@ -53,6 +54,7 @@ function fetchCalledTemplates(names, start, templates) {
 
 var desugarXSL = compileXSL(loadXMLNow(ROOTDIR + "js/browser/desugar.xml"));
 
+// takes in a template XML node (f:template) and returns {ss: A new XSL stylesheet, varNames: a list of variables the stylesheet is expecting}
 function makeXSLFromTemplate(templateNode) {
 	var baseNode = xpath("*[not(self::f:param | self::f:derive | self::f:template | self::f:action | self::xsl:template | self::f:include)]", templateNode);
 	
@@ -95,7 +97,8 @@ function makeXSLFromTemplate(templateNode) {
 
 
 
-// runXSL :: {paramName: paramValueInXML} -> XML
+// runXSL :: XML -> {paramName: paramValueInXML} -> XML
+// should take in a stylesheet from makeXSLFromTemplate and a hash of parameter values where the keys are the varNames from makeXSLFromTemplate
 function runXSL(compiledXSL, params) {
 	// make source document
 	var source = createEl("f:source");

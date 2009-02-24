@@ -18,7 +18,7 @@
 
 	
 	<xsl:variable name="expectInfon" select="$expectedType/@name = $infonType/@name" />
-	<xsl:variable name="empty" select="not($object) and not($left)" />
+	<xsl:variable name="empty" select="not($object/*) and not($left/*)" />
 	
 	<xsl:choose>
 		<xsl:when test="$expectInfon">
@@ -57,14 +57,16 @@
 							<xsl:value-of select="$typeName/*/@value" />
 						</html:div>
 					</xsl:when>
-					<xsl:when test="$object">
-						<f:thunk url="object.xml">
-							<f:with-param name="focus" select="$object" />
-						</f:thunk>
-					</xsl:when>
-					<xsl:when test="$left and $right">
-						<f:thunk with-template="$printCons" />
-					</xsl:when>
+					<xsl:otherwise>
+						<f:each select="$object">
+							<f:thunk url="object.xml">
+								<f:with-param name="focus" select="$object" />
+							</f:thunk>							
+						</f:each>
+						<f:each select="$left">
+							<f:thunk with-template="$printCons" />
+						</f:each>
+					</xsl:otherwise>
 				</xsl:choose>
 			</html:div>
 		</xsl:otherwise>
@@ -111,20 +113,20 @@
 		
 		<f:thunk with-template="$wrapInContext" />
 		
-		<xsl:for-each select="$relations/*">
+		<f:each select="$relations" key="relation">
 			<html:div class="entry">
 				<f:on event="click" with-action="$selectRelation">
-					<f:with-param name="relation" select="." />
+					<f:with-param name="relation" select="$relation" />
 				</f:on>
 				
 				<f:thunk url="object.xml">
-					<f:with-param name="focus" select="." />
+					<f:with-param name="focus" select="$relation" />
 				</f:thunk>
 			</html:div>
 			<f:thunk with-template="$selectRelation">
-				<f:with-param name="relation" select="." />
+				<f:with-param name="relation" select="$relation" />
 			</f:thunk>
-		</xsl:for-each>
+		</f:each>
 		<f:action name="selectRelation">
 			<f:param name="relation" type="Object" />
 			<f:derive name="argCount" d="(mapSet (compose (compose length keys) getRelationTypeComponents)) (bindUnitSet Object~Cons (getTypes relation))" />
@@ -134,7 +136,7 @@
 			<f:intact object="$left" action="add" property="object" key="$relation" />
 			
 			<xsl:call-template name="makeConsIP">
-				<xsl:with-param name="num" select="$argCount/*[1]/@value - 1" />
+				<xsl:with-param name="num" select="$argCount/*[1]/*/@value - 1" />
 				<xsl:with-param name="left" select="$left" />
 			</xsl:call-template>
 			
@@ -193,16 +195,16 @@
 		
 		<f:thunk with-template="$wrapInContext" />
 		
-		<xsl:for-each select="$objects/*">
+		<f:each select="$objects" key="object">
 			<html:div class="entry">
 				<f:on event="click" with-action="$selectObject">
-					<f:with-param name="object" select="." />
+					<f:with-param name="object" select="$object" />
 				</f:on>
 				<f:thunk url="object.xml">
-					<f:with-param name="focus" select="." />
+					<f:with-param name="focus" select="$object" />
 				</f:thunk>
 			</html:div>
-		</xsl:for-each>
+		</f:each>
 		<f:action name="selectObject">
 			<f:param name="object" type="Object" />
 			
@@ -229,10 +231,10 @@
 	<f:action name="dropObject">
 		<f:derive name="droppedObject" d="bindUnit (compose returnFutureUnit UI.dragging:object) (UI.main:dragging ui.main)" />
 		
-		<xsl:if test="$droppedObject">
+		<f:each select="$droppedObject">
 			<f:intact object="$focus" action="add" property="object" key="$droppedObject" />
 			<f:perform with-action="$stopDragging" />
-		</xsl:if>
+		</f:each>
 	</f:action>
 
 	
@@ -278,7 +280,7 @@
 				<f:param name="focus" type="UI.consIP" />
 				<f:param name="num" type="Number" />
 			
-				<xsl:variable name="t" select="$rtInputs/f:map[1]/f:entry[position() = $num/@value]/f:value/*" />
+				<xsl:variable name="t" select="$rtInputs/f:map[1]/f:entry[position() = $num/@value]/f:value/*/*" />
 				<xsl:if test="$t">
 					<xsl:choose>
 						<xsl:when test="$t/@name = $polyA/@name">
