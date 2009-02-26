@@ -98,7 +98,7 @@ loop(Req, DocRoot) ->
 					receive 
 						{updates, Updates, LastMessageId2} ->
 							responseTime:updatesOut(SessionId, pipeline, Updates),
-							JsonOut = {struct, [{"updates", Updates},{"lastMessageId", LastMessageId2}]};
+							JsonOut = {struct, [{"responses", Updates},{"lastMessageId", LastMessageId2}]};
 						JsonOut ->
 							JsonOut
 					after 
@@ -107,7 +107,7 @@ loop(Req, DocRoot) ->
 							JsonOut = {struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]}
 					end,
 					spit(Req, JsonOut);
-				"query" ->
+				"post" ->
 					Data = Req:parse_post(),
 					Json = proplists:get_value("json", Data),
 					Struct = mochijson2:decode(Json),
@@ -116,32 +116,52 @@ loop(Req, DocRoot) ->
 						session_closed ->
 							spit(Req, {struct, [{"sessionClosed", true}] });
 						SessionPid ->
-							Queries = struct:get_value(<<"queries">>, Struct),
+							Messages = struct:get_value(<<"messages">>, Struct),
 							ProcessQuery = fun( Query ) ->
-												Expr = struct:get_value(<<"expr">>, Query),
-												QueryId = struct:get_value(<<"queryId">>, Query),
-												responseTime:in(SessionId, 'query', QueryId, now() ),
-												EvalInjectFun = fun() ->
-													Cell = eval:evaluate( expr:exprParse( binary_to_list(Expr) ) ),
-													% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
-													cell:injectFunc(Cell, 
-														fun() ->
-															SessionPid ! {done, QueryId}
-														end,
-														fun(Val) ->
-															SessionPid ! {data, {QueryId, add, Val}},
-															fun() -> 
-																case Val of
-																	{Key,_} -> SessionPid ! {data, {QueryId, remove, Key}};
-																	_ -> SessionPid ! {data, {QueryId, remove, Val}}
-																end
-															end
-														end
-													)
-												end,
-												session:inject(SessionPid, QueryId, EvalInjectFun)
-											end,
-							try lists:foreach( ProcessQuery, Queries) of
+								Expr = struct:get_value(<<"expr">>, Query),
+								QueryId = struct:get_value(<<"queryId">>, Query),
+								responseTime:in(SessionId, 'query', QueryId, now() ),
+								EvalInjectFun = fun() ->
+									Cell = eval:evaluate( expr:exprParse( binary_to_list(Expr) ) ),
+									% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
+									cell:injectFunc(Cell, 
+										fun() ->
+											SessionPid ! {done, QueryId}
+										end,
+										fun(Val) ->
+											SessionPid ! {data, {QueryId, add, Val}},
+											fun() -> 
+												case Val of
+													{Key,_} -> SessionPid ! {data, {QueryId, remove, Key}};
+													_ -> SessionPid ! {data, {QueryId, remove, Val}}
+												end
+											end
+										end
+									)
+								end,
+								session:inject(SessionPid, QueryId, EvalInjectFun)
+							end,
+							ProcessAction = fun( Action ) ->
+								ActionId = struct:get_value(<<"actionId">>, Action),
+								Actions = struct:get_value(<<"actions">>, Action),
+								{Returned, Created} = processActionList(Actions),
+								Success = lists:all(fun(X) -> X =/= error end, Returned),
+								CreatedStruct = {struct, Created},
+								% responseTime:out(SessionId, action, now() ),
+								ActionResponse = {struct, [{"actionResponse", 
+									{struct, [{"actionId", ActionId}, {"success", Success},{"returned", Returned},{"created", CreatedStruct}] }
+								}]},
+								SessionPid ! {actionResponse, ActionResponse}
+							end,
+							
+							ProcessMessage = fun( Message ) ->
+								case struct:get_first(Message) of
+									{<<"query">>, Query} -> ProcessQuery(Query);
+									{<<"action">>, Action} -> ProcessAction(Action)
+								end
+							end,
+							
+							try lists:foreach( ProcessMessage, Messages) of
 								ok -> spit(Req, true)
 							catch 
 								ErrorType:Reason -> 
@@ -162,14 +182,24 @@ loop(Req, DocRoot) ->
 					case session:lookup(SessionId) of
 						session_closed ->
 							spit(Req, {struct, [{"sessionClosed", true}] });
-						_SessionPid ->
-							Actions = struct:get_value(<<"actions">>, Struct),
-							try processActionList(Actions) of
-								{Returned, Created} ->
-									Success = lists:all(fun(X) -> X =/= error end, Returned),
-									CreatedStruct = {struct, Created},
-									% responseTime:out(SessionId, action, now() ),
-									spit(Req, {struct, [{"success", Success},{"returned", Returned},{"created", CreatedStruct}] } )
+						SessionPid ->
+							Messages = struct:get_value(<<"messages">>, Struct),
+							
+							ProcessAction = fun( Message ) ->
+								Action = struct:get_value(<<"action">>, Message),
+								ActionId = struct:get_value(<<"actionId">>, Action),
+								Actions = struct:get_value(<<"actions">>, Action),
+								{Returned, Created} = processActionList(Actions),
+								Success = lists:all(fun(X) -> X =/= error end, Returned),
+								CreatedStruct = {struct, Created},
+								% responseTime:out(SessionId, action, now() ),
+								ActionResponse = {struct, [{"actionResponse", 
+									{struct, [{"actionId", ActionId}, {"success", Success},{"returned", Returned},{"created", CreatedStruct}] }
+								}]},
+								SessionPid ! {actionResponse, ActionResponse}
+							end,
+							try lists:foreach( ProcessAction, Messages) of
+								ok -> spit(Req, {struct, [{"result", true}]})
 							catch
 								ErrorType:Reason -> 
 									spit(Req, {struct, [
@@ -207,8 +237,7 @@ processActionList(Actions) ->
 	
 processActionList(Actions, Updates, Variables) ->
 	ProcessActions = fun(Action, {UpdatesAccumulator, VariablesAccumulator}) ->
-						ActionType = struct:get_value(<<"action">>, Action),
-						processAction(ActionType, Action, UpdatesAccumulator, VariablesAccumulator)
+						processAction(Action, UpdatesAccumulator, VariablesAccumulator)
 					end,
 	{ActionUpdates, ReturnVariables} = lists:foldl(ProcessActions, {Updates, Variables}, Actions),
 	{lists:reverse(ActionUpdates), ReturnVariables}.
@@ -219,7 +248,7 @@ processActionList(Actions, Updates, Variables) ->
 %% processAction:: Action -> List Update -> List {String, String} -> { List Update, List {String, String} }
 %% 
 
-processAction(<<"block">>, Action, Updates, OldVariables) ->
+processAction({struct, [{<<"block">>, Action}]}, Updates, OldVariables) ->
 	BlockVariables = struct:get_value(<<"variables">>, Action),
 	Actions = struct:get_value(<<"actions">>, Action),
 	{Returned,_} = processActionList(Actions, [], OldVariables),
@@ -230,7 +259,7 @@ processAction(<<"block">>, Action, Updates, OldVariables) ->
 				end,
 	{ Updates, NewVariables ++ OldVariables};
 % action:create is how variables get bound to objects
-processAction(<<"create">>, Action, Updates, Variables) ->
+processAction({struct, [{<<"create">>, Action}]}, Updates, Variables) ->
 	Type = binary_to_list( struct:get_value(<<"type">>, Action) ),
 	Variable = struct:get_value(<<"variable">>, Action),
 	Prop = struct:get_value(<<"prop">>, Action),
@@ -245,8 +274,7 @@ processAction(<<"create">>, Action, Updates, Variables) ->
 			{ Updates, [{ Variable, Object } | Variables1] }
 	end;
 % action:return is how bound variables get returned to the client
-processAction(<<"return">>, Action, Updates, Variables) ->
-	Variable = struct:get_value(<<"variable">>, Action),
+processAction({struct, [{<<"return">>, Variable}]}, Updates, Variables) ->
 	case lists:keysearch(Variable, 1, Variables) of
 		{value, {_, Binding} } ->
 			{ [Binding|Updates], Variables};
@@ -255,7 +283,8 @@ processAction(<<"return">>, Action, Updates, Variables) ->
 			{ [error|Updates], Variables}
 	end;
 % action:add|remove doesn't affect the state of the response to client unless there is an error
-processAction(ActionType, Action, Updates, Variables) when ActionType =:= <<"add">> orelse ActionType =:= <<"remove">> ->
+processAction({struct, [{<<"change">>, Action}]}, Updates, Variables) ->
+	ActionType = struct:get_value(<<"kind">>, Action),
 	Variable = struct:get_value(<<"object">>, Action),
 	Object = bindVarOrFormatExprElement( Variable, Variables ),
 	if

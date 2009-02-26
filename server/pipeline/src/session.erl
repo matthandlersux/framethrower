@@ -141,6 +141,9 @@ session( State ) ->
 					io:format("queryId not found in session, perhaps already finished?~n", []),
 					session( State )
 			end;
+		{actionResponse, ActionResponse} ->
+			?this(msgQueue) ! { actionResponse, ActionResponse },
+			session(State);
 		{inject, QueryId, InjectFun } ->
 			session(
 				State#session{
@@ -173,6 +176,8 @@ msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, off ) ->
 		{data, {QueryId, Action, Data}} ->
 			Struct = wellFormedUpdate(Data, QueryId, Action),
 			msgQueueLoop( [{LastMessageId + 1, Struct}|MsgQueue], off);
+		{actionResponse, ActionResponse} ->
+			msgQueueLoop( [{LastMessageId + 1, ActionResponse}|MsgQueue], off);
 		{dataList, Msgs} ->
 			Msgs1 = lists:foldl( 
 						fun({Q, A, D}, [{L,_}|_] = Acc) -> 
@@ -232,14 +237,18 @@ msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, {To, ClientLastMessageId}) ->
 %% 
 
 wellFormedUpdate(QueryId, Action) ->
-	{struct, [{"queryId",QueryId},{"action", Action}]}.
+	{struct, [{"queryUpdate", 
+		{struct, [{"queryId",QueryId},{"action", Action}]}
+	}]}.
 	
 wellFormedUpdate(Data, QueryId, Action) ->
 	case Data of
 		{Key, Value} -> Data1 = [{"key", mblib:exprElementToJson(Key)},{"value", mblib:exprElementToJson(Value)}];
 		_ -> Data1 = [{"key", mblib:exprElementToJson(Data)}]
 	end,
-	{struct, [{"queryId",QueryId},{"action", Action}|Data1]}.
+	{struct, [{"queryUpdate",
+		{struct, [{"queryId",QueryId},{"action", Action}|Data1]}
+	}]}.
 
 %% 
 %% streamUntil:: Pid -> {Number, Struct}
