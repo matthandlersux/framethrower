@@ -13,6 +13,8 @@
 	<f:derive name="situationType" d="shared.type.situation" />
 	<f:derive name="entityType" d="shared.type.entity" />
 	<f:derive name="typeType" d="shared.type.type" />
+	
+	<f:derive name="movieType" d="shared.type.movie" />
 
 	<f:derive name="prefs" d="ui.prefs" />
 	<f:derive name="situationType" d="shared.type.situation" />
@@ -22,6 +24,7 @@
 	<f:intact object="$prefs" property="typeDisplay" action="add" key="$situationType" value="'#2ae'" />
 	<f:intact object="$prefs" property="typeDisplay" action="add" key="$entityType" value="'#8c3'" />
 	<f:intact object="$prefs" property="typeDisplay" action="add" key="$relationType" value="'#e29'" />
+	<f:intact object="$prefs" property="typeDisplay" action="add" key="$movieType" value="'#933'" />
 
 
 </f:action>

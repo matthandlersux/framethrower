@@ -103,7 +103,7 @@ function getServerAdvice(templateNode, url, env) {
 				template = returnFromXSLCopyOf(te.template);
 			}
 			
-			var params = map(te.params, returnFromXSLCopyOf);
+			var params = map(te.params, returnFromXSLCopyOf); // TODO: right now this only sends variables, should also send numbers, strings, etc.
 			
 			calls.push({
 				call: "thunk",
@@ -158,7 +158,6 @@ design server advice annotation syntax (for hand advising to avoid tricky xsl st
 design a cleanup thing?
 	get rid of templates never called
 	don't use params in thunks that aren't declared earlier (and are remote)
-recursing on all the url's...
 
 
 documents.withDoc("testing/uiTest/pane/objectsIn.xml", function (d) {console.log(getServerAdvice(d));})

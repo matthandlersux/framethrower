@@ -8,10 +8,15 @@
 		<xsl:param name="relationTemplate" />
 		<xsl:param name="infonArgs" />
 		<xsl:param name="argTemplate" />
+		<xsl:param name="color" />
 		
 
 	
 		<html:div class="infon">
+			<xsl:if test="$color">
+				<xsl:attribute name="style">background-color: <xsl:value-of select="$color" />;</xsl:attribute>
+			</xsl:if>
+			
 			<xsl:choose>
 				<xsl:when test="$relationTemplate/f:row">
 					<xsl:for-each select="$relationTemplate/f:row">

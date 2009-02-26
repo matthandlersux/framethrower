@@ -68,11 +68,15 @@
 					<xsl:with-param name="top" select="$mouseY/@value + 2" />
 				</xsl:call-template>
 			
-				<f:thunk url="../view2/object.xml">
+				<f:thunk url="../view2/viewPlus.xml">
 					<f:with-param name="focus" select="$object" />
+					<f:with-param name="extra" select="$noExtra" />
 				</f:thunk>
 			</html:div>
 		</f:each></f:each></f:each>
+		<f:template name="noExtra">
+			<f:param name="focus" type="Object" />
+		</f:template>
 	</f:template>
 	
 	<f:action name="closeTopPane" />

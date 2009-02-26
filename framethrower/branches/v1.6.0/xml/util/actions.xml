@@ -156,7 +156,19 @@
 		</f:perform>
 	
 		<f:return name="cons2" />
-	</f:action>	
+	</f:action>
+	
+	<f:action name="makeInfon1">
+		<f:param name="relation" type="Object" />
+		<f:param name="arg1" type="Object" />
+		
+		<f:perform with-action="$makeCons" name="cons1">
+			<f:with-param name="left" select="$relation" />
+			<f:with-param name="right" select="$arg1" />
+		</f:perform>
+		
+		<f:return name="cons1" />
+	</f:action>
 
 	<f:action name="makeCons">
 		<f:param name="left" type="Object" />

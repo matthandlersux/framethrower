@@ -38,7 +38,23 @@ var rootObjects = {};
 	m("shared.type.poly.a"); // unknown how we want to do polymorphic types.
 							// For now, we only allow one polymorphic type per relation type and it has to be the output. For example: in :: Situation -> a -> a
 	
+	m("shared.type.movie");
+	
+	
 	m("shared.realLife");
+	
+	
+	
+	m("shared.movie.story");
+	m("shared.movie.presentation");
+	m("shared.movie.making");
+	
+	
+	m("test.1");
+	m("test.2");
+	m("test.3");
+	
+	
 	
 	
 	m("ui.ui", "UI.ui");

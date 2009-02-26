@@ -81,6 +81,12 @@ Pane itself
 .tab-artifacts {
 	background:transparent url(images/artifacts.png) no-repeat scroll 6px center;
 }
+.tab-infonsIn .icon {
+	background-image:url(images/infonsin.png);
+}
+.tab-about .icon {
+	background-image:url(images/infonsabout.png);
+}
 .tab-infonsIn .icon, .tab-about .icon {
 	-moz-border-radius:8px;
 	-webkit-border-radius:8px;
@@ -89,12 +95,6 @@ Pane itself
 	height:15px;
 	width:15px;
 	margin: 6px;
-}
-.tab-infonsIn .icon {
-	background-image:url(images/infonsin.png);
-}
-.tab-about .icon {
-	background-image:url(images/infonsabout.png);
 }
 
 

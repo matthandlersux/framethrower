@@ -16,6 +16,8 @@
 	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
 	<f:derive name="typeName" d="getName expectedType" />
 
+	<f:include url="/xml/util/typeColor.xml" />
+
 	
 	<xsl:variable name="expectInfon" select="$expectedType/@name = $infonType/@name" />
 	<xsl:variable name="empty" select="not($object/*) and not($left/*)" />
@@ -48,7 +50,13 @@
 				<f:on event="dragEnd" with-action="$dropObject" />
 				<xsl:choose>
 					<xsl:when test="$empty">
-						<xsl:variable name="color" select="$typeDisplay/f:entry[f:key/f:o/@name = $expectedType/@name][1]/f:value/f:literal/@value" />
+						<xsl:variable name="color">
+							<xsl:call-template name="typeColor">
+								<xsl:with-param name="typeNames" select="$expectedType/@name" />
+								<xsl:with-param name="typeDisplay" select="$typeDisplay" />
+							</xsl:call-template>
+						</xsl:variable>
+						
 						<html:div class="objectDrop">
 							<xsl:attribute name="style">
 								border-color: <xsl:value-of select="$color" />;
@@ -82,13 +90,13 @@
 		<f:action name="wrap">
 			<f:derive name="sharedIn" d="shared.in" />
 			<f:create type="UI.consIP" name="temp" />
-			<xsl:if test="$object">
+			<f:each select="$object">
 				<f:intact object="$temp" action="add" property="object" key="$object" />
-			</xsl:if>
-			<xsl:if test="$left and $right">
+			</f:each>
+			<f:each select="$left"><f:each select="$right">
 				<f:intact object="$temp" action="add" property="left" key="$left" />
 				<f:intact object="$temp" action="add" property="right" key="$right" />
-			</xsl:if>
+			</f:each></f:each>
 			
 			<f:create type="UI.consIP" name="in" />
 			<f:intact object="$in" action="add" property="object" key="$sharedIn" />
@@ -235,6 +243,9 @@
 			<f:intact object="$focus" action="add" property="object" key="$droppedObject" />
 			<f:perform with-action="$stopDragging" />
 		</f:each>
+		
+		<f:intact object="$focus" action="remove" property="left" />
+		<f:intact object="$focus" action="remove" property="right" />
 	</f:action>
 
 	
@@ -263,7 +274,14 @@
 			
 			<f:derive name="template" d="getRelationTemplate relation" />
 			<f:derive name="rtInputs" d="mapSet getRelationTypeInputs (bindUnitSet Object~Cons (getTypes relation))" />
-		
+			
+			<xsl:variable name="color">
+				<xsl:call-template name="typeColor">
+					<xsl:with-param name="typeNames" select="$expectedType/@name" />
+					<xsl:with-param name="typeDisplay" select="$typeDisplay" />
+				</xsl:call-template>
+			</xsl:variable>
+			
 		
 			<xsl:variable name="rt" select="$template/f:literal/f:relationTemplate" />
 			<xsl:if test="$rt">
@@ -272,6 +290,7 @@
 						<xsl:with-param name="relationTemplate" select="$rt" />
 						<xsl:with-param name="infonArgs" select="$infonArgs" />
 						<xsl:with-param name="argTemplate" select="$printArg" />
+						<xsl:with-param name="color" select="$color" />
 					</xsl:call-template>
 				</html:span>
 			</xsl:if>

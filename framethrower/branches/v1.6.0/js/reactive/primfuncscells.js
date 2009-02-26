@@ -460,7 +460,7 @@ var primFuncs = function () {
 			}
 		},
 		gate: {
-			type: "Unit Null -> a -> Unit a",
+			type: "Unit b -> a -> Unit a",
 			func: function (gatekeeper, passer) {
 				// if gatekeeper is set, send passer through
 				// if gatekeeper is empty, output is empty

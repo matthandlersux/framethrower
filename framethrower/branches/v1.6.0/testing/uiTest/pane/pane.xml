@@ -10,12 +10,25 @@
 	<f:derive name="tab" d="UI.pane.pane:tab pane" />
 	<f:derive name="focus" d="UI.pane.pane:focus pane" />
 	
-	<f:derive name="focustype" d="bindSet (getOntProp shared.isA) (returnUnitSet focus)" />
+	<!-- <f:derive name="focustype" d="bindSet (getOntProp shared.isA) (returnUnitSet focus)" /> -->
+	<f:derive name="focustype" d="bindSetUnit getTypes focus" />
+	
+	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
 	
 	<f:derive name="propertiesState" d="UI.pane.pane:propertiesState pane" />
 
+	<f:include url="/xml/util/typeColor.xml" />
+
 	<f:each select="$focus">
 		<xsl:variable name="tab" select="$tab/*" /> <!-- TODO fix this -->
+		
+		<xsl:variable name="color">
+			<xsl:call-template name="typeColor">
+				<xsl:with-param name="typeNames" select="$focustype/f:o/@name" />
+				<xsl:with-param name="typeDisplay" select="$typeDisplay" />
+			</xsl:call-template>
+		</xsl:variable>
+		
 		<html:div class="pane">
 			<html:div class="titlebar">
 				<html:div class="titlebar-focus">
@@ -31,7 +44,7 @@
 				</html:div>
 			
 				<html:div class="tabs">
-					<xsl:if test="$focustype/*[1]/@name = 'shared.type.situation'">
+					<xsl:if test="$focustype/*/@name = 'shared.type.situation'">
 						<html:div class="tab">
 							<xsl:if test="$tab/@value = 'objectsIn'">
 								<xsl:attribute name="selected">true</xsl:attribute>
@@ -54,7 +67,9 @@
 								<f:with-param name="tab" select="'infonsIn'" />
 							</f:on>
 							<html:div class="tab-infonsIn">
-								<html:div class="icon" />
+								<html:div class="icon">
+									<xsl:attribute name="style">background-color: <xsl:value-of select="$color" /></xsl:attribute>
+								</html:div>
 								Infons in
 								<f:thunk with-template="$infonCount">
 									<f:with-param name="focus" select="$focus" />
@@ -70,7 +85,9 @@
 							<f:with-param name="tab" select="'about'" />
 						</f:on>
 						<html:div class="tab-about">
-							<html:div class="icon" />
+							<html:div class="icon">
+								<xsl:attribute name="style">background-color: <xsl:value-of select="$color" /></xsl:attribute>
+							</html:div>
 							About
 							<f:thunk with-template="$aboutCount">
 								<f:with-param name="focus" select="$focus" />

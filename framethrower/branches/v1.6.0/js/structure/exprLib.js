@@ -64,6 +64,10 @@ var exprLib = {
 		type: "(a -> Unit b) -> Set a -> Set b",
 		expr: "f -> bindSet (compose returnUnitSet f)"
 	},
+	bindSetUnit: {
+		type: "(a -> Set b) -> Unit a -> Set b",
+		expr: "f -> compose (bindSet f) returnUnitSet"
+	},
 	
 	mapBinaryUnit: {
 		type: "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
@@ -76,12 +80,12 @@ var exprLib = {
 	// ========================================================================
 	
 	passthru: {
-		type: "(a -> Unit Null) -> a -> Unit a",
+		type: "(a -> Unit b) -> a -> Unit a",
 		expr: "pred -> x -> gate (pred x) x"
 	},
 	
 	filter: {
-		type: "(a -> Unit Null) -> Set a -> Set a",
+		type: "(a -> Unit b) -> Set a -> Set a",
 		expr: "pred -> bindSet (compose returnUnitSet (passthru pred))"
 	},
 	
@@ -229,11 +233,44 @@ var exprLib = {
 		}
 	},
 	
-	getTypes: {
+	getTypesOLD: {
 		type: "Object -> Set Object",
 		expr: "unfoldSet (getOntProp shared.isA)"
 	},
-
+	
+	getTypes: {
+		type: "Object -> Set Object",
+		expr: "unfoldSet oneStep",
+		where: {
+			oneStep: {
+				type: "Object -> Set Object",
+				expr: "x -> union (getOntProp shared.isA x) (constructedType x)",
+				where: {
+					constructedType: {
+						type: "Object -> Set Object",
+						expr: "x -> finalRight (filter leftLeft (bindSetUnit (getOntProp shared.isA) (left x)))",
+						// TODO: instead of (getOntProp shared.isA) this should recursively call getTypes.
+						// Right now we can only get type for one-deep Cons's.
+						// (Need to build in recursion first).
+						where: {
+							left: {
+								type: "Object -> Unit Object",
+								chain: ["Cons:left"]		
+							},
+							leftLeft: {
+								type: "Object -> Unit Object",
+								chain: ["Cons:left", "Cons:left"] // TODO: need to check if it equals shared.relationType
+							},
+							finalRight: {
+								type: "Set Object -> Set Object",
+								chain: ["Cons:right"]
+							}
+						}
+					}
+				}
+			}
+		}
+	},
 
 	// ========================================================================
 	// Querying for infons
