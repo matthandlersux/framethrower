@@ -43,9 +43,10 @@ function actionXMLToJS(node) {
 		// TODO: add support for multiple returns via commas in name
 		var name = getAttr(node, "name");
 		return {
-			action: "block",
-			variables: name ? [name] : [],
-			actions: map(children, actionXMLToJS)
+			block: {
+				variables: name ? [name] : [],
+				actions: map(children, actionXMLToJS)
+			}
 		};
 	} else if (nn === "f:create") {
 		var te = node.custom.thunkEssence;
@@ -55,10 +56,11 @@ function actionXMLToJS(node) {
 			return extractVar(param);
 		});
 		return {
-			action: "create",
-			variable: name,
-			type: type,
-			prop: properties
+			create: {
+				variable: name,
+				type: type,
+				prop: properties
+			}
 		};
 	} else if (nn === "f:intact") {
 		var te = node.custom.thunkEssence;
@@ -68,18 +70,20 @@ function actionXMLToJS(node) {
 		var key = extractVar(te.params["key"]);
 		var value = extractVar(te.params["value"]);
 		return {
-			action: action,
-			object: object,
-			property: property,
-			key: key,
-			value: value
+			change: {
+				kind: action,
+				object: object,
+				property: property,
+				key: key,
+				value: value
+			}
 		};
 	} else if (nn === "f:return") {
 		return {
-			action: "return",
-			variable: getAttr(node, "name")
+			'return': getAttr(node, "name")
 		};
 	} else if (nn === "f:servercall") {
+		//TODO: add this to the protocol
 		var te = node.custom.thunkEssence;
 		var variablesString = getAttr(node, "variables");
 		return {
@@ -104,27 +108,30 @@ function performActionsJSLocal(actions, env, ret) {
 	}
 	
 	forEach(actions, function (action) {
-		if (action.action === "block") {
+		if (action.block) {
+			var block = action.block;
 			var newEnv = makeDynamicEnv(env.env);
-			var results = performActionsJSLocal(action.actions, newEnv);
+			var results = performActionsJSLocal(block.actions, newEnv);
 			
 			var retNum = 0;
 			forEach(results, function (result) {
-				env.add(action.variables[retNum], result);
+				env.add(block.variables[retNum], result);
 				retNum++;
 			});
-			if (retNum !== action.variables.length) {
-				console.warn("Block doesn't have the right amount of variables", action);
+			if (retNum !== block.variables.length) {
+				console.warn("Block doesn't have the right amount of variables", block);
 			}
-		} else if (action.action === "create") {
-			var res = createObject(action.type, map(action.prop, unextract));
-			if (action.variable) {
-				env.add(action.variable, res);
+		} else if (action.create) {
+			var create = action.create;
+			var res = createObject(create.type, map(create.prop, unextract));
+			if (create.variable) {
+				env.add(create.variable, res);
 			}
-		} else if (action.action === "add" || action.action === "remove") {
-			intact(unextract(action.object), action.property, action.action, unextract(action.key), unextract(action.value));
-		} else if (action.action === "return") {
-			ret.push(env.env(action.variable));
+		} else if (action.change) {
+			var change = action.change;
+			intact(unextract(change.object), change.property, change.kind, unextract(change.key), unextract(change.value));
+		} else if (action.return) {
+			ret.push(env.env(action.return));
 		}
 	});
 	
@@ -195,7 +202,7 @@ function performActionsJS(actions, callback, env, ret) {
 				});
 				performActionsJS(actions, callback, env, ret);
 			}
-
+			console.log("HERE");
 			performActionsJS(action.actions, cb, newEnv);
 		}
 	}
@@ -211,27 +218,27 @@ function tagActionsClientOrServer(actions, env, ret) {
 	if (!ret) ret = [];
 	
 	forEach(actions, function (action) {
-		if (action.action === "block") {
+		if (action.block) {
 			var newEnv = makeDynamicEnv(env.env);
-			var results = tagActionsClientOrServer(action.actions, newEnv);
+			var results = tagActionsClientOrServer(action.block.actions, newEnv);
 			
 			var retNum = 0;
 			forEach(results, function (result) {
-				env.add(action.variables[retNum], result);
+				env.add(action.block.variables[retNum], result);
 				retNum++;
 			});
-		} else if (action.action === "create") {
+		} else if (action.create) {
 			// decide based on type
-			var type = action.type;
+			var type = action.create.type;
 			if (objects.inherits(type, "Object")) {
 				action.server = true;
 			}			
-			if (action.variable) {
-				env.add(action.variable, action.server ? true : false);
+			if (action.create.variable) {
+				env.add(action.create.variable, action.server ? true : false);
 			}
-		} else if (action.action === "add" || action.action === "remove") {
+		} else if (action.change) {
 			// decide based on type of object
-			var o = action.object;
+			var o = action.change.object;
 			if (o.variable) {
 				action.server = env.env(o.variable);
 			} else {
@@ -240,8 +247,8 @@ function tagActionsClientOrServer(actions, env, ret) {
 					action.server = true;
 				}
 			}
-		} else if (action.action === "return") {
-			ret.push(env.env(action.variable));
+		} else if (action.return) {
+			ret.push(env.env(action.return));
 		}
 	});
 	
@@ -254,11 +261,12 @@ function isClientOrServer(action) {
 	// if (action.action === "servercall") {
 	// 		return "server";
 	// 	} else 
-	if (action.action === "return") {
+	
+	if (action.return) {
 		return "neither";
-	} else if (action.action === "block") {
+	} else if (action.block) {
 		var ret = "neither";
-		forEach(action.actions, function (action) {
+		forEach(action.block.actions, function (action) {
 			var cs = isClientOrServer(action);
 			if (ret === "neither") {
 				ret = cs;
@@ -331,32 +339,34 @@ function clientJSONToServerJSON(actions) {
 	}
 
 	return map(actions, function (action) {
-		if (action.action === "block") {
+		if (action.block) {
 			return {
-				action: "block",
-				variables: action.variables,
-				actions: clientJSONToServerJSON(action.actions)
+				block: {
+					variables: action.block.variables,
+					actions: clientJSONToServerJSON(action.block.actions)
+				}
 			};
-		} else if (action.action === "create") {
+		} else if (action.create) {
 			return {
-				action: "create",
-				type: action.type,
-				variable: action.variable,
-				prop: map(action.prop, convert)
+				create: {
+					type: action.create.type,
+					variable: action.create.variable,
+					prop: map(action.create.prop, convert)
+				}
 			};
-		} else if (action.action === "add" || action.action === "remove") {
+		} else if (action.change) {
+			var change = action.change;
 			return {
-				action: action.action,
-				object: convert(action.object),
-				property: action.property,
-				key: convert(action.key),
-				value: convert(action.value)
+				change: {
+					kind: change.kind,
+					object: convert(change.object),
+					property: change.property,
+					key: convert(change.key),
+					value: convert(change.value)
+				}
 			};
-		} else if (action.action === "return") {
-			return {
-				action: "return",
-				variable: action.variable
-			};
+		} else if (action.return) {
+			return action;
 		}
 	});
 }

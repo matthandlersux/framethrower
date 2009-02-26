@@ -185,7 +185,9 @@ var session = (function () {
 	var queriesToAsk = [];
 	var actionsToSend = [];
 	var nextQueryId = 1;
+	var nextActionId = 1;
 	var lastMessageId = 0;
+	var actionsPending = {};
 	
 	var cells = {};
 	
@@ -203,22 +205,40 @@ var session = (function () {
 	function sendAllActions() {
 		if (sessionId && sessionId !== "initializing") {
 			if (actionsToSend.length > 0) {
+				var actionId = nextActionId;
+				nextActionId++;
 				var sending = actionsToSend.shift();
 				var json = JSON.stringify({
 					sessionId: sessionId,
-					actions: sending.actions
+					messages: [
+						{
+							action: {
+								actionId: actionId,
+								actions: sending.actions
+							}
+						}
+					]
 				});
 
-				xhr(serverBaseUrl+"action", json, function (response) {
+				actionsPending[actionId] = sending.callback;
+
+				//TODO: store this callback with the actionId and call it from the pipeline when the actionResponse is received
+
+				xhr(serverBaseUrl+"post", json, function (response) {
 					response = JSON.parse(response);
 					
-					// TODO fill this with correct variables or whatever
-					if (sending.callback) {
-						sending.callback(response.created, response.returned); 
+					// TODO: respond to just true or an error
+					if (response.result !== true) {
+						debug.log("Action Error:", response.result);
 					}
 					
 					sendAllActions();
+				},
+				function () {
+					actionToSend = actionsToSend.concat(asking);
+					sendAllActions();
 				});
+
 			}
 		}
 	}
@@ -244,8 +264,10 @@ var session = (function () {
 		}
 		
 		queriesToAsk.push({
-			expr: unparseExpr(getExpr(expr)),
-			queryId: queryId
+			query: {
+				expr: unparseExpr(getExpr(expr)),
+				queryId: queryId
+			}
 		});
 		
 		return cell;
@@ -256,13 +278,14 @@ var session = (function () {
 			if (queriesToAsk.length > 0) {
 				var asking = queriesToAsk;
 				queriesToAsk = [];
+				
 				var json = JSON.stringify({
 					sessionId: sessionId,
-					queries: asking
+					messages: asking
 				});
-			
-				xhr(serverBaseUrl+"query", json, function (text) {
-				
+							
+				xhr(serverBaseUrl+"post", json, function (text) {
+					//TODO: response to error
 				}, function () {
 					queriesToAsk = queriesToAsk.concat(asking);
 					askAllQueries();
@@ -293,30 +316,43 @@ var session = (function () {
 					return;
 				} else {
 					lastMessageId = o.lastMessageId;
-					forEach(o.updates, function (update) {
+					forEach(o.responses, function (response) {
 						//console.log("doing update", update, o.updates);
-						var cell = cells[update.queryId];
+						if (response.queryUpdate) {
+							var update = response.queryUpdate;
+							var cell = cells[update.queryId];
 						
-						if (cell !== undefined) { // TODO do i need this?
-							var keyType; // TODO test this
-							var valueType;
-							var cellType = getType(cell);
-							if (cellType.left.kind === "typeApply") {
-								keyType = cellType.left.right;
-								valueType = cellType.right;
-							} else {
-								keyType = cellType.right;
-							}
+							if (cell !== undefined) { // TODO do i need this?
+								var keyType; // TODO test this
+								var valueType;
+								var cellType = getType(cell);
+								if (cellType.left.kind === "typeApply") {
+									keyType = cellType.left.right;
+									valueType = cellType.right;
+								} else {
+									keyType = cellType.right;
+								}
 
-							if (update.action == "done") {
-								cell.setDone();
-							} else {
-								var key = parseServerResponse(update.key, keyType);
-								var value = parseServerResponse(update.value, valueType);
-								cell.control[update.action](key, value);
+								if (update.action == "done") {
+									cell.setDone();
+								} else {
+									var key = parseServerResponse(update.key, keyType);
+									var value = parseServerResponse(update.value, valueType);
+									cell.control[update.action](key, value);
+								}
+							}
+						} else if (response.actionResponse) {
+							var actionResponse = response.actionResponse;
+							
+							// TODO fill this with correct variables or whatever
+							var callback = actionsPending[actionResponse.actionId];
+							delete actionsPending[actionResponse.actionId];
+							if (callback && actionResponse.success) {
+								callback(actionResponse.created, actionResponse.returned); 
+							} else if (!actionResponse.success){
+								debug.log("Action failed, actionId:", actionResponse.actionId);
 							}
 						}
-
 					});
 					refreshScreen();
 				}

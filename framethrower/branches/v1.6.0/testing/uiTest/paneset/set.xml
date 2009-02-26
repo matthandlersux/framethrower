@@ -185,10 +185,13 @@
 		<f:action name="newPane">
 			<f:param name="focus" type="Object" />
 			<f:derive name="lastPaneKey" d="takeLastKey (UI.pane.set:panes paneset)" />
-			<xsl:variable name="newKey">
-				<xsl:call-template name="ord-bigger">
-					<xsl:with-param name="s" select="$lastPaneKey/@value" />
-				</xsl:call-template>
+			
+			<xsl:variable name="newKey">			
+				<f:each select="$lastPaneKey">
+					<xsl:call-template name="ord-bigger">
+						<xsl:with-param name="s" select="./@value" />
+					</xsl:call-template>
+				</f:each>
 			</xsl:variable>
 
 			<f:create type="UI.pane.pane" name="newPane" />
