@@ -80,7 +80,7 @@ function actionXMLToJS(node) {
 		};
 	} else if (nn === "f:return") {
 		return {
-			'return': getAttr(node, "name")
+			returnValue: getAttr(node, "name")
 		};
 	} else if (nn === "f:servercall") {
 		//TODO: add this to the protocol
@@ -130,8 +130,8 @@ function performActionsJSLocal(actions, env, ret) {
 		} else if (action.change) {
 			var change = action.change;
 			intact(unextract(change.object), change.property, change.kind, unextract(change.key), unextract(change.value));
-		} else if (action.return) {
-			ret.push(env.env(action.return));
+		} else if (action.returnValue) {
+			ret.push(env.env(action.returnValue));
 		}
 	});
 	
@@ -247,8 +247,8 @@ function tagActionsClientOrServer(actions, env, ret) {
 					action.server = true;
 				}
 			}
-		} else if (action.return) {
-			ret.push(env.env(action.return));
+		} else if (action.returnValue) {
+			ret.push(env.env(action.returnValue));
 		}
 	});
 	
@@ -262,7 +262,7 @@ function isClientOrServer(action) {
 	// 		return "server";
 	// 	} else 
 	
-	if (action.return) {
+	if (action.returnValue) {
 		return "neither";
 	} else if (action.block) {
 		var ret = "neither";
@@ -365,7 +365,7 @@ function clientJSONToServerJSON(actions) {
 					value: convert(change.value)
 				}
 			};
-		} else if (action.return) {
+		} else if (action.returnValue) {
 			return action;
 		}
 	});
