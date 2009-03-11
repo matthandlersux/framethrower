@@ -99,8 +99,6 @@ var exprLib = {
 	// Map utility
 	// ========================================================================
 	
-	// I think we should consider making this one primitive, maybe as :: Set a -> Unit a
-	// Andrew made this a primFunc. Not yet implemented on server. 
 	takeLastVal: {
 	 	type: "Map a b -> Unit b",
 	 	expr: "m -> bindUnit ((swap getKey) m) (takeLast (keys m))"

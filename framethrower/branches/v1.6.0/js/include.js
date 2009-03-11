@@ -1,7 +1,7 @@
 (function () {
 	
 	var includes = [
-		"js/external/firebugx.js",
+		//"js/external/firebugx.js",
 		"js/external/XMLHttpRequest.1.0.3/XMLHttpRequest.js",
 		"js/external/json2.js",
 		

@@ -7,7 +7,7 @@ function bootstrap(node, ids) {
 function evalThunk(thunkNode) {
 	var thunkEssence = thunkNode.custom.thunkEssence;
 	
-	function perform(xt) {
+	function perform(xt) {		
 		var e = xt;
 		forEach(xt.params, function (p) {
 			var thunksParam = thunkEssence.params[p.name];
@@ -62,6 +62,9 @@ function evalThunk(thunkNode) {
 	}
 	
 	if (thunkEssence.url) {
+		//send serverAdviceRequest
+		session.serverAdviceRequest(thunkEssence.url, thunkEssence.params);
+		
 		xmlTemplates.withTemplate(thunkEssence.url, perform);
 	} else if (thunkEssence.template) {
 		perform(thunkEssence.template);

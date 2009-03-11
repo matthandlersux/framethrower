@@ -15,32 +15,40 @@ function getServerAdvice(templateNode, url, env) {
 		var type = parseType(getAttr(paramNode, "type"));
 		
 		var remote = getRemoteType(type);
-		scope[name] = {remote: remote};
+		scope[name] = {remote: remote, name:name};
 		
 		if (remote < 2) {
 			params.push(name);
 		}
 	});
 	
-	var derives = {};
+	var derives = [];
 	forEach(xpath("f:derive", templateNode), function (deriveNode) {
 		var name = getAttr(deriveNode, "name");
+		
 		var d = getAttr(deriveNode, "d");
 		
 		var expr = parseExpr(d, newEnv);
+		
 		scope[name] = expr;
 		
 		var remote = getRemote(expr);
 		
 		if (remote < 2) {
-			derives[name] = stringify(expr);
+			derives.push({
+				name: name,
+				value: stringify(expr)
+			});
 		}
 	});
 	
-	var templates = {};
+	var templates = [];
 	forEach(xpath("(f:template|f:action)", templateNode), function (tNode) {
 		var name = getAttr(tNode, "name");
-		templates[name] = getServerAdvice(tNode, url, newEnv);
+		templates.push({
+			name: name,
+			value: getServerAdvice(tNode, url, newEnv)
+		});
 	});
 	
 	
@@ -63,11 +71,12 @@ function getServerAdvice(templateNode, url, env) {
 			var block = [];
 			forEach(node.childNodes, function (x) {walkNode(x, block);});
 			calls.push({
-				call: "forEach",
-				on: returnFromVariable(getAttr(node, "select")),
-				key: getAttr(node, "key"),
-				value: getAttr(node, "value"),
-				block: block
+				forEach: {
+					on: returnFromVariable(getAttr(node, "select")),
+					key: getAttr(node, "key"),
+					value: getAttr(node, "value"),
+					block: block
+				}
 			});
 		} else if (nn === "f:pattern") {
 			var match = [];
@@ -89,8 +98,7 @@ function getServerAdvice(templateNode, url, env) {
 			});
 			
 			calls.push({
-				call: "pattern",
-				match: match
+				pattern: match
 			});
 		} else if (nn === "f:thunk") {
 			var te = getThunkEssence(node, url, {});
@@ -98,17 +106,24 @@ function getServerAdvice(templateNode, url, env) {
 			var template;
 			if (te.url) {
 				template = "url:" + te.url;
-				//serverAdviceFromUrl(te.url);
 			} else {
 				template = returnFromXSLCopyOf(te.template);
 			}
 			
 			var params = map(te.params, returnFromXSLCopyOf); // TODO: right now this only sends variables, should also send numbers, strings, etc.
+			var formattedParams = [];
+			forEach(params, function(param, paramName) {
+				formattedParams.push({
+					name: paramName,
+					value: param
+				});
+			});
 			
 			calls.push({
-				call: "thunk",
-				template: template,
-				params: params
+				thunk: {
+					template: template,
+					params: formattedParams
+				}
 			});
 		} else {
 			// recurse
@@ -137,7 +152,10 @@ var serverAdvice = {};
 function serverAdviceFromUrl(url) {
 	if (!serverAdvice["url:" + url]) {
 		documents.withDoc(url, function (doc) {
-			serverAdvice["url:" + url] = getServerAdvice(doc, url);
+			var template = getServerAdvice(doc, url);
+//			serverAdvice["url:" + url] = template;
+			session.registerTemplate(url, template);
+
 		});
 	}
 }

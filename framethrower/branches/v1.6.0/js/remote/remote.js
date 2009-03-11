@@ -57,9 +57,8 @@ function getRemoteType(type) {
 }
 
 
-
-
-var debugRemoteObjects = {};
+var remoteObjectsScope = {};
+var remoteObjectsEnv = extendEnv(base.env, remoteObjectsScope);
 
 function makeRemoteObject(name, type) {
 	var o = {
@@ -68,7 +67,7 @@ function makeRemoteObject(name, type) {
 		name: name,
 		type: type
 	};
-	debugRemoteObjects[name] = o;
+	remoteObjectsScope[name] = o;
 	return o;
 }
 
@@ -182,8 +181,7 @@ function parseServerResponse(s, expectedType) {
 
 var session = (function () {
 	var sessionId = null;
-	var queriesToAsk = [];
-	var actionsToSend = [];
+	var messages = [];
 	var nextQueryId = 1;
 	var nextActionId = 1;
 	var lastMessageId = 0;
@@ -195,61 +193,22 @@ var session = (function () {
 		if (!sessionId) {
 			newSession();
 		}
-		
-		actionsToSend.push({
-			actions: actions,
-			callback: callback
-		});
-		sendAllActions();
-	}
-	function sendAllActions() {
-		if (sessionId && sessionId !== "initializing") {
-			if (actionsToSend.length > 0) {
-				var actionId = nextActionId;
-				nextActionId++;
-				var sending = actionsToSend.shift();
-				var json = JSON.stringify({
-					sessionId: sessionId,
-					messages: [
-						{
-							action: {
-								actionId: actionId,
-								actions: sending.actions
-							}
-						}
-					]
-				});
 
-				actionsPending[actionId] = sending.callback;
+		var actionId = nextActionId;
+		nextActionId++;
 
-				//TODO: store this callback with the actionId and call it from the pipeline when the actionResponse is received
-
-				xhr(serverBaseUrl+"post", json, function (response) {
-					response = JSON.parse(response);
-					
-					// TODO: respond to just true or an error
-					if (response.result !== true) {
-						debug.log("Action Error:", response.result);
-					}
-					
-					sendAllActions();
-				},
-				function () {
-					actionToSend = actionsToSend.concat(asking);
-					sendAllActions();
-				});
-
+		messages.push({
+			action: {
+				actionId: '' + actionId,
+				actions: actions
 			}
-		}
+		});
+
+		actionsPending[actionId] = callback;
+		sendAllMessages();
 	}
-	
-	
 	
 	function addQuery(expr) {
-		if (!sessionId) {
-			newSession();
-		}
-		
 		var queryId = nextQueryId;
 		nextQueryId++;
 		
@@ -263,33 +222,73 @@ var session = (function () {
 			debug.error("Trying to send a local thing to the server", expr);
 		}
 		
-		queriesToAsk.push({
+		messages.push({
 			query: {
 				expr: unparseExpr(getExpr(expr)),
-				queryId: queryId
+				queryId: '' + queryId
 			}
 		});
 		
 		return cell;
 	}
 	
-	function askAllQueries() {
-		if (sessionId && sessionId !== "initializing") {
-			if (queriesToAsk.length > 0) {
-				var asking = queriesToAsk;
-				queriesToAsk = [];
-				
+	function registerTemplate (url, template) {
+		messages.push({
+			registerTemplate: {
+				name: url,
+				template: template
+			}
+		});
+	}
+	
+	function serverAdviceRequest (url, params) {
+		//convert params to exprElement
+		formattedParams = [];
+		forEach(params, function(param, paramName) {
+			formattedParams.push({
+				name: paramName,
+				value: stringify(param)
+			});
+		});
+		
+		messages.push({
+			serverAdviceRequest: {
+				thunk: {
+					template: url,
+					params: formattedParams
+				}
+			}
+		});
+
+	}
+	
+	function sendAllMessages() {
+		if (!sessionId) {
+			newSession();
+		} else if (sessionId && sessionId !== "initializing") {
+			if (messages.length > 0) {
 				var json = JSON.stringify({
 					sessionId: sessionId,
-					messages: asking
+					messages: messages
 				});
-							
-				xhr(serverBaseUrl+"post", json, function (text) {
-					//TODO: response to error
-				}, function () {
-					queriesToAsk = queriesToAsk.concat(asking);
-					askAllQueries();
+				var asking = messages;
+				messages = [];
+				
+				xhr(serverBaseUrl+"post", json, function (response) {
+					response = JSON.parse(response);
+					
+					// TODO: respond to just true or an error
+					if (response.result !== true) {
+						debug.log("Action Error:", response.result);
+					}
+					
+					sendAllMessages();
+				},
+				function () {
+					messages = messages.concat(asking);
+					sendAllMessages();
 				});
+
 			}
 		}
 	}
@@ -301,9 +300,9 @@ var session = (function () {
 			sessionId: sessionId,
 			lastMessageId: lastMessageId
 		});
-		console.log("I'm pipelining", json);
+		//console.log("I'm pipelining", json);
 		xhr(serverBaseUrl+"pipeline", json, function (text) {
-			console.log("updater got a message", text);
+			//console.log("updater got a message", text);
 			
 			// TODO if text is blank, treat this as session closed
 			
@@ -352,6 +351,25 @@ var session = (function () {
 							} else if (!actionResponse.success){
 								debug.log("Action failed, actionId:", actionResponse.actionId);
 							}
+						} else if (response.queryDefine) {
+							var queryDefine = response.queryDefine;
+							var expr = parseExpr(queryDefine.expr, remoteObjectsEnv);
+							var type = getType(expr);
+							var cell = makeCC(type);
+							cell.expr = expr;
+							
+							cells[queryDefine.queryId] = cell;
+							//add this expr and cell to local hashtable
+							resultExprStringified = uniqueExpr(expr);
+							evalCache[resultExprStringified] = cell;
+						} else if (response.queryReference) {
+							var queryReference = response.queryReference;
+							var refCell = cells[queryReference.queryId];
+							cells[queryReference.referenceId].injectFunc(refCell,
+								function (val) {
+									return refCell.addLine(val);
+								}
+							);
 						}
 					});
 					refreshScreen();
@@ -368,7 +386,6 @@ var session = (function () {
 	function newSession() {
 		sessionId = "initializing";
 		lastMessageId = 0;
-		nextQueryId = 1;
 		
 		// TODO: move all cells' expr's into queriesToAsk
 		// that is, do the right thing if you had a session, but it's now closed
@@ -377,16 +394,18 @@ var session = (function () {
 			var o = JSON.parse(text);
 			sessionId = o.sessionId;
 
-			askAllQueries();
-			sendAllActions();
+			sendAllMessages();
+
 			if (!updaterRunning) startUpdater();
 		});
 	}
 	
 	return {
+		registerTemplate: registerTemplate,
+		serverAdviceRequest: serverAdviceRequest,
 		query: addQuery,
 		addActions: addActions,
-		flush: askAllQueries,
+		flush: sendAllMessages,
 		debugCells: cells
 	};
 })();

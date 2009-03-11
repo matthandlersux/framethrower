@@ -143,7 +143,7 @@ function compileTemplate(templateNode, url) {
 	var templates = xpath("(f:template|f:action)", templateNode);
 	templates = map(templates, function (template) {
 		var name = getAttr(template, "name");
-		return {name: name, compiled: compileTemplate(template, url)};
+		return {name: name, compiled: compileTemplate(template, url + "#" + "name")};
 	});
 	
 	var xsl = makeXSLFromTemplate(templateNode);
@@ -302,6 +302,10 @@ function compileTemplate(templateNode, url) {
 			cell.injectFunc(
 				function() {
 					update();
+					if(url.indexOf("#") == -1) {
+						//only send "top level" urls
+						session.serverAdviceRequest(url, p);
+					}
 				}, function(){});
 			update();
 			return cell;
