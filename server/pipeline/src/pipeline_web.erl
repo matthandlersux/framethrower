@@ -174,7 +174,12 @@ processQuery ( Query, SessionId, SessionPid ) ->
 		true ->
 			responseTime:in(SessionId, 'query', QueryId, now() ),
 			EvalInjectFun = fun() ->
-				Cell = eval:evaluate( expr:exprParse(Expr) ),
+				Cell = try
+					eval:evaluate( expr:exprParse(Expr) )
+				catch _:_ ->
+					?trace(Expr),
+					exit(normal)
+				end,
 				% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
 				cell:injectFunc(Cell, 
 					fun() ->

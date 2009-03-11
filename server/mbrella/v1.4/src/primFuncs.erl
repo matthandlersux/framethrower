@@ -352,7 +352,7 @@ primitives() ->
 	
 	#exprFun{
 	name = "gate",
-	type = "Unit Null -> a -> Unit a",
+	type = "Unit b -> a -> Unit a",
 	function = fun(GateKeeper, Passer) ->
 		OutputCell = cell:makeCell(),
 		Intercept = cell:injectIntercept(OutputCell, fun(C1, IsSet) ->
