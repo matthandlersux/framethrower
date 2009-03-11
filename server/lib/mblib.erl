@@ -222,9 +222,7 @@ bootJsonScript() ->
 bootJsonScriptLoop() ->
 	SessionId = session:new(),
 	{ok, JSONBinary} = file:read_file("lib/bootJSON"),
-	try pipeline_web:processActionList( mochijson2:decode( binary_to_list( JSONBinary ) ) )
-	catch E:R -> io:format("~p", [{error_running_bootJSON, E,R}])
-	end,
+	pipeline_web:processActionList( mochijson2:decode( binary_to_list( JSONBinary ) ) ),
 	% case inets:start() of
 	% 	ok ->
 	% 		receive

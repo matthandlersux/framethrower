@@ -10,37 +10,6 @@
 % do notation
 -define (do(X, Y, Next), then( Y, fun(X) -> Next end )).
 
-%exprCustom checks for cells in a passed in dict
-customExprParse(String, Dict) ->
-	customExpr(parse(String), Dict).
-customExpr(AST, Dict) when is_record(AST, cons) ->
-	{cons, AST#cons.type, customExpr(AST#cons.left, Dict), customExpr(AST#cons.right, Dict)};
-customExpr(AST, _) when AST =:= "true" orelse AST =:= "false" ->
-	list_to_atom(AST);
-customExpr(AST, Dict) when is_list(AST) ->
-	case is_string(AST) of
-		true ->
-			try dict:fetch(AST, Dict)
-			catch
-				_:_ -> 
-					case env:lookup(AST) of
-						notfound ->
-							#exprVar{value = AST};
-						Expr -> Expr
-					end
-			end;
-		false ->
-			exit(AST)
-	end;
-customExpr({primitive, _, BoolStringNat}, _) ->
-	BoolStringNat;
-customExpr(AST, _) when is_number(AST) ->
-	AST;
-customExpr(AST, _) when is_boolean(AST) ->
-	AST;
-customExpr(AST, _) ->
-	AST.
-
 %% 
 %% exprParse takes a string and returns and expression, an expression can then be fed into eval:evaluate
 %% exprParse:: String -> Expr
@@ -49,6 +18,8 @@ customExpr(AST, _) ->
 
 exprParse(String) ->
 	expr( parse(String), dict:new() ).
+exprParse(String, CustomEnv) ->
+	expr( parse(String), CustomEnv ).
 expr( ParsedString, LambdaEnv ) when is_record(ParsedString, cons) ->
 	case ParsedString#cons.type of
 		lambda ->
@@ -289,8 +260,8 @@ unparse(String, Variables) when is_list(String) ->
 	{String, Variables};
 unparse(Bool, Variables) when is_boolean(Bool) ->
 	{atom_to_list(Bool), Variables};
-unparse(null, Variables) ->
-	{atom_to_list(null), Variables};
+unparse(Atom, Variables) when is_atom(Atom) ->
+	{atom_to_list(Atom), Variables};
 unparse(Number, Variables) ->
 	{integer_to_list(Number), Variables}.
 

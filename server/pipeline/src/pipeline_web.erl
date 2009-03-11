@@ -10,6 +10,7 @@
 -export([start/1, stop/0, loop/2, processActionList/1]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+-define (pipelineBufferTime, 50).
 
 %% External API
 
@@ -83,7 +84,7 @@ loop(Req, DocRoot) ->
         'POST' ->
             case Path of
 				"newSession" ->
-					SessionId = session:new(),
+					SessionId = sessionManager:newSession(),
 					% responseTime:in(SessionId, newSession, now() ),
 					% responseTime:out(SessionId, newSession, now() ),
 					spit(Req, "sessionId", SessionId);
@@ -94,17 +95,19 @@ loop(Req, DocRoot) ->
 					LastMessageId = struct:get_value(<<"lastMessageId">>, Struct),
 					SessionId = struct:get_value(<<"sessionId">>, Struct),
 					responseTime:in(SessionId, pipeline, null, now() ),
-					sessionManager ! {pipeline, self(), {SessionId, LastMessageId}},
-					receive 
-						{updates, Updates, LastMessageId2} ->
-							responseTime:updatesOut(SessionId, pipeline, Updates),
-							JsonOut = {struct, [{"responses", Updates},{"lastMessageId", LastMessageId2}]};
-						JsonOut ->
-							JsonOut
-					after 
-						45000 ->
-							% ?trace({no_response_for_pipeline, SessionId, LastMessageId}),
-							JsonOut = {struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]}
+					JsonOut = case sessionManager:lookup(SessionId) of
+						sessionClosed -> {struct, [{"sessionClosed", true}] };
+						SessionPid ->
+							Self = self(),
+							spawn( fun() -> timer:sleep(?pipelineBufferTime), session:pipeline(SessionPid, Self, LastMessageId) end),
+							receive 
+								{updates, Updates, LastMessageId2} ->
+									responseTime:updatesOut(SessionId, pipeline, Updates),
+									{struct, [{"responses", Updates},{"lastMessageId", LastMessageId2}]};
+								OtherJson -> OtherJson
+							after 45000 ->
+								{struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]}
+							end
 					end,
 					spit(Req, JsonOut);
 				"post" ->
@@ -112,95 +115,24 @@ loop(Req, DocRoot) ->
 					Json = proplists:get_value("json", Data),
 					Struct = mochijson2:decode(Json),
 					SessionId = struct:get_value(<<"sessionId">>, Struct),
-					case session:lookup(SessionId) of
+					case sessionManager:lookup(SessionId) of
 						session_closed ->
 							spit(Req, {struct, [{"sessionClosed", true}] });
 						SessionPid ->
 							Messages = struct:get_value(<<"messages">>, Struct),
-							ProcessQuery = fun( Query ) ->
-								Expr = struct:get_value(<<"expr">>, Query),
-								QueryId = struct:get_value(<<"queryId">>, Query),
-								responseTime:in(SessionId, 'query', QueryId, now() ),
-								EvalInjectFun = fun() ->
-									Cell = eval:evaluate( expr:exprParse( binary_to_list(Expr) ) ),
-									% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
-									cell:injectFunc(Cell, 
-										fun() ->
-											SessionPid ! {done, QueryId}
-										end,
-										fun(Val) ->
-											SessionPid ! {data, {QueryId, add, Val}},
-											fun() -> 
-												case Val of
-													{Key,_} -> SessionPid ! {data, {QueryId, remove, Key}};
-													_ -> SessionPid ! {data, {QueryId, remove, Val}}
-												end
-											end
-										end
-									)
-								end,
-								session:inject(SessionPid, QueryId, EvalInjectFun)
-							end,
-							ProcessAction = fun( Action ) ->
-								ActionId = struct:get_value(<<"actionId">>, Action),
-								Actions = struct:get_value(<<"actions">>, Action),
-								{Returned, Created} = processActionList(Actions),
-								Success = lists:all(fun(X) -> X =/= error end, Returned),
-								CreatedStruct = {struct, Created},
-								% responseTime:out(SessionId, action, now() ),
-								ActionResponse = {struct, [{"actionResponse", 
-									{struct, [{"actionId", ActionId}, {"success", Success},{"returned", Returned},{"created", CreatedStruct}] }
-								}]},
-								SessionPid ! {actionResponse, ActionResponse}
-							end,
 							
 							ProcessMessage = fun( Message ) ->
 								case struct:get_first(Message) of
-									{<<"query">>, Query} -> ProcessQuery(Query);
-									{<<"action">>, Action} -> ProcessAction(Action)
+									{<<"query">>, Query} -> processQuery(Query, SessionId, SessionPid);
+									{<<"action">>, Action} -> processAction(Action, SessionPid);
+									{<<"registerTemplate">>, RegisterTemplate} -> processRegisterTemplate(RegisterTemplate, SessionPid);
+									{<<"serverAdviceRequest">>, ServerAdviceRequest} -> processServerAdviceRequest(ServerAdviceRequest, SessionPid)
 								end
 							end,
 							
 							try lists:foreach( ProcessMessage, Messages) of
-								ok -> spit(Req, true)
-							catch 
-								ErrorType:Reason -> 
-									spit(Req, {struct, [
-										{"errorType", ErrorType}, 
-										{"reason", 
-											list_to_binary(io_lib:format("~p", [{Reason, erlang:get_stacktrace()}]))
-										}
-									] })
-							end
-					end;
-				"action" ->
-					Data = Req:parse_post(),
-					Json = proplists:get_value("json", Data),
-					Struct = mochijson2:decode(Json),
-					SessionId = struct:get_value(<<"sessionId">>, Struct),
-					% responseTime:in(SessionId, action, now() ),
-					case session:lookup(SessionId) of
-						session_closed ->
-							spit(Req, {struct, [{"sessionClosed", true}] });
-						SessionPid ->
-							Messages = struct:get_value(<<"messages">>, Struct),
-							
-							ProcessAction = fun( Message ) ->
-								Action = struct:get_value(<<"action">>, Message),
-								ActionId = struct:get_value(<<"actionId">>, Action),
-								Actions = struct:get_value(<<"actions">>, Action),
-								{Returned, Created} = processActionList(Actions),
-								Success = lists:all(fun(X) -> X =/= error end, Returned),
-								CreatedStruct = {struct, Created},
-								% responseTime:out(SessionId, action, now() ),
-								ActionResponse = {struct, [{"actionResponse", 
-									{struct, [{"actionId", ActionId}, {"success", Success},{"returned", Returned},{"created", CreatedStruct}] }
-								}]},
-								SessionPid ! {actionResponse, ActionResponse}
-							end,
-							try lists:foreach( ProcessAction, Messages) of
 								ok -> spit(Req, {struct, [{"result", true}]})
-							catch
+							catch 
 								ErrorType:Reason -> 
 									spit(Req, {struct, [
 										{"errorType", ErrorType}, 
@@ -217,7 +149,65 @@ loop(Req, DocRoot) ->
             Req:respond({501, [], []})
     end.
 
+%Utility
+getFromStruct(StringKey, Struct) ->
+	Result = struct:get_value(list_to_binary(StringKey), Struct),
+	if
+		is_binary(Result) -> binary_to_list(Result);
+		true -> Result
+	end.
+
 %% Internal API
+
+processRegisterTemplate ( RegisterTemplate, SessionPid ) ->
+	Name = getFromStruct("name", RegisterTemplate),
+	Template = getFromStruct("template", RegisterTemplate),
+	session:registerTemplate(SessionPid, Name, Template).
+	
+processServerAdviceRequest ( ServerAdviceRequest, SessionPid ) ->
+	session:serverAdviceRequest(SessionPid, ServerAdviceRequest).
+
+processQuery ( Query, SessionId, SessionPid ) ->
+	Expr = getFromStruct("expr", Query),
+	QueryId = getFromStruct("queryId", Query),
+	case session:checkQuery(SessionPid, Expr) of
+		true ->
+			responseTime:in(SessionId, 'query', QueryId, now() ),
+			EvalInjectFun = fun() ->
+				Cell = eval:evaluate( expr:exprParse(Expr) ),
+				% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
+				cell:injectFunc(Cell, 
+					fun() ->
+						session:sendUpdate(SessionPid, {done, QueryId})
+					end,
+					fun(Val) ->
+						session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
+						fun() -> 
+							case Val of
+								{Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
+								_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
+							end
+						end
+					end
+				)
+			end,
+			session:inject(SessionPid, QueryId, EvalInjectFun);
+		{false, ReferenceId} -> 
+			session:sendUpdate(SessionPid, {queryReference, QueryId, ReferenceId})
+	end.
+	
+processAction ( Action, SessionPid ) ->
+	ActionId = getFromStruct("actionId", Action),
+	Actions = struct:get_value(<<"actions">>, Action),
+	{Returned, Created} = processActionList(Actions),
+	Success = lists:all(fun(X) -> X =/= error end, Returned),
+	CreatedStruct = {struct, Created},
+	% responseTime:out(SessionId, action, now() ),
+	ActionResponse = {struct, [{"actionResponse", 
+		{struct, [{"actionId", ActionId}, {"success", Success},{"returned", Returned},{"created", CreatedStruct}] }
+	}]},
+	session:sendUpdate(SessionPid, {actionResponse, ActionResponse}).
+
 
 %% 
 %% processActionList takes a list of actions, runs each eaction on the server, stores results, and returns "server.#" cells
@@ -274,7 +264,7 @@ processAction({struct, [{<<"create">>, Action}]}, Updates, Variables) ->
 			{ Updates, [{ Variable, Object } | Variables1] }
 	end;
 % action:return is how bound variables get returned to the client
-processAction({struct, [{<<"return">>, Variable}]}, Updates, Variables) ->
+processAction({struct, [{<<"returnValue">>, Variable}]}, Updates, Variables) ->
 	case lists:keysearch(Variable, 1, Variables) of
 		{value, {_, Binding} } ->
 			{ [Binding|Updates], Variables};

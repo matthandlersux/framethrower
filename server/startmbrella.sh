@@ -63,7 +63,7 @@ while [ $# -gt 0 ]
 	esac
 done
 
-eval='-eval "'${serialize}'session:startManager(),memoize:start(),env:start(),objects:start()'${responsetime}${bootscript}'."'
+eval='-eval "'${serialize}'sessionManager:start(),memoize:start(),env:start(),objects:start()'${responsetime}${bootscript}'."'
 # eval='-eval "memoize:start()."'
 commonflags="$conf $sname $adddirs $boot $startapp $eval"
 

@@ -72,7 +72,7 @@ parseEndCap(R, State) ->
 	#testWorld{startCaps=StartCaps, outMessages=OutMessages} = State,
 	Name = getAtt(name, R),
 	Expression = getAtt(expression, R),
-	EC = eval:evaluate(expr:customExprParse(Expression, StartCaps)),
+	EC = eval:evaluate(expr:exprParse(Expression, StartCaps)),
 
 	Self = self(),
 	cell:injectFunc(EC, 
@@ -153,7 +153,7 @@ extractExpectedMessage(_, State) -> State.  % ignore any other text data
 loop(ExpectedMessages, FinishedMessages, State) ->
 	receive
 		{response, ECName, Message} ->
-			NewExpectedMessages = lists:map(fun(EMessage) -> checkIncomingMessage(EMessage, Message, State) end, ExpectedMessages),
+			NewExpectedMessages = lists:map(fun(EMessage) -> checkIncomingMessage(EMessage, {ECName, Message}, State) end, ExpectedMessages),
 			NewerState = lists:foldl(fun updateState/2, State, NewExpectedMessages),
 			NewerExpectedMessages = lists:filter(fun filterExpectedMessages/1, NewExpectedMessages),
 			NewFinishedMessages = FinishedMessages ++ lists:filter(fun filterFinishedMessages/1, NewExpectedMessages),
@@ -188,8 +188,8 @@ scMatch(MessageToCheck, TrySC, StartCaps) ->
 		_ -> false
 	end.	
 	
-checkIncomingMessage({ECName, MessageToCheck, {true, Output}}, IncomingMessage, State) -> {ECName, MessageToCheck, {true, Output}};
-checkIncomingMessage({ECName, MessageToCheck, {false, _}}, IncomingMessage, State) ->
+checkIncomingMessage({ECName, MessageToCheck, {true, Output}}, {ECName, IncomingMessage}, State) -> {ECName, MessageToCheck, {true, Output}};
+checkIncomingMessage({ECName, MessageToCheck, {false, _}}, {ECName, IncomingMessage}, State) ->
 	#testWorld{startCaps=StartCaps} = State,
 	Response =
 		case IncomingMessage of
@@ -221,6 +221,9 @@ checkIncomingMessage({ECName, MessageToCheck, {false, _}}, IncomingMessage, Stat
 		{badMatch, WrongMessage} -> {false, "Error: Expected Message: " ++ messageToString(MessageToCheck, ECName) ++ ", but received message " ++ messageToString(WrongMessage, ECName)};
 		noMessage -> {false, "Error: Expected Message: " ++ messageToString(MessageToCheck, ECName) ++ ", but received NO Message"}
 	end,
+	{ECName, MessageToCheck, Result};
+checkIncomingMessage({ECName, MessageToCheck, {false, _}}, {_, IncomingMessage}, State) ->
+	Result = {false, "Error: Expected Message: " ++ messageToString(MessageToCheck, ECName) ++ ", but received NO Message"},
 	{ECName, MessageToCheck, Result}.
 
 

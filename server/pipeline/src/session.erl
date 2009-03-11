@@ -6,106 +6,60 @@
 -module (session).
 -compile (export_all).
 
+-behaviour(gen_server).
+
 -include ("../../mbrella/v1.4/include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define (this(Field), State#?MODULE.Field).
--define (pipelineBufferTime, 50).
+-define (pipelineBufferTime, 400).
 
 
--export ([new/0, lookup/1, startManager/0, inject/3]).
+%% gen_server callbacks
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-%% ====================================================
-%% TYPES
-%% ====================================================
+-export ([new/0, inject/3, getQueryId/1]).
 
 
 %% ====================================================
 %% External API
 %% ====================================================
 
-%% @doc Starts the Session Manager which is responsible for keeping track of sessions
-%% 		and interfacing with the pipeline frontend
-%% @spec startManager() -> ok
-
-startManager() ->
-	Pid = spawn(fun() -> manager() end),
-	register(sessionManager, Pid).
-
-%% @doc Spawns a new session, registers it with the sessionManager, and returns the Pid
+%% @doc Spawns a new session and returns the Pid
 %% @spec new() -> pid()
 
-new() ->
-	Pid = spawn(fun() -> session() end),
-	SessionId = sessionId(),
-	sessionManager ! {register, {SessionId, Pid}},
-	SessionId.
+new () ->
+	{ok, Pid} = gen_server:start(?MODULE, [], []),
+	Pid.
 
-%% @doc Used to lookup a session's Pid from its name, this is a hack
-%% @spec lookup( string() ) -> pid()
+inject (SessionPid, QueryId, Fun) ->
+	gen_server:cast(SessionPid, {inject, QueryId, Fun}).
+	
+getQueryId (SessionPid) ->
+	gen_server:call(SessionPid, getQueryId).
 
-lookup(SessionId) ->
-	sessionManager ! {lookup, self(), SessionId},
-	receive Response -> Response end.
-	
-inject( SessionPid, QueryId, Fun ) ->
-	SessionPid ! {inject, QueryId, Fun}.
-	
+sendUpdate (SessionPid, Message) ->
+	gen_server:cast(SessionPid, Message).
+
+registerTemplate (SessionPid, Name, Template) ->
+	gen_server:cast(SessionPid, {registerTemplate, {Name, Template}}).
+
+serverAdviceRequest (SessionPid, ServerAdviceRequest) ->
+	gen_server:cast(SessionPid, {serverAdviceRequest, ServerAdviceRequest}).
+
+pipeline(SessionPid, From, LastMessageId) ->
+	gen_server:cast(SessionPid, {pipeline, From, LastMessageId}).
+
+queryDefine(SessionPid, Expr, QueryId) ->
+	gen_server:call(SessionPid, {queryDefine, Expr, QueryId}).
+
+checkQuery(SessionPid, Expr) ->
+	gen_server:call(SessionPid, {checkQuery, Expr}).
+
 %% ====================================================
 %% Internal API
 %% ====================================================
 	
-manager() ->
-	process_flag(trap_exit, true),
-	State = ets:new(sessionManagerState, []),
-	ets:insert(State, {sessionIds, 1}),
-	manager(State).
-	
-manager(State) ->
-	receive
-		{register, {Id, Pid}} ->
-			link(Pid),
-			ets:insert(State, {Id, Pid}),
-			manager(State);
-		{unregister, {Id, Pid}} ->
-			unlink(Pid),
-			ets:delete(State, Id),
-			manager(State);
-		{newId, From} ->
-			[{_, LastId}] = ets:lookup(State, sessionIds),
-			ets:insert(State, {sessionIds, LastId + 1}),
-			From ! list_to_binary( "session." ++ integer_to_list(LastId + 1) ),
-			manager(State);
-		{lookup, From, SessionId} ->
-			case ets:lookup(State, SessionId) of
-				[{_, Pid}] ->
-					From ! Pid;
-				_ ->
-					From ! session_closed
-			end,
-			manager(State);
-		{pipeline, From, {SessionId, LastMessageId}} ->
-			case ets:lookup(State, SessionId) of
-				[{_, Pid}] ->
-					spawn( fun() -> timer:sleep(?pipelineBufferTime), Pid ! {pipeline, From, LastMessageId} end);
-				[] ->
-					From ! {struct, [{"sessionClosed", true}] }
-			end,
-			manager(State);
-		{'EXIT', From, _Reason} ->
-			case ets:match(State, {'$1', From}) of
-				[[SessionId]] ->
-					% io:format("Exit signal from session: ~p~n~p~n~n", [SessionId, Reason]),
-					unlink(From),
-					ets:delete(State, SessionId);
-				[] ->
-					io:format("Exit signal from random: ~p~n~n", [From])
-			end,
-			manager(State);
-		Any ->
-			io:format("Session Manager Received: ~p~n~n", [Any]),
-			manager(State)
-	end.
 
 %% 
 %% session is a process that acts as the intermediary between server and client, it keeps track of cleanupFunctions
@@ -115,53 +69,95 @@ manager(State) ->
 %% 		session dies after 2 minutes of inactivity 
 %% 
 	
-session() ->
-	session( #session{} ).
-session( State ) ->
-	receive 
-		{pipeline, From, ClientLastMessageId} ->
-			?this(msgQueue) ! {pipeline, From, ClientLastMessageId},
-			session( State );
-		{data, {QueryId, _Action, _Data} = Msg} ->
-			case dict:is_key(QueryId, ?this(openQueries) ) of
-				true -> 
-					session( State#session{ openQueries = dict:append(QueryId, Msg, ?this(openQueries) ) } );
-				false ->
-					?this(msgQueue) ! { data, Msg },
-					session( State )
-			end;
-		{done, QueryId} ->
-			try dict:fetch(QueryId, ?this(openQueries) ) of
-				Msgs -> 
-					% NOTE: dict:append places new elements at the end of the list, but they get reversed by the foldl in msgQueue()
-					?this(msgQueue) ! {dataList, Msgs ++ [{QueryId, done}]},
-					session( State#session{ openQueries = dict:erase( QueryId, ?this(openQueries) ) } )
-			catch 
-				_:_ -> 
-					io:format("queryId not found in session, perhaps already finished?~n", []),
-					session( State )
-			end;
-		{actionResponse, ActionResponse} ->
-			?this(msgQueue) ! { actionResponse, ActionResponse },
-			session(State);
-		{inject, QueryId, InjectFun } ->
-			session(
-				State#session{
-					openQueries = dict:store(QueryId, [], ?this(openQueries)),
-					cleanup = [InjectFun()|?this(cleanup)] }
-				);
-		{'EXIT', From, Reason} ->
-			?trace({"process crapped out :(", From, Reason}),
-			session( State )
-	after
-		120000 ->
-			case ?this(cleanup) of
-				[] -> true;
-				_ -> 
-					lists:foreach( fun(Fun) -> Fun() end, ?this(cleanup) )
-			end,
-			exit(timed_out)
-	end.
+
+%% ====================================================================
+%% Server functions
+%% ====================================================================
+
+init([]) ->
+	process_flag(trap_exit, true),
+	State = #session{},
+    {ok, State, ?this(timeout)}.
+
+handle_call(getQueryId, _, State) ->
+	NewQueryId = ?this(queryIdCount) + 1,
+	Reply = "server." ++ integer_to_list(NewQueryId),
+	{reply, Reply, State#session{queryIdCount = NewQueryId}, ?this(timeout)};
+handle_call({queryDefine, Expr, QueryId}, _, State) ->
+	{Reply, ServerAdviceHash} = case dict:find(Expr, ?this(serverAdviceHash)) of
+		{ok, _} -> {false, ?this(serverAdviceHash)};
+		_ -> 
+			?this(msgQueue) ! {queryDefine, Expr, QueryId},
+			{true, dict:store(Expr, QueryId, ?this(serverAdviceHash))}
+	end,
+	{reply, Reply, State#session{serverAdviceHash = ServerAdviceHash}, ?this(timeout)};
+handle_call({checkQuery, Expr}, _, State) ->
+	{Reply, ServerAdviceHash} = case dict:find(Expr, ?this(serverAdviceHash)) of
+		{ok, QueryId} -> {{false, QueryId}, ?this(serverAdviceHash)};
+		_ -> 
+			{true, dict:store(Expr, defined, ?this(serverAdviceHash))}
+	end,
+	{reply, Reply, State#session{serverAdviceHash = ServerAdviceHash}, ?this(timeout)}.
+
+
+
+handle_cast({pipeline, From, ClientLastMessageId}, State) ->
+	?this(msgQueue) ! {pipeline, From, ClientLastMessageId},
+	{noreply, State, ?this(timeout)};
+handle_cast({data, {QueryId, _Action, _Data} = Msg}, State) ->
+	NewState = case dict:is_key(QueryId, ?this(openQueries) ) of
+		true -> 
+			State#session{ openQueries = dict:append(QueryId, Msg, ?this(openQueries) )};
+		false ->
+			?this(msgQueue) ! { data, Msg },
+			State
+	end,
+	{noreply, NewState, ?this(timeout)};
+handle_cast({done, QueryId}, State) ->
+	NewState = try dict:fetch(QueryId, ?this(openQueries) ) of
+		Msgs -> 
+			% NOTE: dict:append places new elements at the end of the list, but they get reversed by the foldl in msgQueue()
+			?this(msgQueue) ! {dataList, Msgs ++ [{QueryId, done}]},
+			State#session{ openQueries = dict:erase( QueryId, ?this(openQueries) ) }
+	catch 
+		_:_ -> 
+			io:format("queryId not found in session, perhaps already finished?~n", []),
+			State
+	end,
+	{noreply, NewState, ?this(timeout)};
+handle_cast({queryReference, QueryId, ReferenceId}, State) ->
+	?this(msgQueue) ! { queryReference, QueryId, ReferenceId },
+	{noreply, State, ?this(timeout)};
+handle_cast({inject, QueryId, InjectFun }, State) ->
+	NewState = State#session{
+		openQueries = dict:store(QueryId, [], ?this(openQueries)),
+		cleanup = [InjectFun()|?this(cleanup)] 
+	},
+	{noreply, NewState, ?this(timeout)};
+handle_cast({actionResponse, ActionResponse}, State) ->
+	?this(msgQueue) ! { actionResponse, ActionResponse },
+	{noreply, State, ?this(timeout)};
+handle_cast({registerTemplate, {Name, Template}}, State) ->
+	NewState = State#session{
+		templates = dict:store(Name, Template, ?this(templates))
+	},
+	{noreply, NewState, ?this(timeout)};
+handle_cast({serverAdviceRequest, ServerAdviceRequest}, State) ->
+	serverAdvice:processServerAdvice(ServerAdviceRequest, ?this(templates), self()),
+	{noreply, State, ?this(timeout)}.
+
+handle_info(timeout, State) ->
+	case ?this(cleanup) of
+		[] -> true;
+		_ -> 
+			lists:foreach( fun(Fun) -> Fun() end, ?this(cleanup) )
+	end,
+	{stop, normal, empty};
+handle_info(_, State) -> {noreply, State}.
+terminate(_, _) -> ok.
+code_change(_, State, _) -> {ok, State}.
+
+
 
 %% 
 %% msgQueue is a process that holds only the messages that are ready to be delivered to the client
@@ -178,6 +174,12 @@ msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, off ) ->
 			msgQueueLoop( [{LastMessageId + 1, Struct}|MsgQueue], off);
 		{actionResponse, ActionResponse} ->
 			msgQueueLoop( [{LastMessageId + 1, ActionResponse}|MsgQueue], off);
+		{queryDefine, DExpr, QueryId} ->
+			Struct = wellFormedQueryDefine(DExpr, QueryId),
+			msgQueueLoop( [{LastMessageId + 1, Struct}|MsgQueue], off);
+		{ queryReference, QueryId, ReferenceId } ->
+			Struct = wellFormedQueryReference(QueryId, ReferenceId),
+			msgQueueLoop( [{LastMessageId + 1, Struct}|MsgQueue], off);
 		{dataList, Msgs} ->
 			Msgs1 = lists:foldl( 
 						fun({Q, A, D}, [{L,_}|_] = Acc) -> 
@@ -238,7 +240,7 @@ msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, {To, ClientLastMessageId}) ->
 
 wellFormedUpdate(QueryId, Action) ->
 	{struct, [{"queryUpdate", 
-		{struct, [{"queryId",QueryId},{"action", Action}]}
+		{struct, [{"queryId", list_to_binary(QueryId)},{"action", Action}]}
 	}]}.
 	
 wellFormedUpdate(Data, QueryId, Action) ->
@@ -247,7 +249,17 @@ wellFormedUpdate(Data, QueryId, Action) ->
 		_ -> Data1 = [{"key", mblib:exprElementToJson(Data)}]
 	end,
 	{struct, [{"queryUpdate",
-		{struct, [{"queryId",QueryId},{"action", Action}|Data1]}
+		{struct, [{"queryId",list_to_binary(QueryId)},{"action", Action}|Data1]}
+	}]}.
+
+wellFormedQueryDefine(DExpr, QueryId) ->
+	{struct, [{"queryDefine",
+		{struct, [{"queryId",list_to_binary(QueryId)},{"expr", list_to_binary(DExpr)}]}
+	}]}.
+	
+wellFormedQueryReference(QueryId, ReferenceId) ->
+	{struct, [{"queryReference",
+		{struct, [{"queryId",list_to_binary(QueryId)},{"referenceId", list_to_binary(ReferenceId)}]}
 	}]}.
 
 %% 
@@ -276,15 +288,3 @@ stream(To, Updates, LastMessageId) when is_tuple(Updates) ->
 	stream(To, [Updates], LastMessageId);
 stream(To, Updates, LastMessageId) ->
 	To ! {updates, Updates, LastMessageId}.
-
-%% 
-%% sessionId:: SessionName
-%%		creates a new session and returns the name
-%% 
-
-sessionId() ->
-	sessionManager ! {newId, self()},
-	receive 
-		SessionId ->
-			SessionId
-	end.

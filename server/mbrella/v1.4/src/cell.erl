@@ -43,10 +43,16 @@
 %% External functions
 %% ====================================================================
 
+getToKey(Keyval) ->
+	case Keyval of
+		key -> fun(X) -> X end;
+		keyval -> fun({Key,Val}) -> Key end
+	end.
+
 makeCell() -> 
-	ToKey = fun(X) -> X end,
+	ToKey = getToKey(key),
 	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
-	NewCell = #exprCell{pid=Pid},
+	NewCell = #exprCell{pid=Pid, keyval=key},
 	env:nameAndStoreCell(NewCell).
 
 update(Cell) ->
@@ -54,9 +60,9 @@ update(Cell) ->
 	env:store(Name, Cell).
 	
 makeCellMapInput() ->
-	ToKey = fun({Key,Val}) -> Key end,
+	ToKey = getToKey(keyval),
 	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
-	NewCell = #exprCell{pid=Pid},
+	NewCell = #exprCell{pid=Pid, keyval=keyval},
 	env:nameAndStoreCell(NewCell).
 
 removeDependency(Cell, InputCell, InputId) ->
@@ -130,7 +136,10 @@ makeFuture(Value) ->
 %% 
 
 addLine(Cell, Value) ->
-	gen_server:call(Cell#exprCell.pid, {addLine, Value, Cell#exprCell.name}).
+	gen_server:cast(Cell#exprCell.pid, {addLine, Value, Cell#exprCell.name}),
+	ToKey = getToKey(Cell#exprCell.keyval),
+	Key = ToKey(Value),
+	fun() -> gen_server:cast(Cell#exprCell.pid, {removeLine, Key}) end.
 
 %% 
 %% removeline:: CellPid -> a -> Atom
@@ -222,23 +231,6 @@ init([ToKey]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({addLine, Value, CellName}, From, State) ->
-	% case ?this(done) of
-	% 	true -> ?trace(CellName);
-	% 	_ -> nosideeffect
-	% end,
-	Key = (?this(toKey))(Value),
-	Dot = try rangedict:fetch(Key, ?this(dots)) of
-		{dot, Num, Val, Lines} -> {dot, Num+1, Val, Lines}
-	catch
-		_:_ -> onAdd({dot, 1, Value, dict:new()}, ?this(funcs))
-	end,
-	NewDots = rangedict:store(Key, Dot, ?this(dots)),
-	NewState = State#cellState{dots=NewDots},
-	Self = self(),
-	CallBack = fun() -> 
-		gen_server:cast(Self, {removeLine, Key}) end,
-    {reply, CallBack, NewState};
 handle_call({injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}, _, State) ->
 	Id = ?this(funcColor),
 	OnRemove = case OutputCellOrIntOrFunc of
@@ -275,6 +267,20 @@ handle_call(getState, From, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
+handle_cast({addLine, Value, CellName}, State) ->
+	% case ?this(done) of
+	% 	true -> ?trace(CellName);
+	% 	_ -> nosideeffect
+	% end,
+	Key = (?this(toKey))(Value),
+	Dot = try rangedict:fetch(Key, ?this(dots)) of
+		{dot, Num, Val, Lines} -> {dot, Num+1, Val, Lines}
+	catch
+		_:_ -> onAdd({dot, 1, Value, dict:new()}, ?this(funcs))
+	end,
+	NewDots = rangedict:store(Key, Dot, ?this(dots)),
+	NewState = State#cellState{dots=NewDots},
+    {noreply, NewState};
 handle_cast({removeLine, Value}, State) ->
 	NewDots = try rangedict:fetch(Value, ?this(dots)) of
 		{dot, Num, Val, Lines} = Dot -> 

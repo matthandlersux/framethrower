@@ -483,58 +483,58 @@ primitives() ->
 	function = fun(Cell) ->
 		SetType = type:buildType(type:get(Cell), "Map a (Set b)", "Set a"),
 		OutputCell = cell:makeCellMapInput(),
-		BType = type:buildType(type:get(Cell), "Map a (Set b)", "b"),
-		BHashCell = cell:makeCell(),
-		TypedBHashCell = BHashCell#exprCell{type=type:parse("Set " ++ type:unparse(BType))},
-		cell:update(TypedBHashCell),
 		Intercept = cell:injectIntercept(OutputCell, fun(Message, BHash) ->
 			case Message of
 				{bHashAdd, BVal} ->
-					NewCell = cell:makeCell(),
-					TypedCell = NewCell#exprCell{type=SetType},
-					cell:update(TypedCell),
-					cell:addLine(OutputCell, {BVal, TypedCell}),
-					dict:store(BVal, TypedCell, BHash);
+					case dict:find(BVal, BHash) of
+						{ok, {BCell, Num}} -> dict:store(BVal, {BCell, Num+1}, BHash);
+						_ -> 
+							NewCell = cell:makeCell(),
+							TypedCell = NewCell#exprCell{type=SetType},
+							cell:update(TypedCell),
+							cell:addLine(OutputCell, {BVal, TypedCell}),
+							dict:store(BVal, {TypedCell, 1}, BHash)
+					end;
 				{bHashRemove, BVal} ->
-					cell:removeLine(OutputCell, BVal),
-					dict:erase(BVal, BHash);
+					case dict:find(BVal, BHash) of
+						{ok, {BCell, 1}} ->
+							cell:removeLine(OutputCell, BVal),
+							dict:erase(BVal, BHash);
+						{ok, {BCell, Num}} ->
+							dict:store(BVal, {BCell, Num-1}, BHash);
+						_ -> BHash
+					end;
 				{addInnerLine, InnerVal, Key} ->
-					cell:addLine(dict:fetch(InnerVal, BHash), Key),
+					{BCell, _} = dict:fetch(InnerVal, BHash),
+					cell:addLine(BCell, Key),
 					BHash;
 				{removeInnerLine, InnerVal, Key} ->
-					cell:removeLine(dict:fetch(InnerVal, BHash), Key),
+					{BCell, _} = dict:fetch(InnerVal, BHash),
+					cell:removeLine(BCell, Key),
 					BHash;
 				done ->
-					dict:map(fun(BVal, BCell) -> cell:done(BCell) end, BHash),
+					dict:map(fun(BVal, {BCell,_}) -> 
+						cell:done(BCell) end, BHash),
 					BHash
 			end
 		end, dict:new()),
 		
-		cell:injectFunc(BHashCell, 
-			fun() ->
-				intercept:sendIntercept(Intercept, done)
-			end,
-			fun(BVal) ->
-				intercept:sendIntercept(Intercept, {bHashAdd, BVal}),
-				fun() -> intercept:sendIntercept(Intercept, {bHashRemove, BVal}) end
-			end),
-
-		cell:injectFuncs(Intercept, [{BHashCell, fun(BVal) -> 
-			%this is to make Intercept depend on BHashCell for being 'done' 
-			fun() -> nosideeffect end 
-		end},
-		{Cell, fun({Key, Val}) ->
-			cell:injectFunc(Val, BHashCell, fun(InnerVal) ->
-				OnRemove1 = cell:addLine(BHashCell, InnerVal),
+		cell:injectFunc(Cell, Intercept, fun({Key, Val}) ->
+			cell:injectFunc(Val, Intercept, fun(InnerVal) ->
+				intercept:sendIntercept(Intercept, {bHashAdd, InnerVal}),
 				intercept:sendIntercept(Intercept, {addInnerLine, InnerVal, Key}),
 				fun() ->
 					intercept:sendIntercept(Intercept, {removeInnerLine, InnerVal, Key}),
-					OnRemove1()
+					intercept:sendIntercept(Intercept, {bHashRemove, InnerVal})
 				end
 			end)
-		end}]),
-		cell:injectFunc(Cell, BHashCell, fun(Val) -> 
-			%this is to make BHashCell depend on Cell for being 'done' 
+		end),	
+		cell:injectFunc(OutputCell, 
+		fun() ->
+			intercept:sendIntercept(Intercept, done)
+		end,
+		fun(Val) -> 
+			%this is to make Intercept depend on Cell for being 'done' 
 			fun() -> nosideeffect end 
 		end),
 		OutputCell

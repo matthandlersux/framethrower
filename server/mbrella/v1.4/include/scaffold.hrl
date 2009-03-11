@@ -99,7 +99,8 @@
 	name,
 	pid,
 	type,
-	bottom
+	bottom,
+	keyval
 }).
 	
 %% ====================================================
@@ -123,5 +124,9 @@
 	msgQueue = session:msgQueue(),
 	openQueries = dict:new(),
 	cleanup = [],
-	lastMessageId = 0}
-).
+	lastMessageId = 0,
+	templates = dict:new(),
+	queryIdCount = 0,
+	serverAdviceHash = dict:new(),
+	timeout = 120000
+}).
