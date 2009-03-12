@@ -12,8 +12,6 @@
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define (this(Field), State#?MODULE.Field).
--define (pipelineBufferTime, 10).
-
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -217,7 +215,18 @@ msgQueueLoop( [{LastMessageId, _}|_] = MsgQueue, {To, ClientLastMessageId}) ->
 								end,
 								MsgQueue, Msgs),
 					MsgQueue1 = streamUntil(To, Updates, ClientLastMessageId),
-					msgQueueLoop( MsgQueue1, off )
+					msgQueueLoop( MsgQueue1, off );
+				{actionResponse, ActionResponse} ->
+					stream(To, ActionResponse, LastMessageId + 1),
+					msgQueueLoop( [{LastMessageId + 1, ActionResponse}], off);
+				{queryDefine, DExpr, QueryId} ->
+					Struct = wellFormedQueryDefine(DExpr, QueryId),
+					stream(To, Struct, LastMessageId + 1),
+					msgQueueLoop( [{LastMessageId + 1, Struct}], off);
+				{queryReference, QueryId, ReferenceId} ->
+					Struct = wellFormedQueryReference(QueryId, ReferenceId),
+					stream(To, Struct, LastMessageId + 1),
+					msgQueueLoop( [{LastMessageId + 1, Struct}], off)
 			after
 				30000 ->
 					msgQueueLoop( MsgQueue, off)

@@ -209,7 +209,7 @@ processAction ( Action, SessionPid ) ->
 	CreatedStruct = {struct, Created},
 	% responseTime:out(SessionId, action, now() ),
 	ActionResponse = {struct, [{"actionResponse", 
-		{struct, [{"actionId", ActionId}, {"success", Success},{"returned", Returned},{"created", CreatedStruct}] }
+		{struct, [{"actionId", list_to_binary(ActionId)}, {"success", Success},{"returned", Returned},{"created", CreatedStruct}] }
 	}]},
 	session:sendUpdate(SessionPid, {actionResponse, ActionResponse}).
 
