@@ -219,9 +219,9 @@ var session = (function () {
 		
 		cells[queryId] = cell;
 		
-		if (unparseExpr(getExpr(expr)).indexOf("local.") !== -1) {
-			debug.error("Trying to send a local thing to the server", expr);
-		}
+		// if (unparseExpr(getExpr(expr)).indexOf("local.") !== -1) {
+		// 	debug.error("Trying to send a local thing to the server", expr);
+		// }
 		
 		messages.push({
 			query: {

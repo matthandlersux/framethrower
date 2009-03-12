@@ -25,8 +25,7 @@ function evalThunk(thunkNode) {
 		
 		
 		var custom = thunkNode.custom;
-		
-		//TODO:make doneResponse do something interesting
+
 		var todo = [];
 		var ecell = evaluate(e);
 		

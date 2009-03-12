@@ -16,7 +16,7 @@ function replaceXML(node, replacer, pass, firstRun) {
 	*/
 	
 	
-	if (xpath("self::f:thunk | self::f:on", replacer).length > 0) {
+	if (xpath("self::f:thunk | self::f:on | self::f:create | self::f:intact", replacer).length > 0) {
 		if (node.custom && node.custom.thunkEssence) {
 			var replacerTe = getThunkEssence(replacer, pass.baseUrl, pass.ids);
 			if (compareThunkEssences(replacerTe, node.custom.thunkEssence)) {
@@ -71,7 +71,9 @@ function processThunks(node, pass) {
 	// bootstrap uses this method with pass = {baseUrl: "", ids: {}}
 	
 	// first, tag thunkEssence on any bindings, or actions that need it (f:on, f:create, f:intact, f:servercall)
+	
 	var nodesNeedingTagging = xpath(tagCustomXpath, node);
+	
 	forEach(nodesNeedingTagging, function (node) {
 		tagThunkEssence(node, pass.baseUrl, pass.ids);
 	});
@@ -204,6 +206,7 @@ function unloadXML(node) {
 }
 
 function unloadXMLNode(node) {
+	
 	// call remove function on active thunks
 	if (node.custom && node.custom.removeFunc) {
 		node.custom.removeFunc();
