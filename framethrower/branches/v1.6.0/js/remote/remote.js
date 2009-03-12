@@ -186,6 +186,7 @@ var session = (function () {
 	var nextActionId = 1;
 	var lastMessageId = 0;
 	var actionsPending = {};
+	var sending = false;
 	
 	var cells = {};
 	
@@ -263,33 +264,39 @@ var session = (function () {
 	}
 	
 	function sendAllMessages() {
-		if (!sessionId) {
-			newSession();
-		} else if (sessionId && sessionId !== "initializing") {
-			if (messages.length > 0) {
-				var json = JSON.stringify({
-					sessionId: sessionId,
-					messages: messages
-				});
-				var asking = messages;
-				messages = [];
+		if(!sending) {
+			sending = true;
+			if (!sessionId) {
+				newSession();
+			} else if (sessionId && sessionId !== "initializing") {
+				if (messages.length > 0) {
+					var json = JSON.stringify({
+						sessionId: sessionId,
+						messages: messages
+					});
+					var asking = messages;
+					messages = [];
 				
-				xhr(serverBaseUrl+"post", json, function (response) {
-					response = JSON.parse(response);
+					xhr(serverBaseUrl+"post", json, function (response) {
+						sending = false;
+						response = JSON.parse(response);
 					
-					// TODO: respond to just true or an error
-					if (response.result !== true) {
-						debug.log("Action Error:", response.result);
-					}
+						// TODO: respond to just true or an error
+						if (response.result !== true) {
+							debug.log("Action Error:", response.result);
+						}
 					
-					sendAllMessages();
-				},
-				function () {
-					messages = messages.concat(asking);
-					sendAllMessages();
-				});
+						sendAllMessages();
+					},
+					function () {
+						sending = false;
+						messages = messages.concat(asking);
+						sendAllMessages();
+					});
 
+				}
 			}
+			sending = false;
 		}
 	}
 	

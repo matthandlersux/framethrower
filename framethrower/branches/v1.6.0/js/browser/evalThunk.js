@@ -63,7 +63,7 @@ function evalThunk(thunkNode) {
 	
 	if (thunkEssence.url) {
 		//send serverAdviceRequest
-		session.serverAdviceRequest(thunkEssence.url, thunkEssence.params);
+		// session.serverAdviceRequest(thunkEssence.url, thunkEssence.params);
 		
 		xmlTemplates.withTemplate(thunkEssence.url, perform);
 	} else if (thunkEssence.template) {
