@@ -304,7 +304,7 @@ function compileTemplate(templateNode, url) {
 					update();
 					if(url.indexOf("#") == -1) {
 						//only send "top level" urls
-						//session.serverAdviceRequest(url, p);
+						session.serverAdviceRequest(url, p);
 					}
 				}, function(){});
 			update();
