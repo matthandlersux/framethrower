@@ -12,7 +12,7 @@
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define (this(Field), State#?MODULE.Field).
--define (pipelineBufferTime, 400).
+-define (pipelineBufferTime, 10).
 
 
 %% gen_server callbacks
