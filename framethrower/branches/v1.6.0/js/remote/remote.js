@@ -260,12 +260,10 @@ var session = (function () {
 				}
 			}
 		});
-
 	}
 	
 	function sendAllMessages() {
 		if(!sending) {
-			sending = true;
 			if (!sessionId) {
 				newSession();
 			} else if (sessionId && sessionId !== "initializing") {
@@ -276,7 +274,7 @@ var session = (function () {
 					});
 					var asking = messages;
 					messages = [];
-				
+					sending = true;
 					xhr(serverBaseUrl+"post", json, function (response) {
 						sending = false;
 						response = JSON.parse(response);
@@ -296,7 +294,6 @@ var session = (function () {
 
 				}
 			}
-			sending = false;
 		}
 	}
 	
@@ -312,6 +309,11 @@ var session = (function () {
 			//console.log("updater got a message", text);
 			
 			// TODO if text is blank, treat this as session closed
+			
+			if(text.indexOf("Sean Connery") !== -1) {
+				console.log("FOUND Sean Connery!!!!!!");
+			}
+			
 			
 			// try {
 				var o = JSON.parse(text);
@@ -359,6 +361,7 @@ var session = (function () {
 								debug.log("Action failed, actionId:", actionResponse.actionId);
 							}
 						} else if (response.queryDefine) {
+							console.log("Query Define");
 							var queryDefine = response.queryDefine;
 							var expr = parseExpr(queryDefine.expr, remoteObjectsEnv);
 							var type = getType(expr);
