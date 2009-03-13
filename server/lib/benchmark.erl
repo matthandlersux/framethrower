@@ -19,3 +19,22 @@ test_loop(_M, _F, _A, 0, List) ->
 test_loop(M, F, A, N, List) ->
     {T, _Result} = timer:tc(M, F, A),
     test_loop(M, F, A, N - 1, [T|List]).
+
+test_process_sizes() ->
+	Test1 = spawn(fun() -> testSize1() end),
+	Test2 = spawn(fun() -> testSize2() end).
+	
+testSize1() ->
+	Var = 2,
+	testSizeFun(Var),
+	io:format("Test1: ~p~n", [erlang:process_info(self(), memory)] ).
+	
+testSize2() ->
+	Var = 2,
+	Fun = fun(Num) -> Num * Num end,
+	Fun( Var ),
+	Fun( Var ),
+	io:format("Test2: ~p~n", [erlang:process_info(self(), memory)] ).
+
+testSizeFun(Num) -> Num * Num.
+	

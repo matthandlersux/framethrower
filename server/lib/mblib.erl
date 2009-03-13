@@ -2,6 +2,7 @@
 -compile (export_all).
 
 -include ("../mbrella/v1.4/include/scaffold.hrl").
+-define(consKeysLeftRight, [3, 4] ).
 
 %% ====================================================
 %% Searching Functions
@@ -55,7 +56,8 @@ traverse1( Expr, LookFor) ->
 %% 
 
 traverseCons( Expr ) when is_record(Expr, cons) ->
-	ElementList = recordKeysToIndex( cons, [left, right]),
+	% ElementList = recordKeysToIndex( cons, [left, right]),
+	ElementList = ?consKeysLeftRight,
 	{next, ElementList};
 traverseCons( Expr ) -> 
 	{ok, Expr}.

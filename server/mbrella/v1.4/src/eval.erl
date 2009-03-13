@@ -2,6 +2,7 @@
 -compile( export_all).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+-define(consKeysRight, [4] ).
 
 -include ("../include/scaffold.hrl").
 
@@ -213,7 +214,8 @@ getLambdaVars( Expr ) ->
 	LookForLambda =
 		fun( #cons{type = lambda, left = Variable, right = RightExpr} = Expr1 ) when is_record(Expr1, cons) ->
 			Catcher ! {add, Variable#exprVar.value},
-			{next, mblib:recordKeysToIndex(cons, [right])}
+			% recordKeysToIndex can be turned into a macro to save time
+			{next, ?consKeysRight}
 		end,
 	mblib:traverse( Expr, LookForLambda ),
 	Ref = make_ref(),
