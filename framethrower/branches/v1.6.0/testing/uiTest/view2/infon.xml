@@ -10,7 +10,7 @@
 	<f:derive name="infonArgs" d="getInfonArguments focus" />
 	<f:derive name="template" d="(bindSet getRelationTemplate) (getInfonRelations focus)" />
 	
-	<f:derive name="types" d="getTypes (Cons~Object focus)" />
+	<f:derive name="types" d="getTypesMap (Cons~Object focus)" />
 	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
 	
 	<f:include url="/xml/util/typeColor.xml" />
@@ -19,7 +19,7 @@
 	<xsl:if test="$rt">
 		<xsl:variable name="color">
 			<xsl:call-template name="typeColor">
-				<xsl:with-param name="typeNames" select="$types/f:o/@name" />
+				<xsl:with-param name="typeNames" select="$types/f:entry/f:value/f:set/f:o/@name" />
 				<xsl:with-param name="typeDisplay" select="$typeDisplay" />
 			</xsl:call-template>
 		</xsl:variable>
@@ -31,6 +31,14 @@
 			<xsl:with-param name="color" select="$color" />
 		</xsl:call-template>
 	</xsl:if>
+	
+	<f:each select="$infonArgs" key="key" value="val">
+		<f:each select="$val" key="obj">
+			<f:thunkadvice url="view.xml">
+				<f:with-param name="focus" select="$obj" />
+			</f:thunkadvice>
+		</f:each>
+	</f:each>
 	
 	<f:template name="printArg">
 		<f:param name="focus" type="Object" />
