@@ -481,7 +481,8 @@ primitives() ->
 	name = "invert",
 	type = "Map a (Set b) -> Map b (Set a)",
 	function = fun(Cell) ->
-		SetType = type:buildType(type:get(Cell), "Map a (Set b)", "Set a"),
+		%TAG: EVALNOTYPE
+		%SetType = type:buildType(type:get(Cell), "Map a (Set b)", "Set a"),
 		OutputCell = cell:makeCellMapInput(),
 		Intercept = cell:injectIntercept(OutputCell, fun(Message, BHash) ->
 			case Message of
@@ -490,8 +491,10 @@ primitives() ->
 						{ok, {BCell, Num}} -> dict:store(BVal, {BCell, Num+1}, BHash);
 						_ -> 
 							NewCell = cell:makeCell(),
-							TypedCell = NewCell#exprCell{type=SetType},
-							cell:update(TypedCell),
+							TypedCell = NewCell,
+							%TAG: EVALNOTYPE
+							%TypedCell = NewCell#exprCell{type=SetType},
+							%cell:update(TypedCell),
 							cell:addLine(OutputCell, {BVal, TypedCell}),
 							dict:store(BVal, {TypedCell, 1}, BHash)
 					end;

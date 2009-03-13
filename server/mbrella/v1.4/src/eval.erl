@@ -22,6 +22,74 @@
 %% evaluate:: Expr -> Expr
 %% 
 
+%This is eval when we were type checking, which allowed us to do less memoization checks
+%TAG: EVALNOTYPE
+% evaluate(Expr) when is_record(Expr, cons) ->
+% 	case Expr#cons.type of
+% 		lambda ->
+% 			% ?trace(Expr),
+% 			Expr;
+% 		apply ->
+% 			case evaluate( Expr#cons.left ) of
+% 				#cons{type = lambda} = Lambda ->
+% 					% ?trace(Lambda),
+% 					evaluate( betaReduce(Lambda, Expr#cons.right) );
+% 				Left ->
+% 					% ?trace(Expr),
+% 					Type = type:get( Expr ),
+% 					% ?trace(Type),
+% 					BottomExpr = bottomOut(Expr),	
+% 					case type:isReactive(Type) of
+% 						true ->
+% 							NormalExpr = normalize(BottomExpr),
+% 							case memoize:get( NormalExpr ) of
+% 								Cell when is_record(Cell, exprCell) -> Cell;
+% 								_ ->
+% 									F = evaluate( Left ), 
+% 									Input = evaluate( Expr#cons.right ),
+% 									Result = applyFun( F, Input ),
+% 									TypedCell = Result#exprCell{type = Type, bottom = BottomExpr},
+% 									cell:update(TypedCell),
+% 									% this is correct - memoize:add returns an onRemove function
+% 									OnRemove = memoize:add( NormalExpr, TypedCell),
+% 									cell:addOnRemove(TypedCell, OnRemove),
+% 									TypedCell
+% 							end;
+% 						false ->
+% 							% ?trace(Left),
+% 							% ?trace(Expr#cons.right),
+% 							F = evaluate( Left ), 
+% 							Input = evaluate( Expr#cons.right ),
+% 							case applyFun( F, Input ) of
+% 								X when is_function(X) ->
+% 									%decide if it needs to be named
+% 									#exprFun{function = X, type = Type, bottom = BottomExpr};
+% 								Result when is_record(Result, exprCell) ->
+% 									TypedCell = Result#exprCell{type = Type, bottom = BottomExpr},
+% 									cell:update(TypedCell),
+% 									TypedCell;
+% 								NumStringBool ->
+% 									NumStringBool
+% 							end
+% 					end
+% 			end
+% 	end;
+% evaluate(Expr) ->
+% 	% here we can have any expr object...
+% 	BottomExpr = bottomOut(Expr),
+% 	case Expr of
+% 		X when is_function(X) ->
+% 			Type = type:get( Expr ),
+% 			%decide if it needs to be named
+% 			#exprFun{function = X, type = Type, bottom = BottomExpr};
+% 		Result when is_record(Result, exprCell) ->
+% 			Type = type:get( Expr ),
+% 			Result#exprCell{type = Type, bottom = BottomExpr};
+% 		NumStringBool ->
+% 			NumStringBool
+% 	end.
+
+
 evaluate(Expr) when is_record(Expr, cons) ->
 	case Expr#cons.type of
 		lambda ->
@@ -33,38 +101,22 @@ evaluate(Expr) when is_record(Expr, cons) ->
 					% ?trace(Lambda),
 					evaluate( betaReduce(Lambda, Expr#cons.right) );
 				Left ->
-					% ?trace(Expr),
-					Type = type:get( Expr ),
-					% ?trace(Type),
-					BottomExpr = bottomOut(Expr),	
-					case type:isReactive(Type) of
-						true ->
-							NormalExpr = normalize(BottomExpr),
-							case memoize:get( NormalExpr ) of
-								Cell when is_record(Cell, exprCell) -> Cell;
-								_ ->
-									F = evaluate( Left ), 
-									Input = evaluate( Expr#cons.right ),
-									Result = applyFun( F, Input ),
-									TypedCell = Result#exprCell{type = Type, bottom = BottomExpr},
-									cell:update(TypedCell),
-									% this is correct - memoize:add returns an onRemove function
-									OnRemove = memoize:add( NormalExpr, TypedCell),
-									cell:addOnRemove(TypedCell, OnRemove),
-									TypedCell
-							end;
-						false ->
-							% ?trace(Left),
-							% ?trace(Expr#cons.right),
+					BottomExpr = bottomOut(Expr),
+					NormalExpr = normalize(BottomExpr),
+					case memoize:get( NormalExpr ) of
+						Cell when is_record(Cell, exprCell) -> Cell;
+						_ ->
 							F = evaluate( Left ), 
 							Input = evaluate( Expr#cons.right ),
 							case applyFun( F, Input ) of
 								X when is_function(X) ->
 									%decide if it needs to be named
-									#exprFun{function = X, type = Type, bottom = BottomExpr};
+									#exprFun{function = X, bottom = BottomExpr};
 								Result when is_record(Result, exprCell) ->
-									TypedCell = Result#exprCell{type = Type, bottom = BottomExpr},
+									TypedCell = Result#exprCell{bottom = BottomExpr},
 									cell:update(TypedCell),
+									OnRemove = memoize:add( NormalExpr, TypedCell),
+									cell:addOnRemove(TypedCell, OnRemove),
 									TypedCell;
 								NumStringBool ->
 									NumStringBool
@@ -77,15 +129,16 @@ evaluate(Expr) ->
 	BottomExpr = bottomOut(Expr),
 	case Expr of
 		X when is_function(X) ->
-			Type = type:get( Expr ),
 			%decide if it needs to be named
-			#exprFun{function = X, type = Type, bottom = BottomExpr};
+			#exprFun{function = X, bottom = BottomExpr};
 		Result when is_record(Result, exprCell) ->
-			Type = type:get( Expr ),
-			Result#exprCell{type = Type, bottom = BottomExpr};
+			Result#exprCell{bottom = BottomExpr};
 		NumStringBool ->
 			NumStringBool
 	end.
+
+
+
 
 %% 
 %% betaReduce:: LambdaCons -> ExprVar -> Expr
