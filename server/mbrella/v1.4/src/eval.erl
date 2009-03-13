@@ -124,18 +124,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 					end
 			end
 	end;
-evaluate(Expr) ->
-	% here we can have any expr object...
-	BottomExpr = bottomOut(Expr),
-	case Expr of
-		X when is_function(X) ->
-			%decide if it needs to be named
-			#exprFun{function = X, bottom = BottomExpr};
-		Result when is_record(Result, exprCell) ->
-			Result#exprCell{bottom = BottomExpr};
-		NumStringBool ->
-			NumStringBool
-	end.
+evaluate(NumStringBool) -> NumStringBool.
 
 
 
