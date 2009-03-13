@@ -222,10 +222,14 @@ var session = (function () {
 		// if (unparseExpr(getExpr(expr)).indexOf("local.") !== -1) {
 		// 	debug.error("Trying to send a local thing to the server", expr);
 		// }
+
+		var newExpr = unparseExpr(getExpr(expr));
+
+		//console.log("Query", queryId, {expr:newExpr});
 		
 		messages.push({
 			query: {
-				expr: unparseExpr(getExpr(expr)),
+				expr: newExpr,
 				queryId: '' + queryId
 			}
 		});
@@ -309,12 +313,7 @@ var session = (function () {
 			//console.log("updater got a message", text);
 			
 			// TODO if text is blank, treat this as session closed
-			
-			if(text.indexOf("Sean Connery") !== -1) {
-				console.log("FOUND Sean Connery!!!!!!");
-			}
-			
-			
+						
 			// try {
 				var o = JSON.parse(text);
 				
@@ -361,7 +360,6 @@ var session = (function () {
 								debug.log("Action failed, actionId:", actionResponse.actionId);
 							}
 						} else if (response.queryDefine) {
-							console.log("Query Define");
 							var queryDefine = response.queryDefine;
 							var expr = parseExpr(queryDefine.expr, remoteObjectsEnv);
 							var type = getType(expr);
