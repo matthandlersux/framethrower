@@ -16,7 +16,7 @@
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export ([new/0, inject/3, getQueryId/1]).
+-export ([new/0, addCleanup/3, getQueryId/1]).
 
 
 %% ====================================================
@@ -30,8 +30,8 @@ new () ->
 	{ok, Pid} = gen_server:start(?MODULE, [], []),
 	Pid.
 
-inject (SessionPid, QueryId, Fun) ->
-	gen_server:cast(SessionPid, {inject, QueryId, Fun}).
+addCleanup (SessionPid, QueryId, Fun) ->
+	gen_server:cast(SessionPid, {addCleanup, QueryId, Fun}).
 	
 getQueryId (SessionPid) ->
 	gen_server:call(SessionPid, getQueryId).
@@ -126,10 +126,10 @@ handle_cast({done, QueryId}, State) ->
 handle_cast({queryReference, QueryId, ReferenceId}, State) ->
 	?this(msgQueue) ! { queryReference, QueryId, ReferenceId },
 	{noreply, State, ?this(timeout)};
-handle_cast({inject, QueryId, InjectFun }, State) ->
+handle_cast({addCleanup, QueryId, CleanupFun }, State) ->
 	NewState = State#session{
 		openQueries = dict:store(QueryId, [], ?this(openQueries)),
-		cleanup = [InjectFun()|?this(cleanup)] 
+		cleanup = [CleanupFun|?this(cleanup)] 
 	},
 	{noreply, NewState, ?this(timeout)};
 handle_cast({actionResponse, ActionResponse}, State) ->

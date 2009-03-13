@@ -18,24 +18,14 @@
 }).
 
 processServerAdvice(ServerAdviceRequest, Templates, From) ->
-	processCall(ServerAdviceRequest, Templates, dict:new(), From).
-
-processCall(ServerAdviceRequest, Templates, Scope, From) ->
-	spawn(fun() -> handleCall(ServerAdviceRequest, Templates, Scope, From) end).
-
-processThunk(ServerAdviceRequest, Templates, Scope, From) ->
-	spawn(fun() -> handleThunk(ServerAdviceRequest, Templates, Scope, From) end).
-
-processForEach(ServerAdviceRequest, Templates, Scope, From) ->
-	spawn(fun() -> handleForEach(ServerAdviceRequest, Templates, Scope, From) end).
-
-processPattern(ServerAdviceRequest, Templates, Scope, From) ->
-	spawn(fun() -> handlePattern(ServerAdviceRequest, Templates, Scope, From) end).
+	spawn(fun() ->
+		processCall(ServerAdviceRequest, Templates, dict:new(), From)
+	end).
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
-handleCall (Call, Templates, Scope, SessionPid) ->
+processCall (Call, Templates, Scope, SessionPid) ->
 	case struct:get_first(Call) of
 		{<<"thunk">>, Thunk} -> processThunk(Thunk, Templates, Scope, SessionPid);
 		{<<"forEach">>, ForEach} -> processForEach(ForEach, Templates, Scope, SessionPid);
@@ -71,23 +61,21 @@ runTemplate (Template, Params, Templates, Scope, SessionPid) ->
 						QueryId = session:getQueryId(SessionPid),
 						case session:queryDefine(SessionPid, expr:unparse(DParsed), QueryId) of
 							true ->
-								EvalInjectFun = fun() ->
-									cell:injectFunc(Cell, 
-										fun() ->
-											session:sendUpdate(SessionPid, {done, QueryId})
-										end,
-										fun(Val) ->
-											session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
-											fun() -> 
-												case Val of
-													{Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
-													_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
-												end
+								OnRemove = cell:injectFunc(Cell, 
+									fun() ->
+										session:sendUpdate(SessionPid, {done, QueryId})
+									end,
+									fun(Val) ->
+										session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
+										fun() -> 
+											case Val of
+												{Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
+												_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
 											end
 										end
-									)
-								end,
-								session:inject(SessionPid, QueryId, EvalInjectFun);
+									end
+								),
+								session:addCleanup(SessionPid, QueryId, OnRemove);
 							false -> nosideeffect
 						end;
 					_ ->
@@ -114,7 +102,7 @@ runTemplate (Template, Params, Templates, Scope, SessionPid) ->
 		processCall(Call, UpdatedTemplates, ScopeWithDerives, SessionPid)
 	end, Calls).
 
-handleThunk (Thunk, Templates, Scope, SessionPid) ->
+processThunk (Thunk, Templates, Scope, SessionPid) ->
 	TemplateName = getFromStruct("template", Thunk),
 	
 	Params = getFromStruct("params", Thunk),
@@ -136,7 +124,7 @@ handleThunk (Thunk, Templates, Scope, SessionPid) ->
 		_ -> nosideeffect
 	end.
 	
-handleForEach (ForEach, Templates, Scope, SessionPid) ->
+processForEach (ForEach, Templates, Scope, SessionPid) ->
 	On = getFromStruct("on", ForEach),
 	KeyName = getFromStruct("key", ForEach),
 	ValName = getFromStruct("value", ForEach),
@@ -165,7 +153,7 @@ handleForEach (ForEach, Templates, Scope, SessionPid) ->
 		_ -> nosideeffect
 	end.
 	
-handlePattern (Pattern, Templates, Scope, SessionPid) ->
+processPattern (Pattern, Templates, Scope, SessionPid) ->
 	
 	
 	MatchList = lists:reverse(Pattern),
