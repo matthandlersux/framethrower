@@ -45,8 +45,13 @@ registerTemplate (SessionPid, Name, Template) ->
 serverAdviceRequest (SessionPid, ServerAdviceRequest) ->
 	gen_server:cast(SessionPid, {serverAdviceRequest, ServerAdviceRequest}).
 
-pipeline(SessionPid, From, LastMessageId) ->
-	gen_server:cast(SessionPid, {pipeline, From, LastMessageId}).
+pipeline(SessionPid, LastMessageId) ->
+	gen_server:cast(SessionPid, {pipeline, self(), LastMessageId}),
+	receive 
+		Json -> Json
+	after 45000 ->
+		timeout
+	end.
 
 queryDefine(SessionPid, Expr, QueryId) ->
 	gen_server:call(SessionPid, {queryDefine, Expr, QueryId}).

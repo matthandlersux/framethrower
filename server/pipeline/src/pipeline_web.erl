@@ -98,15 +98,13 @@ loop(Req, DocRoot) ->
 					JsonOut = case sessionManager:lookup(SessionId) of
 						sessionClosed -> {struct, [{"sessionClosed", true}] };
 						SessionPid ->
-							Self = self(),
-							spawn( fun() -> timer:sleep(?pipelineBufferTime), session:pipeline(SessionPid, Self, LastMessageId) end),
-							receive 
+							case session:pipeline(SessionPid, LastMessageId) of
+								timeout ->
+									{struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]};
 								{updates, Updates, LastMessageId2} ->
 									responseTime:updatesOut(SessionId, pipeline, Updates),
 									{struct, [{"responses", Updates},{"lastMessageId", LastMessageId2}]};
 								OtherJson -> OtherJson
-							after 45000 ->
-								{struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]}
 							end
 					end,
 					spit(Req, JsonOut);
