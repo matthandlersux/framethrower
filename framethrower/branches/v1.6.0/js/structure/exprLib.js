@@ -231,12 +231,12 @@ var exprLib = {
 		}
 	},
 	
-	getTypes: {
+	getTypesOld: {
 		type: "Object -> Set Object",
 		expr: "unfoldSet (getOntProp shared.isA)"
 	},
 	
-	getTypesNew: {
+	getTypes: {
 		type: "Object -> Set Object",
 		expr: "unfoldSet oneStep",
 		where: {
