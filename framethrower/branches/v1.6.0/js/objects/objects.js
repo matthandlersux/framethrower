@@ -51,6 +51,8 @@ var classesToMake = {
 			"url": "String",
 			"width": "Number",
 			"height": "Number",
+			//"frameCount": "Number",
+			"frameRate": "Number",
 			"duration": "Number"
 		}
 	},
@@ -101,7 +103,7 @@ var classesToMake = {
 	"UI.main": {
 		prop: {
 			"pane": "UI.pane",
-			"popup": "Unit UI.popup",
+			"popup": "Map String UI.popup",
 			"dragging": "Unit UI.dragging"
 		}
 	},
@@ -131,14 +133,23 @@ var classesToMake = {
 	"UI.pane.set": {
 		inherit: "UI.pane",
 		prop: {
-			"panes": "Map String UI.pane"
+			"panes": "Map String UI.pane",
+			"orientation": "Unit String"
+		}
+	},
+	"UI.pane.timeline": {
+		inherit: "UI.pane",
+		prop: {
+			"focus": "Object",
+			"zoomWidth": "Unit Number",
+			"previewFrame": "Unit Number"
 		}
 	},
 	"UI.pane.pane": {
 		inherit: "UI.pane",
 		prop: {
 			"tab": "Unit String", // objectsIn, addingObj, infonsIn, about
-			"focus": "Unit Object",
+			"focus": "Unit Object", // this should just be Object, TODO
 			"propertiesState": "UI.propertiesState",
 			"aboutNewInfons": "Set UI.consIP",
 			"infonsInNewInfons": "Set UI.consIP",
@@ -150,31 +161,41 @@ var classesToMake = {
 	
 	"UI.propertiesState": {
 		prop: {
-			"editName": "Unit Null"
+			"editName": "Unit Null",
+			"newTypes": "Set UI.outlineNode"
 		}
 	},
 	
 	
-	// "UI.objectIP": {
-	// 	prop: {
-	// 		"object": "Unit Object",
-	// 		"consIP": "Unit UI.consIP"
-	// 	}
-	// },
-	// "UI.consIP": {
-	// 	//inherit: "UI.objectIP",
-	// 	prop: {
-	// 		left: "UI.objectIP",
-	// 		right: "UI.objectIP"
-	// 	},
-	// 	makeNew: ["left", "right"]
-	// },
 	
 	"UI.consIP": {
 		prop: {
 			"object": "Unit Object",
 			"left": "Unit UI.consIP",
 			"right": "Unit UI.consIP"
+		}
+	},
+	
+	
+	"UI.outlineNode": {
+		prop: {
+			"focus": "Object", // the use of Outline here should be replaced by a, when we have polymorphic classes (ie: UI.outlineNode a)
+			"children": "Map Object UI.outlineNode",
+			"expanded": "Unit Null"
+		}
+	},
+	
+	"UI.relationCreator.word": {
+		prop: {
+			"string": "Unit String",
+			"type": "Unit Object"
+		}
+	},
+	
+	"UI.relationCreator": {
+		prop: {
+			"typeExplorer": "UI.outlineNode",
+			"words": "Map String UI.relationCreator.word"
 		}
 	},
 	
