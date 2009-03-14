@@ -40,7 +40,11 @@
 		
 		<xsl:variable name="minspacing" select="150" />
 		
-		<html:div>
+		<html:div class="rulerContainer">
+			<xsl:attribute name="style">
+				width: <xsl:value-of select="$width/@value" />px;
+				height: <xsl:value-of select="$height/@value" />px;
+			</xsl:attribute>
 			<xsl:variable name="mininc" select="$duration/@value div ($width/@value div $minspacing)" />
 			<xsl:variable name="rulerinc" select="$denoms/*/*[@d &gt; $mininc][1]" />
 			<xsl:variable name="notchinc" select="$rulerinc/preceding-sibling::*[2]/@d" />
@@ -65,8 +69,10 @@
 			<xsl:param name="intervals" />
 
 			<xsl:if test="$pos &lt; $maxpos">
-				<html:div class="{concat('ruler-notch-',count($intervals) + 1 - count($intervals[$timestep mod round(@d div $timeinc) = 0]))}"
-					style="left: {round($pos)}px;">
+				<html:div class="{concat('ruler-notch-',count($intervals) + 1 - count($intervals[$timestep mod round(@d div $timeinc) = 0]))}">
+					<xsl:attribute name="style">
+						left: <xsl:value-of select="round($pos)" />px;
+					</xsl:attribute>
 					<xsl:if test="count($intervals) = count($intervals[$timestep mod round(@d div $timeinc) = 0])">
 						<html:div class="rulerMarking">
 							<xsl:call-template name="rulermarking">

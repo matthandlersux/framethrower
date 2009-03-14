@@ -52,7 +52,7 @@
 	<f:intact object="$columns" property="panes" action="add" key="'b'" value="$mainPane" />
 	
 	
-	<f:derive name="walleMovie" d="test.walleMovie" />
+	<f:derive name="walleMovie" d="shared.test.walleMovie" />
 	<f:create type="UI.pane.timeline" name="timeline">
 		<f:with-param name="focus" select="$walleMovie" />
 	</f:create>

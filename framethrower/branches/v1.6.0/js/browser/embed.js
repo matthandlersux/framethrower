@@ -13,8 +13,10 @@ function processEmbed(node) {
 		// TODO: ask Andrew quickly about doneResponse (first arg to injectFunc)
 		var removeFunc = params["gotoTime"].injectFunc(function () {}, function (time) {
 			//console.log("I got the time", time);
-			if (mov.SetTime) {
+			try {
 				mov.SetTime(time * mov.GetTimeScale());
+			} catch (e) {
+				
 			}
 		}).func;
 		

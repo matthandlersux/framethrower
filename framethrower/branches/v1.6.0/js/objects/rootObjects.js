@@ -55,6 +55,11 @@ var rootObjects = {};
 	m("shared.movie.making");
 	
 	
+	
+	m("shared.test.walleMovie");
+	
+	
+	
 	// m("test.1");
 	// m("test.2");
 	// m("test.3");
@@ -73,7 +78,6 @@ var rootObjects = {};
 	
 	
 	
-	m("test.walleMovie");
 	
 	
 	m("test.typeExplorer", "UI.outlineNode", {"focus": rootObjects["shared.type"]});

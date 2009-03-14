@@ -206,7 +206,7 @@
 		<f:with-param name="type" select="$movieType" />
 	</f:perform> -->
 	
-	<f:derive name="walleMovie" d="test.walleMovie" />
+	<f:derive name="walleMovie" d="shared.test.walleMovie" />
 	<f:perform with-action="$nameObject">
 		<f:with-param name="object" select="$walleMovie" />
 		<f:with-param name="name" select="'Wall-E'" />
