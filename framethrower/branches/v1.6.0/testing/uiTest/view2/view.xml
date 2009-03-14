@@ -9,6 +9,9 @@
 	
 	<f:derive name="asCons" d="Object~Cons focus" />
 	<f:derive name="asText" d="Object~X.text focus" />
+	<f:derive name="asPicture" d="Object~X.picture focus" />
+	<f:derive name="asVideo" d="Object~X.video focus" />
+	
 	
 	<f:pattern>
 		<f:match test="$asCons">
@@ -18,9 +21,21 @@
 			</f:thunk>
 		</f:match>
 		<f:match test="$asText">
-			<f:thunk url="text.xml">
+			<f:thunk url="media/text.xml">
 				<f:with-param name="focus" select="$asText" />
 				<f:with-param name="recurse" select="$recurse" />
+			</f:thunk>
+		</f:match>
+		<f:match test="$asPicture">
+			<f:thunk url="media/picture.xml">
+				<f:with-param name="focus" select="$asPicture" />
+				<f:with-param name="transform"><f:transform width="80" height="80" /></f:with-param>
+			</f:thunk>
+		</f:match>
+		<f:match test="$asVideo">
+			<f:thunk url="media/video.xml">
+				<f:with-param name="focus" select="$asVideo" />
+				<f:with-param name="transform"><f:transform width="80" height="80" /></f:with-param>
 			</f:thunk>
 		</f:match>
 		<f:otherwise>

@@ -1,0 +1,120 @@
+<f:template name="outline"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="display" type="a -> Unit JS" />
+	<f:param name="makeNewChild" type="a -> Unit JS" /> <!-- TODO: also add remove action (this will take a parent and child) -->
+	<f:param name="getChildren" type="Object -> Set Object" />
+	<f:param name="outlineNode" type="UI.outlineNode" />
+
+	<f:derive name="focus" d="UI.outlineNode:focus outlineNode" />
+	<f:derive name="expanded" d="UI.outlineNode:expanded outlineNode" />
+	<f:derive name="childrenMap" d="UI.outlineNode:children outlineNode" />
+	
+	<f:template name="printNode">
+		<f:param name="focus" type="Object" />
+		<html:div class="outline-node">
+			<f:thunk with-template="$display">
+				<f:with-param name="focus" select="$focus" />
+			</f:thunk>
+			<html:button>
+				<f:on event="click" with-action="$makeNewChild">
+					<f:with-param name="focus" select="$focus" />
+				</f:on>
+				+
+			</html:button>
+		</html:div>
+	</f:template>
+	
+	<html:div class="outline">
+		<f:pattern>
+			<f:match test="$expanded">
+				<html:div class="outline-expanded">
+					<f:on event="click" with-action="$collapse" />
+				</html:div>
+			</f:match>
+			<f:otherwise>
+				<html:div class="outline-collapsed">
+					<f:on event="click" with-action="$expand" />
+				</html:div>
+			</f:otherwise>
+		</f:pattern>
+	
+		<f:each select="$focus">
+			<f:thunk with-template="$printNode">
+				<f:with-param name="focus" select="$focus" />
+			</f:thunk>
+		
+			<f:each select="$expanded">
+				<html:div class="outline-children">
+					<f:thunk with-template="$printChildren">
+						<f:with-param name="focus" select="$focus" />
+					</f:thunk>
+				</html:div>
+			</f:each>
+		</f:each>
+	</html:div>
+	
+	<f:template name="printChildren">
+		<f:param name="focus" type="Object" />
+		<f:derive name="children" d="getChildren focus" />
+		<f:derive name="childrenCount" d="buildMap (compose length getChildren) children" />
+		
+		
+		
+		<f:each select="$children" key="child">
+			<xsl:variable name="childOutlineNode" select="$childrenMap/f:entry[f:key/f:o/@name = $child/@name]/f:value/f:o" />
+			<xsl:choose>
+				<xsl:when test="$childOutlineNode">
+					<f:thunk with-template="$outline">
+						<f:with-param name="display" select="$display" />
+						<f:with-param name="makeNewChild" select="$makeNewChild" />
+						<f:with-param name="getChildren" select="$getChildren" />
+						<f:with-param name="outlineNode" select="$childOutlineNode" />
+					</f:thunk>
+				</xsl:when>
+				<xsl:otherwise>
+					<html:div class="outline">
+						<xsl:variable name="childCount" select="$childrenCount/f:entry[f:key/f:o/@name = $child/@name]/f:value/f:unit/f:literal/@value" />
+						<xsl:choose>
+							<xsl:when test="$childCount &gt; 0">
+								<html:div class="outline-collapsed">
+									<f:on event="click" with-action="$newExpand">
+										<f:with-param name="focus" select="$child" />
+									</f:on>
+								</html:div>
+							</xsl:when>
+							<xsl:otherwise>
+								<html:div class="outline-childless">
+									<xsl:copy-of select="$childrenCount" />
+								</html:div>
+							</xsl:otherwise>
+						</xsl:choose>
+
+						<f:thunk with-template="$printNode">
+							<f:with-param name="focus" select="$child" />
+						</f:thunk>
+					</html:div>
+				</xsl:otherwise>
+			</xsl:choose>
+		</f:each>
+	</f:template>
+	
+	<f:action name="newExpand">
+		<f:param name="focus" type="Object" />
+		<f:create type="UI.outlineNode" name="newOutlineNode">
+			<f:with-param name="focus" select="$focus" />
+		</f:create>
+		<f:intact object="$newOutlineNode" property="expanded" action="add" key="null" />
+		<f:intact object="$outlineNode" property="children" action="add" key="$focus" value="$newOutlineNode" />
+	</f:action>
+	<f:action name="expand">
+		<f:intact object="$outlineNode" property="expanded" action="add" key="null" />
+	</f:action>
+	<f:action name="collapse">
+		<f:intact object="$outlineNode" property="expanded" action="remove" />
+	</f:action>
+	
+</f:template>

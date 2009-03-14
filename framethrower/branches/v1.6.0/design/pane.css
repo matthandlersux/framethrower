@@ -11,7 +11,7 @@ Pane Set
 
 .paneset-pane {
 	position:absolute;
-	overflow: hidden;
+/*	overflow: auto;*/
 }
 
 .paneset-spacer {
@@ -26,11 +26,11 @@ Pane itself
 
 .pane {
 /*	background-color:yellow;*/
+	overflow: auto;
 }
 .pane-content {
 	padding-top:4px;
-	border: 1px solid #666;
-	overflow: auto;
+	/*border: 1px solid #666;*/
 }
 
 .titlebar {
@@ -53,6 +53,7 @@ Pane itself
 .tabs {
 	position:relative;
 	top:1px;
+	display: table-row;
 }
 .tab {
 	background-color:#FFFFFF;

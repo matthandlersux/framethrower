@@ -6,7 +6,9 @@ function unparseExpr(expr) {
 	This should only be called on closed Expr's
 	*/
 	function helper(expr) {
-		if (expr.kind === "exprApply") {
+		if (expr.name) {
+			return expr.name;
+		} else if (expr.kind === "exprApply") {
 			return {cons: "apply", left: helper(expr.left), right: helper(expr.right)};
 		} else if (expr.kind === "exprLambda") {
 			return {cons: "lambda", left: helper(expr.left), right: helper(expr.right)};
@@ -25,6 +27,7 @@ function unparseExpr(expr) {
 		}
 	}
 	return unparse(helper(expr));
+	
 }
 
 //var stringify = unparseExpr;

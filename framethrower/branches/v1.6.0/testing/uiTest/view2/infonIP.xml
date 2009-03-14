@@ -192,8 +192,8 @@
 		<f:perform with-action="$showPopup">
 			<f:with-param name="x" select="$x" />
 			<f:with-param name="y" select="$y" />
-			<f:with-param name="width" select="300" as="Number" />
-			<f:with-param name="height" select="300" as="Number" />
+			<f:with-param name="width" select="260" as="Number" />
+			<f:with-param name="height" select="500" as="Number" />
 			<f:with-param name="content" select="$relationPopup" />
 		</f:perform>
 	</f:action>
@@ -228,8 +228,8 @@
 		<f:perform with-action="$showPopup">
 			<f:with-param name="x" select="$x" />
 			<f:with-param name="y" select="$y" />
-			<f:with-param name="width" select="300" as="Number" />
-			<f:with-param name="height" select="300" as="Number" />
+			<f:with-param name="width" select="260" as="Number" />
+			<f:with-param name="height" select="500" as="Number" />
 			<f:with-param name="content" select="$objectPopup" />
 		</f:perform>
 	</f:action>

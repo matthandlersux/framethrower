@@ -12,7 +12,6 @@
 	<f:derive name="realLife" d="shared.realLife" />
 	<f:derive name="situationType" d="shared.type.situation" />
 	<f:derive name="entityType" d="shared.type.entity" />
-	<f:derive name="typeType" d="shared.type.type" />
 	
 	<f:derive name="movieType" d="shared.type.movie" />
 
@@ -24,7 +23,67 @@
 	<f:intact object="$prefs" property="typeDisplay" action="add" key="$situationType" value="'#2ae'" />
 	<f:intact object="$prefs" property="typeDisplay" action="add" key="$entityType" value="'#8c3'" />
 	<f:intact object="$prefs" property="typeDisplay" action="add" key="$relationType" value="'#e29'" />
-	<f:intact object="$prefs" property="typeDisplay" action="add" key="$movieType" value="'#933'" />
+	<f:intact object="$prefs" property="typeDisplay" action="add" key="$movieType" value="'#a22'" />
+	
+	
+	
+	<!-- <f:derive name="main" d="ui.main" />
+	
+	<f:create type="UI.pane.set" name="paneSet" />
+	
+	<f:create type="UI.pane.pane" name="mainPane" />
+	<f:intact object="$mainPane" property="focus" action="add" key="$realLife" />
+	
+	<f:intact object="$paneSet" property="panes" action="add" key="'b'" value="$mainPane" />
+	
+	
+	<f:intact object="$main" property="pane" action="add" key="$paneSet" /> -->
+	
+	<f:derive name="mainPaneSet" d="ui.mainPaneSet" />
+	
+	<f:intact object="$mainPaneSet" property="orientation" action="add" key="'vertical'" />
+	
+	<f:create type="UI.pane.set" name="columns" />
+	<f:intact object="$columns" property="orientation" action="add" key="'horizontal'" />
+	
+	<f:create type="UI.pane.pane" name="mainPane" />
+	<f:intact object="$mainPane" property="focus" action="add" key="$realLife" />
+	
+	<f:intact object="$columns" property="panes" action="add" key="'b'" value="$mainPane" />
+	
+	
+	<f:derive name="walleMovie" d="test.walleMovie" />
+	<f:create type="UI.pane.timeline" name="timeline">
+		<f:with-param name="focus" select="$walleMovie" />
+	</f:create>
+	<f:intact object="$timeline" property="height" action="add" key="180" />
+	<f:intact object="$timeline" property="zoomWidth" action="add" key="4000" />
+	
+	<!-- <f:create type="UI.pane.pane" name="timeline" />
+	<f:intact object="$timeline" property="focus" action="add" key="$realLife" />
+	<f:intact object="$timeline" property="height" action="add" key="200" /> -->
 
+	
+	<f:intact object="$mainPaneSet" property="panes" action="add" key="'b'" value="$columns" />
+	<f:intact object="$mainPaneSet" property="panes" action="add" key="'bb'" value="$timeline" />
+
+
+
+	<!-- <f:perform with-action="$showPopup">
+		<f:with-param name="x" select="100" as="Number" />
+		<f:with-param name="y" select="100" as="Number" />
+		<f:with-param name="width" select="500" as="Number" />
+		<f:with-param name="height" select="300" as="Number" />
+		<f:with-param name="content" select="$test" />
+	</f:perform>
+
+	<f:template name="test">
+		<f:derive name="relationCreator" d="test.relationCreator" />
+		<f:thunk url="relationCreator/relationCreator.xml">
+			<f:with-param name="relationCreator" select="$relationCreator" />
+		</f:thunk>
+	</f:template> -->
+	
+	<f:include url="/xml/util/uiActions.xml" />
 
 </f:action>

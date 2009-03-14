@@ -105,6 +105,15 @@
 		</xsl:copy>
 	</xsl:template>
 	
+	<xsl:template match="*[self::f:with-param or self::f:with-template or self::f:with-action][not(@select)][not(f:literal)]">
+		<xsl:copy>
+			<xsl:copy-of select="@*" />
+			<f:literal type="XML">
+				<xsl:copy-of select="*" />
+			</f:literal>
+		</xsl:copy>
+	</xsl:template>
+	
 	<xsl:template name="write-select">
 		<xsl:param name="s" select="@select" />
 		<xsl:variable name="fc" select="substring($s, 1, 1)" />
@@ -142,20 +151,22 @@
 			<xsl:attribute name="select"><xsl:value-of select="@select" />/*</xsl:attribute>
 			
 			<xsl:choose>
+				<xsl:when test="@value">
+					<xsl:if test="@key">
+						<xsl:element name="xsl:variable" namespace="{$xslns}">
+							<xsl:attribute name="name"><xsl:value-of select="@key" /></xsl:attribute>
+							<xsl:attribute name="select">f:key/*</xsl:attribute>
+						</xsl:element>
+					</xsl:if>
+					<xsl:element name="xsl:variable" namespace="{$xslns}">
+						<xsl:attribute name="name"><xsl:value-of select="@value" /></xsl:attribute>
+						<xsl:attribute name="select">f:value/*</xsl:attribute>
+					</xsl:element>
+				</xsl:when>
 				<xsl:when test="not(@key)">
 					<xsl:element name="xsl:variable" namespace="{$xslns}">
 						<xsl:attribute name="name"><xsl:value-of select="substring(@select, 2)" /></xsl:attribute>
 						<xsl:attribute name="select">.</xsl:attribute>
-					</xsl:element>
-				</xsl:when>
-				<xsl:when test="@value">
-					<xsl:element name="xsl:variable" namespace="{$xslns}">
-						<xsl:attribute name="name"><xsl:value-of select="@key" /></xsl:attribute>
-						<xsl:attribute name="select">f:key/*</xsl:attribute>
-					</xsl:element>
-					<xsl:element name="xsl:variable" namespace="{$xslns}">
-						<xsl:attribute name="name"><xsl:value-of select="@value" /></xsl:attribute>
-						<xsl:attribute name="select">f:value/*</xsl:attribute>
 					</xsl:element>
 				</xsl:when>
 				<xsl:otherwise>

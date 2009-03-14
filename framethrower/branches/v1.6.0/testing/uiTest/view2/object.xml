@@ -7,19 +7,26 @@
 	<f:param name="focus" type="Object" />
 	
 	<f:derive name="name" d="getName focus" />
-	<f:derive name="thumbnail" d="getOntProp shared.thumbnail focus" />
+	<f:derive name="thumbnail" d="bindUnitSet Object~X.picture (getOntProp shared.thumbnail focus)" />
 	
-	<f:derive name="types" d="getTypes focus" />
+	<!-- <f:derive name="types" d="getTypes focus" /> -->
+	<f:derive name="types" d="getTypesMap focus" />
 	<f:derive name="isRelation" d="filterRelations (returnSet focus)" />
 	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
 	
+	<f:derive name="isTypeObject" d="isType focus" />
+	
 	<f:include url="/xml/util/typeColor.xml" />
 	
-	<html:div class="object">
+	<xsl:variable name="class">
+		object<xsl:if test="$isTypeObject/*"> typeObject</xsl:if>
+	</xsl:variable>
+	
+	<html:div class="{$class}">
 		<xsl:variable name="color">
 			<xsl:call-template name="typeColor">
 				<xsl:with-param name="isRelation" select="$isRelation" />
-				<xsl:with-param name="typeNames" select="$types/f:o/@name" />
+				<xsl:with-param name="typeNames" select="$types/f:entry/f:value/f:set/f:o/@name" />
 				<xsl:with-param name="typeDisplay" select="$typeDisplay" />
 			</xsl:call-template>
 		</xsl:variable>
@@ -27,10 +34,9 @@
 		<xsl:attribute name="style">background-color: <xsl:value-of select="$color" /></xsl:attribute>
 		
 		<f:each select="$thumbnail" position="1">
-			<f:thunk url="picture.xml">
+			<f:thunk url="media/picture.xml">
 				<f:with-param name="focus" select="$thumbnail" />
-				<f:with-param name="width" select="30" />
-				<f:with-param name="height" select="30" />
+				<f:with-param name="transform"><f:transform width="30" height="30" /></f:with-param>
 			</f:thunk>
 		</f:each>
 		
@@ -39,7 +45,13 @@
 				<xsl:value-of select="$name/*/@value" />				
 			</xsl:when>
 			<xsl:otherwise>
-				<html:i>Untitled</html:i>
+				<html:form>
+					<html:input name="newName" type="text" value="">
+						<f:on event="manualblur" with-action="$changeName">
+							<f:with-param-browser name="newName" form="newName" />
+						</f:on>
+					</html:input>
+				</html:form>
 			</xsl:otherwise>
 		</xsl:choose>
 
@@ -47,6 +59,24 @@
 	</html:div>
 	
 
-
+	<f:action name="changeName">
+		<f:param name="newName" type="String" />
+		<f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" />
+		
+		<xsl:if test="string-length($newName/@value) &gt; 0">
+			<!-- remove old name(s) -->
+			<f:each select="$ontInfons" key="ontInfon">
+				<f:intact object="$ontInfon" action="remove" property="truth" key="null" /> <!-- TODO shouldn't need a key -->
+			</f:each>
+		
+			<f:perform with-action="$nameObject">
+				<f:with-param name="object" select="$focus" />
+				<f:with-param name="name" select="$newName" />
+			</f:perform>
+		</xsl:if>
+	</f:action>
+	
+	<f:include url="/xml/util/actions.xml" />
+	
 
 </f:template>

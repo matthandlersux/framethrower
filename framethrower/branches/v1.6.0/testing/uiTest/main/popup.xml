@@ -15,12 +15,33 @@
 	<f:derive name="pheight" d="UI.popup:height popup" /> <!-- these aren't actually used anymore -->
 	<f:derive name="content" d="UI.popup:content popup" />
 
-	<xsl:variable name="w" select="260" />
-	<xsl:variable name="h" select="floor($height/@value div 2)" />
-	
-	<!-- The following works the way the mac context menu seems to work -->
 
-	<f:each select="$px"><f:each select="$py"><f:each select="$content">
+	<xsl:template name="min">
+		<xsl:param name="n1" /><xsl:param name="n2" />
+		<xsl:choose>
+			<xsl:when test="$n1 &lt; $n2"><xsl:value-of select="$n1" /></xsl:when>
+			<xsl:otherwise><xsl:value-of select="$n2" /></xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	
+
+	<f:each select="$px"><f:each select="$py"><f:each select="$pwidth"><f:each select="$pheight"><f:each select="$content">
+		
+		<xsl:variable name="w">
+			<xsl:call-template name="min">
+				<xsl:with-param name="n1" select="$pwidth/@value" />
+				<xsl:with-param name="n2" select="floor($width/@value div 2)" />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:variable name="h">
+			<xsl:call-template name="min">
+				<xsl:with-param name="n1" select="$pheight/@value" />
+				<xsl:with-param name="n2" select="floor($height/@value div 2)" />
+			</xsl:call-template>
+		</xsl:variable>
+		
+		<!-- The following works the way the mac context menu seems to work -->
+		
 		<xsl:variable name="left">
 			<xsl:choose>
 				<xsl:when test="$px/@value + $w &gt; $width/@value">
@@ -53,7 +74,7 @@
 
 			<f:thunk with-template="$content" />
 		</html:div>
-	</f:each></f:each></f:each>
+	</f:each></f:each></f:each></f:each></f:each>
 	
 	<f:include url="/xml/util/style.xml" />
 </f:template>

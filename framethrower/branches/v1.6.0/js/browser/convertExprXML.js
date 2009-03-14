@@ -90,15 +90,9 @@ function xmlToExpr(xml, ids) {
 	
 	if (nn === "f:literal") {
 		return unxmlizeLiteral(xml, ids);
-	} else if (nn === "f:o" || nn === "f:set" || nn === "f:map") {
+	} else if (nn === "f:o" || nn === "f:set" || nn === "f:map" || nn === "f:unit") {
 		var id = getAttr(xml, "name");
 		return ids[id];
-	} else if (nn === "f:set") {
-		// TODO
-	} else if (nn === "f:map") {
-		// TODO
-	} else if (nn === "f:unit") {
-		debug.error("Not supposed to hit a f:unit..."); // TODO remove this
 	} else {
 		return cloneNode(xml); // TODO: perhaps don't need cloneNode here
 	}

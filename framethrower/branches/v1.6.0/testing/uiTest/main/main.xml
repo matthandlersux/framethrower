@@ -31,7 +31,7 @@
 					</f:thunk>
 				</f:each>
 				
-				<f:each select="$popup">
+				<f:each select="$popup" key="ord" value="popup">
 					<html:div class="popupbg">
 						<xsl:call-template name="style">
 							<xsl:with-param name="width" select="$screenWidth/@value" />

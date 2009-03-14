@@ -7,11 +7,14 @@
 	<f:param name="pane" type="UI.pane.pane" />
 	<f:param name="closePane" type="Unit JS" />
 	<f:param name="newPane" type="a -> Unit JS" />
+	<f:param name="width" type="Number" />
+	<f:param name="height" type="Number" />
+	
 	<f:derive name="tab" d="UI.pane.pane:tab pane" />
 	<f:derive name="focus" d="UI.pane.pane:focus pane" />
 	
 	<!-- <f:derive name="focustype" d="bindSet (getOntProp shared.isA) (returnUnitSet focus)" /> -->
-	<f:derive name="focustype" d="bindSetUnit getTypes focus" />
+	<f:derive name="focustype" d="mapUnit getTypesMap focus" />
 	
 	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
 	
@@ -24,12 +27,16 @@
 		
 		<xsl:variable name="color">
 			<xsl:call-template name="typeColor">
-				<xsl:with-param name="typeNames" select="$focustype/f:o/@name" />
+				<xsl:with-param name="typeNames" select="$focustype/f:map/f:entry/f:value/f:set/f:o/@name" />
 				<xsl:with-param name="typeDisplay" select="$typeDisplay" />
 			</xsl:call-template>
 		</xsl:variable>
 		
 		<html:div class="pane">
+			<xsl:attribute name="style">
+				width: <xsl:value-of select="$width/@value" />px;
+				height: <xsl:value-of select="$height/@value" />px;
+			</xsl:attribute>
 			<html:div class="titlebar">
 				<html:div class="titlebar-focus">
 					<f:thunk url="../view2/viewPlus.xml">
@@ -44,7 +51,7 @@
 				</html:div>
 			
 				<html:div class="tabs">
-					<xsl:if test="$focustype/*/@name = 'shared.type.situation'">
+					<xsl:if test="$focustype/f:map/f:entry/f:value/f:set/f:o/@name = 'shared.type.situation'">
 						<html:div class="tab">
 							<xsl:if test="$tab/@value = 'objectsIn'">
 								<xsl:attribute name="selected">true</xsl:attribute>

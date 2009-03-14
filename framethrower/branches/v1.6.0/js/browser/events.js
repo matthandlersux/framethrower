@@ -31,31 +31,39 @@
 		var fon = xpath("ancestor-or-self::*[f:on/@event='" + eventName + "' or f:result/f:on/@event='" + eventName + "' or f:result/f:result/f:on/@event='" + eventName + "'][1]", target);
 		
 		if (fon.length > 0) {
-			fon = xpath("f:on[@event='" + eventName + "'] | f:result/f:on[@event='" + eventName + "'] | f:result/f:result/f:on[@event='" + eventName + "']", fon[0])[0];
-			var te = copyThunkEssence(fon.custom.thunkEssence);
+			var fonEl = xpath("f:on[@event='" + eventName + "'] | f:result/f:on[@event='" + eventName + "'] | f:result/f:result/f:on[@event='" + eventName + "']", fon[0])[0];
+			var te = copyThunkEssence(fonEl.custom.thunkEssence);
 			
-			var browserParams = xpath("f:with-param-browser", fon);
+			var browserParams = xpath("f:with-param-browser", fonEl);
 			var form;
 			forEach(browserParams, function (browserParam) {
 				var name = getAttr(browserParam, "name");
 				if (getAttr(browserParam, "form")) {
 					if (!form) {
-						form = xpath("ancestor-or-self::html:form[1]", fon);
+						form = xpath("ancestor-or-self::html:form[1]", fonEl);
 						if (form.length === 0) {
-							debug.error("f:on has a f:with-param-browser needing a form, but there's no form", fon);
+							debug.error("f:on has a f:with-param-browser needing a form, but there's no form", fonEl);
 						}
 						form = form[0];
 					}
 					
 					var el = form.elements[getAttr(browserParam, "form")];
-					te.params[name] = el.value;
+					te.params[name] = "" + el.value;
 				} else if (getAttr(browserParam, "prop")) {
 					var prop = getAttr(browserParam, "prop");
 					if (prop === "mouseX") {
-						te.params[name] = mouseDownPos[0]; // TODO change this to mouseCurrentPos
+						te.params[name] = mouseCurrentPos[0]; // TODO change this to mouseCurrentPos
 					} else if (prop === "mouseY") {
-						te.params[name] = mouseDownPos[1];
-					} // TODO: add more here...
+						te.params[name] = mouseCurrentPos[1];
+					} else if (prop === "relMouseX") {
+						//te.params[name] = mouseCurrentPos[0] - window.getComputedStyle(fon, null).getPropertyValue("left");
+						//console.log(getPosition(fonEl.parentNode));
+						te.params[name] = mouseCurrentPos[0] - getPosition(fonEl.parentNode)[0];
+					} else if (prop === "relMouseY") {
+						te.params[name] = mouseCurrentPos[1] - window.getComputedStyle(fon, null).getPropertyValue("top");
+					}
+					
+					// TODO: add more here...
 				}
 			});
 			
@@ -111,6 +119,8 @@
 		mouseIsDragging = false;
 	}
 	function mousemove(e) {
+		mouseCurrentPos[0] = e.clientX;
+		mouseCurrentPos[1] = e.clientY;
 		processEvent("mousemove", e, {clientX: e.clientX, clientY: e.clientY});
 		if (mouseIsDown && !mouseIsDragging) {
 			var xdiff=mouseDownPos[0]-e.clientX;

@@ -91,6 +91,20 @@
 			<f:with-param name="arg2" select="$type" />
 		</f:perform>
 	</f:action>
+	
+	<f:action name="makeType">
+		<f:param name="object" type="Object" />
+		
+		<f:derive name="isType" d="shared.isType" />
+		
+		<f:perform with-action="$makeInfon1" name="infon">
+			<f:with-param name="relation" select="$isType" />
+			<f:with-param name="arg1" select="$object" />
+		</f:perform>
+		<f:perform with-action="$makeTrueInOnt">
+			<f:with-param name="infon" select="$infon" />
+		</f:perform>
+	</f:action>
 
 
 

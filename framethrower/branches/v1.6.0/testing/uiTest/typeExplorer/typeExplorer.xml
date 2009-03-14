@@ -1,0 +1,44 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="outlineNode" type="UI.outlineNode" />
+	<f:param name="extra" type="a -> Unit JS" />
+	
+	<f:derive name="getTypeChildren" d="getTypeChildren" />
+	
+	<f:include url="/xml/util/actions.xml" />
+	
+	<f:template name="displayType">
+		<f:param name="focus" type="Object" />
+		<html:span>
+			<f:thunk url="../view2/object.xml">
+				<f:with-param name="focus" select="$focus" />
+			</f:thunk>
+			<f:thunk with-template="$extra">
+				<f:with-param name="focus" select="$focus" />
+			</f:thunk>
+		</html:span>
+	</f:template>
+	
+	<f:action name="makeNewSubType">
+		<f:param name="focus" type="Object" /> <!-- TODO: change this name to parent, then make the remove one take parent and child -->
+		<f:create type="Object" name="subType" />
+		<f:perform with-action="$makeType">
+			<f:with-param name="object" select="$subType" />
+		</f:perform>
+		<f:perform with-action="$typeObject">
+			<f:with-param name="object" select="$subType" />
+			<f:with-param name="type" select="$focus" />
+		</f:perform>
+	</f:action>
+	
+	<f:thunk url="../outline/outline.xml">
+		<f:with-param name="display" select="$displayType" />
+		<f:with-param name="makeNewChild" select="$makeNewSubType" />
+		<f:with-param name="outlineNode" select="$outlineNode" />
+		<f:with-param name="getChildren" select="$getTypeChildren" />
+	</f:thunk>
+</f:template>

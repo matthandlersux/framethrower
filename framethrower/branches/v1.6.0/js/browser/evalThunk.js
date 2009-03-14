@@ -12,7 +12,7 @@ function evalThunk(thunkNode) {
 		forEach(xt.params, function (p) {
 			var thunksParam = thunkEssence.params[p.name];
 			
-			if (!thunksParam) {
+			if (thunksParam === undefined) {
 				debug.error("No f:with-param for `"+p.name+"` in thunk", thunkNode);
 			}
 			
@@ -29,7 +29,7 @@ function evalThunk(thunkNode) {
 		var todo = [];
 		var ecell = evaluate(e);
 		
-		var doneResponse = function() {
+		var doneResponse = function () {
 			//this depends on update in xsl.js being called before this function, which relies on a cell performing its done response functions in the order they were injected
 			//TODO: make this less of a hack
 			if (thunkNode.custom && thunkNode.custom.isAction && thunkNode.custom.onXMLUpdate) {

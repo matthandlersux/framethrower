@@ -1,0 +1,73 @@
+.timeline-left {
+	position:absolute;
+}
+.timeline-container {
+	position: absolute;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.timeline-preview {
+	position: absolute;
+}
+
+
+
+
+.timeline-cut {
+	position: absolute;
+	width: 1px;
+	background-color: #639;
+}
+
+
+.timeline {
+	position:absolute;
+}
+
+
+
+
+
+.rulerContainer {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	overflow-x: hidden;
+	overflow-y: hidden;
+	background-image: url(../images/zui.1/innerbackground.png);
+}
+
+.ruler-cursor, .ruler-selected-range, .ruler-selected, .ruler-notch-1, .ruler-notch-2, .ruler-notch-3 {
+	position:absolute;
+	top: 0px;
+	width: 40px;
+	height: 100%;
+}
+
+.rulerMarking {
+	font-family:verdana;
+	font-size:10px;
+	color:#888;
+	-moz-user-select:none;
+	margin-left: 2px;
+}
+
+.ruler-cursor {
+	border-left:1px solid #999;
+	color: #fc0;
+}
+.ruler-selected {
+	border-left: 1px solid #fc0;
+}
+.ruler-selected-range {
+	background-color:rgba(255, 204, 0, 0.4);
+	border-left: 1px solid #fc0;
+	border-right: 1px solid #fc0;
+}
+
+
+.ruler-notch-1 {border-left:1px dashed #888;}
+.ruler-notch-2 {border-left:1px dotted #666;}
+.ruler-notch-3 {border-left:1px dotted #444;}

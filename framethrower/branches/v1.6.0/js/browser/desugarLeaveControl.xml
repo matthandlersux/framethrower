@@ -105,6 +105,15 @@
 		</xsl:copy>
 	</xsl:template>
 	
+	<xsl:template match="*[self::f:with-param or self::f:with-template or self::f:with-action][not(@select)][not(f:literal)]">
+		<xsl:copy>
+			<xsl:copy-of select="@*" />
+			<f:literal type="XML">
+				<xsl:copy-of select="*" />
+			</f:literal>
+		</xsl:copy>
+	</xsl:template>
+	
 	<xsl:template name="write-select">
 		<xsl:param name="s" select="@select" />
 		<xsl:variable name="fc" select="substring($s, 1, 1)" />
@@ -139,7 +148,7 @@
 	<xsl:template match="f:each">
 		<xsl:copy>
 			<xsl:copy-of select="@*" />
-			<xsl:if test="not(@key)">
+			<xsl:if test="not(@key) and not(@value)">
 				<xsl:attribute name="key"><xsl:value-of select="substring(@select, 2)" /></xsl:attribute>
 			</xsl:if>
 			<xsl:apply-templates select="node()" />

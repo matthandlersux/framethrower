@@ -1,3 +1,7 @@
+var tagsNeedingCustom = ["f:thunk", "f:on", "f:create", "f:intact", "f:embed"];
+var tagsCustomXpathSelf = map(tagsNeedingCustom, function (x) {return "self::"+x;}).join(" | ");
+var tagsCustomXpathDescendant = "descendant-or-self::*[" + map(tagsNeedingCustom, function (x) {return "self::"+x;}).join(" or ") + "]";
+
 function replaceXML(node, replacer, pass, firstRun) {
 	/*
 	if replacer is a thunk or on
@@ -16,7 +20,7 @@ function replaceXML(node, replacer, pass, firstRun) {
 	*/
 	
 	
-	if (xpath("self::f:thunk | self::f:on | self::f:create | self::f:intact", replacer).length > 0) {
+	if (xpath(tagsCustomXpathSelf, replacer).length > 0) {
 		if (node.custom && node.custom.thunkEssence) {
 			var replacerTe = getThunkEssence(replacer, pass.baseUrl, pass.ids);
 			if (compareThunkEssences(replacerTe, node.custom.thunkEssence)) {
@@ -64,15 +68,14 @@ function bruteReplace(node, replacer, pass, firstRun) {
 	return replacer;
 }
 
-var tagCustomXpath = "descendant-or-self::*[self::f:thunk or self::f:on or self::f:create or self::f:intact]";
+
 
 function processThunks(node, pass) {
 	// note: all new XML must be processed by this function
 	// bootstrap uses this method with pass = {baseUrl: "", ids: {}}
 	
 	// first, tag thunkEssence on any bindings, or actions that need it (f:on, f:create, f:intact, f:servercall)
-	
-	var nodesNeedingTagging = xpath(tagCustomXpath, node);
+	var nodesNeedingTagging = xpath(tagsCustomXpathDescendant, node);
 	
 	forEach(nodesNeedingTagging, function (node) {
 		tagThunkEssence(node, pass.baseUrl, pass.ids);
@@ -91,6 +94,12 @@ function processThunks(node, pass) {
 		// setTimeout(function () {
 		// 			evalThunk(thunk);
 		// 		}, 1);
+	});
+	
+	// process any embeds
+	var embeds = xpath("descendant-or-self::f:embed", node);
+	forEach(embeds, function (embed) {
+		processEmbed(embed);
 	});
 }
 
@@ -201,7 +210,7 @@ function insertBefore(parentNode, newNode, node) {
 
 
 function unloadXML(node) {
-	var concerns = xpath(tagCustomXpath, node);
+	var concerns = xpath(tagsCustomXpathDescendant, node);
 	forEach(concerns, unloadXMLNode);
 }
 

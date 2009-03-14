@@ -21,12 +21,12 @@
 			<f:with-param name="content" select="$content" />
 		</f:create>
 		
-		<f:intact object="$main" property="popup" action="add" key="$popup" />
+		<f:intact object="$main" property="popup" action="add" key="'b'" value="$popup" />
 	</f:action>
 	
 	<f:action name="hidePopup">
 		<f:derive name="main" d="ui.main" />
-		<f:intact object="$main" action="remove" property="popup" />
+		<f:intact object="$main" action="remove" property="popup" key="'b'" />
 	</f:action>
 	
 	<f:action name="stopDragging">

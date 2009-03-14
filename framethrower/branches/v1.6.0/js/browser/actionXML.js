@@ -307,7 +307,7 @@ function triggerAction(thunkEssence) {
 			//console.dir(actions);
 
 			performActionsJS(actions, function (res) {
-				console.log("got result back", res);
+				//console.log("got result back", res);
 				refreshScreen(); // TODO: this is probably not an optimal place for a refreshScreen
 			});
 

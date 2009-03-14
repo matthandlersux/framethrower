@@ -58,7 +58,16 @@ var desugarXSL = compileXSL(loadXMLNow(ROOTDIR + "js/browser/desugar.xml"));
 function makeXSLFromTemplate(templateNode) {
 	var baseNode = xpath("*[not(self::f:param | self::f:derive | self::f:template | self::f:action | self::xsl:template | self::f:include)]", templateNode);
 	
-	var res = createEl("f:result");
+	//var res = createEl("f:result");
+	var res;
+	var resultxml = xpath("f:resultxml", templateNode); // this allows me to use a different element other than f:result as the container, specifically useful for svg which doesn't process into f:result's
+	if (resultxml.length > 0) {
+		res = createEl(getAttr(resultxml[0], "element"));
+	} else {
+		res = createEl("f:result");
+	}
+	
+	
 	var container = createEl("container"); // this is a hack, Firefox doesn't like using parentless nodes as source documents in XSL transforms
 	container.appendChild(res);
 	forEach(baseNode, function (node) {

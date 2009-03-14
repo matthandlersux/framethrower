@@ -1,0 +1,219 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="timeline" type="UI.pane.timeline" />
+	<f:param name="closePane" type="Unit JS" />
+	<f:param name="newPane" type="a -> Unit JS" />
+	
+	<f:param name="width" type="Number" />
+	<f:param name="height" type="Number" />
+	
+	<f:derive name="focus" d="UI.pane.timeline:focus timeline" />
+	
+	<f:derive name="video" d="bindUnitSet Object~X.video (bindSet (getOntProp shared.video) (returnFutureSet focus))" />
+
+	<f:each select="$video">
+		<f:thunk with-template="$drawPreviewAndTimeline">
+			<f:with-param name="video" select="$video" />
+		</f:thunk>
+	</f:each>
+
+	
+	<f:template name="drawPreviewAndTimeline">
+		<f:param name="video" type="X.video" />
+		<f:derive name="vw" d="X.video:width video" />
+		<f:derive name="vh" d="X.video:height video" />
+		
+		<f:each select="$vw"><f:each select="$vh">
+			<xsl:variable name="ratio" select="$vw/@value div $vh/@value" />
+			<xsl:variable name="dh" select="$height/@value" />
+			<xsl:variable name="dw" select="round($ratio * $dh)" />
+			
+			<xsl:variable name="timelineWidth" select="$width/@value - $dw" />
+			
+			<html:div class="timeline-left">
+				<xsl:attribute name="style">
+					width: <xsl:value-of select="$timelineWidth" />px;
+					height: <xsl:value-of select="$height/@value" />px;
+				</xsl:attribute>
+				
+				<f:thunk with-template="$drawTimeline">
+					<f:with-param name="width" select="$timelineWidth" as="Number" />
+					<f:with-param name="height" select="$height" />
+				</f:thunk>
+			</html:div>
+			
+			<html:div class="timeline-preview">
+				<xsl:attribute name="style">
+					left: <xsl:value-of select="$timelineWidth" />px;
+					top: 0px;
+					width: <xsl:value-of select="$dw" />px;
+					height: <xsl:value-of select="$dh" />px;
+				</xsl:attribute>
+				
+				<f:thunk with-template="$drawPreview">
+					<f:with-param name="width" select="$dw" as="Number" />
+					<f:with-param name="height" select="$dh" as="Number" />
+				</f:thunk>
+				
+			</html:div>
+			
+		</f:each></f:each>
+		
+		<f:template name="drawPreview">
+			<f:param name="width" type="Number" />
+			<f:param name="height" type="Number" />
+			
+			<f:derive name="url" d="X.video:url video" />
+			
+			<f:derive name="previewFrame" d="UI.pane.timeline:previewFrame timeline" />
+
+			<xsl:variable name="w" select="$width/@value" />
+			<xsl:variable name="h" select="$height/@value" />
+			
+			<f:each select="$url">
+
+				<!-- <html:img src="http://media.eversplosion.com/crop.php?file={$url/@value}&amp;time={$previewFrame/@value}&amp;width={$w}&amp;height={$h}" width="{$w}" height="{$h}" /> -->
+				
+				<f:embed>
+					<f:with-param name="width" select="$w" as="Number" />
+					<f:with-param name="height" select="$h" as="Number" />
+					<f:with-param name="src" select="'http://media.eversplosion.com/tmp/wallefinallow.mp4'" />
+					<f:with-param name="gotoTime" select="$previewFrame" />
+				</f:embed>
+
+					<!-- <xsl:value-of select="$previewFrame/@value" /> -->
+			</f:each>
+		</f:template>
+		
+		<f:template name="drawTimeline">
+			<f:param name="width" type="Number" />
+			<f:param name="height" type="Number" />
+			
+			<f:derive name="zoomWidth" d="UI.pane.timeline:zoomWidth timeline" />
+			
+			<f:derive name="duration" d="X.video:duration video" />
+			<!-- <f:derive name="frameRate" d="X.video:frameRate video" /> -->
+			
+			<f:derive name="transitionsXML" d="bindFutureSet X.xml:xml (bindUnitSet Object~X.xml (getOntProp shared.videoTransitionsXML (X.video~Object video)))" />
+			
+			
+			<xsl:variable name="controlsWidth" select="30" />
+				
+			<html:div class="timeline-controls">
+				<xsl:attribute name="style">
+					width: <xsl:value-of select="$controlsWidth" />px;
+				</xsl:attribute>
+				
+				<html:div>
+					<f:on event="click" with-action="$zoomIn" />
+					+
+				</html:div>
+				<html:div>
+					<f:on event="click" with-action="$zoomOut" />
+					-
+				</html:div>
+			</html:div>
+			
+			<html:div class="timeline-container">
+				<xsl:attribute name="style">
+					left: <xsl:value-of select="$controlsWidth" />px;
+					top: 0px;
+					width: <xsl:value-of select="$width/@value - $controlsWidth" />px;
+					height: <xsl:value-of select="$height/@value" />px;
+				</xsl:attribute>
+				
+				<f:thunk with-template="$drawActualTimeline" />
+			
+			</html:div>
+			
+			
+			<f:action name="changePreviewFrame">
+				<f:param name="x" type="Number" />
+				
+				<f:each select="$duration"><f:each select="$zoomWidth">
+					<xsl:variable name="ratio" select="$zoomWidth/@value div $duration/@value" />
+					<xsl:variable name="time" select="$x/@value div $ratio" />
+
+					<!-- <f:each select="$transitionsXML">
+						<xsl:variable name="closestTime" select="$transitionsXML//*[@end &lt; $time][following-sibling::*[1]/@end &gt; $time]/@end" />
+						<f:intact object="$timeline" property="previewFrame" action="add">
+							<f:with-param name="key" select="$closestTime" as="Number" />
+						</f:intact>
+					</f:each> -->
+					
+					<f:intact object="$timeline" property="previewFrame" action="add">
+						<f:with-param name="key" select="round($time)" as="Number" />
+					</f:intact>
+					
+				</f:each></f:each>
+			</f:action>
+			
+			
+			<f:action name="zoomIn">
+				<f:each select="$zoomWidth">
+					<f:intact object="$timeline" property="zoomWidth" action="add">
+						<f:with-param name="key" select="round($zoomWidth/@value * 1.5)" as="Number" />
+					</f:intact>
+				</f:each>
+			</f:action>
+			<f:action name="zoomOut">
+				<f:each select="$zoomWidth">
+					<f:intact object="$timeline" property="zoomWidth" action="add">
+						<f:with-param name="key" select="round($zoomWidth/@value div 1.5)" as="Number" />
+					</f:intact>
+				</f:each>
+			</f:action>
+
+
+
+			<!-- <f:template name="drawTransitionsLines">
+				<f:resultxml element="svg:g" />
+				<f:each select="$transitionsXML">
+					<xsl:for-each select="$transitionsXML//*[@start]">
+						<svg:line x1="{@start}" x2="{@start}" y1="0" y2="{$height/@value}" />
+					</xsl:for-each>
+				</f:each>
+			</f:template> -->			
+			
+			<f:template name="drawActualTimeline">
+				<f:each select="$duration"><f:each select="$zoomWidth">
+
+					<xsl:variable name="ratio" select="$zoomWidth/@value div $duration/@value" />
+					<html:div class="timeline">
+						<xsl:attribute name="style">
+							width: <xsl:value-of select="$zoomWidth/@value" />px;
+							height: <xsl:value-of select="$height/@value" />px;
+						</xsl:attribute>
+						
+						<f:thunk url="ruler.xml">
+							<f:with-param name="width" select="$zoomWidth" />
+							<f:with-param name="height" select="$height" />
+							<f:with-param name="duration" select="$duration" />
+						</f:thunk>
+						
+						<!-- <svg:svg width="{$zoomWidth/@value}px" height="{$height/@value}px">
+							<svg:g transform="scale({$ratio} 1)" stroke-width="{1 div $ratio}" stroke="purple">
+								<f:thunk with-template="$drawTransitionsLines" />
+							</svg:g>
+						</svg:svg> -->
+				
+						<f:on event="mousemove" with-action="$changePreviewFrame">
+							<f:with-param-browser name="x" prop="relMouseX" />
+						</f:on>
+					</html:div>
+				</f:each></f:each>
+			</f:template>
+			
+			
+			
+			
+		</f:template>
+		
+	</f:template>
+
+	
+</f:template>

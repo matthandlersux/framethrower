@@ -67,7 +67,7 @@ function xmlizeLiteral(expr) {
 		var xml = setAttr(createEl("f:literal"), "type", "XML");
 		appendChild(xml, cloneNode(expr));
 		return {xml: xml, ids: {}};
-	} else if (expr.kind === "properties") {
+	} /*else if (expr.kind === "properties") {
 		var xml = setAttr(createEl("f:literal"), "type", "Properties");
 		var ids = {};
 		function append(parentNode, child) {
@@ -86,7 +86,7 @@ function xmlizeLiteral(expr) {
 		});
 		
 		return {xml: xml, ids: ids};		
-	} else {
+	}*/ else {
 		return undefined;
 	}
 }
@@ -104,7 +104,7 @@ function unxmlizeLiteral(xml, ids) {
 		return nullObject;
 	} else if (type === "XML") {
 		return cloneNode(xpath("*", xml)[0]); // TODO: perhaps don't need cloneNode here
-	} else if (type === "Properties") {
+	} /*else if (type === "Properties") {
 		var ret = {
 			kind: "properties",
 			type: parseType("Properties"),
@@ -120,7 +120,7 @@ function unxmlizeLiteral(xml, ids) {
 			ret.value.prop[getAttr(propXML, "name")] = xmlToExpr(propXML.firstChild, ids);
 		});
 		return ret;
-	}
+	}*/
 }
 
 
