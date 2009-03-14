@@ -234,6 +234,12 @@ nat() ->
 			end
 		).
 
+floa() ->
+	?do(Lead, many1( digit() ),
+	?do(_, symbol([$.]),
+	?do(Follow, many1( digit() ),
+	return( list_to_float(Lead ++ "." ++ Follow) )))).
+
 space() ->
 	then( many( sat( fun isSpace/1)), fun(_) -> return({}) end).
 
@@ -251,6 +257,9 @@ typeWithVar() ->
 
 natural() ->
 	token( nat() ).
+
+float() ->
+	token( floa() ).
 
 symbol(XS) ->
 	token( string(XS) ).

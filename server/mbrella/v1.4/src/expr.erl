@@ -2,7 +2,7 @@
 -compile(export_all).
 
 -import (parse, [choice/2, choice/1, literal/0, identifier/0, failure/0,
- 				boolean/0, null/0, natural/0, symbol/1, return/1, then/2, nest/3, alphaNum/0]).
+ 				boolean/0, null/0, natural/0, symbol/1, return/1, then/2, nest/3, alphaNum/0, float/0]).
 -include ("../include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
@@ -178,19 +178,23 @@ primitive() ->
 			end),
 		
 		?do(Null, null(), return({primitive, null})),
-		?do(Bool, boolean(), return({primitive, bool, list_to_atom(Bool)})),
-		?do(Nat, natural(),
-		return({primitive, nat, Nat})),
 		
-		?do(_, symbol("<"),
-		?do(X, natural(),
-		?do(_, symbol("."),
-		?do(Y, natural(),
-		?do(_, symbol("."),
-		?do(Z, natural(),
-		?do(_, symbol(">"),
-		return(list_to_pid("<"++integer_to_list(X)++"."++integer_to_list(Y)++"."++integer_to_list(Z)++">")))))))))
-		% ?do(Cell, cell(), return...)
+		?do(Bool, boolean(), return({primitive, bool, list_to_atom(Bool)})),
+		
+		?do(Float, float(), 
+		return( {primitive, float, Float} )),
+
+		?do(Nat, natural(),
+		return({primitive, nat, Nat}))
+		% ?do(_, symbol("<"),
+		% 		?do(X, natural(),
+		% 		?do(_, symbol("."),
+		% 		?do(Y, natural(),
+		% 		?do(_, symbol("."),
+		% 		?do(Z, natural(),
+		% 		?do(_, symbol(">"),
+		% 		return(list_to_pid("<"++integer_to_list(X)++"."++integer_to_list(Y)++"."++integer_to_list(Z)++">")))))))))
+		% 		% ?do(Cell, cell(), return...)
 	]).
 
 	
