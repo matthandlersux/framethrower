@@ -280,6 +280,18 @@ var primFuncs = function () {
 				return (val1 || val2);
 			}
 		},
+		boolToUnit : {
+			type : "Bool -> Unit Null",
+			func : function (val) {
+				var outputCell = makeCell();
+				if (val) {
+					outputCell.addLine(nullObject);
+					outputCell.setDone();
+				}
+				return outputCell;
+			}
+		},
+		
 		// ============================================================================
 		// Number utility functions
 		// ============================================================================
