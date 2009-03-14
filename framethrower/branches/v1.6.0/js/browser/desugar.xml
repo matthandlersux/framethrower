@@ -90,7 +90,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template match="*[self::f:thunk or self::f:on][@url]">
+	<xsl:template match="*[self::f:thunk or self::f:on or self::f:thunkadvice][@url]">
 		<xsl:copy>
 			<xsl:copy-of select="@*[not(name() = 'url')]" />
 			<f:with-template url="{@url}" />
