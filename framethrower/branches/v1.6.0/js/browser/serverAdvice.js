@@ -100,7 +100,7 @@ function getServerAdvice(templateNode, url, env) {
 			calls.push({
 				pattern: match
 			});
-		} else if (nn === "f:thunk") {
+		} else if (nn === "f:thunk" || nn === "f:thunkadvice") {
 			var te = getThunkEssence(node, url, {});
 			
 			var template;
