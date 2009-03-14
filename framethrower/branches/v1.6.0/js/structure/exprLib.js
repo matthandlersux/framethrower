@@ -36,6 +36,10 @@ var exprLib = {
 		type: "a -> Set a",
 		expr: "x -> returnUnitSet (returnUnit x)"
 	},
+	returnFutureSet: {
+		type: "Future a -> Set a",
+		expr: "x -> returnUnitSet (returnFutureUnit x)"
+	},
 	mapUnit: {
 		type: "(a -> b) -> Unit a -> Unit b",
 		expr: "f -> bindUnit (compose returnUnit f)"
@@ -64,6 +68,10 @@ var exprLib = {
 		type: "(a -> Unit b) -> Set a -> Set b",
 		expr: "f -> bindSet (compose returnUnitSet f)"
 	},
+	bindFutureSet: {
+		type: "(a -> Future b) -> Set a -> Set b",
+		expr: "f -> bindSet (compose returnFutureSet f)"
+	},
 	bindSetUnit: {
 		type: "(a -> Set b) -> Unit a -> Set b",
 		expr: "f -> compose (bindSet f) returnUnitSet"
@@ -72,6 +80,12 @@ var exprLib = {
 	mapBinaryUnit: {
 		type: "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
 		expr: "f -> compose (compose bindUnit reactiveApply) (mapUnit f)"
+	},
+	
+	
+	reactiveEqual: {
+		type: "a -> a -> Unit Null",
+		expr: "x -> y -> boolToUnit (equal x y)"
 	},
 	
 	
@@ -177,6 +191,17 @@ var exprLib = {
 		}
 	},
 	
+	getOntInfonsInverse: {
+		type: "Object -> Object -> Set Cons",
+		expr: "rel -> obj -> filter (infon -> bindUnit (reactiveEqual rel) (downDownLeft infon)) (Object:upLeft obj)",
+		where: {
+			downDownLeft: {
+				type: "Cons -> Unit Object",
+				chain: ["Cons:left", "Cons:left"]
+			}
+		}
+	},
+	
 	// oldGetOntProp: {
 	// 	type: "Object -> Object -> Set Object",
 	// 	expr: "rel -> obj -> infonsToObjects (getOntInfons rel obj)",
@@ -196,6 +221,26 @@ var exprLib = {
 				chain: ["Cons:right"]
 			}
 		}
+	},
+	
+	getOntPropInverse: {
+		type: "Object -> Object -> Set Object",
+		expr: "rel -> obj -> infonsToObjects (filterByTruthInOnt (getOntInfonsInverse rel obj))",
+		where: {
+			infonsToObjects: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:left", "Cons:right"]
+			}
+		}
+	},
+	
+	isType: {
+		type: "Object -> Unit Null",
+		expr: "x -> bindUnit Cons:truth (bindUnit getObjectInOnt (mapUnit Cons~Object (Cons::lookup shared.isType x)))"
+	},
+	getTypeChildren: {
+		type: "Object -> Set Object",
+		expr: "compose (filter isType) (getOntPropInverse shared.isA)"
 	},
 	
 	
@@ -236,38 +281,42 @@ var exprLib = {
 		expr: "unfoldSet (getOntProp shared.isA)"
 	},
 	
-	getTypes: {
+	getTypesOneStep: {
 		type: "Object -> Set Object",
-		expr: "unfoldSet oneStep",
+		expr: "x -> union (getOntProp shared.isA x) (constructedType x)",
 		where: {
-			oneStep: {
+			constructedType: {
 				type: "Object -> Set Object",
-				expr: "x -> union (getOntProp shared.isA x) (constructedType x)",
+				expr: "x -> finalRight (filter leftLeft (bindSetUnit (getOntProp shared.isA) (left x)))",
+				// TODO: instead of (getOntProp shared.isA) this should recursively call getTypes.
+				// Right now we can only get type for one-deep Cons's.
+				// (Need to build in recursion first).
 				where: {
-					constructedType: {
-						type: "Object -> Set Object",
-						expr: "x -> finalRight (filter leftLeft (bindSetUnit (getOntProp shared.isA) (left x)))",
-						// TODO: instead of (getOntProp shared.isA) this should recursively call getTypes.
-						// Right now we can only get type for one-deep Cons's.
-						// (Need to build in recursion first).
-						where: {
-							left: {
-								type: "Object -> Unit Object",
-								chain: ["Cons:left"]		
-							},
-							leftLeft: {
-								type: "Object -> Unit Object",
-								chain: ["Cons:left", "Cons:left"] // TODO: need to check if it equals shared.relationType
-							},
-							finalRight: {
-								type: "Set Object -> Set Object",
-								chain: ["Cons:right"]
-							}
-						}
+					left: {
+						type: "Object -> Unit Object",
+						chain: ["Cons:left"]		
+					},
+					leftLeft: {
+						type: "Object -> Unit Object",
+						chain: ["Cons:left", "Cons:left"] // TODO: need to check if it equals shared.relationType
+					},
+					finalRight: {
+						type: "Set Object -> Set Object",
+						chain: ["Cons:right"]
 					}
 				}
 			}
 		}
+	},
+	
+	getTypes: {
+		type: "Object -> Set Object",
+		expr: "unfoldSet getTypesOneStep"
+	},
+	
+	getTypesMap: {
+		type: "Object -> Map Number (Set Object)",
+		expr: "unfoldMapInv getTypesOneStep"
 	},
 
 	// ========================================================================
@@ -310,6 +359,7 @@ var exprLib = {
 	getInfonsAbout: {
 		type: "Object -> Set Cons",
 		expr: "x -> filterByTruth ((bindSet getAllInfonsAboveCons) (setDifference (Object:upLeft x) (returnUnitSet (Cons::lookup shared.in x))))"
+		// TODO: probably more efficient to do this by filtering out infons whose left is shared.in, rather than doing a setDifference
 	},
 	
 	getInfonsIn: {
