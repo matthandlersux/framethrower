@@ -133,11 +133,16 @@ makeRootObjects() ->
 	objects:createWithName("Object", dict:new(), "shared.isA"),
 	objects:createWithName("Object", dict:new(), "shared.name"),
 	objects:createWithName("Object", dict:new(), "shared.relationTemplate"),
+	
+	objects:createWithName("Object", dict:new(), "shared.video"),
+	objects:createWithName("Object", dict:new(), "shared.videoTransitionsXML"),
 
 	objects:createWithName("Object", dict:new(), "shared.thumbnail"),
 	objects:createWithName("Object", dict:new(), "shared.picture.crop"),
 
-	objects:createWithName("Object", dict:new(), "shared.type.type"),
+	objects:createWithName("Object", dict:new(), "shared.isType"),
+	objects:createWithName("Object", dict:new(), "shared.type"),
+
 	objects:createWithName("Object", dict:new(), "shared.type.situation"),
 	objects:createWithName("Object", dict:new(), "shared.type.entity"),
 	objects:createWithName("Object", dict:new(), "shared.type.infon"),
@@ -145,8 +150,18 @@ makeRootObjects() ->
 	objects:createWithName("Object", dict:new(), "shared.type.relation"), 
 
 	objects:createWithName("Object", dict:new(), "shared.type.poly.a"),
-	objects:createWithName("Object", dict:new(), "shared.realLife"),	
+	objects:createWithName("Object", dict:new(), "shared.type.movie"),
+
+	objects:createWithName("Object", dict:new(), "shared.realLife"),
+	
+	objects:createWithName("Object", dict:new(), "shared.movie.story"),
+	objects:createWithName("Object", dict:new(), "shared.movie.presentation"),
+	objects:createWithName("Object", dict:new(), "shared.movie.making"),
+	
+	objects:createWithName("Object", dict:new(), "shared.test.walleMovie"),
 	ok.
+	
+	
 	
 %% ====================================================================
 %% External functions

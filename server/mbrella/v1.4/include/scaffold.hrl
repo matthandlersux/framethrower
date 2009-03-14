@@ -121,12 +121,14 @@
 %% ====================================================
 
 -record (session, {
-	msgQueue = session:msgQueue(),
+	msgQueue = [],
 	openQueries = dict:new(),
 	cleanup = [],
 	lastMessageId = 0,
 	templates = dict:new(),
 	queryIdCount = 0,
 	serverAdviceHash = dict:new(),
+	clientState = satisfied,
+	outputTimer,
 	timeout = 120000
 }).

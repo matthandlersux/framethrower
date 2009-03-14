@@ -168,7 +168,7 @@ processServerAdviceRequest ( ServerAdviceRequest, SessionPid ) ->
 processQuery ( Query, SessionId, SessionPid ) ->
 	Expr = getFromStruct("expr", Query),
 	QueryId = getFromStruct("queryId", Query),
-	case session:checkQuery(SessionPid, Expr) of
+	case session:checkQuery(SessionPid, Expr, QueryId) of
 		true ->
 			responseTime:in(SessionId, 'query', QueryId, now() ),
 			spawn(fun() ->
@@ -344,11 +344,14 @@ bindVarOrFormatExprElement(VariableOrCellName, Conversions) when is_binary(Varia
 		NumberOrVariable ->
 			try list_to_integer(NumberOrVariable)
 			catch _:_ ->
-				case lists:keysearch(VariableOrCellName, 1, Conversions) of
-					{value, {_, Object} } -> Object;
-					_ -> 
-						throw({variable_not_found, VariableOrCellName}),
-						error % this will be when we start sending functions
+				try list_to_float(NumberOrVariable)
+				catch _:_ ->
+					case lists:keysearch(VariableOrCellName, 1, Conversions) of
+						{value, {_, Object} } -> Object;
+						_ -> 
+							throw({variable_not_found, binary_to_list(VariableOrCellName)}),
+							error % this will be when we start sending functions
+					end
 				end
 			end
 	end;
