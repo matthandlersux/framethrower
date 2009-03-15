@@ -29,6 +29,8 @@
 
 
 
+
+
 .rulerContainer {
 	position: absolute;
 	top: 0px;
@@ -36,7 +38,7 @@
 	height: 100%;
 	overflow-x: hidden;
 	overflow-y: hidden;
-	background-image: url(../images/zui.1/innerbackground.png);
+	background-image: url(images/timeline-background.png);
 }
 
 .ruler-cursor, .ruler-selected-range, .ruler-selected, .ruler-notch-1, .ruler-notch-2, .ruler-notch-3 {
