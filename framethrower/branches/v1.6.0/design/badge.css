@@ -1,0 +1,45 @@
+.badge {
+	position: absolute;
+}
+
+.badgeShadow {
+	padding: 8px;
+	background: rgba(0,0,0,.7);
+	-moz-border-radius:12px;
+	-webkit-border-radius:12px;
+}
+
+.badgeContent {
+	background: #eeeeee;
+	-moz-border-radius:8px;
+	-webkit-border-radius:8px;
+	padding: 10px;
+	min-height: 300px;
+	min-width: 400px;
+}
+
+.badgeArrowShadow, .badgeArrow {
+	float: left;
+	position: relative;
+	left: -30px;
+	top: 30px;
+	
+	font-size: 0px; line-height: 0%; width: 0px;
+	border-top: 30px solid rgba(0,0,0,0);
+	border-right: 30px solid rgba(0,0,0,.7);
+	border-bottom: 30px solid rgba(0,0,0,0);
+}
+
+.badgeArrow {
+	left: -48px;
+	top: 22px;
+	border-right: 30px solid #eeeeee;
+}
+
+.badgePath {
+	-moz-border-radius:8px;
+	-webkit-border-radius:8px;
+	background: white;
+	padding: 5px;
+	position: absolute;
+}
