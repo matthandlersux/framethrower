@@ -11,13 +11,13 @@
 }
 
 .button-zoomIn {
-	width: 22px;
-	height: 22px;
+	width: 15px;
+	height: 15px;
 	background-image: url(images/button.tl.zoomIn.png);
 }
 
 .button-zoomOut {
-	width: 22px;
-	height: 22px;
+	width: 15px;
+	height: 15px;
 	background-image: url(images/button.tl.zoomOut.png);
 }
