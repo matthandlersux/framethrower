@@ -3,3 +3,21 @@
 	height: 15px;
 	background-image: url(images/button.play.png);
 }
+
+.button-relationCreatorSpacer {
+	width: 22px;
+	height: 22px;
+	background-image: url(images/button.rc.textDrop.png);
+}
+
+.button-zoomIn {
+	width: 22px;
+	height: 22px;
+	background-image: url(images/button.tl.zoomIn.png);
+}
+
+.button-zoomOut {
+	width: 22px;
+	height: 22px;
+	background-image: url(images/button.tl.zoomOut.png);
+}
