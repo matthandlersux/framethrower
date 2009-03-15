@@ -16,15 +16,21 @@
 	<f:template name="printNode">
 		<f:param name="focus" type="Object" />
 		<html:div class="outline-node">
-			<f:thunk with-template="$display">
-				<f:with-param name="focus" select="$focus" />
-			</f:thunk>
-			<html:button>
-				<f:on event="click" with-action="$makeNewChild">
-					<f:with-param name="parent" select="$focus" />
-				</f:on>
-				Add Child
-			</html:button>
+			<html:div class="entry" style="padding: 0px">
+				<html:div class="entry-cell">
+					<f:thunk with-template="$display">
+						<f:with-param name="focus" select="$focus" />
+					</f:thunk>
+				</html:div>
+				<html:div class="entry-button">
+					<html:button>
+						<f:on event="click" with-action="$makeNewChild">
+							<f:with-param name="parent" select="$focus" />
+						</f:on>
+						Add Child
+					</html:button>
+				</html:div>
+			</html:div>
 		</html:div>
 	</f:template>
 	

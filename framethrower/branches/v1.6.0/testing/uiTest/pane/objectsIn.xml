@@ -51,7 +51,7 @@
 					<f:with-param name="extra" select="$extra" />
 				</f:thunk>
 			</html:div>
-			<html:div class="entry-cell">
+			<html:div class="entry-button">
 				<f:thunk with-template="$removeButton">
 					<f:with-param name="object" select="$object" />
 				</f:thunk>

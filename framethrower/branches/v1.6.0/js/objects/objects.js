@@ -165,7 +165,7 @@ var classesToMake = {
 	"UI.propertiesState": {
 		prop: {
 			"editName": "Unit Null",
-			"newTypes": "Set UI.outlineNode"
+			"typeExplorer": "Unit UI.outlineNode"
 		}
 	},
 	

@@ -50,6 +50,7 @@
 						<f:on event="manualblur" with-action="$changeName">
 							<f:with-param-browser name="newName" form="newName" />
 						</f:on>
+						<f:on event="click" with-action="$noAction" />
 					</html:input>
 				</html:form>
 			</xsl:otherwise>
@@ -58,7 +59,8 @@
 
 	</html:div>
 	
-
+	<f:action name="noAction" />
+	
 	<f:action name="changeName">
 		<f:param name="newName" type="String" />
 		<f:derive name="ontInfons" d="flattenSetUnit ((mapSet (compose getObjectInOnt Cons~Object)) (getOntInfons shared.name focus))" />

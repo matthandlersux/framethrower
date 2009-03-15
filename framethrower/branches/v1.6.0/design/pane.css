@@ -118,12 +118,24 @@ Within pane
 
 .entry {
 	display: table;
-	margin: 4px;
+	padding: 4px;
 }
-.entry-cell {
+.entry-cell, .entry-button {
 	display: table-cell;
 	padding-right: 10px;
 	vertical-align: top;
+}
+.entry-button {
+	/*visibility: hidden;*/
+	opacity: 0.1;
+}
+
+.entry:hover {
+	background-color: #eee;
+}
+.entry:hover .entry-button {
+	/*visibility: visible;*/
+	opacity: 1.0;
 }
 
 

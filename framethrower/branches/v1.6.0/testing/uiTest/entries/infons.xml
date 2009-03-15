@@ -21,13 +21,13 @@
 					<f:with-param name="infon" select="." />
 				</f:thunk> -->
 			</html:div>
-			<html:div class="entry-cell">
-				<html:div>
+			<html:div class="entry-button">
+				<html:button>
 					<f:on event="click" with-action="$removeInfon">
 						<f:with-param name="infon" select="$infon" />
 					</f:on>
-					<html:button>Remove</html:button>
-				</html:div>
+					Remove
+				</html:button>
 			</html:div>
 		</html:div>
 	</f:each>

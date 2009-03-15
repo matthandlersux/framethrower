@@ -18,7 +18,7 @@
 	<!-- <xsl:if test="$ontInfons" /> -->
 	<!-- <xsl:if test="$typeInfons" /> -->
 	
-	<f:derive name="newTypes" d="UI.propertiesState:newTypes propertiesState" />
+	<f:derive name="typeExplorer" d="UI.propertiesState:typeExplorer propertiesState" />
 	
 	<html:table class="properties">
 		<html:tr>
@@ -49,32 +49,44 @@
 			<html:th>Is A</html:th>
 			<html:td>
 				<f:each select="$focustypes" key="type">
-					<html:div>
-						<f:thunk url="../view2/object.xml">
-							<f:with-param name="focus" select="$type" />
-						</f:thunk>
-						<html:button>
-							Remove
-							<f:on event="click" with-action="$removeType">
-								<f:with-param name="type" select="$type" />
-							</f:on>
-						</html:button>
+					<html:div class="entry">
+						<html:div class="entry-cell">
+							<f:thunk url="../view2/object.xml">
+								<f:with-param name="focus" select="$type" />
+							</f:thunk>
+						</html:div>
+						<html:div class="entry-button">
+							<html:button>
+								Remove
+								<f:on event="click" with-action="$removeType">
+									<f:with-param name="type" select="$type" />
+								</f:on>
+							</html:button>
+						</html:div>
 					</html:div>
 				</f:each>
 				
 				<!-- <f:thunk with-template="$typeExplorer" /> -->
-				<f:each select="$newTypes" key="outlineNode">
-					<f:thunk url="../typeExplorer/typeExplorer.xml">
-						<f:with-param name="outlineNode" select="$outlineNode" />
-						<f:with-param name="extra" select="$typeExtra" />
-					</f:thunk>
-				</f:each>
 				
-				<html:button>
-					<f:on event="click" with-action="$addNewType" />
-					Add New Type
-				</html:button>
-				(This whole UI will be revisited! -Toby)
+				<html:div style="border: 1px solid #ccc">
+					<f:pattern>
+						<f:match test="$typeExplorer">
+							<f:thunk url="../typeExplorer/typeExplorer.xml">
+								<f:with-param name="outlineNode" select="$typeExplorer" />
+								<f:with-param name="extra" select="$typeExtra" />
+							</f:thunk>
+						</f:match>
+						<f:otherwise>
+							<html:button>Load Type Explorer
+								<f:on event="click" with-action="$initTypeExplorer" />
+							</html:button>
+						</f:otherwise>
+					</f:pattern>
+				</html:div>
+				
+				<!-- <xsl:if test="not($typeExplorer/*)">
+					<f:on event="load" with-action="$initTypeExplorer" />
+				</xsl:if> -->
 
 			</html:td>
 		</html:tr>
@@ -89,12 +101,13 @@
 		</f:each>
 	</f:action>
 	
-	<f:action name="addNewType">
+	<f:action name="initTypeExplorer">
 		<f:derive name="type" d="shared.type" />
 		<f:create type="UI.outlineNode" name="newOutlineNode">
 			<f:with-param name="focus" select="$type" />
 		</f:create>
-		<f:intact object="$propertiesState" property="newTypes" action="add" key="$newOutlineNode" />
+		<f:intact object="$newOutlineNode" property="expanded" action="add" key="null" />
+		<f:intact object="$propertiesState" property="typeExplorer" action="add" key="$newOutlineNode" />
 	</f:action>
 	
 	<f:derive name="object" d="focus" /> <!-- kinda ugly that I have to rename this, this is the problem with calls using named parameters (rather than ordered parameters) -->

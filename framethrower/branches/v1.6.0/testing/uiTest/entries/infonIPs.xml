@@ -17,7 +17,7 @@
 					<f:with-param name="expectedType" select="$infonType" />
 				</f:thunk>
 			</html:div>
-			<html:div class="entry-cell">
+			<html:div class="entry-button">
 				<html:div>
 					<f:on event="click" with-action="$addConsIP">
 						<f:with-param name="consIP" select="$infonIP" />
