@@ -26,6 +26,7 @@
 		<f:param name="video" type="X.video" />
 		<f:derive name="vw" d="X.video:width video" />
 		<f:derive name="vh" d="X.video:height video" />
+		<f:derive name="url" d="X.video:url video" />
 		
 		<f:each select="$vw"><f:each select="$vh">
 			<xsl:variable name="ratio" select="$vw/@value div $vh/@value" />
@@ -66,8 +67,6 @@
 		<f:template name="drawPreview">
 			<f:param name="width" type="Number" />
 			<f:param name="height" type="Number" />
-			
-			<f:derive name="url" d="X.video:url video" />
 			
 			<f:derive name="previewFrame" d="UI.pane.timeline:previewFrame timeline" />
 
@@ -131,26 +130,7 @@
 			</html:div>
 			
 			
-			<f:action name="changePreviewFrame">
-				<f:param name="x" type="Number" />
-				
-				<f:each select="$duration"><f:each select="$zoomWidth">
-					<xsl:variable name="ratio" select="$zoomWidth/@value div $duration/@value" />
-					<xsl:variable name="time" select="$x/@value div $ratio" />
 
-					<!-- <f:each select="$transitionsXML">
-						<xsl:variable name="closestTime" select="$transitionsXML//*[@end &lt; $time][following-sibling::*[1]/@end &gt; $time]/@end" />
-						<f:intact object="$timeline" property="previewFrame" action="add">
-							<f:with-param name="key" select="$closestTime" as="Number" />
-						</f:intact>
-					</f:each> -->
-					
-					<f:intact object="$timeline" property="previewFrame" action="add">
-						<f:with-param name="key" select="round($time)" as="Number" />
-					</f:intact>
-					
-				</f:each></f:each>
-			</f:action>
 			
 			
 			<f:action name="zoomIn">
@@ -179,7 +159,69 @@
 				</f:each>
 			</f:template> -->			
 			
+			<f:action name="changePreviewFrame">
+				<f:param name="x" type="Number" />
+				<f:derive name="selecting" d="UI.pane.timeline:selecting timeline" />
+				
+				<f:each select="$duration"><f:each select="$zoomWidth">
+					<xsl:variable name="ratio" select="$zoomWidth/@value div $duration/@value" />
+					<xsl:variable name="time" select="$x/@value div $ratio" />
+
+					<!-- <f:each select="$transitionsXML">
+						<xsl:variable name="closestTime" select="$transitionsXML//*[@end &lt; $time][following-sibling::*[1]/@end &gt; $time]/@end" />
+						<f:intact object="$timeline" property="previewFrame" action="add">
+							<f:with-param name="key" select="$closestTime" as="Number" />
+						</f:intact>
+					</f:each> -->
+					
+					<f:intact object="$timeline" property="previewFrame" action="add">
+						<f:with-param name="key" select="round($time)" as="Number" />
+					</f:intact>
+					
+					<f:each select="$selecting">
+						<f:intact object="$timeline" property="selectedTime2" action="add">
+							<f:with-param name="key" select="round($time)" as="Number" />
+						</f:intact>
+					</f:each>
+					
+					
+				</f:each></f:each>
+			</f:action>
+			<f:action name="startSelection">
+				<f:param name="x" type="Number" />
+				
+				<f:each select="$duration"><f:each select="$zoomWidth">
+					<xsl:variable name="ratio" select="$zoomWidth/@value div $duration/@value" />
+					<xsl:variable name="time" select="$x/@value div $ratio" />
+
+					<!-- <f:each select="$transitionsXML">
+						<xsl:variable name="closestTime" select="$transitionsXML//*[@end &lt; $time][following-sibling::*[1]/@end &gt; $time]/@end" />
+						<f:intact object="$timeline" property="previewFrame" action="add">
+							<f:with-param name="key" select="$closestTime" as="Number" />
+						</f:intact>
+					</f:each> -->
+					
+					
+					<f:intact object="$timeline" property="selectedTime1" action="add">
+						<f:with-param name="key" select="round($time)" as="Number" />
+					</f:intact>
+					<f:intact object="$timeline" property="selectedTime2" action="add">
+						<f:with-param name="key" select="round($time)" as="Number" />
+					</f:intact> <!-- TODO: make this a remove and do the proper grab frame thing -->
+					<f:intact object="$timeline" property="selecting" action="add" key="null" />
+					
+					
+				</f:each></f:each>
+			</f:action>
+			<f:action name="stopSelection">
+				<f:intact object="$timeline" property="selecting" action="remove" />
+			</f:action>
+			
 			<f:template name="drawActualTimeline">
+				<f:derive name="selectedTime1" d="UI.pane.timeline:selectedTime1 timeline" />
+				<f:derive name="selectedTime2" d="UI.pane.timeline:selectedTime2 timeline" />
+				
+				
 				<f:each select="$duration"><f:each select="$zoomWidth">
 
 					<xsl:variable name="ratio" select="$zoomWidth/@value div $duration/@value" />
@@ -189,11 +231,13 @@
 							height: <xsl:value-of select="$height/@value" />px;
 						</xsl:attribute>
 						
-						<f:thunk url="ruler.xml">
-							<f:with-param name="width" select="$zoomWidth" />
-							<f:with-param name="height" select="$height" />
-							<f:with-param name="duration" select="$duration" />
-						</f:thunk>
+						<html:span>
+							<f:thunk url="ruler.xml">
+								<f:with-param name="width" select="$zoomWidth" />
+								<f:with-param name="height" select="$height" />
+								<f:with-param name="duration" select="$duration" />
+							</f:thunk>
+						</html:span>
 						
 						<!-- <svg:svg width="{$zoomWidth/@value}px" height="{$height/@value}px">
 							<svg:g transform="scale({$ratio} 1)" stroke-width="{1 div $ratio}" stroke="purple">
@@ -204,14 +248,68 @@
 						<f:on event="mousemove" with-action="$changePreviewFrame">
 							<f:with-param-browser name="x" prop="relMouseX" />
 						</f:on>
+						
+						<f:on event="mousedown" with-action="$startSelection">
+							<f:with-param-browser name="x" prop="relMouseX" />
+						</f:on>
+						<f:on event="mouseup" with-action="$stopSelection" />
+						
+						<f:each select="$selectedTime1"><f:each select="$selectedTime2">
+							<xsl:variable name="t1" select="$selectedTime1/@value" />
+							<xsl:variable name="t2" select="$selectedTime2/@value" />
+							<xsl:variable name="tmin"><xsl:choose>
+								<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t1" /></xsl:when>
+								<xsl:otherwise><xsl:value-of select="$t2" /></xsl:otherwise>
+							</xsl:choose></xsl:variable>
+							<xsl:variable name="tmax"><xsl:choose>
+								<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t2" /></xsl:when>
+								<xsl:otherwise><xsl:value-of select="$t1" /></xsl:otherwise>
+							</xsl:choose></xsl:variable>
+							<xsl:variable name="width">
+								<xsl:choose>
+									<xsl:when test="round(($tmax - $tmin) * $ratio) = 0">0</xsl:when>
+									<xsl:otherwise><xsl:value-of select="round(($tmax - $tmin) * $ratio) - 1" /></xsl:otherwise>
+								</xsl:choose>
+							</xsl:variable>
+							
+							<html:div class="ruler-selected-range">
+								<xsl:attribute name="style">
+									left: <xsl:value-of select="round($tmin * $ratio)" />px;
+									width: <xsl:value-of select="$width" />px;
+								</xsl:attribute>
+								
+								<html:div>
+									<xsl:attribute name="style">
+										left: <xsl:value-of select="round($width div 2)" />px;
+										top: <xsl:value-of select="$height/@value - 45" />px;
+										position: absolute;
+										margin-left: -7px;
+									</xsl:attribute>
+									<html:div class="button-play" />
+								</html:div>
+								
+							</html:div>
+						</f:each></f:each>
+						
 					</html:div>
 				</f:each></f:each>
 			</f:template>
 			
-			
-			
-			
 		</f:template>
+		
+		
+		<!-- <f:template name="popupPreview">
+			<f:param name="startTime" type="Number" />
+			<f:param name="" />
+			<f:each select="$vw"><f:each select="$vh"><f:each select="$url">
+				<f:embed>
+					<f:with-param name="width" select="$vw" />
+					<f:with-param name="height" select="$vh" />
+					<f:with-param name="src" select="'http://media.eversplosion.com/tmp/wallefinalhigh.mp4'" as="String" />
+					<f:with-param name="gotoTime" select="$previewFrame" />
+				</f:embed>
+			</f:each></f:each></f:each>
+		</f:template> -->
 		
 	</f:template>
 

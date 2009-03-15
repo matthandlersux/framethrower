@@ -142,7 +142,10 @@ var classesToMake = {
 		prop: {
 			"focus": "Object",
 			"zoomWidth": "Unit Number",
-			"previewFrame": "Unit Number"
+			"previewFrame": "Unit Number",
+			"selectedTime1": "Unit Number",
+			"selectedTime2": "Unit Number",
+			"selecting": "Unit Null"
 		}
 	},
 	"UI.pane.pane": {

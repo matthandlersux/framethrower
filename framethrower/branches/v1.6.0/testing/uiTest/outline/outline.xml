@@ -21,9 +21,9 @@
 			</f:thunk>
 			<html:button>
 				<f:on event="click" with-action="$makeNewChild">
-					<f:with-param name="focus" select="$focus" />
+					<f:with-param name="parent" select="$focus" />
 				</f:on>
-				+
+				Add Child
 			</html:button>
 		</html:div>
 	</f:template>

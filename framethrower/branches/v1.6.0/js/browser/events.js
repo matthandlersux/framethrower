@@ -110,6 +110,7 @@
 		}
 	}
 	function mouseup(e) {
+		processEvent("mouseup", e);
 		if (mouseIsDragging) {
 			processEvent("dragEnd", e);
 		} else {

@@ -18,6 +18,8 @@
 	<!-- <xsl:if test="$ontInfons" /> -->
 	<!-- <xsl:if test="$typeInfons" /> -->
 	
+	<f:derive name="newTypes" d="UI.propertiesState:newTypes propertiesState" />
+	
 	<html:table class="properties">
 		<html:tr>
 			<html:th>Name</html:th>
@@ -44,80 +46,69 @@
 			</html:td>
 		</html:tr>
 		<html:tr>
-			<html:th>Type</html:th>
+			<html:th>Is A</html:th>
 			<html:td>
 				<f:each select="$focustypes" key="type">
 					<html:div>
 						<f:thunk url="../view2/object.xml">
 							<f:with-param name="focus" select="$type" />
 						</f:thunk>
+						<html:button>
+							Remove
+							<f:on event="click" with-action="$removeType">
+								<f:with-param name="type" select="$type" />
+							</f:on>
+						</html:button>
 					</html:div>
 				</f:each>
 				
-				<f:thunk with-template="$typeExplorer" />
+				<!-- <f:thunk with-template="$typeExplorer" /> -->
+				<f:each select="$newTypes" key="outlineNode">
+					<f:thunk url="../typeExplorer/typeExplorer.xml">
+						<f:with-param name="outlineNode" select="$outlineNode" />
+						<f:with-param name="extra" select="$typeExtra" />
+					</f:thunk>
+				</f:each>
+				
+				<html:button>
+					<f:on event="click" with-action="$addNewType" />
+					Add New Type
+				</html:button>
+				(This whole UI will be revisited! -Toby)
+
 			</html:td>
 		</html:tr>
 	</html:table>
 	
-	
-	<f:template name="typeExplorer">
-		<f:derive name="newTypes" d="UI.propertiesState:newTypes propertiesState" />
-		<f:derive name="getTypeChildren" d="getTypeChildren" />
-		<f:derive name="object" d="focus" /> <!-- kinda ugly that I have to rename this, this is the problem with calls using named parameters (rather than ordered parameters) -->
-
-		<f:each select="$newTypes" key="outlineNode">
-			<f:thunk url="../outline/outline.xml">
-				<f:with-param name="display" select="$displayType" />
-				<f:with-param name="makeNewChild" select="$makeNewSubType" />
-				<f:with-param name="outlineNode" select="$outlineNode" />
-				<f:with-param name="getChildren" select="$getTypeChildren" />
-			</f:thunk>
+	<f:action name="removeType">
+		<f:param name="type" type="Object" />
+		<f:derive name="ontInfon" d="bindUnit getObjectInOnt (mapUnit Cons~Object (bindUnit (swap Cons::lookup type) (mapUnit Cons~Object (Cons::lookup shared.isA focus))))" />
+		
+		<f:each select="$ontInfon">
+			<f:intact object="$ontInfon" action="remove" property="truth" />
 		</f:each>
-
-		<html:button>
-			<f:on event="click" with-action="$addNewType" />
-			Add New Type
-		</html:button>
-		(This whole UI will be revisited! -Toby)
-
-		<f:action name="addNewType">
-			<f:derive name="type" d="shared.type" />
-			<f:create type="UI.outlineNode" name="newOutlineNode">
-				<f:with-param name="focus" select="$type" />
-			</f:create>
-			<f:intact object="$propertiesState" property="newTypes" action="add" key="$newOutlineNode" />
-		</f:action>
-
-		<f:template name="displayType">
-			<f:param name="focus" type="Object" />
-			<html:span>
-				<f:on event="click" with-action="$selectType" />
-				<f:thunk url="../view2/object.xml">
-					<f:with-param name="focus" select="$focus" />
-				</f:thunk>
-			</html:span>
-			<f:action name="selectType">
-				<f:perform with-action="$typeObject">
-					<f:with-param name="object" select="$object" />
-					<f:with-param name="type" select="$focus" />
-				</f:perform>
-			</f:action>
-		</f:template>
-
-		<f:action name="makeNewSubType">
-			<f:param name="focus" type="Object" /> <!-- TODO: change this name to parent, then make the remove one take parent and child -->
-			<f:create type="Object" name="subType" />
-			<f:perform with-action="$makeType">
-				<f:with-param name="object" select="$subType" />
-			</f:perform>
+	</f:action>
+	
+	<f:action name="addNewType">
+		<f:derive name="type" d="shared.type" />
+		<f:create type="UI.outlineNode" name="newOutlineNode">
+			<f:with-param name="focus" select="$type" />
+		</f:create>
+		<f:intact object="$propertiesState" property="newTypes" action="add" key="$newOutlineNode" />
+	</f:action>
+	
+	<f:derive name="object" d="focus" /> <!-- kinda ugly that I have to rename this, this is the problem with calls using named parameters (rather than ordered parameters) -->
+	<f:template name="typeExtra">
+		<f:param name="focus" type="Object" />
+		
+		<f:on event="click" with-action="$selectType" />
+		<f:action name="selectType">
 			<f:perform with-action="$typeObject">
-				<f:with-param name="object" select="$subType" />
+				<f:with-param name="object" select="$object" />
 				<f:with-param name="type" select="$focus" />
 			</f:perform>
 		</f:action>
 	</f:template>
-	
-	
 	
 	
 	

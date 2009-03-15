@@ -24,14 +24,14 @@
 	</f:template>
 	
 	<f:action name="makeNewSubType">
-		<f:param name="focus" type="Object" /> <!-- TODO: change this name to parent, then make the remove one take parent and child -->
+		<f:param name="parent" type="Object" />
 		<f:create type="Object" name="subType" />
 		<f:perform with-action="$makeType">
 			<f:with-param name="object" select="$subType" />
 		</f:perform>
 		<f:perform with-action="$typeObject">
 			<f:with-param name="object" select="$subType" />
-			<f:with-param name="type" select="$focus" />
+			<f:with-param name="type" select="$parent" />
 		</f:perform>
 	</f:action>
 	
