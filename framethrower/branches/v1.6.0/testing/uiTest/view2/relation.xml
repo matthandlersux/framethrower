@@ -1,0 +1,34 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="Object" />
+
+	<f:derive name="template" d="getRelationTemplate focus" />
+	
+	<xsl:variable name="rt" select="$template/f:literal/f:relationTemplate" />
+	
+
+	
+	<html:div class="object">
+		<xsl:attribute name="style">background-color: #e29</xsl:attribute>
+		
+		<xsl:for-each select="$rt/node()">
+			<xsl:choose>
+				<xsl:when test="self::*">
+					...
+				</xsl:when>
+				<xsl:when test="self::text()">
+					<xsl:value-of select="." />
+				</xsl:when>
+				<xsl:otherwise>
+
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:for-each>
+
+	</html:div>
+	
+</f:template>

@@ -93,6 +93,11 @@ var exprLib = {
 	// Set utility
 	// ========================================================================
 	
+	isNotEmpty: {
+		type: "Set a -> Unit Null",
+		expr: "compose reactiveNot isEmpty"
+	},
+	
 	passthru: {
 		type: "(a -> Unit b) -> a -> Unit a",
 		expr: "pred -> x -> gate (pred x) x"
@@ -411,10 +416,10 @@ var exprLib = {
 	},
 	
 	
-	
+	// TODO: this doesn't seem to work, the union is supposed to grab nullary relations but doesn't seem to...
 	filterRelations: {
 		type: "Set Object -> Set Object",
-		expr: "filter (x -> (compose reactiveNot isEmpty) (bindUnitSet Object~Cons (getTypes x)))"
+		expr: "union (filter (x -> isNotEmpty (bindUnitSet Object~Cons (getTypes x)))) (filter (x -> isNotEmpty (bindUnitSet (reactiveEqual shared.type.infon) (getTypes x))))"
 	},
 
 	// ========================================================================

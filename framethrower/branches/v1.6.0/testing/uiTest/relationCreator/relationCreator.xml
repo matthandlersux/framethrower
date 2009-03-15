@@ -9,10 +9,12 @@
 	<f:derive name="words" d="UI.relationCreator:words relationCreator" />
 	
 	<f:include url="/xml/util/ord.xml" />
+	<f:include url="/xml/util/actions.xml" />
 	<f:include url="/xml/util/uiActions.xml" />
 	
 	<html:div class="relationCreator-relation">
 		<html:div class="relationCreator-spacer">
+			<html:div class="button-relationCreatorSpacer" />
 			<xsl:variable name="dropKey">
 				<xsl:call-template name="ord-smaller">
 					<xsl:with-param name="s" select="$words/f:entry[1]/f:key/f:literal/@value" />
@@ -38,6 +40,7 @@
 				</f:thunk>
 			</html:div>
 			<html:div class="relationCreator-spacer">
+				<html:div class="button-relationCreatorSpacer" />
 				<xsl:variable name="dropKey">
 					<xsl:choose>
 						<xsl:when test="$nextKey">
@@ -65,6 +68,13 @@
 
 	<html:div class="relationCreator-types">
 		<f:thunk with-template="$printTypes" />
+	</html:div>
+	
+	<html:div class="relationCreator-done">
+		<html:button>
+			Create Relation
+			<f:on event="click" with-action="$buildRelation" />
+		</html:button>
 	</html:div>
 	
 	<f:template name="printWord">
@@ -187,17 +197,89 @@
 		</f:template>
 	</f:template>
 	
+	<f:action name="buildRelation">
+		
+		<f:derive name="strings" d="mapMapValue (UI.relationCreator.word:string) words" />
+		<f:derive name="types" d="mapMapValue (UI.relationCreator.word:type) words" />
 
+		<f:derive name="ont" d="shared.ont" />
+		<f:derive name="infonType" d="shared.type.infon" />
+		
+		<f:create type="Object" name="relation" />
+		
+		<f:perform with-action="$relationTemplateObject">
+			<f:with-param name="object" select="$relation" />
+			<f:with-param name="relTem">
+				<f:relationTemplate>
+					<f:each select="$strings" key="key" value="stringUnit">
+						<xsl:variable name="string" select="$stringUnit/f:literal/@value" />
+						<xsl:choose>
+							<xsl:when test="$string">
+								<xsl:value-of select="concat(' ', $string, ' ')" />
+							</xsl:when>
+							<xsl:otherwise>
+								<f:arg num="{count($stringUnit/../../preceding-sibling::f:entry/f:value/f:unit[not(f:literal)]) + 1}" />
+							</xsl:otherwise>
+						</xsl:choose>
+					</f:each>
+				</f:relationTemplate>
+			</f:with-param>
+		</f:perform>
+		
+		<xsl:variable name="ts" select="$types/f:entry/f:value/f:unit/*" />
+		
+		<xsl:if test="count($ts) &gt; 0">
+			<f:let name="relationType">
+				<xsl:for-each select="$ts">
+					<xsl:sort order="descending" select="position()" />
+					<xsl:variable name="input" select="." />
+					<xsl:variable name="output">
+						<xsl:choose>
+							<xsl:when test="position() = 1">
+								<xsl:copy-of select="$infonType" />
+							</xsl:when>
+							<xsl:otherwise>
+								<f:var name="{position() - 1}" />
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					<f:perform with-action="$makeRelationType" name="{position()}">
+						<f:with-param name="input" select="$input" />
+						<f:with-param name="output" select="$output" />
+					</f:perform>
+				</xsl:for-each>
+			
+				<f:return name="{count($ts)}" />
+			</f:let>
+		</xsl:if>
+		<xsl:variable name="relationType">
+			<xsl:choose>
+				<xsl:when test="count($ts) &gt; 0">
+					<f:var name="relationType" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:copy-of select="$infonType" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
+		<f:perform with-action="$typeObject">
+			<f:with-param name="object" select="$relation" />
+			<f:with-param name="type" select="$relationType" />
+		</f:perform>
+		
+		<f:perform with-action="$putObjectInSituation">
+			<f:with-param name="situation" select="$ont" />
+			<f:with-param name="object" select="$relation" />
+		</f:perform>
+		
+		<f:perform with-action="$hidePopup" />
+
+	</f:action>
 	
 	
 	<!--
 	
-	Install
-		in choose relation popup during infon making
-		make it actually make a relation
-	Put low frame-rate Wall-E in video timeline preview
-		use old timeline ruler instead of cuts?
-	Fix up type explorer
 	Elaborate timeline
 		click for image
 			make popup take xml instead of left/right/width/height

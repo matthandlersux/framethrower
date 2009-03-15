@@ -74,7 +74,10 @@ var rootObjects = {};
 	m("ui.mainPaneSet", "UI.pane.set");
 	m("ui.main", "UI.main", {"pane": objects.cast(rootObjects["ui.mainPaneSet"], "UI.pane")});
 	
-	
+
+	m("ui.relationCreator.typeExplorer", "UI.outlineNode", {"focus": rootObjects["shared.type"]});
+	rootObjects["ui.relationCreator.typeExplorer"].prop["expanded"].control.add(nullObject);
+	m("ui.relationCreator", "UI.relationCreator", {"typeExplorer": rootObjects["ui.relationCreator.typeExplorer"]});
 	
 	
 	

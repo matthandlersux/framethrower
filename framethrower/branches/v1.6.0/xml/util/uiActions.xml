@@ -12,6 +12,7 @@
 		<f:param name="content" type="Unit JS" />
 		
 		<f:derive name="main" d="ui.main" />
+		<f:derive name="popups" d="UI.main:popup main" />
 		
 		<f:create type="UI.popup" name="popup">
 			<f:with-param name="x" select="$x" />
@@ -21,12 +22,35 @@
 			<f:with-param name="content" select="$content" />
 		</f:create>
 		
-		<f:intact object="$main" property="popup" action="add" key="'b'" value="$popup" />
+		<xsl:variable name="lastKey" select="$popups/f:entry[position() = last()]/f:key/f:literal" />
+		<xsl:variable name="key">
+			<xsl:choose>
+				<xsl:when test="$lastKey">
+					<xsl:call-template name="ord-bigger">
+						<xsl:with-param name="s" select="$lastKey/@value" />
+					</xsl:call-template>
+				</xsl:when>
+				<xsl:otherwise>b</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
+		<f:intact object="$main" property="popup" action="add" value="$popup">
+			<f:with-param name="key" select="$key" as="String" />
+		</f:intact>
+		
+		<f:include url="ord.xml" />
 	</f:action>
 	
 	<f:action name="hidePopup">
 		<f:derive name="main" d="ui.main" />
-		<f:intact object="$main" action="remove" property="popup" key="'b'" />
+		<f:derive name="popups" d="UI.main:popup main" />
+		
+		<xsl:variable name="lastKey" select="$popups/f:entry[position() = last()]/f:key/f:literal" />
+		
+		<xsl:if test="$lastKey">
+			<f:intact object="$main" action="remove" property="popup" key="$lastKey" />
+		</xsl:if>
+		<!-- <f:intact object="$main" action="remove" property="popup" key="'b'" /> -->
 	</f:action>
 	
 	<f:action name="stopDragging">

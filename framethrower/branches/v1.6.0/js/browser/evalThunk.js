@@ -111,10 +111,10 @@ function compareThunkEssences(te1, te2) {
 	// check parameters
 	return (
 		all(te1.params, function (param, name) {
-			return stringify(param) === stringify(te2.params[name]);
+			return te2.params[name] !== undefined && stringify(param) === stringify(te2.params[name]);
 		}) &&
 		all(te2.params, function (param, name) {
-			return stringify(param) === stringify(te1.params[name]);
+			return te1.params[name] !== undefined;
 		})
 	);
 }

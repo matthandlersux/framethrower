@@ -105,11 +105,11 @@
 		</xsl:copy>
 	</xsl:template>
 	
-	<xsl:template match="*[self::f:with-param or self::f:with-template or self::f:with-action][not(@select)][not(f:literal)]">
+	<xsl:template match="*[self::f:with-param or self::f:with-template or self::f:with-action][not(@select)][not(f:literal)][not(f:o)][not(f:var)]">
 		<xsl:copy>
 			<xsl:copy-of select="@*" />
 			<f:literal type="XML">
-				<xsl:copy-of select="*" />
+				<xsl:apply-templates select="node()" />
 			</f:literal>
 		</xsl:copy>
 	</xsl:template>

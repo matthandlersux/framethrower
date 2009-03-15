@@ -101,6 +101,13 @@ function processThunks(node, pass) {
 	forEach(embeds, function (embed) {
 		processEmbed(embed);
 	});
+	
+	// focus any new html:input's
+	// TODO: probably want something more nuanced here
+	var inputs = xpath("descendant-or-self::html:input", node);
+	forEach(inputs, function (input) {
+		input.focus();
+	});
 }
 
 function replaceAttributes(node, replacer) {

@@ -114,12 +114,40 @@
 		</f:action>
 	</f:template>
 	
+	<f:template name="newRelation">
+		<html:div>
+			<f:on event="click" with-action="$showNewRelationPopup">
+				<f:with-param-browser name="x" prop="mouseX" />
+				<f:with-param-browser name="y" prop="mouseY" />
+			</f:on>
+			<html:button>New Relation</html:button>
+		</html:div>
+		<f:template name="newRelationPopup">
+			<f:derive name="relationCreator" d="ui.relationCreator" />
+			<f:thunk url="../relationCreator/relationCreator.xml">
+				<f:with-param name="relationCreator" select="$relationCreator" />
+			</f:thunk>
+		</f:template>
+		<f:action name="showNewRelationPopup">
+			<f:param name="x" type="Number" />
+			<f:param name="y" type="Number" />
+			<f:perform with-action="$showPopup">
+				<f:with-param name="x" select="$x" />
+				<f:with-param name="y" select="$y" />
+				<f:with-param name="width" select="500" as="Number" />
+				<f:with-param name="height" select="300" as="Number" />
+				<f:with-param name="content" select="$newRelationPopup" />
+			</f:perform>
+		</f:action>
+	</f:template>
+	
 	
 	
 	<f:template name="relationPopup">
 		<f:derive name="relations" d="filterRelations (getObjectsIn shared.ont)" />
 		
 		<f:thunk with-template="$wrapInContext" />
+		<f:thunk with-template="$newRelation" />
 		
 		<f:each select="$relations" key="relation">
 			<html:div class="entry">
@@ -127,7 +155,7 @@
 					<f:with-param name="relation" select="$relation" />
 				</f:on>
 				
-				<f:thunk url="object.xml">
+				<f:thunk url="relation.xml">
 					<f:with-param name="focus" select="$relation" />
 				</f:thunk>
 			</html:div>
@@ -139,21 +167,42 @@
 			<f:param name="relation" type="Object" />
 			<f:derive name="argCount" d="(mapSet (compose (compose length keys) getRelationTypeComponents)) (bindUnitSet Object~Cons (getTypes relation))" />
 			
+			<!-- TODO: this is super confusing.. rewrite -->
+			
+			<f:intact object="$focus" action="remove" property="object" />
+			<f:intact object="$focus" action="remove" property="left" />
+			<f:intact object="$focus" action="remove" property="right" />
 			
 			<f:create name="left" type="UI.consIP" />
 			<f:intact object="$left" action="add" property="object" key="$relation" />
 			
-			<xsl:call-template name="makeConsIP">
-				<xsl:with-param name="num" select="$argCount/*[1]/*/@value - 1" />
-				<xsl:with-param name="left" select="$left" />
-			</xsl:call-template>
+			<xsl:variable name="recursions" select="$argCount/*[1]/*/@value - 1" />
 			
-			<f:intact action="add" property="left" object="$focus">
-				<f:with-param name="key"><f:var name="c1" /></f:with-param>
-			</f:intact>
-			
-			<f:create type="UI.consIP" name="o0" />
-			<f:intact action="add" property="right" object="$focus" key="$o0" />
+			<xsl:choose>
+				<xsl:when test="$recursions &gt; 0">
+					<xsl:call-template name="makeConsIP">
+						<xsl:with-param name="num" select="$recursions" />
+						<xsl:with-param name="left" select="$left" />
+					</xsl:call-template>
+
+					<f:intact action="add" property="left" object="$focus">
+						<f:with-param name="key"><f:var name="c1" /></f:with-param>
+					</f:intact>
+
+					<f:create type="UI.consIP" name="o0" />
+					<f:intact action="add" property="right" object="$focus" key="$o0" />
+				</xsl:when>
+				<xsl:when test="$recursions = 0">
+					<f:intact action="add" property="left" object="$focus" key="$left" />
+
+					<f:create type="UI.consIP" name="o0" />
+					<f:intact action="add" property="right" object="$focus" key="$o0" />
+				</xsl:when>
+				<xsl:otherwise>
+					<f:intact action="add" property="object" object="$focus" key="$relation" />
+				</xsl:otherwise>
+			</xsl:choose>
+
 				
 			<f:perform with-action="$hidePopup" />
 			

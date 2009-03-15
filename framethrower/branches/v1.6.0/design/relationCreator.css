@@ -3,10 +3,8 @@
 }
 
 .relationCreator-spacer {
-	background-color: purple;
-	padding: 4px;
-	margin: 4px;
 	float: left;
+	padding: 0px 3px;
 }
 
 .relationCreator-types {

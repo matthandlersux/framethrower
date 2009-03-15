@@ -198,5 +198,58 @@
 	
 		<f:return name="cons" />
 	</f:action>
+	
+	
+	
+	<f:action name="makeRelationType3">
+		<f:param name="input1" type="Object" />
+		<f:param name="input2" type="Object" />
+		<f:param name="input3" type="Object" />
+		<f:param name="output" type="Object" />
+		
+		<f:perform with-action="$makeRelationType" name="rt1">
+			<f:with-param name="input" select="$input3" />
+			<f:with-param name="output" select="$output" />
+		</f:perform>
+		<f:perform with-action="$makeRelationType" name="rt2">
+			<f:with-param name="input" select="$input2" />
+			<f:with-param name="output" select="$rt1" />
+		</f:perform>
+		<f:perform with-action="$makeRelationType" name="rt3">
+			<f:with-param name="input" select="$input1" />
+			<f:with-param name="output" select="$rt2" />
+		</f:perform>
+		<f:return name="rt3" />
+	</f:action>	
+	
+	<f:action name="makeRelationType2">
+		<f:param name="input1" type="Object" />
+		<f:param name="input2" type="Object" />
+		<f:param name="output" type="Object" />
+		
+		<f:perform with-action="$makeRelationType" name="rt1">
+			<f:with-param name="input" select="$input2" />
+			<f:with-param name="output" select="$output" />
+		</f:perform>
+		<f:perform with-action="$makeRelationType" name="rt2">
+			<f:with-param name="input" select="$input1" />
+			<f:with-param name="output" select="$rt1" />
+		</f:perform>
+		<f:return name="rt2" />
+	</f:action>
+	
+	<f:action name="makeRelationType">
+		<f:param name="input" type="Object" />
+		<f:param name="output" type="Object" />
+		<f:derive name="relationType" d="shared.type.relation" />
+	
+		<f:perform with-action="$makeInfon2" name="infon">
+			<f:with-param name="relation" select="$relationType" />
+			<f:with-param name="arg1" select="$input" />
+			<f:with-param name="arg2" select="$output" />
+		</f:perform>
+		
+		<f:return name="infon" />
+	</f:action>
 
 </f:includes>

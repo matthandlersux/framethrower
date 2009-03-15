@@ -1,5 +1,6 @@
 .timeline-left {
 	position:absolute;
+	background-color: #111;
 }
 .timeline-container {
 	position: absolute;
@@ -9,6 +10,12 @@
 
 .timeline-preview {
 	position: absolute;
+}
+
+.timeline-controls {
+}
+.timeline-controls div {
+	margin: 2px;
 }
 
 

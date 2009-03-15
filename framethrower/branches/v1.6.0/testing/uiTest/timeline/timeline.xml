@@ -109,11 +109,11 @@
 				
 				<html:div>
 					<f:on event="click" with-action="$zoomIn" />
-					+
+					<html:div class="button-zoomIn" />
 				</html:div>
 				<html:div>
 					<f:on event="click" with-action="$zoomOut" />
-					-
+					<html:div class="button-zoomOut" />
 				</html:div>
 			</html:div>
 			

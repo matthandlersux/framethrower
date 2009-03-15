@@ -90,7 +90,7 @@ Pane itself
 }
 .tab-infonsIn .icon, .tab-about .icon {
 	-moz-border-radius:8px;
-	-webkit-border-radius:8px;
+	-webkit-border-radius:7.5px;
 	
 	float:left;
 	height:15px;
