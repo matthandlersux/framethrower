@@ -91,22 +91,27 @@ loop(Req, DocRoot) ->
 				"pipeline" ->
 					Data = Req:parse_post(),
 					Json = proplists:get_value("json", Data),
-					Struct = mochijson2:decode(Json),
-					LastMessageId = struct:get_value(<<"lastMessageId">>, Struct),
-					SessionId = struct:get_value(<<"sessionId">>, Struct),
-					responseTime:in(SessionId, pipeline, null, now() ),
-					JsonOut = case sessionManager:lookup(SessionId) of
-						sessionClosed -> {struct, [{"sessionClosed", true}] };
-						SessionPid ->
-							case session:pipeline(SessionPid, LastMessageId) of
-								timeout ->
-									TimeoutError = {struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]},
-									{struct, [{"responses", [TimeoutError]},{"lastMessageId", LastMessageId}]};
-								{updates, Updates, LastMessageId2} ->
-									responseTime:updatesOut(SessionId, pipeline, Updates),
-									{struct, [{"responses", Updates},{"lastMessageId", LastMessageId2}]};
-								OtherJson -> OtherJson
-							end
+					JsonOut = try mochijson2:decode(Json) of Struct ->
+						LastMessageId = struct:get_value(<<"lastMessageId">>, Struct),
+						SessionId = struct:get_value(<<"sessionId">>, Struct),
+						responseTime:in(SessionId, pipeline, null, now() ),
+						case sessionManager:lookup(SessionId) of
+							sessionClosed -> {struct, [{"sessionClosed", true}] };
+							SessionPid ->
+								case session:pipeline(SessionPid, LastMessageId) of
+									timeout ->
+										TimeoutError = {struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]},
+										{struct, [{"responses", [TimeoutError]},{"lastMessageId", LastMessageId}]};
+									{updates, Updates, LastMessageId2} ->
+										responseTime:updatesOut(SessionId, pipeline, Updates),
+										{struct, [{"responses", Updates},{"lastMessageId", LastMessageId2}]};
+									OtherJson -> OtherJson
+								end
+						end
+					catch _:_ -> 
+						?trace("Decode Error: "), ?trace(Json),
+						DecodeError = {struct, [{"errorType", decodeError}, {"reason", bad_json}]},
+						{struct, [{"responses", [DecodeError]}]}
 					end,
 					spit(Req, JsonOut);
 				"post" ->
