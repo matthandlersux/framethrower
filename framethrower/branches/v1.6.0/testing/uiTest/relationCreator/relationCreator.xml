@@ -241,17 +241,17 @@
 								<xsl:copy-of select="$infonType" />
 							</xsl:when>
 							<xsl:otherwise>
-								<f:var name="{position() - 1}" />
+								<f:var name="rt{position() - 1}" />
 							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:variable>
-					<f:perform with-action="$makeRelationType" name="{position()}">
+					<f:perform with-action="$makeRelationType" name="rt{position()}">
 						<f:with-param name="input" select="$input" />
 						<f:with-param name="output" select="$output" />
 					</f:perform>
 				</xsl:for-each>
 			
-				<f:return name="{count($ts)}" />
+				<f:return name="rt{count($ts)}" />
 			</f:let>
 		</xsl:if>
 		<xsl:variable name="relationType">

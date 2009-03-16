@@ -242,10 +242,13 @@
 						</html:span>
 						
 						<html:div class="timeline-layers">
-							<f:each select="$layers" key="ord" value="layer">
-								<f:thunk with-template="$drawLayer">
-									<f:with-param name="layer" select="$layer" />
-								</f:thunk>
+							<f:each select="$focus">
+								<f:each select="$layers" key="ord" value="layer">
+									<f:thunk with-template="$drawLayer">
+										<f:with-param name="movie" select="$focus" />
+										<f:with-param name="layer" select="$layer" />
+									</f:thunk>
+								</f:each>
 							</f:each>
 						</html:div>
 						
@@ -315,16 +318,24 @@
 				</f:template>
 				
 				<f:template name="drawLayer">
+					<f:param name="movie" type="Object" />
 					<f:param name="layer" type="Object" />
 					
-					<f:each select="$duration"><f:each select="$zoomWidth">
+					<f:derive name="layerSituations" d="getSituationsInLayer movie layer" />
+					
+					<!-- <f:each select="$duration"><f:each select="$zoomWidth">
 						<html:div class="timeline-layer">
 							<xsl:attribute name="style">
 								width: <xsl:value-of select="$zoomWidth/@value" />px;
 								background-color: rgba(128,0,0,0.5);
 							</xsl:attribute>
+							
+							<f:each select="$layerSituations" key="$sit">
+								Found a situation!
+							</f:each>
+							
 						</html:div>
-					</f:each></f:each>
+					</f:each></f:each> -->
 					
 				</f:template>
 				

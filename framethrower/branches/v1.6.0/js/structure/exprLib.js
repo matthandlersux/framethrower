@@ -575,7 +575,7 @@ var exprLib = {
 				chain: ["UI.main:pane"]
 			}
 		}
-	}
+	},
 	
 	
 	// unfoldToEnd: {
@@ -590,6 +590,26 @@ var exprLib = {
 	// },
 	
 	
+	
+	// ========================================================================
+	// Video Timeline stuff
+	// ========================================================================
+	
+	getMovieTimeRanges: {
+		type: "Object -> Set Object",
+		expr: "movie -> upRight (Cons::lookup shared.movie.timeRange movie)",
+		where: {
+			upRight: {
+				type: "Unit Cons -> Set Object",
+				chain: "Object:upRight"
+			}
+		}
+	},
+	
+	getSituationsInLayer: {
+		type: "Object -> Object -> Set Object",
+		expr: "movie -> layer -> mapSet Cons~Object (bindUnitSet (Cons::lookup layer) (getMovieTimeRanges movie))"
+	}
 
 };
 
