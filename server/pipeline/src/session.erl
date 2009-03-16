@@ -150,6 +150,7 @@ handle_cast({addCleanup, QueryId, CleanupFun }, State) ->
 handle_cast({actionResponse, ActionResponse}, State) ->
 	MsgQueue = addToQueue(ActionResponse, ?this(msgQueue)),
 	NewState = State#session{msgQueue = MsgQueue},
+	?this(outputTimer) ! sendNow,
 	{noreply, NewState, ?this(timeout)};
 handle_cast({registerTemplate, {Name, Template}}, State) ->
 	NewState = State#session{
@@ -203,8 +204,9 @@ startOutputTimer(State, SessionPid, To) ->
 outputTimer(State, SessionPid, To) ->
 	WaitTime = case State of
 		allDone -> 0;
+		sendNow -> 30;
 		satisfied -> 30000;
-		waiting -> 2000
+		waiting -> 500
 	end,
 	receive
 		Update -> outputTimer(Update, SessionPid, To)
