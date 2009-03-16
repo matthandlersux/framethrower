@@ -76,16 +76,9 @@ classesToMake() ->
 				{"url", "String"},
 				{"width", "Number"},
 				{"height", "Number"},
+				{"frameRate", "Number"},				
 				{"duration", "Number"}
 			]
-		},
-		#classToMake{
-			name = "X.text",
-			inherit = "Object",
-			prop = [
-				{"string", "String"}
-			],
-			memoize = ["string"]
 		},
 		#classToMake{
 			name = "X.picture",
@@ -105,7 +98,15 @@ classesToMake() ->
 				{"width", "Number"},
 				{"height", "Number"}
 			]
-		},		
+		},
+		#classToMake{
+			name = "X.text",
+			inherit = "Object",
+			prop = [
+				{"string", "String"}
+			],
+			memoize = ["string"]
+		},
 		#classToMake{
 			name = "X.xml",
 			inherit = "Object",
@@ -113,16 +114,34 @@ classesToMake() ->
 				{"xml", "XML"}
 			]
 		},
+		#classToMake{
+			name = "X.time.range",
+			inherit = "Object",
+			prop = [
+				{"start", "Number"},
+				{"duration", "Number"}
+			]
+		},
+
 
 		%% ====================================================
 		%% UI
 		%% ====================================================
-		#classToMake{
-			name = "UI.prefs",
-			prop = [
-				{"typeDisplay", "Map Object String"}
-			]
-		}
+	
+		#classToMake{ name = "UI.ui",prop = [ {"screenWidth", "Unit Number"}, {"screenHeight", "Unit Number"}, {"mouseX", "Unit Number"}, {"mouseY", "Unit Number"}]}, 
+		#classToMake{ name = "UI.main",prop = [ {"pane", "UI.pane"}, {"popup", "Map String UI.popup"}, {"dragging", "Unit UI.dragging"}]}, 
+		#classToMake{ name = "UI.popup",prop = [ {"x", "Number"}, {"y", "Number"}, {"width", "Number"}, {"height", "Number"}, {"content", "Unit JS"}]}, 
+		#classToMake{ name = "UI.dragging",prop = [ {"object", "Object"}]}, 
+		#classToMake{ name = "UI.pane",prop = [ {"width", "Unit Number"}, {"height", "Unit Number"}]}, 
+		#classToMake{ name = "UI.pane.set",inherit = "UI.pane", prop = [ {"panes", "Map String UI.pane"}, {"orientation", "Unit String"}]}, 
+		#classToMake{ name = "UI.pane.timeline",inherit = "UI.pane", prop = [ {"focus", "Object"}, {"zoomWidth", "Unit Number"}, {"previewFrame", "Unit Number"}, {"selectedTime1", "Unit Number"}, {"selectedTime2", "Unit Number"}, {"selecting", "Unit Null"}]}, 
+		#classToMake{ name = "UI.pane.pane",inherit = "UI.pane", prop = [ {"tab", "Unit String"}, {"focus", "Unit Object"}, {"propertiesState", "UI.propertiesState"}, {"aboutNewInfons", "Set UI.consIP"}, {"infonsInNewInfons", "Set UI.consIP"}, {"addingObject", "Unit Object"}, {"addingObjectPropertiesState", "UI.propertiesState"}]}, 
+		#classToMake{ name = "UI.propertiesState",prop = [ {"editName", "Unit Null"}, {"typeExplorer", "Unit UI.outlineNode"}]}, 
+		#classToMake{ name = "UI.consIP",prop = [ {"object", "Unit Object"}, {"left", "Unit UI.consIP"}, {"right", "Unit UI.consIP"}]}, 
+		#classToMake{ name = "UI.outlineNode",prop = [ {"focus", "Object"}, {"children", "Map Object UI.outlineNode"}, {"expanded", "Unit Null"}]}, 
+		#classToMake{ name = "UI.relationCreator.word",prop = [ {"string", "Unit String"}, {"type", "Unit Object"}]}, 
+		#classToMake{ name = "UI.relationCreator",prop = [ {"typeExplorer", "UI.outlineNode"}, {"words", "Map String UI.relationCreator.word"}]}, 
+		#classToMake{ name = "UI.prefs",prop = [ {"typeDisplay", "Map Object String"}, {"timelineLayers", "Map String Object"}]}
 	].
 
 makeRootObjects() ->
