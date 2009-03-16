@@ -239,6 +239,7 @@ var session = (function () {
 	}
 	
 	function registerTemplate (url, template) {
+		return;
 		messages.push({
 			registerTemplate: {
 				name: url,
