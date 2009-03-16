@@ -345,17 +345,17 @@ bindVarOrFormatExprElement(VariableOrCellName, Conversions) when is_binary(Varia
 		"<" ++ _ = XML ->
 			XML;
 		NumberOrVariable ->
-			try list_to_integer(NumberOrVariable)
-			catch _:_ ->
-				try list_to_float(NumberOrVariable)
-				catch _:_ ->
-					case lists:keysearch(VariableOrCellName, 1, Conversions) of
-						{value, {_, Object} } -> Object;
-						_ -> 
+			case lists:keysearch(VariableOrCellName, 1, Conversions) of
+				{value, {_, Object} } -> Object;
+				_ -> 
+					try list_to_integer(NumberOrVariable)
+					catch _:_ ->
+						try list_to_float(NumberOrVariable)
+						catch _:_ ->
 							throw({variable_not_found, binary_to_list(VariableOrCellName)}),
 							error % this will be when we start sending functions
+						end
 					end
-				end
 			end
 	end;
 bindVarOrFormatExprElement(NumBool, _) when is_number(NumBool); is_atom(NumBool); is_boolean(NumBool) -> NumBool;

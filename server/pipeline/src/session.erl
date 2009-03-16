@@ -97,7 +97,7 @@ handle_call({queryDefine, Expr, QueryId}, _, State) ->
 			NewState = State,
 			false;
 		_ -> 
-			?this(outputTimer) ! waiting,
+			sendToOutputTimer(?this(outputTimer), waiting),
 			NewState = State#session{
 				openQueries = dict:store(QueryId, open, ?this(openQueries)),
 				serverAdviceHash = dict:store(Expr, QueryId, ?this(serverAdviceHash)),
@@ -135,7 +135,7 @@ handle_cast({queryDefine, ExprString, QueryId}, State) ->
 handle_cast({data, {QueryId, Action, Data}}, State) ->
 	MsgQueue = addToQueue(wellFormedUpdate(Data, QueryId, Action), ?this(msgQueue)),
 	case(?this(clientState)) of
-		satisfied -> ?this(outputTimer) ! waiting;
+		satisfied -> sendToOutputTimer(?this(outputTimer), waiting);
 		_ -> nosideeffect
 	end,	
 	{noreply, State#session{msgQueue = MsgQueue, clientState = waiting}, ?this(timeout)};
@@ -160,7 +160,7 @@ handle_cast({addCleanup, QueryId, CleanupFun }, State) ->
 handle_cast({actionResponse, ActionResponse}, State) ->
 	MsgQueue = addToQueue(ActionResponse, ?this(msgQueue)),
 	NewState = State#session{msgQueue = MsgQueue, clientState = waiting},
-	?this(outputTimer) ! sendNow,
+	sendToOutputTimer(?this(outputTimer), sendNow),
 	{noreply, NewState, ?this(timeout)};
 handle_cast({registerTemplate, {Name, Template}}, State) ->
 	NewState = State#session{
@@ -168,7 +168,7 @@ handle_cast({registerTemplate, {Name, Template}}, State) ->
 	},
 	{noreply, NewState, ?this(timeout)};
 handle_cast({serverAdviceRequest, ServerAdviceRequest}, State) ->
-	?this(outputTimer) ! waiting,
+	sendToOutputTimer(?this(outputTimer), waiting),
 	serverAdvice:processServerAdvice(ServerAdviceRequest, ?this(templates), self()),
 	{noreply, State#session{clientState = waiting, serverAdviceCount = ?this(serverAdviceCount) + 1}, ?this(timeout)};
 handle_cast(serverAdviceDone, State) ->
@@ -179,18 +179,16 @@ handle_cast({checkQuery, Expr, QueryId, ResponseFun}, State) ->
 	OpenQueries = dict:store(QueryId, open, ?this(openQueries)),
 	NewState = case dict:find(Expr, ?this(serverAdviceHash)) of
 		{ok, ReferenceId} ->
-			?this(outputTimer) ! waiting,
+			sendToOutputTimer(?this(outputTimer), waiting),
 			ResponseFun({false, ReferenceId}),
 			State#session{openQueries = OpenQueries, clientState = waiting};
 		_ ->
-			?this(outputTimer) ! waiting, 
+			sendToOutputTimer(?this(outputTimer), waiting),
 			ServerAdviceHash = dict:store(Expr, defined, ?this(serverAdviceHash)),
 			ResponseFun(true),
 			State#session{serverAdviceHash = ServerAdviceHash, openQueries = OpenQueries, clientState = waiting}
 	end,
 	{noreply, NewState, ?this(timeout)}.
-
-
 
 
 handle_info(timeout, State) ->
@@ -210,6 +208,12 @@ code_change(_, State, _) -> {ok, State}.
 %%
 startOutputTimer(State, SessionPid, To) ->
 	spawn_link( fun() -> outputTimer(State, SessionPid, To) end).
+
+sendToOutputTimer(OutputTimer, State) ->
+	case OutputTimer of
+		undefined -> nosideeffect;
+		Pid -> Pid ! State
+	end.
 
 outputTimer(State, SessionPid, To) ->
 	WaitTime = case State of
@@ -248,7 +252,7 @@ stream(To, MsgQueueToSend) ->
 updateClientState(State) ->
 	ClientState = case {dict:size(?this(openQueries)), ?this(serverAdviceCount)} of
 		{0,0} -> 
-			?this(outputTimer) ! allDone,
+			sendToOutputTimer(?this(outputTimer), allDone),
 			allDone;
 		_ -> 
 			?this(clientState)
