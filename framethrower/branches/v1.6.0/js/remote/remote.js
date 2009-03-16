@@ -67,6 +67,7 @@ function makeRemoteObject(name, type) {
 		name: name,
 		type: type
 	};
+	
 	remoteObjectsScope[name] = o;
 	return o;
 }
@@ -247,6 +248,7 @@ var session = (function () {
 	}
 	
 	function serverAdviceRequest (url, params) {
+		return;
 		//convert params to exprElement
 		formattedParams = [];
 		forEach(params, function(param, paramName) {
@@ -312,6 +314,7 @@ var session = (function () {
 		xhr(serverBaseUrl+"pipeline", json, function (text) {
 			//console.log("updater got a message", text);
 			
+			
 			// TODO if text is blank, treat this as session closed
 						
 			// try {
@@ -345,8 +348,13 @@ var session = (function () {
 								} else {
 									var key = parseServerResponse(update.key, keyType);
 									var value = parseServerResponse(update.value, valueType);
+									//console.log("Update:", update.key, update.value);
 									cell.control[update.action](key, value);
 								}
+							} else {
+								var key = parseServerResponse(update.key, keyType);
+								var value = parseServerResponse(update.value, valueType);
+								//console.log("Update:", update.key, update.value);
 							}
 						} else if (response.actionResponse) {
 							var actionResponse = response.actionResponse;
@@ -360,16 +368,20 @@ var session = (function () {
 								debug.log("Action failed, actionId:", actionResponse.actionId);
 							}
 						} else if (response.queryDefine) {
-							var queryDefine = response.queryDefine;
-							var expr = parseExpr(queryDefine.expr, remoteObjectsEnv);
-							var type = getType(expr);
-							var cell = makeCC(type);
-							cell.expr = expr;
+							try {
+								var queryDefine = response.queryDefine;
+								var expr = parseExpr(queryDefine.expr, remoteObjectsEnv);
+								var type = getType(expr);
+								var cell = makeCC(type);
+								cell.expr = expr;
 							
-							cells[queryDefine.queryId] = cell;
-							//add this expr and cell to local hashtable
-							resultExprStringified = uniqueExpr(expr);
-							evalCache[resultExprStringified] = cell;
+								cells[queryDefine.queryId] = cell;
+								//add this expr and cell to local hashtable
+								resultExprStringified = uniqueExpr(expr);
+								evalCache[resultExprStringified] = cell;
+							} catch (e) {
+								console.log(e, response.queryDefine);
+							}
 						} else if (response.queryReference) {
 							var queryReference = response.queryReference;
 							var refCell = cells[queryReference.queryId];

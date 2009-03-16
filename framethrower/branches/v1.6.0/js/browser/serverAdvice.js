@@ -105,7 +105,7 @@ function getServerAdvice(templateNode, url, env) {
 			
 			var template;
 			if (te.url) {
-				template = "url:" + te.url;
+				template = te.url;
 			} else {
 				template = returnFromXSLCopyOf(te.template);
 			}
