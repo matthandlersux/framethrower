@@ -404,6 +404,7 @@ var exprLib = {
 		}
 	},
 	
+	// TODO: this is just needed for getting all relations in infonIP.xml relation popup. Factor it out.
 	getAllIn: {
 		type: "Object -> Set Object",
 		expr: "x -> filter notCons (downRight (filterByTruth (getConsUsingIn x)))",
@@ -430,15 +431,23 @@ var exprLib = {
 			}
 		}
 	},
+	// getObjectsOfType: {
+	// 	type: "Object -> Set Object",
+	// 	expr: "type -> move type",
+	// 	where: {
+	// 		move: {
+	// 			type: "Object -> Set Object",
+	// 			chain: ["Object:upLeft", "Cons:left", "Cons:right"]
+	// 		}
+	// 	}
+	// },
 	getObjectsOfType: {
 		type: "Object -> Set Object",
-		expr: "type -> move type",
-		where: {
-			move: {
-				type: "Object -> Set Object",
-				chain: ["Object:upLeft", "Cons:left", "Cons:right"]
-			}
-		}
+		expr: "getOntPropInverse shared.isA"
+	},
+	getObjectsOfTypeRecursive: {
+		type: "Object -> Set Object",
+		expr: "type -> filter (compose reactiveNot isType) (unfoldSet getObjectsOfType type)"
 	},
 	
 	

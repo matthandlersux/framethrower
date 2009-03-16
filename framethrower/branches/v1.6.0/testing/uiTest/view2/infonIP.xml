@@ -248,7 +248,7 @@
 	</f:action>
 	
 	<f:template name="objectPopup">
-		<f:derive name="objects" d="getObjectsOfType expectedType" />
+		<f:derive name="objects" d="getObjectsOfTypeRecursive expectedType" />
 		
 		<f:thunk with-template="$wrapInContext" />
 		

@@ -97,7 +97,7 @@
 		<f:derive name="ontInfon" d="bindUnit getObjectInOnt (mapUnit Cons~Object (bindUnit (swap Cons::lookup type) (mapUnit Cons~Object (Cons::lookup shared.isA focus))))" />
 		
 		<f:each select="$ontInfon">
-			<f:intact object="$ontInfon" action="remove" property="truth" />
+			<f:intact object="$ontInfon" action="remove" property="truth" key="null" />
 		</f:each>
 	</f:action>
 	
