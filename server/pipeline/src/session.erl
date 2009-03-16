@@ -130,10 +130,10 @@ handle_cast({flush, To}, State) ->
 handle_cast({queryDefine, ExprString, QueryId}, State) ->
 	?trace("Query Define"),
 	MsgQueue = addToQueue(wellFormedQueryDefine(ExprString, QueryId), ?this(msgQueue)),
-	{noreply, State#session{msgQueue = MsgQueue}, ?this(timeout)};	
+	{noreply, State#session{msgQueue = MsgQueue}, ?this(timeout)};
 handle_cast({data, {QueryId, Action, Data}}, State) ->
 	MsgQueue = addToQueue(wellFormedUpdate(Data, QueryId, Action), ?this(msgQueue)),
-	{noreply, State#session{msgQueue = MsgQueue}, ?this(timeout)};
+	{noreply, State#session{msgQueue = MsgQueue, clientState = waiting}, ?this(timeout)};
 handle_cast({done, QueryId}, State) ->
 	MsgQueue = addToQueue(wellFormedUpdate(QueryId, done), ?this(msgQueue)),
 	OpenQueries = dict:erase(QueryId, ?this(openQueries)),
@@ -154,7 +154,7 @@ handle_cast({addCleanup, QueryId, CleanupFun }, State) ->
 	{noreply, NewState, ?this(timeout)};
 handle_cast({actionResponse, ActionResponse}, State) ->
 	MsgQueue = addToQueue(ActionResponse, ?this(msgQueue)),
-	NewState = State#session{msgQueue = MsgQueue, clientState = sendNow},
+	NewState = State#session{msgQueue = MsgQueue, clientState = waiting},
 	?this(outputTimer) ! sendNow,
 	{noreply, NewState, ?this(timeout)};
 handle_cast({registerTemplate, {Name, Template}}, State) ->
