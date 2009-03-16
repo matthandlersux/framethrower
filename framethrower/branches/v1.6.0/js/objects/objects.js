@@ -87,6 +87,16 @@ var classesToMake = {
 		}
 	},
 	
+	"X.time.range": {
+		inherit: "Object",
+		prop: {
+			"start": "Number",
+			"duration": "Number"
+		}
+	},
+	
+	
+	
 	// ====================================================
 	// UI
 	// ====================================================
@@ -206,7 +216,8 @@ var classesToMake = {
 	
 	"UI.prefs": {
 		prop: {
-			"typeDisplay": "Map Object String"
+			"typeDisplay": "Map Object String",
+			"timelineLayers": "Map String Object"
 		}
 	}
 };

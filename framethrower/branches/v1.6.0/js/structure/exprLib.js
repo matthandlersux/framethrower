@@ -367,18 +367,44 @@ var exprLib = {
 		// TODO: probably more efficient to do this by filtering out infons whose left is shared.in, rather than doing a setDifference
 	},
 	
+	isInfon: {
+		type: "Object -> Unit Null",
+		expr: "obj -> isEmpty (bindUnitSet (reactiveEqual shared.type) (getTypes obj))" // TODO: this is wrong.. just happens to work
+	},
+	
+	// getInfonsIn: {
+	// 	type: "Object -> Set Cons",
+	// 	expr: "x -> filter (compose (compose reactiveNot isEmpty) downRight) (filterByTruth (getConsUsingIn x))",
+	// 	where: {
+	// 		downRight: {
+	// 			type: "Cons -> Set Cons",
+	// 			chain: ["Cons:right"]
+	// 		}
+	// 	}
+	// },
 	getInfonsIn: {
-		type: "Object -> Set Cons",
-		expr: "x -> filter (compose (compose reactiveNot isEmpty) downRight) (filterByTruth (getConsUsingIn x))",
+		type: "Object -> Set Object",
+		expr: "x -> filter isInfon (downRight (filterByTruth (getConsUsingIn x)))",
 		where: {
 			downRight: {
-				type: "Cons -> Set Cons",
+				type: "Set Cons -> Set Object",
 				chain: ["Cons:right"]
 			}
 		}
 	},
 
 	getObjectsIn: {
+		type: "Object -> Set Object",
+		expr: "x -> filter (compose reactiveNot isInfon) (downRight (filterByTruth (getConsUsingIn x)))",
+		where: {
+			downRight: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:right"]
+			}
+		}
+	},
+	
+	getAllIn: {
 		type: "Object -> Set Object",
 		expr: "x -> filter notCons (downRight (filterByTruth (getConsUsingIn x)))",
 		where: {
@@ -389,7 +415,7 @@ var exprLib = {
 			notCons: {
 				type: "Object -> Unit Null",
 				expr: "obj -> isEmpty (returnUnitSet (Object~Cons obj))"
-			}
+			 }
 		}
 	},
 	
@@ -419,7 +445,9 @@ var exprLib = {
 	// TODO: this doesn't seem to work, the union is supposed to grab nullary relations but doesn't seem to...
 	filterRelations: {
 		type: "Set Object -> Set Object",
-		expr: "union (filter (x -> isNotEmpty (bindUnitSet Object~Cons (getTypes x)))) (filter (x -> isNotEmpty (bindUnitSet (reactiveEqual shared.type.infon) (getTypes x))))"
+		//expr: "union (filter (x -> isNotEmpty (bindUnitSet Object~Cons (getTypes x)))) (filter (x -> isNotEmpty (bindUnitSet (reactiveEqual shared.type.infon) (getTypes x))))"
+		//expr: "(filter (x -> isNotEmpty (bindUnitSet Object~Cons (getTypes x))))"
+		expr: "filter (x -> (compose reactiveNot isEmpty) (bindUnitSet Object~Cons (getTypes x)))"
 	},
 
 	// ========================================================================

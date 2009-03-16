@@ -64,6 +64,8 @@
 				</f:on>
 			</html:div>
 		</f:each>
+		
+		<html:div style="clear:both" />
 	</html:div>
 
 	<html:div class="relationCreator-types">

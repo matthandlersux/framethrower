@@ -44,6 +44,8 @@ var rootObjects = {};
 							// For now, we only allow one polymorphic type per relation type and it has to be the output. For example: in :: Situation -> a -> a
 	
 	m("shared.type.movie");
+	m("shared.type.location");
+	m("shared.type.agent");
 	
 	
 	m("shared.realLife");
@@ -53,6 +55,8 @@ var rootObjects = {};
 	m("shared.movie.story");
 	m("shared.movie.presentation");
 	m("shared.movie.making");
+	
+	m("shared.movie.timeRange");
 	
 	
 	

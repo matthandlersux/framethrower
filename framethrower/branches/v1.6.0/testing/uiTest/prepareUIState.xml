@@ -14,16 +14,30 @@
 	<f:derive name="entityType" d="shared.type.entity" />
 	
 	<f:derive name="movieType" d="shared.type.movie" />
+	<f:derive name="locationType" d="shared.type.location" />
+	<f:derive name="agentType" d="shared.type.agent" />
+	
 
 	<f:derive name="prefs" d="ui.prefs" />
+	
 	<f:derive name="situationType" d="shared.type.situation" />
 	<f:derive name="entityType" d="shared.type.entity" />
 	<f:derive name="relationType" d="shared.type.relation" />
-
 	<f:intact object="$prefs" property="typeDisplay" action="add" key="$situationType" value="'#2ae'" />
-	<f:intact object="$prefs" property="typeDisplay" action="add" key="$entityType" value="'#8c3'" />
+	<f:intact object="$prefs" property="typeDisplay" action="add" key="$entityType" value="'#5a1'" />
 	<f:intact object="$prefs" property="typeDisplay" action="add" key="$relationType" value="'#e29'" />
+	
 	<f:intact object="$prefs" property="typeDisplay" action="add" key="$movieType" value="'#a22'" />
+	<f:intact object="$prefs" property="typeDisplay" action="add" key="$locationType" value="'#829'" />
+	<f:intact object="$prefs" property="typeDisplay" action="add" key="$agentType" value="'#9e1'" />
+	
+	
+	<f:derive name="movieStory" d="shared.movie.story" />
+	<f:derive name="moviePresentation" d="shared.movie.presentation" />
+	<f:derive name="movieMaking" d="shared.movie.making" />
+	<f:intact object="$prefs" property="timelineLayers" action="add" key="'b'" value="$movieStory" />
+	<f:intact object="$prefs" property="timelineLayers" action="add" key="'bb'" value="$moviePresentation" />
+	<f:intact object="$prefs" property="timelineLayers" action="add" key="'bbb'" value="$movieMaking" />
 	
 	
 	

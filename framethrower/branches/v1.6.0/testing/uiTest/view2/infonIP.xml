@@ -134,8 +134,8 @@
 			<f:perform with-action="$showPopup">
 				<f:with-param name="x" select="$x" />
 				<f:with-param name="y" select="$y" />
-				<f:with-param name="width" select="500" as="Number" />
-				<f:with-param name="height" select="300" as="Number" />
+				<f:with-param name="width" select="400" as="Number" />
+				<f:with-param name="height" select="220" as="Number" />
 				<f:with-param name="content" select="$newRelationPopup" />
 			</f:perform>
 		</f:action>
@@ -144,7 +144,7 @@
 	
 	
 	<f:template name="relationPopup">
-		<f:derive name="relations" d="filterRelations (getObjectsIn shared.ont)" />
+		<f:derive name="relations" d="filterRelations (getAllIn shared.ont)" />
 		
 		<f:thunk with-template="$wrapInContext" />
 		<f:thunk with-template="$newRelation" />

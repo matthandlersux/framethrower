@@ -141,17 +141,13 @@
 	</f:perform>
 	
 	
-	
-	
 	<!-- ==========================================================================
-	Movie/Video Timeline Relations/Types
+	Additional Types
 	=========================================================================== -->
 	
 	<f:derive name="movieType" d="shared.type.movie" />
-	
-	<f:derive name="movieStory" d="shared.movie.story" />
-	<f:derive name="moviePresentation" d="shared.movie.presentation" />
-	<f:derive name="movieMaking" d="shared.movie.making" />
+	<f:derive name="locationType" d="shared.type.location" />
+	<f:derive name="agentType" d="shared.type.agent" />
 	
 	<f:perform with-action="$nameObject">
 		<f:with-param name="object" select="$movieType" />
@@ -165,10 +161,43 @@
 		<f:with-param name="object" select="$movieType" />
 	</f:perform>
 	
+	<f:perform with-action="$nameObject">
+		<f:with-param name="object" select="$locationType" />
+		<f:with-param name="name" select="'Location'" />
+	</f:perform>
+	<f:perform with-action="$typeObject">
+		<f:with-param name="object" select="$locationType" />
+		<f:with-param name="type" select="$entityType" />
+	</f:perform>
+	<f:perform with-action="$makeType">
+		<f:with-param name="object" select="$locationType" />
+	</f:perform>
+	
+	<f:perform with-action="$nameObject">
+		<f:with-param name="object" select="$agentType" />
+		<f:with-param name="name" select="'Agent'" />
+	</f:perform>
+	<f:perform with-action="$typeObject">
+		<f:with-param name="object" select="$agentType" />
+		<f:with-param name="type" select="$entityType" />
+	</f:perform>
+	<f:perform with-action="$makeType">
+		<f:with-param name="object" select="$agentType" />
+	</f:perform>
+	
+	<!-- ==========================================================================
+	Movie/Video Timeline Relations/Types
+	=========================================================================== -->
+	
+	<f:derive name="movieStory" d="shared.movie.story" />
+	<f:derive name="moviePresentation" d="shared.movie.presentation" />
+	<f:derive name="movieMaking" d="shared.movie.making" />
+	
 	<f:perform with-action="$makeRelationType" name="movieToSituation">
 		<f:with-param name="input" select="$movieType" />
 		<f:with-param name="output" select="$situationType" />
 	</f:perform>
+	
 	<f:perform with-action="$typeObject">
 		<f:with-param name="object" select="$movieStory" />
 		<f:with-param name="type" select="$movieToSituation" />
@@ -181,7 +210,41 @@
 			</f:relationTemplate>
 		</f:with-param>
 	</f:perform>
+	<f:perform with-action="$typeObject">
+		<f:with-param name="object" select="$moviePresentation" />
+		<f:with-param name="type" select="$movieToSituation" />
+	</f:perform>
+	<f:perform with-action="$relationTemplateObject">
+		<f:with-param name="object" select="$moviePresentation" />
+		<f:with-param name="relTem">
+			<f:relationTemplate>
+				<f:arg num="1" />'s Presentation
+			</f:relationTemplate>
+		</f:with-param>
+	</f:perform>
+	<f:perform with-action="$typeObject">
+		<f:with-param name="object" select="$movieMaking" />
+		<f:with-param name="type" select="$movieToSituation" />
+	</f:perform>
+	<f:perform with-action="$relationTemplateObject">
+		<f:with-param name="object" select="$movieMaking" />
+		<f:with-param name="relTem">
+			<f:relationTemplate>
+				<f:arg num="1" />'s Making
+			</f:relationTemplate>
+		</f:with-param>
+	</f:perform>
 	
+	
+	<f:derive name="movieTimeRange" d="shared.movie.timeRange" />
+	<f:perform with-action="$relationTemplateObject">
+		<f:with-param name="object" select="$movieTimeRange" />
+		<f:with-param name="relTem">
+			<f:relationTemplate>
+				<f:arg num="1" /> at <f:arg num="2" />
+			</f:relationTemplate>
+		</f:with-param>
+	</f:perform>
 
 	
 	
@@ -227,6 +290,32 @@
 		<f:with-param name="arg2" select="$walleVideo" />
 	</f:perform>
 	
+	
+	
+	<f:perform with-action="$makeInfon1" name="walleStory">
+		<f:with-param name="relation" select="$movieStory" />
+		<f:with-param name="arg1" select="$walleMovie" />
+	</f:perform>
+	<f:perform with-action="$putObjectInSituation">
+		<f:with-param name="situation" select="$realLife" />
+		<f:with-param name="object" select="$walleStory" />
+	</f:perform>
+	<f:perform with-action="$makeInfon1" name="wallePresentation">
+		<f:with-param name="relation" select="$moviePresentation" />
+		<f:with-param name="arg1" select="$walleMovie" />
+	</f:perform>
+	<f:perform with-action="$putObjectInSituation">
+		<f:with-param name="situation" select="$realLife" />
+		<f:with-param name="object" select="$wallePresentation" />
+	</f:perform>
+	<f:perform with-action="$makeInfon1" name="walleMaking">
+		<f:with-param name="relation" select="$movieMaking" />
+		<f:with-param name="arg1" select="$walleMovie" />
+	</f:perform>
+	<f:perform with-action="$putObjectInSituation">
+		<f:with-param name="situation" select="$realLife" />
+		<f:with-param name="object" select="$walleMaking" />
+	</f:perform>
 
 
 
@@ -239,7 +328,7 @@
 	
 	<f:perform with-action="$makeNamedObject" name="sc">
 		<f:with-param name="name" select="'Sean Connery'" />
-		<f:with-param name="type" select="$entityType" />
+		<f:with-param name="type" select="$agentType" />
 	</f:perform>
 	<f:perform with-action="$putObjectInSituation">
 		<f:with-param name="situation" select="$realLife" />
@@ -262,7 +351,7 @@
 	
 	<f:perform with-action="$makeNamedObject" name="jb">
 		<f:with-param name="name" select="'James Bond'" />
-		<f:with-param name="type" select="$entityType" />
+		<f:with-param name="type" select="$agentType" />
 	</f:perform>
 	<f:perform with-action="$putObjectInSituation">
 		<f:with-param name="situation" select="$gfmovstory" />
@@ -381,7 +470,7 @@
 	
 	<f:perform with-action="$makeNamedObject" name="charlene">
 		<f:with-param name="name" select="'Charlene'" />
-		<f:with-param name="type" select="$entityType" />
+		<f:with-param name="type" select="$agentType" />
 	</f:perform>
 	<f:perform with-action="$putObjectInSituation">
 		<f:with-param name="situation" select="$realLife" />

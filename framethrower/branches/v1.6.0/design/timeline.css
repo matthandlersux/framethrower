@@ -32,6 +32,17 @@
 	position:absolute;
 }
 
+.timeline-layers {
+	position:absolute;
+	top: 14px;
+	left: 0px;
+}
+.timeline-layer {
+	position:relative;
+	height: 24px;
+	margin-bottom: 4px;
+}
+
 
 
 
