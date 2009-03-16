@@ -151,6 +151,8 @@ makeRootObjects() ->
 
 	objects:createWithName("Object", dict:new(), "shared.type.poly.a"),
 	objects:createWithName("Object", dict:new(), "shared.type.movie"),
+	objects:createWithName("Object", dict:new(), "shared.type.location"),
+	objects:createWithName("Object", dict:new(), "shared.type.agent"),
 
 	objects:createWithName("Object", dict:new(), "shared.realLife"),
 	
@@ -158,9 +160,10 @@ makeRootObjects() ->
 	objects:createWithName("Object", dict:new(), "shared.movie.presentation"),
 	objects:createWithName("Object", dict:new(), "shared.movie.making"),
 	
+	objects:createWithName("Object", dict:new(), "shared.movie.timeRange"),
+	
 	objects:createWithName("Object", dict:new(), "shared.test.walleMovie"),
 	ok.
-	
 	
 	
 %% ====================================================================

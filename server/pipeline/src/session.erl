@@ -56,8 +56,11 @@ pipeline(SessionPid, LastMessageId) ->
 queryDefine(SessionPid, Expr, QueryId) ->
 	gen_server:call(SessionPid, {queryDefine, Expr, QueryId}).
 
-checkQuery(SessionPid, Expr, QueryId) ->
-	gen_server:call(SessionPid, {checkQuery, Expr, QueryId}).
+checkQuery(SessionPid, Expr, QueryId, ResponseFun) ->
+	gen_server:cast(SessionPid, {checkQuery, Expr, QueryId, ResponseFun}).
+
+serverAdviceDone(SessionPid) ->
+	gen_server:cast(SessionPid, serverAdviceDone).
 
 %% ====================================================
 %% Internal API
@@ -94,57 +97,50 @@ handle_call({queryDefine, Expr, QueryId}, _, State) ->
 			NewState = State,
 			false;
 		_ -> 
+			?this(outputTimer) ! waiting,
 			NewState = State#session{
 				openQueries = dict:store(QueryId, open, ?this(openQueries)),
 				serverAdviceHash = dict:store(Expr, QueryId, ?this(serverAdviceHash)),
-				clientState = waiting,
-				msgQueue = addToQueue(wellFormedQueryDefine(Expr, QueryId), ?this(msgQueue))
+				clientState = waiting
 			},
 			true
 	end,
-	{reply, Reply, NewState, ?this(timeout)};
-handle_call({checkQuery, Expr, QueryId}, _, State) ->
-	OpenQueries = dict:store(QueryId, open, ?this(openQueries)),
-	case dict:find(Expr, ?this(serverAdviceHash)) of
-		{ok, ReferenceId} ->
-			NewState = State#session{openQueries = OpenQueries, clientState = waiting},
-			{reply, {false, ReferenceId}, NewState, ?this(timeout)};
-		_ -> 
-			ServerAdviceHash = dict:store(Expr, defined, ?this(serverAdviceHash)),
-			NewState = State#session{serverAdviceHash = ServerAdviceHash, openQueries = OpenQueries, clientState = waiting},
-			{reply, true, NewState, ?this(timeout)}
-	end.
+	{reply, Reply, NewState, ?this(timeout)}.
 
 
 handle_cast({pipeline, From, ClientLastMessageId}, State) ->
-	OutputTimer = outputTimer(self(), From),
+	OutputTimer = startOutputTimer(?this(clientState), self(), From),
 	MsgQueue = updateBuffer(?this(msgQueue), ClientLastMessageId),
 	NewState = State#session{msgQueue = MsgQueue, outputTimer = OutputTimer},
 	{noreply, NewState, ?this(timeout)};
 handle_cast({flush, To}, State) ->
 	stream(To, ?this(msgQueue)),
-	{noreply, State, ?this(timeout)};
+	ClientState = case ?this(clientState) of
+		allDone -> satisfied;
+		CurrentState -> CurrentState
+	end,
+	{noreply, State#session{clientState = ClientState}, ?this(timeout)};
+	
+	
+handle_cast({queryDefine, ExprString, QueryId}, State) ->
+	?trace("Query Define"),
+	MsgQueue = addToQueue(wellFormedQueryDefine(ExprString, QueryId), ?this(msgQueue)),
+	{noreply, State#session{msgQueue = MsgQueue}, ?this(timeout)};	
 handle_cast({data, {QueryId, Action, Data}}, State) ->
 	MsgQueue = addToQueue(wellFormedUpdate(Data, QueryId, Action), ?this(msgQueue)),
 	{noreply, State#session{msgQueue = MsgQueue}, ?this(timeout)};
 handle_cast({done, QueryId}, State) ->
-	MsgQueue = addToQueue(wellFormedUpdate(QueryId, done), ?this(msgQueue)),	
+	MsgQueue = addToQueue(wellFormedUpdate(QueryId, done), ?this(msgQueue)),
 	OpenQueries = dict:erase(QueryId, ?this(openQueries)),
-	ClientState = case dict:size(OpenQueries) of
-		0 -> satisfied;
-		_ -> ?this(clientState)
-	end,
-	NewState = State#session{openQueries = OpenQueries, clientState = ClientState, msgQueue = MsgQueue},
-	{noreply, NewState, ?this(timeout)};
+	NewState = updateClientState(State#session{openQueries = OpenQueries}),
+	NewerState = NewState#session{msgQueue = MsgQueue},
+	{noreply, NewerState, ?this(timeout)};
 handle_cast({queryReference, QueryId, ReferenceId}, State) ->
 	OpenQueries = dict:erase(QueryId, ?this(openQueries)),
-	ClientState = case dict:size(OpenQueries) of
-		0 -> satisfied;
-		_ -> ?this(clientState)
-	end,
+	NewState = updateClientState(State#session{openQueries = OpenQueries}),	
 	MsgQueue = addToQueue(wellFormedQueryReference(QueryId, ReferenceId), ?this(msgQueue)),
-	NewState = State#session{openQueries = OpenQueries, clientState = ClientState, msgQueue = MsgQueue},
-	{noreply, NewState, ?this(timeout)};
+	NewerState = NewState#session{msgQueue = MsgQueue},
+	{noreply, NewerState, ?this(timeout)};
 handle_cast({addCleanup, QueryId, CleanupFun }, State) ->
 	NewState = State#session{
 		openQueries = dict:store(QueryId, [], ?this(openQueries)),
@@ -161,8 +157,30 @@ handle_cast({registerTemplate, {Name, Template}}, State) ->
 	},
 	{noreply, NewState, ?this(timeout)};
 handle_cast({serverAdviceRequest, ServerAdviceRequest}, State) ->
+	?this(outputTimer) ! waiting,
 	serverAdvice:processServerAdvice(ServerAdviceRequest, ?this(templates), self()),
-	{noreply, State, ?this(timeout)}.
+	{noreply, State#session{clientState = waiting, serverAdviceCount = ?this(serverAdviceCount) + 1}, ?this(timeout)};
+handle_cast(serverAdviceDone, State) ->
+	ServerAdviceCount = ?this(serverAdviceCount) - 1,
+	NewState = updateClientState(State#session{serverAdviceCount = ServerAdviceCount}),
+	{noreply, NewState, ?this(timeout)};
+handle_cast({checkQuery, Expr, QueryId, ResponseFun}, State) ->
+	OpenQueries = dict:store(QueryId, open, ?this(openQueries)),
+	NewState = case dict:find(Expr, ?this(serverAdviceHash)) of
+		{ok, ReferenceId} ->
+			?this(outputTimer) ! waiting,
+			ResponseFun({false, ReferenceId}),
+			State#session{openQueries = OpenQueries, clientState = waiting};
+		_ ->
+			?this(outputTimer) ! waiting, 
+			ServerAdviceHash = dict:store(Expr, defined, ?this(serverAdviceHash)),
+			ResponseFun(true),
+			State#session{serverAdviceHash = ServerAdviceHash, openQueries = OpenQueries, clientState = waiting}
+	end,
+	{noreply, NewState, ?this(timeout)}.
+
+
+
 
 handle_info(timeout, State) ->
 	case ?this(cleanup) of
@@ -176,25 +194,55 @@ terminate(_, _) -> ok.
 code_change(_, State, _) -> {ok, State}.
 
 
-
-outputTimer(SessionPid, To) ->
-	spawn_link( fun() -> outputTimer(satisfied, SessionPid, To) end).
+%% 
+%% Output Timer
+%%
+startOutputTimer(State, SessionPid, To) ->
+	spawn_link( fun() -> outputTimer(State, SessionPid, To) end).
 
 outputTimer(State, SessionPid, To) ->
 	WaitTime = case State of
-		satisfied -> 500;
-		waiting -> 200
+		allDone -> 0;
+		satisfied -> 30000;
+		waiting -> 2000
 	end,
 	receive
-		Update -> outputTimer(Update, To, SessionPid)
+		Update -> outputTimer(Update, SessionPid, To)
 	after WaitTime ->
 		session:flush(SessionPid, To)
 	end.
 
-	
+
+
+%% 
+%% stream:: Pid -> List Struct -> Number -> Tuple
+%% 
+stream(To, Updates) when is_tuple(Updates) ->
+	stream(To, [Updates]);
+stream(To, MsgQueueToSend) ->
+	case MsgQueueToSend of
+		[{LastMessageId, _}|_] ->
+			{_, Updates} = lists:unzip(MsgQueueToSend),
+			ReverseUpdates = lists:reverse(Updates),
+			To ! {updates, ReverseUpdates, LastMessageId};
+		_ -> To ! timeout
+	end.
+
+
 %% ====================================================
 %% utilities
 %% ====================================================
+
+updateClientState(State) ->
+	ClientState = case {dict:size(?this(openQueries)), ?this(serverAdviceCount)} of
+		{0,0} -> 
+			?this(outputTimer) ! allDone,
+			allDone;
+		_ -> 
+			?this(clientState)
+	end,
+	State#session{clientState = ClientState}.
+
 
 addToQueue(Struct, MsgQueue) ->
 	MessageId = case MsgQueue of 
@@ -222,7 +270,7 @@ wellFormedUpdate(QueryId, Action) ->
 	{struct, [{"queryUpdate", 
 		{struct, [{"queryId", list_to_binary(QueryId)},{"action", Action}]}
 	}]}.
-	
+
 wellFormedUpdate(Data, QueryId, Action) ->
 	case Data of
 		{Key, Value} -> Data1 = [{"key", mblib:exprElementToJson(Key)},{"value", mblib:exprElementToJson(Value)}];
@@ -236,41 +284,8 @@ wellFormedQueryDefine(DExpr, QueryId) ->
 	{struct, [{"queryDefine",
 		{struct, [{"queryId",list_to_binary(QueryId)},{"expr", list_to_binary(DExpr)}]}
 	}]}.
-	
+
 wellFormedQueryReference(QueryId, ReferenceId) ->
 	{struct, [{"queryReference",
 		{struct, [{"queryId",list_to_binary(QueryId)},{"referenceId", list_to_binary(ReferenceId)}]}
 	}]}.
-
-%% 
-%% streamUntil:: Pid -> {Number, Struct}
-%% 
-
-% streamUntil(To, MsgQueue, Until) ->
-% 	Predicate = fun({Id, _}) ->
-% 		if
-% 			Id > Until -> true;
-% 			true -> false
-% 		end
-% 	end,
-% 	[{LastMessageId, _}|_] = MsgQueueToSend = lists:takewhile(Predicate, MsgQueue),
-% 	{_, Updates} = lists:unzip(MsgQueueToSend),
-% 	ReverseUpdates = lists:reverse(Updates),
-% 	stream(To, ReverseUpdates, LastMessageId),
-% 	% ?trace({MsgQueue, Until}),
-% 	% ?trace(MsgQueueToSend),
-% 	MsgQueueToSend.
-
-%% 
-%% stream:: Pid -> List Struct -> Number -> Tuple
-%% 
-stream(To, Updates) when is_tuple(Updates) ->
-	stream(To, [Updates]);
-stream(To, MsgQueueToSend) ->
-	case MsgQueueToSend of
-		[{LastMessageId, _}|_] ->
-			{_, Updates} = lists:unzip(MsgQueueToSend),
-			ReverseUpdates = lists:reverse(Updates),
-			To ! {updates, ReverseUpdates, LastMessageId};
-		_ -> To ! timeout
-	end.

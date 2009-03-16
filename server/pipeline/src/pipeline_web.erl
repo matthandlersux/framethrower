@@ -100,7 +100,8 @@ loop(Req, DocRoot) ->
 						SessionPid ->
 							case session:pipeline(SessionPid, LastMessageId) of
 								timeout ->
-									{struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]};
+									TimeoutError = {struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]},
+									{struct, [{"responses", [TimeoutError]},{"lastMessageId", LastMessageId}]};
 								{updates, Updates, LastMessageId2} ->
 									responseTime:updatesOut(SessionId, pipeline, Updates),
 									{struct, [{"responses", Updates},{"lastMessageId", LastMessageId2}]};
@@ -168,31 +169,33 @@ processServerAdviceRequest ( ServerAdviceRequest, SessionPid ) ->
 processQuery ( Query, SessionId, SessionPid ) ->
 	Expr = getFromStruct("expr", Query),
 	QueryId = getFromStruct("queryId", Query),
-	case session:checkQuery(SessionPid, Expr, QueryId) of
-		true ->
-			responseTime:in(SessionId, 'query', QueryId, now() ),
-			spawn(fun() ->
-				Cell = eval:evaluate( expr:exprParse(Expr) ),
-				% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
-				OnRemove = cell:injectFunc(Cell, 
-					fun() ->
-						session:sendUpdate(SessionPid, {done, QueryId})
-					end,
-					fun(Val) ->
-						session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
-						fun() -> 
-							case Val of
-								{Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
-								_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
+	session:checkQuery(SessionPid, Expr, QueryId, fun(Checked) ->
+		case Checked of
+			true ->
+				responseTime:in(SessionId, 'query', QueryId, now() ),
+%				spawn(fun() ->
+					Cell = eval:evaluate( expr:exprParse(Expr) ),
+					% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
+					OnRemove = cell:injectFunc(Cell, 
+						fun() ->
+							session:sendUpdate(SessionPid, {done, QueryId})
+						end,
+						fun(Val) ->
+							session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
+							fun() -> 
+								case Val of
+									{Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
+									_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
+								end
 							end
 						end
-					end
-				),
-				session:addCleanup(SessionPid, QueryId, OnRemove)
-			end);
-		{false, ReferenceId} -> 
-			session:sendUpdate(SessionPid, {queryReference, QueryId, ReferenceId})
-	end.
+					),
+					session:addCleanup(SessionPid, QueryId, OnRemove);
+%				end);
+			{false, ReferenceId} -> 
+				session:sendUpdate(SessionPid, {queryReference, QueryId, ReferenceId})
+		end
+	end).
 	
 processAction ( Action, SessionPid ) ->
 	ActionId = getFromStruct("actionId", Action),

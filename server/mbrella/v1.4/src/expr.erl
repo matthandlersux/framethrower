@@ -124,7 +124,7 @@ parse(String) ->
 		[{Result, [eos]}] -> Result;
 		[{Result, Leftovers}] -> io:format("unused input \"~p\"~n~nresult: ~p~n", [Leftovers -- [eos], Result]);
 		% [{X,Y}] -> io:format("~120p~n~n~120p~n~n", [X, Y -- [eos]]);
-		[] -> io:format("invalid input ~n", [])
+		[] -> io:format("invalid input ~n", String)
 	end.
 
 %% ====================================================
@@ -255,6 +255,8 @@ unparse(#cons{type = lambda, left = L, right = R}, Variables) ->
 unparse(#exprFun{name = undefined, bottom = Bottom}, Variables) ->
 	unparse(Bottom, Variables);	
 unparse(#exprFun{name = Name}, Variables) ->
+	{Name, Variables};
+unparse(#exprCell{name = Name}, Variables) ->
 	{Name, Variables};
 unparse(#object{name = Name}, Variables) ->
 	{Name, Variables};

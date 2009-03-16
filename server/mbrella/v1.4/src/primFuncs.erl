@@ -186,6 +186,18 @@ primitives() ->
 	function = fun(Val1, Val2) ->
 		Val1 or Val2
 	end},
+	#exprFun{
+	name = "boolToUnit",
+	type = "Bool -> Unit Null",
+	function = fun(Val) ->
+		OutputCell = cell:makeCell(),
+		case Val of
+			true -> cell:addLine(OutputCell, null);
+			false -> nosideeffect
+		end,
+		cell:done(OutputCell),
+		OutputCell
+	end},	
 	%% ============================================================================
 	%% Number utility functions
 	%% ============================================================================

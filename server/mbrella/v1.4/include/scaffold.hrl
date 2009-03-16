@@ -129,6 +129,8 @@
 	queryIdCount = 0,
 	serverAdviceHash = dict:new(),
 	clientState = satisfied,
+	serverAdviceCount = 0,
 	outputTimer,
-	timeout = 120000
+	timeout = 120000,
+	debug = 0
 }).
