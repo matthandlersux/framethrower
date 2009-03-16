@@ -105,7 +105,11 @@ handle_call({queryDefine, Expr, QueryId}, _, State) ->
 			},
 			true
 	end,
-	{reply, Reply, NewState, ?this(timeout)}.
+	{reply, Reply, NewState, ?this(timeout)};
+handle_call(Other, _, State) ->
+	?trace("WRONG CALL"),
+	?trace(Other),
+	{reply, ok, State}.
 
 
 handle_cast({pipeline, From, ClientLastMessageId}, State) ->
@@ -117,6 +121,7 @@ handle_cast({flush, To}, State) ->
 	stream(To, ?this(msgQueue)),
 	ClientState = case ?this(clientState) of
 		allDone -> satisfied;
+		sendNow -> waiting;
 		CurrentState -> CurrentState
 	end,
 	{noreply, State#session{clientState = ClientState}, ?this(timeout)};
@@ -149,7 +154,7 @@ handle_cast({addCleanup, QueryId, CleanupFun }, State) ->
 	{noreply, NewState, ?this(timeout)};
 handle_cast({actionResponse, ActionResponse}, State) ->
 	MsgQueue = addToQueue(ActionResponse, ?this(msgQueue)),
-	NewState = State#session{msgQueue = MsgQueue},
+	NewState = State#session{msgQueue = MsgQueue, clientState = sendNow},
 	?this(outputTimer) ! sendNow,
 	{noreply, NewState, ?this(timeout)};
 handle_cast({registerTemplate, {Name, Template}}, State) ->
@@ -206,7 +211,7 @@ outputTimer(State, SessionPid, To) ->
 		allDone -> 0;
 		sendNow -> 30;
 		satisfied -> 30000;
-		waiting -> 500
+		waiting -> 200
 	end,
 	receive
 		Update -> outputTimer(Update, SessionPid, To)
