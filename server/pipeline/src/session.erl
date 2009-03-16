@@ -121,7 +121,8 @@ handle_cast({flush, To}, State) ->
 	stream(To, ?this(msgQueue)),
 	ClientState = case ?this(clientState) of
 		allDone -> satisfied;
-		sendNow -> waiting;
+		sendNow -> satisfied;
+		waiting -> satisfied;
 		CurrentState -> CurrentState
 	end,
 	{noreply, State#session{clientState = ClientState}, ?this(timeout)};
@@ -133,6 +134,10 @@ handle_cast({queryDefine, ExprString, QueryId}, State) ->
 	{noreply, State#session{msgQueue = MsgQueue}, ?this(timeout)};
 handle_cast({data, {QueryId, Action, Data}}, State) ->
 	MsgQueue = addToQueue(wellFormedUpdate(Data, QueryId, Action), ?this(msgQueue)),
+	case(?this(clientState)) of
+		satisfied -> ?this(outputTimer) ! waiting;
+		_ -> nosideeffect
+	end,	
 	{noreply, State#session{msgQueue = MsgQueue, clientState = waiting}, ?this(timeout)};
 handle_cast({done, QueryId}, State) ->
 	MsgQueue = addToQueue(wellFormedUpdate(QueryId, done), ?this(msgQueue)),
