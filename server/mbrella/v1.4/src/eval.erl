@@ -106,7 +106,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 					% ?trace(BottomExpr),
 					NormalExpr = normalize(BottomExpr),
 					case memoize:get( NormalExpr ) of
-						Cell when is_record(Cell, exprCell) -> Cell;
+						Cell when is_record(Cell, cellPointer) -> Cell;
 						_ ->
 							F = evaluate( Left ), 
 							Input = evaluate( Expr#cons.right ),
@@ -119,12 +119,13 @@ evaluate(Expr) when is_record(Expr, cons) ->
 								X when is_function(X) ->
 									%decide if it needs to be named
 									#exprFun{function = X, bottom = BottomExpr};
-								Result when is_record(Result, exprCell) ->
-									TypedCell = Result#exprCell{bottom = BottomExpr},
+								Result when is_record(Result, cellPointer) ->
+									Cell = env:lookup(Result#cellPointer.name),
+									TypedCell = Cell#exprCell{bottom = BottomExpr},
 									cell:update(TypedCell),
-									OnRemove = memoize:add( NormalExpr, TypedCell),
-									cell:addOnRemove(TypedCell, OnRemove),
-									#cellPointer{name = TypedCell#exprCell.name};
+									OnRemove = memoize:add( NormalExpr, Result),
+									cell:addOnRemove(Result, OnRemove),
+									Result;
 								NumStringBool ->
 									NumStringBool
 							end
@@ -270,6 +271,7 @@ bottomOut( InExpr ) ->
 						{ok, Expr#exprCell.bottom}
 				end;
 			( ExprCell ) when is_record(ExprCell, exprCell) ->
+				?trace("Up in HERE"),
 				case ExprCell#exprCell.bottom of 
 					undefined ->
 						{ok, ExprCell#exprCell.name};

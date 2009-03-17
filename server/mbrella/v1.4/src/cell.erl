@@ -47,7 +47,7 @@ makeCell() ->
 	{ok, Pid} = gen_server:start(?MODULE, [], []),
 	NewCell = #exprCell{pid=Pid},
 	NamedCell = env:nameAndStoreCell(NewCell),
-	#cellPointer{name = NamedCell#exprCell.name}.
+	#cellPointer{name = NamedCell#exprCell.name, pid = Pid}.
 
 update(Cell) ->
 	Name = Cell#exprCell.name,
@@ -57,15 +57,14 @@ makeCellMapInput() ->
 	{ok, Pid} = gen_server:start(?MODULE, [], []),
 	NewCell = #exprCell{pid=Pid},
 	NamedCell = env:nameAndStoreCell(NewCell),
-	#cellPointer{name = NamedCell#exprCell.name}.
+	#cellPointer{name = NamedCell#exprCell.name, pid = Pid}.
 
 removeDependency(Cell, InputCell, InputId) ->
-	gen_server:cast(Cell#exprCell.pid, {removeDependency, InputCell, InputId, Cell}).	
+	gen_server:cast(Cell#cellPointer.pid, {removeDependency, InputCell, InputId, Cell}).	
 
-injectFunc(CellOrPointer, OutputCellOrIntOrFunc, Fun) ->
-	Cell = checkPointer(CellOrPointer),
-	{Id, OnRemove} = gen_server:call(Cell#exprCell.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, CellOrPointer}),
-	gen_server:cast(Cell#exprCell.pid, {injectFunc, OutputCellOrIntOrFunc, Fun, CellOrPointer, Id}),
+injectFunc(Cell, OutputCellOrIntOrFunc, Fun) ->
+	{Id, OnRemove} = gen_server:call(Cell#cellPointer.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}),
+	gen_server:cast(Cell#cellPointer.pid, {injectFunc, OutputCellOrIntOrFunc, Fun, Cell, Id}),
 	OnRemove.
 
 injectFuncs(OutputCellOrIntOrFunc, CellFuncs) ->
@@ -75,41 +74,33 @@ injectFuncs(OutputCellOrIntOrFunc, CellFuncs) ->
 			problem:call();
 		_ -> nosideeffect
 	end,
-	CellFuncIds = lists:map(fun({CellOrPointer, Fun}) ->
-		Cell = checkPointer(CellOrPointer),
-		{Id, _} = gen_server:call(Cell#exprCell.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, CellOrPointer}),
-		{CellOrPointer, Fun, Id}
+	CellFuncIds = lists:map(fun({Cell, Fun}) ->
+			{Id, _} = gen_server:call(Cell#cellPointer.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}),
+		{Cell, Fun, Id}
 	end, CellFuncs),
-	lists:map(fun({CellOrPointer, Fun, Id}) ->
-		Cell = checkPointer(CellOrPointer),
-		gen_server:cast(Cell#exprCell.pid, {injectFunc, OutputCellOrIntOrFunc, Fun, CellOrPointer, Id})
+	lists:map(fun({Cell, Fun, Id}) ->
+			gen_server:cast(Cell#cellPointer.pid, {injectFunc, OutputCellOrIntOrFunc, Fun, Cell, Id})
 	end, CellFuncIds),
 	ok.
 
-removeFunc(CellOrPointer, Id) ->
-	Cell = checkPointer(CellOrPointer),	
-	gen_server:cast(Cell#exprCell.pid, {removeFunc, Id, Cell}).
+removeFunc(Cell, Id) ->
+	gen_server:cast(Cell#cellPointer.pid, {removeFunc, Id, Cell}).
 
-injectIntercept(CellOrPointer, Fun, InitState) ->
-	Cell = checkPointer(CellOrPointer),
-	gen_server:call(Cell#exprCell.pid, {injectIntercept, Fun, InitState, Cell}).
+injectIntercept(Cell, Fun, InitState) ->
+	gen_server:call(Cell#cellPointer.pid, {injectIntercept, Fun, InitState, Cell}).
 
-done(CellOrPointer) ->
-	Cell = checkPointer(CellOrPointer),
-	gen_server:cast(Cell#exprCell.pid, {done, Cell}).
+done(Cell) ->
+	gen_server:cast(Cell#cellPointer.pid, {done, Cell}).
 
-done(CellOrPointer, DoneCell, Id) ->
-	Cell = checkPointer(CellOrPointer),
-	gen_server:cast(Cell#exprCell.pid, {done, DoneCell, Id, Cell}).
+done(Cell, DoneCell, Id) ->
+	gen_server:cast(Cell#cellPointer.pid, {done, DoneCell, Id, Cell}).
 
-getState(CellOrPointer) ->
-	Cell = checkPointer(CellOrPointer),
-	gen_server:call(Cell#exprCell.pid, getState).
+getState(Cell) ->
+	gen_server:call(Cell#cellPointer.pid, getState).
 
 %FunOrOnRemove can be a function, or #onRemove
 %#onRemove will also be used as dependencies, so this cell can know when it has received all current updates
-addOnRemove(CellOrPointer, FunOrOnRemove) ->
-	Cell = checkPointer(CellOrPointer),	
+addOnRemove(Cell, FunOrOnRemove) ->
 	OnRemove = case FunOrOnRemove of
 		OnRemRecord when is_record(OnRemRecord, onRemove) -> 
 			OnRemRecord;
@@ -119,15 +110,13 @@ addOnRemove(CellOrPointer, FunOrOnRemove) ->
 				done=true
 			}
 	end,
-	gen_server:cast(Cell#exprCell.pid, {addOnRemove, OnRemove}).
+	gen_server:cast(Cell#cellPointer.pid, {addOnRemove, OnRemove}).
 
-setKeyRange(CellOrPointer, Start, End) ->
-	Cell = checkPointer(CellOrPointer),
-	gen_server:cast(Cell#exprCell.pid, {setKeyRange, Start, End}).
+setKeyRange(Cell, Start, End) ->
+	gen_server:cast(Cell#cellPointer.pid, {setKeyRange, Start, End}).
 
-getStateArray(CellOrPointer) ->
-	Cell = checkPointer(CellOrPointer),
-	gen_server:call(Cell#exprCell.pid, getStateArray).
+getStateArray(Cell) ->
+	gen_server:call(Cell#cellPointer.pid, getStateArray).
 
 %% 
 %% makeFuture:: Expr -> Cell
@@ -147,32 +136,21 @@ makeFuture(Value) ->
 %% addline:: CellPid -> a -> CleanupFun
 %% 
 
-addLine(CellOrPointer, Value) ->
-	Cell = checkPointer(CellOrPointer),
-	gen_server:cast(Cell#exprCell.pid, {addLine, Value, Cell#exprCell.name}),
+addLine(Cell, Value) ->
+	gen_server:cast(Cell#cellPointer.pid, {addLine, Value, Cell#cellPointer.name}),
 	Key = toKey(Value),
-	fun() -> gen_server:cast(Cell#exprCell.pid, {removeLine, Key}) end.
+	fun() -> gen_server:cast(Cell#cellPointer.pid, {removeLine, Key}) end.
 
 %% 
 %% removeline:: CellPid -> a -> Atom
 %% 
-removeLine(CellOrPointer, Value) ->
-	Cell = checkPointer(CellOrPointer),
-	gen_server:cast(Cell#exprCell.pid, {removeLine, Value}).
+removeLine(Cell, Value) ->
+	gen_server:cast(Cell#cellPointer.pid, {removeLine, Value}).
 
 
 %% --------------------------------------------------------------------
 %%% Internal functions
 %% --------------------------------------------------------------------
-
-checkPointer(CellOrPointer) ->
-	case CellOrPointer of
-		CellPointer when is_record(CellPointer, cellPointer) ->
-			env:lookup(CellPointer#cellPointer.name);
-		_ -> 
-			% ?trace("Still getting exprCell somehow!"),
-			CellOrPointer
-	end.
 
 toKey({pair, Key, _}) -> Key;
 toKey(Key) -> Key.

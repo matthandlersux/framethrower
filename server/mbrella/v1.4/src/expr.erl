@@ -49,7 +49,7 @@ expr(ParsedString, LambdaEnv) when is_list(ParsedString) ->
 							% #exprVar{value = ParsedString};
 							throw({variable_not_in_environment, [{variable, ParsedString}, {lambda_variables, dict:fetch_keys(LambdaEnv)}]});
 						ExprCell when is_record(ExprCell, exprCell) -> 
-							#cellPointer{name = ParsedString};
+							#cellPointer{name = ParsedString, pid = ExprCell#exprCell.pid};
 						Object when is_record(Object, object) -> 
 							#objectPointer{name = ParsedString};
 						ExprFun ->
