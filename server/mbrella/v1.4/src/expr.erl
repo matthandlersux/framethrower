@@ -263,6 +263,10 @@ unparse(#exprFun{name = Name}, Variables) ->
 	{Name, Variables};
 unparse(#exprCell{name = Name}, Variables) ->
 	{Name, Variables};
+unparse(#cellPointer{name = Name}, Variables) ->
+	{Name, Variables};
+unparse(#objectPointer{name = Name}, Variables) ->
+	{Name, Variables};	
 unparse(#object{name = Name}, Variables) ->
 	{Name, Variables};
 unparse(#exprVar{value = Value}, Variables) ->

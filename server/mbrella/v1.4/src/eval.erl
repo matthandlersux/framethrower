@@ -132,8 +132,6 @@ evaluate(Expr) when is_record(Expr, cons) ->
 					end
 			end
 	end;
-evaluate(ExprCell) when is_record(ExprCell, exprCell) -> 
-	#cellPointer{name = ExprCell#exprCell.name};	
 evaluate(Object) when is_record(Object, object) -> 
 	#objectPointer{name = Object#object.name};
 evaluate(NumStringBool) -> NumStringBool.
@@ -269,14 +267,6 @@ bottomOut( InExpr ) ->
 						{ok, Expr#exprCell.name};
 					_ ->
 						{ok, Expr#exprCell.bottom}
-				end;
-			( ExprCell ) when is_record(ExprCell, exprCell) ->
-				?trace("Up in HERE"),
-				case ExprCell#exprCell.bottom of 
-					undefined ->
-						{ok, ExprCell#exprCell.name};
-					_ ->
-						{ok, ExprCell#exprCell.bottom}
 				end
 		end,
 	mblib:traverse(InExpr, LookForAndReplaceFun).
