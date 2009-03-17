@@ -49,8 +49,8 @@ start_link(FileName) ->
 
 serializeEnv() ->
 	gen_server:cast(?MODULE, clear),
-	EnvDict = env:getStateDict(),
-	AddIfObj = fun(_, ObjOrCellOrFunc, InProcess) ->
+	EnvEts = env:getStateDict(),
+	AddIfObj = fun({_, ObjOrCellOrFunc}, InProcess) ->
 		case ObjOrCellOrFunc of
 			Obj when is_record(Obj, object) -> 
 				{_, NewInProcess} = serializeObj(Obj, InProcess),
@@ -58,7 +58,7 @@ serializeEnv() ->
 			_ -> InProcess
 		end
 	end,
-	dict:fold(AddIfObj, dict:new(), EnvDict),
+	ets:fold(AddIfObj, dict:new(), EnvEts),
 	Response = gen_server:cast(?MODULE, write),
 	ok.
 

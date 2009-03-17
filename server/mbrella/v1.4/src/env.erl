@@ -71,31 +71,33 @@ createEnv() ->
 init([]) ->
 	process_flag(trap_exit, true),
 	%may want to change globalTable from dict to ETS table
-    {ok, #envState{nameCounter = 0, globalTable = dict:new(), baseEnv = createEnv()}}.
+    {ok, #envState{nameCounter = 0, globalTable = ets:new(env, []), baseEnv = createEnv()}}.
 
 handle_call({nameAndStoreCell, ExprCell}, _, State) ->
 	NewNameCounter = ?this(nameCounter) + 1,
 	Name = "server." ++ integer_to_list(NewNameCounter),
 	NewExprCell = ExprCell#exprCell{name=Name},
-	NewGlobalTable = dict:store(Name, NewExprCell, ?this(globalTable)),
-    {reply, NewExprCell, State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable}};
+	ets:insert(?this(globalTable), {Name, NewExprCell}),
+    {reply, NewExprCell, State#envState{nameCounter = NewNameCounter}};
 handle_call({nameAndStoreObj, Obj}, _, State) ->
 	NewNameCounter = ?this(nameCounter) + 1,
 	Name = "server." ++ integer_to_list(NewNameCounter),
 	NewObj = Obj#object{name=Name},
-	NewGlobalTable = dict:store(Name, NewObj, ?this(globalTable)),
-    {reply, NewObj, State#envState{nameCounter = NewNameCounter, globalTable = NewGlobalTable}};
+	ets:insert(?this(globalTable), {Name, NewObj}),
+    {reply, NewObj, State#envState{nameCounter = NewNameCounter}};
 handle_call({lookup, Name}, _, State) ->
 	BaseCell = dict:find(Name, ?this(baseEnv)),
 	GlobalCell = case BaseCell of
-		error -> dict:find(Name, ?this(globalTable));
-		Answer -> Answer
+		error -> 
+			case ets:lookup(?this(globalTable), Name) of
+				[{_, Reply}] ->
+					Reply;
+				[] -> 
+					notfound
+			end;
+		{ok, Answer} -> Answer
 	end,
-	ExprCell = case GlobalCell of
-		error -> notfound;
-		{ok, Answer2} -> Answer2
-	end,
-    {reply, ExprCell, State};
+    {reply, GlobalCell, State};
 handle_call(getStateDict, _, State) ->
     {reply, ?this(globalTable), State};
 handle_call(getState, _, State) ->
@@ -109,14 +111,14 @@ handle_call(stop, _, State) ->
 handle_cast({addFun, Name, TypeString, Function}, State) -> 
 	Type = type:parse(TypeString),
 	NewExprFun = #exprFun{name = Name, type = Type, function = Function},
-	NewGlobalTable = dict:store(Name, NewExprFun, ?this(globalTable) ),
-	{noreply, State#envState{globalTable = NewGlobalTable}};
+	ets:insert(?this(globalTable), {Name, NewExprFun}),
+	{noreply, State};
 handle_cast({addExpr, Name, Expr}, State) -> 
-	NewGlobalTable = dict:store(Name, Expr, ?this(globalTable) ),
-	{noreply, State#envState{globalTable = NewGlobalTable} };
+	ets:insert(?this(globalTable), {Name, Expr}),
+	{noreply, State};
 handle_cast({store, Name, Obj}, State) ->
-	NewGlobalTable = dict:store(Name, Obj, ?this(globalTable) ),
-    {noreply, State#envState{globalTable = NewGlobalTable} }.
+	ets:insert(?this(globalTable), {Name, Obj}),
+    {noreply, State}.
 
 
 handle_info(_, State) -> {noreply, State}.
