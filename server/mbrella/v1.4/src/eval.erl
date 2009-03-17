@@ -103,12 +103,18 @@ evaluate(Expr) when is_record(Expr, cons) ->
 					evaluate( betaReduce(Lambda, Expr#cons.right) );
 				Left ->
 					BottomExpr = bottomOut(Expr),
+					% ?trace(BottomExpr),
 					NormalExpr = normalize(BottomExpr),
 					case memoize:get( NormalExpr ) of
 						Cell when is_record(Cell, exprCell) -> Cell;
 						_ ->
 							F = evaluate( Left ), 
 							Input = evaluate( Expr#cons.right ),
+							if 
+								is_record(Input, object) -> ?trace(Expr#cons.right);
+								true -> noside
+							end,
+							
 							case applyFun( F, Input ) of
 								X when is_function(X) ->
 									%decide if it needs to be named
@@ -118,15 +124,17 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									cell:update(TypedCell),
 									OnRemove = memoize:add( NormalExpr, TypedCell),
 									cell:addOnRemove(TypedCell, OnRemove),
-									TypedCell;
+									#cellPointer{name = TypedCell#exprCell.name};
 								NumStringBool ->
 									NumStringBool
 							end
 					end
 			end
 	end;
-evaluate(Object) when is_record(Object, object) ->
-	{objectPointer, Object#object.name};
+evaluate(ExprCell) when is_record(ExprCell, exprCell) -> 
+	#cellPointer{name = ExprCell#exprCell.name};	
+evaluate(Object) when is_record(Object, object) -> 
+	#objectPointer{name = Object#object.name};
 evaluate(NumStringBool) -> NumStringBool.
 
 
@@ -253,20 +261,26 @@ bottomOut( InExpr ) ->
 					_ ->
 						{ok, Expr#exprFun.bottom}
 				end;
-			( Expr ) when is_record(Expr, exprCell) ->
+			( ExprPointer ) when is_record(ExprPointer, cellPointer) ->
+				Expr = env:lookup(ExprPointer#cellPointer.name),
 				case Expr#exprCell.bottom of 
 					undefined ->
 						{ok, Expr#exprCell.name};
 					_ ->
 						{ok, Expr#exprCell.bottom}
+				end;
+			( ExprCell ) when is_record(ExprCell, exprCell) ->
+				case ExprCell#exprCell.bottom of 
+					undefined ->
+						{ok, ExprCell#exprCell.name};
+					_ ->
+						{ok, ExprCell#exprCell.bottom}
 				end
 		end,
 	mblib:traverse(InExpr, LookForAndReplaceFun).
 
 normalize( Expression ) -> 
 	NormFun = fun( Expr ) when is_record(Expr, exprFun) ->
-					{ok, Expr#exprFun{type = undefined, function = undefined, bottom = undefined}};
-				( Expr ) when is_record(Expr, exprCell) ->
-					{ok, Expr#exprCell{pid = undefined, type = undefined, bottom = undefined}}
-		end,
+		{ok, Expr#exprFun{type = undefined, function = undefined, bottom = undefined}}
+	end,
 	mblib:traverse(Expression, NormFun).

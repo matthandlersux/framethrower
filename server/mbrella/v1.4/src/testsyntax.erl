@@ -114,11 +114,11 @@ extractMessage(R, State) when is_record(R, xmlElement) ->
 	Value = case Args of 
 		{scPatternMatch, Name} -> 
 			dict:fetch(Name, StartCaps);
-		{Key, {scPatternMatch, Name}} ->
+		{pair, Key, {scPatternMatch, Name}} ->
 			{Key, dict:fetch(Name, StartCaps)};
 		{func, Name} ->
 			env:lookup(Name);
-		{Key, {func, Name}} ->
+		{pair, Key, {func, Name}} ->
 			{Key, env:lookup(Name)};			
 		Arg -> Arg
 	end,

@@ -25,7 +25,7 @@
 %% ====================================================================
 %% Cell internal data structure record
 %% ====================================================================
--record(cellState, {funcs, dots, toKey, onRemoves=[], funcColor=0, intercept, done=false}).
+-record(cellState, {funcs, dots, onRemoves=[], funcColor=0, intercept, done=false}).
 -record(onRemove, {function, cell, id, done}).
 -record(func, {function, outputCellOrIntOrFunc}).
 
@@ -43,16 +43,9 @@
 %% External functions
 %% ====================================================================
 
-getToKey(Keyval) ->
-	case Keyval of
-		key -> fun(X) -> X end;
-		keyval -> fun({Key,Val}) -> Key end
-	end.
-
 makeCell() -> 
-	ToKey = getToKey(key),
-	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
-	NewCell = #exprCell{pid=Pid, keyval=key},
+	{ok, Pid} = gen_server:start(?MODULE, [], []),
+	NewCell = #exprCell{pid=Pid},
 	env:nameAndStoreCell(NewCell).
 
 update(Cell) ->
@@ -60,21 +53,22 @@ update(Cell) ->
 	env:store(Name, Cell).
 	
 makeCellMapInput() ->
-	ToKey = getToKey(keyval),
-	{ok, Pid} = gen_server:start(?MODULE, [ToKey], []),
-	NewCell = #exprCell{pid=Pid, keyval=keyval},
+	{ok, Pid} = gen_server:start(?MODULE, [], []),
+	NewCell = #exprCell{pid=Pid},
 	env:nameAndStoreCell(NewCell).
 
 removeDependency(Cell, InputCell, InputId) ->
 	gen_server:cast(Cell#exprCell.pid, {removeDependency, InputCell, InputId, Cell}).	
 
-injectFunc(Cell, OutputCellOrIntOrFunc, Fun) ->
+injectFunc(CellOrPointer, OutputCellOrIntOrFunc, Fun) ->
+	Cell = checkPointer(CellOrPointer),
 	{Id, OnRemove} = gen_server:call(Cell#exprCell.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}),
 	gen_server:cast(Cell#exprCell.pid, {injectFunc, OutputCellOrIntOrFunc, Fun, Cell, Id}),
 	OnRemove.
 
 injectFuncs(OutputCellOrIntOrFunc, CellFuncs) ->
-	CellFuncIds = lists:map(fun({Cell, Fun}) ->
+	CellFuncIds = lists:map(fun({CellOrPointer, Fun}) ->
+		Cell = checkPointer(CellOrPointer),
 		{Id, _} = gen_server:call(Cell#exprCell.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}),
 		{Cell, Fun, Id}
 	end, CellFuncs),
@@ -86,10 +80,12 @@ injectFuncs(OutputCellOrIntOrFunc, CellFuncs) ->
 removeFunc(Cell, Id) ->
 	gen_server:cast(Cell#exprCell.pid, {removeFunc, Id, Cell}).
 
-injectIntercept(Cell, Fun, InitState) ->
+injectIntercept(CellOrPointer, Fun, InitState) ->
+	Cell = checkPointer(CellOrPointer),
 	gen_server:call(Cell#exprCell.pid, {injectIntercept, Fun, InitState, Cell}).
 
-done(Cell) ->
+done(CellOrPointer) ->
+	Cell = checkPointer(CellOrPointer),
 	gen_server:cast(Cell#exprCell.pid, {done, Cell}).
 
 done(Cell, DoneCell, Id) ->
@@ -112,10 +108,12 @@ addOnRemove(Cell, FunOrOnRemove) ->
 	end,
 	gen_server:cast(Cell#exprCell.pid, {addOnRemove, OnRemove}).
 
-setKeyRange(Cell, Start, End) ->
+setKeyRange(CellOrPointer, Start, End) ->
+	Cell = checkPointer(CellOrPointer),
 	gen_server:cast(Cell#exprCell.pid, {setKeyRange, Start, End}).
 
-getStateArray(Cell) ->
+getStateArray(CellOrPointer) ->
+	Cell = checkPointer(CellOrPointer),
 	gen_server:call(Cell#exprCell.pid, getStateArray).
 
 %% 
@@ -123,10 +121,11 @@ getStateArray(Cell) ->
 %% 
 
 makeFuture(Value) ->
-	TypeString = type:unparse(type:get(Value)),
-	FutureType = type:parse("Future " ++ TypeString),
-	Cell = (makeCell())#exprCell{type=FutureType},
-	update(Cell),
+	% TypeString = type:unparse(type:get(Value)),
+	% FutureType = type:parse("Future " ++ TypeString),
+	% Cell = (makeCell())#exprCell{type=FutureType},
+	% update(Cell),
+	Cell = makeCell(),
 	addLine(Cell, Value),
 	done(Cell),
 	Cell.
@@ -135,10 +134,10 @@ makeFuture(Value) ->
 %% addline:: CellPid -> a -> CleanupFun
 %% 
 
-addLine(Cell, Value) ->
+addLine(CellOrPointer, Value) ->
+	Cell = checkPointer(CellOrPointer),
 	gen_server:cast(Cell#exprCell.pid, {addLine, Value, Cell#exprCell.name}),
-	ToKey = getToKey(Cell#exprCell.keyval),
-	Key = ToKey(Value),
+	Key = toKey(Value),
 	fun() -> gen_server:cast(Cell#exprCell.pid, {removeLine, Key}) end.
 
 %% 
@@ -151,6 +150,16 @@ removeLine(Cell, Value) ->
 %% --------------------------------------------------------------------
 %%% Internal functions
 %% --------------------------------------------------------------------
+
+checkPointer(CellOrPointer) ->
+	case CellOrPointer of
+		CellPointer when is_record(CellPointer, cellPointer) ->
+			env:lookup(CellPointer#cellPointer.name);
+		_ -> CellOrPointer
+	end.
+
+toKey({pair, Key, _}) -> Key;
+toKey(Key) -> Key.
 
 addLineResponse(Dot, Fun, Id) ->
 	{dot, Num, Value, Lines} = Dot,
@@ -213,12 +222,11 @@ checkDone(State, Cell) ->
 %%          ignore               |
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
-init([ToKey]) ->
+init([]) ->
 	process_flag(trap_exit, true),
     {ok, #cellState{
 		funcs=dict:new(),
-		dots=rangedict:new(),
-		toKey=ToKey
+		dots=rangedict:new()
 	}}.
 
 %% --------------------------------------------------------------------
@@ -272,7 +280,7 @@ handle_cast({addLine, Value, CellName}, State) ->
 	% 	true -> ?trace(CellName);
 	% 	_ -> nosideeffect
 	% end,
-	Key = (?this(toKey))(Value),
+	Key = toKey(Value),
 	Dot = try rangedict:fetch(Key, ?this(dots)) of
 		{dot, Num, Val, Lines} -> {dot, Num+1, Val, Lines}
 	catch

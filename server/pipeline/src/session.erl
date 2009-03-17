@@ -290,8 +290,7 @@ wellFormedUpdate(QueryId, Action) ->
 wellFormedUpdate(Data, QueryId, Action) ->
 	Data1 = case Data of
 		%TODO: tag key/val pairs in cells as {pair, Key, Val} so it doesn't conflict with objectPointer
-		{objectPointer, _} -> [{"key", mblib:exprElementToJson(Data)}];
-		{Key, Value} -> [{"key", mblib:exprElementToJson(Key)},{"value", mblib:exprElementToJson(Value)}];
+		{pair, Key, Value} -> [{"key", mblib:exprElementToJson(Key)},{"value", mblib:exprElementToJson(Value)}];
 		_ -> [{"key", mblib:exprElementToJson(Data)}]
 	end,
 	{struct, [{"queryUpdate",

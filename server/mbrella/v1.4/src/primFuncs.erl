@@ -43,7 +43,7 @@ primitives() ->
 	function = fun(Key, Cell) ->
 		OutputCell = cell:makeCellMapInput(),
 		cell:injectFunc(Cell, OutputCell, fun(Val) ->
-			cell:addLine(OutputCell, {Key, Val})
+			cell:addLine(OutputCell, {pair, Key, Val})
 		end),
 		OutputCell
 	end},
@@ -70,7 +70,7 @@ primitives() ->
 	type = "(a -> b -> Map a c) -> Map a b -> Map a c",
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCellMapInput(),
-		cell:injectFunc(Cell, OutputCell, fun({Key,Val}) ->
+		cell:injectFunc(Cell, OutputCell, fun({pair, Key,Val}) ->
 			applyAndInject(applyFun(Fun, Key), Val, OutputCell, fun(InnerVal) ->
 				cell:addLine(OutputCell, InnerVal) end
 			)
@@ -230,7 +230,7 @@ primitives() ->
 	type = "Number -> Number -> Map Number Number",
 	function = fun(Val1, Val2) ->
 		OutputCell = cell:makeCellMapInput(),
-		for(1, Val1, fun(X) -> cell:addLine(OutputCell, {X, Val2}) end),
+		for(1, Val1, fun(X) -> cell:addLine(OutputCell, {pair, X, Val2}) end),
 		cell:done(OutputCell),
 		OutputCell
 	end},
@@ -473,7 +473,7 @@ primitives() ->
 		OutputCell = cell:makeCellMapInput(),
 		cell:injectFunc(Cell, OutputCell, fun(Val) ->
 			Result = applyFun(Fun, Val),
-			cell:addLine(OutputCell, {Val, Result})
+			cell:addLine(OutputCell, {pair, Val, Result})
 		end),
 		OutputCell
 	end},
@@ -507,7 +507,7 @@ primitives() ->
 							%TAG: EVALNOTYPE
 							%TypedCell = NewCell#exprCell{type=SetType},
 							%cell:update(TypedCell),
-							cell:addLine(OutputCell, {BVal, TypedCell}),
+							cell:addLine(OutputCell, {pair, BVal, TypedCell}),
 							dict:store(BVal, {TypedCell, 1}, BHash)
 					end;
 				{bHashRemove, BVal} ->
@@ -534,7 +534,7 @@ primitives() ->
 			end
 		end, dict:new()),
 		
-		cell:injectFunc(Cell, Intercept, fun({Key, Val}) ->
+		cell:injectFunc(Cell, Intercept, fun({pair, Key, Val}) ->
 			cell:injectFunc(Val, Intercept, fun(InnerVal) ->
 				intercept:sendIntercept(Intercept, {bHashAdd, InnerVal}),
 				intercept:sendIntercept(Intercept, {addInnerLine, InnerVal, Key}),
@@ -559,9 +559,9 @@ primitives() ->
 	type = "(a -> b) -> Map c a -> Map c b",
 	function = fun(Fun, Cell) ->
 		OutputCell = cell:makeCellMapInput(),
-		cell:injectFunc(Cell, OutputCell, fun({Key, Val}) ->
+		cell:injectFunc(Cell, OutputCell, fun({pair, Key, Val}) ->
 			Result = applyFun(Fun, Val),
-			cell:addLine(OutputCell, {Key, Result})
+			cell:addLine(OutputCell, {pair, Key, Result})
 		end),
 		OutputCell
 	end},
@@ -572,7 +572,7 @@ primitives() ->
 		OutputCell = cell:makeCell(),
 		cell:injectFunc(Cell, OutputCell, fun(KeyVal) ->
 			case KeyVal of
-				{GetKey, Val} -> cell:addLine(OutputCell, Val);
+				{pair, GetKey, Val} -> cell:addLine(OutputCell, Val);
 				_ -> undefined
 			end
 		end),
@@ -583,7 +583,7 @@ primitives() ->
 	type = "Map a b -> Set a",
 	function = fun(Cell) ->
 		OutputCell = cell:makeCell(),
-		cell:injectFunc(Cell, OutputCell, fun({Key, Val}) ->
+		cell:injectFunc(Cell, OutputCell, fun({pair, Key, Val}) ->
 			cell:addLine(OutputCell, Key)
 		end),
 		OutputCell
@@ -655,7 +655,7 @@ unfoldMapHelper({Key, Val}, Fun, OutputCell, Done) ->
 		applyAndInject(Fun, Key, OutputCell, fun(InnerVal) ->
 			unfoldMapHelper({InnerVal, Val+1}, Fun, OutputCell, dict:store(Key, Key, Done))
 		end),
-		cell:addLine(OutputCell, {Key, Val})
+		cell:addLine(OutputCell, {pair, Key, Val})
 	end.
 
 
@@ -716,6 +716,13 @@ for(I, Max, F) -> [F(I)|for(I+1, Max, F)].
 
 
 applyFun(Fun, Input) ->
+	case Input of
+		Object when is_record(Object, object) ->
+			% ?trace("AHA!!"),
+			% mistake:here();
+			noside;
+		_ -> noside
+	end,
 	eval:evaluate(#cons{type=apply, left=Fun, right=Input}).
 
 applyAndInject(Fun, Input, OutputCell, InjectedFun) ->

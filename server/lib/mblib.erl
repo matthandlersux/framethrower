@@ -208,10 +208,12 @@ exprElementToJson(X) when is_list(X) ->
 exprElementToJson(X) when is_pid(X) ->
 	#exprCell{name = Name} = env:lookup(X),
 	list_to_binary(Name);
+exprElementToJson(CellPointer) when is_record(CellPointer, cellPointer) ->
+	list_to_binary(CellPointer#cellPointer.name);
+exprElementToJson(ObjectPointer) when is_record(ObjectPointer, objectPointer) ->
+	list_to_binary(ObjectPointer#objectPointer.name);	
 exprElementToJson(X) when is_record(X, exprCell) ->
 	list_to_binary(X#exprCell.name);
-exprElementToJson({objectPointer, ObjectName}) ->
-	list_to_binary(ObjectName);	
 exprElementToJson(X) when is_record(X, object) ->
 	list_to_binary(X#object.name);	
 exprElementToJson(X) -> X.

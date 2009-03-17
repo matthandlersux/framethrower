@@ -48,7 +48,12 @@ expr(ParsedString, LambdaEnv) when is_list(ParsedString) ->
 						notfound ->
 							% #exprVar{value = ParsedString};
 							throw({variable_not_in_environment, [{variable, ParsedString}, {lambda_variables, dict:fetch_keys(LambdaEnv)}]});
-						Expr -> Expr
+						ExprCell when is_record(ExprCell, exprCell) -> 
+							#cellPointer{name = ParsedString};
+						Object when is_record(Object, object) -> 
+							#objectPointer{name = ParsedString};
+						ExprFun ->
+							ExprFun
 					end;
 				ExprVar ->
 					ExprVar
@@ -59,7 +64,7 @@ expr(ParsedString, LambdaEnv) when is_list(ParsedString) ->
 expr({primitive, _, BoolStringNat}, _) ->
 	BoolStringNat;
 expr({primitive, null}, _) ->
-	null;	
+	null;
 expr(ParsedString, _) when is_number(ParsedString) ->
 	ParsedString;
 expr(ParsedString, _) when is_boolean(ParsedString) ->

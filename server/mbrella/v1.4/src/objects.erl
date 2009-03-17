@@ -229,13 +229,15 @@ create(ClassName, Props) ->
 			{error, objectCreationError}
 	end.
 
-add(Object, Property, Key) ->
+add(ObjOrPointer, Property, Key) ->
+	Object = checkPointer(ObjOrPointer),
 	Prop = Object#object.prop,
 	Cell = dict:fetch(Property, Prop),
 	cell:addLine(Cell, Key),
 	ok.
 
-remove(Object, Property, Key) ->
+remove(ObjOrPointer, Property, Key) ->
+	Object = checkPointer(ObjOrPointer),
 	Prop = Object#object.prop,
 	Cell = dict:fetch(Property, Prop),
 	cell:removeLine(Cell, Key),
@@ -268,31 +270,22 @@ makeCasts(SuperClass, TargetClass) ->
 
 makeCast(TargetClassName) ->
 	fun (ObjOrPointer) ->
-		Obj = case ObjOrPointer of
-			{objectPointer, ObjectName} ->
-				env:lookup(ObjectName);
-			_ -> ObjOrPointer
-		end,
+		Obj = checkPointer(ObjOrPointer),
 		CastingDict = Obj#object.castingDict,
 		CastedObjName = dict:fetch(TargetClassName, CastingDict),
-		Answer = env:lookup(CastedObjName),
-		Answer
+		#objectPointer{name = CastedObjName}
 	end.
 
 makeCastDown(TargetClassName, Classes) ->
 	fun (ObjOrPointer) ->
-		Obj = case ObjOrPointer of
-			{objectPointer, ObjectName} ->
-				env:lookup(ObjectName);
-			_ -> ObjOrPointer
-		end,
+		Obj = checkPointer(ObjOrPointer),
 		OutputCell = cell:makeCell(),
 		CastingDict = Obj#object.castingDict,
 		case dict:find(TargetClassName, CastingDict) of
 			error ->
 				cell:done(OutputCell);
 			{ok, CastedObjName} -> 
-				CastedObj = env:lookup(CastedObjName),
+				CastedObj = #objectPointer{name = CastedObjName},
 				cell:addLine(OutputCell, CastedObj),
 				cell:done(OutputCell)
 		end,
@@ -343,20 +336,24 @@ castPropsUpIfNeeded(Props, ObjClass, Classes) ->
 			true ->
 				reactive;
 			false ->
-				InstanceValue = dict:fetch(PropName, Props),
-				InstanceType = type:get(InstanceValue),
-				case type:compareTypes(InstanceType, PropType) of
-					true -> InstanceValue;
-					false ->
-						PropTypeString = atom_to_list(PropType#type.value),
-						InstanceTypeString = atom_to_list(InstanceType#type.value),
-						SubClass = dict:fetch(InstanceTypeString, Classes),
-						SuperClass = dict:fetch(PropTypeString, Classes),
-						Inherits = ((InstanceType#type.type == typeName) and (PropType#type.type == typeName) and inherits(SubClass, SuperClass)),
-						case Inherits of
-							true -> (SuperClass#class.castUp)(InstanceValue);
-							false -> ?trace("Property Type Mismatch")
-						end
+				case dict:fetch(PropName, Props) of
+					ObjectPointer when is_record(ObjectPointer, objectPointer) ->
+						InstanceValue = env:lookup(ObjectPointer#objectPointer.name),
+						InstanceType = type:get(InstanceValue),
+						case type:compareTypes(InstanceType, PropType) of
+							true -> ObjectPointer;
+							false ->
+								PropTypeString = atom_to_list(PropType#type.value),
+								InstanceTypeString = atom_to_list(InstanceType#type.value),
+								SubClass = dict:fetch(InstanceTypeString, Classes),
+								SuperClass = dict:fetch(PropTypeString, Classes),
+								Inherits = ((InstanceType#type.type == typeName) and (PropType#type.type == typeName) and inherits(SubClass, SuperClass)),
+								case Inherits of
+									true -> (SuperClass#class.castUp)(InstanceValue);
+									false -> ?trace("Property Type Mismatch")
+								end
+						end;
+					Prop -> Prop
 				end
 		end
 	end, ObjClass#class.prop),
@@ -401,6 +398,12 @@ makeInheritedCopies(Obj, Classes) ->
 			dict:store(UpClassName, NewerCopy, Dict)
 	end.
 
+checkPointer(ObjectOrPointer) ->
+	case ObjectOrPointer of
+		ObjectPointer when is_record(ObjectPointer, objectPointer) ->
+			env:lookup(ObjectPointer#objectPointer.name);
+		_ -> ObjectOrPointer
+	end.
 
 %% ====================================================================
 %% Server functions
@@ -471,7 +474,8 @@ handle_call({create, ClassName, PropDict, InName}, From, State) ->
 				CopyWithDict
 			end, Copies),
 			
-			NewO = dict:fetch(ClassName, CopiesWithDict),
+			NewO = #objectPointer{name = NamedO#object.name},
+			% NewO = dict:fetch(ClassName, CopiesWithDict),
 			case Memoize of
 				undefined -> {NewO, State};
 				_ ->
@@ -558,11 +562,7 @@ handle_cast({addProp, Name, PropName, TypeString}, State) ->
 		false -> Name ++ " -> Future (" ++ TypeString ++ ")"
 	end,
 	GetFunc = fun(ObjOrPointer) ->
-		Obj = case ObjOrPointer of
-			{objectPointer, ObjectName} ->
-				env:lookup(ObjectName);
-			_ -> ObjOrPointer
-		end,
+		Obj = checkPointer(ObjOrPointer),
 		dict:fetch(PropName, Obj#object.prop)
 	end,
 	env:addFun(GetFuncName, FuncType, GetFunc),

@@ -277,7 +277,7 @@ populateCells(Cell, CellDict, ObjectDict) when is_record(Cell, exprCell) ->
 	NewCell = env:lookup(dict:fetch(Cell#exprCell.name, CellDict)),
 	NewProp = lists:map(fun(KeyOrKeyVal) ->
 		Restored = case KeyOrKeyVal of
-			{Key, Val} -> {unserializeProp(Key, CellDict, ObjectDict), unserializeProp(Val, CellDict, ObjectDict)};
+			{pair, Key, Val} -> {unserializeProp(Key, CellDict, ObjectDict), unserializeProp(Val, CellDict, ObjectDict)};
 			Key -> unserializeProp(Key, CellDict, ObjectDict)
 		end,
 		cell:addLine(NewCell, Restored)
