@@ -125,6 +125,8 @@ evaluate(Expr) when is_record(Expr, cons) ->
 					end
 			end
 	end;
+evaluate(Object) when is_record(Object, object) ->
+	{objectPointer, Object#object.name};
 evaluate(NumStringBool) -> NumStringBool.
 
 

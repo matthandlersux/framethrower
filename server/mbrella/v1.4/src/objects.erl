@@ -267,15 +267,25 @@ makeCasts(SuperClass, TargetClass) ->
 	makeCasts(SuperClass#class.inherit, TargetClass).
 
 makeCast(TargetClassName) ->
-	fun (Obj) ->
+	fun (ObjOrPointer) ->
+		Obj = case ObjOrPointer of
+			{objectPointer, ObjectName} ->
+				env:lookup(ObjectName);
+			_ -> ObjOrPointer
+		end,
 		CastingDict = Obj#object.castingDict,
 		CastedObjName = dict:fetch(TargetClassName, CastingDict),
 		Answer = env:lookup(CastedObjName),
 		Answer
 	end.
 
-makeCastDown(Cast, TargetClassName, Classes) ->
-	fun (Obj) ->
+makeCastDown(TargetClassName, Classes) ->
+	fun (ObjOrPointer) ->
+		Obj = case ObjOrPointer of
+			{objectPointer, ObjectName} ->
+				env:lookup(ObjectName);
+			_ -> ObjOrPointer
+		end,
 		OutputCell = cell:makeCell(),
 		CastingDict = Obj#object.castingDict,
 		case dict:find(TargetClassName, CastingDict) of
@@ -530,7 +540,7 @@ handle_cast({makeClass, Name, Inherit, Memoize}, State) ->
 		castUp = Cast
 	},
 	TempClasses = dict:store(Name, NewClassWithoutCastDown, Classes),
-	CastDown = 	makeCastDown(Cast, Name, TempClasses),
+	CastDown = 	makeCastDown(Name, TempClasses),
 	NewClass = NewClassWithoutCastDown#class{castDown = CastDown},
 	makeCasts(NewClass#class.inherit, NewClass),
 	NewClasses = dict:store(Name, NewClass, Classes),
@@ -547,7 +557,12 @@ handle_cast({addProp, Name, PropName, TypeString}, State) ->
 		true -> Name ++ " -> (" ++ TypeString ++ ")";
 		false -> Name ++ " -> Future (" ++ TypeString ++ ")"
 	end,
-	GetFunc = fun(Obj) ->
+	GetFunc = fun(ObjOrPointer) ->
+		Obj = case ObjOrPointer of
+			{objectPointer, ObjectName} ->
+				env:lookup(ObjectName);
+			_ -> ObjOrPointer
+		end,
 		dict:fetch(PropName, Obj#object.prop)
 	end,
 	env:addFun(GetFuncName, FuncType, GetFunc),

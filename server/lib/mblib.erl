@@ -210,6 +210,8 @@ exprElementToJson(X) when is_pid(X) ->
 	list_to_binary(Name);
 exprElementToJson(X) when is_record(X, exprCell) ->
 	list_to_binary(X#exprCell.name);
+exprElementToJson({objectPointer, ObjectName}) ->
+	list_to_binary(ObjectName);	
 exprElementToJson(X) when is_record(X, object) ->
 	list_to_binary(X#object.name);	
 exprElementToJson(X) -> X.
