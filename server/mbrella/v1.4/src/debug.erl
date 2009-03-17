@@ -113,9 +113,12 @@ pretty( TupleList ) ->
 			end,
 	Header = fun(Tuple) -> Printer(1, Tuple) end,				
 	Print = fun(Tuple) -> lists:foreach( fun(E) -> Printer(2, E) end, tuple_to_list(Tuple) ), NewLine() end,
-	lists:foreach(Header, tuple_to_list( lists:nth(1, TupleList) )),
+	
 	NewLine(),
-	lists:foreach(Print, TupleList).
+	lists:foreach(Header, tuple_to_list( lists:nth(1, TupleList) )),
+	NewLine(), NewLine(),
+	lists:foreach(Print, lists:keysort(1, TupleList) ),
+	NewLine().
 
 processTotals() ->
 	processTotals( getProcessStats() ).

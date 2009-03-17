@@ -116,7 +116,7 @@ loop(Req, DocRoot) ->
 					spit(Req, JsonOut);
 				"post" ->
 					Data = Req:parse_post(),
-					?trace(iolist_size(term_to_binary(Data))),
+					% ?trace(iolist_size(term_to_binary(Data))),
 					Json = proplists:get_value("json", Data),
 					Struct = mochijson2:decode(Json),
 					SessionId = struct:get_value(<<"sessionId">>, Struct),
