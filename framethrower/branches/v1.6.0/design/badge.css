@@ -23,8 +23,8 @@
 	float: left;
 	position: relative;
 	left: -30px;
-	top: 30px;
-	
+/*	top: 30px;
+*/	
 	font-size: 0px; line-height: 0%; width: 0px;
 	border-top: 30px solid rgba(0,0,0,0);
 	border-right: 30px solid rgba(0,0,0,.7);
@@ -33,8 +33,12 @@
 
 .badgeArrow {
 	left: -48px;
-	top: 22px;
-	border-right: 30px solid #eeeeee;
+/*	top: 22px;
+*/	border-right: 30px solid #eeeeee;
+}
+
+.badgeArrowRight {
+
 }
 
 .badgePath {
