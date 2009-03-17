@@ -46,7 +46,8 @@
 makeCell() -> 
 	{ok, Pid} = gen_server:start(?MODULE, [], []),
 	NewCell = #exprCell{pid=Pid},
-	env:nameAndStoreCell(NewCell).
+	NamedCell = env:nameAndStoreCell(NewCell),
+	#cellPointer{name = NamedCell#exprCell.name}.
 
 update(Cell) ->
 	Name = Cell#exprCell.name,
@@ -55,29 +56,38 @@ update(Cell) ->
 makeCellMapInput() ->
 	{ok, Pid} = gen_server:start(?MODULE, [], []),
 	NewCell = #exprCell{pid=Pid},
-	env:nameAndStoreCell(NewCell).
+	NamedCell = env:nameAndStoreCell(NewCell),
+	#cellPointer{name = NamedCell#exprCell.name}.
 
 removeDependency(Cell, InputCell, InputId) ->
 	gen_server:cast(Cell#exprCell.pid, {removeDependency, InputCell, InputId, Cell}).	
 
 injectFunc(CellOrPointer, OutputCellOrIntOrFunc, Fun) ->
 	Cell = checkPointer(CellOrPointer),
-	{Id, OnRemove} = gen_server:call(Cell#exprCell.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}),
-	gen_server:cast(Cell#exprCell.pid, {injectFunc, OutputCellOrIntOrFunc, Fun, Cell, Id}),
+	{Id, OnRemove} = gen_server:call(Cell#exprCell.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, CellOrPointer}),
+	gen_server:cast(Cell#exprCell.pid, {injectFunc, OutputCellOrIntOrFunc, Fun, CellOrPointer, Id}),
 	OnRemove.
 
 injectFuncs(OutputCellOrIntOrFunc, CellFuncs) ->
+	case OutputCellOrIntOrFunc of
+		ExprCell when is_record(ExprCell, exprCell) ->
+			?trace("Lookout!"),
+			problem:call();
+		_ -> nosideeffect
+	end,
 	CellFuncIds = lists:map(fun({CellOrPointer, Fun}) ->
 		Cell = checkPointer(CellOrPointer),
-		{Id, _} = gen_server:call(Cell#exprCell.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}),
-		{Cell, Fun, Id}
+		{Id, _} = gen_server:call(Cell#exprCell.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, CellOrPointer}),
+		{CellOrPointer, Fun, Id}
 	end, CellFuncs),
-	lists:map(fun({Cell, Fun, Id}) ->
-		gen_server:cast(Cell#exprCell.pid, {injectFunc, OutputCellOrIntOrFunc, Fun, Cell, Id})
+	lists:map(fun({CellOrPointer, Fun, Id}) ->
+		Cell = checkPointer(CellOrPointer),
+		gen_server:cast(Cell#exprCell.pid, {injectFunc, OutputCellOrIntOrFunc, Fun, CellOrPointer, Id})
 	end, CellFuncIds),
 	ok.
 
-removeFunc(Cell, Id) ->
+removeFunc(CellOrPointer, Id) ->
+	Cell = checkPointer(CellOrPointer),	
 	gen_server:cast(Cell#exprCell.pid, {removeFunc, Id, Cell}).
 
 injectIntercept(CellOrPointer, Fun, InitState) ->
@@ -88,15 +98,18 @@ done(CellOrPointer) ->
 	Cell = checkPointer(CellOrPointer),
 	gen_server:cast(Cell#exprCell.pid, {done, Cell}).
 
-done(Cell, DoneCell, Id) ->
+done(CellOrPointer, DoneCell, Id) ->
+	Cell = checkPointer(CellOrPointer),
 	gen_server:cast(Cell#exprCell.pid, {done, DoneCell, Id, Cell}).
 
-getState(Cell) ->
+getState(CellOrPointer) ->
+	Cell = checkPointer(CellOrPointer),
 	gen_server:call(Cell#exprCell.pid, getState).
 
 %FunOrOnRemove can be a function, or #onRemove
 %#onRemove will also be used as dependencies, so this cell can know when it has received all current updates
-addOnRemove(Cell, FunOrOnRemove) ->
+addOnRemove(CellOrPointer, FunOrOnRemove) ->
+	Cell = checkPointer(CellOrPointer),	
 	OnRemove = case FunOrOnRemove of
 		OnRemRecord when is_record(OnRemRecord, onRemove) -> 
 			OnRemRecord;
@@ -143,7 +156,8 @@ addLine(CellOrPointer, Value) ->
 %% 
 %% removeline:: CellPid -> a -> Atom
 %% 
-removeLine(Cell, Value) ->
+removeLine(CellOrPointer, Value) ->
+	Cell = checkPointer(CellOrPointer),
 	gen_server:cast(Cell#exprCell.pid, {removeLine, Value}).
 
 
@@ -155,7 +169,9 @@ checkPointer(CellOrPointer) ->
 	case CellOrPointer of
 		CellPointer when is_record(CellPointer, cellPointer) ->
 			env:lookup(CellPointer#cellPointer.name);
-		_ -> CellOrPointer
+		_ -> 
+			% ?trace("Still getting exprCell somehow!"),
+			CellOrPointer
 	end.
 
 toKey({pair, Key, _}) -> Key;
@@ -201,7 +217,7 @@ checkDone(State, Cell) ->
 			dict:map(fun(FuncId, Func) ->
 				case Func#func.outputCellOrIntOrFunc of
 					undefined -> nosideeffect;
-					OutputCell when is_record(OutputCell, exprCell) -> done(OutputCell, Cell, FuncId);
+					OutputCell when is_record(OutputCell, cellPointer) -> done(OutputCell, Cell, FuncId);
 					Intercept when is_pid(Intercept) -> intercept:done(Intercept, Cell, FuncId);
 					Function when is_function(Function) -> Function()
 				end
@@ -246,7 +262,7 @@ handle_call({injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}, _, State) ->
 		_ -> #onRemove{function = fun() -> removeFunc(Cell, Id) end, cell=Cell, id=Id, done=false}
 	end,
 	case OutputCellOrIntOrFunc of
-		OutputCell when is_record(OutputCell, exprCell) -> addOnRemove(OutputCell, OnRemove);
+		OutputCell when is_record(OutputCell, cellPointer) -> addOnRemove(OutputCell, OnRemove);
 		%TODO: make Intercept a record for consistancy with Cell
 		Intercept when is_pid(Intercept) -> intercept:addOnRemove(Intercept, OnRemove);
 		%done function
@@ -336,7 +352,7 @@ handle_cast({injectFunc, OutputCellOrIntOrFunc, Fun, Cell, Id}, State) ->
 	case ?this(done) of
 		true -> 
 			case OutputCellOrIntOrFunc of
-				OutputCell when is_record(OutputCell, exprCell) -> done(OutputCell, Cell, Id);
+				OutputCell when is_record(OutputCell, cellPointer) -> done(OutputCell, Cell, Id);
 				Intercept when is_pid(Intercept) -> intercept:done(Intercept, Cell, Id);
 				Function when is_function(Function) -> Function()
 			end;
@@ -365,7 +381,7 @@ handle_cast({done, DoneCell, Id, Cell}, State) ->
 		false ->
 			NewOnRemoves = lists:map(fun(OnRemove) ->
 				if 
-					(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#exprCell.name =:= DoneCell#exprCell.name) andalso (OnRemove#onRemove.id =:= Id) ->
+					(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#exprCell.name =:= DoneCell#cellPointer.name) andalso (OnRemove#onRemove.id =:= Id) ->
 						OnRemove#onRemove{done=true};
 					true -> 
 						OnRemove

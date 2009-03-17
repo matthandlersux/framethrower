@@ -716,13 +716,6 @@ for(I, Max, F) -> [F(I)|for(I+1, Max, F)].
 
 
 applyFun(Fun, Input) ->
-	case Input of
-		Object when is_record(Object, object) ->
-			% ?trace("AHA!!"),
-			% mistake:here();
-			noside;
-		_ -> noside
-	end,
 	eval:evaluate(#cons{type=apply, left=Fun, right=Input}).
 
 applyAndInject(Fun, Input, OutputCell, InjectedFun) ->

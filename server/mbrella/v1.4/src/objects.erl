@@ -369,9 +369,10 @@ makeFutureProps(Props, ObjClass, Classes) ->
 		fun (PropName, PropType) ->
 			case type:isReactive(PropType) of
 				true ->
-					PropCell = (cell:makeCell())#exprCell{type=PropType},
+					% PropCell = (cell:makeCell())#exprCell{type=PropType},
+					% cell:update(PropCell),
+					PropCell = cell:makeCell(),
 					cell:done(PropCell),
-					cell:update(PropCell),
 					PropCell;
 				false ->
 					PropValue = dict:fetch(PropName, Props),
@@ -536,7 +537,8 @@ handle_cast({makeClass, Name, Inherit, Memoize}, State) ->
 		end,
 		memoize = Memoize,
 		makeMemoEntry = fun() ->
-			Broadcaster = (cell:makeCell())#exprCell{type=type:parse("Unit " ++ Name)},
+			% Broadcaster = (cell:makeCell())#exprCell{type=type:parse("Unit " ++ Name)},
+			Broadcaster = cell:makeCell(),
 			cell:done(Broadcaster),
 			NewMemoEntry = #memoEntry{broadcaster = Broadcaster},
 			NewMemoEntry
