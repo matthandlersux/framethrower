@@ -102,3 +102,60 @@ httpSearchPage() ->
 	<body>
 	</html>
 	".
+
+pretty() ->
+	pretty( processTotals() ).
+pretty( TupleList ) ->
+	NewLine = fun() -> io:format("~n", []) end,
+	Printer = fun(Which, Item) ->
+				io:format("~-30s", [ io_lib:format("~p", [element(Which, Item)]) ])
+				% format("~-21s ~-33s ~8s ~8s ~4s~n", [A1,A2,A3,A4,A5]).
+			end,
+	Header = fun(Tuple) -> Printer(1, Tuple) end,				
+	Print = fun(Tuple) -> lists:foreach( fun(E) -> Printer(2, E) end, tuple_to_list(Tuple) ), NewLine() end,
+	lists:foreach(Header, tuple_to_list( lists:nth(1, TupleList) )),
+	NewLine(),
+	lists:foreach(Print, TupleList).
+
+processTotals() ->
+	processTotals( getProcessStats() ).
+processTotals( Stats ) ->
+	% Processed = [ {memory}|| UCurrentFunction <- lists:usort( [X || [_,]] ),
+	%  				{Mem, CurrentFunction, MsgQLen, Status} <- Stats].
+	Interesting = interestingProcessNames(),
+	InitialCalls = lists:usort( [X || {_, X, _, _} <- Stats, lists:member(element(1, X), Interesting) ] ),
+	Fun = fun( Call ) ->
+			Memory = [ Mem || {Mem, X, _, _} <- Stats, X =:= Call],
+			{ {processType, Call}, 
+				{total_memory, lists:sum(  Memory )},
+				{number_of_processes, length( Memory )}
+			}
+		end,
+	lists:map(Fun, InitialCalls).
+	
+interestingProcessNames() ->
+	{ok, Files1} = file:list_dir("/Users/handler/Documents/svn/ftrepository/server/mbrella/v1.4/src/"),
+	{ok, Files2} = file:list_dir("/Users/handler/Documents/svn/ftrepository/server/pipeline/src/"),
+	{ok, Files3} = file:list_dir("/Users/handler/Documents/svn/ftrepository/server/lib/"),
+	[list_to_atom(Y) || [{Y,_}] <- [ parse:parse(parse:many(parse:alphaNumSpace()), X) || X <- Files1 ++ Files2 ++ Files3] ].			
+
+getProcessStats() ->
+	Processes = processes(),
+	Fun = fun(Pid) -> getProcessInfo(Pid) end,
+	lists:map(Fun, Processes).
+	
+getProcessInfo(Pid) ->
+	Stats = [memory, initial_call, message_queue_len, status],
+    case process_info(Pid, Stats) of
+	undefined -> {0,0,0,0};
+	[{_, Mem}, {_, InitialCall}, {_, MsgQLen}, {_, Status}] ->
+	    {Mem, initialCall( InitialCall, Pid ), MsgQLen, Status}
+    end.
+
+initialCall(InitialCall, Pid)  ->
+    case InitialCall of
+		{proc_lib, init_p, _} ->
+		    proc_lib:translate_initial_call(Pid);
+		ICall ->
+		    ICall
+    end.
