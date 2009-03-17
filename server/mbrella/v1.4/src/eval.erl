@@ -119,7 +119,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 								X when is_function(X) ->
 									%decide if it needs to be named
 									#exprFun{function = X, bottom = BottomExpr};
-								Result when is_record(Result, cellPointer) ->
+								Result when is_record(Result, exprCell) ->
 									Cell = env:lookup(Result#cellPointer.name),
 									TypedCell = Cell#exprCell{bottom = BottomExpr},
 									cell:update(TypedCell),

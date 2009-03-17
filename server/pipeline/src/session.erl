@@ -177,17 +177,18 @@ handle_cast(serverAdviceDone, State) ->
 	{noreply, NewState, ?this(timeout)};
 handle_cast({checkQuery, Expr, QueryId, ResponseFun}, State) ->
 	OpenQueries = dict:store(QueryId, open, ?this(openQueries)),
-	NewState = case dict:find(Expr, ?this(serverAdviceHash)) of
-		{ok, ReferenceId} ->
-			sendToOutputTimer(?this(outputTimer), waiting),
-			ResponseFun({false, ReferenceId}),
-			State#session{openQueries = OpenQueries, clientState = waiting};
-		_ ->
-			sendToOutputTimer(?this(outputTimer), waiting),
-			ServerAdviceHash = dict:store(Expr, defined, ?this(serverAdviceHash)),
-			ResponseFun(true),
-			State#session{serverAdviceHash = ServerAdviceHash, openQueries = OpenQueries, clientState = waiting}
-	end,
+	% TODO: uncomment this stuff for serverAdvice
+	% NewState = case dict:find(Expr, ?this(serverAdviceHash)) of
+	% 	{ok, ReferenceId} ->
+	% 		sendToOutputTimer(?this(outputTimer), waiting),
+	% 		ResponseFun({false, ReferenceId}),
+	% 		State#session{openQueries = OpenQueries, clientState = waiting};
+	% 	_ ->
+	sendToOutputTimer(?this(outputTimer), waiting),
+	% ServerAdviceHash = dict:store(Expr, defined, ?this(serverAdviceHash)),
+	ResponseFun(true),
+	NewState = State#session{openQueries = OpenQueries, clientState = waiting},
+	% end,
 	{noreply, NewState, ?this(timeout)}.
 
 
