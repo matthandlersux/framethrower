@@ -111,6 +111,8 @@ if (!window.serverBaseUrl) {
 
 function xhr(url, post, callback, failCallback, timeout) {
 	
+	if (LOCAL) return;
+	
 	// maxCalls--;
 	// if (maxCalls <= 0) {
 	// 	console.error("Max calls exceeded");

@@ -54,10 +54,11 @@
 	<f:intact object="$main" property="pane" action="add" key="$paneSet" /> -->
 	
 	<f:derive name="mainPaneSet" d="ui.mainPaneSet" />
+	<f:derive name="columns" d="ui.mainPaneSet.columns" />
 	
 	<f:intact object="$mainPaneSet" property="orientation" action="add" key="'vertical'" />
 	
-	<f:create type="UI.pane.set" name="columns" />
+	<!-- <f:create type="UI.pane.set" name="columns" /> -->
 	<f:intact object="$columns" property="orientation" action="add" key="'horizontal'" />
 	
 	<f:create type="UI.pane.pane" name="mainPane" />

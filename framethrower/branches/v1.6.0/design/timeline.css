@@ -40,7 +40,34 @@
 .timeline-layer {
 	position:relative;
 	height: 24px;
-	margin-bottom: 4px;
+	margin-bottom: 1px;
+	background-color: rgba(255,255,255,0.3);
+}
+.timeline-layer-situation {
+	position: absolute;
+	top: 0px;
+	height: 20px;
+	margin:1px 0px;
+	background-color:rgba(34,170,278,0.5);
+	border: 1px solid rgba(34,170,278,0.8);
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	cursor: pointer;
+}
+.timeline-layer-situation:hover {
+	background-color:rgba(34,170,278,0.9);
+}
+
+.timeline-selected-layers {
+	position:absolute;
+	top: 18px;
+}
+.timeline-selected-layer {
+	height: 24px;
+	margin-bottom: 1px;
+}
+.timeline-selected-layer div {
+	cursor: pointer;
 }
 
 

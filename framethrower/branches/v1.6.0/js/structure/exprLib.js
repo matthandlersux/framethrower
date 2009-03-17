@@ -76,6 +76,10 @@ var exprLib = {
 		type: "(a -> Set b) -> Unit a -> Set b",
 		expr: "f -> compose (bindSet f) returnUnitSet"
 	},
+	bindFutureUnit: {
+		type: "(a -> Future b) -> Unit a -> Unit b",
+		expr: "f -> bindUnit (compose returnFutureUnit f)"
+	},
 	
 	mapBinaryUnit: {
 		type: "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
@@ -601,7 +605,7 @@ var exprLib = {
 		where: {
 			upRight: {
 				type: "Unit Cons -> Set Object",
-				chain: "Object:upRight"
+				chain: ["Object:upRight"]
 			}
 		}
 	},
@@ -609,6 +613,11 @@ var exprLib = {
 	getSituationsInLayer: {
 		type: "Object -> Object -> Set Object",
 		expr: "movie -> layer -> mapSet Cons~Object (bindUnitSet (Cons::lookup layer) (getMovieTimeRanges movie))"
+	},
+	
+	getTimeRangeFromSit: {
+		type: "Object -> Unit X.time.range",
+		chain: ["Cons:right", "Cons:right"]
 	}
 
 };

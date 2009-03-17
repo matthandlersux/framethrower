@@ -76,6 +76,8 @@ var rootObjects = {};
 	m("ui.prefs", "UI.prefs");
 	
 	m("ui.mainPaneSet", "UI.pane.set");
+	m("ui.mainPaneSet.columns", "UI.pane.set");
+	
 	m("ui.main", "UI.main", {"pane": objects.cast(rootObjects["ui.mainPaneSet"], "UI.pane")});
 	
 

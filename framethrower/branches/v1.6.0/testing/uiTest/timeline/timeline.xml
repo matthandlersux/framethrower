@@ -20,7 +20,9 @@
 			<f:with-param name="video" select="$video" />
 		</f:thunk>
 	</f:each>
-
+	
+	<f:include url="/xml/util/actions.xml" />
+	<f:include url="/xml/util/ord.xml" />
 	
 	<f:template name="drawPreviewAndTimeline">
 		<f:param name="video" type="X.video" />
@@ -265,7 +267,7 @@
 							<f:with-param-browser name="x" prop="relMouseX" />
 						</f:on>
 						
-						<f:on event="mousedown" with-action="$startSelection">
+						<f:on event="dragStart" with-action="$startSelection">
 							<f:with-param-browser name="x" prop="relMouseX" />
 						</f:on>
 						<f:on event="mouseup" with-action="$stopSelection" />
@@ -275,7 +277,53 @@
 					</html:div>
 				</f:each></f:each>
 				
+				
+				
+				
+				<f:action name="makeSituationInLayer">
+					<f:param name="layer" type="Object" />
+					
+					<f:derive name="timeRangeRel" d="shared.movie.timeRange" />
+					
+					<f:each select="$focus"><f:each select="$selectedTime1"><f:each select="$selectedTime2">
+						<xsl:variable name="t1" select="$selectedTime1/@value" />
+						<xsl:variable name="t2" select="$selectedTime2/@value" />
+						<xsl:variable name="tmin"><xsl:choose>
+							<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t1" /></xsl:when>
+							<xsl:otherwise><xsl:value-of select="$t2" /></xsl:otherwise>
+						</xsl:choose></xsl:variable>
+						<xsl:variable name="tmax"><xsl:choose>
+							<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t2" /></xsl:when>
+							<xsl:otherwise><xsl:value-of select="$t1" /></xsl:otherwise>
+						</xsl:choose></xsl:variable>
+						
+						<f:create type="X.time.range" name="timeRange">
+							<f:with-param name="start" select="$tmin" as="Number" />
+							<f:with-param name="duration" select="$tmax - $tmin" as="Number" />
+						</f:create>
+						
+						<f:perform with-action="$makeInfon2" name="inf">
+							<f:with-param name="relation" select="$timeRangeRel" />
+							<f:with-param name="arg1" select="$focus" />
+							<f:with-param name="arg2" select="$timeRange" />
+						</f:perform>
+						
+						<f:perform with-action="$makeInfon1" name="inf2">
+							<f:with-param name="relation" select="$layer" />
+							<f:with-param name="arg1" select="$inf" />
+						</f:perform>
+						
+						<f:intact object="$timeline" property="selectedTime1" action="remove" />
+						<f:intact object="$timeline" property="selectedTime2" action="remove" />
+					</f:each></f:each></f:each>
+
+				</f:action>
+				
+				
+				
 				<f:template name="drawSelection">
+					<f:derive name="selecting" d="UI.pane.timeline:selecting timeline" />
+					
 					<f:each select="$duration"><f:each select="$zoomWidth"><f:each select="$selectedTime1"><f:each select="$selectedTime2">
 						
 						<xsl:variable name="ratio" select="$zoomWidth/@value div $duration/@value" />
@@ -303,19 +351,43 @@
 								width: <xsl:value-of select="$width" />px;
 							</xsl:attribute>
 							
-							<html:div>
-								<xsl:attribute name="style">
-									left: <xsl:value-of select="round($width div 2)" />px;
-									top: <xsl:value-of select="$height/@value - 45" />px;
-									position: absolute;
-									margin-left: -7px;
-								</xsl:attribute>
-								<html:div class="button-play" />
-							</html:div>
+							<xsl:if test="not($selecting/*)">
+								<f:thunk with-template="$selectionInsides" />
+							</xsl:if>
+
 							
 						</html:div>
 					</f:each></f:each></f:each></f:each>
+					
+					<f:template name="selectionInsides">
+						<html:div>
+							<xsl:attribute name="style">
+								left: 50%;
+								top: 150px;
+								position: absolute;
+								margin-left: -7px;
+							</xsl:attribute>
+							<html:div class="button-play" />
+						</html:div>
+						
+						<html:div class="timeline-selected-layers">
+							<xsl:attribute name="style">
+								left: 50%;
+								margin-left: -7px;
+							</xsl:attribute>
+							<f:each select="$layers" key="ord" value="layer">
+								<html:div class="timeline-selected-layer">
+									<f:on event="click" with-action="$makeSituationInLayer">
+										<f:with-param name="layer" select="$layer" />
+									</f:on>
+									<html:div class="button-zoomIn" />
+								</html:div>
+							</f:each>
+						</html:div>
+					</f:template>
 				</f:template>
+				
+
 				
 				<f:template name="drawLayer">
 					<f:param name="movie" type="Object" />
@@ -323,20 +395,59 @@
 					
 					<f:derive name="layerSituations" d="getSituationsInLayer movie layer" />
 					
-					<!-- <f:each select="$duration"><f:each select="$zoomWidth">
+					<f:each select="$zoomWidth">
 						<html:div class="timeline-layer">
 							<xsl:attribute name="style">
 								width: <xsl:value-of select="$zoomWidth/@value" />px;
-								background-color: rgba(128,0,0,0.5);
 							</xsl:attribute>
 							
-							<f:each select="$layerSituations" key="$sit">
-								Found a situation!
+							<f:each select="$layerSituations" key="sit">
+								<f:thunk with-template="$drawLayerSituation">
+									<f:with-param name="situation" select="$sit" />
+								</f:thunk>
 							</f:each>
 							
 						</html:div>
-					</f:each></f:each> -->
+					</f:each>
 					
+					<f:template name="drawLayerSituation">
+						<f:param name="situation" type="Object" />
+						<f:derive name="timerange" d="getTimeRangeFromSit situation" />
+						<f:derive name="sitStart" d="bindFutureUnit X.time.range:start timerange" />
+						<f:derive name="sitDuration" d="bindFutureUnit X.time.range:duration timerange" />
+						
+						<f:each select="$duration"><f:each select="$zoomWidth"><f:each select="$sitStart"><f:each select="$sitDuration">
+							<xsl:variable name="ratio" select="$zoomWidth/@value div $duration/@value" />
+							<html:div class="timeline-layer-situation">
+								<xsl:attribute name="style">
+									left: <xsl:value-of select="$sitStart/@value * $ratio" />px;
+									width: <xsl:value-of select="$sitDuration/@value * $ratio" />px;
+								</xsl:attribute>
+								<f:on event="click" with-action="$openSituation" />
+							</html:div>
+						</f:each></f:each></f:each></f:each>
+						
+						<f:action name="openSituation">
+							<!-- TODO: this is hacked in here.. rethink how pane sets work -->
+							<f:derive name="columns" d="ui.mainPaneSet.columns" />
+							<f:derive name="lastPaneKey" d="takeLastKey (UI.pane.set:panes columns)" />
+
+							<xsl:variable name="newKey">			
+								<f:each select="$lastPaneKey">
+									<xsl:call-template name="ord-bigger">
+										<xsl:with-param name="s" select="./@value" />
+									</xsl:call-template>
+								</f:each>
+							</xsl:variable>
+
+							<f:create type="UI.pane.pane" name="newPane" />
+							<f:intact object="$newPane" action="add" property="focus" key="$situation" />
+
+							<f:intact object="$columns" action="add" property="panes" value="$newPane">
+								<f:with-param name="key" select="$newKey" as="String" />
+							</f:intact>
+						</f:action>
+					</f:template>
 				</f:template>
 				
 			</f:template>

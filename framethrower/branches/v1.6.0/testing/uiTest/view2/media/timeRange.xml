@@ -1,0 +1,47 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="X.time.range" />
+	
+	<f:derive name="start" d="X.time.range:start focus" />
+	<f:derive name="duration" d="X.time.range:duration focus" />
+
+	
+	<html:span class="text">
+		<f:each select="$start"><f:each select="$duration">
+			<xsl:call-template name="rulermarking">
+				<xsl:with-param name="t" select="$start/@value" />
+			</xsl:call-template>
+			-
+			<xsl:call-template name="rulermarking">
+				<xsl:with-param name="t" select="$start/@value + $duration/@value" />
+			</xsl:call-template>
+		</f:each></f:each>
+	</html:span>
+	
+	<xsl:template name="rulermarking">
+		<xsl:param name="t" />
+
+		<xsl:variable name="h" select="floor($t div 3600)" />
+		<xsl:variable name="m" select="floor(($t mod 3600) div 60)" />
+		<xsl:variable name="s" select="floor(($t mod 60))" />
+
+		<xsl:if test="$h &gt; 0">
+			<xsl:value-of select="$h" />
+			<xsl:text>:</xsl:text>
+			<xsl:if test="$m &lt; 10">
+				<xsl:text>0</xsl:text>
+			</xsl:if>
+		</xsl:if>
+		<xsl:value-of select="$m" />
+		<xsl:text>:</xsl:text>
+		<xsl:if test="$s &lt; 10">
+			<xsl:text>0</xsl:text>
+		</xsl:if>
+		<xsl:value-of select="$s" />
+
+	</xsl:template>
+</f:template>
