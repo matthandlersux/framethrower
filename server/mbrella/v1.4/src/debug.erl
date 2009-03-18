@@ -30,7 +30,7 @@ processOverview() ->
 
 %% 
 %% processMemory:: Atom -> ok
-%%		processMemory prints information about the distribution of sizes of Atom processes and their totals
+%%		processMemory prints information about the distribution of sizes of Atom processes and their totals (ex: processMemory( cell ))
 %% 
 
 processMemory( Type ) ->
