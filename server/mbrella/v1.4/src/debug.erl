@@ -44,15 +44,30 @@ processMemory( Type ) ->
 %% 
 	
 pidFromStat(MemoryValue) ->
-	getProcessStats([memory], MemoryValue).
+	getProcessStats({[memory], MemoryValue}).
 pidFromStat(Stat, StatValue) ->
-	getProcessStats([Stat], StatValue).
+	getProcessStats({[Stat], StatValue}).
 
 %% ====================================================
 %% Internal API
 %% ====================================================
 
-	
+recordMemoryUsage( Record ) when is_tuple(Record) ->
+	RecordName = element(1, Record),
+	try mblib:rInfo(RecordName) of
+		Fields ->
+			tupleMemoryUsage( Record, Fields )
+	catch
+		_:_ -> 
+			?trace({record_not_found, Record}),
+			tupleMemoryUsage( Record )
+	end.
+
+tupleMemoryUsage( Tuple ) ->
+	tupleMemoryUsage( Tuple, [ integer_to_list(Number) || Number <- lists:seq(1, size(Tuple)) ] ).
+tupleMemoryUsage( Tuple, Tags ) ->
+	list_to_tuple( [ {Tag, iolist_size( term_to_binary(Element) )} || Element <- tuple_to_list(Tuple), Tag <- Tags ] ).
+
 %% 
 %% pretty:: List Tuple TaggedTuple -> ok
 %%		pretty takes a list of tuples that are tagged, ex: [{{tag1, Value},{tag2, Value2}},{{tag1,OtherValue}, ...}]
