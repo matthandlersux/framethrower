@@ -6,7 +6,7 @@
 
 -compile(export_all).
 
--record(cellState, {funcs, dots, toKey, onRemoves=[], funcColor=0, intercept, done=false}).
+% -record(cellState, {funcs, dots, toKey, onRemoves=[], funcColor=0, intercept, done=false}).
 -record(onRemove, {function, cell, id, done}).
 -record(func, {function, outputCellOrIntOrFunc}).
 -record(interceptState, {function, state, ownerCell}).
@@ -47,26 +47,41 @@ pidFromStat(MemoryValue) ->
 	getProcessStats({[memory], MemoryValue}).
 pidFromStat(Stat, StatValue) ->
 	getProcessStats({[Stat], StatValue}).
+	
+largeCellMemoryUsage() ->
+	Max = lists:max( [ Size || {_, {_, Size}, _, _} <- processDistributionTotals( cell ) ] ),
+	Pid = pidFromStat( Max ),
+	cellMemoryUsage( Pid ).
 
 %% ====================================================
 %% Internal API
 %% ====================================================
 
+cellMemoryUsage( Pid ) when is_pid(Pid) ->
+	State = gen_server:call( Pid, getState ),
+	MemUsage = recordMemoryUsage( State ),
+	prettyList( MemUsage ).
+	
+prettyList( Tuple ) when is_tuple(Tuple) ->
+	prettyList( tuple_to_list(Tuple) );
+prettyList( List ) ->
+	pretty( [ {{element, E}, {value, V}} || {E, V} <- List ] ).
+
 recordMemoryUsage( Record ) when is_tuple(Record) ->
 	RecordName = element(1, Record),
 	try mblib:rInfo(RecordName) of
 		Fields ->
-			tupleMemoryUsage( Record, Fields )
+			tupleMemoryUsage( erlang:append_element( Record, Record), [RecordName] ++ Fields ++ [total_mem_usage] )
 	catch
 		_:_ -> 
-			?trace({record_not_found, Record}),
-			tupleMemoryUsage( Record )
+			?trace({record_not_found, RecordName}),
+			tupleMemoryUsage( erlang:append_element( Record, Record) )
 	end.
 
 tupleMemoryUsage( Tuple ) ->
-	tupleMemoryUsage( Tuple, [ integer_to_list(Number) || Number <- lists:seq(1, size(Tuple)) ] ).
+	tupleMemoryUsage( Tuple, [ Number || Number <- lists:seq(1, size(Tuple)) ] ).
 tupleMemoryUsage( Tuple, Tags ) ->
-	list_to_tuple( [ {Tag, iolist_size( term_to_binary(Element) )} || Element <- tuple_to_list(Tuple), Tag <- Tags ] ).
+	list_to_tuple( lists:zip(Tags, [ iolist_size( term_to_binary(Element) ) || Element <- tuple_to_list(Tuple) ] ) ).
 
 %% 
 %% pretty:: List Tuple TaggedTuple -> ok

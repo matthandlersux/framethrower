@@ -141,7 +141,17 @@ recordKeysToIndex(FieldList, Key) ->
 	which(Key, FieldList) + 1.
 
 rInfo(cons) ->
-	record_info(fields, cons).
+	record_info(fields, cons);
+rInfo(object) ->
+	record_info(fields, object);
+rInfo(exprCell) ->
+	record_info(fields, exprCell);
+rInfo(exprFun) ->
+	record_info(fields, exprFun);
+rInfo(session) ->
+	record_info(fields, session);
+rInfo(cellState) ->
+	record_info(fields, cellState).
 	
 %% 
 %% which figures out the placement of an element in a record

@@ -25,7 +25,8 @@
 %% ====================================================================
 %% Cell internal data structure record
 %% ====================================================================
--record(cellState, {funcs, dots, onRemoves=[], funcColor=0, intercept, done=false}).
+%moved this record to scaffold
+% -record(cellState, {funcs, dots, onRemoves=[], funcColor=0, intercept, done=false}).
 -record(onRemove, {function, cell, id, done}).
 -record(func, {function, outputCellOrIntOrFunc}).
 
