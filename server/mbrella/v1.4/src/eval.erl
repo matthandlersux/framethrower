@@ -90,7 +90,7 @@
 % 			NumStringBool
 % 	end.
 
-
+% Evaluate with older memoization strategy
 evaluate(Expr) when is_record(Expr, cons) ->
 	case Expr#cons.type of
 		lambda ->
@@ -110,11 +110,6 @@ evaluate(Expr) when is_record(Expr, cons) ->
 						_ ->
 							F = evaluate( Left ), 
 							Input = evaluate( Expr#cons.right ),
-							if 
-								is_record(Input, object) -> ?trace(Expr#cons.right);
-								true -> noside
-							end,
-							
 							case applyFun( F, Input ) of
 								X when is_function(X) ->
 									%decide if it needs to be named
@@ -135,6 +130,51 @@ evaluate(Expr) when is_record(Expr, cons) ->
 evaluate(Object) when is_record(Object, object) -> 
 	#objectPointer{name = Object#object.name};
 evaluate(NumStringBool) -> NumStringBool.
+
+% evaluate(Expr) ->
+% 	{Result, _} = evaluateH(Expr),
+% 	Result.
+% 
+% evaluateH(Expr) when is_record(Expr, cons) ->
+% 	case Expr#cons.type of
+% 		lambda ->
+% 			% ?trace(Expr),
+% 			{Expr, Expr};
+% 		apply ->
+% 			{EvalLeft, LeftBottom} = evaluateH( Expr#cons.left ),
+% 			case EvalLeft of
+% 				#cons{type = lambda} = Lambda ->
+% 					% ?trace(Lambda),
+% 					{BetaR, BetaRBottom} = evaluateH( betaReduce(Lambda, Expr#cons.right) ),
+% 					{BetaR, #cons{type = apply, left = LeftBottom, right = BetaRBottom}};
+% 				Left ->
+% 					{F, FBottom} = {Left, LeftBottom},
+% 					{Input, InputBottom} = evaluateH( Expr#cons.right ),
+% 					
+% 					BottomExpr = Expr#cons{type = apply, left = FBottom, right = InputBottom},
+% 					% NormalExpr = normalize(BottomExpr),
+% 					case memoize:get( BottomExpr ) of
+% 						Cell when is_record(Cell, cellPointer) -> {Cell, Cell};
+% 						_ ->
+% 							case applyFun( F, Input ) of
+% 								X when is_function(X) ->
+% 									%decide if it needs to be named
+% 									{#exprFun{function = X}, BottomExpr};
+% 								Result when is_record(Result, cellPointer) ->
+% 									OnRemove = memoize:add( BottomExpr, Result),
+% 									cell:addOnRemove(Result, OnRemove),
+% 									{Result, Result};
+% 								NumStringBool ->
+% 									{NumStringBool, BottomExpr}
+% 							end
+% 					end
+% 			end
+% 	end;
+% evaluateH(Object) when is_record(Object, object) -> 
+% 	Result = #objectPointer{name = Object#object.name},
+% 	{Result, Result};
+% evaluateH(NumStringBool) -> 
+% 	{NumStringBool, NumStringBool}.
 
 
 
