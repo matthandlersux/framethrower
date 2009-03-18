@@ -53,7 +53,10 @@ remove( BottomExpr ) ->
 % 	a {lambda, apply, etc..} nesting with some variable parameters
 get( BottomExpr ) -> 
 	gen_server:call(?MODULE, {get, BottomExpr}).
-	
+
+getTable() ->
+	gen_server:call(?MODULE, getTable).
+
 die() ->
 	gen_server:cast(?MODULE, {terminate, killed}).
 
@@ -89,14 +92,17 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({get, Expr}, From, State) ->
-	case ets:lookup(?this(ets), Expr) of
+handle_call({get, Expr}, _, State) ->
+	Unparsed = expr:unparse(Expr),
+	case ets:lookup(?this(ets), Unparsed) of
 		[{_, Reply}] ->
 			good;
 		[] -> 
 			Reply = key_does_not_exist
 	end,
-    {reply, Reply, State}.
+    {reply, Reply, State};
+handle_call(getTable, _, State) ->
+	{reply, ?this(ets), State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -106,7 +112,8 @@ handle_call({get, Expr}, From, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast({add, Expr, Cell}, State) ->
-	ets:insert(?this(ets), {Expr, Cell}),
+	Unparsed = expr:unparse(Expr),
+	ets:insert(?this(ets), {Unparsed, Cell}),
     {noreply, State};
 handle_cast({remove, Expr}, State) ->
 	ets:delete(?this(ets), Expr),

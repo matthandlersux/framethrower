@@ -323,7 +323,7 @@ propToDict(Props, Conversions) ->
 propToDict({struct, []}, _, Dict) -> Dict;
 propToDict({struct, [{BinaryKey, VarOrExprElement}|Props]}, Conversions, Dict) ->
 	Key = binary_to_list(BinaryKey),
-	Value = bindVarOrFormatExprElement(VarOrExprElement, Conversions),
+	Value = bindVarOrFormatExprElement(VarOrExprElement, Conversions),	
 	propToDict({struct, Props}, Conversions, dict:store(Key, Value, Dict)).
 
 % propToDict({struct, []}, _, Dict) -> Dict;
@@ -339,9 +339,11 @@ bindVarOrFormatExprElement(VariableOrCellName, Conversions) when is_binary(Varia
 	% ?trace(binary_to_list(VariableOrCellName)),
 	case binary_to_list(VariableOrCellName) of
 		"server." ++ _ = ObjectName ->
-			env:lookup(ObjectName);
+			Obj = env:lookup(ObjectName),
+			#objectPointer{name = Obj#object.name};
 		"shared." ++ _ = ObjectName ->
-			env:lookup(ObjectName);
+			Obj = env:lookup(ObjectName),
+			#objectPointer{name = Obj#object.name};			
 		"\"" ++ _ = String ->
 			bindVarOrFormatExprElement(String, null);
 		%TODO: this may be a hack
