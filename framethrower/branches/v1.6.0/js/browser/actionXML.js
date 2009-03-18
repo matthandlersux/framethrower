@@ -371,7 +371,7 @@ function clientJSONToServerJSON(actions) {
 	});
 }
 
-function renderJSONFromAction(url) {
+function renderJSONFromAction(url, callback) {
 	var thunkEssence = {
 		url: url,
 		params: {}
@@ -387,8 +387,10 @@ function renderJSONFromAction(url) {
 			
 			json = clientJSONToServerJSON(json);
 			
-			console.log(json);
-			console.log(JSON.stringify(json));
+			callback(json);
+			
+			//console.log(json);
+			//console.log(JSON.stringify(json));
 		}
 	}
 

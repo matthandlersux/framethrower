@@ -1,4 +1,9 @@
+var CELLCOUNT = 0;
+var CELLSCREATED = 0;
+
 function makeBaseCell (toKey) {
+	CELLCOUNT++;
+	CELLSCREATED++;
 	var cell = {kind: "startCap", remote: 2, name: localIds()};
 	var funcs = makeObjectHash();
 	var onRemoves = makeObjectHash();
@@ -121,6 +126,8 @@ function makeBaseCell (toKey) {
 			removeLineResponse(dot, id);
 		});
 		if (funcs.isEmpty() && !cell.persist) {
+			console.log("removing a cell");
+			CELLCOUNT--;
 			onRemoves.forEach(function(onRemove) {
 				if (onRemove.func) {
 					onRemove.func();

@@ -81,11 +81,15 @@ var exprLib = {
 		expr: "f -> bindUnit (compose returnFutureUnit f)"
 	},
 	
-	mapBinaryUnit: {
-		type: "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
-		expr: "f -> compose (compose bindUnit reactiveApply) (mapUnit f)"
-	},
+	// mapBinaryUnit: {
+	// 	type: "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
+	// 	expr: "f -> compose (compose bindUnit reactiveApply) (mapUnit f)"
+	// },
 	
+	
+	// ========================================================================
+	// Bool/Reactive Bool (Unit a) utility
+	// ========================================================================
 	
 	reactiveEqual: {
 		type: "a -> a -> Unit Null",
@@ -144,31 +148,29 @@ var exprLib = {
 	// Object/Cons utility
 	// ========================================================================
 	
-	filterByTruth: {
-		type: "Set Cons -> Set Cons",
-		expr: "filter Cons:truth"
-	},
-	
-	getObjectInOnt: {
-		type: "Object -> Unit Cons",
-		expr: "obj -> (bindUnit ((swap Cons::lookup) obj)) inOnt",
-		where: {
-			inOnt: {
-				type: "Unit Object",
-				expr: "(mapUnit Cons~Object) (Cons::lookup shared.in shared.ont)"
-			}
-		}
+	getInfon2: {
+		type: "Object -> Object -> Object -> Unit Cons",
+		expr: "rel -> arg1 -> arg2 -> bindUnit ((swap Cons::lookup) arg2) (mapUnit Cons~Object (Cons::lookup rel arg1))"
 	},
 	
 	getObjectInSit: {
 		type: "Object -> Object -> Unit Cons",
-		expr: "obj -> sit -> (bindUnit ((swap Cons::lookup) obj)) (inSit sit)",
-		where: {
-			inSit: {
-				type: "Object -> Unit Object",
-				expr: "sit -> (mapUnit Cons~Object) (Cons::lookup shared.in sit)"
-			}
-		}
+		expr: "obj -> sit -> getInfon2 shared.in sit obj"
+	},
+	
+	getObjectInOnt: {
+		type: "Object -> Unit Cons",
+		expr: "obj -> getObjectInSit obj shared.ont"
+	},
+	
+	
+	// ========================================================================
+	// Filtering by Truth
+	// ========================================================================
+	
+	filterByTruth: {
+		type: "Set Cons -> Set Cons",
+		expr: "filter Cons:truth"
 	},
 	
 	filterByTruthInOnt: {
@@ -182,9 +184,7 @@ var exprLib = {
 		}
 	},
 	
-
 	
-
 	// ========================================================================
 	// Getting properties of objects
 	// ========================================================================
@@ -211,16 +211,6 @@ var exprLib = {
 		}
 	},
 	
-	// oldGetOntProp: {
-	// 	type: "Object -> Object -> Set Object",
-	// 	expr: "rel -> obj -> infonsToObjects (getOntInfons rel obj)",
-	// 	where: {
-	// 		infonsToObjects: {
-	// 			type: "Set Cons -> Set Object",
-	// 			chain: ["Cons:right"]
-	// 		}
-	// 	}
-	// },
 	getOntProp: {
 		type: "Object -> Object -> Set Object",
 		expr: "rel -> obj -> infonsToObjects (filterByTruthInOnt (getOntInfons rel obj))",
@@ -242,27 +232,11 @@ var exprLib = {
 			}
 		}
 	},
+
+	// ========================================================================
+	// Getting some specific properties
+	// ========================================================================	
 	
-	isType: {
-		type: "Object -> Unit Null",
-		expr: "x -> bindUnit Cons:truth (bindUnit getObjectInOnt (mapUnit Cons~Object (Cons::lookup shared.isType x)))"
-	},
-	getTypeChildren: {
-		type: "Object -> Set Object",
-		expr: "compose (filter isType) (getOntPropInverse shared.isA)"
-	},
-	
-	
-	// oldGetName: {
-	// 	type: "Object -> Set String",
-	// 	expr: "obj -> getStrings (oldGetOntProp shared.name obj)",
-	// 	where: {
-	// 		getStrings: {
-	// 			type: "Set Object -> Set String",
-	// 			chain: ["X.text:string"]
-	// 		}
-	// 	}
-	// },
 	getName: {
 		type: "Object -> Set String",
 		expr: "obj -> getStrings (getOntProp shared.name obj)",
@@ -285,7 +259,12 @@ var exprLib = {
 		}
 	},
 	
-	getTypesOld: {
+	
+	// ========================================================================
+	// Getting Type (following isA recursively, infering type for Cons's)
+	// ========================================================================
+	
+	getTypesOLD: {
 		type: "Object -> Set Object",
 		expr: "unfoldSet (getOntProp shared.isA)"
 	},
@@ -326,6 +305,19 @@ var exprLib = {
 	getTypesMap: {
 		type: "Object -> Map Number (Set Object)",
 		expr: "unfoldMapInv getTypesOneStep"
+	},
+
+	// ========================================================================
+	// Type Explorer
+	// ========================================================================	
+	
+	isType: {
+		type: "Object -> Unit Null",
+		expr: "x -> bindUnit Cons:truth (bindUnit getObjectInOnt (mapUnit Cons~Object (Cons::lookup shared.isType x)))"
+	},
+	getTypeChildren: {
+		type: "Object -> Set Object",
+		expr: "compose (filter isType) (getOntPropInverse shared.isA)"
 	},
 
 	// ========================================================================

@@ -14,6 +14,8 @@
 	
 	<f:derive name="focustypes" d="getOntProp shared.isA focus" />
 	
+	<f:derive name="thumbnail" d="bindUnitSet Object~X.picture (getOntProp shared.thumbnail focus)" />
+	
 	<!-- These are a total hack -->
 	<!-- <xsl:if test="$ontInfons" /> -->
 	<!-- <xsl:if test="$typeInfons" /> -->
@@ -88,6 +90,20 @@
 					<f:on event="load" with-action="$initTypeExplorer" />
 				</xsl:if> -->
 
+			</html:td>
+		</html:tr>
+		
+		<html:tr>
+			<html:th>Pictures</html:th>
+			<html:td>
+				<f:each select="$thumbnail">
+					<html:div>
+						<f:thunk url="../view2/media/picture.xml">
+							<f:with-param name="focus" select="$thumbnail" />
+							<f:with-param name="transform"><f:transform width="240" height="240" /></f:with-param>
+						</f:thunk>
+					</html:div>
+				</f:each>
 			</html:td>
 		</html:tr>
 	</html:table>

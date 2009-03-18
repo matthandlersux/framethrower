@@ -35,9 +35,20 @@
 		</f:perform>
 	</f:action>
 	
+	<f:action name="removeSubType">
+		<f:param name="parent" type="Object" />
+		<f:param name="child" type="Object" />
+		<f:derive name="ontInfon" d="bindUnit getObjectInOnt (mapUnit Cons~Object (getInfon2 shared.isA child parent))" />
+		
+		<f:each select="$ontInfon">
+			<f:intact object="$ontInfon" property="truth" action="remove" key="null" />
+		</f:each>
+	</f:action>
+	
 	<f:thunk url="../outline/outline.xml">
 		<f:with-param name="display" select="$displayType" />
 		<f:with-param name="makeNewChild" select="$makeNewSubType" />
+		<f:with-param name="removeChild" select="$removeSubType" />
 		<f:with-param name="outlineNode" select="$outlineNode" />
 		<f:with-param name="getChildren" select="$getTypeChildren" />
 	</f:thunk>

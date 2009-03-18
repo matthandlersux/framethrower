@@ -166,6 +166,7 @@ function xhr(url, post, callback, failCallback, timeout) {
 		req.abort();
 		fail();
 	}, timeout);
+	if (post.length > 300) console.log("sending big post, length: "+post.length);
 }
 
 
