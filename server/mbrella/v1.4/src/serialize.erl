@@ -38,149 +38,102 @@
 %% External functions
 %% ====================================================================
 
-start(FileName) -> 
-	start_link(FileName),
+start(DefaultFileName) -> 
+	start_link(DefaultFileName),
 	unserialize().
-start_link(FileName) ->
-	case gen_server:start({local, ?MODULE}, ?MODULE, [FileName], []) of
+start_link(DefaultFileName) ->
+	case gen_server:start({local, ?MODULE}, ?MODULE, [DefaultFileName], []) of
 		{ok, Pid} -> Pid;
 		Else -> Else
 	end.
 
 serializeEnv() ->
-	gen_server:cast(?MODULE, clear),
+	gen_server:cast(?MODULE, serializeEnv).
+
+serializeEnv(FileName) ->
+	gen_server:cast(?MODULE, {serializeEnv, FileName}).
+	
+unserialize() ->
+	gen_server:cast(?MODULE, unserialize).
+
+unserialize(FileName) ->
+	gen_server:cast(?MODULE, {unserialize, FileName}).
+
+getStateList() ->
+	gen_server:call(?MODULE, getStateList).
+
+stop() ->
+	gen_server:call(?MODULE, stop).
+
+
+%%SERIALIZE
+
+serializeNow(ETS) ->
 	EnvEts = env:getStateDict(),
 	AddIfObj = fun({_, ObjOrCellOrFunc}, InProcess) ->
 		case ObjOrCellOrFunc of
 			Obj when is_record(Obj, object) -> 
-				{_, NewInProcess} = serializeObj(Obj, InProcess),
+				{_, NewInProcess} = serializeObj(Obj, InProcess, ETS),
 				NewInProcess;
 			_ -> InProcess
 		end
 	end,
 	ets:fold(AddIfObj, dict:new(), EnvEts),
-	Response = gen_server:cast(?MODULE, write),
 	ok.
 
-serializeObj(Obj, InProcess) ->
+serializeObj(Obj, InProcess, ETS) ->
 	ObjName = Obj#object.name,
 	NewInProcess = dict:store(ObjName, true, InProcess),
 	{UpdatedProp, UpdatedInProcess} = dict:fold(fun (PropName, Property, {InnerProp, InnerInProcess}) ->
-		{NewProperty, NewInnerInProcess} = serializeProp(Property, InnerInProcess),
+		{NewProperty, NewInnerInProcess} = serializeProp(Property, InnerInProcess, ETS),
 		NewProp = dict:store(PropName, NewProperty, InnerProp),
 		{NewProp, NewInnerInProcess}
 	end, {dict:new(), NewInProcess}, Obj#object.prop),
 	NewObj = Obj#object{prop = UpdatedProp},
-	gen_server:cast(?MODULE, {add, ObjName, NewObj}),
+	ets:insert(ETS, {ObjName, NewObj}),
 	{#object{name=ObjName}, UpdatedInProcess}.
 	
-serializeCell(Cell, InProcess) ->
+serializeCell(Cell, InProcess, ETS) ->
 	Name = Cell#exprCell.name,	
 	NewInProcess = dict:store(Name, true, InProcess),
 	StateArray = cell:getStateArray(Cell),
 	{UpdatedStateArray, UpdatedInProcess} = lists:foldl(fun(Property, {InnerStateArray, InnerInProcess}) -> 
-		{NewProperty, NewInnerInProcess} = serializeProp(Property, InnerInProcess),
+		{NewProperty, NewInnerInProcess} = serializeProp(Property, InnerInProcess, ETS),
 		NewStateArray = [NewProperty|InnerStateArray],
 		{NewStateArray, NewInnerInProcess}
 	end, {[], NewInProcess}, StateArray),
 	NewCell = Cell#exprCell{pid=UpdatedStateArray},
-	gen_server:cast(?MODULE, {add, Name, NewCell}),
+	ets:insert(ETS, {Name, NewCell}),
 	{#exprCell{name=Name}, UpdatedInProcess}.
 
-serializeProp(Property, InProcess) when is_record(Property, exprCell) ->
+serializeProp(Property, InProcess, ETS) when is_record(Property, exprCell) ->
 	PropName = Property#exprCell.name,
 	case dict:find(PropName, InProcess) of
-		error -> serializeCell(Property, InProcess);
+		error -> serializeCell(Property, InProcess, ETS);
 		_ -> {#exprCell{name=PropName}, InProcess}
 	end;
-serializeProp(Property, InProcess) when is_record(Property, object) ->
+serializeProp(Property, InProcess, ETS) when is_record(Property, object) ->
 	PropName = Property#object.name,
 	case dict:find(PropName, InProcess) of
-		error -> serializeObj(Property, InProcess);
+		error -> serializeObj(Property, InProcess, ETS);
 		_ -> {#object{name=PropName}, InProcess}
 	end;
-serializeProp(Property, InProcess) ->
+serializeProp(Property, InProcess, _) ->
 	{Property, InProcess}.
 
 
-unserialize() ->
-	gen_server:cast(?MODULE, unserialize).
+%% UNSERIALIZE
 
 
-getStateList() ->
-	gen_server:call(?MODULE, getStateList).
-	
-stop() ->
-	gen_server:call(?MODULE, stop).
-
-%% ====================================================================
-%% Server functions
-%% ====================================================================
-
-%% --------------------------------------------------------------------
-%% Function: init/1
-%% Description: Initiates the server
-%% Returns: {ok, State}          |
-%%          {ok, State, Timeout} |
-%%          ignore               |
-%%          {stop, Reason}
-%% --------------------------------------------------------------------
-init([FileName]) ->
-	process_flag(trap_exit, true),
-	State = case ets:file2tab(FileName) of
-		{ok, Table} ->
-			#serialize{ets = Table, file = FileName};
-		{error, _Reason} ->
-			#serialize{file = FileName}
-	end,
-    {ok, State}.
-
-%% --------------------------------------------------------------------
-%% Function: handle_call/3
-%% Description: Handling call messages
-%% Returns: {reply, Reply, State}          |
-%%          {reply, Reply, State, Timeout} |
-%%          {noreply, State}               |
-%%          {noreply, State, Timeout}      |
-%%          {stop, Reason, Reply, State}   | (terminate/2 is called)
-%%          {stop, Reason, State}            (terminate/2 is called)
-%% --------------------------------------------------------------------
-handle_call(getStateList, From, State) ->
-	% case ets:lookup(?this(ets), Expr) of
-	% 	[{_, Reply}] ->
-	% 		good;
-	% 	[] -> 
-	% 		Reply = key_does_not_exist
-	% end,
-    {reply, ets:tab2list(?this(ets)), State};
-handle_call(stop, _, State) ->
-	{stop, normal, stopped, State}.
-
-%% --------------------------------------------------------------------
-%% Function: handle_cast/2
-%% Description: Handling cast messages
-%% Returns: {noreply, State}          |
-%%          {noreply, State, Timeout} |
-%%          {stop, Reason, State}            (terminate/2 is called)
-%% --------------------------------------------------------------------
-handle_cast({add, Name, Elem}, State) ->
-	ets:insert(?this(ets), {Name, Elem}),
-    {noreply, State};
-handle_cast(write, State) ->
-	ets:tab2file(?this(ets), ?this(file)),
-    {noreply, State};
-handle_cast(clear, State) ->
-	NewState = State#serialize{ets=ets:new(serializeTable, [])},
-    {noreply, NewState};
-handle_cast(unserialize, State) ->
+unserializeNow(ETS) ->
 	%unserialize all cells
 	CellDict = ets:foldl(fun({Name, ObjOrCell}, Dict) -> 
 		makeCells(ObjOrCell, Dict)
-	end, dict:new(), ?this(ets)),
+	end, dict:new(), ETS),
 	%unserialize all objects, leaving old casting tables
 	{EmptyDependencies, NewObjectDict} = ets:foldl(fun({Name, ObjOrCell}, {Dependencies, ObjectDict}) -> 
 		tryMakeObject(ObjOrCell, Dependencies, CellDict, ObjectDict) 
-	end, {dict:new(), dict:new()}, ?this(ets)),
+	end, {dict:new(), dict:new()}, ETS),
 	%map casting tables to new object names, and update objects in env
 	dict:map(fun(Name, ObjName) ->
 		Obj = env:lookup(ObjName), 
@@ -189,18 +142,15 @@ handle_cast(unserialize, State) ->
 	%add objects/cells/primitives to all cells
 	ets:foldl(fun({Name, ObjOrCell}, Acc) -> 
 		populateCells(ObjOrCell, CellDict, NewObjectDict)
-	end, acc, ?this(ets)),
+	end, acc, ETS),
 	%add objects to memoTables
 	
 	dict:map(fun(Name, ObjName) -> 
 		Obj = env:lookup(ObjName),
 		memoizeObject(Obj)
-	end, NewObjectDict),
-	
-	
-    {noreply, State};
-handle_cast({terminate, Reason}, State) ->
-	{stop, Reason, State}.
+	end, NewObjectDict).	
+
+
 
 makeCells(Cell, CellDict) when is_record(Cell, exprCell) ->
 	NewCell = case type:isMap(Cell#exprCell.type) of
@@ -310,6 +260,81 @@ memoizeObject(Obj) ->
 		end
 	end, Prop),
 	objects:addToMemoTable(Obj, NewProp).
+
+
+%% ====================================================================
+%% Server functions
+%% ====================================================================
+
+%% --------------------------------------------------------------------
+%% Function: init/1
+%% Description: Initiates the server
+%% Returns: {ok, State}          |
+%%          {ok, State, Timeout} |
+%%          ignore               |
+%%          {stop, Reason}
+%% --------------------------------------------------------------------
+init([FileName]) ->
+	process_flag(trap_exit, true),
+    {ok, #serialize{file = FileName}}.
+
+%% --------------------------------------------------------------------
+%% Function: handle_call/3
+%% Description: Handling call messages
+%% Returns: {reply, Reply, State}          |
+%%          {reply, Reply, State, Timeout} |
+%%          {noreply, State}               |
+%%          {noreply, State, Timeout}      |
+%%          {stop, Reason, Reply, State}   | (terminate/2 is called)
+%%          {stop, Reason, State}            (terminate/2 is called)
+%% --------------------------------------------------------------------
+handle_call(getStateList, From, State) ->
+	% case ets:lookup(?this(ets), Expr) of
+	% 	[{_, Reply}] ->
+	% 		good;
+	% 	[] -> 
+	% 		Reply = key_does_not_exist
+	% end,
+    {reply, ets:tab2list(?this(ets)), State};
+handle_call(stop, _, State) ->
+	{stop, normal, stopped, State}.
+
+%% --------------------------------------------------------------------
+%% Function: handle_cast/2
+%% Description: Handling cast messages
+%% Returns: {noreply, State}          |
+%%          {noreply, State, Timeout} |
+%%          {stop, Reason, State}            (terminate/2 is called)
+%% --------------------------------------------------------------------
+handle_cast({serializeEnv, FileName}, State) ->
+	ETS = ets:new(serializeTable, []),
+	serializeNow(ETS),
+	ets:tab2file(ETS, FileName),
+    {noreply, State};
+handle_cast(serializeEnv, State) ->
+	ETS = ets:new(serializeTable, []),
+	serializeNow(ETS),
+	ets:tab2file(ETS, ?this(file)),
+    {noreply, State};
+handle_cast(unserialize, State) ->
+	case ets:file2tab(?this(file)) of
+		{ok, Table} ->
+			unserializeNow(Table);
+		{error, _Reason} ->
+			nosideeffect
+	end,
+    {noreply, State};
+handle_cast({unserialize, FileName}, State) ->
+	case ets:file2tab(FileName) of
+		{ok, Table} ->
+			unserializeNow(Table);
+		{error, _Reason} ->
+			nosideeffect
+	end,
+    {noreply, State};
+handle_cast({terminate, Reason}, State) ->
+	{stop, Reason, State}.
+
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2

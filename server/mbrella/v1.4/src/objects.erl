@@ -29,8 +29,6 @@
 -record(class, {name, prop=dict:new(),inherit,memoize,memoTable=dict:new(),castUp,castDown,makeMemoEntry}).
 -record(memoEntry, {broadcaster, object}).
 
--record(classToMake, {name, inherit, prop, memoize}).
-
 %% ====================================================
 %% Types
 %% ====================================================
@@ -42,147 +40,147 @@
 %% 
 
 
-classesToMake() ->
-	[
-		%% ====================================================
-		%% Core
-		%% ====================================================
-		#classToMake{
-			name="Object",
-			prop= [
-				{"upLeft", "Set Cons"},
-				{"upRight", "Set Cons"}
-			]
-		},
-		#classToMake{
-			name = "Cons",
-			inherit = "Object",
-			prop = [
-				{"left", "Object"},
-				{"right", "Object"},
-				{"truth", "Unit Null"}
-			],
-			memoize= ["left", "right"]
-		},
+% classesToMake() ->
+% 	[
+% 		%% ====================================================
+% 		%% Core
+% 		%% ====================================================
+% 		#classToMake{
+% 			name="Object",
+% 			prop= [
+% 				{"upLeft", "Set Cons"},
+% 				{"upRight", "Set Cons"}
+% 			]
+% 		},
+% 		#classToMake{
+% 			name = "Cons",
+% 			inherit = "Object",
+% 			prop = [
+% 				{"left", "Object"},
+% 				{"right", "Object"},
+% 				{"truth", "Unit Null"}
+% 			],
+% 			memoize= ["left", "right"]
+% 		},
+% 
+% 		%% ====================================================
+% 		%% External Representations
+% 		%% ====================================================
+% 
+% 		#classToMake{
+% 			name = "X.video",
+% 			inherit = "Object",
+% 			prop = [
+% 				{"url", "String"},
+% 				{"width", "Number"},
+% 				{"height", "Number"},
+% 				{"frameRate", "Number"},				
+% 				{"duration", "Number"}
+% 			]
+% 		},
+% 		#classToMake{
+% 			name = "X.picture",
+% 			inherit = "Object",
+% 			prop = [
+% 				{"url", "String"},
+% 				{"width", "Number"},
+% 				{"height", "Number"}
+% 			]
+% 		},
+% 		#classToMake{
+% 			name = "X.picture.crop",
+% 			inherit = "Object",
+% 			prop = [
+% 				{"x", "Number"},
+% 				{"y", "Number"},
+% 				{"width", "Number"},
+% 				{"height", "Number"}
+% 			]
+% 		},
+% 		#classToMake{
+% 			name = "X.text",
+% 			inherit = "Object",
+% 			prop = [
+% 				{"string", "String"}
+% 			],
+% 			memoize = ["string"]
+% 		},
+% 		#classToMake{
+% 			name = "X.xml",
+% 			inherit = "Object",
+% 			prop = [
+% 				{"xml", "XML"}
+% 			]
+% 		},
+% 		#classToMake{
+% 			name = "X.time.range",
+% 			inherit = "Object",
+% 			prop = [
+% 				{"start", "Number"},
+% 				{"duration", "Number"}
+% 			]
+% 		},
+% 
+% 
+% 		%% ====================================================
+% 		%% UI
+% 		%% ====================================================
+% 	
+% 		#classToMake{ name = "UI.ui",prop = [ {"screenWidth", "Unit Number"}, {"screenHeight", "Unit Number"}, {"mouseX", "Unit Number"}, {"mouseY", "Unit Number"}]}, 
+% 		#classToMake{ name = "UI.main",prop = [ {"pane", "UI.pane"}, {"popup", "Map String UI.popup"}, {"dragging", "Unit UI.dragging"}]}, 
+% 		#classToMake{ name = "UI.popup",prop = [ {"x", "Number"}, {"y", "Number"}, {"width", "Number"}, {"height", "Number"}, {"content", "Unit JS"}]}, 
+% 		#classToMake{ name = "UI.dragging",prop = [ {"object", "Object"}]}, 
+% 		#classToMake{ name = "UI.pane",prop = [ {"width", "Unit Number"}, {"height", "Unit Number"}]}, 
+% 		#classToMake{ name = "UI.pane.set",inherit = "UI.pane", prop = [ {"panes", "Map String UI.pane"}, {"orientation", "Unit String"}]}, 
+% 		#classToMake{ name = "UI.pane.timeline",inherit = "UI.pane", prop = [ {"focus", "Object"}, {"zoomWidth", "Unit Number"}, {"previewFrame", "Unit Number"}, {"selectedTime1", "Unit Number"}, {"selectedTime2", "Unit Number"}, {"selecting", "Unit Null"}]}, 
+% 		#classToMake{ name = "UI.pane.pane",inherit = "UI.pane", prop = [ {"tab", "Unit String"}, {"focus", "Unit Object"}, {"propertiesState", "UI.propertiesState"}, {"aboutNewInfons", "Set UI.consIP"}, {"infonsInNewInfons", "Set UI.consIP"}, {"addingObject", "Unit Object"}, {"addingObjectPropertiesState", "UI.propertiesState"}]}, 
+% 		#classToMake{ name = "UI.propertiesState",prop = [ {"editName", "Unit Null"}, {"typeExplorer", "Unit UI.outlineNode"}]}, 
+% 		#classToMake{ name = "UI.consIP",prop = [ {"object", "Unit Object"}, {"left", "Unit UI.consIP"}, {"right", "Unit UI.consIP"}]}, 
+% 		#classToMake{ name = "UI.outlineNode",prop = [ {"focus", "Object"}, {"children", "Map Object UI.outlineNode"}, {"expanded", "Unit Null"}]}, 
+% 		#classToMake{ name = "UI.relationCreator.word",prop = [ {"string", "Unit String"}, {"type", "Unit Object"}]}, 
+% 		#classToMake{ name = "UI.relationCreator",prop = [ {"typeExplorer", "UI.outlineNode"}, {"words", "Map String UI.relationCreator.word"}]}, 
+% 		#classToMake{ name = "UI.prefs",prop = [ {"typeDisplay", "Map Object String"}, {"timelineLayers", "Map String Object"}]}
+% 	].
 
-		%% ====================================================
-		%% External Representations
-		%% ====================================================
-
-		#classToMake{
-			name = "X.video",
-			inherit = "Object",
-			prop = [
-				{"url", "String"},
-				{"width", "Number"},
-				{"height", "Number"},
-				{"frameRate", "Number"},				
-				{"duration", "Number"}
-			]
-		},
-		#classToMake{
-			name = "X.picture",
-			inherit = "Object",
-			prop = [
-				{"url", "String"},
-				{"width", "Number"},
-				{"height", "Number"}
-			]
-		},
-		#classToMake{
-			name = "X.picture.crop",
-			inherit = "Object",
-			prop = [
-				{"x", "Number"},
-				{"y", "Number"},
-				{"width", "Number"},
-				{"height", "Number"}
-			]
-		},
-		#classToMake{
-			name = "X.text",
-			inherit = "Object",
-			prop = [
-				{"string", "String"}
-			],
-			memoize = ["string"]
-		},
-		#classToMake{
-			name = "X.xml",
-			inherit = "Object",
-			prop = [
-				{"xml", "XML"}
-			]
-		},
-		#classToMake{
-			name = "X.time.range",
-			inherit = "Object",
-			prop = [
-				{"start", "Number"},
-				{"duration", "Number"}
-			]
-		},
-
-
-		%% ====================================================
-		%% UI
-		%% ====================================================
-	
-		#classToMake{ name = "UI.ui",prop = [ {"screenWidth", "Unit Number"}, {"screenHeight", "Unit Number"}, {"mouseX", "Unit Number"}, {"mouseY", "Unit Number"}]}, 
-		#classToMake{ name = "UI.main",prop = [ {"pane", "UI.pane"}, {"popup", "Map String UI.popup"}, {"dragging", "Unit UI.dragging"}]}, 
-		#classToMake{ name = "UI.popup",prop = [ {"x", "Number"}, {"y", "Number"}, {"width", "Number"}, {"height", "Number"}, {"content", "Unit JS"}]}, 
-		#classToMake{ name = "UI.dragging",prop = [ {"object", "Object"}]}, 
-		#classToMake{ name = "UI.pane",prop = [ {"width", "Unit Number"}, {"height", "Unit Number"}]}, 
-		#classToMake{ name = "UI.pane.set",inherit = "UI.pane", prop = [ {"panes", "Map String UI.pane"}, {"orientation", "Unit String"}]}, 
-		#classToMake{ name = "UI.pane.timeline",inherit = "UI.pane", prop = [ {"focus", "Object"}, {"zoomWidth", "Unit Number"}, {"previewFrame", "Unit Number"}, {"selectedTime1", "Unit Number"}, {"selectedTime2", "Unit Number"}, {"selecting", "Unit Null"}]}, 
-		#classToMake{ name = "UI.pane.pane",inherit = "UI.pane", prop = [ {"tab", "Unit String"}, {"focus", "Unit Object"}, {"propertiesState", "UI.propertiesState"}, {"aboutNewInfons", "Set UI.consIP"}, {"infonsInNewInfons", "Set UI.consIP"}, {"addingObject", "Unit Object"}, {"addingObjectPropertiesState", "UI.propertiesState"}]}, 
-		#classToMake{ name = "UI.propertiesState",prop = [ {"editName", "Unit Null"}, {"typeExplorer", "Unit UI.outlineNode"}]}, 
-		#classToMake{ name = "UI.consIP",prop = [ {"object", "Unit Object"}, {"left", "Unit UI.consIP"}, {"right", "Unit UI.consIP"}]}, 
-		#classToMake{ name = "UI.outlineNode",prop = [ {"focus", "Object"}, {"children", "Map Object UI.outlineNode"}, {"expanded", "Unit Null"}]}, 
-		#classToMake{ name = "UI.relationCreator.word",prop = [ {"string", "Unit String"}, {"type", "Unit Object"}]}, 
-		#classToMake{ name = "UI.relationCreator",prop = [ {"typeExplorer", "UI.outlineNode"}, {"words", "Map String UI.relationCreator.word"}]}, 
-		#classToMake{ name = "UI.prefs",prop = [ {"typeDisplay", "Map Object String"}, {"timelineLayers", "Map String Object"}]}
-	].
-
-makeRootObjects() ->
-	objects:createWithName("Object", dict:new(), "shared.in"),
-
-	objects:createWithName("Object", dict:new(), "shared.ont"),
-
-	objects:createWithName("Object", dict:new(), "shared.isA"),
-	objects:createWithName("Object", dict:new(), "shared.name"),
-	objects:createWithName("Object", dict:new(), "shared.relationTemplate"),
-	
-	objects:createWithName("Object", dict:new(), "shared.video"),
-	objects:createWithName("Object", dict:new(), "shared.videoTransitionsXML"),
-
-	objects:createWithName("Object", dict:new(), "shared.thumbnail"),
-	objects:createWithName("Object", dict:new(), "shared.picture.crop"),
-
-	objects:createWithName("Object", dict:new(), "shared.isType"),
-	objects:createWithName("Object", dict:new(), "shared.type"),
-
-	objects:createWithName("Object", dict:new(), "shared.type.situation"),
-	objects:createWithName("Object", dict:new(), "shared.type.entity"),
-	objects:createWithName("Object", dict:new(), "shared.type.infon"),
-	%% this will itself be used as a binary relation to make relation types
-	objects:createWithName("Object", dict:new(), "shared.type.relation"), 
-
-	objects:createWithName("Object", dict:new(), "shared.type.poly.a"),
-	objects:createWithName("Object", dict:new(), "shared.type.movie"),
-	objects:createWithName("Object", dict:new(), "shared.type.location"),
-	objects:createWithName("Object", dict:new(), "shared.type.agent"),
-
-	objects:createWithName("Object", dict:new(), "shared.realLife"),
-	
-	objects:createWithName("Object", dict:new(), "shared.movie.story"),
-	objects:createWithName("Object", dict:new(), "shared.movie.presentation"),
-	objects:createWithName("Object", dict:new(), "shared.movie.making"),
-	
-	objects:createWithName("Object", dict:new(), "shared.movie.timeRange"),
-	
-	objects:createWithName("Object", dict:new(), "shared.test.walleMovie"),
-	ok.
+% makeRootObjects() ->
+% 	objects:createWithName("Object", dict:new(), "shared.in"),
+% 
+% 	objects:createWithName("Object", dict:new(), "shared.ont"),
+% 
+% 	objects:createWithName("Object", dict:new(), "shared.isA"),
+% 	objects:createWithName("Object", dict:new(), "shared.name"),
+% 	objects:createWithName("Object", dict:new(), "shared.relationTemplate"),
+% 	
+% 	objects:createWithName("Object", dict:new(), "shared.video"),
+% 	objects:createWithName("Object", dict:new(), "shared.videoTransitionsXML"),
+% 
+% 	objects:createWithName("Object", dict:new(), "shared.thumbnail"),
+% 	objects:createWithName("Object", dict:new(), "shared.picture.crop"),
+% 
+% 	objects:createWithName("Object", dict:new(), "shared.isType"),
+% 	objects:createWithName("Object", dict:new(), "shared.type"),
+% 
+% 	objects:createWithName("Object", dict:new(), "shared.type.situation"),
+% 	objects:createWithName("Object", dict:new(), "shared.type.entity"),
+% 	objects:createWithName("Object", dict:new(), "shared.type.infon"),
+% 	%% this will itself be used as a binary relation to make relation types
+% 	objects:createWithName("Object", dict:new(), "shared.type.relation"), 
+% 
+% 	objects:createWithName("Object", dict:new(), "shared.type.poly.a"),
+% 	objects:createWithName("Object", dict:new(), "shared.type.movie"),
+% 	objects:createWithName("Object", dict:new(), "shared.type.location"),
+% 	objects:createWithName("Object", dict:new(), "shared.type.agent"),
+% 
+% 	objects:createWithName("Object", dict:new(), "shared.realLife"),
+% 	
+% 	objects:createWithName("Object", dict:new(), "shared.movie.story"),
+% 	objects:createWithName("Object", dict:new(), "shared.movie.presentation"),
+% 	objects:createWithName("Object", dict:new(), "shared.movie.making"),
+% 	
+% 	objects:createWithName("Object", dict:new(), "shared.movie.timeRange"),
+% 	
+% 	objects:createWithName("Object", dict:new(), "shared.test.walleMovie"),
+% 	ok.
 	
 	
 %% ====================================================================
@@ -190,9 +188,13 @@ makeRootObjects() ->
 %% ====================================================================
 
 start() -> 
-	Server = gen_server:start({local, ?MODULE}, ?MODULE, [], []),
-	%TODO: make classes and add properties
-	ClassesToMake = classesToMake(),
+	gen_server:start({local, ?MODULE}, ?MODULE, [], []).
+
+stop() ->
+	gen_server:call(?MODULE, stop).
+
+
+makeClasses(ClassesToMake) ->
 	lists:map(fun (ClassDef) ->
 		#classToMake{name = Name, inherit = Inherit, prop = Prop, memoize = Memoize} = ClassDef,
 		makeClass(Name, Inherit, Memoize),
@@ -200,12 +202,7 @@ start() ->
 			addProp(Name, PropName, TypeString)
 		end, Prop),
 		addMemoLookup(ClassDef)
-	end, ClassesToMake),
-	makeRootObjects(),
-	Server.
-
-stop() ->
-	gen_server:call(?MODULE, stop).
+	end, ClassesToMake).
 
 makeClass(Name, Inherit, Memoize) ->
 	gen_server:cast(?MODULE, {makeClass, Name, Inherit, Memoize}).

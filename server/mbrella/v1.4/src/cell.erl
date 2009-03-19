@@ -69,12 +69,6 @@ injectFunc(Cell, OutputCellOrIntOrFunc, Fun) ->
 	OnRemove.
 
 injectFuncs(OutputCellOrIntOrFunc, CellFuncs) ->
-	case OutputCellOrIntOrFunc of
-		ExprCell when is_record(ExprCell, exprCell) ->
-			?trace("Lookout!"),
-			problem:call();
-		_ -> nosideeffect
-	end,
 	CellFuncIds = lists:map(fun({Cell, Fun}) ->
 			{Id, _} = gen_server:call(Cell#cellPointer.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}),
 		{Cell, Fun, Id}

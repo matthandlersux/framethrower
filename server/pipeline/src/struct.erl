@@ -19,8 +19,9 @@
 -module(struct).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
--export([extend/2, withdraw/2, get_value/2, get_first/1, set_value/3, delete/2]).
+-export([extend/2, withdraw/2, get_value/2, set_value/3, delete/2]).
 
+-export([get_first/1, to_list/1]).
 
 %% @type key() = binary()
 %% @type value() = [integer() | float() | atom() | tuple() | binary() | string() | list()]
@@ -95,13 +96,6 @@ wdr([{K, V} | T], L2, Result) ->
 			wdr(T, L2, Result)
 		end.
 
-%% @spec get_first(struct()) -> {key(), value()}
-get_first({struct, [FirstPair | _]}) ->
-	FirstPair;
-get_first(Other) ->
-	?trace(Other),
-	notfound.
-
 %% @spec get_value(path() | key(), struct()) -> value()
 get_value(Path, Struct) when is_tuple(Path) ->
 	L = tuple_to_list(Path),
@@ -145,3 +139,15 @@ del([], Struct, Result) ->
 del([Key | T ], Struct, Result) ->
 	del(T, Struct, {struct, [{Key, Result}]}).
 
+
+%% Below are extentions to struct made by eversplosion team
+
+%% @spec get_first(struct()) -> {key(), value()}
+get_first({struct, [FirstPair | _]}) ->
+	FirstPair;
+get_first(Other) ->
+	?trace(Other),
+	notfound.
+
+to_list({struct, List}) ->
+	List.

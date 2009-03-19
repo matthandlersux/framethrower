@@ -2,6 +2,7 @@
 -compile (export_all).
 
 -include ("../mbrella/v1.4/include/scaffold.hrl").
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define(consKeysLeftRight, [3, 4] ).
 
 %% ====================================================
@@ -229,6 +230,41 @@ exprElementToJson(X) when is_record(X, object) ->
 exprElementToJson(X) -> X.
 
 
+createClasses(ClassesStruct) ->
+	Classes = struct:to_list(ClassesStruct),
+	ClassesToMake = lists:map(fun(Anything) ->
+		{Name, Fields} = Anything,
+		BinProp = struct:to_list(struct:get_value(<<"prop">>, Fields)),
+		Prop = lists:map(fun({PropName, PropVal}) ->
+			{binary_to_list(PropName), binary_to_list(PropVal)}
+		end, BinProp),
+
+		InheritBin = struct:get_value(<<"inherit">>, Fields),
+		MemoizeBin = struct:get_value(<<"memoize">>, Fields),
+
+		WithProps = #classToMake{ name = binary_to_list(Name),prop = Prop},
+		WithInherit = case InheritBin of
+			undefined -> WithProps;
+			_ -> WithProps#classToMake{inherit = binary_to_list(InheritBin)}
+		end,
+		case MemoizeBin of
+			undefined -> WithInherit;
+			_ ->
+				Memoize = lists:map(fun(MemoField) ->
+					binary_to_list(MemoField)
+				end, MemoizeBin),
+				WithInherit#classToMake{memoize = Memoize}
+		end
+	end, Classes),
+	objects:makeClasses(ClassesToMake).
+
+createRootObjects(RootObjectsStruct) ->
+	RootObjects = struct:to_list(RootObjectsStruct),
+	lists:foreach(fun({Name, Type}) ->
+		objects:createWithName(binary_to_list(Type), dict:new(), binary_to_list(Name))
+	end, RootObjects).
+
+
 %% 
 %% function to load bootJSON file and run it against the server on bootup to populate objects and cells etc...
 %% 
@@ -239,7 +275,15 @@ bootJsonScript() ->
 bootJsonScriptLoop() ->
 	SessionId = session:new(),
 	{ok, JSONBinary} = file:read_file("lib/bootJSON"),
-	pipeline_web:processActionList( mochijson2:decode( binary_to_list( JSONBinary ) ) ),
+	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
+	ClassesStruct = struct:get_value(<<"classes">>, Struct),
+	RootObjectsStruct = struct:get_value(<<"rootObjects">>, Struct),
+	PrepareStateStruct = struct:get_value(<<"prepareState">>, Struct),	
+
+	createClasses(ClassesStruct),
+	createRootObjects(RootObjectsStruct),
+	pipeline_web:processActionList(PrepareStateStruct),
+	
 	% case inets:start() of
 	% 	ok ->
 	% 		receive

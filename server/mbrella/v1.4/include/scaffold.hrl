@@ -69,7 +69,14 @@
 	prop = dict:new(),
 	castingDict
 	}).
-	
+
+-record (classToMake, {
+	name,
+	inherit,
+	prop,
+	memoize
+	}).
+
 %% ====================================================
 %% expression records
 %% ====================================================
