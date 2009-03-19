@@ -425,7 +425,6 @@ primitives() ->
 	name = "fold",
 	type = "(a -> b -> b) -> (a -> b -> b) -> b -> Set a -> Unit b",
 	function = fun(Fun, FunInv, Init, Cell) ->
-		?trace(erlang:get_stacktrace()),
 		OutputCell = cell:makeCell(),
 		cell:addLine(OutputCell, Init),
 		Intercept = cell:injectIntercept(OutputCell, fun(Message, Cache) ->
