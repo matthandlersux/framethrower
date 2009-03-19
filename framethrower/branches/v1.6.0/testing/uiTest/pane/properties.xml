@@ -155,10 +155,12 @@
 			<f:intact object="$ontInfon" action="remove" property="truth" key="null" /> <!-- TODO shouldn't need a key -->
 		</f:each>
 		
-		<f:perform with-action="$nameObject">
-			<f:with-param name="object" select="$focus" />
-			<f:with-param name="name" select="$newName" />
-		</f:perform>
+		<xsl:if test="string-length($newName/@value) &gt; 0">
+			<f:perform with-action="$nameObject">
+				<f:with-param name="object" select="$focus" />
+				<f:with-param name="name" select="$newName" />
+			</f:perform>
+		</xsl:if>
 		
 		<f:intact object="$propertiesState" action="remove" property="editName" key="null" /> <!-- TODO shouldn't need a key -->
 		

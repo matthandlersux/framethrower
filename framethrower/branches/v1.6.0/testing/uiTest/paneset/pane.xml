@@ -13,6 +13,7 @@
 	<f:derive name="asSet" d="UI.pane~UI.pane.set pane" />
 	<f:derive name="asPane" d="UI.pane~UI.pane.pane pane" />
 	<f:derive name="asTimeline" d="UI.pane~UI.pane.timeline pane" />
+	<f:derive name="asRealTimeline" d="UI.pane~UI.pane.realTimeline pane" />
 	
 	<f:each select="$asSet">
 		<f:thunk url="set.xml">
@@ -39,5 +40,15 @@
 			<f:with-param name="height" select="$height" />
 		</f:thunk>
 	</f:each>
+	<f:each select="$asRealTimeline">
+		<f:thunk url="../realTimeline/realTimeline.xml">
+			<f:with-param name="realTimeline" select="$asRealTimeline" />
+			<f:with-param name="newPane" select="$newPane" />
+			<f:with-param name="closePane" select="$closePane" />
+			<f:with-param name="width" select="$width" />
+			<f:with-param name="height" select="$height" />
+		</f:thunk>
+	</f:each>
+
 		
 </f:template>

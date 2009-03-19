@@ -67,37 +67,26 @@
 	<f:intact object="$columns" property="panes" action="add" key="'b'" value="$mainPane" />
 	
 	
-	<f:derive name="walleMovie" d="shared.test.walleMovie" />
+	<!-- <f:derive name="walleMovie" d="shared.test.walleMovie" />
 	<f:create type="UI.pane.timeline" name="timeline">
 		<f:with-param name="focus" select="$walleMovie" />
 	</f:create>
 	<f:intact object="$timeline" property="height" action="add" key="180" />
-	<f:intact object="$timeline" property="zoomWidth" action="add" key="4000" />
+	<f:intact object="$timeline" property="zoomWidth" action="add" key="4000" /> -->
 	
-	<!-- <f:create type="UI.pane.pane" name="timeline" />
-	<f:intact object="$timeline" property="focus" action="add" key="$realLife" />
-	<f:intact object="$timeline" property="height" action="add" key="200" /> -->
+	<f:create type="UI.pane.realTimeline" name="timeline">
+		<f:with-param name="focus" select="$realLife" />
+	</f:create>
+	<f:intact object="$timeline" property="height" action="add" key="80" />
+	<f:intact object="$timeline" property="zoomWidth" action="add" key="4000" />
+	<f:intact object="$timeline" property="startDate" action="add" key="-80" />
+	<f:intact object="$timeline" property="endDate" action="add" key="380" />
 
 	
 	<f:intact object="$mainPaneSet" property="panes" action="add" key="'b'" value="$columns" />
 	<f:intact object="$mainPaneSet" property="panes" action="add" key="'bb'" value="$timeline" />
 
 
-
-	<!-- <f:perform with-action="$showPopup">
-		<f:with-param name="x" select="100" as="Number" />
-		<f:with-param name="y" select="100" as="Number" />
-		<f:with-param name="width" select="500" as="Number" />
-		<f:with-param name="height" select="300" as="Number" />
-		<f:with-param name="content" select="$test" />
-	</f:perform>
-
-	<f:template name="test">
-		<f:derive name="relationCreator" d="test.relationCreator" />
-		<f:thunk url="relationCreator/relationCreator.xml">
-			<f:with-param name="relationCreator" select="$relationCreator" />
-		</f:thunk>
-	</f:template> -->
 	
 	<f:include url="/xml/util/uiActions.xml" />
 

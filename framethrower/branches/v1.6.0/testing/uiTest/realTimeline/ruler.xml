@@ -1,0 +1,212 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="width" type="Number" />
+	<f:param name="height" type="Number" />
+	
+	<f:param name="startDate" type="Number" />
+	<f:param name="endDate" type="Number" />
+	
+	<f:param name="focus" type="Object" />
+	
+	<f:include url="/xml/util/actions.xml" />
+	<f:include url="/xml/util/ord.xml" />
+	
+	<f:thunk with-template="$draw">
+		<f:with-param name="months">
+			<months>
+				<m day="-92" month="Oct 99" />
+				<m day="-61" month="Nov 99" />
+				<m day="-31" month="Dec 99" />
+				<m day="0" month="Jan 00" />
+				<m day="31" month="Feb 00" />
+				<m day="60" month="Mar 00" />
+				<m day="91" month="Apr 00" />
+				<m day="121" month="May 00" />
+				<m day="152" month="Jun 00" />
+				<m day="182" month="Jul 00" />
+				<m day="213" month="Aug 00" />
+				<m day="244" month="Sep 00" />
+				<m day="274" month="Oct 00" />
+				<m day="305" month="Nov 00" />
+				<m day="335" month="Dec 00" />
+				<m day="366" month="Jan 01" />
+				<m day="397" month="Feb 01" />
+				<m day="425" month="Mar 01" />
+			</months>
+		</f:with-param>
+	</f:thunk>
+	
+	<f:template name="draw">
+		<f:param name="months" type="XML" />
+		
+		<html:div class="rulerContainer">
+			<xsl:attribute name="style">
+				width: <xsl:value-of select="$width/@value" />px;
+				height: <xsl:value-of select="$height/@value" />px;
+			</xsl:attribute>
+			
+			<xsl:call-template name="rulernotch">
+				<xsl:with-param name="day" select="$startDate/@value" />
+				<xsl:with-param name="pos" select="0" />
+				<xsl:with-param name="posinc" select="$width/@value div ($endDate/@value - $startDate/@value)" />
+				<xsl:with-param name="endday" select="$endDate/@value" />
+				<xsl:with-param name="months" select="$months" />
+				<xsl:with-param name="makeSituationForDay" select="$makeSituationForDay" />
+			</xsl:call-template>
+			
+		</html:div>
+		
+		
+		<xsl:template name="rulernotch">
+			<xsl:param name="day" />
+			<xsl:param name="pos" />
+			<xsl:param name="posinc" />
+			<xsl:param name="endday" />
+			<xsl:param name="months" />
+			<xsl:param name="makeSituationForDay" />
+			
+			<xsl:if test="$day &lt; $endday">
+				<xsl:variable name="month" select="$months/*/*[@day &lt; $day][last()]" />
+				<xsl:variable name="d" select="$day - $month/@day" />
+				<xsl:variable name="m" select="$month/@month" />
+				
+				<xsl:variable name="class">
+					<xsl:choose>
+						<xsl:when test="$d = 1">1</xsl:when>
+						<xsl:otherwise>3</xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				
+				<html:div class="ruler-notch-{$class}">
+					<xsl:attribute name="style">
+						left: <xsl:value-of select="round($pos)" />px;
+					</xsl:attribute>
+					
+					<f:on event="click" with-action="$makeSituationForDay">
+						<f:with-param name="day" select="$day" as="Number" />
+					</f:on>
+					
+					<html:div class="rulerMarkingHidden">
+						<xsl:value-of select="concat($d, ' ', $m)" />
+					</html:div>
+				</html:div>
+				
+				<xsl:call-template name="rulernotch">
+					<xsl:with-param name="day" select="$day + 1" />
+					<xsl:with-param name="pos" select="$pos + $posinc" />
+					<xsl:with-param name="posinc" select="$posinc" />
+					<xsl:with-param name="endday" select="$endday" />
+					<xsl:with-param name="months" select="$months" />
+					<xsl:with-param name="makeSituationForDay" select="$makeSituationForDay" />
+				</xsl:call-template>
+				
+			</xsl:if>
+			
+		</xsl:template>
+		
+		
+		
+		
+		
+		<f:action name="makeSituationForDay">
+			<f:param name="day" type="Number" />
+			
+			<f:derive name="atTime" d="shared.atTime" />
+			
+			<f:create type="X.date" name="date">
+				<f:with-param name="day" select="$day" />
+			</f:create>
+			
+			<f:perform with-action="$makeInfon1" name="inf">
+				<f:with-param name="relation" select="$atTime" />
+				<f:with-param name="arg1" select="$date" />
+			</f:perform>
+			
+			<!-- Open it -->
+			<!-- TODO: this is hacked in here.. rethink how pane sets work -->
+			<f:derive name="columns" d="ui.mainPaneSet.columns" />
+			<f:derive name="lastPaneKey" d="takeLastKey (UI.pane.set:panes columns)" />
+
+			<xsl:variable name="newKey">			
+				<f:each select="$lastPaneKey">
+					<xsl:call-template name="ord-bigger">
+						<xsl:with-param name="s" select="./@value" />
+					</xsl:call-template>
+				</f:each>
+			</xsl:variable>
+
+			<f:create type="UI.pane.pane" name="newPane" />
+			<f:intact object="$newPane" action="add" property="focus" key="$inf" />
+
+			<f:intact object="$columns" action="add" property="panes" value="$newPane">
+				<f:with-param name="key" select="$newKey" as="String" />
+			</f:intact>
+			
+		</f:action>		
+		
+		
+		
+		<!-- <xsl:template name="rulernotch">
+			<xsl:param name="timestep" />
+			<xsl:param name="pos" />
+			<xsl:param name="maxpos" />
+			<xsl:param name="timeinc" />
+			<xsl:param name="posinc" />
+			<xsl:param name="intervals" />
+
+			<xsl:if test="$pos &lt; $maxpos">
+				<html:div class="{concat('ruler-notch-',count($intervals) + 1 - count($intervals[$timestep mod round(@d div $timeinc) = 0]))}">
+					<xsl:attribute name="style">
+						left: <xsl:value-of select="round($pos)" />px;
+					</xsl:attribute>
+					<xsl:if test="count($intervals) = count($intervals[$timestep mod round(@d div $timeinc) = 0])">
+						<html:div class="rulerMarking">
+							<xsl:call-template name="rulermarking">
+								<xsl:with-param name="t" select="$timestep * $timeinc" />
+							</xsl:call-template>
+						</html:div>
+
+					</xsl:if>
+				</html:div>
+
+				<xsl:call-template name="rulernotch">
+					<xsl:with-param name="timestep" select="$timestep+1" />
+					<xsl:with-param name="pos" select="$pos+$posinc" />
+					<xsl:with-param name="maxpos" select="$maxpos" />
+					<xsl:with-param name="timeinc" select="$timeinc" />
+					<xsl:with-param name="posinc" select="$posinc" />
+					<xsl:with-param name="intervals" select="$intervals" />
+				</xsl:call-template>
+			</xsl:if>
+		</xsl:template>
+
+		<xsl:template name="rulermarking">
+			<xsl:param name="t" />
+
+			<xsl:variable name="h" select="floor($t div 3600)" />
+			<xsl:variable name="m" select="floor(($t mod 3600) div 60)" />
+			<xsl:variable name="s" select="floor(($t mod 60))" />
+
+			<xsl:if test="$h &gt; 0">
+				<xsl:value-of select="$h" />
+				<xsl:text>:</xsl:text>
+				<xsl:if test="$m &lt; 10">
+					<xsl:text>0</xsl:text>
+				</xsl:if>
+			</xsl:if>
+			<xsl:value-of select="$m" />
+			<xsl:text>:</xsl:text>
+			<xsl:if test="$s &lt; 10">
+				<xsl:text>0</xsl:text>
+			</xsl:if>
+			<xsl:value-of select="$s" />
+
+		</xsl:template> -->
+	</f:template>
+
+	
+</f:template>

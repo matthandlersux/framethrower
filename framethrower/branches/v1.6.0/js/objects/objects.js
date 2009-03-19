@@ -87,12 +87,21 @@ var classesToMake = {
 		}
 	},
 	
-	"X.time.range": {
+	"X.time.range": { // this should be renamed X.video.time.range
 		inherit: "Object",
 		prop: {
 			"start": "Number",
 			"duration": "Number"
 		}
+	},
+	
+	
+	"X.date": {
+		inherit: "Object",
+		prop: {
+			"day": "Number" // for now Jan 1, 2000 is 0
+		},
+		memoize: ["day"]
 	},
 	
 	
@@ -158,6 +167,17 @@ var classesToMake = {
 			"selecting": "Unit Null"
 		}
 	},
+	"UI.pane.realTimeline": {
+		inherit: "UI.pane",
+		prop: {
+			"focus": "Object",
+			"startDate": "Unit Number",
+			"endDate": "Unit Number",
+			"zoomWidth": "Unit Number"
+		}
+	},
+	
+	
 	"UI.pane.pane": {
 		inherit: "UI.pane",
 		prop: {

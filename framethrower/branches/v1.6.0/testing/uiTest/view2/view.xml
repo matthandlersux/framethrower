@@ -12,6 +12,7 @@
 	<f:derive name="asPicture" d="Object~X.picture focus" />
 	<f:derive name="asVideo" d="Object~X.video focus" />
 	<f:derive name="asTimeRange" d="Object~X.time.range focus" />
+	<f:derive name="asDate" d="Object~X.date focus" />
 	
 	
 	<f:pattern>
@@ -41,6 +42,11 @@
 		<f:match test="$asTimeRange">
 			<f:thunk url="media/timeRange.xml">
 				<f:with-param name="focus" select="$asTimeRange" />
+			</f:thunk>
+		</f:match>
+		<f:match test="$asDate">
+			<f:thunk url="media/date.xml">
+				<f:with-param name="focus" select="$asDate" />
 			</f:thunk>
 		</f:match>
 		<f:otherwise>

@@ -610,6 +610,27 @@ var exprLib = {
 	getTimeRangeFromSit: {
 		type: "Object -> Unit X.time.range",
 		chain: ["Cons:right", "Cons:right"]
+	},
+	
+	getSalientDates: {
+		type: "a -> Set Number",
+		expr: "obj -> convert (Object:upRight shared.atTime)",
+		where: {
+			convert: {
+				type: "Set Cons -> Set Number",
+				chain: ["Cons:right", "X.date:day"]
+			}
+			// hasIn: {
+			// 	type: "Cons -> Unit Null",
+			// 	expr: "x -> (upLeft x)",
+			// 	where: {
+			// 		upLeft: {
+			// 			type: "Cons -> Set Cons",
+			// 			chain: ["Object:upLeft"]
+			// 		}
+			// 	}
+			// }
+		}
 	}
 
 };

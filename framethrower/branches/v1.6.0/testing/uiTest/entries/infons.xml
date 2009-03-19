@@ -58,8 +58,8 @@
 	</f:template>
 	
 	<f:action name="removeInfon">
-		<f:param name="infon" type="Cons" />
-		<f:intact object="$infon" action="remove" property="truth" key="null" />
+		<f:param name="infon" type="Object" />
+		<f:intact object="$infon" action="remove" property="truth" key="null" /> <!-- NOTE: this only works cause we don't type-check.. should probably convert Object~Cons -->
 	</f:action>
 
 </f:template>

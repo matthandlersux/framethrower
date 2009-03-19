@@ -149,7 +149,7 @@
 	<f:derive name="locationType" d="shared.type.location" />
 	<f:derive name="agentType" d="shared.type.agent" />
 	
-	<f:perform with-action="$nameObject">
+	<!-- <f:perform with-action="$nameObject">
 		<f:with-param name="object" select="$movieType" />
 		<f:with-param name="name" select="'Movie'" />
 	</f:perform>
@@ -159,7 +159,7 @@
 	</f:perform>
 	<f:perform with-action="$makeType">
 		<f:with-param name="object" select="$movieType" />
-	</f:perform>
+	</f:perform> -->
 	
 	<f:perform with-action="$nameObject">
 		<f:with-param name="object" select="$locationType" />
@@ -189,7 +189,7 @@
 	Movie/Video Timeline Relations/Types
 	=========================================================================== -->
 	
-	<f:derive name="movieStory" d="shared.movie.story" />
+	<!-- <f:derive name="movieStory" d="shared.movie.story" />
 	<f:derive name="moviePresentation" d="shared.movie.presentation" />
 	<f:derive name="movieMaking" d="shared.movie.making" />
 	
@@ -233,10 +233,15 @@
 				<f:arg num="1" />'s Making
 			</f:relationTemplate>
 		</f:with-param>
-	</f:perform>
+	</f:perform> -->
+
+
+
+	<!-- ==========================================================================
+	Video time ranges/points
+	=========================================================================== -->	
 	
-	
-	<f:derive name="movieTimeRange" d="shared.movie.timeRange" />
+	<!-- <f:derive name="movieTimeRange" d="shared.movie.timeRange" />
 	<f:perform with-action="$relationTemplateObject">
 		<f:with-param name="object" select="$movieTimeRange" />
 		<f:with-param name="relTem">
@@ -244,30 +249,52 @@
 				<f:arg num="1" /> at <f:arg num="2" />
 			</f:relationTemplate>
 		</f:with-param>
-	</f:perform>
+	</f:perform> -->
 
+	<f:derive name="videoTime" d="shared.video.time" />
+	<f:perform with-action="$relationTemplateObject">
+		<f:with-param name="object" select="$videoTime" />
+		<f:with-param name="relTem">
+			<f:relationTemplate>
+				<f:arg num="1" /> at <f:arg num="2" />
+			</f:relationTemplate>
+		</f:with-param>
+	</f:perform>
 	
 	
+	<f:derive name="atTime" d="shared.atTime" />
+	<f:perform with-action="$relationTemplateObject">
+		<f:with-param name="object" select="$atTime" />
+		<f:with-param name="relTem">
+			<f:relationTemplate>
+				on <f:arg num="1" />
+			</f:relationTemplate>
+		</f:with-param>
+	</f:perform>
 	
+	<!-- TODO: I don't like how this is, ontologically. Am just doing it so it reads well for this Apr 1 demo. Really "on" should be a binary relation :: Situation -> Date -> Situation -->
+	<f:perform with-action="$makeRelationType" name="toSituation">
+		<f:with-param name="input" select="$type" />
+		<f:with-param name="output" select="$situationType" />
+	</f:perform>
+	
+	<f:perform with-action="$typeObject">
+		<f:with-param name="object" select="$atTime" />
+		<f:with-param name="type" select="$toSituation" />
+	</f:perform>
 	
 	
 	<!-- ==========================================================================
 	Wall-E Example
 	=========================================================================== -->
 	
-	<f:create type="X.video" name="walleVideo">
+	<!-- <f:create type="X.video" name="walleVideo">
 		<f:with-param name="url" select="'devise-walle.mp4'" />
 		<f:with-param name="width" select="720" />
 		<f:with-param name="height" select="304" />
-		<!-- <f:with-param name="frameCount" select="141318" /> -->
 		<f:with-param name="duration" select="5894.139" />
 		<f:with-param name="frameRate" select="23.976024627686" />
 	</f:create>
-	
-	<!-- <f:perform with-action="$makeNamedObject" name="walleMovie">
-		<f:with-param name="name" select="'Wall-E'" />
-		<f:with-param name="type" select="$movieType" />
-	</f:perform> -->
 	
 	<f:derive name="walleMovie" d="shared.test.walleMovie" />
 	<f:perform with-action="$nameObject">
@@ -315,7 +342,7 @@
 	<f:perform with-action="$putObjectInSituation">
 		<f:with-param name="situation" select="$realLife" />
 		<f:with-param name="object" select="$walleMaking" />
-	</f:perform>
+	</f:perform> -->
 
 
 
@@ -326,7 +353,7 @@
 
 	
 	
-	<f:perform with-action="$makeNamedObject" name="sc">
+	<!-- <f:perform with-action="$makeNamedObject" name="sc">
 		<f:with-param name="name" select="'Sean Connery'" />
 		<f:with-param name="type" select="$agentType" />
 	</f:perform>
@@ -458,7 +485,7 @@
 	<f:perform with-action="$putObjectInSituation">
 		<f:with-param name="situation" select="$realLife" />
 		<f:with-param name="object" select="$scperformsjb" />
-	</f:perform>
+	</f:perform> -->
 	
 	
 	
@@ -468,7 +495,7 @@
 	Charlene Thumbnail Example
 	=========================================================================== -->
 	
-	<f:perform with-action="$makeNamedObject" name="charlene">
+	<!-- <f:perform with-action="$makeNamedObject" name="charlene">
 		<f:with-param name="name" select="'Charlene'" />
 		<f:with-param name="type" select="$agentType" />
 	</f:perform>
@@ -481,7 +508,7 @@
 		<f:with-param name="url" select="'charlene.jpg'" />
 		<f:with-param name="width" select="640" />
 		<f:with-param name="height" select="480" />
-	</f:perform>
+	</f:perform> -->
 	
 
 
@@ -497,12 +524,6 @@
 
 
 
-
-
-	
-	
-	
-	
 
 	
 	

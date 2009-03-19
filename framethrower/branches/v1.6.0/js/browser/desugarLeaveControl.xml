@@ -124,7 +124,7 @@
 			<xsl:when test='$fc = "&#39;"'>
 				<f:literal type="String" value="{{{$s}}}" />
 			</xsl:when>
-			<xsl:when test="contains('0123456789', $fc)">
+			<xsl:when test="contains('0123456789-', $fc)">
 				<f:literal type="Number" value="{$s}" />
 			</xsl:when>
 			<xsl:when test="$s = 'true' or $s = 'false'">

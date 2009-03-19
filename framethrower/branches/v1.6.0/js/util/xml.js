@@ -3,7 +3,8 @@ var xmlns = {
     xsl: "http://www.w3.org/1999/XSL/Transform",
     html: "http://www.w3.org/1999/xhtml",
     svg: "http://www.w3.org/2000/svg",
-	exsl: "http://exslt.org/common"
+	exsl: "http://exslt.org/common",
+	date: "http://exslt.org/dates-and-times"
 };
 
 /* Put these in your root xml element

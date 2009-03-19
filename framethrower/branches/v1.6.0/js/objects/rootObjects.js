@@ -60,6 +60,13 @@ var rootObjects = {};
 	
 	
 	
+	m("shared.video.time");
+	
+	m("shared.atTime");
+	
+	
+	
+	
 	m("shared.test.walleMovie");
 	
 	
