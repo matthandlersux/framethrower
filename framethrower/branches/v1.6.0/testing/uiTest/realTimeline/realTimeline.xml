@@ -18,6 +18,9 @@
 	<f:derive name="endDate" d="UI.pane.realTimeline:endDate realTimeline" />
 	
 
+
+	<f:include url="/xml/util/actions.xml" />
+	<f:include url="/xml/util/ord.xml" />
 	
 	
 	<html:div class="timeline-left">
@@ -57,38 +60,78 @@
 	
 	</html:div>
 	
+	
+	<f:action name="openSituation">
+		<f:param name="sit" type="Object" />
+		
+		<!-- Open it -->
+		<!-- TODO: this is hacked in here.. rethink how pane sets work -->
+		<f:derive name="columns" d="ui.mainPaneSet.columns" />
+		<f:derive name="lastPaneKey" d="takeLastKey (UI.pane.set:panes columns)" />
+
+		<xsl:variable name="newKey">			
+			<f:each select="$lastPaneKey">
+				<xsl:call-template name="ord-bigger">
+					<xsl:with-param name="s" select="./@value" />
+				</xsl:call-template>
+			</f:each>
+		</xsl:variable>
+
+		<f:create type="UI.pane.pane" name="newPane" />
+		<f:intact object="$newPane" action="add" property="focus" key="$sit" />
+
+		<f:intact object="$columns" action="add" property="panes" value="$newPane">
+			<f:with-param name="key" select="$newKey" as="String" />
+		</f:intact>
+		
+	</f:action>
+	
 	<f:template name="drawActualTimeline">
-		<f:derive name="dates" d="getSalientDates shared.realLife" />
+		<!-- <f:derive name="dates" d="getSalientDates shared.realLife" /> -->
+		<f:derive name="dates" d="getSalientDates2 shared.realLife" />
 		
 		<f:each select="$zoomWidth"><f:each select="$startDate"><f:each select="$endDate"><f:each select="$focus">
 			
 			<xsl:variable name="ratio" select="$zoomWidth/@value div ($endDate/@value - $startDate/@value)" />
 			
-			<html:div>
-				<f:each select="$dates" key="day">
-					<html:div class="dateblob">
-						<xsl:attribute name="style">
-							left: <xsl:value-of select="round(($day/@value - $startDate/@value) * $ratio)" />px;
-							width: <xsl:value-of select="round($ratio)" />px;
-							top: 0px;
-							height: <xsl:value-of select="$height/@value" />px;
-							position:absolute; background-color:rgba(34,170,278,0.5);
-						</xsl:attribute>
-					</html:div>
-				</f:each>
-			</html:div>
+
 			
-			<!-- <f:thunk url="ruler.xml">
+			<f:thunk url="ruler.xml">
 				<f:with-param name="width" select="$zoomWidth" />
 				<f:with-param name="height" select="$height" />
 				<f:with-param name="startDate" select="$startDate" />
 				<f:with-param name="endDate" select="$endDate" />
 				<f:with-param name="focus" select="$focus" />
-			</f:thunk> -->
+			</f:thunk>
 			
+			
+			<html:div>
+				<f:each select="$dates" key="sit" value="days">
+					<f:each select="$days" key="day">
+						<html:div class="dateblob">
+							<xsl:attribute name="style">
+								left: <xsl:value-of select="round(($day/@value - $startDate/@value) * $ratio)" />px;
+								width: <xsl:value-of select="round($ratio)" />px;
+								top: 30px;
+								height: <!-- <xsl:value-of select="$height/@value" /> -->10px;
+								position:absolute; background-color:rgba(34,170,278,0.5); cursor: pointer;
+							</xsl:attribute>
+							<f:on event="click" with-action="$openSituation">
+								<f:with-param name="sit" select="$sit" />
+							</f:on>
+						</html:div>
+					</f:each>
+				</f:each>
+			</html:div>
 			
 		</f:each></f:each></f:each></f:each>
 	</f:template>
+
+
+
+
+
+
 
 
 	<f:action name="zoomIn">

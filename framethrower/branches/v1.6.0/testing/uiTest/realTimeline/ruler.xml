@@ -128,7 +128,7 @@
 			
 			<!-- Open it -->
 			<!-- TODO: this is hacked in here.. rethink how pane sets work -->
-			<f:derive name="columns" d="ui.mainPaneSet.columns" />
+			<!-- <f:derive name="columns" d="ui.mainPaneSet.columns" />
 			<f:derive name="lastPaneKey" d="takeLastKey (UI.pane.set:panes columns)" />
 
 			<xsl:variable name="newKey">			
@@ -144,7 +144,7 @@
 
 			<f:intact object="$columns" action="add" property="panes" value="$newPane">
 				<f:with-param name="key" select="$newKey" as="String" />
-			</f:intact>
+			</f:intact> -->
 			
 		</f:action>		
 		

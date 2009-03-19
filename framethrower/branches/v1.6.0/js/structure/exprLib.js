@@ -631,6 +631,21 @@ var exprLib = {
 			// 	}
 			// }
 		}
+	},
+	
+	getSalientDates2: {
+		type: "a -> Map Object (Set Number)",
+		expr: "obj -> buildMap convert (upRight shared.atTime)",
+		where: {
+			upRight: {
+				type: "Object -> Set Object",
+				chain: ["Object:upRight"]
+			},
+			convert: {
+				type: "Object -> Set Number",
+				chain: ["Cons:right", "X.date:day"]
+			}
+		}
 	}
 
 };

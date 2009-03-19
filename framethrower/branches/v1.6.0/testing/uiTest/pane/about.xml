@@ -9,6 +9,7 @@
 	<f:param name="pane" type="UI.pane.pane" />
 	
 	<f:derive name="set" d="mapSet Cons~Object (getInfonsAbout focus)" />
+
 	
 	<f:derive name="newInfons" d="UI.pane.pane:aboutNewInfons pane" />
 
