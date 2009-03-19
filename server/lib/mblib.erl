@@ -269,20 +269,25 @@ createRootObjects(RootObjectsStruct) ->
 %% function to load bootJSON file and run it against the server on bootup to populate objects and cells etc...
 %% 
 
-bootJsonScript() ->
-	spawn( fun() -> bootJsonScriptLoop() end ).
+% bootJsonScript(PrepareStateBool) ->
+% 	spawn( fun() -> bootJsonScriptLoop(PrepareStateBool) end ).
 	
-bootJsonScriptLoop() ->
+bootJsonScript(PrepareStateBool) ->
 	SessionId = session:new(),
 	{ok, JSONBinary} = file:read_file("lib/bootJSON"),
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
 	ClassesStruct = struct:get_value(<<"classes">>, Struct),
 	RootObjectsStruct = struct:get_value(<<"rootObjects">>, Struct),
-	PrepareStateStruct = struct:get_value(<<"prepareState">>, Struct),	
 
 	createClasses(ClassesStruct),
 	createRootObjects(RootObjectsStruct),
-	pipeline_web:processActionList(PrepareStateStruct),
+
+	case PrepareStateBool of
+		true ->
+			PrepareStateStruct = struct:get_value(<<"prepareState">>, Struct),	
+			pipeline_web:processActionList(PrepareStateStruct);
+		_ -> noside
+	end,
 	
 	% case inets:start() of
 	% 	ok ->

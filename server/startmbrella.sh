@@ -8,6 +8,7 @@ sname="-sname $webappname"
 mbrellaversion="v1.4"
 adddirs="-pa $PWD/$webappname/ebin $PWD/$webappname/deps/*/ebin $PWD/mbrella/${mbrellaversion}/ebin $PWD/lib/"
 boot="-boot start_sasl"
+preparestate="false"
 startapp="-s $webappname"
 ENV_PGM=`which env`
 program="$0"
@@ -75,13 +76,13 @@ while [ $# -gt 0 ]
 			conf="-config errorlognotty";
 			heart="-heart -env HEART_BEAT_TIMEOUT 30";;
 		-s|--serialize)
-			serialize="serialize:start(\\\"$1\\\"),";;
+			serialize="serialize:start(\\\"$1\\\")";;
 		--noconfig)
 			conf="";;
 		-b|--bootJson)
-			bootscript=',mblib:bootJsonScript( )';;
+			preparestate='true';;
 		-r|--responsetime)
-			responsetime=',responseTime:start( )';;
+			responsetime=",responseTime:start( )";;
 		--help)
 			help;
 			exit 0;;
@@ -93,7 +94,7 @@ while [ $# -gt 0 ]
 	esac
 done
 
-eval='-eval "'${serialize}'sessionManager:start(),memoize:start(),env:start(),objects:start()'${responsetime}${bootscript}'."'
+eval='-eval "sessionManager:start(),memoize:start(),env:start(),objects:start(),mblib:bootJsonScript('${preparestate}')'${serialize}${responsetime}'."'
 # eval='-eval "memoize:start()."'
 commonflags="$heartenv $conf $sname $adddirs $boot $startapp $eval"
 

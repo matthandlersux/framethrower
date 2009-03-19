@@ -48,6 +48,7 @@ start_link(DefaultFileName) ->
 	end.
 
 serializeEnv() ->
+	?trace("Here"),
 	gen_server:cast(?MODULE, serializeEnv).
 
 serializeEnv(FileName) ->
@@ -78,7 +79,7 @@ serializeNow(ETS) ->
 			_ -> InProcess
 		end
 	end,
-	ets:fold(AddIfObj, dict:new(), EnvEts),
+	ets:foldl(AddIfObj, dict:new(), EnvEts),
 	ok.
 
 serializeObj(Obj, InProcess, ETS) ->
@@ -91,32 +92,35 @@ serializeObj(Obj, InProcess, ETS) ->
 	end, {dict:new(), NewInProcess}, Obj#object.prop),
 	NewObj = Obj#object{prop = UpdatedProp},
 	ets:insert(ETS, {ObjName, NewObj}),
-	{#object{name=ObjName}, UpdatedInProcess}.
+	{#objectPointer{name=ObjName}, UpdatedInProcess}.
 	
-serializeCell(Cell, InProcess, ETS) ->
-	Name = Cell#exprCell.name,	
+serializeCell(CellPointer, InProcess, ETS) ->
+	Name = CellPointer#cellPointer.name,
 	NewInProcess = dict:store(Name, true, InProcess),
-	StateArray = cell:getStateArray(Cell),
+	StateArray = cell:getStateArray(CellPointer),
 	{UpdatedStateArray, UpdatedInProcess} = lists:foldl(fun(Property, {InnerStateArray, InnerInProcess}) -> 
 		{NewProperty, NewInnerInProcess} = serializeProp(Property, InnerInProcess, ETS),
 		NewStateArray = [NewProperty|InnerStateArray],
 		{NewStateArray, NewInnerInProcess}
 	end, {[], NewInProcess}, StateArray),
+	Cell = env:lookup(Name),
 	NewCell = Cell#exprCell{pid=UpdatedStateArray},
 	ets:insert(ETS, {Name, NewCell}),
-	{#exprCell{name=Name}, UpdatedInProcess}.
+	{#cellPointer{name=Name}, UpdatedInProcess}.
 
-serializeProp(Property, InProcess, ETS) when is_record(Property, exprCell) ->
-	PropName = Property#exprCell.name,
+serializeProp(Property, InProcess, ETS) when is_record(Property, cellPointer) ->
+	PropName = Property#cellPointer.name,
 	case dict:find(PropName, InProcess) of
 		error -> serializeCell(Property, InProcess, ETS);
-		_ -> {#exprCell{name=PropName}, InProcess}
+		_ -> {#cellPointer{name=PropName}, InProcess}
 	end;
-serializeProp(Property, InProcess, ETS) when is_record(Property, object) ->
-	PropName = Property#object.name,
+serializeProp(Property, InProcess, ETS) when is_record(Property, objectPointer) ->
+	PropName = Property#objectPointer.name,
 	case dict:find(PropName, InProcess) of
-		error -> serializeObj(Property, InProcess, ETS);
-		_ -> {#object{name=PropName}, InProcess}
+		error -> 
+			Object = env:lookup(PropName),
+			serializeObj(Object, InProcess, ETS);
+		_ -> {#objectPointer{name=PropName}, InProcess}
 	end;
 serializeProp(Property, InProcess, _) ->
 	{Property, InProcess}.
@@ -134,9 +138,10 @@ unserializeNow(ETS) ->
 	{EmptyDependencies, NewObjectDict} = ets:foldl(fun({Name, ObjOrCell}, {Dependencies, ObjectDict}) -> 
 		tryMakeObject(ObjOrCell, Dependencies, CellDict, ObjectDict) 
 	end, {dict:new(), dict:new()}, ETS),
+	
 	%map casting tables to new object names, and update objects in env
-	dict:map(fun(Name, ObjName) ->
-		Obj = env:lookup(ObjName), 
+	dict:map(fun(Name, ObjPointer) ->
+		Obj = env:lookup(ObjPointer#objectPointer.name), 
 		mapCastingDict(Obj, NewObjectDict)
 	end, NewObjectDict),
 	%add objects/cells/primitives to all cells
@@ -145,22 +150,21 @@ unserializeNow(ETS) ->
 	end, acc, ETS),
 	%add objects to memoTables
 	
-	dict:map(fun(Name, ObjName) -> 
-		Obj = env:lookup(ObjName),
+	dict:map(fun(Name, ObjPointer) -> 
+		Obj = env:lookup(ObjPointer#objectPointer.name),
 		memoizeObject(Obj)
 	end, NewObjectDict).	
 
 
 
 makeCells(Cell, CellDict) when is_record(Cell, exprCell) ->
-	NewCell = case type:isMap(Cell#exprCell.type) of
-		true -> cell:makeCellMapInput();
-		false -> cell:makeCell()
-	end,
-	cell:done(NewCell),
-	TypedCell = NewCell#exprCell{type=Cell#exprCell.type, bottom=Cell#exprCell.bottom},
+	NewCellPointer = cell:makeCell(),
+	cell:done(NewCellPointer),
+	NewCell = env:lookup(NewCellPointer#cellPointer.name),
+	% TypedCell = NewCell#exprCell{type=Cell#exprCell.type, bottom=Cell#exprCell.bottom},
+	TypedCell = NewCell#exprCell{type=Cell#exprCell.type},
 	cell:update(TypedCell),
-	dict:store(Cell#exprCell.name, TypedCell#exprCell.name, CellDict);
+	dict:store(Cell#exprCell.name, NewCellPointer, CellDict);
 makeCells(_, CellDict) -> CellDict.
 
 tryMakeObject(Obj, Dependencies, CellDict, ObjectDict) when is_record(Obj, object) -> 
@@ -169,9 +173,10 @@ tryMakeObject(Obj, Dependencies, CellDict, ObjectDict) when is_record(Obj, objec
 			{false, _} -> AccBool;
 			true ->
 				case Property of
-					ObjProp when is_record(ObjProp, object) ->
-						case dict:find(ObjProp#object.name, ObjectDict) of
-							error -> {false, ObjProp#object.name};
+					ObjProp when is_record(ObjProp, objectPointer) ->
+						case dict:find(ObjProp#objectPointer.name, ObjectDict) of
+							error ->
+								{false, ObjProp#objectPointer.name};
 							_ -> true
 						end;
 					_ -> true
@@ -193,7 +198,7 @@ tryMakeObject(Obj, Dependencies, CellDict, ObjectDict) when is_record(Obj, objec
 					ObjWithProp;
 				_ -> env:nameAndStoreObj(ObjWithProp)
 			end,
-			NewObjectDict = dict:store(Obj#object.name, NewObj#object.name, ObjectDict),
+			NewObjectDict = dict:store(Obj#object.name, #objectPointer{name = NewObj#object.name}, ObjectDict),
 			Deps = case dict:find(Obj#object.name, Dependencies) of
 				error -> [];
 				DepList -> DepList
@@ -216,7 +221,7 @@ tryMakeObject(_, Dependencies, _, ObjectDict) -> {Dependencies, ObjectDict}.
 mapCastingDict(Obj, ObjectDict) when is_record(Obj, object) ->
 	CastingDict = Obj#object.castingDict,
 	NewCastingDict = dict:map(fun(_, ObjName) ->
-		dict:fetch(ObjName, ObjectDict)
+		(dict:fetch(ObjName, ObjectDict))#objectPointer.name
 	end, CastingDict),
 	UpdatedObj = Obj#object{castingDict = NewCastingDict},
 	env:store(UpdatedObj#object.name, UpdatedObj);
@@ -224,23 +229,23 @@ mapCastingDict(_, _) -> nosideeffect.
 
 populateCells(Cell, CellDict, ObjectDict) when is_record(Cell, exprCell) -> 
 	StateList = Cell#exprCell.pid,
-	NewCell = env:lookup(dict:fetch(Cell#exprCell.name, CellDict)),
+	NewCellPointer = dict:fetch(Cell#exprCell.name, CellDict),
 	NewProp = lists:map(fun(KeyOrKeyVal) ->
 		Restored = case KeyOrKeyVal of
-			{pair, Key, Val} -> {unserializeProp(Key, CellDict, ObjectDict), unserializeProp(Val, CellDict, ObjectDict)};
+			{pair, Key, Val} -> {pair, unserializeProp(Key, CellDict, ObjectDict), unserializeProp(Val, CellDict, ObjectDict)};
 			Key -> unserializeProp(Key, CellDict, ObjectDict)
 		end,
-		cell:addLine(NewCell, Restored)
+		cell:addLine(NewCellPointer, Restored)
 	end, StateList);
 populateCells(_,_,_) -> nosideeffect.
 
 
 unserializeProp(Property, CellDict, ObjectDict) ->
 	case Property of
-		ObjProp when is_record(ObjProp, object) ->
-			env:lookup(dict:fetch(ObjProp#object.name, ObjectDict));
-		CellProp when is_record(CellProp, exprCell) ->
-			env:lookup(dict:fetch(CellProp#exprCell.name, CellDict));
+		ObjProp when is_record(ObjProp, objectPointer) ->
+			dict:fetch(ObjProp#objectPointer.name, ObjectDict);
+		CellProp when is_record(CellProp, cellPointer) ->
+			dict:fetch(CellProp#cellPointer.name, CellDict);
 		Other -> Other
 	end.
 
@@ -248,17 +253,20 @@ memoizeObject(Obj) ->
 	Prop = Obj#object.prop,
 	NewProp = dict:map(fun(_, Property) ->
 		case Property of
-			Cell when is_record(Cell, exprCell) ->
-				{Left, Right} = (Cell#exprCell.type)#type.value,
-				case atom_to_list(Left#type.value) of
-					"Future" ->
-						[Val] = cell:getStateArray(Property),
-						Val;
-					_ -> Property
+			CellPointer when is_record(CellPointer, cellPointer) ->
+				% {Left, Right} = (Cell#exprCell.type)#type.value,
+				% case atom_to_list(Left#type.value) of
+					% "Future" ->
+				%TODO:
+				%This is a hack, we will send the state of all cells (even non future cells)
+				%objects will only look at the ones that are used for memoizing, so it will not look at the non-future cells
+				case cell:getStateArray(CellPointer) of
+					[Val|_] -> Val;
+					[] -> notused
 				end;
 			_ -> Property
 		end
-	end, Prop),
+	end, Prop),	
 	objects:addToMemoTable(Obj, NewProp).
 
 

@@ -54,12 +54,6 @@ update(Cell) ->
 	Name = Cell#exprCell.name,
 	env:store(Name, Cell).
 	
-makeCellMapInput() ->
-	{ok, Pid} = gen_server:start(?MODULE, [], []),
-	NewCell = #exprCell{pid=Pid},
-	NamedCell = env:nameAndStoreCell(NewCell),
-	#cellPointer{name = NamedCell#exprCell.name, pid = Pid}.
-
 removeDependency(Cell, InputCell, InputId) ->
 	gen_server:cast(Cell#cellPointer.pid, {removeDependency, InputCell, InputId, Cell}).	
 

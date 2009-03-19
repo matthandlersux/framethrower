@@ -41,7 +41,7 @@ primitives() ->
 	name = "returnUnitMap",
 	type = "a -> Unit b -> Map a b",
 	function = fun(Key, Cell) ->
-		OutputCell = cell:makeCellMapInput(),
+		OutputCell = cell:makeCell(),
 		cell:injectFunc(Cell, OutputCell, fun(Val) ->
 			cell:addLine(OutputCell, {pair, Key, Val})
 		end),
@@ -69,7 +69,7 @@ primitives() ->
 	name = "bindMap",
 	type = "(a -> b -> Map a c) -> Map a b -> Map a c",
 	function = fun(Fun, Cell) ->
-		OutputCell = cell:makeCellMapInput(),
+		OutputCell = cell:makeCell(),
 		cell:injectFunc(Cell, OutputCell, fun({pair, Key,Val}) ->
 			applyAndInject(applyFun(Fun, Key), Val, OutputCell, fun(InnerVal) ->
 				cell:addLine(OutputCell, InnerVal) end
@@ -229,7 +229,7 @@ primitives() ->
 	name = "oneToMap",
 	type = "Number -> Number -> Map Number Number",
 	function = fun(Val1, Val2) ->
-		OutputCell = cell:makeCellMapInput(),
+		OutputCell = cell:makeCell(),
 		for(1, Val1, fun(X) -> cell:addLine(OutputCell, {pair, X, Val2}) end),
 		cell:done(OutputCell),
 		OutputCell
@@ -459,7 +459,7 @@ primitives() ->
 	name = "unfoldMap",
 	type = "(a -> Set a) -> a -> Map a Number",
 	function = fun(Fun, Init) ->
-		OutputCell = cell:makeCellMapInput(),
+		OutputCell = cell:makeCell(),
 		unfoldMapHelper({Init, 0}, Fun, OutputCell, dict:new()),
 		OutputCell
 	end},
@@ -470,7 +470,7 @@ primitives() ->
 	name = "buildMap",
 	type = "(a -> b) -> Set a -> Map a b",
 	function = fun(Fun, Cell) ->
-		OutputCell = cell:makeCellMapInput(),
+		OutputCell = cell:makeCell(),
 		cell:injectFunc(Cell, OutputCell, fun(Val) ->
 			Result = applyFun(Fun, Val),
 			cell:addLine(OutputCell, {pair, Val, Result})
@@ -495,7 +495,7 @@ primitives() ->
 	function = fun(Cell) ->
 		%TAG: EVALNOTYPE
 		%SetType = type:buildType(type:get(Cell), "Map a (Set b)", "Set a"),
-		OutputCell = cell:makeCellMapInput(),
+		OutputCell = cell:makeCell(),
 		Intercept = cell:injectIntercept(OutputCell, fun(Message, BHash) ->
 			case Message of
 				{bHashAdd, BVal} ->
@@ -558,7 +558,7 @@ primitives() ->
 	name = "mapMapValue",
 	type = "(a -> b) -> Map c a -> Map c b",
 	function = fun(Fun, Cell) ->
-		OutputCell = cell:makeCellMapInput(),
+		OutputCell = cell:makeCell(),
 		cell:injectFunc(Cell, OutputCell, fun({pair, Key, Val}) ->
 			Result = applyFun(Fun, Val),
 			cell:addLine(OutputCell, {pair, Key, Result})

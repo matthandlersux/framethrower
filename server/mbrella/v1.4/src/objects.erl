@@ -269,7 +269,7 @@ makeCast(TargetClassName) ->
 	fun (ObjOrPointer) ->
 		Obj = checkPointer(ObjOrPointer),
 		CastingDict = Obj#object.castingDict,
-		CastedObjName = dict:fetch(TargetClassName, CastingDict),
+		CastedObjName = dict:fetch(TargetClassName, CastingDict),		
 		#objectPointer{name = CastedObjName}
 	end.
 
@@ -579,7 +579,7 @@ handle_cast({addToMemoTable, Obj, Props}, State) ->
 				dict:fetch(PropName, Props)
 			end, Memoize),
 			makeMemoString(MemoValues)
-	end,		
+	end,
 	UpdatedState = case Memoize of
 		undefined -> State;
 		_ ->
@@ -588,14 +588,15 @@ handle_cast({addToMemoTable, Obj, Props}, State) ->
 				_ -> C#class.memoTable
 			end,
 			Entry = dict:fetch(MemoString, NewMemoTable),
-			NewEntry = Entry#memoEntry{object=Obj},
+			ObjPointer = #objectPointer{name = Obj#object.name},
+			NewEntry = Entry#memoEntry{object=ObjPointer},
 			NewerMemoTable = dict:store(MemoString, NewEntry, NewMemoTable),
 			NewC = C#class{memoTable = NewerMemoTable},
 			NewClasses = dict:store(ClassName, NewC, Classes),
 			NewState = State#state{classes=NewClasses},
 			
 			Broadcaster = NewEntry#memoEntry.broadcaster,
-			cell:addLine(Broadcaster, Obj),
+			cell:addLine(Broadcaster, ObjPointer),
 			NewState
 	end,
 	{noreply, UpdatedState}.

@@ -55,7 +55,7 @@ parseStartCap(R, State) ->
 	SCTypeFirstWord = hd(string:tokens(Type, " ")),
 	SC = if
 		SCTypeFirstWord == "map" -> 
-			Result = cell:makeCellMapInput(), 
+			Result = cell:makeCell(), 
 			TypedCell = Result#exprCell{type=type:parse(Type)},
 			cell:update(TypedCell),
 			TypedCell;

@@ -272,7 +272,7 @@ getDebugHTML(Name, BaseURL) ->
 	GetStateArrayHTML = fun (StateArray) ->
 		lists:foldr(fun(Elem, Acc) ->
 			case Elem of
-				{Key, Val} -> Acc ++ "{Key: " ++ GetElemHtml(Key) ++ ", Val: " ++ GetElemHtml(Val) ++ "}, ";
+				{pair, Key, Val} -> Acc ++ "{Key: " ++ GetElemHtml(Key) ++ ", Val: " ++ GetElemHtml(Val) ++ "}, ";
 				_ -> Acc ++ GetElemHtml(Elem) ++ ", "
 			end
 		end, "", StateArray)
@@ -280,7 +280,7 @@ getDebugHTML(Name, BaseURL) ->
 
 	GetCastingHTML = fun (CastingDict) ->
 		dict:fold(fun(ClassName, ObjectString, Acc) ->
-			Acc ++ ClassName ++ ": " ++ GetElemHtml(env:lookup(ObjectString)) ++ "<br />"
+			Acc ++ ClassName ++ ": " ++ GetElemHtml(#objectPointer{name = ObjectString}) ++ "<br />"
 		end, "", CastingDict)
 	end,
 	
