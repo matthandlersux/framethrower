@@ -78,13 +78,13 @@
 				</f:each>
 			</html:div>
 			
-			<f:thunk url="ruler.xml">
+			<!-- <f:thunk url="ruler.xml">
 				<f:with-param name="width" select="$zoomWidth" />
 				<f:with-param name="height" select="$height" />
 				<f:with-param name="startDate" select="$startDate" />
 				<f:with-param name="endDate" select="$endDate" />
 				<f:with-param name="focus" select="$focus" />
-			</f:thunk>
+			</f:thunk> -->
 			
 			
 		</f:each></f:each></f:each></f:each>
