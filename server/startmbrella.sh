@@ -9,6 +9,9 @@ mbrellaversion="v1.4"
 adddirs="-pa $PWD/$webappname/ebin $PWD/$webappname/deps/*/ebin $PWD/mbrella/${mbrellaversion}/ebin $PWD/lib/"
 boot="-boot start_sasl"
 startapp="-s $webappname"
+ENV_PGM=`which env`
+program="$0"
+originalargs=${1+"$@"}
 #default is interactive
 conf="-config errorlog";
 #place servers that need to be started here
@@ -25,15 +28,38 @@ echo ""
 echo ""
 echo " extra flags: "
 echo ""
+echo "    --help                      print this message"
+echo "    --noconfig                  do not use a config file for sasl"
 echo " -s|--serialize                 serialized server state file location (default: none)"
 echo "                                    ex: \"-s mbrella/v1.4/data/serialize.ets\" "
 echo " -r|--responsetime              turn on responseTime server for debugging server-client message passing"
-echo " -h|--help                      print this message"
 echo " -b|--bootJson                  run bootJSON script against the server upon startup (default: off)"
-echo " --noconfig                     do not use a config file for sasl"
+echo " -h|--heart                     use heart to reboot the runtime system if erlang happens to crap out"
 
 exit 1
 }
+
+
+#=====heart=====
+now=`date -u +%s`
+if [ "$HEART" = true ]; then
+    timediff=`expr $now - $MBRELLA_HEART_START`
+    if [ $timediff -le 60 ]; then
+        if [ $MBRELLA_HEART_RESTARTS -eq 5 ]; then
+            echo "5 restarts attempted within 60 seconds, exiting"
+            exit 1
+        else
+            restarts=`expr $MBRELLA_HEART_RESTARTS + 1`
+            starttime=$MBRELLA_HEART_START
+        fi
+    else
+        restarts=1
+        starttime=$now
+    fi
+else
+    restarts=1
+    starttime=$now
+fi
 
 #=====interpret input=====
 while [ $# -gt 0 ] 
@@ -46,18 +72,22 @@ while [ $# -gt 0 ]
 			daemon="";;
 		-d|--daemon)
 			daemon="-detached";
-			conf="-config errorlognotty";;
+			conf="-config errorlognotty";
+			heart="-heart -env HEART_BEAT_TIMEOUT 30";;
 		-s|--serialize)
-			serialize="serialize:start(\\\"$1\\\"),";
-			shift;;
+			serialize="serialize:start(\\\"$1\\\"),";;
 		--noconfig)
 			conf="";;
 		-b|--bootJson)
 			bootscript=',mblib:bootJsonScript( )';;
 		-r|--responsetime)
 			responsetime=',responseTime:start( )';;
-		-h|--help)
-			help;;
+		--help)
+			help;
+			exit 0;;
+		-h|--heart)
+			heart="-heart";
+			heartenv="-env HEART_BEAT_TIMEOUT 30";;
 		*)
 			help
 	esac
@@ -65,12 +95,16 @@ done
 
 eval='-eval "'${serialize}'sessionManager:start(),memoize:start(),env:start(),objects:start()'${responsetime}${bootscript}'."'
 # eval='-eval "memoize:start()."'
-commonflags="$conf $sname $adddirs $boot $startapp $eval"
+commonflags="$heartenv $conf $sname $adddirs $boot $startapp $eval"
 
-			
+HEART_COMMAND="${ENV_PGM} HEART=true MBRELLA_HEART_RESTARTS=$restarts MBRELLA_HEART_START=$starttime $program $originalargs"
+export HEART_COMMAND
 
+if [ -z "$heart" ]; then
+    unset HEART_COMMAND
+fi
 #=====execute=====
 cd `dirname $0`
-# echo "exec $erl $commonflags"
-eval "exec $erl $commonflags"
+# echo "exec $erl $commonflags\n\n"
+eval "exec $erl $heart $commonflags"
 # proc_open("eval exec $erl $commonflags", array(), something)
