@@ -293,7 +293,7 @@ handle_cast({removeLine, Value}, State) ->
 handle_cast({removeFunc, Id, Cell}, State) ->
 	Func = dict:fetch(Id, ?this(funcs)),
 	case Func#func.outputCellOrIntOrFunc of
-		OutputCell when is_record(OutputCell, exprCell) -> removeDependency(OutputCell, Cell, Id);
+		OutputCell when is_record(OutputCell, cellPointer) -> removeDependency(OutputCell, Cell, Id);
 		Intercept when is_pid(Intercept) -> intercept:removeDependency(Intercept, Cell, Id);
 		%done function
 		_ -> nosideeffect
@@ -336,7 +336,7 @@ handle_cast({injectFunc, OutputCellOrIntOrFunc, Fun, Cell, Id}, State) ->
 handle_cast({removeDependency, InputCell, InputId, Cell}, State) ->
 	NewOnRemoves = lists:filter(fun(OnRemove) ->
 		if 
-			(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#exprCell.name =:= InputCell#exprCell.name) andalso (OnRemove#onRemove.id =:= InputId) ->
+			(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#cellPointer.name =:= InputCell#cellPointer.name) andalso (OnRemove#onRemove.id =:= InputId) ->
 				false;
 			true -> 
 				true
@@ -354,7 +354,7 @@ handle_cast({done, DoneCell, Id, Cell}, State) ->
 		false ->
 			NewOnRemoves = lists:map(fun(OnRemove) ->
 				if 
-					(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#exprCell.name =:= DoneCell#cellPointer.name) andalso (OnRemove#onRemove.id =:= Id) ->
+					(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#cellPointer.name =:= DoneCell#cellPointer.name) andalso (OnRemove#onRemove.id =:= Id) ->
 						OnRemove#onRemove{done=true};
 					true -> 
 						OnRemove
@@ -371,7 +371,7 @@ handle_cast({done, Cell}, State) ->
 			dict:map(fun(FuncId, Func) ->
 				case Func#func.outputCellOrIntOrFunc of
 					undefined -> nosideeffect;
-					OutputCell when is_record(OutputCell, exprCell) -> done(OutputCell, Cell, FuncId);
+					OutputCell when is_record(OutputCell, cellPointer) -> done(OutputCell, Cell, FuncId);
 					Intercept when is_pid(Intercept) -> intercept:done(Intercept, Cell, FuncId);
 					Function when is_function(Function) -> Function()
 				end

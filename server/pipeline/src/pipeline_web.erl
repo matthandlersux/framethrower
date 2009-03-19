@@ -180,7 +180,7 @@ processQuery ( Query, SessionId, SessionPid ) ->
 			true ->
 				responseTime:in(SessionId, 'query', QueryId, now() ),
 %				spawn(fun() ->
-					Cell = eval:evaluate( expr:exprParse(Expr) ),
+					Cell = eval:evaluate( expr:exprParse(Expr) ),					
 					% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
 					OnRemove = cell:injectFunc(Cell, 
 						fun() ->

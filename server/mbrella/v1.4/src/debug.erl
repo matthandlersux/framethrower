@@ -248,10 +248,10 @@ toList(X) -> binary_to_list(mblib:exprElementToJson(X)).
 getDebugHTML(Name, BaseURL) ->
 	GetElemHtml = fun (Elem) ->
 		case Elem of
-			Cell when is_record(Cell, exprCell) ->
+			Cell when is_record(Cell, cellPointer) ->
 				Id = toList(Elem),
 				"<a href=\"" ++ BaseURL ++ Id ++ "\">" ++ "Cell: " ++ Id ++ "</a>";
-			Object when is_record(Object, object) ->
+			Object when is_record(Object, objectPointer) ->
 				Id = toList(Elem),
 				"<a href=\"" ++ BaseURL ++ Id ++ "\">" ++ "Object: " ++ Id ++ "</a>";
 			Intercept when is_pid(Intercept) ->
@@ -309,12 +309,13 @@ getDebugHTML(Name, BaseURL) ->
 			"Prop: <br />" ++ GetPropHTML(Object#object.prop) ++ "<br />" ++
 			"Casting: <br />" ++ GetCastingHTML(Object#object.castingDict) ++ "<br />";
 		Cell when is_record(Cell, exprCell) ->
+			CellPointer = #cellPointer{name = Name, pid = Cell#exprCell.pid},
 			Name ++ ": Cell <br />" ++ 
 			"Type: " ++ toList(type:unparse(Cell#exprCell.type)) ++"<br />" ++
-			"State: " ++ GetStateArrayHTML(cell:getStateArray(Cell)) ++ "<br />" ++ 
-			"Done: " ++ toList((cell:getState(Cell))#cellState.done) ++ "<br /><br />" ++
-			"Dependencies: " ++ GetDependenciesHTML(cell:getState(Cell)) ++ "<br />" ++
-			"Dependers: " ++ GetDependersHTML(cell:getState(Cell)) ++ "<br /><br />" ++
+			"State: " ++ GetStateArrayHTML(cell:getStateArray(CellPointer)) ++ "<br />" ++ 
+			"Done: " ++ toList((cell:getState(CellPointer))#cellState.done) ++ "<br /><br />" ++
+			"Dependencies: " ++ GetDependenciesHTML(cell:getState(CellPointer)) ++ "<br />" ++
+			"Dependers: " ++ GetDependersHTML(cell:getState(CellPointer)) ++ "<br /><br />" ++
 			"Bottom Expr: " ++ GetBottomExprHTML(Cell#exprCell.bottom) ++ "<br />";
 		notfound ->
 			notfound
