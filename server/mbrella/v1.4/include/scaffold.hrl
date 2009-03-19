@@ -131,8 +131,8 @@
 }).
 
 -record (serialize, {
-	ets = ets:new(serializeTable, []),
-	file
+	file,
+	prepareState
 }).
 
 -record(cellState, {

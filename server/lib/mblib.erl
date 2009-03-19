@@ -270,10 +270,10 @@ createRootObjects(RootObjectsStruct) ->
 %% function to load bootJSON file and run it against the server on bootup to populate objects and cells etc...
 %% 
 
-% bootJsonScript(PrepareStateBool) ->
-% 	spawn( fun() -> bootJsonScriptLoop(PrepareStateBool) end ).
-	
-bootJsonScript(PrepareStateBool) ->
+% bootJsonScript() ->
+% 	spawn( fun() -> bootJsonScriptLoop() end ).
+
+bootJsonScript() ->
 	SessionId = session:new(),
 	{ok, JSONBinary} = file:read_file("lib/bootJSON"),
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
@@ -283,13 +283,18 @@ bootJsonScript(PrepareStateBool) ->
 	createClasses(ClassesStruct),
 	createRootObjects(RootObjectsStruct),
 
-	case PrepareStateBool of
-		true ->
-			PrepareStateStruct = struct:get_value(<<"prepareState">>, Struct),	
-			pipeline_web:processActionList(PrepareStateStruct);
-		_ -> noside
-	end,
-	
+	bootedJSONScript.
+
+prepareStateScript() ->
+	{ok, JSONBinary} = file:read_file("lib/bootJSON"),
+	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),	
+	PrepareStateStruct = struct:get_value(<<"prepareState">>, Struct),
+	UpdatedStruct = serialize:updatePrepareState(PrepareStateStruct),
+	pipeline_web:processActionList(PrepareStateStruct),
+	preparedState.
+
+
+
 	% case inets:start() of
 	% 	ok ->
 	% 		receive
@@ -314,4 +319,3 @@ bootJsonScript(PrepareStateBool) ->
 	% 	_ -> erlang:error(couldnt_start_inets)
 	% end,
 	% inets:stop(),
-	bootedJSONScript.

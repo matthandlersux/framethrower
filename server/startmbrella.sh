@@ -8,7 +8,7 @@ sname="-sname $webappname"
 mbrellaversion="v1.4"
 adddirs="-pa $PWD/$webappname/ebin $PWD/$webappname/deps/*/ebin $PWD/mbrella/${mbrellaversion}/ebin $PWD/lib/"
 boot="-boot start_sasl"
-preparestate="false"
+serialize="\\\"test.ets\\\""
 startapp="-s $webappname"
 ENV_PGM=`which env`
 program="$0"
@@ -31,10 +31,10 @@ echo " extra flags: "
 echo ""
 echo "    --help                      print this message"
 echo "    --noconfig                  do not use a config file for sasl"
-echo " -s|--serialize                 serialized server state file location (default: none)"
+echo " -s|--serialize                 location to store serialized server state file (default: test.ets)"
 echo "                                    ex: \"-s mbrella/v1.4/data/serialize.ets\" "
+echo " -u|--unserialize               serialized server state file location (default: test.ets)"
 echo " -r|--responsetime              turn on responseTime server for debugging server-client message passing"
-echo " -b|--bootJson                  run bootJSON script against the server upon startup (default: off)"
 echo " -h|--heart                     use heart to reboot the runtime system if erlang happens to crap out"
 
 exit 1
@@ -76,11 +76,13 @@ while [ $# -gt 0 ]
 			conf="-config errorlognotty";
 			heart="-heart -env HEART_BEAT_TIMEOUT 30";;
 		-s|--serialize)
-			serialize="serialize:start(\\\"$1\\\")";;
+			serialize="\\\"$1\\\"";
+			shift;;
+		-u|--unserialize)
+			unserialize=",serialize:unserialize(\\\"$1\\\")";
+			shift;;
 		--noconfig)
 			conf="";;
-		-b|--bootJson)
-			preparestate='true';;
 		-r|--responsetime)
 			responsetime=",responseTime:start( )";;
 		--help)
@@ -94,7 +96,7 @@ while [ $# -gt 0 ]
 	esac
 done
 
-eval='-eval "sessionManager:start(),memoize:start(),env:start(),objects:start(),mblib:bootJsonScript('${preparestate}')'${serialize}${responsetime}'."'
+eval='-eval "sessionManager:start(),memoize:start(),env:start(),objects:start(),mblib:bootJsonScript(),serialize:start('${serialize}')'${unserialize}',mblib:prepareStateScript()'${responsetime}'."'
 # eval='-eval "memoize:start()."'
 commonflags="$heartenv $daemon $conf $sname $adddirs $boot $startapp $eval"
 

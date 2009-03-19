@@ -39,8 +39,8 @@
 %% ====================================================================
 
 start(DefaultFileName) -> 
-	start_link(DefaultFileName),
-	unserialize().
+	start_link(DefaultFileName).
+	
 start_link(DefaultFileName) ->
 	case gen_server:start({local, ?MODULE}, ?MODULE, [DefaultFileName], []) of
 		{ok, Pid} -> Pid;
@@ -48,17 +48,20 @@ start_link(DefaultFileName) ->
 	end.
 
 serializeEnv() ->
-	?trace("Here"),
-	gen_server:cast(?MODULE, serializeEnv).
+	gen_server:cast(?MODULE, {serializeEnv, undefined}).
 
 serializeEnv(FileName) ->
 	gen_server:cast(?MODULE, {serializeEnv, FileName}).
 	
 unserialize() ->
-	gen_server:cast(?MODULE, unserialize).
+	gen_server:call(?MODULE, {unserialize, undefined}).
 
 unserialize(FileName) ->
-	gen_server:cast(?MODULE, {unserialize, FileName}).
+	gen_server:call(?MODULE, {unserialize, FileName}).
+
+
+updatePrepareState(PrepareStateStruct) ->
+	gen_server:call(?MODULE, {updatePrepareState, PrepareStateStruct}).
 
 getStateList() ->
 	gen_server:call(?MODULE, getStateList).
@@ -296,14 +299,34 @@ init([FileName]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call(getStateList, From, State) ->
-	% case ets:lookup(?this(ets), Expr) of
-	% 	[{_, Reply}] ->
-	% 		good;
-	% 	[] -> 
-	% 		Reply = key_does_not_exist
-	% end,
-    {reply, ets:tab2list(?this(ets)), State};
+handle_call({unserialize, FileName}, _, State) ->
+	FileToUse = case FileName of
+		undefined -> ?this(file);
+		_ -> FileName
+	end,
+	NewState = case ets:file2tab(FileToUse) of
+		{ok, Table} ->
+			unserializeNow(Table),
+			case ets:lookup(Table, prepareState) of
+				[{_, PrepareState}] ->
+					State#serialize{prepareState = PrepareState};
+				[] -> 
+					State
+			end;
+		_ ->
+			State
+	end,
+    {reply, ok, NewState};
+handle_call({updatePrepareState, PrepareStateStruct}, _, State) ->
+	NewPrepState = case ?this(prepareState) of
+		undefined -> {State, PrepareStateStruct};
+		OldPrepState ->
+			%TODO
+			compareHere
+	end,
+	% NewState = State#serialize{prepareState = NewPrepState},
+	NewState = State,
+	{reply, NewPrepState, NewState};
 handle_call(stop, _, State) ->
 	{stop, normal, stopped, State}.
 
@@ -315,30 +338,14 @@ handle_call(stop, _, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast({serializeEnv, FileName}, State) ->
+	FileToUse = case FileName of
+		undefined -> ?this(file);
+		_ -> FileName
+	end,
 	ETS = ets:new(serializeTable, []),
 	serializeNow(ETS),
-	ets:tab2file(ETS, FileName),
-    {noreply, State};
-handle_cast(serializeEnv, State) ->
-	ETS = ets:new(serializeTable, []),
-	serializeNow(ETS),
-	ets:tab2file(ETS, ?this(file)),
-    {noreply, State};
-handle_cast(unserialize, State) ->
-	case ets:file2tab(?this(file)) of
-		{ok, Table} ->
-			unserializeNow(Table);
-		{error, _Reason} ->
-			nosideeffect
-	end,
-    {noreply, State};
-handle_cast({unserialize, FileName}, State) ->
-	case ets:file2tab(FileName) of
-		{ok, Table} ->
-			unserializeNow(Table);
-		{error, _Reason} ->
-			nosideeffect
-	end,
+	ets:insert(ETS, {prepareState, ?this(prepareState)}),
+	ets:tab2file(ETS, FileToUse),
     {noreply, State};
 handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
