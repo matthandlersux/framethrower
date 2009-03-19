@@ -53,14 +53,42 @@ largeCellMemoryUsage() ->
 	Pid = pidFromStat( Max ),
 	cellMemoryUsage( Pid ).
 
+memoryUsage( Term ) when is_tuple(Term) ->
+	prettyList( recordMemoryUsage( Term ) ).
+
 %% ====================================================
 %% Internal API
 %% ====================================================
 
+allCellFunctionMemory() ->
+	allCellFunctionMemory(100).
+allCellFunctionMemory(N) ->
+	Cells = processDistribution(cell),
+	allCellFunctionMemory(N, Cells).
+
+allCellFunctionMemory(0, _) -> [];
+allCellFunctionMemory(N, [{_,{_,Memory},{_,Pid}}|T]) ->
+	State = gen_server:call(Pid, getState),
+	Dict = element(2, State),
+	{_, Funcs} = lists:unzip( dict:to_list(Dict) ),
+	case length(Funcs) of
+		0 -> N1 = N;
+		1 -> N1 = N;
+		_ ->
+			N1 = N-1,
+			io:format("--------------------------~nMemory: ~p~n", [Memory]),
+			[io:format("~-35s ~-20s~n", [Fu, M] ) || {Fu, M} <- [{io_lib:format("~p", [F]), integer_to_list(byteSize(F))} || {_,F,_} <- Funcs] ]
+	end,
+	allCellFunctionMemory( N1, T).
+
 cellMemoryUsage( Pid ) when is_pid(Pid) ->
 	State = gen_server:call( Pid, getState ),
 	MemUsage = recordMemoryUsage( State ),
-	prettyList( MemUsage ).
+	prettyList( MemUsage );
+cellMemoryUsage( Number ) ->
+	State = gen_server:call( pidFromStat(Number), getState ),
+	MemUsage = recordMemoryUsage( State ),
+	prettyList( MemUsage).
 	
 prettyList( Tuple ) when is_tuple(Tuple) ->
 	prettyList( tuple_to_list(Tuple) );
@@ -137,9 +165,9 @@ processTotals( Stats ) ->
 	
 processDistributionTotals( Type ) ->
 	Stats = processDistribution( Type ),
-	Sizes = lists:usort( [Mem || {_, {_, Mem}} <- Stats] ),
+	Sizes = lists:usort( [Mem || {_, {_, Mem}, _} <- Stats] ),
 	Fun = fun( Size ) ->
-				SameSizeProcesses = [ 1 || {_, {_, Mem}} <- Stats, Size =:= Mem],
+				SameSizeProcesses = [ 1 || {_, {_, Mem}, _} <- Stats, Size =:= Mem],
 				{
 					{processType, Type},
 					{processSize, Size},
@@ -161,7 +189,7 @@ processDistribution() ->
 processDistribution( [TypeOfProcess|_] ) ->
 	Stats = getProcessStats(),
 	Stats1 = [Stat || {_, Type, _, _, _} = Stat <- Stats, element(1, Type) =:= TypeOfProcess ],
-	Stats2 = [{{type, Type}, {memory, Mem}} || {Mem, Type, _, _, _} <- lists:reverse( lists:keysort(1, Stats1) )];
+	Stats2 = [{{type, Type}, {memory, Mem}, {pid, Pid}} || {Mem, Type, _, _, Pid} <- lists:reverse( lists:keysort(1, Stats1) )];
 processDistribution( TypeOfProcess ) ->
 	processDistribution( [TypeOfProcess] ).
 
@@ -235,6 +263,9 @@ initialCall(InitialCall, Pid)  ->
 		ICall ->
 		    ICall
     end.
+
+byteSize( Term ) ->
+	iolist_size( term_to_binary( Term ) ).
 
 %% =============================================================================
 %% Html debugging

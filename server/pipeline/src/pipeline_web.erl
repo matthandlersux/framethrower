@@ -178,7 +178,7 @@ processQuery ( Query, SessionId, SessionPid ) ->
 	session:checkQuery(SessionPid, Expr, QueryId, fun(Checked) ->
 		case Checked of
 			true ->
-				responseTime:in(SessionId, 'query', QueryId, now() ),
+				% responseTime:in(SessionId, 'query', QueryId, now() ),
 %				spawn(fun() ->
 					Cell = eval:evaluate( expr:exprParse(Expr) ),					
 					% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close

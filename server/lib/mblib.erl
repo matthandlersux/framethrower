@@ -5,6 +5,7 @@
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define(consKeysLeftRight, [3, 4] ).
 
+
 %% ====================================================
 %% Searching Functions
 %% ====================================================
@@ -180,11 +181,11 @@ which(E, [H|T], Pos) ->
 %% ====================================================
 
 curry(Func) ->
-	Info = erlang:fun_info(Func),
-	[{arity, Arity}] = lists:filter(fun(E) -> case E of {arity,_} -> true; _->false end end, Info),
+	{arity, Arity} = erlang:fun_info(Func, arity),
 	curry(Func,Arity, []).
 curry(Func, 0, Args) -> apply(Func, Args);
-curry(Func, Arity, Args) -> fun(Arg) -> curry(Func, Arity-1, Args ++ [Arg])	end.
+curry(Func, Arity, Args) -> 
+	fun(Arg) -> curry(Func, Arity-1, Args ++ [Arg])	end.
 
 
 %% ====================================================

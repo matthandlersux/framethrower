@@ -96,7 +96,7 @@ done
 
 eval='-eval "sessionManager:start(),memoize:start(),env:start(),objects:start(),mblib:bootJsonScript('${preparestate}')'${serialize}${responsetime}'."'
 # eval='-eval "memoize:start()."'
-commonflags="$heartenv $conf $sname $adddirs $boot $startapp $eval"
+commonflags="$heartenv $daemon $conf $sname $adddirs $boot $startapp $eval"
 
 HEART_COMMAND="${ENV_PGM} HEART=true MBRELLA_HEART_RESTARTS=$restarts MBRELLA_HEART_START=$starttime $program $originalargs"
 export HEART_COMMAND
