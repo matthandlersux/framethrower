@@ -117,7 +117,7 @@ Within pane
 
 
 .entry {
-	display: table;
+	display: table-row;
 	padding: 4px;
 }
 .entry-cell, .entry-button {

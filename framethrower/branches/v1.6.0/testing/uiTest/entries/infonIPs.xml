@@ -10,14 +10,14 @@
 	<f:derive name="infonType" d="shared.type.infon" />
 
 	<f:each select="$infonIPs" key="infonIP">
-		<html:div class="entry">
+		<html:div class="entry" style="margin: 16px 0px; background-color: #eee;">
 			<html:div class="entry-cell">
 				<f:thunk url="../view2/infonIP.xml">
 					<f:with-param name="focus" select="$infonIP" />
 					<f:with-param name="expectedType" select="$infonType" />
 				</f:thunk>
 			</html:div>
-			<html:div class="entry-button">
+			<html:div class="entry-cell">
 				<html:div>
 					<f:on event="click" with-action="$addConsIP">
 						<f:with-param name="consIP" select="$infonIP" />

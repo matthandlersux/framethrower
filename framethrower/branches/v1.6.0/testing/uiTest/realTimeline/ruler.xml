@@ -117,34 +117,48 @@
 			
 			<f:derive name="atTime" d="shared.atTime" />
 			
-			<f:create type="X.date" name="date">
-				<f:with-param name="day" select="$day" />
-			</f:create>
+			<f:derive name="dates" d="getSalientDates2 shared.realLife" />
 			
-			<f:perform with-action="$makeInfon1" name="inf">
-				<f:with-param name="relation" select="$atTime" />
-				<f:with-param name="arg1" select="$date" />
-			</f:perform>
+			<f:derive name="columns" d="ui.mainPaneSet.columns" />
+			<f:derive name="lastPaneKey" d="takeLastKey (UI.pane.set:panes columns)" />
+			
+			<xsl:variable name="created" select="$dates/f:entry[f:value/f:unit/f:literal/@value = $day/@value]" />
+			<xsl:choose>
+				<xsl:when test="$created">
+					<xsl:variable name="newKey">			
+						<f:each select="$lastPaneKey">
+							<xsl:call-template name="ord-bigger">
+								<xsl:with-param name="s" select="./@value" />
+							</xsl:call-template>
+						</f:each>
+					</xsl:variable>
+
+					<f:create type="UI.pane.pane" name="newPane" />
+					<f:intact object="$newPane" action="add" property="focus" key="$created/f:key/*" />
+
+					<f:intact object="$columns" action="add" property="panes" value="$newPane">
+						<f:with-param name="key" select="$newKey" as="String" />
+					</f:intact>
+				</xsl:when>
+				<xsl:otherwise>
+					<f:create type="X.date" name="date">
+						<f:with-param name="day" select="$day" />
+					</f:create>
+
+					<f:perform with-action="$makeInfon1" name="inf">
+						<f:with-param name="relation" select="$atTime" />
+						<f:with-param name="arg1" select="$date" />
+					</f:perform>
+				</xsl:otherwise>
+			</xsl:choose>
+			
+
 			
 			<!-- Open it -->
 			<!-- TODO: this is hacked in here.. rethink how pane sets work -->
-			<!-- <f:derive name="columns" d="ui.mainPaneSet.columns" />
-			<f:derive name="lastPaneKey" d="takeLastKey (UI.pane.set:panes columns)" />
+			<!-- 
 
-			<xsl:variable name="newKey">			
-				<f:each select="$lastPaneKey">
-					<xsl:call-template name="ord-bigger">
-						<xsl:with-param name="s" select="./@value" />
-					</xsl:call-template>
-				</f:each>
-			</xsl:variable>
-
-			<f:create type="UI.pane.pane" name="newPane" />
-			<f:intact object="$newPane" action="add" property="focus" key="$inf" />
-
-			<f:intact object="$columns" action="add" property="panes" value="$newPane">
-				<f:with-param name="key" select="$newKey" as="String" />
-			</f:intact> -->
+ -->
 			
 		</f:action>		
 		

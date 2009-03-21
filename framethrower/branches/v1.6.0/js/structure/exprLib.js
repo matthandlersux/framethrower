@@ -634,7 +634,7 @@ var exprLib = {
 	},
 	
 	getSalientDates2: {
-		type: "a -> Map Object (Set Number)",
+		type: "a -> Map Object (Unit Number)",
 		expr: "obj -> buildMap convert (upRight shared.atTime)",
 		where: {
 			upRight: {
@@ -642,7 +642,7 @@ var exprLib = {
 				chain: ["Object:upRight"]
 			},
 			convert: {
-				type: "Object -> Set Number",
+				type: "Object -> Unit Number",
 				chain: ["Cons:right", "X.date:day"]
 			}
 		}
