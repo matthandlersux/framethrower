@@ -47,24 +47,43 @@ pidFromStat(MemoryValue) ->
 	getProcessStats({[memory], MemoryValue}).
 pidFromStat(Stat, StatValue) ->
 	getProcessStats({[Stat], StatValue}).
-	
+
+%% 
+%% largeCellMemoryUsage:: ok
+%%		largeCellMemoryUsage finds the largest cell byte size, gets its state, and shows how much memory is
+%%		in each part of the state of that cell
+%% 
+
 largeCellMemoryUsage() ->
 	Max = lists:max( [ Size || {_, {_, Size}, _, _} <- processDistributionTotals( cell ) ] ),
 	Pid = pidFromStat( Max ),
 	cellMemoryUsage( Pid ).
 
+%% 
+%% memoryUsage:: ok
+%%		memoryUsage will take a tuple and print out the distribution of memory in each part of the tuple
+%% 
+
 memoryUsage( Term ) when is_tuple(Term) ->
 	prettyList( recordMemoryUsage( Term ) ).
-
-%% ====================================================
-%% Internal API
-%% ====================================================
+	
+%% 
+%% allCellFunctionMemory:: Number -> []
+%%		this will print out the memory usage of Number cells currently alive on the server, Number defaults to
+%%		100
+%% 
 
 allCellFunctionMemory() ->
 	allCellFunctionMemory(100).
 allCellFunctionMemory(N) ->
 	Cells = processDistribution(cell),
 	allCellFunctionMemory(N, Cells).
+
+%% ====================================================
+%% Internal API
+%% ====================================================
+
+
 
 allCellFunctionMemory(0, _) -> [];
 allCellFunctionMemory(N, [{_,{_,Memory},{_,Pid}}|T]) ->
@@ -81,6 +100,13 @@ allCellFunctionMemory(N, [{_,{_,Memory},{_,Pid}}|T]) ->
 	end,
 	allCellFunctionMemory( N1, T).
 
+%% 
+%% cellMemoryUsage:: Pid | Number -> ok
+%%		you can pass this function a Pid and it will output the memory usage of that cells state (provided it is a cell)
+%%		also, you can pass this function the size of a cell and it will find a cell matching that size first, then output
+%%		memory usage info
+%% 
+
 cellMemoryUsage( Pid ) when is_pid(Pid) ->
 	State = gen_server:call( Pid, getState ),
 	MemUsage = recordMemoryUsage( State ),
@@ -89,11 +115,26 @@ cellMemoryUsage( Number ) ->
 	State = gen_server:call( pidFromStat(Number), getState ),
 	MemUsage = recordMemoryUsage( State ),
 	prettyList( MemUsage).
+
+%% 
+%% prettyList:: Tuple TaggedTuple | List TaggedTuple -> ok
+%%		this will take a tuple of the form {{tag, Val},{tag2, Val2},...} or a list [{tag, Val},{tag2, Val2},...]
+%%		and print out a tag and its value on each line
+%% 
 	
 prettyList( Tuple ) when is_tuple(Tuple) ->
 	prettyList( tuple_to_list(Tuple) );
 prettyList( List ) ->
 	pretty( [ {{element, E}, {value, V}} || {E, V} <- List ] ).
+	
+%% 
+%% recordMemoryUsage:: Record -> Tagged Tuple
+%% 		this will take a Record and make a Tagged tuple st. #Record.item -> {...,{item, ItemValue},...}
+%%		right now only works on records defined in mblib:rInfo
+%%		if cant find record info, treats it like a record
+%%
+%%		the output can be used in prettyList/1
+%% 
 
 recordMemoryUsage( Record ) when is_tuple(Record) ->
 	RecordName = element(1, Record),
@@ -105,6 +146,11 @@ recordMemoryUsage( Record ) when is_tuple(Record) ->
 			?trace({record_not_found, RecordName}),
 			tupleMemoryUsage( erlang:append_element( Record, Record) )
 	end.
+
+%% 
+%% tupleMemoryUsage:: (Tuple | Tuple -> Tags) -> Tagged Tuple
+%%		takes a tuple and optional tags, and creates a tagged tuple st. the values are replaced with their byte size
+%% 
 
 tupleMemoryUsage( Tuple ) ->
 	tupleMemoryUsage( Tuple, [ Number || Number <- lists:seq(1, size(Tuple)) ] ).
