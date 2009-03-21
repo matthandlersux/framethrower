@@ -229,16 +229,28 @@ typeW() ->
 	return([X|Y])))).
 	
 nat() ->
-	then( many1( digit() ), fun(XS) ->
-				return(list_to_integer(XS))
-			end
-		).
+	choice( 
+		?do( XS, many1( digit() ),
+		return(list_to_integer(XS)) ),
+		
+		?do( Neg, symbol([$-]),
+		?do( XS, many1( digit() ),
+		return(list_to_integer(Neg ++ XS)) ))
+	).
 
 floa() ->
-	?do(Lead, many1( digit() ),
-	?do(_, symbol([$.]),
-	?do(Follow, many1( digit() ),
-	return( list_to_float(Lead ++ "." ++ Follow) )))).
+	choice( 
+		?do(Lead, many1( digit() ),
+		?do(_, symbol([$.]),
+		?do(Follow, many1( digit() ),
+		return( list_to_float(Lead ++ "." ++ Follow)) ))),
+		
+		?do( Neg, symbol([$-]),
+		?do(Lead, many1( digit() ),
+		?do(_, symbol([$.]),
+		?do(Follow, many1( digit() ),
+		return( list_to_float(Neg ++ Lead ++ "." ++ Follow)) ))))
+	).
 
 space() ->
 	then( many( sat( fun isSpace/1)), fun(_) -> return({}) end).
