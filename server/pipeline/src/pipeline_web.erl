@@ -7,7 +7,7 @@
 -author('author <author@example.com>').
 -include ("../../mbrella/v1.4/include/scaffold.hrl").
 
--export([start/1, stop/0, loop/2, processActionList/1]).
+-export([start/1, stop/0, loop/2, processActionList/1, processActionList/3]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define (pipelineBufferTime, 50).
@@ -190,7 +190,7 @@ processQuery ( Query, SessionId, SessionPid ) ->
 							session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
 							fun() -> 
 								case Val of
-									{Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
+									{pair, Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
 									_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
 								end
 							end
@@ -250,11 +250,13 @@ processAction({struct, [{<<"block">>, Action}]}, Updates, OldVariables) ->
 	Actions = struct:get_value(<<"actions">>, Action),
 	{Returned,_} = processActionList(Actions, [], OldVariables),
 	NewVariables = try lists:zip(BlockVariables, Returned)
-				catch 
-					_:_ ->
-						throw({insufficient_returned_variables, {expected, BlockVariables}, {got, Returned}})
-				end,
-	{ Updates, NewVariables ++ OldVariables};
+		catch 
+			_:_ ->
+				throw({insufficient_returned_variables, {expected, BlockVariables}, {got, Returned}})
+		end,
+	
+	MergedVariables = lists:ukeymerge(1, lists:sort(NewVariables), lists:sort(OldVariables)),
+	{Updates, MergedVariables};
 % action:create is how variables get bound to objects
 processAction({struct, [{<<"create">>, Action}]}, Updates, Variables) ->
 	Type = binary_to_list( struct:get_value(<<"type">>, Action) ),

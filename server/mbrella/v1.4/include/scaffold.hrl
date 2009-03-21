@@ -132,7 +132,8 @@
 
 -record (serialize, {
 	file,
-	prepareState
+	prepareState,
+	variables
 }).
 
 -record(cellState, {

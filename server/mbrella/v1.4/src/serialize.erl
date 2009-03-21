@@ -156,7 +156,27 @@ unserializeNow(ETS) ->
 	dict:map(fun(Name, ObjPointer) -> 
 		Obj = env:lookup(ObjPointer#objectPointer.name),
 		memoizeObject(Obj)
-	end, NewObjectDict).	
+	end, NewObjectDict),
+	
+	%update variables used in prepare state
+	NewVariables = case ets:lookup(ETS, variables) of
+		[{_, Variables}] ->
+			VarsWithUndefined = lists:map(fun({VarName, ObjPointer}) ->
+				case dict:find(ObjPointer#objectPointer.name, NewObjectDict) of
+					{ok, NewPointer} -> {VarName, NewPointer};
+					_ -> undefined
+				end
+			end, Variables),
+			lists:filter(fun(Elem) ->
+				case Elem of
+					undefined -> false;
+					_ -> true
+				end
+			end, VarsWithUndefined);
+		_ ->
+			[]
+	end,
+	NewVariables.	
 
 
 
@@ -273,6 +293,16 @@ memoizeObject(Obj) ->
 	objects:addToMemoTable(Obj, NewProp).
 
 
+comparePrepStates(OldPrepState, PrepareStateStruct, OldVariables) ->
+	
+	NewActions = lists:filter(fun(Elem) ->
+		not(lists:member(Elem, OldPrepState))
+	end, PrepareStateStruct),
+
+	{_, Variables} = pipeline_web:processActionList(NewActions, [], OldVariables),
+	Variables.
+
+
 %% ====================================================================
 %% Server functions
 %% ====================================================================
@@ -287,7 +317,12 @@ memoizeObject(Obj) ->
 %% --------------------------------------------------------------------
 init([FileName]) ->
 	process_flag(trap_exit, true),
-    {ok, #serialize{file = FileName}}.
+	State = #serialize{
+		file = FileName,
+		prepareState = [],
+		variables = []
+	},
+    {ok, State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_call/3
@@ -306,27 +341,22 @@ handle_call({unserialize, FileName}, _, State) ->
 	end,
 	NewState = case ets:file2tab(FileToUse) of
 		{ok, Table} ->
-			unserializeNow(Table),
+			Variables = unserializeNow(Table),
+			StateWithVar = State#serialize{variables = Variables},
 			case ets:lookup(Table, prepareState) of
 				[{_, PrepareState}] ->
-					State#serialize{prepareState = PrepareState};
+					StateWithVar#serialize{prepareState = PrepareState};
 				[] -> 
-					State
+					StateWithVar
 			end;
 		_ ->
 			State
 	end,
     {reply, ok, NewState};
 handle_call({updatePrepareState, PrepareStateStruct}, _, State) ->
-	NewPrepState = case ?this(prepareState) of
-		undefined -> {State, PrepareStateStruct};
-		OldPrepState ->
-			%TODO
-			compareHere
-	end,
-	% NewState = State#serialize{prepareState = NewPrepState},
-	NewState = State,
-	{reply, NewPrepState, NewState};
+	NewVariables = comparePrepStates(?this(prepareState), PrepareStateStruct, ?this(variables)),
+	NewState = State#serialize{prepareState = PrepareStateStruct, variables = NewVariables},
+	{reply, ok, NewState};
 handle_call(stop, _, State) ->
 	{stop, normal, stopped, State}.
 
@@ -345,6 +375,7 @@ handle_cast({serializeEnv, FileName}, State) ->
 	ETS = ets:new(serializeTable, []),
 	serializeNow(ETS),
 	ets:insert(ETS, {prepareState, ?this(prepareState)}),
+	ets:insert(ETS, {variables, ?this(variables)}),
 	ets:tab2file(ETS, FileToUse),
     {noreply, State};
 handle_cast({terminate, Reason}, State) ->

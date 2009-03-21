@@ -9,6 +9,8 @@ mbrellaversion="v1.4"
 adddirs="-pa $PWD/$webappname/ebin $PWD/$webappname/deps/*/ebin $PWD/mbrella/${mbrellaversion}/ebin $PWD/lib/"
 boot="-boot start_sasl"
 serialize="\\\"test.ets\\\""
+unserialize="undefined"
+responsetime="undefined"
 startapp="-s $webappname"
 ENV_PGM=`which env`
 program="$0"
@@ -79,12 +81,12 @@ while [ $# -gt 0 ]
 			serialize="\\\"$1\\\"";
 			shift;;
 		-u|--unserialize)
-			unserialize=",serialize:unserialize(\\\"$1\\\")";
+			unserialize="\\\"$1\\\"";
 			shift;;
 		--noconfig)
 			conf="";;
 		-r|--responsetime)
-			responsetime=",responseTime:start( )";;
+			responsetime="true";;
 		--help)
 			help;
 			exit 0;;
@@ -96,7 +98,8 @@ while [ $# -gt 0 ]
 	esac
 done
 
-eval='-eval "sessionManager:start(),memoize:start(),env:start(),objects:start(),mblib:bootJsonScript(),serialize:start('${serialize}')'${unserialize}',mblib:prepareStateScript()'${responsetime}'."'
+eval='-eval "mblib:startScript([{serialize, '${serialize}'},{unserialize, '${unserialize}'},{responsetime, '${responsetime}'}])."'
+
 # eval='-eval "memoize:start()."'
 commonflags="$heartenv $daemon $conf $sname $adddirs $boot $startapp $eval"
 

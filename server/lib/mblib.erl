@@ -273,6 +273,40 @@ createRootObjects(RootObjectsStruct) ->
 % bootJsonScript() ->
 % 	spawn( fun() -> bootJsonScriptLoop() end ).
 
+
+
+startScript(Options) ->
+	spawn( fun() ->
+		sessionManager:start(),
+		memoize:start(),
+		env:start(),
+		objects:start(),
+		mblib:bootJsonScript(),
+	
+		case lists:keysearch(serialize, 1, Options) of
+			{value, {_, undefined}} ->
+				serialize:start();
+			{value, {_, SFileName}} ->
+				serialize:start(SFileName)
+		end,
+		case lists:keysearch(unserialize, 1, Options) of
+			{value, {_, undefined}} ->
+				nosideeffect;
+			{value, {_, USFileName}} ->
+				serialize:unserialize(USFileName)
+		end,
+		mblib:prepareStateScript(),
+		case lists:keysearch(responsetime, 1, Options) of
+			{value, {_, true}} ->
+				responseTime:start();
+			_ ->
+				nosideeffect
+		end
+	end),
+	doneStartScript.
+
+
+
 bootJsonScript() ->
 	SessionId = session:new(),
 	{ok, JSONBinary} = file:read_file("lib/bootJSON"),
@@ -290,7 +324,6 @@ prepareStateScript() ->
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),	
 	PrepareStateStruct = struct:get_value(<<"prepareState">>, Struct),
 	UpdatedStruct = serialize:updatePrepareState(PrepareStateStruct),
-	pipeline_web:processActionList(PrepareStateStruct),
 	preparedState.
 
 
