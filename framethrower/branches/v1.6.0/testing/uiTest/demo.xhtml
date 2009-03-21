@@ -18,9 +18,15 @@ var DEBUG = true;
 //var LOCAL = true;
 var LOCAL = false;
 
-var serverBaseUrl = "http://clever.eversplosion.com:8000/";
-//var serverBaseUrl = "http://localhost:8000/";
-//var serverBaseUrl = "http://littleguy.eversplosion.com:8000/";
+if (location.host) {
+	var serverBaseUrl = location.protocol + "//" + location.host + "/";
+} else {
+	var serverBaseUrl = prompt("server base url?", "http://clever.eversplosion.com:8000/");
+	//var serverBaseUrl = "http://localhost:8000/";
+	//var serverBaseUrl = "http://littleguy.eversplosion.com:8000/";
+}
+
+
 
 var INCLUDES=["test.js"];
 var ONLOAD="initialize()";
