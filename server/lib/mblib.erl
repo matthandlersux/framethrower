@@ -302,9 +302,7 @@ startScript(Options) ->
 			_ ->
 				nosideeffect
 		end
-	end),
-	doneStartScript.
-
+	end).
 
 
 bootJsonScript() ->

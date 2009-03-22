@@ -17,9 +17,9 @@
 %% 
 
 exprParse(String) ->
-	expr( parse(String), dict:new() ).
+	expr(altparse:parse(String), dict:new() ).
 exprParse(String, CustomEnv) ->
-	expr( parse(String), CustomEnv ).
+	expr(altparse:parse(String), CustomEnv ).
 expr( ParsedString, LambdaEnv ) when is_record(ParsedString, cons) ->
 	case ParsedString#cons.type of
 		lambda ->
