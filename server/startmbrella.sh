@@ -92,6 +92,8 @@ while [ $# -gt 0 ]
 			exit 0;;
 		-h|--heart)
 			heart="-heart";
+			daemon="-detached";
+			conf="-config errorlognotty";
 			heartenv="-env HEART_BEAT_TIMEOUT 30";;
 		*)
 			help

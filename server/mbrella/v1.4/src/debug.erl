@@ -86,6 +86,7 @@ allCellFunctionMemory(N) ->
 
 
 allCellFunctionMemory(0, _) -> [];
+allCellFunctionMemory(_, []) -> io:format("Cells are too small, try loading the application to beef them up.");
 allCellFunctionMemory(N, [{_,{_,Memory},{_,Pid}}|T]) ->
 	State = gen_server:call(Pid, getState),
 	Dict = element(2, State),
