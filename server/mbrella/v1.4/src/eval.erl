@@ -100,12 +100,14 @@ evaluate(Expr) when is_record(Expr, cons) ->
 			case evaluate( Expr#cons.left ) of
 				#cons{type = lambda} = Lambda ->
 					% ?trace(Lambda),
-					evaluate( betaReduce(Lambda, Expr#cons.right) );
+					Fun = normalizeVariables(Lambda, "x"),
+					Input = normalizeVariables(Expr#cons.right, "y"),
+					evaluate( betaReplace(Fun#cons.right, (Fun#cons.left)#exprVar.value, Input) );
 				Left ->
 					BottomExpr = bottomOut(Expr),
 					% ?trace(BottomExpr),
-					NormalExpr = normalize(BottomExpr),
-					case memoize:get( NormalExpr ) of
+					% NormalExpr = normalize(BottomExpr),
+					case memoize:get( BottomExpr ) of
 						Cell when is_record(Cell, cellPointer) -> Cell;
 						_ ->
 							F = evaluate( Left ), 
@@ -118,7 +120,7 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									Cell = env:lookup(Result#cellPointer.name),
 									TypedCell = Cell#exprCell{bottom = BottomExpr},
 									cell:update(TypedCell),
-									OnRemove = memoize:add( NormalExpr, Result),
+									OnRemove = memoize:add( BottomExpr, Result),
 									cell:addOnRemove(Result, OnRemove),
 									Result;
 								NumStringBool ->
@@ -177,6 +179,57 @@ evaluate(NumStringBool) -> NumStringBool.
 % 	{NumStringBool, NumStringBool}.
 
 
+
+
+% Takes in a closed Expr and returns it back but with every lambda's parameter renamed in a standard way
+% 	Properties:
+% 		Every lambda expression will have a unique parameter name
+% 		normalizeVariables will return the same thing on any Expr's that are "alpha-equivalent" (equivalent up to variable names)
+% 	Optional parameter prefix: will name variables starting with this prefix, default is "x"
+normalizeVariables(Expr, Prefix) ->
+	normalizeHelper(Expr, [], Prefix, 0).
+
+normalizeHelper(Expr, Vars, Prefix, VarCount) ->
+	case Expr of
+		Cons when is_record(Expr, cons) ->
+			case Expr#cons.type of
+				apply ->
+					#cons{
+						type = apply,
+						left = normalizeHelper(Expr#cons.left, Vars, Prefix, VarCount),
+						right = normalizeHelper(Expr#cons.right, Vars, Prefix, VarCount)
+					};
+				lambda ->
+					NewVar = Prefix ++ integer_to_list(VarCount),
+					NewVars = [{(Expr#cons.left)#exprVar.value, NewVar}|Vars],
+					#cons{
+						type = lambda,
+						left = #exprVar{value = NewVar},
+						right = normalizeHelper(Expr#cons.right, NewVars, Prefix, VarCount+1)
+					}
+			end;
+		Var when is_record(Var, exprVar) ->
+			{_, {_, VarName}} = lists:keysearch(Var#exprVar.value, 1, Vars),
+			Var#exprVar{value = VarName};
+		_ ->
+			Expr
+	end.
+			
+
+betaReplace(Expr, Name, ReplaceExpr) ->
+	% replaces all Var's with (.value == name) with replaceExpr in expr
+	% this should only be called if expr and replaceExpr share no variable names (to avoid collisions)
+	case Expr of
+		#exprVar{value = Name} ->
+			ReplaceExpr;
+		Cons when is_record(Cons, cons) ->
+			Cons#cons{
+				left = betaReplace(Cons#cons.left, Name, ReplaceExpr),
+				right = betaReplace(Cons#cons.right, Name, ReplaceExpr)
+			};
+		_ ->
+			Expr
+	end.
 
 
 %% 
@@ -292,27 +345,32 @@ applyFun( #exprFun{function = Fun} = ExprFun, Expr ) when is_record(ExprFun, exp
 	Fun(Expr).
 	
 bottomOut( InExpr ) -> 
-	LookForAndReplaceFun = 
-		fun( Expr ) when is_record(Expr, exprFun) ->
-				case Expr#exprFun.bottom of
-					undefined ->
-						{ok, Expr};
-					_ ->
-						{ok, Expr#exprFun.bottom}
-				end;
-			( ExprPointer ) when is_record(ExprPointer, cellPointer) ->
-				Expr = env:lookup(ExprPointer#cellPointer.name),
-				case Expr#exprCell.bottom of 
-					undefined ->
-						{ok, Expr#exprCell.name};
-					_ ->
-						{ok, Expr#exprCell.bottom}
-				end
-		end,
-	mblib:traverse(InExpr, LookForAndReplaceFun).
+	case InExpr of
+		ExprFun when is_record(ExprFun, exprFun) ->
+			case ExprFun#exprFun.bottom of
+				undefined ->
+					#exprFun{name=ExprFun#exprFun.name};
+				_ ->
+					ExprFun#exprFun.bottom
+			end;
+		ExprPointer when is_record(ExprPointer, cellPointer) ->
+			Expr = env:lookup(ExprPointer#cellPointer.name),
+			case Expr#exprCell.bottom of 
+				undefined ->
+					Expr#exprCell.name;
+				_ ->
+					Expr#exprCell.bottom
+			end;
+		Cons when is_record(Cons, cons) ->
+			Cons#cons{
+				left = bottomOut(Cons#cons.left),
+				right = bottomOut(Cons#cons.right)
+			};
+		_ -> InExpr
+	end.
 
-normalize( Expression ) -> 
-	NormFun = fun( Expr ) when is_record(Expr, exprFun) ->
-		{ok, Expr#exprFun{type = undefined, function = undefined, bottom = undefined}}
-	end,
-	mblib:traverse(Expression, NormFun).
+% normalize( Expression ) -> 
+% 	NormFun = fun( Expr ) when is_record(Expr, exprFun) ->
+% 		{ok, Expr#exprFun{type = undefined, function = undefined, bottom = undefined}}
+% 	end,
+% 	mblib:traverse(Expression, NormFun).

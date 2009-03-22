@@ -89,7 +89,6 @@
 }).
 
 -record (exprFun, {
-	kind = "fun",
 	type,
 	name,
 	function,
@@ -97,7 +96,6 @@
 }).
 
 -record (exprVar, {
-	kind,
 	value
 }).
 
