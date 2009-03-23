@@ -1,3 +1,0 @@
-<derived name="x" from="focus">
-	<f:get what="childObjects" />
-</derived>
