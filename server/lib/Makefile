@@ -1,5 +1,5 @@
 all:
-	erlc -W *.erl
+	erlc -W0 -o ./ebin/ *.erl
 	
 clean:
 	\rm *.beam
