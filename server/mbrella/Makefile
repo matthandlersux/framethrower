@@ -4,5 +4,5 @@ mbrella: lib
 	(cd src;$(MAKE))
 	
 lib:
-	(cd ../../lib;$(MAKE))
+	(cd ../lib;$(MAKE))
 	
