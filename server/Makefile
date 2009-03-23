@@ -7,4 +7,4 @@ pipeline: mochiweb
 #	(cd mochiweb;$(MAKE))
 	
 mbrella:
-	(cd mbrella/v1.4/;$(MAKE))
+	(cd mbrella/;$(MAKE))
