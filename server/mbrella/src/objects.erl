@@ -7,7 +7,7 @@
 
 -behaviour(gen_server).
 -include("../include/scaffold.hrl").
--include ("../../../lib/ast.hrl").
+-include ("../../lib/ast.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 

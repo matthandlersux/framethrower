@@ -8,7 +8,7 @@
 
 -behaviour(gen_server).
 
--include ("../../mbrella/v1.4/include/scaffold.hrl").
+-include ("../../mbrella/include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define (this(Field), State#?MODULE.Field).

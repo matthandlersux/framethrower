@@ -6,7 +6,7 @@
 -module(serverAdvice).
 -author('andrew dailey <adailey14@gmail.com>').
 
--include ("../../mbrella/v1.4/include/scaffold.hrl").
+-include ("../../mbrella/include/scaffold.hrl").
 
 -export([processServerAdvice/3]).
 

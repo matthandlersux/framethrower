@@ -5,7 +5,7 @@
 
 -module(pipeline_web).
 -author('author <author@example.com>').
--include ("../../mbrella/v1.4/include/scaffold.hrl").
+-include ("../../mbrella/include/scaffold.hrl").
 
 -export([start/1, stop/0, loop/2, processActionList/1, processActionList/3]).
 
