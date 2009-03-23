@@ -104,6 +104,13 @@ var classesToMake = {
 		memoize: ["day"]
 	},
 	
+	"X.prefs": {
+		inherit: "Object",
+		prop: {
+			"typeColors": "Map Object String"
+		}
+	},
+	
 	
 	
 	// ====================================================

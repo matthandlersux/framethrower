@@ -16,7 +16,7 @@
 	<!-- <f:derive name="focustype" d="bindSet (getOntProp shared.isA) (returnUnitSet focus)" /> -->
 	<f:derive name="focustype" d="mapUnit getTypesMap focus" />
 	
-	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
+	<f:derive name="typeDisplay" d="X.prefs:typeColors shared.globalPrefs" />
 	
 	<f:derive name="propertiesState" d="UI.pane.pane:propertiesState pane" />
 

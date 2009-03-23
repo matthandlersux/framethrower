@@ -10,7 +10,7 @@
 	<f:derive name="name" d="getName focus" />
 	
 	<f:derive name="editName" d="UI.propertiesState:editName propertiesState" />
-	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
+	<f:derive name="typeDisplay" d="X.prefs:typeColors shared.globalPrefs" />
 	
 	<f:derive name="focustypes" d="getOntProp shared.isA focus" />
 	

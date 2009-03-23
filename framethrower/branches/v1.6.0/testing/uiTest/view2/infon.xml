@@ -11,7 +11,7 @@
 	<f:derive name="template" d="(bindSet getRelationTemplate) (getInfonRelations focus)" />
 	
 	<f:derive name="types" d="getTypesMap (Cons~Object focus)" />
-	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
+	<f:derive name="typeDisplay" d="X.prefs:typeColors shared.globalPrefs" />
 	
 	<f:include url="/xml/util/typeColor.xml" />
 	

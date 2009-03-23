@@ -13,7 +13,12 @@ var rootObjects = {};
 		if (!LOCAL && name.substr(0, 7) === "shared.") {
 			rootObjects[name] = makeRemoteObject(name, parseType(className));
 		} else {
-			rootObjects[name] = objects.make(className, props);
+			if (objects.isClass(className)) {
+				rootObjects[name] = objects.make(className, props);
+			} else {
+				rootObjects[name] = makeControlledCell(className);
+			}
+			
 			rootObjects[name].name = name;
 		}
 		
@@ -65,9 +70,14 @@ var rootObjects = {};
 	m("shared.atTime");
 	
 	
+	m("shared.globalPrefs", "X.prefs");
+	
 	
 	
 	m("shared.test.walleMovie");
+	
+	
+	
 	
 	
 	

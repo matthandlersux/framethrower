@@ -186,6 +186,19 @@
 	</f:perform>
 	
 	<!-- ==========================================================================
+	Global preferences
+	=========================================================================== -->
+	
+	<f:derive name="prefs" d="shared.globalPrefs" />
+	
+	<f:intact object="$prefs" property="typeColors" action="add" key="$situationType" value="'#2ae'" />
+	<f:intact object="$prefs" property="typeColors" action="add" key="$entityType" value="'#5a1'" />
+	
+	<f:intact object="$prefs" property="typeColors" action="add" key="$movieType" value="'#a22'" />
+	<f:intact object="$prefs" property="typeColors" action="add" key="$locationType" value="'#829'" />
+	<f:intact object="$prefs" property="typeColors" action="add" key="$agentType" value="'#9e1'" />
+	
+	<!-- ==========================================================================
 	Movie/Video Timeline Relations/Types
 	=========================================================================== -->
 	

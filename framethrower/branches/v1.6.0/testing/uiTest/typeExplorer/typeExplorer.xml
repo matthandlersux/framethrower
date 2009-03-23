@@ -10,17 +10,73 @@
 	<f:derive name="getTypeChildren" d="getTypeChildren" />
 	
 	<f:include url="/xml/util/actions.xml" />
+	<f:include url="/xml/util/typeColor.xml" />
+	<f:include url="/xml/util/uiActions.xml" />
 	
 	<f:template name="displayType">
 		<f:param name="focus" type="Object" />
+		<f:derive name="types" d="getTypesMap focus" />
+		<f:derive name="typeDisplay" d="X.prefs:typeColors shared.globalPrefs" />
+		
+		<xsl:variable name="color">
+			<xsl:call-template name="typeColor">
+				<xsl:with-param name="typeNames" select="$types/f:entry/f:value/f:set/f:o/@name" />
+				<xsl:with-param name="typeDisplay" select="$typeDisplay" />
+			</xsl:call-template>
+		</xsl:variable>
+		
 		<html:span>
 			<f:thunk url="../view2/object.xml">
 				<f:with-param name="focus" select="$focus" />
 			</f:thunk>
+			<html:div>
+				<xsl:attribute name="style">
+					background-color: <xsl:value-of select="$color" />;
+					width: 10px;
+					height: 10px;
+				</xsl:attribute>
+				<f:on event="click" with-action="$showChangeColorPopup">
+					<f:with-param-browser name="x" prop="mouseX" />
+					<f:with-param-browser name="y" prop="mouseY" />
+				</f:on>
+			</html:div>
 			<f:thunk with-template="$extra">
 				<f:with-param name="focus" select="$focus" />
 			</f:thunk>
 		</html:span>
+		
+		<!-- Put the popup to change color here -->
+		<f:template name="changeColorPopup">
+			<xsl:variable name="color">
+				<xsl:call-template name="typeColor">
+					<xsl:with-param name="typeNames" select="$types/f:entry/f:value/f:set/f:o/@name" />
+					<xsl:with-param name="typeDisplay" select="$typeDisplay" />
+				</xsl:call-template>
+			</xsl:variable>
+			<html:form>
+				<html:input value="{$color}" name="string">
+					<f:on event="manualblur" with-action="$updateColor">
+						<f:with-param-browser name="newString" form="string" />
+					</f:on>
+				</html:input>
+			</html:form>
+			<f:action name="updateColor">
+				<f:param name="newString" type="String" />
+				<f:derive name="prefs" d="shared.globalPrefs" />
+				<f:intact object="$prefs" property="typeColors" action="add" key="$focus" value="$newString" />
+			</f:action>
+		</f:template>
+		<f:action name="showChangeColorPopup">
+			<f:param name="x" type="Number" />
+			<f:param name="y" type="Number" />
+			<f:perform with-action="$showPopup">
+				<f:with-param name="x" select="$x" />
+				<f:with-param name="y" select="$y" />
+				<f:with-param name="width" select="160" as="Number" />
+				<f:with-param name="height" select="40" as="Number" />
+				<f:with-param name="content" select="$changeColorPopup" />
+			</f:perform>
+		</f:action>
 	</f:template>
 	
 	<f:action name="makeNewSubType">

@@ -10,7 +10,7 @@
 	<f:derive name="types" d="getTypes focus" />
 	<f:derive name="isRelation" d="filterRelations (returnSet focus)" />
 	
-	<f:derive name="typeDisplay" d="UI.prefs:typeDisplay ui.prefs" />
+	<f:derive name="typeDisplay" d="X.prefs:typeColors shared.globalPrefs" />
 	
 	<html:div class="object">
 		<xsl:variable name="color">
