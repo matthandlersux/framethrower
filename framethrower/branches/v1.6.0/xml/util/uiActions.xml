@@ -15,10 +15,13 @@
 		<f:derive name="popups" d="UI.main:popup main" />
 		
 		<f:create type="UI.popup" name="popup">
-			<f:with-param name="x" select="$x" />
+			<!-- <f:with-param name="x" select="$x" />
 			<f:with-param name="y" select="$y" />
 			<f:with-param name="width" select="$width" />
-			<f:with-param name="height" select="$height" />
+			<f:with-param name="height" select="$height" /> -->
+			<f:with-param name="display">
+				<display x="{$x/@value}" y="{$y/@value}" width="{$width/@value}" height="{$height/@value}" />
+			</f:with-param>
 			<f:with-param name="content" select="$content" />
 		</f:create>
 		

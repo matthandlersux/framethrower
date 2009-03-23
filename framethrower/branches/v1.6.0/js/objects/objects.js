@@ -136,10 +136,7 @@ var classesToMake = {
 	
 	"UI.popup": {
 		prop: {
-			"x": "Number",
-			"y": "Number",
-			"width": "Number",
-			"height": "Number",
+			"display": "XML",
 			"content": "Unit JS"
 		}
 	},
