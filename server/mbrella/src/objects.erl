@@ -7,7 +7,7 @@
 
 -behaviour(gen_server).
 -include("../include/scaffold.hrl").
--include ("../../lib/ast.hrl").
+-include ("../../../lib/ast.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
@@ -397,10 +397,18 @@ makeInheritedCopies(Obj, Classes) ->
 	end.
 
 checkPointer(ObjectOrPointer) ->
-	case ObjectOrPointer of
+	Answer = case ObjectOrPointer of
 		ObjectPointer when is_record(ObjectPointer, objectPointer) ->
 			env:lookup(ObjectPointer#objectPointer.name);
 		_ -> ObjectOrPointer
+	end,
+	if
+		is_record(Answer, object) -> Answer;
+		true -> 
+			?trace("Check Pointer Not an Object"),
+			?trace(ObjectOrPointer),
+			?trace(Answer),
+			exit(problem)
 	end.
 
 %% ====================================================================

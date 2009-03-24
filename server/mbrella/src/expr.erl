@@ -52,8 +52,8 @@ expr(ParsedString, LambdaEnv) when is_list(ParsedString) ->
 							#cellPointer{name = ParsedString, pid = ExprCell#exprCell.pid};
 						Object when is_record(Object, object) -> 
 							#objectPointer{name = ParsedString};
-						ExprFun ->
-							ExprFun
+						ExprFun when is_record(ExprFun, exprFun) ->
+							#funPointer{name = ParsedString}
 					end;
 				ExprVar ->
 					ExprVar
@@ -261,6 +261,8 @@ unparse(#exprFun{name = undefined, bottom = Bottom}, Variables) ->
 	unparse(Bottom, Variables);	
 unparse(#exprFun{name = Name}, Variables) ->
 	{Name, Variables};
+unparse(#funPointer{name = Name}, Variables) ->
+	{Name, Variables};	
 unparse(#exprCell{name = Name}, Variables) ->
 	{Name, Variables};
 unparse(#cellPointer{name = Name}, Variables) ->

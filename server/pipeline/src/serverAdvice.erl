@@ -25,41 +25,36 @@ processServerAdvice(ServerAdviceRequest, Templates, SessionPid) ->
 		cell:injectFunc(TriggerCell, DoneCell, NoFun),
 		
 		OrderPid = spawn(fun() -> orderLoop(dict:new(), SessionPid) end),
-		processCall(ServerAdviceRequest, Templates, dict:new(), OrderPid, DoneCell, 0),
+		processCall(ServerAdviceRequest, Templates, dict:new(), OrderPid, DoneCell, 0, top),
 		cell:done(TriggerCell),
 		cell:injectFunc(DoneCell, fun() -> 
 			OrderPid ! {close, self()},
 			receive
-				State -> processOrderState(State, SessionPid, 1)
+				{closedState, State} -> 
+					case dict:fetch_keys(State) of
+						[] -> nosideeffect;
+						Keys ->
+							Sorted = lists:sort(Keys),
+							lists:foreach(fun(Key) ->
+								Messages = dict:fetch(Key, State),
+								lists:foreach(fun(Message) -> processMessage(Message, SessionPid) end, Messages)
+							end, Sorted)
+					end
 			end,
 			session:serverAdviceDone(SessionPid) 
 		end, NoFun)
 	end).
 
 
-processOrderState(State, SessionPid, Depth) ->
-	?trace(State),
-	case dict:find(Depth, State) of
-		{ok, Messages} ->
-			?trace(Messages),
-			lists:foreach(fun(Message) -> processMessage(Message, SessionPid) end, Messages),
-			processOrderState(State, SessionPid, Depth + 1);
-		_ -> nosideeffect
-	end.
-
 processMessage(Message, SessionPid) ->
-	?trace(Message),
 	session:sendUpdate(SessionPid, Message).
 
 orderLoop(State, SessionPid) ->
 	receive
-		{newDepth, Depth} ->
-			NewState = dict:store(Depth, [], State),
-			orderLoop(NewState, SessionPid);
 		{queryDefine, ExprString, Depth, From} ->
-			QueryId = session:getQueryId(SessionPid),			
+			QueryId = session:getQueryId(SessionPid),
 			Success = session:queryDefine(SessionPid, ExprString, QueryId),
-			From ! {Success, QueryId},
+			From ! {queryDefineResponse, Success, QueryId},
 			NewState = case Success of
 				true -> dict:append(Depth, {queryDefine, ExprString, QueryId}, State);
 				false -> State
@@ -71,9 +66,13 @@ orderLoop(State, SessionPid) ->
 		{addCleanup, QueryId, OnRemove} ->
 			session:addCleanup(SessionPid, QueryId, OnRemove),
 			orderLoop(State, SessionPid);
-		{close, From} ->
-			From ! State,
-			maintainLoop(SessionPid)
+		{close, Pid} ->
+			Pid ! {closedState, State},
+			maintainLoop(SessionPid);
+		Other ->
+			?trace("GOT Other in Order Loop"),
+			?trace(Other),
+			orderLoop(State, SessionPid)
 	end.
 
 
@@ -82,7 +81,7 @@ maintainLoop(SessionPid) ->
 		{queryDefine, ExprString, _, From} ->
 			QueryId = session:getQueryId(SessionPid),
 			Success = session:queryDefine(SessionPid, ExprString, QueryId),
-			From ! {Success, QueryId},
+			From ! {queryDefineResponse, Success, QueryId},
 			case Success of
 				true -> processMessage({queryDefine, ExprString, QueryId}, SessionPid);
 				false -> nosideeffect
@@ -93,13 +92,20 @@ maintainLoop(SessionPid) ->
 			maintainLoop(SessionPid);
 		{addCleanup, QueryId, OnRemove} ->
 			session:addCleanup(SessionPid, QueryId, OnRemove),
+			maintainLoop(SessionPid);
+		{close, Pid} ->
+			Pid ! {closedState, dict:new()},
+			maintainLoop(SessionPid);
+		Other ->
+			?trace("GOT OTHER!!!"),
+			?trace(Other),
 			maintainLoop(SessionPid)
 	end.
 
-queryDefine(OrderPid, ExprString, Depth) -> 
+queryDefine(OrderPid, ExprString, Depth) ->
 	OrderPid ! {queryDefine, ExprString, Depth, self()},
 	receive
-		Response -> Response
+		{queryDefineResponse, Success, QueryId} -> {Success, QueryId}
 	end.
 
 sendUpdate(OrderPid, Update, Depth) ->
@@ -136,7 +142,8 @@ runTemplate (Template, Params, Templates, Scope, OrderPid, DoneCell, Depth) ->
 		try expr:exprParse(DExpr, AccScope) of
 			DParsed -> 
 				case eval:evaluate( DParsed ) of
-					Cell when is_record(Cell, exprCell) ->
+					Cell when is_record(Cell, cellPointer) ->
+						cell:injectFunc(Cell, DoneCell, fun(_) -> nosideeffect end),
 						case queryDefine(OrderPid, expr:unparse(DParsed), Depth) of
 							{true, QueryId} ->
 								OnRemove = cell:injectFunc(Cell, 
@@ -153,8 +160,8 @@ runTemplate (Template, Params, Templates, Scope, OrderPid, DoneCell, Depth) ->
 											end
 										end
 									end
-								),
-								addCleanup(OrderPid, QueryId, OnRemove);
+								);
+								%addCleanup(OrderPid, QueryId, OnRemove);
 							_ -> nosideeffect
 						end;
 					_ ->
@@ -178,13 +185,12 @@ runTemplate (Template, Params, Templates, Scope, OrderPid, DoneCell, Depth) ->
 	Calls = getFromStruct("calls", Template),
 	
 	lists:foreach(fun(Call) ->
-		processCall(Call, UpdatedTemplates, ScopeWithDerives, OrderPid, DoneCell, Depth)
+		processCall(Call, UpdatedTemplates, ScopeWithDerives, OrderPid, DoneCell, Depth, runTemplate)
 	end, Calls).
 
 
-processCall (Call, Templates, Scope, OrderPid, DoneCell, Depth) ->
+processCall (Call, Templates, Scope, OrderPid, DoneCell, Depth, From) ->
 	NewDepth = Depth + 1,
-	OrderPid ! {newDepth, NewDepth},
 	case struct:get_first(Call) of
 		{<<"thunk">>, Thunk} -> processThunk(Thunk, Templates, Scope, OrderPid, DoneCell, NewDepth);
 		{<<"forEach">>, ForEach} -> processForEach(ForEach, Templates, Scope, OrderPid, DoneCell, NewDepth);
@@ -223,14 +229,14 @@ processForEach (ForEach, Templates, Scope, OrderPid, DoneCell, Depth) ->
 			Cell = eval:evaluate(OnExpr),
 			UpdateFun = fun (Update) ->
 				NewScope = case Update of
-					{Key, Val} ->
+					{pair, Key, Val} ->
 						KeyScope = dict:store(KeyName, Key, Scope),
 						dict:store(ValName, Val, KeyScope);
 					Key ->
 						dict:store(KeyName, Key, Scope)
 				end,
 				lists:foreach(fun(Call) ->
-					processCall(Call, Templates, NewScope, OrderPid, DoneCell, Depth)
+					processCall(Call, Templates, NewScope, OrderPid, DoneCell, Depth, forEach)
 				end, Block),
 				fun() ->
 					%TODO
@@ -244,35 +250,37 @@ processForEach (ForEach, Templates, Scope, OrderPid, DoneCell, Depth) ->
 processPattern (Pattern, Templates, Scope, OrderPid, DoneCell, Depth) ->
 	MatchList = lists:reverse(Pattern),
 	
-	MatchCell = (cell:makeCellMapInput())#exprCell{type = type:parse("Map Number (Unit a)")},
-	cell:update(MatchCell),
+	MatchCell = cell:makeCell(),
+	cell:done(MatchCell),
+	% #exprCell{type = type:parse("Map Number (Unit a)")},
+	% cell:update(MatchCell),
 	
-	DefaultCell = (cell:makeCell())#exprCell{type = type:parse("Unit a")},
+	DefaultCell = cell:makeCell(),
+	% #exprCell{type = type:parse("Unit a")},
+	% cell:update(DefaultCell),
+	cell:addLine(DefaultCell, null),
 	cell:done(DefaultCell),
 	
 	lists:foldr(fun(Match, Index) ->
 		MatchVar = getFromStruct("match", Match),
 		case MatchVar of
-			undefined -> cell:addLine(MatchCell, {Index, DefaultCell});
+			undefined -> cell:addLine(MatchCell, {pair, Index, DefaultCell});
 			_ ->
 				case dict:find(MatchVar, Scope) of
 					{ok, MatchExpr} -> 
 						Cell = eval:evaluate(MatchExpr),
-						cell:addLine(MatchCell, {Index, Cell});
+						cell:addLine(MatchCell, {pair, Index, Cell}),
+						cell:injectFunc(Cell, MatchCell, fun(_) -> nosideeffect end);
 					_ -> nosideeffect
 				end
 		end,
 		Index+1
 	end, 0, MatchList),
-	cell:done(MatchCell),
 	
 	GetFirstExpr = expr:exprParse("theMap -> bindMap returnUnitMap (bindMap returnUnitMap (buildMap (swap getKey theMap) (returnUnitSet (takeLast (keys (bindMap returnUnitMap theMap))))))"),
 	GetFirstCell = eval:evaluate({cons, apply, GetFirstExpr, MatchCell}),
 	
-	%TODO:add some value for the default cell
-	cell:addLine(DefaultCell, null),
-	
-	UpdateFun = fun ({Index, Val}) ->
+	UpdateFun = fun ({pair, Index, Val}) ->
 		Match = lists:nth(Index+1, Pattern),
 		Block = getFromStruct("block", Match),
 		As = getFromStruct("as", Match),
@@ -282,7 +290,7 @@ processPattern (Pattern, Templates, Scope, OrderPid, DoneCell, Depth) ->
 				dict:store(As, Val, Scope)
 		end,
 		lists:foreach(fun(Call) ->
-			processCall(Call, Templates, NewScope, OrderPid, DoneCell, Depth)
+			processCall(Call, Templates, NewScope, OrderPid, DoneCell, Depth, pattern)
 		end, Block),
 		fun() ->
 			%TODO
@@ -294,13 +302,13 @@ processPattern (Pattern, Templates, Scope, OrderPid, DoneCell, Depth) ->
 
 %Utility
 
-checkForInnerCell(OrderPid, {KeyToCheck, ValToCheck}, Depth) ->
+checkForInnerCell(OrderPid, {pair, KeyToCheck, ValToCheck}, Depth) ->
 	checkForInnerCell(OrderPid, KeyToCheck, Depth),
 	checkForInnerCell(OrderPid, ValToCheck, Depth);
 checkForInnerCell(OrderPid, ValToCheck, Depth) ->
 	case ValToCheck of
-		ValCell when is_record(ValCell, exprCell) ->
-			case queryDefine(OrderPid, ValCell#exprCell.name, Depth) of
+		ValCell when is_record(ValCell, cellPointer) ->
+			case queryDefine(OrderPid, ValCell#cellPointer.name, Depth) of
 				{true, QueryId} ->
 					OnRemove = cell:injectFunc(ValCell, 
 						fun() ->

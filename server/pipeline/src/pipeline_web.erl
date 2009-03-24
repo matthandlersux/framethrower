@@ -175,33 +175,28 @@ processServerAdviceRequest ( ServerAdviceRequest, SessionPid ) ->
 processQuery ( Query, SessionId, SessionPid ) ->
 	Expr = getFromStruct("expr", Query),
 	QueryId = getFromStruct("queryId", Query),
-	session:checkQuery(SessionPid, Expr, QueryId, fun(Checked) ->
-		case Checked of
-			true ->
-				% responseTime:in(SessionId, 'query', QueryId, now() ),
-%				spawn(fun() ->
-					Cell = eval:evaluate( expr:exprParse(Expr) ),					
-					% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
-					OnRemove = cell:injectFunc(Cell, 
-						fun() ->
-							session:sendUpdate(SessionPid, {done, QueryId})
-						end,
-						fun(Val) ->
-							session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
-							fun() -> 
-								case Val of
-									{pair, Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
-									_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
-								end
-							end
+	case session:checkQuery(SessionPid, Expr, QueryId) of
+		true ->
+			% responseTime:in(SessionId, 'query', QueryId, now() ),
+			Cell = eval:evaluate( expr:exprParse(Expr) ),					
+			% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
+			OnRemove = cell:injectFunc(Cell, 
+				fun() ->
+					session:sendUpdate(SessionPid, {done, QueryId})
+				end,
+				fun(Val) ->
+					session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
+					fun() -> 
+						case Val of
+							{pair, Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
+							_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
 						end
-					),
-					session:addCleanup(SessionPid, QueryId, OnRemove);
-%				end);
-			{false, ReferenceId} -> 
-				session:sendUpdate(SessionPid, {queryReference, QueryId, ReferenceId})
-		end
-	end).
+					end
+				end
+			),
+			session:addCleanup(SessionPid, QueryId, OnRemove);
+		false -> nosideeffect
+	end.
 	
 processAction ( Action, SessionPid ) ->
 	ActionId = getFromStruct("actionId", Action),

@@ -342,6 +342,9 @@ getAllVars( Expr ) ->
 %% 
 
 applyFun( #exprFun{function = Fun} = ExprFun, Expr ) when is_record(ExprFun, exprFun) ->
+	Fun(Expr);
+applyFun( #funPointer{name = Name} = FunPointer, Expr ) when is_record(FunPointer, funPointer) ->
+	#exprFun{function = Fun} = env:lookup(Name),
 	Fun(Expr).
 	
 bottomOut( InExpr ) -> 
