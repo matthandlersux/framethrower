@@ -104,7 +104,8 @@ evaluate(Expr) when is_record(Expr, cons) ->
 					Input = normalizeVariables(Expr#cons.right, "y"),
 					evaluate( betaReplace(Fun#cons.right, (Fun#cons.left)#exprVar.value, Input) );
 				Left ->
-					BottomExpr = bottomOut(Expr),
+					Normal = normalizeVariables(Expr, "x"),
+					BottomExpr = bottomOut(Normal),
 					% ?trace(BottomExpr),
 					% NormalExpr = normalize(BottomExpr),
 					case memoize:get( BottomExpr ) of

@@ -419,6 +419,7 @@ unfoldSet(Fun, Init) ->
 unfoldMap(Fun, Init) ->
 	% ?trace(iolist_size( term_to_binary(Fun))),
 	% ?trace(Fun),
+	% ?trace(debug:byteSize(Fun)),
 	OutputCell = cell:makeCell(),
 	unfoldMapHelper({Init, 0}, Fun, OutputCell, dict:new()),
 	OutputCell.
