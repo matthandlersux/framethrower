@@ -9,10 +9,6 @@
 	<f:param name="height" type="Number" />
 	
 	
-	<!-- <f:derive name="px" d="UI.popup:x popup" />
-	<f:derive name="py" d="UI.popup:y popup" />
-	<f:derive name="pwidth" d="UI.popup:width popup" />
-	<f:derive name="pheight" d="UI.popup:height popup" /> -->
 	<f:derive name="display" d="UI.popup:display popup" />
 	<f:derive name="content" d="UI.popup:content popup" />
 
@@ -26,7 +22,6 @@
 	</xsl:template>
 	
 
-	<!-- <f:each select="$px"><f:each select="$py"><f:each select="$pwidth"><f:each select="$pheight"><f:each select="$content"> -->
 	<f:each select="$display"><f:each select="$content">
 		
 		<xsl:variable name="d" select="$display/*" />
@@ -80,7 +75,6 @@
 		</html:div>
 		
 	</f:each></f:each>
-	<!-- </f:each></f:each></f:each></f:each></f:each> -->
 	
 	<f:include url="/xml/util/style.xml" />
 </f:template>

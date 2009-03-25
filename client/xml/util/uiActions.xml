@@ -5,23 +5,14 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 
 	<f:action name="showPopup">
-		<f:param name="x" type="Number" />
-		<f:param name="y" type="Number" />
-		<f:param name="width" type="Number" />
-		<f:param name="height" type="Number" />
+		<f:param name="display" type="XML" />
 		<f:param name="content" type="Unit JS" />
 		
 		<f:derive name="main" d="ui.main" />
 		<f:derive name="popups" d="UI.main:popup main" />
 		
 		<f:create type="UI.popup" name="popup">
-			<!-- <f:with-param name="x" select="$x" />
-			<f:with-param name="y" select="$y" />
-			<f:with-param name="width" select="$width" />
-			<f:with-param name="height" select="$height" /> -->
-			<f:with-param name="display">
-				<display x="{$x/@value}" y="{$y/@value}" width="{$width/@value}" height="{$height/@value}" />
-			</f:with-param>
+			<f:with-param name="display" select="$display" />
 			<f:with-param name="content" select="$content" />
 		</f:create>
 		

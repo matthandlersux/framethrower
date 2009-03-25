@@ -304,6 +304,9 @@ startScript(Options) ->
 		end
 	end).
 
+%% 
+%% script that gets executed when the mbrella/pipeline application starts
+%% 
 
 bootJsonScript() ->
 	SessionId = session:new(),
