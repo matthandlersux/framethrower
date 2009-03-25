@@ -37,7 +37,7 @@ function evalThunk(thunkNode) {
 			}
 		};
 
-		var removeFunc = ecell.injectFunc(doneResponse, function (xmlids) {
+		var removeFunc = ecell.inject(doneResponse, function (xmlids) {
 			thunkNode = replaceXML(thunkNode, xmlids.xml, {baseUrl: xt.url, ids: xmlids.ids}, true);
 
 			thunkNode.custom = custom;

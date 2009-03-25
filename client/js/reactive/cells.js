@@ -51,7 +51,7 @@ function makeBaseCell (toKey) {
 	
 	
 	
-	cell.injectFuncOnRemove = function (depender) {
+	cell.injectOnRemove = function (depender) {
 		var id = funcColor++;
 		var onRemove = {
 			func:function () {
@@ -67,7 +67,7 @@ function makeBaseCell (toKey) {
 		return onRemove;
 	};
 	
-	cell.injectFuncHelper = function (depender, f, id) {
+	cell.injectHelper = function (depender, f, id) {
 		funcs.set(id, {func:f, depender:depender});		
 		dots.forRange(function (dot, key) {
 			if(dot.num > 0) {
@@ -87,20 +87,20 @@ function makeBaseCell (toKey) {
 	//if cell is of type Unit a or Set a, f is a function that takes one argument key::a
 	//if cell is of type Map a b, f is a function that takes one javascript object: {key::a, val::b}
 	//f(k) or f{key=k,val=v}) returns a callback function that will be called when k is removed from the Unit/Set/Map
-	cell.injectFunc = function (depender, f) {
-		var onRemove = cell.injectFuncOnRemove(depender);
+	cell.inject = function (depender, f) {
+		var onRemove = cell.injectOnRemove(depender);
 		var id = onRemove.id;
-		cell.injectFuncHelper(depender, f, id);
+		cell.injectHelper(depender, f, id);
 		return onRemove;
 	};
 	
-	injectFuncs = function (depender, cellFuncs) {
+	injects = function (depender, cellFuncs) {
 		forEach(cellFuncs, function (cellFunc) {
-			var onRemove = cellFunc.cell.injectFuncOnRemove(depender);
+			var onRemove = cellFunc.cell.injectOnRemove(depender);
 			cellFunc.id = onRemove.id;
 		});
 		forEach(cellFuncs, function (cellFuncId) {
-			cellFuncId.cell.injectFuncHelper(depender, cellFuncId.f, cellFuncId.id);
+			cellFuncId.cell.injectHelper(depender, cellFuncId.f, cellFuncId.id);
 		});
 	};
 		

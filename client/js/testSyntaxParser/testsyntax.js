@@ -102,7 +102,7 @@ function testFile(filename) {
 			debug.log("DONE Message from: " + endCapName);
 		};
 
-		scFromExp.injectFunc(doneResponse, function(keyVal) {
+		scFromExp.inject(doneResponse, function(keyVal) {
 			if(keyVal.key != undefined && keyVal.val != undefined) {
 				testWorld.outMessages[endCapName].push({action:'set', key:keyVal.key, value:keyVal.val});
 			} else {

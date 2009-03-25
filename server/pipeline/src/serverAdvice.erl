@@ -22,12 +22,12 @@ processServerAdvice(ServerAdviceRequest, Templates, SessionPid) ->
 		DoneCell = cell:makeCell(),
 		TriggerCell = cell:makeCell(),
 		NoFun = fun(_) -> nosideeffect end,
-		cell:injectFunc(TriggerCell, DoneCell, NoFun),
+		cell:inject(TriggerCell, DoneCell, NoFun),
 		
 		OrderPid = spawn(fun() -> orderLoop(dict:new(), SessionPid) end),
 		processCall(ServerAdviceRequest, Templates, dict:new(), OrderPid, DoneCell, 0, top),
 		cell:done(TriggerCell),
-		cell:injectFunc(DoneCell, fun() -> 
+		cell:inject(DoneCell, fun() -> 
 			OrderPid ! {close, self()},
 			receive
 				{closedState, State} -> 
@@ -143,10 +143,10 @@ runTemplate (Template, Params, Templates, Scope, OrderPid, DoneCell, Depth) ->
 			DParsed -> 
 				case eval:evaluate( DParsed ) of
 					Cell when is_record(Cell, cellPointer) ->
-						cell:injectFunc(Cell, DoneCell, fun(_) -> nosideeffect end),
+						cell:inject(Cell, DoneCell, fun(_) -> nosideeffect end),
 						case queryDefine(OrderPid, expr:unparse(DParsed), Depth) of
 							{true, QueryId} ->
-								OnRemove = cell:injectFunc(Cell, 
+								OnRemove = cell:inject(Cell, 
 									fun() ->
 										sendUpdate(OrderPid, {done, QueryId}, Depth)
 									end,
@@ -243,7 +243,7 @@ processForEach (ForEach, Templates, Scope, OrderPid, DoneCell, Depth) ->
 					undosideeffect
 				end
 			end,
-			cell:injectFunc(Cell, DoneCell, UpdateFun);
+			cell:inject(Cell, DoneCell, UpdateFun);
 		_ -> nosideeffect
 	end.
 	
@@ -270,7 +270,7 @@ processPattern (Pattern, Templates, Scope, OrderPid, DoneCell, Depth) ->
 					{ok, MatchExpr} -> 
 						Cell = eval:evaluate(MatchExpr),
 						cell:addLine(MatchCell, {pair, Index, Cell}),
-						cell:injectFunc(Cell, MatchCell, fun(_) -> nosideeffect end);
+						cell:inject(Cell, MatchCell, fun(_) -> nosideeffect end);
 					_ -> nosideeffect
 				end
 		end,
@@ -297,7 +297,7 @@ processPattern (Pattern, Templates, Scope, OrderPid, DoneCell, Depth) ->
 			undosideeffect
 		end
 	end,
-	cell:injectFunc(GetFirstCell, DoneCell, UpdateFun).
+	cell:inject(GetFirstCell, DoneCell, UpdateFun).
 
 
 %Utility
@@ -310,7 +310,7 @@ checkForInnerCell(OrderPid, ValToCheck, Depth) ->
 		ValCell when is_record(ValCell, cellPointer) ->
 			case queryDefine(OrderPid, ValCell#cellPointer.name, Depth) of
 				{true, QueryId} ->
-					OnRemove = cell:injectFunc(ValCell, 
+					OnRemove = cell:inject(ValCell, 
 						fun() ->
 							sendUpdate(OrderPid, {done, QueryId}, Depth)
 						end,
