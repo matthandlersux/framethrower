@@ -1,0 +1,108 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="outlineNode" type="UI.outlineNode" />
+	<f:param name="extra" type="a -> Unit JS" />
+	
+	<f:derive name="getTypeChildren" d="getTypeChildren" />
+	
+	<f:include url="/xml/util/actions.xml" />
+	<f:include url="/xml/util/typeColor.xml" />
+	<f:include url="/xml/util/uiActions.xml" />
+	
+	<f:template name="displayType">
+		<f:param name="focus" type="Object" />
+		<f:derive name="types" d="getTypesMap focus" />
+		<f:derive name="typeDisplay" d="X.prefs:typeColors shared.globalPrefs" />
+		
+		<xsl:variable name="color">
+			<xsl:call-template name="typeColor">
+				<xsl:with-param name="typeNames" select="$types/f:entry/f:value/f:set/f:o/@name" />
+				<xsl:with-param name="typeDisplay" select="$typeDisplay" />
+			</xsl:call-template>
+		</xsl:variable>
+		
+		<html:span>
+			<f:thunk url="../view2/object.xml">
+				<f:with-param name="focus" select="$focus" />
+			</f:thunk>
+			<html:div>
+				<xsl:attribute name="style">
+					background-color: <xsl:value-of select="$color" />;
+					width: 10px;
+					height: 10px;
+				</xsl:attribute>
+				<f:on event="click" with-action="$showChangeColorPopup">
+					<f:with-param-browser name="x" prop="mouseX" />
+					<f:with-param-browser name="y" prop="mouseY" />
+				</f:on>
+			</html:div>
+			<f:thunk with-template="$extra">
+				<f:with-param name="focus" select="$focus" />
+			</f:thunk>
+		</html:span>
+		
+		<!-- Put the popup to change color here -->
+		<f:template name="changeColorPopup">
+			<xsl:variable name="color">
+				<xsl:call-template name="typeColor">
+					<xsl:with-param name="typeNames" select="$types/f:entry/f:value/f:set/f:o/@name" />
+					<xsl:with-param name="typeDisplay" select="$typeDisplay" />
+				</xsl:call-template>
+			</xsl:variable>
+			<html:form>
+				<html:input value="{$color}" name="string">
+					<f:on event="manualblur" with-action="$updateColor">
+						<f:with-param-browser name="newString" form="string" />
+					</f:on>
+				</html:input>
+			</html:form>
+			<f:action name="updateColor">
+				<f:param name="newString" type="String" />
+				<f:derive name="prefs" d="shared.globalPrefs" />
+				<f:intact object="$prefs" property="typeColors" action="add" key="$focus" value="$newString" />
+			</f:action>
+		</f:template>
+		<f:action name="showChangeColorPopup">
+			<f:param name="x" type="Number" />
+			<f:param name="y" type="Number" />
+			<f:perform with-action="$showPopup">
+				<f:with-param name="display"><display x="{$x/@value}" y="{$y/@value}" width="160" height="40" /></f:with-param>
+				<f:with-param name="content" select="$changeColorPopup" />
+			</f:perform>
+		</f:action>
+	</f:template>
+	
+	<f:action name="makeNewSubType">
+		<f:param name="parent" type="Object" />
+		<f:create type="Object" name="subType" />
+		<f:perform with-action="$makeType">
+			<f:with-param name="object" select="$subType" />
+		</f:perform>
+		<f:perform with-action="$typeObject">
+			<f:with-param name="object" select="$subType" />
+			<f:with-param name="type" select="$parent" />
+		</f:perform>
+	</f:action>
+	
+	<f:action name="removeSubType">
+		<f:param name="parent" type="Object" />
+		<f:param name="child" type="Object" />
+		<f:derive name="ontInfon" d="bindUnit getObjectInOnt (mapUnit Cons~Object (getInfon2 shared.isA child parent))" />
+		
+		<f:each select="$ontInfon">
+			<f:intact object="$ontInfon" property="truth" action="remove" key="null" />
+		</f:each>
+	</f:action>
+	
+	<f:thunk url="../outline/outline.xml">
+		<f:with-param name="display" select="$displayType" />
+		<f:with-param name="makeNewChild" select="$makeNewSubType" />
+		<f:with-param name="removeChild" select="$removeSubType" />
+		<f:with-param name="outlineNode" select="$outlineNode" />
+		<f:with-param name="getChildren" select="$getTypeChildren" />
+	</f:thunk>
+</f:template>

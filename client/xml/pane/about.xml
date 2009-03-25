@@ -1,0 +1,60 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	
+	<f:param name="focus" type="Object" />
+	<f:param name="newPane" type="a -> Unit JS" />
+	<f:param name="pane" type="UI.pane.pane" />
+	
+	<f:derive name="set" d="mapSet Cons~Object (getInfonsAbout focus)" />
+
+	
+	<f:derive name="newInfons" d="UI.pane.pane:aboutNewInfons pane" />
+
+
+	<f:thunk url="../entries/infons.xml">
+		<f:with-param name="infons" select="$set" />
+		<f:with-param name="newPane" select="$newPane" />
+	</f:thunk>
+	
+	
+	<f:thunk url="../entries/infonIPs.xml">
+		<f:with-param name="infonIPs" select="$newInfons" />
+		<f:with-param name="cancelConsIP" select="$cancelConsIP" />
+	</f:thunk>
+	<f:action name="cancelConsIP">
+		<f:param name="consIP" type="UI.consIP" />
+		<f:intact object="$pane" action="remove" property="aboutNewInfons" key="$consIP" />
+	</f:action>
+
+
+	<html:div>
+		<f:on event="click" with-action="$newInfon" />
+		<html:button>Add New Infon</html:button>
+	</html:div>
+	<f:action name="newInfon">
+		<f:derive name="sharedIn" d="shared.in" />
+		
+		<f:create type="UI.consIP" name="in" />
+		<f:intact object="$in" action="add" property="object" key="$sharedIn" />
+		
+		<f:create type="UI.consIP" name="sit" />
+		
+		<f:create type="UI.consIP" name="situatedInfon" />
+		
+		<f:create type="UI.consIP" name="new" />
+				
+		
+		<f:create type="UI.consIP" name="cons" />
+		<f:intact object="$cons" action="add" property="left" key="$in" />
+		<f:intact object="$cons" action="add" property="right" key="$sit" />
+
+		<f:intact object="$new" action="add" property="left" key="$cons" />
+		<f:intact object="$new" action="add" property="right" key="$situatedInfon" />
+		
+		<f:intact object="$pane" action="add" property="aboutNewInfons" key="$new" />
+	</f:action>
+
+</f:template>

@@ -1,0 +1,120 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg"
+	xmlns:date="http://exslt.org/dates-and-times">
+	
+	<f:param name="realTimeline" type="UI.pane.realTimeline" />
+	<f:param name="closePane" type="Unit JS" />
+	<f:param name="newPane" type="a -> Unit JS" />
+
+	<f:param name="width" type="Number" />
+	<f:param name="height" type="Number" />
+	
+	<f:derive name="focus" d="UI.pane.realTimeline:focus realTimeline" />
+	<f:derive name="zoomWidth" d="UI.pane.realTimeline:zoomWidth realTimeline" />
+	<f:derive name="startDate" d="UI.pane.realTimeline:startDate realTimeline" />
+	<f:derive name="endDate" d="UI.pane.realTimeline:endDate realTimeline" />
+	
+
+
+	<f:include url="/xml/util/actions.xml" />
+	<f:include url="/xml/util/ord.xml" />
+	
+	
+	<html:div class="timeline-left">
+		<xsl:attribute name="style">
+			width: <xsl:value-of select="$width/@value" />px;
+			height: <xsl:value-of select="$height/@value" />px;
+		</xsl:attribute>
+		
+		<xsl:variable name="controlsWidth" select="30" />
+	
+		<html:div class="timeline-controls">
+			<xsl:attribute name="style">
+				width: <xsl:value-of select="$controlsWidth" />px;
+			</xsl:attribute>
+		
+			<html:div>
+				<f:on event="click" with-action="$zoomIn" />
+				<html:div class="button-zoomIn" />
+			</html:div>
+			<html:div>
+				<f:on event="click" with-action="$zoomOut" />
+				<html:div class="button-zoomOut" />
+			</html:div>
+		</html:div>
+		
+		<html:div class="timeline-container">
+			<xsl:attribute name="style">
+				left: <xsl:value-of select="$controlsWidth" />px;
+				top: 0px;
+				width: <xsl:value-of select="$width/@value - $controlsWidth" />px;
+				height: <xsl:value-of select="$height/@value" />px;
+			</xsl:attribute>
+			
+			<f:thunk with-template="$drawActualTimeline" />
+		
+		</html:div>
+	
+	</html:div>
+	
+	<f:template name="drawActualTimeline">
+		<!-- <f:derive name="dates" d="getSalientDates shared.realLife" /> -->
+		<f:derive name="dates" d="getSalientDates2 shared.realLife" />
+		
+		<f:each select="$zoomWidth"><f:each select="$startDate"><f:each select="$endDate"><f:each select="$focus">
+			
+			<xsl:variable name="ratio" select="$zoomWidth/@value div ($endDate/@value - $startDate/@value)" />
+			
+			<html:div>
+				<f:each select="$dates" key="sit" value="days">
+					<f:each select="$days" key="day">
+						<html:div class="dateblob">
+							<xsl:attribute name="style">
+								left: <xsl:value-of select="round(($day/@value - $startDate/@value) * $ratio)" />px;
+								width: <xsl:value-of select="round($ratio)" />px;
+								top: 0px;
+								height: <xsl:value-of select="$height/@value" />px;
+								position:absolute; background-color:rgba(34,170,278,0.5); cursor: pointer;
+							</xsl:attribute>
+						</html:div>
+					</f:each>
+				</f:each>
+			</html:div>
+			
+			<f:thunk url="ruler.xml">
+				<f:with-param name="width" select="$zoomWidth" />
+				<f:with-param name="height" select="$height" />
+				<f:with-param name="startDate" select="$startDate" />
+				<f:with-param name="endDate" select="$endDate" />
+				<f:with-param name="focus" select="$focus" />
+			</f:thunk>
+			
+		</f:each></f:each></f:each></f:each>
+	</f:template>
+
+
+
+
+
+
+
+
+	<f:action name="zoomIn">
+		<f:each select="$zoomWidth">
+			<f:intact object="$realTimeline" property="zoomWidth" action="add">
+				<f:with-param name="key" select="round($zoomWidth/@value * 1.5)" as="Number" />
+			</f:intact>
+		</f:each>
+	</f:action>
+	<f:action name="zoomOut">
+		<f:each select="$zoomWidth">
+			<f:intact object="$realTimeline" property="zoomWidth" action="add">
+				<f:with-param name="key" select="round($zoomWidth/@value div 1.5)" as="Number" />
+			</f:intact>
+		</f:each>
+	</f:action>
+
+</f:template>

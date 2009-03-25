@@ -1,0 +1,294 @@
+<f:template name="testTemplate"
+	xmlns:f="http://www.worldmerge.com/2008/xsl"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:svg="http://www.w3.org/2000/svg">
+
+	<f:param name="relationCreator" type="UI.relationCreator" />
+	
+	<f:derive name="words" d="UI.relationCreator:words relationCreator" />
+	
+	<f:include url="/xml/util/ord.xml" />
+	<f:include url="/xml/util/actions.xml" />
+	<f:include url="/xml/util/uiActions.xml" />
+	
+	<html:div class="relationCreator-relation">
+		<html:div class="relationCreator-spacer">
+			<html:div class="button-relationCreatorSpacer" />
+			<xsl:variable name="dropKey">
+				<xsl:call-template name="ord-smaller">
+					<xsl:with-param name="s" select="$words/f:entry[1]/f:key/f:literal/@value" />
+				</xsl:call-template>
+			</xsl:variable>
+			<f:on event="dragEnd" with-action="$drop">
+				<f:with-param name="dropKey" select="$dropKey" as="String" />
+			</f:on>
+			<f:on event="click" with-action="$insertString">
+				<f:with-param name="dropKey" select="$dropKey" as="String" />
+			</f:on>
+		</html:div>
+		
+		<!-- Note:
+			This map will always be String, Type, String, Type, String, ... (alternating but beginning and ending with String)
+		-->
+		<f:each select="$words" key="key" value="word">
+			<xsl:variable name="nextKey" select="following-sibling::f:entry/f:key/f:literal" /> <!-- NOTE: This depends on how f:each is implemented -->
+			<html:div class="relationCreator-word">
+				<f:thunk with-template="$printWord">
+					<f:with-param name="word" select="$word" />
+					<f:with-param name="key" select="$key" />
+				</f:thunk>
+			</html:div>
+			<html:div class="relationCreator-spacer">
+				<html:div class="button-relationCreatorSpacer" />
+				<xsl:variable name="dropKey">
+					<xsl:choose>
+						<xsl:when test="$nextKey">
+							<xsl:call-template name="ord-between">
+								<xsl:with-param name="s1" select="$key/@value" />
+								<xsl:with-param name="s2" select="$nextKey/@value" />
+							</xsl:call-template>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:call-template name="ord-bigger">
+								<xsl:with-param name="s" select="$key/@value" />
+							</xsl:call-template>
+						</xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+				<f:on event="dragEnd" with-action="$drop">
+					<f:with-param name="dropKey" select="$dropKey" as="String" />
+				</f:on>
+				<f:on event="click" with-action="$insertString">
+					<f:with-param name="dropKey" select="$dropKey" as="String" />
+				</f:on>
+			</html:div>
+		</f:each>
+		
+		<html:div style="clear:both" />
+	</html:div>
+
+	<html:div class="relationCreator-types">
+		<f:thunk with-template="$printTypes" />
+	</html:div>
+	
+	<html:div class="relationCreator-done">
+		<html:button>
+			Create Relation
+			<f:on event="click" with-action="$buildRelation" />
+		</html:button>
+	</html:div>
+	
+	<f:template name="printWord">
+		<f:param name="word" type="UI.relationCreator.word" />
+		<f:param name="key" type="String" />
+		<f:derive name="string" d="UI.relationCreator.word:string word" />
+		<f:derive name="type" d="UI.relationCreator.word:type word" />
+		
+		<html:span>
+			<f:pattern>
+				<f:match test="$string">
+					<html:form>
+						<xsl:variable name="size">
+							<xsl:variable name="minsize" select="5" />
+							<xsl:variable name="length" select="string-length($string/@value)" />
+							<xsl:choose>
+								<xsl:when test="$length &gt; $minsize"><xsl:value-of select="$length" /></xsl:when>
+								<xsl:otherwise><xsl:value-of select="$minsize" /></xsl:otherwise>
+							</xsl:choose>
+						</xsl:variable>
+						<html:input name="string" value="{$string/@value}" size="{$size}" style="text-align:center">
+							<f:on event="manualblur" with-action="$updateWordString">
+								<f:with-param-browser name="newString" form="string" />
+							</f:on>
+						</html:input>
+					</html:form>
+				</f:match>
+				<f:match test="$type">
+					<html:span>
+						<f:thunk url="../view2/object.xml">
+							<f:with-param name="focus" select="$type" />
+						</f:thunk>
+						<f:on event="dragStart" with-action="$drag" />
+					</html:span>
+				</f:match>
+			</f:pattern>
+			<f:on event="dragEnd" with-action="$dropReplace" />
+		</html:span>
+		
+		<f:action name="updateWordString">
+			<f:param name="newString" type="String" />
+			<xsl:choose>
+				<xsl:when test="$newString/@value = ''">
+					<f:intact object="$relationCreator" property="words" action="remove" key="$key" />
+				</xsl:when>
+				<xsl:otherwise>
+					<f:intact object="$word" property="string" action="add" key="$newString" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</f:action>
+		<f:action name="drag">
+			<f:derive name="main" d="ui.main" />
+			
+			<f:each select="$type">
+				<f:intact object="$relationCreator" property="words" action="remove" key="$key" />
+				<f:create name="dragging" type="UI.dragging">
+					<f:with-param name="object" select="$type" />
+				</f:create>
+				<f:intact object="$main" action="add" property="dragging" key="$dragging" />
+			</f:each>
+		</f:action>
+		<f:action name="dropReplace">
+			<f:derive name="droppedObject" d="bindUnit (compose returnFutureUnit UI.dragging:object) (UI.main:dragging ui.main)" />
+			<f:each select="$droppedObject">
+				<f:create type="UI.relationCreator.word" name="newType" />
+				<f:intact object="$newType" property="type" action="add" key="$droppedObject" />
+				
+				<f:intact object="$relationCreator" property="words" action="remove" key="$key" />
+				<f:intact object="$relationCreator" property="words" action="add" key="$key" value="$newType" />
+				
+				<f:perform with-action="$stopDragging" />
+			</f:each>
+		</f:action>
+	</f:template>
+	
+	
+	<f:action name="drop">
+		<f:param name="dropKey" type="String" />
+		<f:derive name="droppedObject" d="bindUnit (compose returnFutureUnit UI.dragging:object) (UI.main:dragging ui.main)" />
+		
+		<f:each select="$droppedObject">
+			<f:create type="UI.relationCreator.word" name="newType" />
+			<f:intact object="$newType" property="type" action="add" key="$droppedObject" />
+
+			<f:intact object="$relationCreator" property="words" action="add" key="$dropKey" value="$newType" />
+			
+			<f:perform with-action="$stopDragging" />
+		</f:each>
+	</f:action>
+	<f:action name="insertString">
+		<f:param name="dropKey" type="String" />
+		<f:create type="UI.relationCreator.word" name="newString" />
+		<f:intact object="$newString" property="string" action="add" key="''" />
+
+		<f:intact object="$relationCreator" property="words" action="add" key="$dropKey" value="$newString" />
+	</f:action>
+	
+	
+	<f:template name="printTypes">
+		<f:derive name="typeExplorer" d="UI.relationCreator:typeExplorer relationCreator" />
+
+		<f:each select="$typeExplorer">
+			<f:thunk url="../typeExplorer/typeExplorer.xml">
+				<f:with-param name="outlineNode" select="$typeExplorer" />
+				<f:with-param name="extra" select="$typeExtra" />
+			</f:thunk>
+		</f:each>
+		
+		<f:template name="typeExtra">
+			<f:param name="focus" type="Object" />
+			
+			<f:on event="dragStart" with-action="$drag" />
+			<f:action name="drag">
+				<f:derive name="main" d="ui.main" />
+				<f:create name="dragging" type="UI.dragging">
+					<f:with-param name="object" select="$focus" />
+				</f:create>
+				<f:intact object="$main" action="add" property="dragging" key="$dragging" />
+			</f:action>
+		</f:template>
+	</f:template>
+	
+	<f:action name="buildRelation">
+		
+		<f:derive name="strings" d="mapMapValue (UI.relationCreator.word:string) words" />
+		<f:derive name="types" d="mapMapValue (UI.relationCreator.word:type) words" />
+
+		<f:derive name="ont" d="shared.ont" />
+		<f:derive name="infonType" d="shared.type.infon" />
+		
+		<f:create type="Object" name="relation" />
+		
+		<f:perform with-action="$relationTemplateObject">
+			<f:with-param name="object" select="$relation" />
+			<f:with-param name="relTem">
+				<f:relationTemplate>
+					<f:each select="$strings" key="key" value="stringUnit">
+						<xsl:variable name="string" select="$stringUnit/f:literal/@value" />
+						<xsl:choose>
+							<xsl:when test="$string">
+								<xsl:value-of select="concat(' ', $string, ' ')" />
+							</xsl:when>
+							<xsl:otherwise>
+								<f:arg num="{count($stringUnit/../../preceding-sibling::f:entry/f:value/f:unit[not(f:literal)]) + 1}" />
+							</xsl:otherwise>
+						</xsl:choose>
+					</f:each>
+				</f:relationTemplate>
+			</f:with-param>
+		</f:perform>
+		
+		<xsl:variable name="ts" select="$types/f:entry/f:value/f:unit/*" />
+		
+		<xsl:if test="count($ts) &gt; 0">
+			<f:let name="relationType">
+				<xsl:for-each select="$ts">
+					<xsl:sort order="descending" select="position()" />
+					<xsl:variable name="input" select="." />
+					<xsl:variable name="output">
+						<xsl:choose>
+							<xsl:when test="position() = 1">
+								<xsl:copy-of select="$infonType" />
+							</xsl:when>
+							<xsl:otherwise>
+								<f:var name="rt{position() - 1}" />
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					<f:perform with-action="$makeRelationType" name="rt{position()}">
+						<f:with-param name="input" select="$input" />
+						<f:with-param name="output" select="$output" />
+					</f:perform>
+				</xsl:for-each>
+			
+				<f:return name="rt{count($ts)}" />
+			</f:let>
+		</xsl:if>
+		<xsl:variable name="relationType">
+			<xsl:choose>
+				<xsl:when test="count($ts) &gt; 0">
+					<f:var name="relationType" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:copy-of select="$infonType" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
+		<f:perform with-action="$typeObject">
+			<f:with-param name="object" select="$relation" />
+			<f:with-param name="type" select="$relationType" />
+		</f:perform>
+		
+		<f:perform with-action="$putObjectInSituation">
+			<f:with-param name="situation" select="$ont" />
+			<f:with-param name="object" select="$relation" />
+		</f:perform>
+		
+		<f:perform with-action="$hidePopup" />
+
+	</f:action>
+	
+	
+	<!--
+	
+	Elaborate timeline
+		click for image
+			make popup take xml instead of left/right/width/height
+		select for playing
+		layers
+		situations with @time
+		
+	-->
+
+</f:template>

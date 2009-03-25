@@ -6,7 +6,7 @@ function initialize() {
 	
 	//console.profile();
 	
-	documents.preload("testing/uiTest/main/main.xml", function () {
+	documents.preload("xml/main/main.xml", function () {
 		bootstrap(document.body);
 	});
 }
