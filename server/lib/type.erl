@@ -376,14 +376,12 @@ unparse(String, Variables) ->
 	{String, Variables}.
 
 
-isReactive(#type{type = typeApply, value = {#type{type = typeName, value = Val}, _}}) ->
-	if
-		Val =:= 'Unit';
-		Val =:= 'Set';
-		Val =:= 'Map';
-		Val =:= 'Assoc';
-		Val =:= 'List' -> true;
-		true -> false
+isReactive(#type{type = typeApply, value = {Val, _}}) ->
+	case Val of
+		#type{type = typeName, value = 'Unit'} -> true;
+		#type{type = typeName, value = 'Set'} -> true;
+		#type{type = typeApply, value = {#type{type = typeName, value = 'Map'},_}} -> true;
+		_ -> false
 	end;
 isReactive(_) -> false.
 
