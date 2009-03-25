@@ -56,8 +56,8 @@ pipeline(SessionPid, LastMessageId) ->
 queryDefine(SessionPid, Expr, QueryId) ->
 	gen_server:call(SessionPid, {queryDefine, Expr, QueryId}).
 
-checkQuery(SessionPid, Expr, QueryId, ResponseFun) ->
-	gen_server:cast(SessionPid, {checkQuery, Expr, QueryId, ResponseFun}).
+checkQuery(SessionPid, Expr, QueryId) ->
+	gen_server:call(SessionPid, {checkQuery, Expr, QueryId}).
 
 serverAdviceDone(SessionPid) ->
 	gen_server:cast(SessionPid, serverAdviceDone).
@@ -99,17 +99,27 @@ handle_call({queryDefine, Expr, QueryId}, _, State) ->
 		_ -> 
 			sendToOutputTimer(?this(outputTimer), waiting),
 			NewState = State#session{
-				openQueries = dict:store(QueryId, open, ?this(openQueries)),
+				openQueries = dict:store(QueryId, [], ?this(openQueries)),
 				serverAdviceHash = dict:store(Expr, QueryId, ?this(serverAdviceHash)),
 				clientState = waiting
 			},
 			true
 	end,
 	{reply, Reply, NewState, ?this(timeout)};
-handle_call(Other, _, State) ->
-	?trace("WRONG CALL"),
-	?trace(Other),
-	{reply, ok, State}.
+handle_call({checkQuery, Expr, QueryId}, _, State) ->
+	OpenQueries = dict:store(QueryId, open, ?this(openQueries)),
+	{Reply, NewState} = case dict:find(Expr, ?this(serverAdviceHash)) of
+		{ok, ReferenceId} ->
+			sendToOutputTimer(?this(outputTimer), waiting),
+			sendUpdate(self(), {queryReference, QueryId, ReferenceId}),
+			{false, State#session{openQueries = OpenQueries, clientState = waiting}};
+		_ ->
+			sendToOutputTimer(?this(outputTimer), waiting),
+			ServerAdviceHash = dict:store(Expr, defined, ?this(serverAdviceHash)),
+			{true, State#session{openQueries = OpenQueries, serverAdviceHash = ServerAdviceHash, clientState = waiting}}
+	end,
+	{reply, Reply, NewState, ?this(timeout)}.
+
 
 
 handle_cast({pipeline, From, ClientLastMessageId}, State) ->
@@ -126,12 +136,18 @@ handle_cast({flush, To}, State) ->
 		CurrentState -> CurrentState
 	end,
 	{noreply, State#session{clientState = ClientState}, ?this(timeout)};
-	
-	
 handle_cast({queryDefine, ExprString, QueryId}, State) ->
-	?trace("Query Define"),
+	References = dict:fetch(QueryId, ?this(openQueries)),
 	MsgQueue = addToQueue(wellFormedQueryDefine(ExprString, QueryId), ?this(msgQueue)),
-	{noreply, State#session{msgQueue = MsgQueue}, ?this(timeout)};
+	{MsgQueueWithRefs, OpenQueries} = lists:foldr(fun(QueryIdToReference, {AccQueue, AccOpenQ}) ->
+		NewQueue = addToQueue(wellFormedQueryReference(QueryIdToReference, QueryId), AccQueue),
+		NewOpenQ = dict:erase(QueryIdToReference, AccOpenQ),
+		{NewQueue, NewOpenQ}
+	end, {MsgQueue, ?this(openQueries)}, References),
+	NewOpenQueries = dict:erase(QueryId, OpenQueries),
+	NewState = updateClientState(State#session{openQueries = NewOpenQueries}),	
+	NewerState = NewState#session{msgQueue = MsgQueueWithRefs},
+	{noreply, NewerState, ?this(timeout)};
 handle_cast({data, {QueryId, Action, Data}}, State) ->
 	MsgQueue = addToQueue(wellFormedUpdate(Data, QueryId, Action), ?this(msgQueue)),
 	case(?this(clientState)) of
@@ -146,10 +162,16 @@ handle_cast({done, QueryId}, State) ->
 	NewerState = NewState#session{msgQueue = MsgQueue},
 	{noreply, NewerState, ?this(timeout)};
 handle_cast({queryReference, QueryId, ReferenceId}, State) ->
-	OpenQueries = dict:erase(QueryId, ?this(openQueries)),
-	NewState = updateClientState(State#session{openQueries = OpenQueries}),	
-	MsgQueue = addToQueue(wellFormedQueryReference(QueryId, ReferenceId), ?this(msgQueue)),
-	NewerState = NewState#session{msgQueue = MsgQueue},
+	NewerState = case dict:find(ReferenceId, ?this(openQueries)) of
+		{ok, List} ->
+			OpenQueries = dict:store(ReferenceId, [QueryId|List], ?this(openQueries)),
+			State#session{openQueries = OpenQueries};
+		_ ->
+			OpenQueries = dict:erase(QueryId, ?this(openQueries)),
+			NewState = updateClientState(State#session{openQueries = OpenQueries}),	
+			MsgQueue = addToQueue(wellFormedQueryReference(QueryId, ReferenceId), ?this(msgQueue)),
+			NewState#session{msgQueue = MsgQueue}
+	end,
 	{noreply, NewerState, ?this(timeout)};
 handle_cast({addCleanup, QueryId, CleanupFun }, State) ->
 	NewState = State#session{
@@ -174,23 +196,7 @@ handle_cast({serverAdviceRequest, ServerAdviceRequest}, State) ->
 handle_cast(serverAdviceDone, State) ->
 	ServerAdviceCount = ?this(serverAdviceCount) - 1,
 	NewState = updateClientState(State#session{serverAdviceCount = ServerAdviceCount}),
-	{noreply, NewState, ?this(timeout)};
-handle_cast({checkQuery, Expr, QueryId, ResponseFun}, State) ->
-	OpenQueries = dict:store(QueryId, open, ?this(openQueries)),
-	% TODO: uncomment this stuff for serverAdvice
-	% NewState = case dict:find(Expr, ?this(serverAdviceHash)) of
-	% 	{ok, ReferenceId} ->
-	% 		sendToOutputTimer(?this(outputTimer), waiting),
-	% 		ResponseFun({false, ReferenceId}),
-	% 		State#session{openQueries = OpenQueries, clientState = waiting};
-	% 	_ ->
-	sendToOutputTimer(?this(outputTimer), waiting),
-	% ServerAdviceHash = dict:store(Expr, defined, ?this(serverAdviceHash)),
-	ResponseFun(true),
-	NewState = State#session{openQueries = OpenQueries, clientState = waiting},
-	% end,
 	{noreply, NewState, ?this(timeout)}.
-
 
 handle_info(timeout, State) ->
 	case ?this(cleanup) of

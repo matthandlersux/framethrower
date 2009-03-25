@@ -417,6 +417,8 @@ unfoldSet(Fun, Init) ->
 %% 
 
 unfoldMap(Fun, Init) ->
+	% ?trace(iolist_size( term_to_binary(Fun))),
+	% ?trace(Fun),
 	OutputCell = cell:makeCell(),
 	unfoldMapHelper({Init, 0}, Fun, OutputCell, dict:new()),
 	OutputCell.
@@ -561,34 +563,35 @@ rangeByKey(StartCell, EndCell, Cell) ->
 %% 
 
 takeLast(Cell) ->
-	OutputCell = cell:makeCell(),
-	Intercept = cell:injectIntercept(OutputCell, fun(Message, Cache) ->
-		case Message of
-			change -> 
-				StateArray = cell:getStateArray(Cell),
-				case length(StateArray) of
-					0 -> 
-						case Cache of
-							undefined -> undefined;
-							_ -> cell:removeLine(OutputCell, Cache)
-						end;
+	OutputCell = cell:makeCell(),	
+	Change = fun(Cache) ->
+		StateArray = cell:getStateArray(Cell),
+		case length(StateArray) of
+			0 -> 
+				case Cache of
+					undefined -> undefined;
+					_ -> cell:removeLine(OutputCell, Cache)
+				end;
+			_ ->
+				Last = lists:last(StateArray),
+				case Cache of
+					Last -> 
+						Last;
+					undefined ->
+						cell:addLine(OutputCell, Last),
+						Last;
 					_ ->
-						Last = lists:last(StateArray),
-						case Cache of
-							Last -> 
-								Last;
-							undefined ->
-								cell:addLine(OutputCell, Last),
-								Last;
-							_ ->
-								cell:removeLine(OutputCell, Cache),
-								cell:addLine(OutputCell, Last),
-								Last
-						end
+						cell:removeLine(OutputCell, Cache),
+						cell:addLine(OutputCell, Last),
+						Last
 				end
 		end
-	end, undefined),
-	intercept:sendIntercept(Intercept, change),
+	end,
+
+	Intercept = cell:injectIntercept(OutputCell, fun(change, Cache) ->
+		Change(Cache)
+	end, Change(undefined)),
+	% intercept:sendIntercept(Intercept, change),
 	cell:injectFunc(Cell, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, change),
 		fun() -> intercept:sendIntercept(Intercept, change) end

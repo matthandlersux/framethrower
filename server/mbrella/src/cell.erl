@@ -343,35 +343,27 @@ handle_cast({removeDependency, InputCell, InputId, Cell}, State) ->
 	end,
     {noreply, NewState};
 handle_cast({done, DoneCell, Id, Cell}, State) ->
-	NewState = case ?this(done) of
-		true -> State;
-		false ->
-			NewOnRemoves = lists:map(fun(OnRemove) ->
-				if 
-					(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#cellPointer.name =:= DoneCell#cellPointer.name) andalso (OnRemove#onRemove.id =:= Id) ->
-						OnRemove#onRemove{done=true};
-					true -> 
-						OnRemove
-				end
-			end, ?this(onRemoves)),
-			StateWithOnRemoves = State#cellState{onRemoves=NewOnRemoves},
-			checkDone(StateWithOnRemoves, Cell)
-	end,
+	NewOnRemoves = lists:map(fun(OnRemove) ->
+		if 
+			(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#cellPointer.name =:= DoneCell#cellPointer.name) andalso (OnRemove#onRemove.id =:= Id) ->
+				OnRemove#onRemove{done=true};
+			true -> 
+				OnRemove
+		end
+	end, ?this(onRemoves)),
+	StateWithOnRemoves = State#cellState{onRemoves=NewOnRemoves},
+	NewState = checkDone(StateWithOnRemoves, Cell),
     {noreply, NewState};
 handle_cast({done, Cell}, State) ->
-	NewState = case ?this(done) of
-		true -> State;
-		false ->
-			dict:map(fun(FuncId, Func) ->
-				case Func#func.outputCellOrIntOrFunc of
-					undefined -> nosideeffect;
-					OutputCell when is_record(OutputCell, cellPointer) -> done(OutputCell, Cell, FuncId);
-					Intercept when is_pid(Intercept) -> intercept:done(Intercept, Cell, FuncId);
-					Function when is_function(Function) -> Function()
-				end
-			end, ?this(funcs)),
-			State#cellState{done=true}
-	end,
+	dict:map(fun(FuncId, Func) ->
+		case Func#func.outputCellOrIntOrFunc of
+			undefined -> nosideeffect;
+			OutputCell when is_record(OutputCell, cellPointer) -> done(OutputCell, Cell, FuncId);
+			Intercept when is_pid(Intercept) -> intercept:done(Intercept, Cell, FuncId);
+			Function when is_function(Function) -> Function()
+		end
+	end, ?this(funcs)),
+	NewState = State#cellState{done=true},
     {noreply, NewState};
 handle_cast({setKeyRange, Start, End}, State) ->
 	OnAdd = fun(Val) ->

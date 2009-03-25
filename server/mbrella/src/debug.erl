@@ -86,7 +86,6 @@ allCellFunctionMemory(N) ->
 
 
 allCellFunctionMemory(0, _) -> [];
-allCellFunctionMemory(_, []) -> io:format("Cells are too small, try loading the application to beef them up.");
 allCellFunctionMemory(N, [{_,{_,Memory},{_,Pid}}|T]) ->
 	State = gen_server:call(Pid, getState),
 	Dict = element(2, State),
@@ -247,7 +246,7 @@ processDistribution( TypeOfProcess ) ->
 %% 
 
 interestingProcessNames() ->
-	{ok, Files1} = file:list_dir("./mbrella/v1.4/src/"),
+	{ok, Files1} = file:list_dir("./mbrella/src/"),
 	{ok, Files2} = file:list_dir("./pipeline/src/"),
 	{ok, Files3} = file:list_dir("./lib/"),
 	[list_to_atom(Y) || [{Y,_}] <- [ parse:parse(parse:many(parse:alphaNumSpace()), X) || X <- Files1 ++ Files2 ++ Files3] ].			
