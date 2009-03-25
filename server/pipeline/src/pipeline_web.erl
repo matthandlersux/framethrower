@@ -288,7 +288,10 @@ processAction({struct, [{<<"change">>, Action}]}, Updates, Variables) ->
 			Property = binary_to_list( struct:get_value(<<"property">>, Action) ),
 			Key = bindVarOrFormatExprElement( struct:get_value(<<"key">>, Action), Variables),
 			ValueName = struct:get_value(<<"value">>, Action),
-			if ValueName =:= undefined -> Data = Key; true -> Data = {Key, bindVarOrFormatExprElement( ValueName, Variables ) } end,
+			if 
+				ValueName =:= undefined -> Data = Key; 
+				true -> Data = {pair, Key, bindVarOrFormatExprElement( ValueName, Variables ) }
+			end,
 			case ActionType of 
 				<<"add">> ->
 					case objects:add(Object, Property, Data) of
