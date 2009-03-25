@@ -23,6 +23,8 @@ conf="-config errorlog";
 
 help() {
 
+echo "running without any flags starts up the pipelin/mochiweb/mbrella system without unserializing anything"
+echo ""
 echo "usage: "
 echo ""
 echo " mbrella -i|--interactive       puts you in the erlang shell with the system"
