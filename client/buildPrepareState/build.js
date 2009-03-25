@@ -1,4 +1,4 @@
-var prepareStateXMLUrl = "testing/uiTest/prepareState.xml"; // TODO: change this when we reorganize file hierarchy
+var prepareStateXMLUrl = "xml/init/prepareStateIntel.xml";
 
 function initialize() {
 	var combined = {};
