@@ -176,15 +176,15 @@
 						</f:intact>
 					</f:each> -->
 					
-					<!-- <f:intact object="$timeline" property="previewFrame" action="add">
-						<f:with-param name="key" select="round($time)" as="Number" />
-					</f:intact> -->
+					<f:intact object="$timeline" property="previewFrame" action="add">
+						<f:with-param name="key" select="$time" as="Number" />
+					</f:intact>
 					
-					<!-- <f:each select="$selecting">
+					<f:each select="$selecting">
 						<f:intact object="$timeline" property="selectedTime2" action="add">
 							<f:with-param name="key" select="round($time)" as="Number" />
 						</f:intact>
-					</f:each> -->
+					</f:each>
 					
 					
 				</f:each></f:each>

@@ -8,12 +8,12 @@
     xmlns:svg="http://www.w3.org/2000/svg">
 
 <head>
-<title>UI Testing</title>
+<title>WM - Local - Intel</title>
 
-<link rel="stylesheet" href="../../design/style.css" type="text/css" media="screen" title="no title" charset="utf-8" />
+<link rel="stylesheet" href="../design/style.css" type="text/css" media="screen" title="no title" charset="utf-8" />
 
 <script>
-var ROOTDIR = "../../";
+var ROOTDIR = "../";
 var DEBUG = true;
 var LOCAL = true;
 //var LOCAL = false;
@@ -22,19 +22,16 @@ var LOCAL = true;
 //var serverBaseUrl = "http://localhost:8000/";
 var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
 
-var INCLUDES=["test.js"];
+var INCLUDES=["init.js"];
 var ONLOAD="initialize()";
 </script>
 
-<script type="text/javascript" src="../../js/external/yuiloader-min.js"></script> 
-<script src="../../js/include.js"></script>
+<script type="text/javascript" src="../js/external/yuiloader-min.js"></script> 
+<script src="../js/include.js"></script>
 
 </head>
 
 <body>
-		<!-- <f:thunk>
-			<f:with-template url="testing/uiTest/view.xml" />
-		</f:thunk> -->
 		
 		<f:thunk>
 			<f:with-template url="xml/main/main.xml" />
