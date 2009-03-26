@@ -30,7 +30,7 @@ returnFuture(Val) ->
 
 returnUnitSet(Cell) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFunc(Cell, OutputCell, fun(Val) ->
+	cell:inject(Cell, OutputCell, fun(Val) ->
 		cell:addLine(OutputCell, Val) 
 	end),
 	OutputCell.
@@ -41,7 +41,7 @@ returnUnitSet(Cell) ->
 
 returnUnitMap(Key, Cell) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFunc(Cell, OutputCell, fun(Val) ->
+	cell:inject(Cell, OutputCell, fun(Val) ->
 		cell:addLine(OutputCell, {pair, Key, Val})
 	end),
 	OutputCell.
@@ -52,7 +52,7 @@ returnUnitMap(Key, Cell) ->
 
 returnFutureUnit(Cell) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFunc(Cell, OutputCell, fun(Val) ->
+	cell:inject(Cell, OutputCell, fun(Val) ->
 		cell:addLine(OutputCell, Val)
 	end),
 	OutputCell.
@@ -63,7 +63,7 @@ returnFutureUnit(Cell) ->
 
 bindMap(Fun, Cell) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFunc(Cell, OutputCell, fun({pair, Key,Val}) ->
+	cell:inject(Cell, OutputCell, fun({pair, Key,Val}) ->
 		applyAndInject(applyFun(Fun, Key), Val, OutputCell, fun(InnerVal) ->
 			cell:addLine(OutputCell, InnerVal) end
 		)
@@ -76,9 +76,10 @@ bindMap(Fun, Cell) ->
 
 union(Cell1, Cell2) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFuncs(OutputCell, [
-		{Cell1, fun(Val) -> cell:addLine(OutputCell, Val) end},
-		{Cell2, fun(Val) ->	cell:addLine(OutputCell, Val) end}]),
+	cell:leash(OutputCell),
+	cell:inject(Cell1, OutputCell, fun(Val) -> cell:addLine(OutputCell, Val) end),
+	cell:inject(Cell2, OutputCell, fun(Val) ->	cell:addLine(OutputCell, Val) end),
+	cell:unleash(OutputCell),
 	OutputCell.
 
 %% 
@@ -107,14 +108,17 @@ setDifference(Cell1, Cell2) ->
 				dict:store(Val, NewEntry, State)
 		end
 	end, dict:new()),
-	cell:injectFuncs(Intercept, [{Cell1, fun(Val) ->
+	
+	cell:leash(OutputCell),
+	cell:inject(Cell1, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, {plus, Val}),
 		fun() -> intercept:sendIntercept(Intercept, {minus, Val}) end
-	end},
-	{Cell2, fun(Val) ->
+	end),
+	cell:inject(Cell2, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, {minus, Val}),
 		fun() -> intercept:sendIntercept(Intercept, {plus, Val}) end
-	end}]),
+	end),
+	cell:unleash(OutputCell),
 	OutputCell.
 
 %% 
@@ -146,7 +150,7 @@ takeOne(Cell) ->
 				end		
 		end
 	end, undefined),
-	cell:injectFunc(Cell, Intercept, fun(Val) ->
+	cell:inject(Cell, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, {add, Val}),
 		fun() -> intercept:sendIntercept(Intercept, {remove, Val}) end
 	end),
@@ -233,7 +237,7 @@ oneToMap(Val1, Val2) ->
 
 reactiveApply(Cell, Input) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFunc(Cell, OutputCell, fun(Val) ->
+	cell:inject(Cell, OutputCell, fun(Val) ->
 		cell:addLine(OutputCell, applyFun(Val, Input))
 	end),
 	OutputCell.
@@ -245,7 +249,7 @@ reactiveApply(Cell, Input) ->
 reactiveNot(Cell) ->
 	OutputCell = cell:makeCell(),
 	cell:addLine(OutputCell, null),
-	cell:injectFunc(Cell, OutputCell, fun(Val) ->
+	cell:inject(Cell, OutputCell, fun(Val) ->
 		cell:removeLine(OutputCell, null),
 		fun () -> cell:addLine(OutputCell, null) end
 	end),
@@ -279,14 +283,16 @@ reactiveAnd(Cell1, Cell2) ->
 				UpdateOutputCell({C1, Val, IsSet})
 		end
 	end, {false, false, false}),
-	cell:injectFuncs(Intercept, [{Cell1, fun(Val) ->
+	cell:leash(OutputCell),
+	cell:inject(Cell1, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, {cell1val, true}),
 		fun() -> intercept:sendIntercept(Intercept, {cell1val, false}) end
-	end},
-	{Cell2, fun(Val) ->
+	end),
+	cell:inject(Cell2, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, {cell2val, true}),
 		fun() -> intercept:sendIntercept(Intercept, {cell2val, false}) end
-	end}]),
+	end),
+	cell:unleash(OutputCell),
 	OutputCell.
 
 %% 
@@ -317,14 +323,16 @@ reactiveOr(Cell1, Cell2) ->
 				UpdateOutputCell({C1, Val, IsSet})
 		end
 	end, {false, false, false}),
-	cell:injectFuncs(Intercept, [{Cell1, fun(Val) ->
+	cell:leash(OutputCell),
+	cell:inject(Cell1, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, {cell1val, true}),
 		fun() -> intercept:sendIntercept(Intercept, {cell1val, false}) end
-	end},
-	{Cell2, fun(Val) ->
+	end),
+	cell:inject(Cell2, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, {cell2val, true}),
 		fun() -> intercept:sendIntercept(Intercept, {cell2val, false}) end
-	end}]),
+	end),
+	cell:unleash(OutputCell),
 	OutputCell.
 
 %% 
@@ -350,7 +358,7 @@ isEmpty(Cell) ->
 				end
 		end
 	end, 0),
-	cell:injectFunc(Cell, Intercept, fun(Val) ->
+	cell:inject(Cell, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, plus),
 		fun() -> intercept:sendIntercept(Intercept, minus) end
 	end),
@@ -374,7 +382,7 @@ gate(GateKeeper, Passer) ->
 				IsSet
 		end
 	end, false),
-	cell:injectFunc(GateKeeper, Intercept, fun(Val) ->
+	cell:inject(GateKeeper, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, true),
 		fun() -> intercept:sendIntercept(Intercept, false) end
 	end),
@@ -401,7 +409,7 @@ fold(Fun, FunInv, Init, Cell) ->
 				NewCache
 		end
 	end, Init),
-	cell:injectFunc(Cell, Intercept, fun(Val) ->
+	cell:inject(Cell, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, {plus, Val}),
 		fun() -> intercept:sendIntercept(Intercept, {minus, Val}) end
 	end),
@@ -430,7 +438,7 @@ unfoldMap(Fun, Init) ->
 
 buildMap(Fun, Cell) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFunc(Cell, OutputCell, fun(Val) ->
+	cell:inject(Cell, OutputCell, fun(Val) ->
 		Result = applyFun(Fun, Val),
 		cell:addLine(OutputCell, {pair, Val, Result})
 	end),
@@ -442,8 +450,8 @@ buildMap(Fun, Cell) ->
 
 flattenSet(Cell) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFunc(Cell, OutputCell, fun(InnerCell) ->
-		cell:injectFunc(InnerCell, OutputCell, fun(Val) ->
+	cell:inject(Cell, OutputCell, fun(InnerCell) ->
+		cell:inject(InnerCell, OutputCell, fun(Val) ->
 			cell:addLine(OutputCell, Val) end)
 	end),
 	OutputCell.
@@ -494,8 +502,8 @@ invert(Cell) ->
 		end
 	end, dict:new()),
 	
-	cell:injectFunc(Cell, Intercept, fun({pair, Key, Val}) ->
-		cell:injectFunc(Val, Intercept, fun(InnerVal) ->
+	cell:inject(Cell, Intercept, fun({pair, Key, Val}) ->
+		cell:inject(Val, Intercept, fun(InnerVal) ->
 			intercept:sendIntercept(Intercept, {bHashAdd, InnerVal}),
 			intercept:sendIntercept(Intercept, {addInnerLine, InnerVal, Key}),
 			fun() ->
@@ -504,7 +512,7 @@ invert(Cell) ->
 			end
 		end)
 	end),	
-	cell:injectFunc(OutputCell, 
+	cell:inject(OutputCell, 
 	fun() ->
 		intercept:sendIntercept(Intercept, done)
 	end,
@@ -520,7 +528,7 @@ invert(Cell) ->
 
 mapMapValue(Fun, Cell) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFunc(Cell, OutputCell, fun({pair, Key, Val}) ->
+	cell:inject(Cell, OutputCell, fun({pair, Key, Val}) ->
 		Result = applyFun(Fun, Val),
 		cell:addLine(OutputCell, {pair, Key, Result})
 	end),
@@ -532,7 +540,7 @@ mapMapValue(Fun, Cell) ->
 
 getKey(GetKey, Cell) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFunc(Cell, OutputCell, fun(KeyVal) ->
+	cell:inject(Cell, OutputCell, fun(KeyVal) ->
 		case KeyVal of
 			{pair, GetKey, Val} -> cell:addLine(OutputCell, Val);
 			_ -> undefined
@@ -546,7 +554,7 @@ getKey(GetKey, Cell) ->
 
 keys(Cell) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFunc(Cell, OutputCell, fun({pair, Key, Val}) ->
+	cell:inject(Cell, OutputCell, fun({pair, Key, Val}) ->
 		cell:addLine(OutputCell, Key)
 	end),
 	OutputCell.
@@ -593,7 +601,7 @@ takeLast(Cell) ->
 		Change(Cache)
 	end, Change(undefined)),
 	% intercept:sendIntercept(Intercept, change),
-	cell:injectFunc(Cell, Intercept, fun(Val) ->
+	cell:inject(Cell, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, change),
 		fun() -> intercept:sendIntercept(Intercept, change) end
 	end),
@@ -844,7 +852,7 @@ unfoldMapHelper({Key, Val}, Fun, OutputCell, Done) ->
 
 bindUnitOrSetHelper(Fun, Cell) ->
 	OutputCell = cell:makeCell(),
-	cell:injectFunc(Cell, OutputCell, fun(Val) ->
+	cell:inject(Cell, OutputCell, fun(Val) ->
 		applyAndInject(Fun, Val, OutputCell, fun(InnerVal) ->
 			cell:addLine(OutputCell, InnerVal) end
 		)
@@ -879,18 +887,20 @@ rangeHelper(OutputCell, SetRangeFunc, StartCell, EndCell, Cell) ->
 				{Start, undefined}
 		end
 	end, {undefined, undefined}),
-	
-	cell:injectFuncs(Intercept, [{StartCell, fun(Val) ->
+
+	cell:leash(OutputCell),
+	cell:inject(StartCell, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, {startAdd, Val}),
 		fun() -> intercept:sendIntercept(Intercept, startRemove) end
-	end},
-	{EndCell, fun(Val) ->
+	end),
+	cell:inject(EndCell, Intercept, fun(Val) ->
 		intercept:sendIntercept(Intercept, {endAdd, Val}),
 		fun() -> intercept:sendIntercept(Intercept, endRemove) end
-	end},
-	{Cell, fun(Val) ->
+	end),
+	cell:inject(Cell, Intercept, fun(Val) ->
 		cell:addLine(OutputCell, Val)
-	end}]),
+	end),
+	cell:unleash(OutputCell),
 	OutputCell.
 
 
@@ -902,4 +912,4 @@ applyFun(Fun, Input) ->
 	eval:evaluate(#cons{type=apply, left=Fun, right=Input}).
 
 applyAndInject(Fun, Input, OutputCell, InjectedFun) ->
-	cell:injectFunc(applyFun(Fun, Input), OutputCell, InjectedFun).
+	cell:inject(applyFun(Fun, Input), OutputCell, InjectedFun).

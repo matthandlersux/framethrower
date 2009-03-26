@@ -9,14 +9,15 @@
 -include("../include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+
 -define (this(Field), State#cellState.Field).
 
 %% --------------------------------------------------------------------
 %% External exports
-%-export([injectFunc/2]).
+%-export([inject/2]).
 
 %% gen_server callbacks
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3, update/1]).
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 %%For now, export all
 -compile(export_all).
@@ -25,20 +26,11 @@
 %% ====================================================================
 %% Cell internal data structure record
 %% ====================================================================
-%moved this record to scaffold
+% moved these records to scaffold
 % -record(cellState, {funcs, dots, onRemoves=[], funcColor=0, intercept, done=false}).
--record(onRemove, {function, cell, id, done}).
--record(func, {function, outputCellOrIntOrFunc}).
+% -record(depender, {function, cell, id, done}).
+% -record(func, {function, depender}).
 
-%% ====================================================
-%% Types
-%% ====================================================
-
-%% 
-%% Value:: Nat | Bool | String | Cell | {Value, Value}
-%% Cell:: Pid
-%% Pid:: < Nat . Nat . Nat >
-%% 
 
 %% ====================================================================
 %% External functions
@@ -49,77 +41,6 @@ makeCell() ->
 	NewCell = #exprCell{pid=Pid},
 	NamedCell = env:nameAndStoreCell(NewCell),
 	#cellPointer{name = NamedCell#exprCell.name, pid = Pid}.
-
-update(Cell) ->
-	Name = Cell#exprCell.name,
-	env:store(Name, Cell).
-	
-removeDependency(Cell, InputCell, InputId) ->
-	gen_server:cast(Cell#cellPointer.pid, {removeDependency, InputCell, InputId, Cell}).	
-
-injectFunc(Cell, OutputCellOrIntOrFunc, Fun) ->
-	{Id, OnRemove} = gen_server:call(Cell#cellPointer.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}),
-	gen_server:cast(Cell#cellPointer.pid, {injectFunc, OutputCellOrIntOrFunc, Fun, Cell, Id}),
-	OnRemove.
-
-injectFuncs(OutputCellOrIntOrFunc, CellFuncs) ->
-	CellFuncIds = lists:map(fun({Cell, Fun}) ->
-			{Id, _} = gen_server:call(Cell#cellPointer.pid, {injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}),
-		{Cell, Fun, Id}
-	end, CellFuncs),
-	lists:map(fun({Cell, Fun, Id}) ->
-			gen_server:cast(Cell#cellPointer.pid, {injectFunc, OutputCellOrIntOrFunc, Fun, Cell, Id})
-	end, CellFuncIds),
-	ok.
-
-removeFunc(Cell, Id) ->
-	gen_server:cast(Cell#cellPointer.pid, {removeFunc, Id, Cell}).
-
-injectIntercept(Cell, Fun, InitState) ->
-	gen_server:call(Cell#cellPointer.pid, {injectIntercept, Fun, InitState, Cell}).
-
-done(Cell) ->
-	gen_server:cast(Cell#cellPointer.pid, {done, Cell}).
-
-done(Cell, DoneCell, Id) ->
-	gen_server:cast(Cell#cellPointer.pid, {done, DoneCell, Id, Cell}).
-
-getState(Cell) ->
-	gen_server:call(Cell#cellPointer.pid, getState).
-
-%FunOrOnRemove can be a function, or #onRemove
-%#onRemove will also be used as dependencies, so this cell can know when it has received all current updates
-addOnRemove(Cell, FunOrOnRemove) ->
-	OnRemove = case FunOrOnRemove of
-		OnRemRecord when is_record(OnRemRecord, onRemove) -> 
-			OnRemRecord;
-		Function -> 
-			#onRemove{
-				function=Function,
-				done=true
-			}
-	end,
-	gen_server:cast(Cell#cellPointer.pid, {addOnRemove, OnRemove}).
-
-setKeyRange(Cell, Start, End) ->
-	gen_server:cast(Cell#cellPointer.pid, {setKeyRange, Start, End}).
-
-getStateArray(Cell) ->
-	gen_server:call(Cell#cellPointer.pid, getStateArray).
-
-%% 
-%% makeFuture:: Expr -> Cell
-%% 
-
-makeFuture(Value) ->
-	% TypeString = type:unparse(type:get(Value)),
-	% FutureType = type:parse("Future " ++ TypeString),
-	% Cell = (makeCell())#exprCell{type=FutureType},
-	% update(Cell),
-	Cell = makeCell(),
-	addLine(Cell, Value),
-	done(Cell),
-	Cell.
 
 %% 
 %% addline:: CellPid -> a -> CleanupFun
@@ -137,6 +58,63 @@ removeLine(Cell, Value) ->
 	gen_server:cast(Cell#cellPointer.pid, {removeLine, Value}).
 
 
+
+
+inject(Cell, Depender, Fun) ->
+	Id = gen_server:call(Cell#cellPointer.pid, getColor),
+	case Depender of
+		OutputCell when is_record(OutputCell, cellPointer) -> addDependency(OutputCell, #depender{cell=Cell, id=Id});
+		Intercept when is_pid(Intercept) -> intercept:addDependency(Intercept, #depender{cell=Cell, id=Id});
+		DoneResponse when is_function(DoneResponse) -> nosideeffect
+	end,
+	gen_server:cast(Cell#cellPointer.pid, {inject, Depender, Fun, Cell, Id}),
+	fun() -> removeFunc(Cell, Id) end.
+
+removeFunc(Cell, Id) ->
+	gen_server:cast(Cell#cellPointer.pid, {removeFunc, Id, Cell}).
+
+injectIntercept(Cell, Fun, InitState) ->
+	gen_server:call(Cell#cellPointer.pid, {injectIntercept, Fun, InitState, Cell}).
+
+addOnRemove(Cell, OnRemove) ->
+	gen_server:cast(Cell#cellPointer.pid, {addOnRemove, OnRemove}).
+
+
+
+
+done(Cell) ->
+	gen_server:cast(Cell#cellPointer.pid, {done, Cell}).
+
+done(Cell, DoneDependency) ->
+	gen_server:cast(Cell#cellPointer.pid, {done, DoneDependency, Cell}).
+
+addDependency(Cell, Dependency) ->
+	gen_server:cast(Cell#cellPointer.pid, {addDependency, Dependency}).
+
+removeDependency(Cell, Dependency) ->
+	gen_server:cast(Cell#cellPointer.pid, {removeDependency, Dependency, Cell}).
+
+leash(Cell) ->
+	addDependency(Cell, leash).
+
+unleash(Cell) ->
+	done(Cell, leash).
+
+
+
+
+
+setKeyRange(Cell, Start, End) ->
+	gen_server:cast(Cell#cellPointer.pid, {setKeyRange, Start, End}).
+
+getStateArray(Cell) ->
+	gen_server:call(Cell#cellPointer.pid, getStateArray).
+
+getState(Cell) ->
+	gen_server:call(Cell#cellPointer.pid, getState).
+
+
+
 %% --------------------------------------------------------------------
 %%% Internal functions
 %% --------------------------------------------------------------------
@@ -149,8 +127,8 @@ addLineResponse(Dot, Fun, Id) ->
 	OnRemove = Fun(Value),
 	case OnRemove of
 		undefined -> Dot;
-		OnRemRecord when is_record(OnRemRecord, onRemove) ->
-			{dot, Num, Value, dict:store(Id, OnRemRecord#onRemove.function, Lines)};
+		OnRemRecord when is_record(OnRemRecord, depender) ->
+			{dot, Num, Value, dict:store(Id, OnRemRecord#depender.function, Lines)};
 		F -> {dot, Num, Value, dict:store(Id, F, Lines)}
 	end.
 
@@ -175,21 +153,30 @@ onRemove(Dot, Funcs) ->
 	dict:map(RemoveFolder, Funcs),
 	{ok}.
 
+informDepender(Depender, Cell, FuncId) ->
+	case Depender of
+		OutputCell when is_record(OutputCell, cellPointer) -> done(OutputCell, #depender{cell=Cell, id=FuncId});
+		Intercept when is_pid(Intercept) -> intercept:done(Intercept, #depender{cell=Cell, id=FuncId});
+		DoneResponse when is_function(DoneResponse) -> DoneResponse();
+		_ -> nosideeffect
+	end.	
+
+filterDependencies(Dependencies, DependencyToRemove) ->
+	lists:filter(fun(Dependency) ->
+		case Dependency of
+			DependencyToRemove -> false;
+			_ -> true
+		end
+	end, Dependencies).
+
 checkDone(State, Cell) ->
-	AllDone = lists:foldl(fun(OnRemove, Acc) ->
-		Acc andalso OnRemove#onRemove.done
-	end, true, ?this(onRemoves)),
-	case AllDone of
-		true ->
+	AllDone = case ?this(dependencies) of
+		[] ->
 			dict:map(fun(FuncId, Func) ->
-				case Func#func.outputCellOrIntOrFunc of
-					undefined -> nosideeffect;
-					OutputCell when is_record(OutputCell, cellPointer) -> done(OutputCell, Cell, FuncId);
-					Intercept when is_pid(Intercept) -> intercept:done(Intercept, Cell, FuncId);
-					Function when is_function(Function) -> Function()
-				end
-			end, ?this(funcs));
-		false -> nosideeffect
+				informDepender(Func#func.depender, Cell, FuncId)
+			end, ?this(funcs)),
+			true;
+		_ -> false
 	end,
 	State#cellState{done=AllDone}.
 
@@ -222,33 +209,22 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({injectFuncOnRemove, OutputCellOrIntOrFunc, Cell}, _, State) ->
+handle_call(getColor, _, State) ->
 	Id = ?this(funcColor),
-	OnRemove = case OutputCellOrIntOrFunc of
-		Function when is_function(Function) -> fun() -> removeFunc(Cell, Id) end;
-		_ -> #onRemove{function = fun() -> removeFunc(Cell, Id) end, cell=Cell, id=Id, done=false}
-	end,
-	case OutputCellOrIntOrFunc of
-		OutputCell when is_record(OutputCell, cellPointer) -> addOnRemove(OutputCell, OnRemove);
-		%TODO: make Intercept a record for consistancy with Cell
-		Intercept when is_pid(Intercept) -> intercept:addOnRemove(Intercept, OnRemove);
-		%done function
-		_ -> nosideeffect
-	end,
 	NewState = State#cellState{funcColor=Id+1},
-	{reply, {Id, OnRemove}, NewState};
-handle_call({injectIntercept, Fun, IntState, Cell}, From, State) ->
+	{reply, Id, NewState};
+handle_call({injectIntercept, Fun, IntState, Cell}, _, State) ->
 	Intercept = intercept:makeIntercept(Fun, IntState, Cell),
 	NewState = State#cellState{intercept=Intercept},
     {reply, Intercept, NewState};
-handle_call(getStateArray, From, State) ->
+handle_call(getStateArray, _, State) ->
 	SortedDict = rangedict:toSortedDict(?this(dots)),
 	ResultArray = sorteddict:fold(fun(Key, Dot, Acc) -> 
 		{dot, _, Val, _} = Dot,
 		[Val|Acc]
 	end, [], SortedDict),
 	{reply, ResultArray, State};
-handle_call(getState, From, State) ->
+handle_call(getState, _, State) ->
 	{reply, State, State}.
 
 %% --------------------------------------------------------------------
@@ -259,10 +235,6 @@ handle_call(getState, From, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast({addLine, Value, CellName}, State) ->
-	% case ?this(done) of
-	% 	true -> ?trace(CellName);
-	% 	_ -> nosideeffect
-	% end,
 	Key = toKey(Value),
 	Dot = try rangedict:fetch(Key, ?this(dots)) of
 		{dot, Num, Val, Lines} -> {dot, Num+1, Val, Lines}
@@ -286,9 +258,9 @@ handle_cast({removeLine, Value}, State) ->
     {noreply, NewState};
 handle_cast({removeFunc, Id, Cell}, State) ->
 	Func = dict:fetch(Id, ?this(funcs)),
-	case Func#func.outputCellOrIntOrFunc of
-		OutputCell when is_record(OutputCell, cellPointer) -> removeDependency(OutputCell, Cell, Id);
-		Intercept when is_pid(Intercept) -> intercept:removeDependency(Intercept, Cell, Id);
+	case Func#func.depender of
+		OutputCell when is_record(OutputCell, cellPointer) -> removeDependency(OutputCell, #depender{cell=Cell, id=Id});
+		Intercept when is_pid(Intercept) -> intercept:removeDependency(Intercept, #depender{cell=Cell, id=Id});
 		%done function
 		_ -> nosideeffect
 	end,
@@ -300,68 +272,42 @@ handle_cast({removeFunc, Id, Cell}, State) ->
 			%TODO: destroy this cell, for now we just remove all functions that are informing this cell
 			nosideeffect;
 			% lists:map(fun(OnRemove) ->
-			% 	(OnRemove#onRemove.function)()
+			% 	(OnRemove#depender.function)()
 			% end, ?this(onRemoves));
 		_ -> nosideeffect
 	end,
     {noreply, NewState};
 handle_cast({addOnRemove, OnRemove}, State) ->
 	NewState = State#cellState{onRemoves=[OnRemove | ?this(onRemoves)]},
-	DoneState = case OnRemove#onRemove.done of
-		false -> NewState#cellState{done=false};
-		true -> NewState
-	end,
-    {noreply, DoneState};
-handle_cast({injectFunc, OutputCellOrIntOrFunc, Fun, Cell, Id}, State) ->
-	NewFuncs = dict:store(Id, #func{function=Fun, outputCellOrIntOrFunc=OutputCellOrIntOrFunc}, ?this(funcs)),
+    {noreply, NewState};
+handle_cast({addDependency, Dependency}, State) ->
+	NewState = State#cellState{dependencies=[Dependency | ?this(dependencies)]},
+    {noreply, NewState};
+handle_cast({inject, Depender, Fun, Cell, Id}, State) ->
+	NewFuncs = dict:store(Id, #func{function=Fun, depender=Depender}, ?this(funcs)),
 	NewDots = rangedict:map(fun(Key, Dot) -> addLineResponse(Dot, Fun, Id) end, ?this(dots)),
 	NewState = State#cellState{funcs=NewFuncs, dots=NewDots},
 	case ?this(done) of
-		true -> 
-			case OutputCellOrIntOrFunc of
-				OutputCell when is_record(OutputCell, cellPointer) -> done(OutputCell, Cell, Id);
-				Intercept when is_pid(Intercept) -> intercept:done(Intercept, Cell, Id);
-				Function when is_function(Function) -> Function()
-			end;
-		false -> 
-			nosideeffect
+		true -> informDepender(Depender, Cell, Id);
+		false -> nosideeffect
 	end,
     {noreply, NewState};
-handle_cast({removeDependency, InputCell, InputId, Cell}, State) ->
-	NewOnRemoves = lists:filter(fun(OnRemove) ->
-		if 
-			(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#cellPointer.name =:= InputCell#cellPointer.name) andalso (OnRemove#onRemove.id =:= InputId) ->
-				false;
-			true -> 
-				true
-		end
-	end, ?this(onRemoves)),
-	StateWithOnRemoves = State#cellState{onRemoves=NewOnRemoves},
+handle_cast({removeDependency, DependencyToRemove, Cell}, State) ->
+	NewDependencies = filterDependencies(?this(dependencies), DependencyToRemove),
+	StateWithDependencies = State#cellState{dependencies=NewDependencies},
 	NewState = case ?this(done) of
-		true -> StateWithOnRemoves;
-		false -> checkDone(StateWithOnRemoves, Cell)
+		true -> StateWithDependencies;
+		false -> checkDone(StateWithDependencies, Cell)
 	end,
     {noreply, NewState};
-handle_cast({done, DoneCell, Id, Cell}, State) ->
-	NewOnRemoves = lists:map(fun(OnRemove) ->
-		if 
-			(not (OnRemove#onRemove.cell =:= undefined)) andalso ((OnRemove#onRemove.cell)#cellPointer.name =:= DoneCell#cellPointer.name) andalso (OnRemove#onRemove.id =:= Id) ->
-				OnRemove#onRemove{done=true};
-			true -> 
-				OnRemove
-		end
-	end, ?this(onRemoves)),
-	StateWithOnRemoves = State#cellState{onRemoves=NewOnRemoves},
-	NewState = checkDone(StateWithOnRemoves, Cell),
+handle_cast({done, DoneDependency, Cell}, State) ->
+	NewDependencies = filterDependencies(?this(dependencies), DoneDependency),
+	StateWithDependencies = State#cellState{dependencies=NewDependencies},
+	NewState = checkDone(StateWithDependencies, Cell),
     {noreply, NewState};
 handle_cast({done, Cell}, State) ->
 	dict:map(fun(FuncId, Func) ->
-		case Func#func.outputCellOrIntOrFunc of
-			undefined -> nosideeffect;
-			OutputCell when is_record(OutputCell, cellPointer) -> done(OutputCell, Cell, FuncId);
-			Intercept when is_pid(Intercept) -> intercept:done(Intercept, Cell, FuncId);
-			Function when is_function(Function) -> Function()
-		end
+		informDepender(Func#func.depender, Cell, FuncId)
 	end, ?this(funcs)),
 	NewState = State#cellState{done=true},
     {noreply, NewState};

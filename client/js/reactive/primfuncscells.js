@@ -4,14 +4,14 @@ var primFuncs = function () {
 		return evaluate(makeApply(func, input));		
 	}
 
-	function applyAndInject(func, input, depender, injectFunc) {
-		return evaluateAndInject(makeApply(func, input), depender, injectFunc);
+	function applyAndInject(func, input, depender, inject) {
+		return evaluateAndInject(makeApply(func, input), depender, inject);
 	}	
 	
 	var bindUnitOrSetHelper = function (f, cell) {
 		var outputCell = makeCell();
 		
-		cell.injectFunc(outputCell, function (val) {
+		cell.inject(outputCell, function (val) {
 			return applyAndInject(f, val, outputCell, function (innerVal) {
 				return outputCell.addLine(innerVal);
 			});
@@ -33,7 +33,7 @@ var primFuncs = function () {
 			}
 		};
 		
-		injectFuncs(outputCell, [
+		injects(outputCell, [
 			{
 				cell: startCell,
 				f: function(val) {
@@ -93,7 +93,7 @@ var primFuncs = function () {
 			type : "Unit a -> Set a",
 			func : function (cell) {
 				var outputCell = makeCell();
-				cell.injectFunc(outputCell, function (val) {
+				cell.inject(outputCell, function (val) {
 					return outputCell.addLine(val);
 				});
 				return outputCell;
@@ -103,7 +103,7 @@ var primFuncs = function () {
 			type : "a -> Unit b -> Map a b",
 			func : function (key, cell) {
 				var outputCell = makeCellMapInput();
-				cell.injectFunc(outputCell, function (val) {
+				cell.inject(outputCell, function (val) {
 					return outputCell.addLine({key:key, val:val});
 				});
 				return outputCell;
@@ -113,7 +113,7 @@ var primFuncs = function () {
 			type : "Future a -> Unit a",
 			func : function (cell) {
 				var outputCell = makeCell();
-				cell.injectFunc(outputCell, function(val) {
+				cell.inject(outputCell, function(val) {
 					outputCell.addLine(val);
 				});
 				return outputCell;
@@ -132,7 +132,7 @@ var primFuncs = function () {
 			func : function (f, cell) {
 				var outputCell = makeCellMapInput();
 
-				cell.injectFunc(outputCell, function (keyVal) {
+				cell.inject(outputCell, function (keyVal) {
 					return applyAndInject(applyFunc(f, keyVal.key), keyVal.val, outputCell, function (innerKeyVal) {
 						return outputCell.addLine(innerKeyVal);
 					});
@@ -146,7 +146,7 @@ var primFuncs = function () {
 			func : function (f, cell) {
 				var outputCell = makeCell();
 				
-				cell.injectFunc(outputCell, function (val) {
+				cell.inject(outputCell, function (val) {
 					return applyAndInject(f, val, outputCell, function (innerVal) {
 						outputCell.addLine(innerVal);
 					});
@@ -162,7 +162,7 @@ var primFuncs = function () {
 			func : function (cell1, cell2) {
 				var outputCell = makeCell();
 				
-				injectFuncs(outputCell, [
+				injects(outputCell, [
 					{
 						cell: cell1,
 						f: function (val) {
@@ -202,7 +202,7 @@ var primFuncs = function () {
 					});
 				};
 
-				injectFuncs(outputCell, [
+				injects(outputCell, [
 					{
 						cell: cell1,
 						f: function (value) {
@@ -234,7 +234,7 @@ var primFuncs = function () {
 				var outputCell = makeCell();
 				var cache;
 				
-				cell.injectFunc(outputCell, function (val) {
+				cell.inject(outputCell, function (val) {
 					if (cache === undefined) {
 						outputCell.addLine(val);
 						cache = val;
@@ -338,7 +338,7 @@ var primFuncs = function () {
 			type : "Unit (a -> b) -> a -> Unit b",
 			func : function (cell, input) {
 				var outputCell = makeCell();
-				cell.injectFunc(outputCell, function (val) {
+				cell.inject(outputCell, function (val) {
 					return outputCell.addLine(applyFunc(val, input));
 				});
 				return outputCell;
@@ -352,7 +352,7 @@ var primFuncs = function () {
 			func: function (cell) {
 				var outputCell = makeCell();
 				outputCell.addLine(nullObject);
-				cell.injectFunc(outputCell, function (val) {
+				cell.inject(outputCell, function (val) {
 					outputCell.removeLine(nullObject);
 					return function() {
 						outputCell.addLine(nullObject);
@@ -379,7 +379,7 @@ var primFuncs = function () {
 					}
 				}
 				
-				injectFuncs(outputCell, [
+				injects(outputCell, [
 					{
 						cell: cell1,
 						f: function (val) {
@@ -425,7 +425,7 @@ var primFuncs = function () {
 					}
 				}
 
-				injectFuncs(outputCell, [
+				injects(outputCell, [
 					{
 						cell: cell1,
 						f: function (val) {
@@ -460,7 +460,7 @@ var primFuncs = function () {
 				var count = 0;
 				outputCell.addLine(nullObject);
 				
-				cell.injectFunc(outputCell, function (val) {
+				cell.inject(outputCell, function (val) {
 					if (count === 0) outputCell.removeLine(nullObject);
 					count++;
 					return function() {
@@ -490,7 +490,7 @@ var primFuncs = function () {
 					}
 				}
 				
-				gatekeeper.injectFunc(outputCell, function (val) {
+				gatekeeper.inject(outputCell, function (val) {
 					bool1 = true;
 					updateOutputCell();
 					return function () {
@@ -510,7 +510,7 @@ var primFuncs = function () {
 		// 		var count = 0;
 		// 		outputCell.addLine(false);
 		// 
-		// 		cell.injectFunc(outputCell, function (val) {
+		// 		cell.inject(outputCell, function (val) {
 		// 			return applyAndInject(f, val, outputCell, function (innerVal) {
 		// 				if (innerVal) {
 		// 					if (count == 0) {
@@ -540,7 +540,7 @@ var primFuncs = function () {
 				var cache = init;
 				outputCell.addLine(cache);
 				
-				cell.injectFunc(outputCell, function (val) {
+				cell.inject(outputCell, function (val) {
 					outputCell.removeLine(cache);
 					cache = applyFunc(applyFunc(f, val), cache);
 					outputCell.addLine(cache);
@@ -561,8 +561,8 @@ var primFuncs = function () {
 				var outputCell = makeCell();
 
 				outputCell.addLine(init);
-				//TODO: make this injectFunc more like the erlang version
-				outputCell.injectFunc(function(){}, function (val) {
+				//TODO: make this inject more like the erlang version
+				outputCell.inject(function(){}, function (val) {
 					return applyAndInject(f, val, outputCell, function (innerVal) {
 						return outputCell.addLine(innerVal);
 					});
@@ -577,8 +577,8 @@ var primFuncs = function () {
 				var outputCell = makeCellMapInput();
 				
 				outputCell.addLine({key:init, val:0});
-				//TODO: make this injectFunc more like the erlang version
-				outputCell.injectFunc(function(){}, function (keyVal) {
+				//TODO: make this inject more like the erlang version
+				outputCell.inject(function(){}, function (keyVal) {
 					return applyAndInject(f, keyVal.key, outputCell, function (val) {
 						return outputCell.addLine({key:val, val:keyVal.val+1});
 					});
@@ -595,7 +595,7 @@ var primFuncs = function () {
 			func : function (f, cell) {
 				var outputCell = makeCellMapInput();
 			
-				cell.injectFunc(outputCell, function (val) {
+				cell.inject(outputCell, function (val) {
 					var result = applyFunc(f, val);
 					return outputCell.addLine({key:val, val:result});
 				});
@@ -614,9 +614,9 @@ var primFuncs = function () {
 				var bHashCell = makeCell();
 				
 				//this is to make outputCell depend on BHashCell for being 'done' 
-				bHashCell.injectFunc(outputCell, function (bValue) {});
+				bHashCell.inject(outputCell, function (bValue) {});
 				
-				bHashCell.injectFunc(
+				bHashCell.inject(
 					function() {
 						bHash.forEach(function(bCell) {
 							bCell.setDone();
@@ -634,8 +634,8 @@ var primFuncs = function () {
 					}
 				);
 
-				cell.injectFunc(outputCell, function (keyVal) {
-					return keyVal.val.injectFunc(bHashCell, function (innerVal) {
+				cell.inject(outputCell, function (keyVal) {
+					return keyVal.val.inject(bHashCell, function (innerVal) {
 						var onRemove1 = bHashCell.addLine(innerVal);
 						var onRemove2 = bHash.get(innerVal).addLine(keyVal.key);
 						return function () {
@@ -653,7 +653,7 @@ var primFuncs = function () {
 			func : function (f, cell) {
 				var outputCell = makeCellMapInput();
 
-				cell.injectFunc(outputCell, function (keyVal) {
+				cell.inject(outputCell, function (keyVal) {
 					var result = applyFunc(f, keyVal.val);
 					return outputCell.addLine({key:keyVal.key, val:result});
 				});
@@ -666,7 +666,7 @@ var primFuncs = function () {
 			func : function (key, cell) {
 				var outputCell = makeCell();
 			
-				cell.injectFunc(outputCell, function (keyVal) {
+				cell.inject(outputCell, function (keyVal) {
 					if (keyVal.key == key) {
 						return outputCell.addLine(keyVal.val);
 					}
@@ -680,7 +680,7 @@ var primFuncs = function () {
 			func : function (cell) {
 				var outputCell = makeCell();
 			
-				cell.injectFunc(outputCell, function (keyVal) {
+				cell.inject(outputCell, function (keyVal) {
 					return outputCell.addLine(keyVal.key);
 				});
 
@@ -735,7 +735,7 @@ var primFuncs = function () {
 				}
 				update();
 				
-				cell.injectFunc(outputCell, function (val) {
+				cell.inject(outputCell, function (val) {
 					update();
 					return update;
 				});

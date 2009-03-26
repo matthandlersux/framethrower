@@ -185,8 +185,7 @@ makeCells(Cell, CellDict) when is_record(Cell, exprCell) ->
 	cell:done(NewCellPointer),
 	NewCell = env:lookup(NewCellPointer#cellPointer.name),
 	% TypedCell = NewCell#exprCell{type=Cell#exprCell.type, bottom=Cell#exprCell.bottom},
-	TypedCell = NewCell#exprCell{type=Cell#exprCell.type},
-	cell:update(TypedCell),
+	% cell:update(TypedCell),
 	dict:store(Cell#exprCell.name, NewCellPointer, CellDict);
 makeCells(_, CellDict) -> CellDict.
 

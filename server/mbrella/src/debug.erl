@@ -7,9 +7,6 @@
 -compile(export_all).
 
 % -record(cellState, {funcs, dots, toKey, onRemoves=[], funcColor=0, intercept, done=false}).
--record(onRemove, {function, cell, id, done}).
--record(func, {function, outputCellOrIntOrFunc}).
--record(interceptState, {function, state, ownerCell}).
 
 %% =============================================================================
 %% Process interogation/forensics
@@ -362,16 +359,16 @@ getDebugHTML(Name, BaseURL) ->
 	end,
 	
 	GetDependenciesHTML = fun (CellState) ->
-		OnRemoves = CellState#cellState.onRemoves,
-		lists:foldr(fun(OnRemove, Acc) ->
-			Acc ++ "Cell: " ++ GetElemHtml(OnRemove#onRemove.cell) ++ ", Id: " ++ toList(OnRemove#onRemove.id) ++ ", Done: " ++ toList(OnRemove#onRemove.done) ++ "<br />"
-		end, "", OnRemoves)
+		Dependencies = CellState#cellState.dependencies,
+		lists:foldr(fun(Dependency, Acc) ->
+			Acc ++ "Cell: " ++ GetElemHtml(Dependency#depender.cell) ++ ", Id: " ++ toList(Dependency#depender.id) ++ "<br />"
+		end, "", Dependencies)
 	end,
 	
 	GetDependersHTML = fun (CellState) ->
 		Funcs = CellState#cellState.funcs,
 		dict:fold(fun(Id, Func, Acc) ->
-			Acc ++ "FuncId: " ++ toList(Id) ++ ", OutputCellOrIntOrFunc: " ++ GetElemHtml(Func#func.outputCellOrIntOrFunc) ++ "<br />"
+			Acc ++ "FuncId: " ++ toList(Id) ++ ", Depender: " ++ GetElemHtml(Func#func.depender) ++ "<br />"
 		end, "", Funcs)
 	end,
 
