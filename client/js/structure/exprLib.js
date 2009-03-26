@@ -1,8 +1,6 @@
 /*
 TODO:
-gate/passthru
 put Futures where they're supposed to be
-make a Null type for Unit Null instead of Unit Bool?
 make an Ord type for generic ordering
 */
 

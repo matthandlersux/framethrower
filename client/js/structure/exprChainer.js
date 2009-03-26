@@ -1,4 +1,8 @@
-
+/*
+This file is for doing the "chain"s in exprLib.
+The idea is you give it a start type, an end type, and a list of functions (to be applied in order, left-to-right)
+The chainer will automatically put in the correct object conversions and monadic combinators
+*/
 var exprChainer = (function () {
 	
 	function getCandC(type) {
