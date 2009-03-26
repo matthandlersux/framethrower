@@ -86,38 +86,6 @@ lambdaVarLookup(String, Dict) ->
 lambdaVarStore(Key, Value, Dict) ->
 	dict:store(Key, Value, Dict).
 
-%% 
-%% old version of exprParse
-%% 
-% 
-% 
-% exprParse(String) ->
-% 	expr(parse(String)).
-% expr(AST) when is_record(AST, cons) ->
-% 	{cons, AST#cons.type, expr(AST#cons.left), expr(AST#cons.right)};
-% expr(AST) when AST =:= "true" orelse (AST =:= "false" orelse AST =:= "null") ->
-% 	list_to_atom(AST);
-% expr(AST) when is_list(AST) ->
-% 	case is_string(AST) of
-% 		true -> 
-% 			case env:lookup(AST) of
-% 				notfound ->
-% 					#exprVar{value = AST};
-% 				Expr -> Expr
-% 			end;
-% 		false ->
-% 			exit(AST)
-% 	end;
-% expr({primitive, _, BoolStringNat}) ->
-% 	BoolStringNat;
-% expr({primitive, null}) ->
-% 	null;	
-% expr(AST) when is_number(AST) ->
-% 	AST;
-% expr(AST) when is_boolean(AST) ->
-% 	AST;
-% expr(AST) ->
-% 	AST.
 	
 %% ====================================================
 %% parser
