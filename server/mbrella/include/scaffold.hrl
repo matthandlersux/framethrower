@@ -61,6 +61,11 @@
 	depender
 }).
 
+-record(dot, {
+	num,
+	value,
+	lines
+}).
 
 %% ====================================================
 %% pointer records

@@ -512,13 +512,8 @@ invert(Cell) ->
 			end
 		end)
 	end),	
-	cell:inject(OutputCell, 
-	fun() ->
+	cell:injectDependency(OutputCell, fun() ->
 		intercept:sendIntercept(Intercept, done)
-	end,
-	fun(Val) -> 
-		%this is to make Intercept depend on Cell for being 'done' 
-		fun() -> nosideeffect end 
 	end),
 	OutputCell.
 
@@ -831,7 +826,7 @@ primitives() ->
 
 unfoldSetHelper(Val, Fun, OutputCell, Done) ->
 	try dict:fetch(Val, Done) of
-		Found -> fun() -> noSideEffect end
+		Found -> undefined
 	catch _:_ ->
 		applyAndInject(Fun, Val, OutputCell, fun(InnerVal) ->
 			unfoldSetHelper(InnerVal, Fun, OutputCell, dict:store(Val, Val, Done))
@@ -841,7 +836,7 @@ unfoldSetHelper(Val, Fun, OutputCell, Done) ->
 
 unfoldMapHelper({Key, Val}, Fun, OutputCell, Done) ->
 	try dict:fetch(Key, Done) of
-		Found -> fun() -> noSideEffect end
+		Found -> undefined
 	catch _:_ ->
 		applyAndInject(Fun, Key, OutputCell, fun(InnerVal) ->
 			unfoldMapHelper({InnerVal, Val+1}, Fun, OutputCell, dict:store(Key, Key, Done))

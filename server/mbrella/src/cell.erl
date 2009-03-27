@@ -4,62 +4,75 @@
 %%%
 %%% -------------------------------------------------------------------
 -module(cell).
-
 -behaviour(gen_server).
+% -compile(export_all).
+
 -include("../include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+-define(this(Field), State#cellState.Field).
 
--define (this(Field), State#cellState.Field).
+%% Exports
+-export([makeCell/0, addLine/2, removeLine/2, injectDependency/2, inject/3, removeFunc/2, injectIntercept/3, addOnRemove/2]).
+-export([done/1, done/2, addDependency/2, removeDependency/2, leash/1, unleash/1]).
+-export([setKeyRange/3, getStateArray/1, getState/1]).
 
-%% --------------------------------------------------------------------
-%% External exports
-%-export([inject/2]).
-
-%% gen_server callbacks
+%% gen_server exports
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
-%%For now, export all
--compile(export_all).
 
-
-%% ====================================================================
-%% Cell internal data structure record
-%% ====================================================================
-% moved these records to scaffold
-% -record(cellState, {funcs, dots, onRemoves=[], funcColor=0, intercept, done=false}).
-% -record(depender, {function, cell, id, done}).
-% -record(func, {function, depender}).
-
+%% ====================================================
+%% TYPES
+%% ====================================================
+%% elem
 
 %% ====================================================================
-%% External functions
+%% External API
 %% ====================================================================
 
+%%----------------------------------------------------------------------
+%% Function: makeCell/0
+%% Purpose: Create a new cell and store it in the environment
+%% Args: none
+%% Side Effect: adds created cell to environment
+%% Returns: cellPointer
+%%----------------------------------------------------------------------
 makeCell() -> 
 	{ok, Pid} = gen_server:start(?MODULE, [], []),
 	NewCell = #exprCell{pid=Pid},
 	NamedCell = env:nameAndStoreCell(NewCell),
 	#cellPointer{name = NamedCell#exprCell.name, pid = Pid}.
 
-%% 
-%% addline:: CellPid -> a -> CleanupFun
-%% 
-
+%%----------------------------------------------------------------------
+%% Function: addLine/2
+%% Purpose: add a line to this cell
+%% Args:   Cell is cellPointer, Value is element.
+%% Returns: A function that will remove this line
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
 addLine(Cell, Value) ->
 	gen_server:cast(Cell#cellPointer.pid, {addLine, Value, Cell#cellPointer.name}),
 	Key = toKey(Value),
 	fun() -> gen_server:cast(Cell#cellPointer.pid, {removeLine, Key}) end.
 
-%% 
-%% removeline:: CellPid -> a -> Atom
-%% 
+%%----------------------------------------------------------------------
+%% Function: removeLine/0
+%% Purpose: remove a line from this cell
+%% Args: Cell is cellPointer, Value is element
+%% Returns: ok
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
 removeLine(Cell, Value) ->
 	gen_server:cast(Cell#cellPointer.pid, {removeLine, Value}).
 
-
-
-
+%%----------------------------------------------------------------------
+%% Function: inject/3
+%% Purpose: Injects a function to be run on all dots in the cell, and a depender to inform when the cell is done
+%% 			If the depender is a cell, this also injects on onRemove into depender to inform this cell when depender dies
+%% Args: Cell is cellPointer, Depender is cellPointer|function
+%% Returns: A function to remove this injected function
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
 inject(Cell, Depender, Fun) ->
 	Id = gen_server:call(Cell#cellPointer.pid, getColor),
 	case Depender of
@@ -70,88 +83,206 @@ inject(Cell, Depender, Fun) ->
 	gen_server:cast(Cell#cellPointer.pid, {inject, Depender, Fun, Cell, Id}),
 	fun() -> removeFunc(Cell, Id) end.
 
-removeFunc(Cell, Id) ->
-	gen_server:cast(Cell#cellPointer.pid, {removeFunc, Id, Cell}).
+%%----------------------------------------------------------------------
+%% Function: injectDependency/0
+%% Purpose: Set up the same dependency behavior as with inject, but not tied to any injected function
+%% Args: Cell is cellPointer, Depender is cellPointer|function
+%% Returns: A function to remove this dependency
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
+injectDependency(Cell, Depender) ->
+	inject(Cell, Depender, undefined).
 
+
+%%----------------------------------------------------------------------
+%% Function: injectIntercept/3
+%% Purpose: Creates a process with a state that multiple cells can send messages to.
+%%			The intercept will process the messages and send updates to the cell.
+%% Args: Cell is cellPointer, Fun is a function that will process received messages and update the intercept state
+%%		InitState is the starting state of the intercept.
+%% Returns: 
+%%     or {error, Reason} (if the process is dead)
+%% eg: injectIntercept(OutputCell, fun(Message, {intState, Num}) -> ... {intState, Num+1} end, {intState, 0})
+%%----------------------------------------------------------------------
 injectIntercept(Cell, Fun, InitState) ->
 	gen_server:call(Cell#cellPointer.pid, {injectIntercept, Fun, InitState, Cell}).
 
+
+%%----------------------------------------------------------------------
+%% Function: addOnRemove/2
+%% Purpose: add a function that will be called when this cell dies
+%% Args: Cell is cellPointer, OnRemove is function
+%% Returns: ok
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
 addOnRemove(Cell, OnRemove) ->
 	gen_server:cast(Cell#cellPointer.pid, {addOnRemove, OnRemove}).
 
 
 
-
+%%----------------------------------------------------------------------
+%% Function: done/1
+%% Purpose: tells a "root" cell that it is done being initialized
+%% Args: Cell is cellPointer
+%% Returns: ok
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
 done(Cell) ->
 	gen_server:cast(Cell#cellPointer.pid, {done, Cell}).
 
-done(Cell, DoneDependency) ->
-	gen_server:cast(Cell#cellPointer.pid, {done, DoneDependency, Cell}).
-
-addDependency(Cell, Dependency) ->
-	gen_server:cast(Cell#cellPointer.pid, {addDependency, Dependency}).
-
-removeDependency(Cell, Dependency) ->
-	gen_server:cast(Cell#cellPointer.pid, {removeDependency, Dependency, Cell}).
-
+%%----------------------------------------------------------------------
+%% Function: leash/1
+%% Purpose: tells a cell that it can't be done until it is "unleashed"
+%% Args: Cell is cellPointer
+%% Returns: ok
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
 leash(Cell) ->
 	addDependency(Cell, leash).
 
+%%----------------------------------------------------------------------
+%% Function: unleash/0
+%% Purpose: removes the restriction imposed by "leash"
+%% Args: Cell is cellPointer
+%% Returns: ok
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
 unleash(Cell) ->
 	done(Cell, leash).
 
-
-
-
-
+%%----------------------------------------------------------------------
+%% Function: setKeyRange/3
+%% Purpose: tell the cell only to process dots between Start and End
+%% Args: Cell is cellPointer, Start and End are elem
+%% Returns: ok
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
 setKeyRange(Cell, Start, End) ->
 	gen_server:cast(Cell#cellPointer.pid, {setKeyRange, Start, End}).
 
+
+%%----------------------------------------------------------------------
+%% Function: getStateArray/0
+%% Purpose: get the dots in the cell
+%% Args: Cell is cellPointer
+%% Returns: [#dot{}]
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
 getStateArray(Cell) ->
 	gen_server:call(Cell#cellPointer.pid, getStateArray).
 
+%%----------------------------------------------------------------------
+%% Function: getState/1
+%% Purpose: get the cell state for debugging
+%% Args: Cell is cellPointer
+%% Returns: #cellState{}
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
 getState(Cell) ->
 	gen_server:call(Cell#cellPointer.pid, getState).
 
 
 
 %% --------------------------------------------------------------------
-%%% Internal functions
+%% Almost Internal API (these functions are only used by Cell and Intercept)
 %% --------------------------------------------------------------------
 
-toKey({pair, Key, _}) -> Key;
-toKey(Key) -> Key.
 
-addLineResponse(Dot, Fun, Id) ->
-	{dot, Num, Value, Lines} = Dot,
-	OnRemove = Fun(Value),
-	case OnRemove of
+%%----------------------------------------------------------------------
+%% Function: done/2
+%% Purpose: lets one cell tell a dependant cell that it is done
+%% Args: Cell is cellPointer, DoneDependency is #depender{}
+%% Returns: ok
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
+done(Cell, DoneDependency) ->
+	gen_server:cast(Cell#cellPointer.pid, {done, DoneDependency, Cell}).
+
+
+%%----------------------------------------------------------------------
+%% Function: addDependency/2
+%% Purpose: tells a cell that it isn't done until Dependency is done
+%% Args: Cell is cellPointer, Dependency is #depender{}
+%% Returns: ok
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
+addDependency(Cell, Dependency) ->
+	gen_server:cast(Cell#cellPointer.pid, {addDependency, Dependency}).
+
+
+%%----------------------------------------------------------------------
+%% Function: removeDependency/2
+%% Purpose: tells a cell that it no longer needs to wait for Dependency to be done
+%% Args: Cell is cellPointer, Dependency is #depender{}
+%% Returns: ok
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
+removeDependency(Cell, Dependency) ->
+	gen_server:cast(Cell#cellPointer.pid, {removeDependency, Dependency, Cell}).
+
+
+
+
+
+
+
+%% --------------------------------------------------------------------
+%% Internal API
+%% --------------------------------------------------------------------
+
+%%----------------------------------------------------------------------
+%% Function: removeFunc/2
+%% Purpose: Removes injected function from cell
+%% Args: Cell is cellPointer, Id is the 'color' of the injected function to be removed
+%% Returns: ok
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
+removeFunc(Cell, Id) ->
+	gen_server:cast(Cell#cellPointer.pid, {removeFunc, Id, Cell}).
+
+
+runFunOnDot(Dot, Fun, Id) ->
+	Undo = Fun(Dot#dot.value),
+	case Undo of
 		undefined -> Dot;
-		OnRemRecord when is_record(OnRemRecord, depender) ->
-			{dot, Num, Value, dict:store(Id, OnRemRecord#depender.function, Lines)};
-		F -> {dot, Num, Value, dict:store(Id, F, Lines)}
+		F -> Dot#dot{lines = dict:store(Id, F, Dot#dot.lines)}
 	end.
 
-removeLineResponse(Dot, Id) ->
-	{dot, Num, Value, Lines} = Dot,
+undoFunOnDot(Dot, Id) ->
+	Lines = Dot#dot.lines,
 	NewLines = case dict:find(Id, Lines) of
 		{ok, Function} ->
 			Function(),
 			dict:erase(Id, Lines);
 		error -> Lines
 	end,
-	{dot, Num, Value, NewLines}.
+	Dot#dot{lines = NewLines}.
 
-onAdd(Dot, Funcs) ->
+addFirstLine(Dot, Funcs) ->
 	AddFolder = fun(Id, Func, CurDot) -> 
-		addLineResponse(CurDot, Func#func.function, Id) end,
+		case Func#func.function of
+			undefined -> CurDot;
+			Fun -> runFunOnDot(CurDot, Fun, Id)
+		end
+	end,
 	dict:fold(AddFolder, Dot, Funcs).
 
-onRemove(Dot, Funcs) ->
+removeLastLine(Dot, Funcs) ->
 	RemoveFolder = fun(Id, _) -> 
-		removeLineResponse(Dot, Id) end,
+		undoFunOnDot(Dot, Id) end,
 	dict:map(RemoveFolder, Funcs),
 	{ok}.
+
+checkDone(State, Cell) ->
+	AllDone = case ?this(dependencies) of
+		[] ->
+			dict:map(fun(FuncId, Func) ->
+				informDepender(Func#func.depender, Cell, FuncId)
+			end, ?this(funcs)),
+			true;
+		_ -> false
+	end,
+	State#cellState{done=AllDone}.
 
 informDepender(Depender, Cell, FuncId) ->
 	case Depender of
@@ -169,19 +300,17 @@ filterDependencies(Dependencies, DependencyToRemove) ->
 		end
 	end, Dependencies).
 
-checkDone(State, Cell) ->
-	AllDone = case ?this(dependencies) of
-		[] ->
-			dict:map(fun(FuncId, Func) ->
-				informDepender(Func#func.depender, Cell, FuncId)
-			end, ?this(funcs)),
-			true;
-		_ -> false
-	end,
-	State#cellState{done=AllDone}.
+%% --------------------------------------------------------------------
+%% Utilities
+%% --------------------------------------------------------------------
+
+toKey({pair, Key, _}) -> Key;
+toKey(Key) -> Key.
+
+
 
 %% ====================================================================
-%% Server functions
+%% Gen Server functions
 %% ====================================================================
 
 %% --------------------------------------------------------------------
@@ -220,8 +349,7 @@ handle_call({injectIntercept, Fun, IntState, Cell}, _, State) ->
 handle_call(getStateArray, _, State) ->
 	SortedDict = rangedict:toSortedDict(?this(dots)),
 	ResultArray = sorteddict:fold(fun(Key, Dot, Acc) -> 
-		{dot, _, Val, _} = Dot,
-		[Val|Acc]
+		[Dot#dot.value|Acc]
 	end, [], SortedDict),
 	{reply, ResultArray, State};
 handle_call(getState, _, State) ->
@@ -236,23 +364,21 @@ handle_call(getState, _, State) ->
 %% --------------------------------------------------------------------
 handle_cast({addLine, Value, CellName}, State) ->
 	Key = toKey(Value),
-	Dot = try rangedict:fetch(Key, ?this(dots)) of
-		{dot, Num, Val, Lines} -> {dot, Num+1, Val, Lines}
-	catch
-		_:_ -> onAdd({dot, 1, Value, dict:new()}, ?this(funcs))
+	Dot = case rangedict:find(Key, ?this(dots)) of
+		{ok, OldDot} -> OldDot#dot{num = OldDot#dot.num+1};
+		error -> addFirstLine(#dot{num=1, value=Value, lines=dict:new()}, ?this(funcs))
 	end,
 	NewDots = rangedict:store(Key, Dot, ?this(dots)),
 	NewState = State#cellState{dots=NewDots},
     {noreply, NewState};
 handle_cast({removeLine, Value}, State) ->
-	NewDots = try rangedict:fetch(Value, ?this(dots)) of
-		{dot, Num, Val, Lines} = Dot -> 
-			if Num =< 1 -> onRemove(Dot, ?this(funcs)),
-						   rangedict:erase(Value, ?this(dots));
-			   true -> rangedict:store(Value, {dot, Num-1, Val, Lines}, ?this(dots))
-			end
-	catch
-		_:_ -> ?this(dots)
+	NewDots = case rangedict:find(Value, ?this(dots)) of
+		{ok, Dot} -> 
+			if Dot#dot.num =< 1 -> removeLastLine(Dot, ?this(funcs)),
+						   rangedict:erase(Dot#dot.value, ?this(dots));
+			   true -> rangedict:store(Dot#dot.value, Dot#dot{num=Dot#dot.num-1}, ?this(dots))
+			end;
+		error -> ?this(dots)
 	end,
 	NewState = State#cellState{dots=NewDots},
     {noreply, NewState};
@@ -265,7 +391,7 @@ handle_cast({removeFunc, Id, Cell}, State) ->
 		_ -> nosideeffect
 	end,
 	NewFuncs = dict:erase(Id, ?this(funcs)),
-	NewDots = rangedict:map(fun(Key, Dot) -> removeLineResponse(Dot, Id) end, ?this(dots)),
+	NewDots = rangedict:map(fun(Key, Dot) -> undoFunOnDot(Dot, Id) end, ?this(dots)),
 	NewState = State#cellState{funcs=NewFuncs, dots=NewDots},
 	case dict:size(NewFuncs) of
 		0 ->
@@ -285,7 +411,10 @@ handle_cast({addDependency, Dependency}, State) ->
     {noreply, NewState};
 handle_cast({inject, Depender, Fun, Cell, Id}, State) ->
 	NewFuncs = dict:store(Id, #func{function=Fun, depender=Depender}, ?this(funcs)),
-	NewDots = rangedict:map(fun(Key, Dot) -> addLineResponse(Dot, Fun, Id) end, ?this(dots)),
+	NewDots = case Fun of
+		undefined -> ?this(dots);
+		_ -> rangedict:map(fun(Key, Dot) -> runFunOnDot(Dot, Fun, Id) end, ?this(dots))
+	end,
 	NewState = State#cellState{funcs=NewFuncs, dots=NewDots},
 	case ?this(done) of
 		true -> informDepender(Depender, Cell, Id);
@@ -312,13 +441,13 @@ handle_cast({done, Cell}, State) ->
 	NewState = State#cellState{done=true},
     {noreply, NewState};
 handle_cast({setKeyRange, Start, End}, State) ->
-	OnAdd = fun(Val) ->
-		onAdd(Val, ?this(funcs))
+	AddFirstLine = fun(Val) ->
+		addFirstLine(Val, ?this(funcs))
 	end,
-	OnRemove = fun(Val) ->
-		onRemove(Val, ?this(funcs))
+	RemoveLastLine = fun(Val) ->
+		removeLastLine(Val, ?this(funcs))
 	end,
-	NewDots = rangedict:setKeyRange({Start, End}, OnAdd, OnRemove, ?this(dots)),
+	NewDots = rangedict:setKeyRange({Start, End}, AddFirstLine, RemoveLastLine, ?this(dots)),
     {noreply, State#cellState{dots=NewDots}}.
 
 

@@ -21,13 +21,12 @@ processServerAdvice(ServerAdviceRequest, Templates, SessionPid) ->
 	spawn(fun() ->
 		DoneCell = cell:makeCell(),
 		TriggerCell = cell:makeCell(),
-		NoFun = fun(_) -> nosideeffect end,
-		cell:inject(TriggerCell, DoneCell, NoFun),
+		cell:injectDependency(TriggerCell, DoneCell),
 		
 		OrderPid = spawn(fun() -> orderLoop(dict:new(), SessionPid) end),
 		processCall(ServerAdviceRequest, Templates, dict:new(), OrderPid, DoneCell, 0, top),
 		cell:done(TriggerCell),
-		cell:inject(DoneCell, fun() -> 
+		cell:injectDependency(DoneCell, fun() -> 
 			OrderPid ! {close, self()},
 			receive
 				{closedState, State} -> 
@@ -42,7 +41,7 @@ processServerAdvice(ServerAdviceRequest, Templates, SessionPid) ->
 					end
 			end,
 			session:serverAdviceDone(SessionPid) 
-		end, NoFun)
+		end)
 	end).
 
 
@@ -143,7 +142,7 @@ runTemplate (Template, Params, Templates, Scope, OrderPid, DoneCell, Depth) ->
 			DParsed -> 
 				case eval:evaluate( DParsed ) of
 					Cell when is_record(Cell, cellPointer) ->
-						cell:inject(Cell, DoneCell, fun(_) -> nosideeffect end),
+						cell:injectDependency(Cell, DoneCell),
 						case queryDefine(OrderPid, expr:unparse(DParsed), Depth) of
 							{true, QueryId} ->
 								OnRemove = cell:inject(Cell, 
@@ -270,7 +269,7 @@ processPattern (Pattern, Templates, Scope, OrderPid, DoneCell, Depth) ->
 					{ok, MatchExpr} -> 
 						Cell = eval:evaluate(MatchExpr),
 						cell:addLine(MatchCell, {pair, Index, Cell}),
-						cell:inject(Cell, MatchCell, fun(_) -> nosideeffect end);
+						cell:injectDependency(Cell, MatchCell);
 					_ -> nosideeffect
 				end
 		end,
