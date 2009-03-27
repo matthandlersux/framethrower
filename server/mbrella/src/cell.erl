@@ -24,7 +24,17 @@
 %% ====================================================
 %% TYPES
 %% ====================================================
-%% elem
+%% elem is the type of things that can be stored in a cell
+%%		elem can be any erlang term, but we expect it to be one of the following:
+%%			String, Number, Atom
+%%			cellPointer, objectPointer, funPointer
+%%			exprFun
+%%			{pair, elem, elem}  (this is used for cells that are maps)
+%% these records are defined in scaffold.hrl:
+%% 		#depender
+%% 		#func
+%% 		#dot
+%%		#cellState
 
 %% ====================================================================
 %% External API
