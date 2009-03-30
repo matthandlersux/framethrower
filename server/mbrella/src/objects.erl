@@ -230,14 +230,16 @@ add(ObjOrPointer, Property, Key) ->
 	Object = checkPointer(ObjOrPointer),
 	Prop = Object#object.prop,
 	Cell = dict:fetch(Property, Prop),
-	cell:addLine(Cell, Key),
+	controlledCell:add(Cell, Key),
 	ok.
 
 remove(ObjOrPointer, Property, Key) ->
 	Object = checkPointer(ObjOrPointer),
-	Prop = Object#object.prop,
-	Cell = dict:fetch(Property, Prop),
-	cell:removeLine(Cell, Key),
+	Cell = dict:fetch(Property, Object#object.prop),
+	case Key of
+		undefined -> controlledCell:remove(Cell);
+		_ -> controlledCell:remove(Cell, Key)
+	end,
 	ok.
 
 getBroadcaster(ClassName, MemoString) ->
@@ -368,7 +370,7 @@ makeFutureProps(Props, ObjClass, Classes) ->
 				true ->
 					% PropCell = (cell:makeCell())#exprCell{type=PropType},
 					% cell:update(PropCell),
-					PropCell = cell:makeCell(),
+					PropCell = controlledCell:makeControlledCell(PropType),
 					cell:done(PropCell),
 					PropCell;
 				false ->

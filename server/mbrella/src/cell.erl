@@ -13,7 +13,7 @@
 -define(this(Field), State#cellState.Field).
 
 %% Exports
--export([makeCell/0, addLine/2, removeLine/2, injectDependency/2, inject/3, removeFunc/2, injectIntercept/3, addOnRemove/2]).
+-export([makeCell/0, addLine/2, removeLine/2, injectDependency/2, inject/3, removeFunc/2, injectIntercept/3, addOnRemove/2, clear/1]).
 -export([done/1, done/2, addDependency/2, removeDependency/2, leash/1, unleash/1]).
 -export([setKeyRange/3, getStateArray/1, getState/1]).
 
@@ -128,6 +128,15 @@ injectIntercept(Cell, Fun, InitState) ->
 addOnRemove(Cell, OnRemove) ->
 	gen_server:cast(Cell#cellPointer.pid, {addOnRemove, OnRemove}).
 
+%%----------------------------------------------------------------------
+%% Function: clear/1
+%% Purpose: remove all lines to this cell
+%% Args: Cell is cellPointer
+%% Returns: ok
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
+clear(Cell) ->
+	gen_server:call(Cell#cellPointer.pid, clear).
 
 
 %%----------------------------------------------------------------------
@@ -229,9 +238,6 @@ addDependency(Cell, Dependency) ->
 %%----------------------------------------------------------------------
 removeDependency(Cell, Dependency) ->
 	gen_server:cast(Cell#cellPointer.pid, {removeDependency, Dependency, Cell}).
-
-
-
 
 
 
@@ -356,6 +362,11 @@ handle_call({injectIntercept, Fun, IntState, Cell}, _, State) ->
 	Intercept = intercept:makeIntercept(Fun, IntState, Cell),
 	NewState = State#cellState{intercept=Intercept},
     {reply, Intercept, NewState};
+handle_call(clear, _, State) ->
+	rangedict:map(fun(Key, _) -> 
+		gen_server:cast(self(), {removeLine, Key})	
+	end, ?this(dots)),
+    {reply, ok, State};
 handle_call(getStateArray, _, State) ->
 	SortedDict = rangedict:toSortedDict(?this(dots)),
 	ResultArray = sorteddict:fold(fun(Key, Dot, Acc) -> 
@@ -384,9 +395,12 @@ handle_cast({addLine, Value, CellName}, State) ->
 handle_cast({removeLine, Value}, State) ->
 	NewDots = case rangedict:find(Value, ?this(dots)) of
 		{ok, Dot} -> 
-			if Dot#dot.num =< 1 -> removeLastLine(Dot, ?this(funcs)),
-						   rangedict:erase(Dot#dot.value, ?this(dots));
-			   true -> rangedict:store(Dot#dot.value, Dot#dot{num=Dot#dot.num-1}, ?this(dots))
+			if 
+				Dot#dot.num =< 1 ->
+					removeLastLine(Dot, ?this(funcs)),
+					rangedict:erase(Value, ?this(dots));
+				true -> 
+					rangedict:store(Value, Dot#dot{num=Dot#dot.num-1}, ?this(dots))
 			end;
 		error -> ?this(dots)
 	end,
