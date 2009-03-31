@@ -75,7 +75,7 @@ parseEndCap(R, State) ->
 	EC = eval:evaluate(expr:exprParse(Expression, StartCaps)),
 
 	Self = self(),
-	cell:injectFunc(EC, 
+	cell:inject(EC, 
 		fun() -> nodoneresponse end,
 		fun(Val) -> 
 			Self ! {response, Name, {set, Val}},

@@ -1,1 +1,4 @@
 .DS_Store
+server/erl_crash.dump
+*.tmproj
+*~

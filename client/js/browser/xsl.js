@@ -248,7 +248,7 @@ function compileTemplate(templateNode, url) {
 				
 				var childRemovers = [];
 				
-				var removeFunc = c.injectFunc(cell, function (x) {
+				var removeFunc = c.inject(cell, function (x) {
 					makeDirty();
 					if (x && x.key !== undefined && x.val !== undefined) {
 						// we have a Map entry
@@ -308,7 +308,7 @@ function compileTemplate(templateNode, url) {
 				}
 			});
 
-			cell.injectFunc(
+			cell.inject(
 				function() {
 					update();
 					if(url.indexOf("#") == -1) {

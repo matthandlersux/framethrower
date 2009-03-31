@@ -179,8 +179,8 @@ processQuery ( Query, SessionId, SessionPid ) ->
 		true ->
 			% responseTime:in(SessionId, 'query', QueryId, now() ),
 			Cell = eval:evaluate( expr:exprParse(Expr) ),					
-			% cell:injectFuncLinked - might be useful so that cell can remove funcs on session close
-			OnRemove = cell:injectFunc(Cell, 
+			% cell:injectLinked - might be useful so that cell can remove funcs on session close
+			OnRemove = cell:inject(Cell, 
 				fun() ->
 					session:sendUpdate(SessionPid, {done, QueryId})
 				end,
@@ -286,9 +286,17 @@ processAction({struct, [{<<"change">>, Action}]}, Updates, Variables) ->
 			{ [error | Updates], Variables };
 		true ->
 			Property = binary_to_list( struct:get_value(<<"property">>, Action) ),
-			Key = bindVarOrFormatExprElement( struct:get_value(<<"key">>, Action), Variables),
+			KeyName = struct:get_value(<<"key">>, Action),
 			ValueName = struct:get_value(<<"value">>, Action),
-			if ValueName =:= undefined -> Data = Key; true -> Data = {Key, bindVarOrFormatExprElement( ValueName, Variables ) } end,
+			if
+				KeyName =:= undefined -> Data = undefined; 
+				true ->
+					Key = bindVarOrFormatExprElement(KeyName, Variables),
+					if
+						ValueName =:= undefined -> Data = Key;
+						true -> Data = {pair, Key, bindVarOrFormatExprElement( ValueName, Variables ) }
+					end
+			end,
 			case ActionType of 
 				<<"add">> ->
 					case objects:add(Object, Property, Data) of

@@ -119,8 +119,8 @@ evaluate(Expr) when is_record(Expr, cons) ->
 									#exprFun{function = X, bottom = BottomExpr};
 								Result when is_record(Result, cellPointer) ->
 									Cell = env:lookup(Result#cellPointer.name),
-									TypedCell = Cell#exprCell{bottom = BottomExpr},
-									cell:update(TypedCell),
+									CellWithBottom = Cell#exprCell{bottom = BottomExpr},
+									env:store(Result#cellPointer.name, CellWithBottom),
 									OnRemove = memoize:add( BottomExpr, Result),
 									cell:addOnRemove(Result, OnRemove),
 									Result;

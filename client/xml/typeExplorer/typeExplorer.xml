@@ -63,6 +63,7 @@
 			<f:action name="updateColor">
 				<f:param name="newString" type="String" />
 				<f:derive name="prefs" d="shared.globalPrefs" />
+				<f:intact object="$prefs" property="typeColors" action="remove" key="$focus" />
 				<f:intact object="$prefs" property="typeColors" action="add" key="$focus" value="$newString" />
 			</f:action>
 		</f:template>

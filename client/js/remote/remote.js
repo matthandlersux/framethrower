@@ -389,7 +389,7 @@ var session = (function () {
 						} else if (response.queryReference) {
 							var queryReference = response.queryReference;
 							var refCell = cells[queryReference.queryId];
-							cells[queryReference.referenceId].injectFunc(refCell,
+							cells[queryReference.referenceId].inject(refCell,
 								function (val) {
 									return refCell.addLine(val);
 								}

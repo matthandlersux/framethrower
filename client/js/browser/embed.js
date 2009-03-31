@@ -11,8 +11,8 @@ function processEmbed(node) {
 		var mov = makeQTMovie(params["src"], params["width"], params["height"], params["autoplay"]);
 		
 		if (params["gotoTime"]) {
-			// TODO: ask Andrew quickly about doneResponse (first arg to injectFunc)
-			var removeFunc = params["gotoTime"].injectFunc(function () {}, function (time) {
+			// TODO: ask Andrew quickly about doneResponse (first arg to inject)
+			var removeFunc = params["gotoTime"].inject(function () {}, function (time) {
 				//console.log("I got the time", time);
 				try {
 					mov.SetTime(time * mov.GetTimeScale());

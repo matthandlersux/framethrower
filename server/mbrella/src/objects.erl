@@ -13,7 +13,7 @@
 
 %% --------------------------------------------------------------------
 %% External exports
-%-export([injectFunc/2]).
+%-export([inject/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -230,14 +230,16 @@ add(ObjOrPointer, Property, Key) ->
 	Object = checkPointer(ObjOrPointer),
 	Prop = Object#object.prop,
 	Cell = dict:fetch(Property, Prop),
-	cell:addLine(Cell, Key),
+	controlledCell:add(Cell, Key),
 	ok.
 
 remove(ObjOrPointer, Property, Key) ->
 	Object = checkPointer(ObjOrPointer),
-	Prop = Object#object.prop,
-	Cell = dict:fetch(Property, Prop),
-	cell:removeLine(Cell, Key),
+	Cell = dict:fetch(Property, Object#object.prop),
+	case Key of
+		undefined -> controlledCell:remove(Cell);
+		_ -> controlledCell:remove(Cell, Key)
+	end,
 	ok.
 
 getBroadcaster(ClassName, MemoString) ->
@@ -368,12 +370,19 @@ makeFutureProps(Props, ObjClass, Classes) ->
 				true ->
 					% PropCell = (cell:makeCell())#exprCell{type=PropType},
 					% cell:update(PropCell),
-					PropCell = cell:makeCell(),
+					PropCell = controlledCell:makeControlledCell(PropType),
 					cell:done(PropCell),
 					PropCell;
 				false ->
 					PropValue = dict:fetch(PropName, Props),
-					cell:makeFuture(PropValue)
+					% TypeString = type:unparse(type:get(Value)),
+					% FutureType = type:parse("Future " ++ TypeString),
+					% Cell = (makeCell())#exprCell{type=FutureType},
+					% update(Cell),
+					Cell = cell:makeCell(),
+					cell:addLine(Cell, PropValue),
+					cell:done(Cell),
+					Cell
 			end
 		end, ObjClass#class.prop),
 	case ObjClass#class.inherit of
