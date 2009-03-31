@@ -17,6 +17,8 @@
 	<f:derive name="typeName" d="getName expectedType" />
 
 	<f:include url="/xml/util/typeColor.xml" />
+	<f:include url="/xml/util/uiActions.xml" />
+	<f:include url="/xml/util/actions.xml" />
 
 	
 	<xsl:variable name="expectInfon" select="$expectedType/@name = $infonType/@name" />
@@ -80,7 +82,7 @@
 		</xsl:otherwise>
 	</xsl:choose>
 	
-	<f:include url="/xml/util/uiActions.xml" />
+	
 	
 	<f:template name="wrapInContext">
 		<html:div>
@@ -245,6 +247,24 @@
 		<f:derive name="objects" d="getObjectsOfTypeRecursive expectedType" />
 		
 		<f:thunk with-template="$wrapInContext" />
+		
+		<html:div>
+			<f:on event="click" with-action="$newObject" />
+			<html:button>New Object</html:button>
+		</html:div>
+		<f:action name="newObject">
+			<f:create type="Object" name="newOb" />
+			<f:perform with-action="$typeObject">
+				<f:with-param name="object" select="$newOb" />
+				<f:with-param name="type" select="$expectedType" />
+			</f:perform>
+			
+			<f:intact object="$focus" action="remove" property="left" />
+			<f:intact object="$focus" action="remove" property="right" />
+			<f:intact object="$focus" action="add" property="object" key="$newOb" />
+			
+			<f:perform with-action="$hidePopup" />
+		</f:action>
 		
 		<f:each select="$objects" key="object">
 			<html:div class="entry">
