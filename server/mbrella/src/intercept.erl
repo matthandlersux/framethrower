@@ -17,12 +17,6 @@
 
 
 %% ====================================================================
-%% Intercept internal data structure record
-%% ====================================================================
--record(interceptState, {function, state, ownerCell}).
--record(onRemove, {function, cell, id, done}).
-
-%% ====================================================================
 %% External functions
 %% ====================================================================
 
@@ -36,23 +30,14 @@ sendIntercept(IntPid, Message) ->
 
 %FunOrOnRemove can be a function, or #onRemove
 %#onRemove will also be used as dependencies, so this cell can know when it has received all current updates
-addOnRemove(IntPid, FunOrOnRemove) ->
-	OnRemove = case FunOrOnRemove of
-		OnRemRecord when is_record(OnRemRecord, onRemove) -> 
-			OnRemRecord;
-		Function -> 
-			#onRemove{
-				function=Function,
-				done=true
-			}
-	end,
-	gen_server:cast(IntPid, {addOnRemove, OnRemove}).
+addDependency(IntPid, Dependency) ->
+	gen_server:cast(IntPid, {addDependency, Dependency}).
 
-removeDependency(IntPid, Cell, Id) ->
-	gen_server:cast(IntPid, {removeDependency, Cell, Id}).	
+removeDependency(IntPid, Dependency) ->
+	gen_server:cast(IntPid, {removeDependency, Dependency}).	
 
-done(IntPid, DoneCell, Id) ->
-	gen_server:cast(IntPid, {done, DoneCell, Id}).
+done(IntPid, DoneDepender) ->
+	gen_server:cast(IntPid, {done, DoneDepender}).
 
 getState(IntPid) ->
 	gen_server:call(IntPid, getState).
@@ -80,14 +65,14 @@ handle_call(getState, From, State) ->
 handle_cast({sendIntercept, Value}, State) ->
 	NewState = State#interceptState{state=(?this(function))(Value, ?this(state))},
 	{noreply, NewState};
-handle_cast({addOnRemove, OnRemove}, State) ->
-	cell:addOnRemove(?this(ownerCell), OnRemove),
+handle_cast({addDependency, Dependency}, State) ->
+	cell:addDependency(?this(ownerCell), Dependency),
     {noreply, State};
-handle_cast({removeDependency, Cell, Id}, State) ->
-	cell:removeDependency(?this(ownerCell), Cell, Id),
+handle_cast({removeDependency, Dependency}, State) ->
+	cell:removeDependency(?this(ownerCell), Dependency),
 	{noreply, State};
-handle_cast({done, DoneCell, Id}, State) ->
-	cell:done(?this(ownerCell), DoneCell, Id),
+handle_cast({done, DoneDepender}, State) ->
+	cell:done(?this(ownerCell), DoneDepender),
     {noreply, State}.
 
 

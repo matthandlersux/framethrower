@@ -376,14 +376,21 @@ unparse(String, Variables) ->
 	{String, Variables}.
 
 
-isReactive(#type{type = typeApply, value = {Val, _}}) ->
+isReactive(Type) ->
+	case outerType(Type) of
+		false -> false;
+		_ -> true
+	end.
+
+outerType(#type{type = typeApply, value = {Val, _}}) ->
 	case Val of
-		#type{type = typeName, value = 'Unit'} -> true;
-		#type{type = typeName, value = 'Set'} -> true;
-		#type{type = typeApply, value = {#type{type = typeName, value = 'Map'},_}} -> true;
+		#type{type = typeName, value = 'Unit'} -> unit;
+		#type{type = typeName, value = 'Set'} -> set;
+		#type{type = typeApply, value = {#type{type = typeName, value = 'Map'},_}} -> map;
 		_ -> false
 	end;
-isReactive(_) -> false.
+outerType(_) -> false.
+
 
 isMap(#type{type = typeApply, value = {#type{type = typeName, value = 'Map'}, _}}) ->
 	true;
