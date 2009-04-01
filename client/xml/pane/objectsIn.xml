@@ -44,7 +44,7 @@
 	</html:div>
 
 	<f:each select="$set" key="object">
-		<html:div class="entry">
+		<html:div class="entry"><html:div class="entry-row">
 			<html:div class="entry-cell">
 				<f:thunk url="../view2/viewPlus.xml">
 					<f:with-param name="focus" select="$object" />
@@ -56,7 +56,7 @@
 					<f:with-param name="object" select="$object" />
 				</f:thunk>
 			</html:div>
-		</html:div>
+		</html:div></html:div>
 	</f:each>
 	
 	<f:template name="extra">

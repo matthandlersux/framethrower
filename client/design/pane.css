@@ -111,6 +111,7 @@ Within pane
 .properties th {
 	text-align: right;
 	font-weight: bold;
+	vertical-align:top;
 }
 
 
@@ -119,6 +120,9 @@ Within pane
 .entry {
 	display: table;
 	padding: 4px;
+}
+.entry-row {
+	display: table-row;
 }
 .entry-cell, .entry-button {
 	display: table-cell;

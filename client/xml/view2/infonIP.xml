@@ -149,7 +149,7 @@
 		<f:thunk with-template="$newRelation" />
 		
 		<f:each select="$relations" key="relation">
-			<html:div class="entry">
+			<html:div class="entry"><html:div class="entry-row">
 				<f:on event="click" with-action="$selectRelation">
 					<f:with-param name="relation" select="$relation" />
 				</f:on>
@@ -157,7 +157,7 @@
 				<f:thunk url="relation.xml">
 					<f:with-param name="focus" select="$relation" />
 				</f:thunk>
-			</html:div>
+			</html:div></html:div>
 			<f:thunk with-template="$selectRelation">
 				<f:with-param name="relation" select="$relation" />
 			</f:thunk>
@@ -267,14 +267,14 @@
 		</f:action>
 		
 		<f:each select="$objects" key="object">
-			<html:div class="entry">
+			<html:div class="entry"><html:div class="entry-row">
 				<f:on event="click" with-action="$selectObject">
 					<f:with-param name="object" select="$object" />
 				</f:on>
 				<f:thunk url="object.xml">
 					<f:with-param name="focus" select="$object" />
 				</f:thunk>
-			</html:div>
+			</html:div></html:div>
 		</f:each>
 		<f:action name="selectObject">
 			<f:param name="object" type="Object" />

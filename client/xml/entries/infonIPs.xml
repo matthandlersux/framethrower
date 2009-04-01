@@ -10,7 +10,7 @@
 	<f:derive name="infonType" d="shared.type.infon" />
 
 	<f:each select="$infonIPs" key="infonIP">
-		<html:div class="entry" style="margin: 16px 0px; background-color: #eee;">
+		<html:div class="entry" style="margin: 16px 0px; background-color: #eee;"><html:div class="entry-row">
 			<html:div class="entry-cell">
 				<f:thunk url="../view2/infonIP.xml">
 					<f:with-param name="focus" select="$infonIP" />
@@ -31,7 +31,7 @@
 					<html:button>Cancel</html:button>
 				</html:div>
 			</html:div>
-		</html:div>
+		</html:div></html:div>
 	</f:each>
 	
 	

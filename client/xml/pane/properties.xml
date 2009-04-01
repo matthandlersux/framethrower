@@ -22,6 +22,8 @@
 	
 	<f:derive name="typeExplorer" d="UI.propertiesState:typeExplorer propertiesState" />
 	
+	<f:derive name="serverBaseUrl" d="serverBaseUrl" />
+	
 	<html:table class="properties">
 		<html:tr>
 			<html:th>Name</html:th>
@@ -51,7 +53,7 @@
 			<html:th>Is A</html:th>
 			<html:td>
 				<f:each select="$focustypes" key="type">
-					<html:div class="entry">
+					<html:div class="entry"><html:div class="entry-row">
 						<html:div class="entry-cell">
 							<f:thunk url="../view2/object.xml">
 								<f:with-param name="focus" select="$type" />
@@ -65,7 +67,7 @@
 								</f:on>
 							</html:button>
 						</html:div>
-					</html:div>
+					</html:div></html:div>
 				</f:each>
 				
 				<!-- <f:thunk with-template="$typeExplorer" /> -->
@@ -106,8 +108,10 @@
 				</f:each>
 				
 				<html:div>
-					<html:form method="POST" enctype="multipart/form-data" action="" target="">
-						<html:input type="file" />
+					<html:form method="post" enctype="multipart/form-data" action="http://media.eversplosion.com/upload.php" target="_blank">
+						<html:input type="file" name="uploadedfile" />
+						<html:input type="hidden" name="object" value="{$focus/@name}" />
+						<html:input type="hidden" name="host" value="{$serverBaseUrl/@value}" />
 						<html:input type="submit" value="Upload" />
 					</html:form>
 				</html:div>

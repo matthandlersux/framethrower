@@ -25,25 +25,31 @@
 			</xsl:call-template>
 		</xsl:variable>
 		
-		<html:span>
-			<f:thunk url="../view2/object.xml">
-				<f:with-param name="focus" select="$focus" />
-			</f:thunk>
-			<html:div>
-				<xsl:attribute name="style">
-					background-color: <xsl:value-of select="$color" />;
-					width: 10px;
-					height: 10px;
-				</xsl:attribute>
-				<f:on event="click" with-action="$showChangeColorPopup">
-					<f:with-param-browser name="x" prop="mouseX" />
-					<f:with-param-browser name="y" prop="mouseY" />
-				</f:on>
+		<html:div class="entry" style="padding:0px;"><html:div class="entry-row">
+			<html:div class="entry-cell">
+				<f:thunk url="../view2/object.xml">
+					<f:with-param name="focus" select="$focus" />
+				</f:thunk>
 			</html:div>
-			<f:thunk with-template="$extra">
-				<f:with-param name="focus" select="$focus" />
-			</f:thunk>
-		</html:span>
+			<html:div class="entry-cell">
+				<html:div>
+					<xsl:attribute name="style">
+						background-color: <xsl:value-of select="$color" />;
+						width: 10px;
+						height: 10px;
+					</xsl:attribute>
+					<f:on event="click" with-action="$showChangeColorPopup">
+						<f:with-param-browser name="x" prop="mouseX" />
+						<f:with-param-browser name="y" prop="mouseY" />
+					</f:on>
+				</html:div>
+			</html:div>
+			<html:div class="entry-cell">
+				<f:thunk with-template="$extra">
+					<f:with-param name="focus" select="$focus" />
+				</f:thunk>
+			</html:div>
+		</html:div></html:div>
 		
 		<!-- Put the popup to change color here -->
 		<f:template name="changeColorPopup">

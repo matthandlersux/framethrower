@@ -8,7 +8,7 @@
 	<f:param name="newPane" type="a -> Unit JS" />
 
 	<f:each select="$infons" key="infon">
-		<html:div class="entry">
+		<html:div class="entry"><html:div class="entry-row">
 			<html:div class="entry-cell">
 				<f:thunk url="../view2/viewPlus.xml">
 					<f:with-param name="focus" select="$infon" />
@@ -29,7 +29,7 @@
 					Remove
 				</html:button>
 			</html:div>
-		</html:div>
+		</html:div></html:div>
 	</f:each>
 	
 	<!-- <f:template name="t">
