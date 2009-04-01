@@ -37,14 +37,6 @@
 		<f:on event="click" with-action="$newPane">
 			<f:with-param name="focus" select="$focus" />
 		</f:on>
-		<f:on event="dragStart" with-action="$drag" />
-		<f:action name="drag">
-			<f:derive name="main" d="ui.main" />
-			<f:create name="dragging" type="UI.dragging">
-				<f:with-param name="object" select="$focus" />
-			</f:create>
-			<f:intact object="$main" action="add" property="dragging" key="$dragging" />
-		</f:action>
 	</f:template>
 	
 	<f:action name="removeInfon">
