@@ -39,149 +39,6 @@
 %% Pid:: < Nat . Nat . Nat >
 %% 
 
-
-% classesToMake() ->
-% 	[
-% 		%% ====================================================
-% 		%% Core
-% 		%% ====================================================
-% 		#classToMake{
-% 			name="Object",
-% 			prop= [
-% 				{"upLeft", "Set Cons"},
-% 				{"upRight", "Set Cons"}
-% 			]
-% 		},
-% 		#classToMake{
-% 			name = "Cons",
-% 			inherit = "Object",
-% 			prop = [
-% 				{"left", "Object"},
-% 				{"right", "Object"},
-% 				{"truth", "Unit Null"}
-% 			],
-% 			memoize= ["left", "right"]
-% 		},
-% 
-% 		%% ====================================================
-% 		%% External Representations
-% 		%% ====================================================
-% 
-% 		#classToMake{
-% 			name = "X.video",
-% 			inherit = "Object",
-% 			prop = [
-% 				{"url", "String"},
-% 				{"width", "Number"},
-% 				{"height", "Number"},
-% 				{"frameRate", "Number"},				
-% 				{"duration", "Number"}
-% 			]
-% 		},
-% 		#classToMake{
-% 			name = "X.picture",
-% 			inherit = "Object",
-% 			prop = [
-% 				{"url", "String"},
-% 				{"width", "Number"},
-% 				{"height", "Number"}
-% 			]
-% 		},
-% 		#classToMake{
-% 			name = "X.picture.crop",
-% 			inherit = "Object",
-% 			prop = [
-% 				{"x", "Number"},
-% 				{"y", "Number"},
-% 				{"width", "Number"},
-% 				{"height", "Number"}
-% 			]
-% 		},
-% 		#classToMake{
-% 			name = "X.text",
-% 			inherit = "Object",
-% 			prop = [
-% 				{"string", "String"}
-% 			],
-% 			memoize = ["string"]
-% 		},
-% 		#classToMake{
-% 			name = "X.xml",
-% 			inherit = "Object",
-% 			prop = [
-% 				{"xml", "XML"}
-% 			]
-% 		},
-% 		#classToMake{
-% 			name = "X.time.range",
-% 			inherit = "Object",
-% 			prop = [
-% 				{"start", "Number"},
-% 				{"duration", "Number"}
-% 			]
-% 		},
-% 
-% 
-% 		%% ====================================================
-% 		%% UI
-% 		%% ====================================================
-% 	
-% 		#classToMake{ name = "UI.ui",prop = [ {"screenWidth", "Unit Number"}, {"screenHeight", "Unit Number"}, {"mouseX", "Unit Number"}, {"mouseY", "Unit Number"}]}, 
-% 		#classToMake{ name = "UI.main",prop = [ {"pane", "UI.pane"}, {"popup", "Map String UI.popup"}, {"dragging", "Unit UI.dragging"}]}, 
-% 		#classToMake{ name = "UI.popup",prop = [ {"x", "Number"}, {"y", "Number"}, {"width", "Number"}, {"height", "Number"}, {"content", "Unit JS"}]}, 
-% 		#classToMake{ name = "UI.dragging",prop = [ {"object", "Object"}]}, 
-% 		#classToMake{ name = "UI.pane",prop = [ {"width", "Unit Number"}, {"height", "Unit Number"}]}, 
-% 		#classToMake{ name = "UI.pane.set",inherit = "UI.pane", prop = [ {"panes", "Map String UI.pane"}, {"orientation", "Unit String"}]}, 
-% 		#classToMake{ name = "UI.pane.timeline",inherit = "UI.pane", prop = [ {"focus", "Object"}, {"zoomWidth", "Unit Number"}, {"previewFrame", "Unit Number"}, {"selectedTime1", "Unit Number"}, {"selectedTime2", "Unit Number"}, {"selecting", "Unit Null"}]}, 
-% 		#classToMake{ name = "UI.pane.pane",inherit = "UI.pane", prop = [ {"tab", "Unit String"}, {"focus", "Unit Object"}, {"propertiesState", "UI.propertiesState"}, {"aboutNewInfons", "Set UI.consIP"}, {"infonsInNewInfons", "Set UI.consIP"}, {"addingObject", "Unit Object"}, {"addingObjectPropertiesState", "UI.propertiesState"}]}, 
-% 		#classToMake{ name = "UI.propertiesState",prop = [ {"editName", "Unit Null"}, {"typeExplorer", "Unit UI.outlineNode"}]}, 
-% 		#classToMake{ name = "UI.consIP",prop = [ {"object", "Unit Object"}, {"left", "Unit UI.consIP"}, {"right", "Unit UI.consIP"}]}, 
-% 		#classToMake{ name = "UI.outlineNode",prop = [ {"focus", "Object"}, {"children", "Map Object UI.outlineNode"}, {"expanded", "Unit Null"}]}, 
-% 		#classToMake{ name = "UI.relationCreator.word",prop = [ {"string", "Unit String"}, {"type", "Unit Object"}]}, 
-% 		#classToMake{ name = "UI.relationCreator",prop = [ {"typeExplorer", "UI.outlineNode"}, {"words", "Map String UI.relationCreator.word"}]}, 
-% 		#classToMake{ name = "UI.prefs",prop = [ {"typeDisplay", "Map Object String"}, {"timelineLayers", "Map String Object"}]}
-% 	].
-
-% makeRootObjects() ->
-% 	objects:createWithName("Object", dict:new(), "shared.in"),
-% 
-% 	objects:createWithName("Object", dict:new(), "shared.ont"),
-% 
-% 	objects:createWithName("Object", dict:new(), "shared.isA"),
-% 	objects:createWithName("Object", dict:new(), "shared.name"),
-% 	objects:createWithName("Object", dict:new(), "shared.relationTemplate"),
-% 	
-% 	objects:createWithName("Object", dict:new(), "shared.video"),
-% 	objects:createWithName("Object", dict:new(), "shared.videoTransitionsXML"),
-% 
-% 	objects:createWithName("Object", dict:new(), "shared.thumbnail"),
-% 	objects:createWithName("Object", dict:new(), "shared.picture.crop"),
-% 
-% 	objects:createWithName("Object", dict:new(), "shared.isType"),
-% 	objects:createWithName("Object", dict:new(), "shared.type"),
-% 
-% 	objects:createWithName("Object", dict:new(), "shared.type.situation"),
-% 	objects:createWithName("Object", dict:new(), "shared.type.entity"),
-% 	objects:createWithName("Object", dict:new(), "shared.type.infon"),
-% 	%% this will itself be used as a binary relation to make relation types
-% 	objects:createWithName("Object", dict:new(), "shared.type.relation"), 
-% 
-% 	objects:createWithName("Object", dict:new(), "shared.type.poly.a"),
-% 	objects:createWithName("Object", dict:new(), "shared.type.movie"),
-% 	objects:createWithName("Object", dict:new(), "shared.type.location"),
-% 	objects:createWithName("Object", dict:new(), "shared.type.agent"),
-% 
-% 	objects:createWithName("Object", dict:new(), "shared.realLife"),
-% 	
-% 	objects:createWithName("Object", dict:new(), "shared.movie.story"),
-% 	objects:createWithName("Object", dict:new(), "shared.movie.presentation"),
-% 	objects:createWithName("Object", dict:new(), "shared.movie.making"),
-% 	
-% 	objects:createWithName("Object", dict:new(), "shared.movie.timeRange"),
-% 	
-% 	objects:createWithName("Object", dict:new(), "shared.test.walleMovie"),
-% 	ok.
-	
 	
 %% ====================================================================
 %% External functions
@@ -216,7 +73,7 @@ createWithName(ClassName, Props, Name) ->
 	catch
 		ErrorType:ErrorPattern -> 
 			{error, objectCreationError}
-	end.	
+	end.
 
 create(ClassName, Props) ->
 	try gen_server:call(?MODULE, {create, ClassName, Props, noname}) of
@@ -230,7 +87,8 @@ add(ObjOrPointer, Property, Key) ->
 	Object = checkPointer(ObjOrPointer),
 	Prop = Object#object.prop,
 	Cell = dict:fetch(Property, Prop),
-	controlledCell:add(Cell, Key),
+	Type = getPropType(Object#object.type, Property),
+	controlledCell:add(Type, Cell, Key),
 	ok.
 
 remove(ObjOrPointer, Property, Key) ->
@@ -247,6 +105,9 @@ getBroadcaster(ClassName, MemoString) ->
 
 addToMemoTable(Obj, Prop) ->
 	gen_server:cast(?MODULE, {addToMemoTable, Obj, Prop}).
+
+getPropType(Class, PropName) ->
+	gen_server:call(?MODULE, {getPropType, Class, PropName}).
 
 %% ====================================================================
 %% Internal functions
@@ -370,7 +231,7 @@ makeFutureProps(Props, ObjClass, Classes) ->
 				true ->
 					% PropCell = (cell:makeCell())#exprCell{type=PropType},
 					% cell:update(PropCell),
-					PropCell = controlledCell:makeControlledCell(PropType),
+					PropCell = cell:makeCell(),
 					cell:done(PropCell),
 					PropCell;
 				false ->
@@ -418,6 +279,12 @@ checkPointer(ObjectOrPointer) ->
 			?trace(ObjectOrPointer),
 			?trace(Answer),
 			exit(problem)
+	end.
+
+getInheritedPropType(Class, PropName) ->
+	PropType = case dict:find(PropName, Class#class.prop) of
+		{ok, Type} -> Type;
+		error -> getInheritedPropType(Class#class.inherit, PropName)
 	end.
 
 %% ====================================================================
@@ -529,8 +396,16 @@ handle_call({getBroadcaster, ClassName, MemoString}, From, State) ->
 	NewClasses = dict:store(ClassName, NewC, Classes),
 	NewState = State#state{classes=NewClasses},
 	{reply, Broadcaster, NewState};
+handle_call({getPropType, Class, PropName}, _, State) ->
+	Classes = State#state.classes,
+	{type, typeName, ClassNameAtom} = Class,
+	ClassName = atom_to_list(ClassNameAtom),
+	C = dict:fetch(ClassName, Classes),
+	PropType = getInheritedPropType(C, PropName),
+	{reply, PropType, State};
 handle_call(stop, _, State) ->
 	{stop, normal, stopped, State}.
+
 
 
 %% --------------------------------------------------------------------
