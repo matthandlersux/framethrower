@@ -104,6 +104,13 @@
 						</f:thunk>
 					</html:div>
 				</f:each>
+				
+				<html:div>
+					<html:form method="POST" enctype="multipart/form-data" action="" target="">
+						<html:input type="file" />
+						<html:input type="submit" value="Upload" />
+					</html:form>
+				</html:div>
 			</html:td>
 		</html:tr>
 	</html:table>

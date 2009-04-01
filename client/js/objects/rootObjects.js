@@ -167,12 +167,5 @@ var rootObjects = {};
 
 
 
-
-
-
-
-/*
-
-ui.prefs displayTypes can be put in by converting an object to a Map Number (Map Object XML)
-
-*/
+// add some helpful client-side globals
+base.add("serverBaseUrl", serverBaseUrl);
