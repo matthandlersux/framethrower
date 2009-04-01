@@ -108,12 +108,14 @@
 				</f:each>
 				
 				<html:div>
-					<html:form method="post" enctype="multipart/form-data" action="http://media.eversplosion.com/upload.php" target="_blank">
+					<html:iframe src="http://media.eversplosion.com/upload.php?object={$focus/@name}&amp;host={$serverBaseUrl/@value}" 
+						style="width: 300px; height: 60px; border: 0px;" />
+					<!-- <html:form method="post" enctype="multipart/form-data" action="http://media.eversplosion.com/upload.php" target="_blank">
 						<html:input type="file" name="uploadedfile" />
 						<html:input type="hidden" name="object" value="{$focus/@name}" />
 						<html:input type="hidden" name="host" value="{$serverBaseUrl/@value}" />
 						<html:input type="submit" value="Upload" />
-					</html:form>
+					</html:form> -->
 				</html:div>
 			</html:td>
 		</html:tr>

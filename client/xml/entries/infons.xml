@@ -14,12 +14,6 @@
 					<f:with-param name="focus" select="$infon" />
 					<f:with-param name="extra" select="$extra" />
 				</f:thunk>
-				<!-- <f:thunk url="../view3/view.xml">
-					<f:with-param name="focus" select="$infon" />
-				</f:thunk> -->
-				<!-- <f:thunk with-template="$t">
-					<f:with-param name="infon" select="." />
-				</f:thunk> -->
 			</html:div>
 			<html:div class="entry-button">
 				<html:button>
@@ -31,16 +25,6 @@
 			</html:div>
 		</html:div></html:div>
 	</f:each>
-	
-	<!-- <f:template name="t">
-		<f:param name="infon" type="Cons" />
-		<f:derive name="infonCon" d="Cons~Object infon" />
-		
-		<f:thunk url="../view2/viewPlus.xml">
-			<f:with-param name="focus" select="$infonCon" />
-			<f:with-param name="extra" select="$extra" />
-		</f:thunk>
-	</f:template> -->
 	
 	<f:template name="extra">
 		<f:param name="focus" type="Object" />

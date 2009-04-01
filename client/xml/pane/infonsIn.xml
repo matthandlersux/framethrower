@@ -12,11 +12,53 @@
 	
 	<f:derive name="newInfons" d="UI.pane.pane:infonsInNewInfons pane" />
 	
+
+	<f:each select="$set" key="infon">
+		<html:div class="entry"><html:div class="entry-row">
+			<html:div class="entry-cell">
+				<f:thunk url="../view2/viewPlus.xml">
+					<f:with-param name="focus" select="$infon" />
+					<f:with-param name="extra" select="$extra" />
+				</f:thunk>
+			</html:div>
+			<html:div class="entry-button">
+				<html:button>
+					<f:on event="click" with-action="$removeInfon">
+						<f:with-param name="infon" select="$infon" />
+					</f:on>
+					Remove
+				</html:button>
+			</html:div>
+		</html:div></html:div>
+	</f:each>
 	
-	<f:thunk url="../entries/infons.xml">
+	<f:template name="extra">
+		<f:param name="focus" type="Object" />
+		<f:on event="click" with-action="$newPane">
+			<f:with-param name="focus" select="$focus" />
+		</f:on>
+		<f:on event="dragStart" with-action="$drag" />
+		<f:action name="drag">
+			<f:derive name="main" d="ui.main" />
+			<f:create name="dragging" type="UI.dragging">
+				<f:with-param name="object" select="$focus" />
+			</f:create>
+			<f:intact object="$main" action="add" property="dragging" key="$dragging" />
+		</f:action>
+	</f:template>
+	
+	<f:action name="removeInfon">
+		<f:param name="infon" type="Object" />
+		<f:derive name="situatedInfon" d="getObjectInSit infon focus" />
+		<f:each select="$situatedInfon">
+			<f:intact object="$situatedInfon" action="remove" property="truth" key="null" />
+		</f:each>
+	</f:action>
+	
+	<!-- <f:thunk url="../entries/infons.xml">
 		<f:with-param name="infons" select="$set" />
 		<f:with-param name="newPane" select="$newPane" />
-	</f:thunk>
+	</f:thunk> -->
 	
 	
 	<f:thunk url="../entries/infonIPs.xml">
