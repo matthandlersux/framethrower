@@ -33,3 +33,35 @@ function initialize() {
 		textarea.select();
 	});
 }
+
+
+function writeToFile(filePath) {
+	if (window.netscape){
+		try {
+			netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+		} catch (err){}
+	}
+	
+	var file = Components.classes["@mozilla.org/file/local;1"].
+	                     createInstance(Components.interfaces.nsILocalFile);
+						
+	file.initWithPath(filePath);
+	
+	var data = document.getElementById("mainTextArea").value;
+	
+	
+	
+	// file is nsIFile, data is a string
+	var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].
+	                         createInstance(Components.interfaces.nsIFileOutputStream);
+
+	// use 0x02 | 0x10 to open file for appending.
+	foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0); 
+	// write, create, truncate
+	// In a c file operation, we have no need to set file mode with or operation,
+	// directly using "r" or "w" usually.
+	foStream.write(data, data.length);
+	foStream.close();
+	
+	alert("Wrote successfully");
+}
