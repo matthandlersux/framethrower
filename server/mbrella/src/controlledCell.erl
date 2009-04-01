@@ -9,8 +9,6 @@
 %%% -------------------------------------------------------------------
 -module(controlledCell).
 -compile(export_all).
--behaviour(gen_server).	
-
 
 -include("../include/scaffold.hrl").
 
@@ -18,7 +16,7 @@
 -define(this(Field), State#cellState.Field).
 
 %% Env Exports
--export([start/0, stop/0, makeControlledCell/1, add/2, remove/1, remove/2]).
+% -export([add/2, remove/1, remove/2]).
 % %% gen_server callbacks
 % -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3, getPrimitives/0]).
 
@@ -31,21 +29,8 @@
 %% External API
 %% ====================================================================
 
-start() ->
-	gen_server:start({local, ?MODULE}, ?MODULE, [], []).
-
-stop() ->
-	gen_server:call(?MODULE, stop).
-
-makeControlledCell(Type) ->
-	Cell = cell:makeCell(),
-	OuterType = type:outerType(Type),
-	store(Cell#cellPointer.name, OuterType),
-	Cell.
-
-add(Cell, Value) ->
-	Type = lookup(Cell#cellPointer.name),
-	case Type of
+add(Type, Cell, Value) ->
+	case type:outerType(Type) of
 		unit ->
 			cell:clear(Cell);
 		set ->
@@ -61,41 +46,3 @@ remove(Cell) ->
 
 remove(Cell, Value) ->
 	cell:removeLine(Cell, Value).
-
-%% ====================================================================
-%% Internal API
-%% ====================================================================
-
-store(Name, Obj) ->
-	gen_server:cast(?MODULE, {store, Name, Obj}).
-
-lookup(Name) ->
-	gen_server:call(?MODULE, {lookup, Name}).
-
-%% ====================================================================
-%% Gen Server functions
-%% ====================================================================
-
-init([]) ->
-	process_flag(trap_exit, true),
-    {ok, ets:new(controlledCells, [])}.
-
-handle_call({lookup, Name}, _, State) ->
-	Answer = case ets:lookup(State, Name) of
-		[{_, Reply}] ->
-			Reply;
-		[] -> 
-			notfound
-	end,
-    {reply, Answer, State};
-handle_call(stop, _, State) ->
-	{stop, normal, stopped, State}.
-
-handle_cast({store, Name, Obj}, State) ->
-	ets:insert(State, {Name, Obj}),
-    {noreply, State}.
-
-
-handle_info(_, State) -> {noreply, State}.
-terminate(_, _) -> ok.
-code_change(_, State, _) -> {ok, State}.

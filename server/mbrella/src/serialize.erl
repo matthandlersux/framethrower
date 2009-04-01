@@ -158,6 +158,7 @@ unserializeNow(ETS) ->
 		memoizeObject(Obj)
 	end, NewObjectDict),
 	
+	
 	%update variables used in prepare state
 	NewVariables = case ets:lookup(ETS, variables) of
 		[{_, Variables}] ->

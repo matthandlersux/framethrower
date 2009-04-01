@@ -280,7 +280,6 @@ startScript(Options) ->
 		sessionManager:start(),
 		memoize:start(),
 		env:start(),
-		controlledCell:start(),
 		objects:start(),
 		mblib:bootJsonScript(),
 	
