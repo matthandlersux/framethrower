@@ -152,14 +152,6 @@
 				</xsl:otherwise>
 			</xsl:choose>
 			
-
-			
-			<!-- Open it -->
-			<!-- TODO: this is hacked in here.. rethink how pane sets work -->
-			<!-- 
-
- -->
-			
 		</f:action>		
 		
 		
