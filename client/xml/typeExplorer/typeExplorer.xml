@@ -30,6 +30,9 @@
 				<f:thunk url="../view2/object.xml">
 					<f:with-param name="focus" select="$focus" />
 				</f:thunk>
+				<f:thunk with-template="$extra">
+					<f:with-param name="focus" select="$focus" />
+				</f:thunk>
 			</html:div>
 			<html:div class="entry-cell">
 				<html:div>
@@ -43,11 +46,6 @@
 						<f:with-param-browser name="y" prop="mouseY" />
 					</f:on>
 				</html:div>
-			</html:div>
-			<html:div class="entry-cell">
-				<f:thunk with-template="$extra">
-					<f:with-param name="focus" select="$focus" />
-				</f:thunk>
 			</html:div>
 		</html:div></html:div>
 		

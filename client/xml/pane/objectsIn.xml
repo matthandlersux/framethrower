@@ -13,7 +13,7 @@
 	
 	<f:derive name="set" d="getObjectsIn focus" />
 	
-	<f:on event="dragEnd" with-action="$dropObject" /> <!-- TODO: this probably shouldn't be out here at this level -->
+	
 	
 	<html:div>
 		<f:pattern>
@@ -64,14 +64,6 @@
 		<f:on event="click" with-action="$newPane">
 			<f:with-param name="focus" select="$focus" />
 		</f:on>
-		<f:on event="dragStart" with-action="$drag" />
-		<f:action name="drag">
-			<f:derive name="main" d="ui.main" />
-			<f:create name="dragging" type="UI.dragging">
-				<f:with-param name="object" select="$focus" />
-			</f:create>
-			<f:intact object="$main" action="add" property="dragging" key="$dragging" />
-		</f:action>
 	</f:template>
 	
 	
@@ -114,25 +106,9 @@
 	
 	
 	
-	<f:include url="/xml/util/uiActions.xml" />
-	<f:include url="/xml/util/actions.xml" />
-	
-	<f:action name="dropObject">
-		<f:derive name="droppedObject" d="bindUnit (compose returnFutureUnit UI.dragging:object) (UI.main:dragging ui.main)" />
-		
-		<f:each select="$droppedObject">
-			<f:perform with-action="$putObjectInSituation">
-				<f:with-param name="object" select="$droppedObject" />
-				<f:with-param name="situation" select="$focus" />
-			</f:perform>
 
-			<f:perform with-action="$stopDragging" />
-		</f:each>
-		
-		<!-- <f:consolelog>
-			<xsl:copy-of select="$droppedObject" />
-		</f:consolelog> -->
-	</f:action>
+	
+
 	
 
 	

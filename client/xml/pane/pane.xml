@@ -21,9 +21,19 @@
 	<f:derive name="propertiesState" d="UI.pane.pane:propertiesState pane" />
 
 	<f:include url="/xml/util/typeColor.xml" />
+	<f:include url="/xml/util/uiActions.xml" />
+	<f:include url="/xml/util/actions.xml" />
 
 	<f:each select="$focus">
 		<xsl:variable name="tab" select="$tab/*" /> <!-- TODO fix this -->
+		
+		
+		<xsl:variable name="isSituation" select="$focustype/f:map/f:entry/f:value/f:set/f:o/@name = 'shared.type.situation'" />
+		
+		<xsl:if test="$isSituation">
+			<f:on event="dragEnd" with-action="$dropObject" />
+		</xsl:if>
+		
 		
 		<xsl:variable name="color">
 			<xsl:call-template name="typeColor">
@@ -51,7 +61,7 @@
 				</html:div>
 			
 				<html:div class="tabs">
-					<xsl:if test="$focustype/f:map/f:entry/f:value/f:set/f:o/@name = 'shared.type.situation'">
+					<xsl:if test="$isSituation">
 						<html:div class="tab">
 							<xsl:if test="$tab/@value = 'objectsIn'">
 								<xsl:attribute name="selected">true</xsl:attribute>
@@ -197,6 +207,19 @@
 	<f:template name="blankTemplate">
 		<f:param name="focus" type="Object" />
 	</f:template>
+	
+	<f:action name="dropObject">
+		<f:derive name="droppedObject" d="bindUnit (compose returnFutureUnit UI.dragging:object) (UI.main:dragging ui.main)" />
+		
+		<f:each select="$droppedObject"><f:each select="$focus">
+			<f:perform with-action="$putObjectInSituation">
+				<f:with-param name="object" select="$droppedObject" />
+				<f:with-param name="situation" select="$focus" />
+			</f:perform>
+
+			<f:perform with-action="$stopDragging" />
+		</f:each></f:each>
+	</f:action>
 	
 	<f:include url="/xml/util/ord.xml" />
 	<!-- <f:include url="/xml/debug/prettyPrint.xml" /> -->
