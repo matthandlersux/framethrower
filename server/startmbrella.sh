@@ -116,5 +116,5 @@ fi
 #=====execute=====
 cd `dirname $0`
 # echo "exec $erl $commonflags\n\n"
-eval "exec $erl $heart $commonflags"
+eval "exec $erl +P 1000000 $heart $commonflags"
 # proc_open("eval exec $erl $commonflags", array(), something)

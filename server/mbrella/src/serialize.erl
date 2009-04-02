@@ -377,6 +377,7 @@ handle_cast({serializeEnv, FileName}, State) ->
 	ets:insert(ETS, {prepareState, ?this(prepareState)}),
 	ets:insert(ETS, {variables, ?this(variables)}),
 	ets:tab2file(ETS, FileToUse),
+	ets:delete(ETS),
     {noreply, State};
 handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
