@@ -1,4 +1,4 @@
 *.beam
 *~
 *COVER.out*
-*.tmproj
+*.tmproj~*
