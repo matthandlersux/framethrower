@@ -103,6 +103,15 @@ var classesToMake = {
 		},
 		memoize: ["day"]
 	},
+	"X.dateRange": {
+		inherit: "Object",
+		prop: {
+			"startDay": "Number",
+			"endDay": "Number"
+		},
+		memoize: ["startDay", "endDay"]
+	},
+	
 	
 	"X.prefs": {
 		inherit: "Object",

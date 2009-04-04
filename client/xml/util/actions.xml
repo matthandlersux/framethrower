@@ -154,6 +154,30 @@
 
 
 
+	<f:action name="makeInfon3">
+		<f:param name="relation" type="Object" />
+		<f:param name="arg1" type="Object" />
+		<f:param name="arg2" type="Object" />
+		<f:param name="arg3" type="Object" />		
+	
+		<f:perform with-action="$makeCons" name="cons1">
+			<f:with-param name="left" select="$relation" />
+			<f:with-param name="right" select="$arg1" />
+		</f:perform>
+
+		<f:perform with-action="$makeCons" name="cons2">
+			<f:with-param name="left" select="$cons1" />
+			<f:with-param name="right" select="$arg2" />
+		</f:perform>
+		
+		<f:perform with-action="$makeCons" name="cons3">
+			<f:with-param name="left" select="$cons2" />
+			<f:with-param name="right" select="$arg3" />
+		</f:perform>
+	
+		<f:return name="cons3" />
+	</f:action>
+
 	<f:action name="makeInfon2">
 		<f:param name="relation" type="Object" />
 		<f:param name="arg1" type="Object" />

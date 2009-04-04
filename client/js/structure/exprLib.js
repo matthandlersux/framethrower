@@ -644,6 +644,19 @@ var exprLib = {
 				chain: ["Cons:right", "X.date:day"]
 			}
 		}
+	},
+	
+	getLayerItems: {
+		type: "Object -> Set Cons",
+		expr: "layer -> filterByTruthInOnt (Object:upLeft layer)" // should really check that the relation is correct...
+	},
+	layerItemDateRange: {
+		type: "Cons -> Unit X.dateRange",
+		chain: ["Cons:left", "Cons:right"]
+	},
+	layerItemObject: {
+		type: "Cons -> Unit Object",
+		chain: ["Cons:left", "Cons:left", "Cons:right"]
 	}
 
 };

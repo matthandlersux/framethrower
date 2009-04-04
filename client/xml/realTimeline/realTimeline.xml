@@ -18,8 +18,8 @@
 	<f:derive name="endDate" d="UI.pane.realTimeline:endDate realTimeline" />
 	
 
-
 	<f:include url="/xml/util/actions.xml" />
+	<f:include url="/xml/util/uiActions.xml" />
 	<f:include url="/xml/util/ord.xml" />
 	
 	
@@ -111,13 +111,15 @@
 	
 	
 	<f:template name="drawActualTimeline">
+		<f:derive name="layers" d="UI.prefs:timelineLayers ui.prefs" />
+		
 		<!-- <f:derive name="dates" d="getSalientDates shared.realLife" /> -->
 		<f:derive name="dates" d="getSalientDates2 shared.realLife" />
 		
 		<f:derive name="selectedTime1" d="UI.pane.realTimeline:selectedTime1 realTimeline" />
 		<f:derive name="selectedTime2" d="UI.pane.realTimeline:selectedTime2 realTimeline" />
 		
-		<f:each select="$zoomWidth"><f:each select="$startDate"><f:each select="$endDate"><f:each select="$focus">
+		<f:each select="$zoomWidth"><f:each select="$startDate"><f:each select="$endDate">
 			
 			<xsl:variable name="ratio" select="$zoomWidth/@value div ($endDate/@value - $startDate/@value)" />
 			
@@ -137,14 +139,26 @@
 						</f:each>
 					</f:each>
 				</html:div>
-			
-				<f:thunk url="ruler.xml">
-					<f:with-param name="width" select="$zoomWidth" />
-					<f:with-param name="height" select="$height" />
-					<f:with-param name="startDate" select="$startDate" />
-					<f:with-param name="endDate" select="$endDate" />
-					<f:with-param name="focus" select="$focus" />
-				</f:thunk>
+				
+				<f:each select="$focus">
+					<f:thunk url="ruler.xml">
+						<f:with-param name="width" select="$zoomWidth" />
+						<f:with-param name="height" select="$height" />
+						<f:with-param name="startDate" select="$startDate" />
+						<f:with-param name="endDate" select="$endDate" />
+						<f:with-param name="focus" select="$focus" />
+					</f:thunk>
+				</f:each>
+				
+				
+				<html:div class="timeline-layers">
+					<f:each select="$layers" key="ord" value="layer">
+						<f:thunk with-template="$drawLayer">
+							<f:with-param name="layer" select="$layer" />
+						</f:thunk>
+					</f:each>
+				</html:div>
+				
 			
 				<f:thunk with-template="$drawSelection" />
 			
@@ -158,7 +172,79 @@
 				<f:on event="mouseup" with-action="$stopSelection" />
 			</html:div>
 			
-		</f:each></f:each></f:each></f:each>
+		</f:each></f:each></f:each>
+		
+		
+		
+		<f:template name="drawLayer">
+			<f:param name="layer" type="Object" />
+			
+			<f:derive name="layerItems" d="getLayerItems layer" />
+			
+			<!-- <f:derive name="layerSituations" d="getSituationsInLayer movie layer" /> -->
+			
+			<f:each select="$zoomWidth">
+				<html:div class="timeline-layer">
+					<xsl:attribute name="style">
+						width: <xsl:value-of select="$zoomWidth/@value" />px;
+					</xsl:attribute>
+					
+					<f:each select="$layerItems" key="item">
+						<f:thunk with-template="$drawLayerItem">
+							<f:with-param name="item" select="$item" />
+						</f:thunk>
+					</f:each>
+					
+				</html:div>
+			</f:each>
+			
+			<f:template name="drawLayerItem">
+				<f:param name="item" type="Cons" />
+				<f:derive name="dateRange" d="layerItemDateRange item" />
+				<f:derive name="object" d="layerItemObject item" />
+				<f:derive name="startDay" d="bindFutureUnit X.dateRange:startDay dateRange" />
+				<f:derive name="endDay" d="bindFutureUnit X.dateRange:endDay dateRange" />
+				
+				<f:each select="$startDay"><f:each select="$endDay">
+					<f:each select="$zoomWidth"><f:each select="$startDate"><f:each select="$endDate">
+						
+						<xsl:variable name="ratio" select="$zoomWidth/@value div ($endDate/@value - $startDate/@value)" />
+						
+						<html:div class="timeline-layer-situation">
+							<xsl:attribute name="style">
+								left: <xsl:value-of select="($startDay/@value - $startDate/@value) * $ratio" />px;
+								width: <xsl:value-of select="($endDay/@value - $startDay/@value) * $ratio" />px;
+							</xsl:attribute>
+							<f:on event="click" with-action="$openObject" />
+						</html:div>
+					</f:each></f:each></f:each>
+				</f:each></f:each>
+				
+				<f:action name="openObject">
+					<f:derive name="columns" d="ui.mainPaneSet.columns" />
+					<f:derive name="lastPaneKey" d="takeLastKey (UI.pane.set:panes columns)" />
+					
+					<f:each select="$object">
+						<xsl:variable name="newKey">			
+							<f:each select="$lastPaneKey">
+								<xsl:call-template name="ord-bigger">
+									<xsl:with-param name="s" select="./@value" />
+								</xsl:call-template>
+							</f:each>
+						</xsl:variable>
+					
+						<f:create type="UI.pane.pane" name="newPane" />
+						<f:intact object="$newPane" action="add" property="focus" key="$object" />
+
+						<f:intact object="$columns" action="add" property="panes" value="$newPane">
+							<f:with-param name="key" select="$newKey" as="String" />
+						</f:intact>
+					</f:each>
+				</f:action>
+			</f:template>
+		</f:template>
+		
+		
 		
 		
 		<f:template name="drawSelection">
@@ -191,25 +277,15 @@
 						width: <xsl:value-of select="$width" />px;
 					</xsl:attribute>
 
-					<!-- <xsl:if test="not($selecting/*)">
+					<xsl:if test="not($selecting/*)">
 						<f:thunk with-template="$selectionInsides" />
-					</xsl:if> -->
+					</xsl:if>
 
 
 				</html:div>
 			</f:each></f:each></f:each></f:each></f:each>
 
-			<!-- <f:template name="selectionInsides">
-				<html:div>
-					<xsl:attribute name="style">
-						left: 50%;
-						top: 150px;
-						position: absolute;
-						margin-left: -7px;
-					</xsl:attribute>
-					<html:div class="button-play" />
-				</html:div>
-
+			<f:template name="selectionInsides">
 				<html:div class="timeline-selected-layers">
 					<xsl:attribute name="style">
 						left: 50%;
@@ -217,14 +293,101 @@
 					</xsl:attribute>
 					<f:each select="$layers" key="ord" value="layer">
 						<html:div class="timeline-selected-layer">
-							<f:on event="click" with-action="$makeSituationInLayer">
+							<f:on event="click" with-action="$makeLayerItem">
+								<f:with-param name="layer" select="$layer" />
+							</f:on>
+							<f:on event="dragEnd" with-action="$attachLayerItem">
 								<f:with-param name="layer" select="$layer" />
 							</f:on>
 							<html:div class="button-zoomIn" />
 						</html:div>
 					</f:each>
 				</html:div>
-			</f:template> -->
+				
+				<f:action name="makeLayerItem">
+					<f:param name="layer" type="Object" />
+					
+					<f:derive name="onDateRel" d="shared.onDate" />
+					
+					<f:each select="$selectedTime1"><f:each select="$selectedTime2">
+						<xsl:variable name="t1" select="$selectedTime1/@value" />
+						<xsl:variable name="t2" select="$selectedTime2/@value" />
+						<xsl:variable name="tmin"><xsl:choose>
+							<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t1" /></xsl:when>
+							<xsl:otherwise><xsl:value-of select="$t2" /></xsl:otherwise>
+						</xsl:choose></xsl:variable>
+						<xsl:variable name="tmax"><xsl:choose>
+							<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t2" /></xsl:when>
+							<xsl:otherwise><xsl:value-of select="$t1" /></xsl:otherwise>
+						</xsl:choose></xsl:variable>
+						
+						<f:create type="X.dateRange" name="dateRange">
+							<f:with-param name="startDay" select="$tmin" as="Number" />
+							<f:with-param name="endDay" select="$tmax" as="Number" />
+						</f:create>
+						
+						<f:create type="Object" name="newObject" />
+						
+						<f:perform with-action="$makeInfon3" name="inf">
+							<f:with-param name="relation" select="$onDateRel" />
+							<f:with-param name="arg1" select="$newObject" />
+							<f:with-param name="arg2" select="$dateRange" />
+							<f:with-param name="arg3" select="$layer" />
+						</f:perform>
+						
+						<f:perform with-action="$makeTrueInOnt">
+							<f:with-param name="infon" select="$inf" />
+						</f:perform>
+						
+						<f:intact object="$realTimeline" property="selectedTime1" action="remove" />
+						<f:intact object="$realTimeline" property="selectedTime2" action="remove" />
+					</f:each></f:each>
+				</f:action>
+				
+				<f:action name="attachLayerItem">
+					<f:param name="layer" type="Object" />
+					
+					<f:derive name="onDateRel" d="shared.onDate" />
+					
+					<f:derive name="droppedObject" d="bindUnit (compose returnFutureUnit UI.dragging:object) (UI.main:dragging ui.main)" />
+
+					<f:each select="$droppedObject">
+						<f:each select="$selectedTime1"><f:each select="$selectedTime2">
+							<xsl:variable name="t1" select="$selectedTime1/@value" />
+							<xsl:variable name="t2" select="$selectedTime2/@value" />
+							<xsl:variable name="tmin"><xsl:choose>
+								<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t1" /></xsl:when>
+								<xsl:otherwise><xsl:value-of select="$t2" /></xsl:otherwise>
+							</xsl:choose></xsl:variable>
+							<xsl:variable name="tmax"><xsl:choose>
+								<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t2" /></xsl:when>
+								<xsl:otherwise><xsl:value-of select="$t1" /></xsl:otherwise>
+							</xsl:choose></xsl:variable>
+
+							<f:create type="X.dateRange" name="dateRange">
+								<f:with-param name="startDay" select="$tmin" as="Number" />
+								<f:with-param name="endDay" select="$tmax" as="Number" />
+							</f:create>
+
+							<f:perform with-action="$makeInfon3" name="inf">
+								<f:with-param name="relation" select="$onDateRel" />
+								<f:with-param name="arg1" select="$droppedObject" />
+								<f:with-param name="arg2" select="$dateRange" />
+								<f:with-param name="arg3" select="$layer" />
+							</f:perform>
+
+							<f:perform with-action="$makeTrueInOnt">
+								<f:with-param name="infon" select="$inf" />
+							</f:perform>
+
+							<f:intact object="$realTimeline" property="selectedTime1" action="remove" />
+							<f:intact object="$realTimeline" property="selectedTime2" action="remove" />
+							
+							<f:perform with-action="$stopDragging" />
+						</f:each></f:each>
+					</f:each>
+				</f:action>
+			</f:template>
 		</f:template>
 		
 	</f:template>

@@ -73,6 +73,15 @@ var rootObjects = {};
 	m("shared.onDate");
 	
 	
+	
+	// intel demo layers
+	m("shared.intelDemo.media");
+	m("shared.intelDemo.rumor1");
+	m("shared.intelDemo.rumor2");
+	m("shared.intelDemo.sermon");
+	
+	
+	
 	m("shared.globalPrefs", "X.prefs");
 	
 	
