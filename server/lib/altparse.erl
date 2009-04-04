@@ -11,184 +11,94 @@
 %% Parser
 %% ====================================================
 
-
 parse(S) ->
-	Seps = [" ", "(",")","->", "\""],
-	
-	Tokens = tokens(S, Seps),
-	
-	WithPulledStrings = pullQuotedStrings(Tokens),
-	
-	WithPrimitives = findPrimitives(WithPulledStrings),
-	
-	WithNestedParens = case nestParens(WithPrimitives) of
-		{Answer, []} ->
-			Answer;
+	{Ans, []} = parseExpr(S),
+	Ans.
+
+parseExpr([$(|Right] = S) ->
+	%apply or lambda
+	case Right of
+		[$\\|Rest] ->
+			%lambda
+			{Expr, [$)|Remaining]} = parseExpr(Rest),
+			{#exprLambda{
+				expr = Expr
+			}, Remaining};
 		_ ->
-			throw({unbalancedParens, "Unbalanced Parens"})
+			%apply
+			{ApplyLeft, SpaceAndRight} = parseExpr(Right),
+			[$ |Rest] = SpaceAndRight,
+			{ApplyRight, [$)|Remaining]} = parseExpr(Rest),
+			{#exprApply{
+				left = ApplyLeft,
+				right = ApplyRight
+			}, Remaining}
+	end;
+parseExpr([$\"|Right] = S) ->
+	%quoted string
+	cutOffRightQuote(Right);
+parseExpr([$ |Right] = S) ->
+	%not sure if this will happen
+	parseExpr(Right);
+parseExpr([$/|Right] = S) ->
+	{NumString, Rest} = untilSpaceOrRightParen(Right),
+	Num = list_to_integer(NumString),
+	{#exprVar{index = Num}, Rest};
+parseExpr([_|Right] = S) ->
+	%env variable or number
+	%read until space or right paren
+	{VarOrPrim, Rest} = untilSpaceOrRightParen(S),
+	Ans = case extractPrim(VarOrPrim) of
+		error ->
+			lookupInEnv(VarOrPrim);
+		Prim ->
+			Prim
 	end,
-	
-	WithLamdas = parseLambdas(WithNestedParens),
-	
-	parseApplys(WithLamdas)
-	
-	.
-	
-	
-	% parseApplys(S, Tokens).
-	
-checkBackSpace({token, Token}) ->
-	suffix("\\", Token);
-checkBackSpace(_) ->
-	false.
+	{Ans, Rest}.
 
 
-pullQuotedStrings(Tokens) ->
-	pullQuotedStrings(Tokens, false, [], false).
 
-pullQuotedStrings([Token|Tokens], Quoting, Qs, PrevBS) ->
-	case Quoting of
-		false ->
-			case Token of
-				"\"" ->
-					pullQuotedStrings(Tokens, true, "\"", false);
-				_ ->
-					BS = checkBackSpace(Token),
-					[Token | pullQuotedStrings(Tokens, false, Qs, BS)]
-			end;
-		true ->
-			case {Token, PrevBS} of
-				{"\"", false} ->
-					NewQs = lists:flatten([Token|Qs]),
-					[NewQs | pullQuotedStrings(Tokens, false, NewQs, false)];
-				_ ->
-					BS = checkBackSpace(Token),
-					pullQuotedStrings(Tokens, true, [Token|Qs], BS)
+cutOffRightQuote([$\"|R]) ->
+	{[], R};
+cutOffRightQuote([L|R]) ->
+	{Ans, Rest} = cutOffRightQuote(R),
+	{[L|Ans], Rest}.
+
+untilSpaceOrRightParen([]) ->
+	{[], []};
+untilSpaceOrRightParen([$ |R] = S) ->
+	{[], S};
+untilSpaceOrRightParen([$)|R] = S) ->
+	{[], S};
+untilSpaceOrRightParen([L|R]) ->
+	{Ans, Rest} = untilSpaceOrRightParen(R),
+	{[L|Ans], Rest}.
+
+extractPrim(VarOrPrim) ->
+	case VarOrPrim of
+		"null" -> null;
+		"true" -> true;
+		"false" -> false;
+		_ ->
+			try list_to_integer(VarOrPrim)
+			catch _:_ ->
+				try list_to_float(VarOrPrim)
+				catch _:_ ->
+					error
+				end
 			end
-	end;
-pullQuotedStrings([], _, _, _) ->
-	[].
-
-
-nestParens([Token|Tokens]) ->
-	case Token of
-		" " ->
-			nestParens(Tokens);
-		"(" ->
-			{Inner, Rest} = nestParens(Tokens),
-			{Answer, Rest2} = nestParens(Rest),
-			{[Inner | Answer], Rest2};
-		")" ->
-			{[], Tokens};
-		_ ->
-			{Answer, Rest} = nestParens(Tokens),
-			{[Token | Answer], Rest}
-	end;
-nestParens([]) ->
-	{[], []}.
-
-
-notArrow("->") -> false;
-notArrow(_) -> true.
-
-parseLambdas({token, String} = Token) ->
-	Token;
-parseLambdas(Tokens) when is_list(Tokens) ->
-	{Left, ArrowAndRight} = lists:splitwith(fun notArrow/1, Tokens),
-	case ArrowAndRight of
-		[] -> 
-			lists:map(fun parseLambdas/1, Tokens);
-		[_|Right] ->
-			#cons{
-				type = lambda,
-				left = lists:map(fun parseLambdas/1, Left),
-				right = parseLambdas(Right)
-			}
-	end;
-parseLambdas(Char) ->
-	Char.
-
-parseApplys({token, Token}) ->
-	Token;
-parseApplys(Cons) when is_record(Cons, cons) ->
-	Cons#cons{
-		left = parseApplys(Cons#cons.left),
-		right = parseApplys(Cons#cons.right)
-	};
-parseApplys(Tokens) when is_list(Tokens) ->
-	case Tokens of
-		[First|[]] -> parseApplys(First);
-		_ ->
-			{Left, Right} = lists:split(length(Tokens) - 1, Tokens),
-			#cons{
-				type = apply,
-				left = parseApplys(Left),
-				right = parseApplys(Right)
-			}
-	end;
-parseApplys(Char) ->
-	Char.
-
-
-%Util
-
-prefix([X|PreTail], [X|Tail]) ->
-    prefix(PreTail, Tail);
-prefix([], List) -> {true, List};
-prefix([_|_], List) -> false.
-
-
-match(In, [Sep|Seps]) ->
-	case prefix(Sep, In) of
-		{true, Rest} ->
-			{Sep, Rest};
-		_ -> match(In, Seps)
-	end;
-match(In, []) ->
-	In.
-	
-findPrimitives([TokenOrSep|Tokens]) ->
-	case TokenOrSep of
-		{token, Token} ->
-			NewToken = case Token of
-				"null" -> null;
-				"true" -> true;
-				"false" -> false;
-				_ ->
-					try list_to_integer(Token)
-					catch _:_ ->
-						try list_to_float(Token)
-						catch _:_ ->
-							Token
-						end
-					end
-			end,
-			[{token, NewToken} | findPrimitives(Tokens)];
-		_ -> 
-			[TokenOrSep | findPrimitives(Tokens)]
-	end;
-findPrimitives([]) -> [].
-
-
-tokens(S, Seps) ->
-	tokens1(S, Seps, []).
-	
-tokens1([], _Seps, Toks) ->
-	reverse(Toks);
-tokens1(In, Seps, Toks) ->
-	case match(In, Seps) of
-		{Tok, Rest} ->
-			tokens1(Rest, Seps, [Tok|Toks]);
-		[C|S] ->
-			tokens2(S, Seps, Toks, [C])
 	end.
-	
-tokens2([], _Seps, Toks, Cs) ->
-	reverse([{token, reverse(Cs)}|Toks]);
-tokens2(In, Seps, Toks, Cs) ->
-	case match(In, Seps) of
-		{Tok, Rest} ->
-			tokens1(Rest, Seps, [Tok|[{token, reverse(Cs)}|Toks]]);
-		[C|S] ->
-			tokens2(S, Seps, Toks, [C|Cs])
+
+lookupInEnv(ParsedString) ->
+	case env:lookup(ParsedString) of
+		notfound ->
+			% #exprVar{value = ParsedString};
+			throw({variable_not_in_environment, [{variable, ParsedString}]});
+		ExprCell when is_record(ExprCell, exprCell) -> 
+			#cellPointer{name = ParsedString, pid = ExprCell#exprCell.pid};
+		Object when is_record(Object, object) -> 
+			#objectPointer{name = ParsedString};
+		ExprFun when is_record(ExprFun, exprFun) ->
+			#funPointer{name = ParsedString};
+		{exprLib, Expr} -> Expr
 	end.

@@ -12,12 +12,12 @@ function evaluate2(expr) {
 	
 	
 	var resultType = getType(expr);
-	var resultExpr = getExpr(expr);
+	getRemote(expr); // just to tag the expr's .remote
 	
 	// check if we're returning a StartCap and see if it's already memoized
 	var resultExprStringified;
 	if (isReactive(resultType)) {
-		resultExprStringified = uniqueExpr(resultExpr);
+		resultExprStringified = stringify(expr);
 		var cached = evalCache[resultExprStringified];
 		if (cached) {
 			return cached;
@@ -38,9 +38,7 @@ function evaluate2(expr) {
 		
 		if (fun.kind === "exprLambda") {
 			// we can do a beta reduction
-			fun = normalizeVariables(fun, "x");
-			input = normalizeVariables(input, "y");
-			var ret = betaReplace(fun.right, fun.left.value, input);
+			var ret = betaReplace(fun, input);
 			ret.type = resultType; // optimization
 			return evaluate(ret);
 		} else {
@@ -50,18 +48,14 @@ function evaluate2(expr) {
 
 			if (typeof ret === "function") {
 				// if ret is a function, return a Fun and annotate its type and expr
-				return {
-					kind: "fun",
-					type: resultType,
-					expr: resultExpr,
-					fun: ret
-				};
+				return makeFun(resultType, ret, stringify(expr), expr.remote);
 			} else if (ret.kind === "startCap") {
 				// if ret is a startCap, memoize the result and annotate its type and expr
 				
 				// annotate
 				ret.type = resultType;
-				ret.expr = resultExpr;
+				ret.name = stringify(expr);
+				ret.remote = expr.remote;
 				
 				memoizeCell(resultExprStringified, ret);
 				

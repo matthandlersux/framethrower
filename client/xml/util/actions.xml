@@ -200,6 +200,32 @@
 	</f:action>
 	
 	
+	<f:action name="makeRelationType4">
+		<f:param name="input1" type="Object" />
+		<f:param name="input2" type="Object" />
+		<f:param name="input3" type="Object" />
+		<f:param name="input4" type="Object" />		
+		<f:param name="output" type="Object" />
+		
+		<f:perform with-action="$makeRelationType" name="rt1">
+			<f:with-param name="input" select="$input4" />
+			<f:with-param name="output" select="$output" />
+		</f:perform>
+		<f:perform with-action="$makeRelationType" name="rt2">
+			<f:with-param name="input" select="$input3" />
+			<f:with-param name="output" select="$rt1" />
+		</f:perform>
+		<f:perform with-action="$makeRelationType" name="rt3">
+			<f:with-param name="input" select="$input2" />
+			<f:with-param name="output" select="$rt2" />
+		</f:perform>
+		<f:perform with-action="$makeRelationType" name="rt4">
+			<f:with-param name="input" select="$input1" />
+			<f:with-param name="output" select="$rt3" />
+		</f:perform>		
+		<f:return name="rt4" />
+	</f:action>
+
 	
 	<f:action name="makeRelationType3">
 		<f:param name="input1" type="Object" />

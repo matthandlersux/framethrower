@@ -23,10 +23,12 @@ var base = makeDynamicEnv(literalEnv);
 
 
 // TODO: factor this out, or at least make it not take real expr's and types, not strings
-function addFun(name, typeString, f, numArguments) {
+function addFun(name, typeString, f, numArguments, remote) {
 	/*
 	This creates a new Fun object and binds it (by putting it in lookupTable)
 	*/
+	
+	if (!remote) remote = 0;
 	
 	var type = parseType(typeString);
 	var fun;
@@ -38,13 +40,7 @@ function addFun(name, typeString, f, numArguments) {
 	}*/
 	fun = curry(f, numArguments);
 	
-	var exprFun = {
-		kind: "fun",
-		name: name,
-		type: type,
-		fun: fun,
-		remote: 0
-	};
+	var exprFun = makeFun(type, fun, name, remote);
 	
 	base.add(name, exprFun);
 	

@@ -12,39 +12,46 @@ An Expr is any one of the following:
 		}
 	*	{
 			kind: "exprLambda",
-			left: Var,
-			right: Expr
+			varName: String, (NOTE: optional. varName is only a human convenience, the system never needs to know this)
+			expr: Expr
 		}
 
 A Var is:
 	{
-		kind: "var",
-		value: String
+		kind: "exprVar",
+		deBruijn: Number
 	}
+
+NOTE: our expr data structure now uses deBruijn indexes:
+http://en.wikipedia.org/wiki/De_Bruijn_index
+
 */
 
 
 
-function makeVar(name) {
-	return {kind: "var", value: name};
-}
-function makeApply(left, right) {
-	return {kind: "exprApply", left: left, right: right};
-}
-function makeLambda(left, right) {
-	return {kind: "exprLambda", left: left, right: right};
-}
+function parseExpression(ast, env, deBruijnHash) {
+	if (!deBruijnHash) deBruijnHash = {};
+	function incrementHash() {
+		var newDeBruijnHash = {};
+		forEach(deBruijnHash, function (index, varName) {
+			newDeBruijnHash[varName] = index + 1;
+		});
+		return newDeBruijnHash;
+	}
 
-
-function parseExpression(ast, env) {
 	if (typeOf(ast) === "string") {
-		return env(ast);
+		if (deBruijnHash[ast]) {
+			return makeVar(deBruijnHash[ast]);
+		} else {
+			return env(ast);			
+		}
 	} else if (ast.cons === "lambda") {
-		var name = ast.left;
-		var v = makeVar(name);
-		return makeLambda(v, parseExpression(ast.right, envAdd(env, name, v)));
+		var newDeBruijnHash = incrementHash();
+		var varName = ast.left;
+		newDeBruijnHash[varName] = 1;
+		return makeLambda(varName, parseExpression(ast.right, env, newDeBruijnHash));
 	} else if (ast.cons === "apply") {
-		return makeApply(parseExpression(ast.left, env), parseExpression(ast.right, env));
+		return makeApply(parseExpression(ast.left, env, deBruijnHash), parseExpression(ast.right, env, deBruijnHash));
 	}
 }
 
@@ -61,75 +68,97 @@ function parseExpr(s, env) {
 }
 
 
+// function unparseExpr(expr) {
+// 	function helper(expr, deBruijnCount) {
+// 		
+// 	}
+// }
 
 
 
-function normalizeVariables(expr, prefix) {
+
+
+
+
+function betaReplace(expr, replaceExpr) {
 	/*
-	Takes in a closed Expr and returns it back but with every lambda's parameter renamed in a standard way
-		Properties:
-			Every lambda expression will have a unique parameter name
-			normalizeVariables will return the same thing on any Expr's that are "alpha-equivalent" (equivalent up to variable names)
-		Optional parameter prefix: will name variables starting with this prefix, default is "x"
+	Takes an expr (which should be a lambda expression) and "applies" it to replaceExpr,
+	replacing all occurances of the variable bound by the lambda expression with the replacement expression.
+	
+	Specifically, via http://en.wikipedia.org/wiki/De_Bruijn_index
+	find the variables n1, n2, …, nk in M that are bound by the λ in λ M,
+	decrease the free variables of M to match the removal of the outer λ-binder, and
+	replace n1, n2, …, nk with N, suitably increasing the free variables occurring in N each time, to match the number of λ-binders the corresponding variable occurs under when substituted.
+	
 	*/
 	
-	function helper(expr, nameGen, env) {
-		if (expr.kind === "exprApply") {
-			return makeApply(helper(expr.left, nameGen, env), helper(expr.right, nameGen, env));
+	function shiftReplaceExpr(expr, extraLambdas, level) {
+		// suitably increasing the free variables occurring in N each time, to match the number of λ-binders the corresponding variable occurs under when substituted.
+		if (getOutsideScope(expr) <= level) {
+			return expr;
+		} else if (expr.kind === "exprVar") {
+			if (expr.deBruijn > level) {
+				return makeVar(expr.deBruijn + extraLambdas);
+			} else {
+				return expr;
+			}
+		} else if (expr.kind === "exprApply") {
+			return makeApply(shiftReplaceExpr(expr.left, extraLambdas, level), shiftReplaceExpr(expr.right, extraLambdas, level));
 		} else if (expr.kind === "exprLambda") {
-			var newVar = makeVar(nameGen());
-			var newEnv = envAdd(env, expr.left.value, newVar);
-			return makeLambda(newVar, helper(expr.right, nameGen, newEnv));
-		} else if (expr.kind === "var") {
-			return env(expr.value);
+			return makeLambda(expr.varName, shiftReplaceExpr(expr.expr, extraLambdas, level + 1));
 		} else {
 			return expr;
 		}
 	}
 	
-	if (!prefix) prefix = "x";
-	return helper(expr, makeGenerator(prefix), emptyEnv);
-}
-
-
-function betaReplace(expr, name, replaceExpr) {
-	// replaces all Var's with (.value == name) with replaceExpr in expr
-	// this should only be called if expr and replaceExpr share no variable names (to avoid collisions)
-	if (expr.kind === "var" && expr.value === name) {
-		return replaceExpr;
-	} else if (expr.kind === "exprApply" || expr.kind === "exprLambda") {
-		return {
-			kind: expr.kind,
-			left: betaReplace(expr.left, name, replaceExpr),
-			right: betaReplace(expr.right, name, replaceExpr)
-		};
-	} else {
-		return expr;
+	var optimizeType = false;
+	if (getOutsideScope(expr) === 0 && getOutsideScope(replaceExpr) === 0) {
+		optimizeType = true;
+		var typeVarToReplace = getType(expr).left.value;
+		var typeToReplaceWith = getType(replaceExpr);		
 	}
-}
-
-
-
-function betaReduce(expr) {
-	// applies beta reduction wherever possible in an Expr
-	// this should only be called on Expr's with normalized variables (to avoid collisions)
-	if (expr.kind === "exprApply") {
-		var fun = betaReduce(expr.left);
-		var input = betaReduce(expr.right);
-		if (fun.kind === "exprLambda") {
-			// we can do a beta reduction here
-			return betaReduce(betaReplace(fun.right, fun.left.value, input));
+	
+	function helper(expr, deBruijn) {
+		if (getOutsideScope(expr) === 0) {
+			return expr;
+		} else if (expr.kind === "exprVar") {
+			if (expr.deBruijn === deBruijn) {
+				var ret = shiftReplaceExpr(replaceExpr, deBruijn - 1, 0);
+				return ret;
+				//return replaceExpr;
+			} else if (expr.deBruijn > deBruijn) {
+				// decrease the free variables of M to match the removal of the outer λ-binder
+				return makeVar(expr.deBruijn - 1);
+			} else {
+				return expr;
+			}
+		} else if (expr.kind === "exprLambda") {
+			return makeLambda(expr.varName, helper(expr.expr, deBruijn + 1), optimizeType && expr.type && imposeSub(expr.type, typeVarToReplace, typeToReplaceWith));
+		} else if (expr.kind === "exprApply") {
+			return makeApply(helper(expr.left, deBruijn), helper(expr.right, deBruijn), optimizeType && expr.type && imposeSub(expr.type, typeVarToReplace, typeToReplaceWith));
 		} else {
-			return makeApply(fun, input);
+			return expr;
 		}
-	} else if (expr.kind === "exprLambda") {
-		return makeLambda(expr.left, betaReduce(expr.right));
+	}
+	var ret = helper(expr.expr, 1);
+	
+	return ret;
+}
+
+
+
+function fullBetaReduce(expr) {
+	if (expr.kind === "exprLambda") {
+		return makeLambda(expr.varName, fullBetaReduce(expr.expr), expr.type);
+	} else if (expr.kind === "exprApply") {
+		var fun = fullBetaReduce(expr.left);
+		var input = fullBetaReduce(expr.right);
+		if (fun.kind === "exprLambda") {
+			return fullBetaReduce(betaReplace(fun, input)); // do I need this extra fullBetaReduce around the betaReplace?
+		} else {
+			return makeApply(fun, input, expr.type);			
+		}
 	} else {
 		return expr;
 	}
-}
-
-function normalizeExpr(expr) {
-	//return normalizeVariables(betaReduce(normalizeVariables(expr)));
-	return normalizeVariables(expr);
 }

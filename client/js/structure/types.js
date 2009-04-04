@@ -194,6 +194,25 @@ function makeFreshTypeVar() {
 
 
 
+function imposeSub(type, name, value) {
+	if (type.kind === "typeName") {
+		return type;
+	} else if (type.kind === "typeVar") {
+		if (type.value === name) {
+			return value;
+		} else {
+			return type;
+		}
+	} else {
+		return {
+			kind: type.kind,
+			left: imposeSub(type.left, name, value),
+			right: imposeSub(type.right, name, value)
+		};
+	}
+}
+
+
 
 
 function getTypeOfExpr(expr) {
@@ -220,7 +239,7 @@ function getTypeOfExpr(expr) {
 		return helper(type);
 	}
 
-	function genConstraints(expr, env, constraints) {
+	function genConstraints(expr, lambdaStack, constraints) {
 		/* MUTATES: constraints
 		this function returns the type of expr, but also adds to constraints (which must be unified and imposed)
 
@@ -249,34 +268,34 @@ function getTypeOfExpr(expr) {
 			return freshenType(expr.type);
 		}
 
-		if (expr.kind === "var") {
-			return getType(env(expr.value));
+		if (expr.kind === "exprVar") {
+			return lambdaStack[expr.deBruijn - 1];
 		} else if (expr.kind === "exprApply") {
 			var funType;
-			if (isEmpty(getFreeVariables(expr.left))) {
-				funType = freshenType(getType(expr.left));
-			} else {
-				funType = genConstraints(expr.left, env, constraints);
-			}
+			// if (getOutsideScope(expr.left) === 0) {
+			// 	funType = freshenType(getType(expr.left));
+			// } else {
+				funType = genConstraints(expr.left, lambdaStack, constraints);
+			// }
 			var inputType;
-			if (isEmpty(getFreeVariables(expr.right))) {
-				inputType = freshenType(getType(expr.right));
-			} else {
-				inputType = genConstraints(expr.right, env, constraints);
-			}
+			// if (getOutsideScope(expr.right) === 0) {
+			// 	inputType = freshenType(getType(expr.right));
+			// } else {
+				inputType = genConstraints(expr.right, lambdaStack, constraints);
+			// }
 			var freshType = makeFreshTypeVar();
 			constraints.push([funType, makeTypeLambda(inputType, freshType)]);
 			return freshType;
 		} else if (expr.kind === "exprLambda") {
 			var freshType = makeFreshTypeVar();
-			var newEnv = envAdd(env, expr.left.value, {type: freshType});
-			return makeTypeLambda(freshType, genConstraints(expr.right, newEnv, constraints));
+			var newLambdaStack = [freshType].concat(lambdaStack);
+			return makeTypeLambda(freshType, genConstraints(expr.expr, newLambdaStack, constraints));
 		} else {
 			return freshenType(getType(expr));
 		}
 	}
 
-	 function containsVar(type, typeVar) {
+	function containsVar(type, typeVar) {
 		if (type.kind === "typeName") {
 			return false;
 		} else if (type.kind === "typeVar") {
@@ -290,7 +309,7 @@ function getTypeOfExpr(expr) {
 		if (expr.freeVariables) {
 			return expr.freeVariables;
 		} else {
-			if (expr.kind === "var") {
+			if (expr.kind === "exprVar") {
 				expr.freeVariables = {};
 				expr.freeVariables[expr.value] = true;
 				return expr.freeVariables;
@@ -364,23 +383,7 @@ function getTypeOfExpr(expr) {
 		return subs;
 	}
 
-	function imposeSub(type, name, value) {
-		if (type.kind === "typeName") {
-			return type;
-		} else if (type.kind === "typeVar") {
-			if (type.value === name) {
-				return value;
-			} else {
-				return type;
-			}
-		} else {
-			return {
-				kind: type.kind,
-				left: imposeSub(type.left, name, value),
-				right: imposeSub(type.right, name, value)
-			};
-		}
-	}
+
 
 
 	function imposeSubs(type, subs) {
@@ -404,7 +407,7 @@ function getTypeOfExpr(expr) {
 	
 	
 	var constraints = [];
-	var t = genConstraints(expr, emptyEnv, constraints);
+	var t = genConstraints(expr, [], constraints);
 	var subs = unify(constraints);
 	return imposeSubs(t, subs);
 }

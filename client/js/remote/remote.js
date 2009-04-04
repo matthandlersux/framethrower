@@ -5,6 +5,16 @@ queryExpr(expr)
 
 
 
+TODO: I'd like to change this so it's accurate (ie: add a thing for "both" remote and local). Elegant way to do this is with a lattice:
+
+     shared
+    /     \
+ remote  local
+    \    /
+     both
+
+
+
 remote has 3 values:
 	0: shared
 	1: remote
@@ -26,14 +36,14 @@ function getRemote(expr) {
 		return 0;
 	} else {
 		if (expr.remote === undefined) {
-			if (expr.kind === "var") {
+			if (expr.kind === "exprVar") {
 				expr.remote = 0;
-			} else if (expr.kind === "exprLambda" || expr.kind === "exprApply") {
-				expr.remote =  Math.max(getRemote(expr.left), getRemote(expr.right));
-			} else if (expr === getExpr(expr)) {
-				expr.remote = 2;
+			} else if (expr.kind === "exprApply") {
+				expr.remote = Math.max(getRemote(expr.left), getRemote(expr.right));
+			} else if (expr.kind === "exprLambda") {
+				expr.remote = getRemote(expr.expr);
 			} else {
-				expr.remote = getRemote(getExpr(expr));
+				expr.remote = 2;
 			}
 		}
 		return expr.remote;
@@ -65,7 +75,8 @@ function makeRemoteObject(name, type) {
 		kind: "remoteObject",
 		remote: 1,
 		name: name,
-		type: type
+		type: type,
+		outsideScope: 0
 	};
 	
 	remoteObjectsScope[name] = o;
@@ -219,7 +230,8 @@ var session = (function () {
 		
 		var type = getType(expr);
 		var cell = makeCC(type);
-		cell.expr = expr;
+		cell.remote = 1;
+		cell.name = stringify(expr);
 		
 		cells[queryId] = cell;
 		
@@ -227,7 +239,7 @@ var session = (function () {
 		// 	debug.error("Trying to send a local thing to the server", expr);
 		// }
 
-		var newExpr = unparseExpr(getExpr(expr));
+		var newExpr = stringifyForServer(expr);
 
 		//console.log("Query", queryId, {expr:newExpr});
 		
@@ -381,7 +393,7 @@ var session = (function () {
 							
 								cells[queryDefine.queryId] = cell;
 								//add this expr and cell to local hashtable
-								resultExprStringified = uniqueExpr(expr);
+								resultExprStringified = stringify(expr);
 								evalCache[resultExprStringified] = cell;
 							} catch (e) {
 								console.log(e, response.queryDefine);

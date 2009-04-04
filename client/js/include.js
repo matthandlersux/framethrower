@@ -9,7 +9,9 @@
 		"js/util/util.js",
 		"js/util/xml.js",
 		"js/util/conSortedSet.js",
-
+		
+		"js/structure/constructors.js",
+		
 		"js/structure/parse.js",
 		"js/structure/env.js",
 		"js/structure/types.js",
@@ -18,7 +20,6 @@
 		"js/structure/literalTypes.js",
 		"js/structure/baseEnv.js",
 
-		"js/structure/stringify.js",
 		"js/structure/evaluate.js",
 
 		"js/reactive/hash.js",
@@ -41,6 +42,7 @@
 		"js/browser/evalThunk.js",
 		"js/browser/embed.js",
 		"js/browser/replaceXML.js",
+		//"js/browser/user.js",		
 		"js/browser/actionXML.js",
 		"js/browser/position.js",
 		"js/browser/events.js",

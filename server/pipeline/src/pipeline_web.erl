@@ -7,7 +7,7 @@
 -author('author <author@example.com>').
 -include ("../../mbrella/include/scaffold.hrl").
 
--export([start/1, stop/0, loop/2, processActionList/1, processActionList/3]).
+-export([start/1, stop/0, loop/2, processActionList/1, processActionList/2]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define (pipelineBufferTime, 50).
@@ -129,7 +129,7 @@ loop(Req, DocRoot) ->
 							ProcessMessage = fun( Message ) ->
 								case struct:get_first(Message) of
 									{<<"query">>, Query} -> processQuery(Query, SessionId, SessionPid);
-									{<<"action">>, Action} -> processAction(Action, SessionPid);
+									{<<"action">>, Action} -> processActionJson(Action, SessionPid);
 									{<<"registerTemplate">>, RegisterTemplate} -> processRegisterTemplate(RegisterTemplate, SessionPid);
 									{<<"serverAdviceRequest">>, ServerAdviceRequest} -> processServerAdviceRequest(ServerAdviceRequest, SessionPid)
 								end
@@ -178,7 +178,7 @@ processQuery ( Query, SessionId, SessionPid ) ->
 	case session:checkQuery(SessionPid, Expr, QueryId) of
 		true ->
 			% responseTime:in(SessionId, 'query', QueryId, now() ),
-			Cell = eval:evaluate( expr:exprParse(Expr) ),					
+			Cell = eval:evaluate( expr:exprParse(Expr) ),
 			% cell:injectLinked - might be useful so that cell can remove funcs on session close
 			OnRemove = cell:inject(Cell, 
 				fun() ->
@@ -198,7 +198,7 @@ processQuery ( Query, SessionId, SessionPid ) ->
 		false -> nosideeffect
 	end.
 	
-processAction ( Action, SessionPid ) ->
+processActionJson ( Action, SessionPid ) ->
 	ActionId = getFromStruct("actionId", Action),
 	Actions = struct:get_value(<<"actions">>, Action),
 	{Returned, Created} = processActionList(Actions),
@@ -217,7 +217,7 @@ processAction ( Action, SessionPid ) ->
 %% 
 
 processActionList(Actions) ->
-	{Results, Variables} = processActionList(Actions, [], []),
+	{Results, Variables} = processActionList(Actions, []),
 	JsonResults = lists:map(fun(error) -> error; (ExprElement) ->
 		[mblib:exprElementToJson(ExprElement), mblib:exprElementToJson(type:unparse((env:lookup(ExprElement#objectPointer.name))#object.type))]
 	end, Results),
@@ -227,11 +227,12 @@ processActionList(Actions) ->
 	{JsonResults, JsonVariables}.
 
 	
-processActionList(Actions, Updates, Variables) ->
+processActionList(Actions, Variables) ->
 	ProcessActions = fun(Action, {UpdatesAccumulator, VariablesAccumulator}) ->
-						processAction(Action, UpdatesAccumulator, VariablesAccumulator)
+						{NewUpdates, NewVariables} = processAction(Action, VariablesAccumulator),
+						{NewUpdates ++ UpdatesAccumulator, NewVariables}
 					end,
-	{ActionUpdates, ReturnVariables} = lists:foldl(ProcessActions, {Updates, Variables}, Actions),
+	{ActionUpdates, ReturnVariables} = lists:foldl(ProcessActions, {[], Variables}, Actions),
 	{lists:reverse(ActionUpdates), ReturnVariables}.
 
 %%
@@ -240,10 +241,10 @@ processActionList(Actions, Updates, Variables) ->
 %% processAction:: Action -> List Update -> List {String, String} -> { List Update, List {String, String} }
 %% 
 
-processAction({struct, [{<<"block">>, Action}]}, Updates, OldVariables) ->
+processAction({struct, [{<<"block">>, Action}]}, OldVariables) ->
 	BlockVariables = struct:get_value(<<"variables">>, Action),
 	Actions = struct:get_value(<<"actions">>, Action),
-	{Returned,_} = processActionList(Actions, [], OldVariables),
+	{Returned,_} = processActionList(Actions, OldVariables),
 	NewVariables = try lists:zip(BlockVariables, Returned)
 		catch 
 			_:_ ->
@@ -251,9 +252,9 @@ processAction({struct, [{<<"block">>, Action}]}, Updates, OldVariables) ->
 		end,
 	
 	MergedVariables = lists:ukeymerge(1, lists:sort(NewVariables), lists:sort(OldVariables)),
-	{Updates, MergedVariables};
+	{[], MergedVariables};
 % action:create is how variables get bound to objects
-processAction({struct, [{<<"create">>, Action}]}, Updates, Variables) ->
+processAction({struct, [{<<"create">>, Action}]}, Variables) ->
 	Type = binary_to_list( struct:get_value(<<"type">>, Action) ),
 	Variable = struct:get_value(<<"variable">>, Action),
 	Prop = struct:get_value(<<"prop">>, Action),
@@ -263,27 +264,27 @@ processAction({struct, [{<<"create">>, Action}]}, Updates, Variables) ->
 	case objects:create(Type, PropDict) of
 		{error, Reason} ->
 			throw({objectscreate_returned_error, Reason, PropDict}),
-			{ Updates, [{Variable, error} | Variables1]};
+			{ [], [{Variable, error} | Variables1]};
 		Object ->
-			{ Updates, [{ Variable, Object } | Variables1] }
+			{ [], [{ Variable, Object } | Variables1] }
 	end;
 % action:return is how bound variables get returned to the client
-processAction({struct, [{<<"returnValue">>, Variable}]}, Updates, Variables) ->
+processAction({struct, [{<<"returnValue">>, Variable}]}, Variables) ->
 	case lists:keysearch(Variable, 1, Variables) of
 		{value, {_, Binding} } ->
-			{ [Binding|Updates], Variables};
+			{ [Binding], Variables};
 		_ -> 
 			throw({return_variable_unbound, Variable}),
-			{ [error|Updates], Variables}
+			{ [error], Variables}
 	end;
 % action:add|remove doesn't affect the state of the response to client unless there is an error
-processAction({struct, [{<<"change">>, Action}]}, Updates, Variables) ->
+processAction({struct, [{<<"change">>, Action}]}, Variables) ->
 	ActionType = struct:get_value(<<"kind">>, Action),
 	Variable = struct:get_value(<<"object">>, Action),
 	Object = bindVarOrFormatExprElement( Variable, Variables ),
 	if
 		Object =:= error; Object =:= notfound ->
-			{ [error | Updates], Variables };
+			{ [error], Variables };
 		true ->
 			Property = binary_to_list( struct:get_value(<<"property">>, Action) ),
 			KeyName = struct:get_value(<<"key">>, Action),
@@ -297,22 +298,35 @@ processAction({struct, [{<<"change">>, Action}]}, Updates, Variables) ->
 						true -> Data = {pair, Key, bindVarOrFormatExprElement( ValueName, Variables ) }
 					end
 			end,
+
 			case ActionType of 
 				<<"add">> ->
 					case objects:add(Object, Property, Data) of
 						ok ->
-							{ Updates, Variables };
+							%catch changes to truth value here, and add history infons when running locally
+							case Property of 
+								"truth" -> % logHistory(Object, true);
+									nosideeffect;
+								_ -> nosideeffect
+							end,
+							{ [], Variables };
 						{error, Reason} ->
 							throw({objectsadd_returned_error, Reason}),
-							{ [error | Updates], Variables }
+							{ [error], Variables }
 					end;
 				<<"remove">> ->
 					case objects:remove(Object, Property, Data) of
 						ok ->
-							{ Updates, Variables };
+							%catch changes to truth value here, and add history infons when running locally
+							case Property of 
+								"truth" -> % logHistory(Object, false);
+									nosideeffect;
+								_ -> nosideeffect
+							end,							
+							{ [], Variables };
 						{error, Reason} ->
 							throw({objectsadd_returned_error, Reason}),
-							{ [error | Updates], Variables }
+							{ [error], Variables }
 					end
 			end
 	end.

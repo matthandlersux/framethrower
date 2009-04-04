@@ -10,59 +10,32 @@
 %% Searching Functions
 %% ====================================================
 
+%% 
+%% traverse:: Tuple -> Fun -> Tuple
+%%		takes any tuple and applies Fun to every element, Fun should be strictly defined
+%%		to only process what it's looking for so that try/catch can do the right thing 
+%%		
+%%		the try catch may be what slows this down
+%% 
 
+traverse( Expr, Do ) when is_tuple(Expr) ->
+	list_to_tuple( traverseHelper( tuple_to_list(Expr), Do ) );
+traverse( Expr, _ ) -> Expr.
 
 %% 
-%% lookForExprVar:: String -> Term -> LookFor
-%% LookFor:: Expr -> {ok, Expr} | {next, List Natural}
+%% traverseHelper:: List -> Fun -> List
 %% 
 
-lookForExprVar(VarName, Replace) ->
-	fun( Expr ) when is_record(Expr, exprVar) ->
-			case Expr#exprVar.value of
-				VarName ->
-					{ok, Replace};
-				_ ->
-					{ok, Expr}
-			end
-	end.
-
-%%	Traverse is like lists:keysearch except that it traverses nested tuples rather than a tuple list
-%%		LookFor is a function that checks a tuple, decides if it needs to be replaced and does so
-%%		or it tells Traverse to continue traversing specific elements of the tuple
-%% 
-%% traverse:: Tuple -> LookFor -> Tuple
-%%		LookFor:: Tuple -> {ok, replacedexpr} | {next, ListOfElementsToTraverse}
-
-traverse( Expr, LookFor) ->
-	LookFor1 = fun( CalledExpr ) ->
-				try LookFor( CalledExpr )
-				catch 
-					_:_ ->
-						traverseCons( CalledExpr )
-				end
+traverseHelper( [], _ ) -> [];
+traverseHelper( [H|T], Do ) ->
+	H1 = 	try Do(H)
+			catch 
+				_:_ ->	if 
+							is_tuple(H) -> traverse(H, Do);
+							true -> H
+						end
 			end,
-	traverse1( Expr, LookFor1 ).
-
-
-traverse1( Expr, LookFor) ->
-	case LookFor(Expr) of
-		{ok, Replaced} ->
-			Replaced;
-		{next, ElementList} ->
-			replaceElement(Expr, ElementList, fun(X) -> traverse1(X, LookFor) end)
-	end.
-
-%% 
-%% traverseCons is a package function for traverse LookFor functions
-%% 
-
-traverseCons( Expr ) when is_record(Expr, cons) ->
-	% ElementList = recordKeysToIndex( cons, [left, right]),
-	ElementList = ?consKeysLeftRight,
-	{next, ElementList};
-traverseCons( Expr ) -> 
-	{ok, Expr}.
+	[H1 | traverseHelper( T, Do)].
 	
 %% 
 %% replaceElement:: Tuple -> List Natural -> (Tuple -> Tuple) -> Tuple
@@ -101,7 +74,7 @@ pumpList([H|T], Fun) ->
 %% maybeStore:: Expr -> FreshVariable -> Env -> Env
 %% 
 
-maybeStore(#exprVar{value = OldVar} = Expr, NewVar, Env) when is_record(Expr, exprVar) ->
+maybeStore(#exprVar{index = OldVar} = Expr, NewVar, Env) when is_record(Expr, exprVar) ->
 	maybeStore(OldVar, NewVar, Env);
 
 %% 
@@ -142,14 +115,16 @@ recordKeysToIndex(FieldList, [Key|KeyList]) ->
 recordKeysToIndex(FieldList, Key) ->
 	which(Key, FieldList) + 1.
 
-rInfo(cons) ->
-	record_info(fields, cons);
 rInfo(object) ->
 	record_info(fields, object);
 rInfo(exprCell) ->
 	record_info(fields, exprCell);
 rInfo(exprFun) ->
 	record_info(fields, exprFun);
+rInfo(exprApply) ->
+	record_info(fields, exprApply);
+rInfo(exprLambda) ->
+	record_info(fields, exprLambda);
 rInfo(session) ->
 	record_info(fields, session);
 rInfo(cellState) ->
@@ -230,6 +205,19 @@ exprElementToJson(X) when is_record(X, object) ->
 	list_to_binary(X#object.name);	
 exprElementToJson(X) -> X.
 
+
+createExprLib(ExprLibStruct) ->
+	Exprs = struct:to_list(ExprLibStruct),
+	lists:map(fun(Anything) ->
+		{BinName, BinExpr} = Anything,
+		Name = binary_to_list(BinName),
+		try 
+			ParsedExpr = expr:exprParse(binary_to_list(BinExpr)),
+			env:store(Name, {exprLib, ParsedExpr})
+		catch
+			_:_ -> nosideeffect
+		end
+	end, Exprs).
 
 createClasses(ClassesStruct) ->
 	Classes = struct:to_list(ClassesStruct),
@@ -314,9 +302,11 @@ bootJsonScript() ->
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
 	ClassesStruct = struct:get_value(<<"classes">>, Struct),
 	RootObjectsStruct = struct:get_value(<<"rootObjects">>, Struct),
+	ExprLibStruct = struct:get_value(<<"exprLib">>, Struct),
 
 	createClasses(ClassesStruct),
 	createRootObjects(RootObjectsStruct),
+	createExprLib(ExprLibStruct),
 
 	bootedJSONScript.
 

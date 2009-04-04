@@ -1,9 +1,9 @@
 function intact(object, property, action, key, value) {
-	if (DEBUG) {
-		if (!object.prop[property]) {
-			debug.error("intact failed. Object does not have property `"+property+"`", object);
-		}
-	}
+	// if (DEBUG) {
+	// 	if (!object.prop[property]) {
+	// 		debug.error("intact failed. Object does not have property `"+property+"`", object);
+	// 	}
+	// }
 	
 	// params has properties key and value, or just key
 	objects.actOnProp(property, object, action, key, value);
@@ -129,7 +129,8 @@ function performActionsJSLocal(actions, env, ret) {
 			}
 		} else if (action.change) {
 			var change = action.change;
-			intact(unextract(change.object), change.property, change.kind, unextract(change.key), unextract(change.value));
+			var object = unextract(change.object);			
+			intact(object, change.property, change.kind, unextract(change.key), unextract(change.value));
 		} else if (action.returnValue) {
 			ret.push(env.env(action.returnValue));
 		}

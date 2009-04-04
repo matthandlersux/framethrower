@@ -77,6 +77,18 @@ choice([H|T]) ->
 	choice(H, choice(T)).
 
 
+%% 
+%% nest:: FirstElement -> Parser -> Fun -> Parser
+%%		nest was my solution to the left associativity of Apply's.  This could be a slow process but essentially it
+%%		returns a parser that takes the first element of something that is left associative (LeftMost) and then 
+%%		looks to see if there are more of those left associative elements to the right of it... it 
+%%		then folds NestFun on the elements that were parsed out so that you have for example:
+%%
+%%		nest(apply1, apply(),  fun(X, Acc) -> {cons, apply, Acc, X} end) -> Parser st.
+%%			parse(Parser, "apply2 apply3 apply4 apply5") ->
+%%				((((apply1 apply2) apply3) apply4) apply5)
+%% 
+
 	
 nest(LeftMost, Parser, NestFun) ->
 	fun(String) ->

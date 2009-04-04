@@ -19,11 +19,13 @@
 %% ====================================================
 
 % Expr:
-% 	#cons |	#exprFun | #exprCell | #exprVar | String | Num | Bool
+% 	#exprLambda | #exprApply |	#exprFun | #exprCell | #exprVar | String | Num | Bool
 % 	
 % Type:
 % 	#type
 % 	
+
+-record (cons, {type, left, right}).
 
 %% ====================================================
 %% external api
@@ -45,7 +47,7 @@ get( Expr ) ->
 %% 
 	
 show( String ) when is_list( String ) ->
-	show( expr:expr(String) );
+	show( expr:exprParse(String) );
 show( Expr ) ->
 	unparse( type:get(Expr) ).
 	
@@ -124,10 +126,10 @@ getType( Expr, _ ) when is_record(Expr, exprFun) ->
 	% io:format("~100p~n~n", [unparse(Expr#exprFun.type)]),
 	Expr#exprFun.type;
 getType( Expr, Env ) when is_record(Expr, exprVar) ->
-	try dict:fetch(Expr#exprVar.value, Env)
+	try dict:fetch(Expr#exprVar.index, Env)
 		% {TypeString, _Fun} -> type(typeVar, parse:tast( TypeString ))
 	catch _:_ ->
-		case env:lookup(Expr#exprVar.value) of
+		case env:lookup(Expr#exprVar.index) of
 			notfound -> erlang:error({typeVar_not_found, Expr});
 			Result -> Result
 		end
@@ -180,18 +182,6 @@ genConstraints(Expr, Prefix, Env) ->
 			{type(lambda, Variable, Type1), Constraints1}
 	end.
 
-% %% 
-% %% maybeStore:: Expr -> FreshVariable -> Env -> Env
-% %% 
-% 
-% maybeStore(#exprVar{value = OldVar} = Expr, NewVar, Env) when is_record(Expr, exprVar) ->
-% 	try dict:fetch(OldVar, Env) of
-% 		_ -> Env
-% 	catch 
-% 		_:_ -> dict:store(OldVar, NewVar, Env)
-% 	end;
-% maybeStore(_, _, Env) -> Env.
-
 %% 
 %% type returns a well formed type tuple
 %% 
@@ -212,6 +202,8 @@ type(lambda, Var, Type) -> {type, typeFun, {Var, Type}}.
 %% 
 
 exprType(Expr) when is_record(Expr, cons) -> Expr#cons.type;
+exprType(Expr) when is_record(Expr, exprApply) -> apply;
+exprType(Expr) when is_record(Expr, exprLambda) -> lambda;
 exprType(Expr) when is_record(Expr, exprVar) -> exprVar;
 exprType(_) -> expr.
 
@@ -396,35 +388,23 @@ isMap(#type{type = typeApply, value = {#type{type = typeName, value = 'Map'}, _}
 	true;
 isMap(_) -> false.
 
+	
 %% 
-%% prefixTypeVars(Expr)
+%% prefixTypeVars:: Expr -> Expr
 %% 
 
 prefixTypeVars( Expr ) ->
-	Prefixer = spawn(fun() -> prefixer(1) end),
-	Expr1 = prefixTypeVars( Expr, Prefixer),
-	Prefixer ! die,
-	Expr1.
+	prefixTypeVars( Expr, "" ).
 
-prefixTypeVars( Expr, Prefixer ) when is_record(Expr, cons) ->
-	Expr#cons{left = prefixTypeVars(Expr#cons.left, Prefixer), right = prefixTypeVars(Expr#cons.right, Prefixer) };
-prefixTypeVars( Expr, Prefixer ) when is_record(Expr, exprFun); is_record(Expr, exprCell)->
-	Ref = make_ref(),
-	Prefixer ! {prefix, self(), Ref, Expr},
-	receive {Ref, Expr1} -> Expr1 end;
+prefixTypeVars( #exprApply{ left = Left, right = Right } = Apply, Index ) when is_record( Apply, exprApply ) ->
+	Apply#exprApply{ left = prefixTypeVars(Left, Index ++ "x"), right = prefixTypeVars(Right, Index ++ "y") };
+prefixTypeVars( #exprLambda{ expr = Expr} = Lambda, Index ) when is_record( Lambda, exprLambda ) ->
+	Lambda#exprLambda{ expr = prefixTypeVars(Expr, "z") };
+prefixTypeVars(#exprFun{ type = Type } = ExprFun, Index ) when is_record( ExprFun, exprFun ) ->
+	ExprFun#exprFun{ type = shiftVars(Type, Index) };
+prefixTypeVars( #exprCell{ type = Type } = ExprCell, Index ) when is_record( ExprCell, exprCell ) ->
+	ExprCell#exprFun{ type = shiftVars(Type, Index) };
 prefixTypeVars( Expr, _ ) -> Expr.
-	
-prefixer(Num) ->
-	receive
-		{prefix, From, Ref, #exprFun{type = Type} = Expr} when is_record(Expr, exprFun) ->
-			From ! {Ref, Expr#exprFun{type = shiftVars(Type, integer_to_list(Num) ) }},
-			prefixer(Num + 1);
-		{prefix, From, Ref, #exprCell{type = Type} = Expr} when is_record(Expr, exprCell) ->
-			From ! {Ref, Expr#exprCell{type = shiftVars(Type, integer_to_list(Num) ) }},
-			prefixer(Num + 1);
-		_ ->
-			true
-	end.
 	
 	
 	

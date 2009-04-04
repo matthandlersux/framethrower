@@ -116,7 +116,7 @@ var exprChainer = (function () {
 	
 	return {
 		chain: function (startType, exprs, endType) {
-			var myVar = makeVar("x");
+			var myVar = makeVar(1);
 			var ret = myVar;
 			forEach(exprs, function (expr) {
 				var f = getNext(startType, expr);
@@ -127,7 +127,7 @@ var exprChainer = (function () {
 				var f = getNext(startType, identity, getCandC(endType));
 				ret = makeApply(f, ret);
 			}
-			return makeLambda(myVar, ret);
+			return makeLambda("x", ret);
 		},
 		chainOn: function (startExpr, exprs) {
 			var ret = startExpr;

@@ -75,11 +75,7 @@ var rootObjects = {};
 	
 	
 	m("shared.test.walleMovie");
-	
-	
-	
-	
-	
+
 	
 	// m("test.1");
 	// m("test.2");

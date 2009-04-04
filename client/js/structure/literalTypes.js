@@ -1,6 +1,6 @@
 
 
-nullObject = {
+var nullObject = {
 	kind: "null",
 	type: parseType("Null"),
 	name: "null"

@@ -19,8 +19,10 @@
 start() ->
 	gen_server:start({local, ?MODULE}, ?MODULE, [], []),
 	FuncExprs = [
-		{"compose", "f -> g -> y -> f (g y)"},
-		{"swap", "f -> x -> y -> f y x"}
+		{"compose", "(\\ (\\ (\\ (/3 (/2 /1)))))"},
+		% {"compose", "f -> g -> y -> f (g y)"},
+		{"swap", "(\\ (\\ (\\ ((/3 /1) /2))))"}
+		% {"swap", "f -> x -> y -> f y x"}
 	],
 	lists:map(fun ({Name, ExprString}) -> addExpr(Name, expr:exprParse(ExprString)) end, FuncExprs),
 	ok.

@@ -20,11 +20,13 @@
 %% expression records
 %% ====================================================
 
+-record (exprLambda, {
+	expr
+}).
 
--record (cons, {
-	type, % lambda | apply
-	left, % ast | fun
-	right % ast | fun | nat | bool |
+-record (exprApply, {
+ 	left,
+	right
 }).
 
 -record (exprFun, {
@@ -35,7 +37,7 @@
 }).
 
 -record (exprVar, {
-	value
+	index
 }).
 
 

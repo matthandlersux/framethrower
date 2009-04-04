@@ -299,7 +299,7 @@ comparePrepStates(OldPrepState, PrepareStateStruct, OldVariables) ->
 		not(lists:member(Elem, OldPrepState))
 	end, PrepareStateStruct),
 
-	{_, Variables} = pipeline_web:processActionList(NewActions, [], OldVariables),
+	{_, Variables} = pipeline_web:processActionList(NewActions, OldVariables),
 	Variables.
 
 

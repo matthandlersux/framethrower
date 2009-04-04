@@ -104,5 +104,8 @@ function makeCC(type) {
 	cell.type = type;
 	cell.persist = true;
 	
+	cell.outsideScope = 0;
+	cell.remote = 2; // this gets overwritten if the cell isn't local
+	
 	return cell;
 }

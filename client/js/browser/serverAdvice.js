@@ -15,7 +15,7 @@ function getServerAdvice(templateNode, url, env) {
 		var type = parseType(getAttr(paramNode, "type"));
 		
 		var remote = getRemoteType(type);
-		scope[name] = {remote: remote, name:name};
+		scope[name] = {remote: remote, name:name, type:type};
 		
 		if (remote < 2) {
 			params.push(name);

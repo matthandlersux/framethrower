@@ -126,7 +126,7 @@ function makeBaseCell (toKey) {
 			removeLineResponse(dot, id);
 		});
 		if (funcs.isEmpty() && !cell.persist) {
-			console.log("removing a cell");
+			// console.log("removing a cell");
 			CELLCOUNT--;
 			onRemoves.forEach(function(onRemove) {
 				if (onRemove.func) {

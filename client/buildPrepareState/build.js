@@ -21,6 +21,16 @@ function initialize() {
 	});
 	combined["rootObjects"] = rObs;
 	
+	// exprLib
+	var eLib = {};
+	forEach(exprLib, function (e, name) {
+		var exp = parseExpr(name);
+		//if (getRemote(exp) !== 2) {
+			eLib[name] = stringify(exp);			
+		//}
+	});
+	combined["exprLib"] = eLib;
+	
 	// get prepareState
 	renderJSONFromAction(prepareStateXMLUrl, function (prepareStateJSON) {
 		

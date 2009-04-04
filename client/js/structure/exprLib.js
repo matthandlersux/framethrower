@@ -673,13 +673,15 @@ function processExprs(exprs, dynamicEnv) {
 		}
 		
 		// for debug:
-		getType(expr); // to make sure it's even well typed at all
 		if (o.type && !compareTypes(parseType(o.type), getType(expr))) {
 			debug.error("Expression `"+name+"` has type `"+unparseType(getType(expr))+"` but is annotated as `"+o.type+"`");
 		}
 		
+		expr = fullBetaReduce(expr);
 		
-		dynamicEnv.add(name, normalizeExpr(expr));
+		expr.stringifyForServer = name;
+
+		dynamicEnv.add(name, expr);
 	});
 }
 

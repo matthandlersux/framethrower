@@ -21,7 +21,6 @@
 		</xsl:choose>
 	</xsl:template>
 	
-
 	<f:each select="$display"><f:each select="$content">
 		
 		<xsl:variable name="d" select="$display/*" />

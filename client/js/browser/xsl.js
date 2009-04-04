@@ -223,7 +223,7 @@ function compileTemplate(templateNode, url) {
 
 				var resultXML = runXSL(compiledXSL, pxml);
 			
-				state = {xml: resultXML, ids: ids};
+				state = {xml: resultXML, ids: ids, type: jsType};
 				cell.addLine(state);
 				delete dirtyThunks[stringify(cell)];
 			}
@@ -326,14 +326,10 @@ function compileTemplate(templateNode, url) {
 			myFun.url = url;
 			return myFun;
 		} else {
-			return {
-				kind: "fun",
-				type: funType,
-				fun: myFun,
-				params: params,
-				url: url,
-				remote: 2
-			};			
+			var ret = makeFun(funType, myFun, undefined, 2);
+			ret.url = url;
+			ret.params = params;
+			return ret;
 		}
 	};
 	

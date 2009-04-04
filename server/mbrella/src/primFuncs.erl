@@ -904,7 +904,7 @@ for(I, Max, F) -> [F(I)|for(I+1, Max, F)].
 
 
 applyFun(Fun, Input) ->
-	eval:evaluate(#cons{type=apply, left=Fun, right=Input}).
+	eval:evaluate(#exprApply{left=Fun, right=Input}).
 
 applyAndInject(Fun, Input, OutputCell, InjectedFun) ->
 	cell:inject(applyFun(Fun, Input), OutputCell, InjectedFun).
