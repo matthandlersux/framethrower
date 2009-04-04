@@ -177,7 +177,10 @@ var classesToMake = {
 			"focus": "Object",
 			"startDate": "Unit Number",
 			"endDate": "Unit Number",
-			"zoomWidth": "Unit Number"
+			"zoomWidth": "Unit Number",
+			"selectedTime1": "Unit Number",
+			"selectedTime2": "Unit Number",
+			"selecting": "Unit Null"
 		}
 	},
 	

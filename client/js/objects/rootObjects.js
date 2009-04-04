@@ -70,6 +70,9 @@ var rootObjects = {};
 	m("shared.atTime");
 	
 	
+	m("shared.onDate");
+	
+	
 	m("shared.globalPrefs", "X.prefs");
 	
 	

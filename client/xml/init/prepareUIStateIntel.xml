@@ -77,7 +77,7 @@
 	<f:create type="UI.pane.realTimeline" name="timeline">
 		<f:with-param name="focus" select="$realLife" />
 	</f:create>
-	<f:intact object="$timeline" property="height" action="add" key="80" />
+	<f:intact object="$timeline" property="height" action="add" key="180" />
 	<f:intact object="$timeline" property="zoomWidth" action="add" key="4000" />
 	<f:intact object="$timeline" property="startDate" action="add" key="-80" />
 	<f:intact object="$timeline" property="endDate" action="add" key="380" />

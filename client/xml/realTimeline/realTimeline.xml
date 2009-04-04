@@ -60,39 +60,173 @@
 	
 	</html:div>
 	
+	
+	
+	
+	
+	<f:action name="moveSelection">
+		<f:param name="x" type="Number" />
+		<f:derive name="selecting" d="UI.pane.realTimeline:selecting realTimeline" />
+		
+		<f:each select="$zoomWidth"><f:each select="$startDate"><f:each select="$endDate"><f:each select="$selecting">
+			
+			<xsl:variable name="ratio" select="$zoomWidth/@value div ($endDate/@value - $startDate/@value)" />
+			<xsl:variable name="time" select="$x/@value div $ratio" />
+
+			<f:intact object="$realTimeline" property="selectedTime2" action="add">
+				<f:with-param name="key" select="round($time) + $startDate/@value" as="Number" />
+			</f:intact>
+			
+		</f:each></f:each></f:each></f:each>
+	</f:action>
+	<f:action name="startSelection">
+		<f:param name="x" type="Number" />
+		
+		<f:each select="$zoomWidth"><f:each select="$startDate"><f:each select="$endDate">
+			
+			<xsl:variable name="ratio" select="$zoomWidth/@value div ($endDate/@value - $startDate/@value)" />
+			<xsl:variable name="time" select="$x/@value div $ratio" />
+
+			<f:intact object="$realTimeline" property="selectedTime1" action="add">
+				<f:with-param name="key" select="round($time) + $startDate/@value - 1" as="Number" />
+			</f:intact>
+			<f:intact object="$realTimeline" property="selectedTime2" action="add">
+				<f:with-param name="key" select="round($time) + $startDate/@value - 1" as="Number" />
+			</f:intact>
+			<f:intact object="$realTimeline" property="selecting" action="add" key="null" />
+
+			
+		</f:each></f:each></f:each>
+	</f:action>
+	<f:action name="stopSelection">
+		<f:intact object="$realTimeline" property="selecting" action="remove" />
+	</f:action>
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	<f:template name="drawActualTimeline">
 		<!-- <f:derive name="dates" d="getSalientDates shared.realLife" /> -->
 		<f:derive name="dates" d="getSalientDates2 shared.realLife" />
+		
+		<f:derive name="selectedTime1" d="UI.pane.realTimeline:selectedTime1 realTimeline" />
+		<f:derive name="selectedTime2" d="UI.pane.realTimeline:selectedTime2 realTimeline" />
 		
 		<f:each select="$zoomWidth"><f:each select="$startDate"><f:each select="$endDate"><f:each select="$focus">
 			
 			<xsl:variable name="ratio" select="$zoomWidth/@value div ($endDate/@value - $startDate/@value)" />
 			
 			<html:div>
-				<f:each select="$dates" key="sit" value="days">
-					<f:each select="$days" key="day">
-						<html:div class="dateblob">
-							<xsl:attribute name="style">
-								left: <xsl:value-of select="round(($day/@value - $startDate/@value) * $ratio)" />px;
-								width: <xsl:value-of select="round($ratio)" />px;
-								top: 0px;
-								height: <xsl:value-of select="$height/@value" />px;
-								position:absolute; background-color:rgba(34,170,278,0.5); cursor: pointer;
-							</xsl:attribute>
-						</html:div>
+				<html:div>
+					<f:each select="$dates" key="sit" value="days">
+						<f:each select="$days" key="day">
+							<html:div class="dateblob">
+								<xsl:attribute name="style">
+									left: <xsl:value-of select="round(($day/@value - $startDate/@value) * $ratio)" />px;
+									width: <xsl:value-of select="round($ratio)" />px;
+									top: 0px;
+									height: <xsl:value-of select="$height/@value" />px;
+									position:absolute; background-color:rgba(34,170,278,0.5); cursor: pointer;
+								</xsl:attribute>
+							</html:div>
+						</f:each>
 					</f:each>
-				</f:each>
+				</html:div>
+			
+				<f:thunk url="ruler.xml">
+					<f:with-param name="width" select="$zoomWidth" />
+					<f:with-param name="height" select="$height" />
+					<f:with-param name="startDate" select="$startDate" />
+					<f:with-param name="endDate" select="$endDate" />
+					<f:with-param name="focus" select="$focus" />
+				</f:thunk>
+			
+				<f:thunk with-template="$drawSelection" />
+			
+				<f:on event="mousemove" with-action="$moveSelection">
+					<f:with-param-browser name="x" prop="relMouseX" />
+				</f:on>
+			
+				<f:on event="dragStart" with-action="$startSelection">
+					<f:with-param-browser name="x" prop="relMouseX" />
+				</f:on>
+				<f:on event="mouseup" with-action="$stopSelection" />
 			</html:div>
 			
-			<f:thunk url="ruler.xml">
-				<f:with-param name="width" select="$zoomWidth" />
-				<f:with-param name="height" select="$height" />
-				<f:with-param name="startDate" select="$startDate" />
-				<f:with-param name="endDate" select="$endDate" />
-				<f:with-param name="focus" select="$focus" />
-			</f:thunk>
-			
 		</f:each></f:each></f:each></f:each>
+		
+		
+		<f:template name="drawSelection">
+			<f:derive name="selecting" d="UI.pane.realTimeline:selecting realTimeline" />
+
+			<f:each select="$zoomWidth"><f:each select="$startDate"><f:each select="$endDate"><f:each select="$selectedTime1"><f:each select="$selectedTime2">
+
+				<xsl:variable name="ratio" select="$zoomWidth/@value div ($endDate/@value - $startDate/@value)" />
+
+				<xsl:variable name="t1" select="$selectedTime1/@value" />
+				<xsl:variable name="t2" select="$selectedTime2/@value" />
+				<xsl:variable name="tmin"><xsl:choose>
+					<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t1" /></xsl:when>
+					<xsl:otherwise><xsl:value-of select="$t2" /></xsl:otherwise>
+				</xsl:choose></xsl:variable>
+				<xsl:variable name="tmax"><xsl:choose>
+					<xsl:when test="$t1 &lt; $t2"><xsl:value-of select="$t2" /></xsl:when>
+					<xsl:otherwise><xsl:value-of select="$t1" /></xsl:otherwise>
+				</xsl:choose></xsl:variable>
+				<xsl:variable name="width">
+					<xsl:choose>
+						<xsl:when test="round(($tmax - $tmin) * $ratio) = 0">0</xsl:when>
+						<xsl:otherwise><xsl:value-of select="round(($tmax - $tmin) * $ratio) - 1" /></xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+
+				<html:div class="ruler-selected-range">
+					<xsl:attribute name="style">
+						left: <xsl:value-of select="round(($tmin - $startDate/@value) * $ratio)" />px;
+						width: <xsl:value-of select="$width" />px;
+					</xsl:attribute>
+
+					<!-- <xsl:if test="not($selecting/*)">
+						<f:thunk with-template="$selectionInsides" />
+					</xsl:if> -->
+
+
+				</html:div>
+			</f:each></f:each></f:each></f:each></f:each>
+
+			<!-- <f:template name="selectionInsides">
+				<html:div>
+					<xsl:attribute name="style">
+						left: 50%;
+						top: 150px;
+						position: absolute;
+						margin-left: -7px;
+					</xsl:attribute>
+					<html:div class="button-play" />
+				</html:div>
+
+				<html:div class="timeline-selected-layers">
+					<xsl:attribute name="style">
+						left: 50%;
+						margin-left: -7px;
+					</xsl:attribute>
+					<f:each select="$layers" key="ord" value="layer">
+						<html:div class="timeline-selected-layer">
+							<f:on event="click" with-action="$makeSituationInLayer">
+								<f:with-param name="layer" select="$layer" />
+							</f:on>
+							<html:div class="button-zoomIn" />
+						</html:div>
+					</f:each>
+				</html:div>
+			</f:template> -->
+		</f:template>
+		
 	</f:template>
 
 

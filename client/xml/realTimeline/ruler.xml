@@ -90,9 +90,11 @@
 						<f:with-param name="day" select="$day" as="Number" />
 					</f:on>
 					
-					<html:div class="rulerMarkingHidden">
-						<xsl:value-of select="concat($d, ' ', $m)" />
-					</html:div>
+					<xsl:if test="$d = 1">
+						<html:div class="rulerMarking">
+							<xsl:value-of select="concat($d, ' ', $m)" />
+						</html:div>
+					</xsl:if>
 				</html:div>
 				
 				<xsl:call-template name="rulernotch">
