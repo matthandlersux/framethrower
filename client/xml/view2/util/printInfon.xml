@@ -9,6 +9,7 @@
 		<xsl:param name="infonArgs" />
 		<xsl:param name="argTemplate" />
 		<xsl:param name="color" />
+		<xsl:param name="extra" />
 		
 
 	
@@ -16,6 +17,8 @@
 			<xsl:if test="$color">
 				<xsl:attribute name="style">background-color: <xsl:value-of select="$color" />;</xsl:attribute>
 			</xsl:if>
+			
+			<xsl:copy-of select="$extra" />
 			
 			<xsl:choose>
 				<xsl:when test="$relationTemplate/f:row">

@@ -7,7 +7,6 @@
 	<f:param name="focus" type="Object" />
 	
 	<f:derive name="name" d="getName focus" />
-	<f:derive name="thumbnail" d="bindUnitSet Object~X.picture (getOntProp shared.thumbnail focus)" />
 	
 	<!-- <f:derive name="types" d="getTypes focus" /> -->
 	<f:derive name="types" d="getTypesMap focus" />
@@ -15,6 +14,8 @@
 	<f:derive name="typeDisplay" d="X.prefs:typeColors shared.globalPrefs" />
 	
 	<f:derive name="isTypeObject" d="isType focus" />
+	
+	<f:derive name="thumbnail" d="bindUnitSet Object~X.picture (getOntProp shared.thumbnail focus)" />
 	
 	<f:include url="/xml/util/typeColor.xml" />
 	
