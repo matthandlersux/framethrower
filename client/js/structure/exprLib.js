@@ -357,7 +357,18 @@ var exprLib = {
 
 	getInfonsAbout: {
 		type: "Object -> Set Cons",
-		expr: "x -> filterByTruth ((bindSet getAllInfonsAboveCons) (setDifference (Object:upLeft x) (returnUnitSet (Cons::lookup shared.in x))))"
+		expr: "compose (filter (cons -> reactiveNot (bindUnit (reactiveEqual shared.ont) (leftRight cons)))) stepOne",
+		where: {
+			stepOne: {
+				type: "Object -> Set Cons",
+				expr: "x -> filterByTruth ((bindSet getAllInfonsAboveCons) (setDifference (Object:upLeft x) (returnUnitSet (Cons::lookup shared.in x))))"
+			},
+			leftRight: {
+				type: "Cons -> Unit Object",
+				chain: ["Cons:left", "Cons:right"]
+			}
+		}
+		
 		// TODO: probably more efficient to do this by filtering out infons whose left is shared.in, rather than doing a setDifference
 	},
 	
