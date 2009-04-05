@@ -357,7 +357,8 @@ var exprLib = {
 
 	getInfonsAbout: {
 		type: "Object -> Set Cons",
-		expr: "compose (filter (cons -> reactiveNot (bindUnit (reactiveEqual shared.ont) (leftRight cons)))) stepOne",
+		//expr: "compose (filter (cons -> reactiveNot (bindUnit (reactiveEqual shared.ont) (leftRight cons)))) stepOne",
+		expr: "stepOne",
 		where: {
 			stepOne: {
 				type: "Object -> Set Cons",
