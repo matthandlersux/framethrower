@@ -59,6 +59,21 @@
 	background-color:rgba(34,170,278,0.9);
 }
 
+.timeline-layer-item {
+	position: absolute;
+	top: 0px;
+	height: 20px;
+	margin:1px 0px;
+	background-color:#666;
+	opacity: 0.7;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	cursor: pointer;
+}
+.timeline-layer-item:hover {
+	opacity: 1.0;
+}
+
 .timeline-selected-layers {
 	position:absolute;
 	top: 18px;

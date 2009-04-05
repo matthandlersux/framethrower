@@ -200,24 +200,38 @@
 			
 			<f:template name="drawLayerItem">
 				<f:param name="item" type="Cons" />
+				
 				<f:derive name="dateRange" d="layerItemDateRange item" />
-				<f:derive name="object" d="layerItemObject item" />
 				<f:derive name="startDay" d="bindFutureUnit X.dateRange:startDay dateRange" />
 				<f:derive name="endDay" d="bindFutureUnit X.dateRange:endDay dateRange" />
 				
+				<f:derive name="object" d="layerItemObject item" />
+				<f:derive name="types" d="mapUnit getTypesMap object" />
+				<f:derive name="typeDisplay" d="X.prefs:typeColors shared.globalPrefs" />
+				
+				<f:include url="/xml/util/typeColor.xml" />
+				
 				<f:each select="$startDay"><f:each select="$endDay">
-					<f:each select="$zoomWidth"><f:each select="$startDate"><f:each select="$endDate">
+					<f:each select="$zoomWidth"><f:each select="$startDate"><f:each select="$endDate"><f:each select="$types">
 						
 						<xsl:variable name="ratio" select="$zoomWidth/@value div ($endDate/@value - $startDate/@value)" />
 						
-						<html:div class="timeline-layer-situation">
+						<xsl:variable name="color">
+							<xsl:call-template name="typeColor">
+								<xsl:with-param name="typeNames" select="$types/f:entry/f:value/f:set/f:o/@name" />
+								<xsl:with-param name="typeDisplay" select="$typeDisplay" />
+							</xsl:call-template>
+						</xsl:variable>
+						
+						<html:div class="timeline-layer-item">
 							<xsl:attribute name="style">
 								left: <xsl:value-of select="($startDay/@value - $startDate/@value) * $ratio" />px;
 								width: <xsl:value-of select="($endDay/@value - $startDay/@value) * $ratio" />px;
+								background-color: <xsl:value-of select="$color" />;
 							</xsl:attribute>
 							<f:on event="click" with-action="$openObject" />
 						</html:div>
-					</f:each></f:each></f:each>
+					</f:each></f:each></f:each></f:each>
 				</f:each></f:each>
 				
 				<f:action name="openObject">
