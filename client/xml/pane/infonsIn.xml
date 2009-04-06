@@ -8,7 +8,7 @@
 	<f:param name="newPane" type="a -> Unit JS" />
 	<f:param name="pane" type="UI.pane.pane" />
 	
-	<f:derive name="set" d="getInfonsIn focus" />
+	<f:derive name="set" d="mapSet Cons~Object (bindUnitSet (swap getObjectInSit focus) (getInfonsIn focus))" />
 	
 	<f:derive name="newInfons" d="UI.pane.pane:infonsInNewInfons pane" />
 	
@@ -41,10 +41,11 @@
 	
 	<f:action name="removeInfon">
 		<f:param name="infon" type="Object" />
-		<f:derive name="situatedInfon" d="getObjectInSit infon focus" />
+		<!-- <f:derive name="situatedInfon" d="getObjectInSit infon focus" />
 		<f:each select="$situatedInfon">
 			<f:intact object="$situatedInfon" action="remove" property="truth" key="null" />
-		</f:each>
+		</f:each> -->
+		<f:intact object="$infon" action="remove" property="truth" key="null" />
 	</f:action>
 	
 	<!-- <f:thunk url="../entries/infons.xml">
