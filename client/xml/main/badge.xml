@@ -106,7 +106,7 @@
 			<html:div>
 				<f:thunk url="../view2/media/picture.xml">
 					<f:with-param name="focus" select="$thumbnail" />
-					<f:with-param name="transform"><f:transform width="240" height="240" /></f:with-param>
+					<f:with-param name="transform"><f:transform width="240" height="640" /></f:with-param>
 				</f:thunk>
 			</html:div>
 		</f:each>
