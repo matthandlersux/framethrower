@@ -24,7 +24,8 @@
 				<f:each select="$pane">
 					<f:thunk url="../paneset/pane.xml">
 						<f:with-param name="closePane" select="$closeTopPane" />
-						<f:with-param name="newPane" select="$newTopPane" />
+						<f:with-param name="showBadge" select="$topShowBadge" />
+						<f:with-param name="newPane" select="$topNewPane" />
 						<f:with-param name="pane" select="$pane" />
 						<f:with-param name="width" select="$screenWidth" />
 						<f:with-param name="height" select="$screenHeight" />
@@ -80,12 +81,17 @@
 	</f:template>
 	
 	<f:action name="closeTopPane" />
-	<f:action name="newTopPane">
+	<f:action name="topShowBadge">
 		<f:param name="focus" type="Object" />
 		<f:param name="elemX" type="Number" />
 		<f:param name="elemY" type="Number" />
 		<f:param name="elemWidth" type="Number" />
-		<f:param name="elemHeight" type="Number" />				
+		<f:param name="elemHeight" type="Number" />
+		<f:param name="openObject" type="a -> Unit JS" />
+	</f:action>
+	
+	<f:action name="topNewPane">
+		<f:param name="focus" type="Object" />
 	</f:action>
 	
 	<f:include url="/xml/util/uiActions.xml" />

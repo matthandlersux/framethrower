@@ -177,7 +177,8 @@
 		
 		<f:thunk url="pane.xml">
 			<f:with-param name="closePane" select="$closePane" />
-			<f:with-param name="newPane" select="$prepareShowBadge" />
+			<f:with-param name="showBadge" select="$prepareShowBadge" />
+			<f:with-param name="newPane" select="$newPane" />
 			<f:with-param name="pane" select="$pane" />
 			<f:with-param name="width" select="$width" />
 			<f:with-param name="height" select="$height" />
@@ -187,6 +188,13 @@
 			<f:intact object="$paneset" action="remove" property="panes" key="$key" />
 		</f:action>
 
+		<xsl:template name="min">
+			<xsl:param name="n1" /><xsl:param name="n2" />
+			<xsl:choose>
+				<xsl:when test="$n1 &lt; $n2"><xsl:value-of select="$n1" /></xsl:when>
+				<xsl:otherwise><xsl:value-of select="$n2" /></xsl:otherwise>
+			</xsl:choose>
+		</xsl:template>
 
 
 		<f:action name="prepareShowBadge">
@@ -195,40 +203,122 @@
 			<f:param name="elemY" type="Number" />
 			<f:param name="elemWidth" type="Number" />
 			<f:param name="elemHeight" type="Number" />
+			<f:param name="openObject" type="a -> Unit JS" />
 
 			<f:derive name="screenWidth" d="UI.ui:screenWidth ui.ui" />
 			<f:derive name="screenHeight" d="UI.ui:screenHeight ui.ui" />
 
-			<!-- Decide Badge Direction -->
-			<xsl:variable name="direction">
-				<xsl:choose>
-					<xsl:when test="$screenWidth/@value - $elemX/@value &gt; 250">left</xsl:when>
-					<xsl:otherwise>right</xsl:otherwise>
-				</xsl:choose>
-			</xsl:variable>
-			<xsl:variable name="arrowOffset" select="140" />
-			
-			<f:perform with-action="$showBadge">
-				<f:with-param name="direction" select="$direction" as="String" />
-				<f:with-param name="arrowOffset" select="$arrowOffset" as="Number"/>
-			</f:perform>
+			<f:each select="$screenWidth">
+				<f:each select="$screenHeight">
+					<!-- Decide Badge Direction -->
+					<xsl:variable name="badgeWidth">
+						<xsl:call-template name="min">
+							<xsl:with-param name="n1" select="250" />
+							<xsl:with-param name="n2" select="floor($screenWidth/@value div 2)" />
+						</xsl:call-template>
+					</xsl:variable>
+					<xsl:variable name="badgeHeight">
+						<xsl:call-template name="min">
+							<xsl:with-param name="n1" select="300" />
+							<xsl:with-param name="n2" select="floor($screenHeight/@value div 2)" />
+						</xsl:call-template>
+					</xsl:variable>
+
+					<xsl:variable name="arrowHeight" select="60" />
+					<xsl:variable name="badgeArrowDistance" select="20" />
+					<xsl:variable name="distanceFromMouseX" select="28" />
+					<xsl:variable name="distanceFromMouseY" select="-45" />
+					
+					<xsl:variable name="hor">
+						<xsl:choose>
+							<xsl:when test="($elemX/@value &lt; ($screenWidth/@value div 2))">left</xsl:when>
+							<xsl:when test="($elemX/@value &gt; ($screenWidth/@value div 2))">right</xsl:when>
+							<xsl:otherwise>left</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					
+					<xsl:variable name="Vert">
+						<xsl:choose>
+							<xsl:when test="($elemY/@value &lt; ($screenHeight/@value div 2))">top</xsl:when>
+							<xsl:when test="($elemY/@value &gt; ($screenHeight/@value div 2))">bottom</xsl:when>
+							<xsl:otherwise>left</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					
+					<xsl:variable name="arrowOffset">
+						<xsl:choose>
+							<xsl:when test="$Vert = 'top'">
+								<xsl:value-of select="$badgeArrowDistance"/>
+							</xsl:when>
+							<xsl:when test="$Vert = 'bottom'">
+								<xsl:value-of select="$badgeHeight - $badgeArrowDistance - $arrowHeight"/>
+							</xsl:when>
+							<xsl:when test="($elemY/@value &gt; ($screenHeight/@value div 2))">bottom</xsl:when>
+							<xsl:otherwise>left</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					
+					
+					<xsl:variable name="badgeY">
+						<xsl:choose>
+							<xsl:when test="$Vert = 'bottom' and ($screenHeight/@value - $elemY/@value &lt; $badgeArrowDistance)">
+								<xsl:value-of select="$elemY/@value - $badgeHeight - ($badgeArrowDistance - ($screenHeight/@value - $elemY/@value)) - $distanceFromMouseY + $elemHeight/@value"/>
+							</xsl:when>
+							<xsl:when test="$Vert = 'bottom'">
+								<xsl:value-of select="$elemY/@value - $badgeHeight - $badgeArrowDistance - $distanceFromMouseY + $elemHeight/@value"/>
+							</xsl:when>
+							<xsl:when test="$Vert = 'top' and ($elemY/@value &lt; $badgeArrowDistance)">
+								<xsl:value-of select="$elemY/@value - $badgeArrowDistance + $distanceFromMouseY"/>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:value-of select="$elemY/@value + $distanceFromMouseY"/>
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+					
+					<xsl:variable name="badgeX">
+						<xsl:choose>
+							<xsl:when test="$hor = 'left'">
+								<xsl:value-of select="$elemX/@value + $elemWidth/@value + $distanceFromMouseX"/>
+							</xsl:when>
+							<xsl:otherwise>
+								<xsl:value-of select="$elemX/@value - $badgeWidth - $distanceFromMouseX"/>
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:variable>
+										
+					<f:perform with-action="$showBadge">
+						<f:with-param name="hor" select="$hor" as="String" />
+						<f:with-param name="arrowOffset" select="$arrowOffset" as="Number"/>
+						<f:with-param name="badgeWidth" select="$badgeWidth" as="Number"/>
+						<f:with-param name="badgeHeight" select="$badgeHeight" as="Number"/>						
+						<f:with-param name="badgeX" select="$badgeX" as="Number"/>
+						<f:with-param name="badgeY" select="$badgeY" as="Number"/>
+					</f:perform>
+				</f:each>
+			</f:each>
 			
 			<f:action name="showBadge">
-				<f:param name="direction" type="String" />
+				<f:param name="badgeX" type="Number" />
+				<f:param name="badgeY" type="Number" />
+				<f:param name="badgeWidth" type="Number" />
+				<f:param name="badgeHeight" type="Number" />
+				<f:param name="hor" type="String" />
 				<f:param name="arrowOffset" type="Number" />
+
 
 				<!-- Put the badge popup here -->
 				<f:template name="badgePopup">
 					<f:thunk url="../main/badge.xml">
 						<f:with-param name="focus" select="$focus" />
-						<f:with-param name="newPane" select="$newPane" />
-						<f:with-param name="direction" select="$direction" />
+						<f:with-param name="newPane" select="$openObject" />
+						<f:with-param name="direction" select="$hor" />
 						<f:with-param name="arrowOffset" select="$arrowOffset" />
 					</f:thunk>
 				</f:template>
 
 				<f:perform with-action="$showPopup">
-					<f:with-param name="display"><display x="{$elemX/@value + $elemWidth/@value}" y="{$elemY/@value + ($elemHeight/@value div 2)}" width="250" height="300" class="badge"/></f:with-param>
+					<f:with-param name="display"><display x="{$badgeX/@value}" y="{$badgeY/@value}" width="{$badgeWidth/@value}" height="{$badgeHeight/@value}" class="badge"/></f:with-param>
 					<f:with-param name="content" select="$badgePopup" />
 				</f:perform>
 				
