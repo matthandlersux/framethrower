@@ -1,9 +1,11 @@
 .badge {
 	position: absolute;
-	padding: 8px;
-	background: rgba(0,0,0,.7);
-	-moz-border-radius:12px;
-	-webkit-border-radius:12px;
+	border: 10px solid rgba(0,0,0,0.7);
+	background: transparent;
+	text-align: left;
+/*	overflow: auto;*/
+	-moz-border-radius: 20px;
+	-webkit-border-radius: 20px;
 }
 
 .badgeShadow {
@@ -11,13 +13,18 @@
 }
 
 .badgeContent {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
 	background: #eeeeee;
-	-moz-border-radius:8px;
-	-webkit-border-radius:8px;
-	padding: 10px;
-	min-height: 300px;
-	min-width: 400px;
-	text-align: left;
+	overflow: auto;
+	
+}
+
+.badgeContent div {
+	padding: 3px;
 }
 
 .badgeArrow {
@@ -115,4 +122,14 @@
 	display: block;
 	margin: 0 auto;
 	margin-bottom: 10px;
+}
+
+.badgePopout {
+	position: absolute;
+	background:transparent url(images/popout.png) no-repeat scroll 6px center;
+	right: 10px;
+	width: 20px;
+	height: 20px;
+	z-index: 2;
+	cursor: pointer;
 }

@@ -62,7 +62,18 @@
 			</xsl:choose>
 		</xsl:variable>
 
-		<html:div class="popup">
+		<xsl:variable name="class">
+			<xsl:choose>
+				<xsl:when test="$d/@class">
+					<xsl:value-of select="$d/@class" />
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="'popup'" />
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<html:div class="{$class}">
 			<xsl:call-template name="style">
 				<xsl:with-param name="left" select="$left" />
 				<xsl:with-param name="top" select="$top" />
