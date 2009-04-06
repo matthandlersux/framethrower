@@ -36,7 +36,7 @@
 		
 		<html:embed
 			src="http://media.eversplosion.com/tmp/{$url/@value}"
-			width="{$w}" height="{$h}" enablejavascript="true" postdomevents="true" scale="aspect" controller="false" autoplay="false"
+			width="{$w}" height="{$h}" enablejavascript="true" postdomevents="true" scale="aspect" controller="false" autoplay="true"
 			/>
 				
 	</f:each></f:each></f:each>
