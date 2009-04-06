@@ -302,21 +302,6 @@
 	
 	
 	
-	
-	<f:create type="X.video" name="walleVideo">
-		<f:with-param name="url" select="'devise-walle.mp4'" />
-		<f:with-param name="width" select="720" />
-		<f:with-param name="height" select="304" />
-		<f:with-param name="duration" select="5894.139" />
-		<f:with-param name="frameRate" select="23.976024627686" />
-	</f:create>
-	
-	<f:perform with-action="$makeOntProperty">
-		<f:with-param name="relation" select="$video" />
-		<f:with-param name="arg1" select="$realLife" />
-		<f:with-param name="arg2" select="$walleVideo" />
-	</f:perform>
-	
 	<!-- ==========================================================================
 	Wall-E Example
 	=========================================================================== -->

@@ -124,7 +124,7 @@
 			<xsl:variable name="ratio" select="$zoomWidth/@value div ($endDate/@value - $startDate/@value)" />
 			
 			<html:div>
-				<html:div>
+				<!-- <html:div>
 					<f:each select="$dates" key="sit" value="days">
 						<f:each select="$days" key="day">
 							<html:div class="dateblob">
@@ -138,7 +138,7 @@
 							</html:div>
 						</f:each>
 					</f:each>
-				</html:div>
+				</html:div> -->
 				
 				<f:each select="$focus">
 					<f:thunk url="ruler.xml">

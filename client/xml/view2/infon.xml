@@ -14,6 +14,7 @@
 	<f:derive name="typeDisplay" d="X.prefs:typeColors shared.globalPrefs" />
 	
 	<f:derive name="thumbnail" d="bindUnitSet Object~X.picture (getOntProp shared.thumbnail (Cons~Object focus))" />
+	<f:derive name="video" d="bindUnitSet Object~X.video (getOntProp shared.video (Cons~Object focus))" />
 	
 	<f:include url="/xml/util/typeColor.xml" />
 	
@@ -30,6 +31,12 @@
 			<f:each select="$thumbnail" position="1">
 				<f:thunk url="media/picture.xml">
 					<f:with-param name="focus" select="$thumbnail" />
+					<f:with-param name="transform"><f:transform width="30" height="30" /></f:with-param>
+				</f:thunk>
+			</f:each>
+			<f:each select="$video">
+				<f:thunk url="../view2/media/video.xml">
+					<f:with-param name="focus" select="$video" />
 					<f:with-param name="transform"><f:transform width="30" height="30" /></f:with-param>
 				</f:thunk>
 			</f:each>

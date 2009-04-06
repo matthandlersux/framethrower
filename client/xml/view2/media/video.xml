@@ -34,10 +34,7 @@
 		<xsl:variable name="w" select="round($mult * $pw/@value)" />
 		<xsl:variable name="h" select="round($mult * $ph/@value)" />
 		
-		<html:span style="position:relative">
-			<html:img src="http://media.eversplosion.com/crop.php?file={$url/@value}&amp;time=100&amp;width={$w}&amp;height={$h}" width="{$w}" height="{$h}" />
-			<html:div class="button-play" style="position:absolute; top: 0px; left: 0px;" />
-		</html:span>
+		<html:img src="http://media.eversplosion.com/crop.php?file={$url/@value}&amp;time=100&amp;width={$w}&amp;height={$h}" width="{$w}" height="{$h}" />
 	
 	</f:each></f:each></f:each>
 	

@@ -8,10 +8,14 @@
 	-webkit-border-radius: 4px;
 	cursor: pointer;
 }
-.object img {
+.object img, .infonRow img {
     vertical-align: middle;
     margin: 2px 2px 2px 1px;
 }
+.infonRow img {
+	margin-top: 4px;
+}
+
 .typeObject {
 	font-family: Candara;
 	font-style: italic;

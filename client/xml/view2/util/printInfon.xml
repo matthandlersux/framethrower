@@ -18,7 +18,7 @@
 				<xsl:attribute name="style">background-color: <xsl:value-of select="$color" />;</xsl:attribute>
 			</xsl:if>
 			
-			<xsl:copy-of select="$extra" />
+			
 			
 			<xsl:choose>
 				<xsl:when test="$relationTemplate/f:row">
@@ -38,6 +38,7 @@
 							<xsl:with-param name="row" select="$relationTemplate" />
 							<xsl:with-param name="infonArgs" select="$infonArgs" />
 							<xsl:with-param name="argTemplate" select="$argTemplate" />
+							<xsl:with-param name="extra" select="$extra" />
 						</xsl:call-template>
 					</html:div>
 				</xsl:otherwise>
@@ -49,8 +50,10 @@
 		<xsl:param name="row" />
 		<xsl:param name="infonArgs" />
 		<xsl:param name="argTemplate" />
+		<xsl:param name="extra" />
 	
 		<html:div class="infonCellHolder">
+			<xsl:copy-of select="$extra" />
 			<xsl:for-each select="$row/node()">
 				<html:div class="infonCell">
 					<xsl:choose>
