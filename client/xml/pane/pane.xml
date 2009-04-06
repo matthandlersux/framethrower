@@ -6,7 +6,7 @@
 	
 	<f:param name="pane" type="UI.pane.pane" />
 	<f:param name="closePane" type="Unit JS" />
-	<f:param name="newPane" type="a -> Unit JS" />
+	<f:param name="newPane" type="a -> b -> c -> d -> e -> Unit JS" />
 	<f:param name="width" type="Number" />
 	<f:param name="height" type="Number" />
 	

@@ -8,15 +8,19 @@
 		<xsl:param name="position" select="'absolute'" />
 		<xsl:param name="width" />
 		<xsl:param name="height" />
-		<xsl:param name="left" select="0" />
-		<xsl:param name="top" select="0" />
+		<xsl:param name="left"/>
+		<xsl:param name="top" />
+		<xsl:param name="right" />
+		<xsl:param name="bottom" />
 	
 		<xsl:attribute name="style">
 			position: <xsl:value-of select="$position" />;
 			width: <xsl:value-of select="$width" />px;
 			height: <xsl:value-of select="$height" />px;
 			left: <xsl:value-of select="$left" />px;
-			top: <xsl:value-of select="$top" />px;			
+			top: <xsl:value-of select="$top" />px;
+			right: <xsl:value-of select="$right" />px;
+			bottom: <xsl:value-of select="$bottom" />px;
 		</xsl:attribute>
 	</xsl:template>
 </f:includes>

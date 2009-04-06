@@ -61,8 +61,15 @@
 						te.params[name] = mouseCurrentPos[0] - getPosition(fonEl.parentNode)[0];
 					} else if (prop === "relMouseY") {
 						te.params[name] = mouseCurrentPos[1] - window.getComputedStyle(fon, null).getPropertyValue("top");
+					} else if (prop === "elemX") {
+						te.params[name] = getPosition(target)[0];
+					} else if (prop === "elemY") {
+						te.params[name] = getPosition(target)[1];
+					} else if (prop === "elemWidth") {
+						te.params[name] = target.offsetWidth;
+					} else if (prop === "elemHeight") {
+						te.params[name] = target.offsetHeight;
 					}
-					
 					// TODO: add more here...
 				}
 			});

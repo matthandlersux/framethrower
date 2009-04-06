@@ -182,7 +182,6 @@ function replaceChildren(node, replacer, pass) {
 				copyBefore(node, rNode, nNode);
 			}
 		}
-
 		rNode = rNode.nextSibling;
 	}
 	

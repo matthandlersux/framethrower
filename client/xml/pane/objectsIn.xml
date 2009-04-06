@@ -5,7 +5,7 @@
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
 	<f:param name="focus" type="Object" />
-	<f:param name="newPane" type="a -> Unit JS" />
+	<f:param name="newPane" type="a -> b -> c -> d -> e -> Unit JS" />
 	<f:param name="pane" type="UI.pane.pane" />
 	
 	<f:derive name="addingObject" d="UI.pane.pane:addingObject pane" />
@@ -63,6 +63,10 @@
 		<f:param name="focus" type="Object" />
 		<f:on event="click" with-action="$newPane">
 			<f:with-param name="focus" select="$focus" />
+			<f:with-param-browser name="elemX" prop="elemX" />
+			<f:with-param-browser name="elemY" prop="elemY" />
+			<f:with-param-browser name="elemWidth" prop="elemWidth" />
+			<f:with-param-browser name="elemHeight" prop="elemHeight" />
 		</f:on>
 	</f:template>
 	

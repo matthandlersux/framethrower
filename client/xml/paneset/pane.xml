@@ -4,7 +4,7 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
-	<f:param name="newPane" type="a -> Unit JS" />
+	<f:param name="newPane" type="a -> b -> c -> d -> e -> Unit JS" />
 	<f:param name="closePane" type="Unit JS" />
 	<f:param name="pane" type="UI.pane" />
 	<f:param name="width" type="Number" />

@@ -82,6 +82,10 @@
 	<f:action name="closeTopPane" />
 	<f:action name="newTopPane">
 		<f:param name="focus" type="Object" />
+		<f:param name="elemX" type="Number" />
+		<f:param name="elemY" type="Number" />
+		<f:param name="elemWidth" type="Number" />
+		<f:param name="elemHeight" type="Number" />				
 	</f:action>
 	
 	<f:include url="/xml/util/uiActions.xml" />

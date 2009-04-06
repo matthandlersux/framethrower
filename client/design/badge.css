@@ -1,16 +1,18 @@
 .badge {
 	position: absolute;
-	padding: 8px;
-	background: rgba(0,0,0,.7);
-	-moz-border-radius:12px;
-	-webkit-border-radius:12px;
+	border: 10px solid rgba(0,0,0,0.7);
+	background: #eeeeee;
+	text-align: left;
+/*	overflow: auto;*/
+	-moz-border-radius: 20px;
+	-webkit-border-radius: 20px;
 }
 
 .badgeShadow {
 
 }
 
-.badgeContent {
+/*.badgeContent {
 	background: #eeeeee;
 	-moz-border-radius:8px;
 	-webkit-border-radius:8px;
@@ -19,7 +21,7 @@
 	min-width: 400px;
 	text-align: left;
 }
-
+*/
 .badgeArrow {
 	position: absolute;
 	

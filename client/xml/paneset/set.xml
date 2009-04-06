@@ -177,7 +177,7 @@
 		
 		<f:thunk url="pane.xml">
 			<f:with-param name="closePane" select="$closePane" />
-			<f:with-param name="newPane" select="$newPane" />
+			<f:with-param name="newPane" select="$prepareShowBadge" />
 			<f:with-param name="pane" select="$pane" />
 			<f:with-param name="width" select="$width" />
 			<f:with-param name="height" select="$height" />
@@ -185,6 +185,54 @@
 		
 		<f:action name="closePane">
 			<f:intact object="$paneset" action="remove" property="panes" key="$key" />
+		</f:action>
+
+
+
+		<f:action name="prepareShowBadge">
+			<f:param name="focus" type="Object" />
+			<f:param name="elemX" type="Number" />
+			<f:param name="elemY" type="Number" />
+			<f:param name="elemWidth" type="Number" />
+			<f:param name="elemHeight" type="Number" />
+
+			<f:derive name="screenWidth" d="UI.ui:screenWidth ui.ui" />
+			<f:derive name="screenHeight" d="UI.ui:screenHeight ui.ui" />
+
+			<!-- Decide Badge Direction -->
+			<xsl:variable name="direction">
+				<xsl:choose>
+					<xsl:when test="$screenWidth/@value - $elemX/@value &gt; 250">left</xsl:when>
+					<xsl:otherwise>right</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			<xsl:variable name="arrowOffset" select="140" />
+			
+			<f:perform with-action="$showBadge">
+				<f:with-param name="direction" select="$direction" as="String" />
+				<f:with-param name="arrowOffset" select="$arrowOffset" as="Number"/>
+			</f:perform>
+			
+			<f:action name="showBadge">
+				<f:param name="direction" type="String" />
+				<f:param name="arrowOffset" type="Number" />
+
+				<!-- Put the badge popup here -->
+				<f:template name="badgePopup">
+					<f:thunk url="../main/badge.xml">
+						<f:with-param name="focus" select="$focus" />
+						<f:with-param name="newPane" select="$newPane" />
+						<f:with-param name="direction" select="$direction" />
+						<f:with-param name="arrowOffset" select="$arrowOffset" />
+					</f:thunk>
+				</f:template>
+
+				<f:perform with-action="$showPopup">
+					<f:with-param name="display"><display x="{$elemX/@value + $elemWidth/@value}" y="{$elemY/@value + ($elemHeight/@value div 2)}" width="250" height="300" class="badge"/></f:with-param>
+					<f:with-param name="content" select="$badgePopup" />
+				</f:perform>
+				
+			</f:action>
 		</f:action>
 		
 		<f:action name="newPane">
@@ -210,6 +258,7 @@
 
 	<f:include url="/xml/util/style.xml" />	
 	<f:include url="/xml/util/ord.xml" />
+	<f:include url="/xml/util/uiActions.xml" />
 	
 	<f:include url="/xml/debug/prettyPrint.xml" />
 </f:template>
