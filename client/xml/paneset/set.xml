@@ -219,7 +219,7 @@
 					</xsl:variable>
 					<xsl:variable name="badgeHeight">
 						<xsl:call-template name="min">
-							<xsl:with-param name="n1" select="300" />
+							<xsl:with-param name="n1" select="320" />
 							<xsl:with-param name="n2" select="floor($screenHeight/@value div 2)" />
 						</xsl:call-template>
 					</xsl:variable>
