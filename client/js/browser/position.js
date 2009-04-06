@@ -5,14 +5,21 @@ function getPosition(node) {
 	var curleft = curtop = 0;
 
 	var recurse = function() {
-		if(obj.offsetParent !== undefined && obj.offsetParent !== null) {
-			curleft += obj.offsetLeft - obj.scrollLeft;
-			curtop += obj.offsetTop - obj.scrollTop;
-			obj = obj.offsetParent;
-			recurse();
-		} else if(obj.parentNode !== undefined && obj.parentNode !== null) {
-			obj = obj.parentNode;
-			recurse();
+		if(obj !== null && obj !== undefined) {
+			if(obj.offsetLeft !== undefined) {
+				if(obj.scrollTop > 0) {
+					console.log(obj.scrollTop);
+				}
+				curleft += obj.offsetLeft - obj.scrollLeft;
+				curtop += obj.offsetTop - obj.scrollTop;
+			}
+			if (obj.offsetParent !== undefined) {
+				obj = obj.offsetParent;
+				recurse();				
+			} else {
+				obj = obj.parentNode;
+				recurse();
+			}
 		}
 	};
 	recurse();
