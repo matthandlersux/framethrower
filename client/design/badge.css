@@ -20,6 +20,11 @@
 	-webkit-border-radius: 10px;
 	background: #eeeeee;
 	overflow: auto;
+	
+}
+
+.badgeContent div {
+	padding: 3px;
 }
 
 .badgeArrow {

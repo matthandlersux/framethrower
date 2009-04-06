@@ -92,57 +92,32 @@
 		</f:on>
 	</html:div>
 	<html:div class="badgeContent">
-		<html:table class="properties">
-			<html:tr>
-				<html:th>Name</html:th>
-				<html:td>
-					<xsl:value-of select="$name/*/@value" />
-				</html:td>
-			</html:tr>
-			<html:tr>
-				<html:th>Is A</html:th>
-				<html:td>
-					<f:each select="$focustypes" key="type">
-						<html:div class="entry"><html:div class="entry-row">
-							<html:div class="entry-cell">
-								<f:thunk url="../view2/object.xml">
-									<f:with-param name="focus" select="$type" />
-								</f:thunk>
-							</html:div>
-						</html:div></html:div>
-					</f:each>
-
-				</html:td>
-			</html:tr>
-	
-			<html:tr>
-				<html:th>Pictures</html:th>
-				<html:td>
-					<f:each select="$thumbnail">
-						<html:div>
-							<f:thunk url="../view2/media/picture.xml">
-								<f:with-param name="focus" select="$thumbnail" />
-								<f:with-param name="transform"><f:transform width="240" height="240" /></f:with-param>
-							</f:thunk>
-						</html:div>
-					</f:each>
-				</html:td>
-			</html:tr>
-	
-			<html:tr>
-				<html:th>Videos</html:th>
-				<html:td>
-					<f:each select="$video">
-						<html:div>
-							<f:thunk url="../view2/media/video.xml">
-								<f:with-param name="focus" select="$video" />
-								<f:with-param name="transform"><f:transform width="240" height="240" /></f:with-param>
-							</f:thunk>
-						</html:div>
-					</f:each>
-				</html:td>
-			</html:tr>
-		</html:table>
+		<html:div>
+			<b><xsl:value-of select="$name/*/@value" /></b>
+		</html:div>
+		<f:each select="$focustypes" key="type">
+			<html:div>
+				<f:thunk url="../view2/object.xml">
+					<f:with-param name="focus" select="$type" />
+				</f:thunk>
+			</html:div>
+		</f:each>
+		<f:each select="$thumbnail">
+			<html:div>
+				<f:thunk url="../view2/media/picture.xml">
+					<f:with-param name="focus" select="$thumbnail" />
+					<f:with-param name="transform"><f:transform width="240" height="240" /></f:with-param>
+				</f:thunk>
+			</html:div>
+		</f:each>
+		<f:each select="$video">
+			<html:div>
+				<f:thunk url="../view2/media/video.xml">
+					<f:with-param name="focus" select="$video" />
+					<f:with-param name="transform"><f:transform width="240" height="240" /></f:with-param>
+				</f:thunk>
+			</html:div>
+		</f:each>
 	</html:div>
 
 	<f:action name="newPaneAndClose">
