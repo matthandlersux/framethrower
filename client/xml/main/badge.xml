@@ -112,7 +112,7 @@
 		</f:each>
 		<f:each select="$video">
 			<html:div>
-				<f:thunk url="../view2/media/video.xml">
+				<f:thunk url="../view2/media/videoPlayer.xml">
 					<f:with-param name="focus" select="$video" />
 					<f:with-param name="transform"><f:transform width="240" height="240" /></f:with-param>
 				</f:thunk>
