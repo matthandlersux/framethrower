@@ -71,7 +71,7 @@
 								<f:with-param name="tab" select="'objectsIn'" />
 							</f:on>
 							<html:div class="tab-children">
-								Children
+								Members
 								<f:thunk with-template="$childCount">
 									<f:with-param name="focus" select="$focus" />
 								</f:thunk>
@@ -106,7 +106,7 @@
 							<html:div class="icon">
 								<xsl:attribute name="style">background-color: <xsl:value-of select="$color" /></xsl:attribute>
 							</html:div>
-							About
+							Infons About
 							<f:thunk with-template="$aboutCount">
 								<f:with-param name="focus" select="$focus" />
 							</f:thunk>
