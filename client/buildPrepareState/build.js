@@ -1,4 +1,5 @@
-var prepareStateXMLUrl = "xml/init/prepareStateIntel.xml";
+//var prepareStateXMLUrl = "xml/init/prepareStateIntel.xml";
+var prepareStateXMLUrl = "xml/init/prepareStateWallE.xml";
 
 function initialize() {
 	var combined = {};
