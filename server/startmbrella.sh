@@ -4,7 +4,12 @@
 erl="erl"
 webappname="pipeline"
 webappdir="./$webappname"
-sname="-sname $webappname"
+if [ -e ../../.server ]; then
+	servername=`cat ../../.server`
+else
+	servername='unknown'
+fi
+sname="-name $webappname@$servername"
 # mbrellaversion="v1.4"
 adddirs="-pa $PWD/$webappname/ebin $PWD/$webappname/deps/*/ebin $PWD/mbrella/ebin $PWD/lib/ebin"
 boot="-boot start_sasl"
