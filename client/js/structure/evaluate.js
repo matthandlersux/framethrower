@@ -97,17 +97,3 @@ function evaluateAndInject(expr, depender, func) {
 	var e = evaluate(expr);
 	return e.inject(depender, func);
 }
-
-
-
-
-// profiling
-
-function getEvalCacheSizeXML() {
-	var v = values(evalCache);
-	var count = 0;
-	forEach(v, function (c) {
-		if (getType(c).right.value === "XML") count++;
-	});
-	return count;
-}

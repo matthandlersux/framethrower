@@ -28,26 +28,30 @@
 		"js/reactive/ranges.js",
 		"js/reactive/controlledCell.js",
 		
-		"js/remote/remote.js",
+		// "js/remote/remote.js",
 		
 		"js/objects/objects.js",
 		"js/objects/rootObjects.js",
 		
 		"js/structure/exprChainer.js",
 		"js/structure/exprLib.js",
-
-		"js/browser/xsl.js",
-		"js/browser/documents.js",
-		"js/browser/convertExprXML.js",
-		"js/browser/evalThunk.js",
-		"js/browser/embed.js",
-		"js/browser/replaceXML.js",
-		//"js/browser/user.js",		
-		"js/browser/actionXML.js",
-		"js/browser/position.js",
-		"js/browser/events.js",
 		
-		"js/browser/serverAdvice.js"
+		"js/templates/funs.js",
+		"js/templates/closure.js",
+		"js/templates/writexml.js"
+		 
+		// "js/browser/xsl.js",
+		// "js/browser/documents.js",
+		// "js/browser/convertExprXML.js",
+		// "js/browser/evalThunk.js",
+		// "js/browser/embed.js",
+		// "js/browser/replaceXML.js",
+		// //"js/browser/user.js",		
+		// "js/browser/actionXML.js",
+		// "js/browser/position.js",
+		// "js/browser/events.js",
+		// 
+		// "js/browser/serverAdvice.js"
 		
 	];
 	

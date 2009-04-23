@@ -258,6 +258,18 @@ function unserializeXML(s) {
 
 
 
+function createEl(nodeName) {
+	var n = nodeName.split(":");
+	if (n.length > 1) {
+		return document.createElementNS(xmlns[n[0]], nodeName);
+	} else {
+		return document.createElement(nodeName);
+	}
+}
+
+function createTextNode(s) {
+	return document.createTextNode(s);
+}
 
 
 function getAttr(node, attName) {
@@ -277,14 +289,7 @@ function setAttr(node, attName, attValue) {
 	}
 	return node;
 }
-function createEl(nodeName) {
-	var n = nodeName.split(":");
-	if (n.length > 1) {
-		return document.createElementNS(xmlns[n[0]], nodeName);
-	} else {
-		return document.createElement(nodeName);
-	}
-}
+
 function appendChild(node, childNode) {
 	node.appendChild(childNode);
 }

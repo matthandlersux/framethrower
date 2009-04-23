@@ -18,6 +18,8 @@ var localIds = makeGenerator("local.");
 
 
 function makeFun(type, fun, name, remote) {
+	if (name === undefined) name = localIds();
+	if (remote === undefined) remote = 2;
 	return {
 		kind: "fun",
 		type: type,

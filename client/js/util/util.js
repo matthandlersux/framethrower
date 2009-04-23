@@ -203,5 +203,7 @@ function capFirst(s) {
 
 
 
-
+function emptyFunction() {
+	
+}
 
