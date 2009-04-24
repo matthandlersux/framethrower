@@ -65,15 +65,10 @@ function makeXMLP(xml, env) {
 function makeClosure(templateCode, env) {
 	var params = templateCode.params;
 	
-	var funType = xmlpType;
-	forEachReverse(params, function (param) {
-		funType = makeTypeLambda(param.type, funType);
-	});
-	
 	var f = curry(function () {
 		var scope = {};
 		forEach(params, function (param, i) {
-			scope[param.name] = arguments[i];
+			scope[param] = arguments[i];
 		});
 		var envWithParams = extendEnv(env, scope);
 		
@@ -83,7 +78,7 @@ function makeClosure(templateCode, env) {
 	}, params.length);
 	
 	if (params.length > 0) {
-		return makeFun(funType, f);
+		return makeFun(templateCode.type, f);
 	} else {
 		return f;
 	}

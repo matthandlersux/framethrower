@@ -59,9 +59,18 @@ function xmlToDOM(xml, env) {
 			node.nodeValue = value;
 		}));
 	} else if (xml.kind === "for-each") {
+		var select = parseExpression(xml.select, env);
+		var result = evaluate(select);
+		
+		var wrapper = createEl("f:wrapper");
+		
+		// set up an endCap to listen to result and change the children of the wrapper
 		// TODO
+		
+		return wrapper;
 	} else if (xml.kind === "call") {
-		// TODO
+		var xmlp = makeClosure(xml.templateCode, env);
+		return xmlToDOM(xmlp.xml, xmlp.env);
 	}
 	
 	var cleanup = null;
@@ -103,14 +112,12 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		if (result.kind === "startCap") {
 			var serialized = makeApply(serializeCell, result);
 			
-			
-			
-			// TODO
+			return evaluateAndInject(serialized, emptyFunction, callback).func;
 		} else {
 			callback(result);
 			return null;
 		}
-	}	
+	}
 }
 
 
