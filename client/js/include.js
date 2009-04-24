@@ -28,7 +28,7 @@
 		"js/reactive/ranges.js",
 		"js/reactive/controlledCell.js",
 		
-		// "js/remote/remote.js",
+		"js/remote/remote.js",
 		
 		"js/objects/objects.js",
 		"js/objects/rootObjects.js",

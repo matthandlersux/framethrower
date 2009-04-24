@@ -86,7 +86,7 @@ function xmlToDOM(xml, env) {
 
 
 
-
+var serializeCell = parseExpr("serialize");
 
 
 // this evaluates an xml insert (or just a string) and sends the result through the callback (perhaps reactively)
@@ -101,6 +101,10 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 
 		// if result is a cell, hook it into an endcap that converts it to a string
 		if (result.kind === "startCap") {
+			var serialized = makeApply(serializeCell, result);
+			
+			
+			
 			// TODO
 		} else {
 			callback(result);

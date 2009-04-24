@@ -3,7 +3,8 @@
 TEMPLATECODE
 	{
 		kind: "templateCode",
-		params: [{name: VARTOCREATE, type: TYPE}],
+		params: [name: VARTOCREATE],
+		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type XMLP
 		let: LETS,
 		output: LINE
 	}

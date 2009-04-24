@@ -1,0 +1,34 @@
+TEMPLATECODE
+	{
+		kind: "templateCode",
+		params: [{name: VARTOCREATE, type: TYPE}],
+		let: LETS,
+		output: LINE
+	}
+
+LETS
+	{VARTOCREATE: LINE}
+
+LINE
+	{kind: "lineExpr", let: LETS, expr: AST},
+	{kind: "lineTemplate", tmeplate: TEMPLATECODE},
+	{kind: "lineJavascript", type: TYPE, f: JAVASCRIPTFUNCTION},
+	{kind: "lineXML", xml: XML}
+	// TODO actions, state
+
+
+
+XML
+	XMLNODE |
+	{kind: "for-each", select: AST, templateCode: TEMPLATECODE} | // this templateCode should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
+	{kind: "call", templateCode: TEMPLATECODE} // this templateCode should take zero parameters.
+	// TODO: case, on-action
+
+XMLNODE
+	{kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately
+	{kind: "textElement", nodeValue: STRING | XMLINSERT}
+
+XMLINSERT
+	{kind: "insert", expr: AST}
+
+
