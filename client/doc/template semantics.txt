@@ -36,8 +36,8 @@ XMLINSERT
 
 where:
 JAVASCRIPTFUNCTION is a javascript function,
-TYPE is a type,
-AST is an AST (this is just a first-pass parsed Expr, so every leaf is a string that hasn't been bound yet),
+TYPE is a string,
+AST is an string for an expression,
 VARTOCREATE is a STRING
 STRING is a string
 
