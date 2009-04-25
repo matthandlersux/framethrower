@@ -177,11 +177,32 @@
 		};
 	}
 
-	function makeOpenTag(name, attributes) {
+	function makeOpenTag(name, attributes, textNode) {
 		return {
 			name: name,
-			attributes: attributes
+			attributes: attributes,
+			textNode: textNode
 		};
+	}
+
+	function checkForInsert (node) {
+		var text = node.nodeValue;
+		if(text == undefined) return undefined;
+		var index = text.indexOf('{');
+		var output = [];
+		if(index == -1) {
+			return undefined;
+		}
+		while(index > 0) {
+			var rindex = text.indexOf('}');
+			var first = text.substr(0, index-1);
+			var insert = text.substr(index+1, rindex-index-1);
+			text = text.substr(rindex+1);
+			output.push(makeTextElement(first));
+			output.push(makeInsert(insert));
+			index = text.indexOf('{');
+		}
+		return output;
 	}
 
 	function makeNode(openTag, xmlp) {
@@ -196,6 +217,23 @@
 				attributeList.push(att);
 			}
 		}
+		
+		//prepend textNode to xmlp
+		if(openTag.textNode !== undefined) {
+			xmlp.unshift(openTag.textNode);
+		}
+		
+		//deal with inserts in textNodes
+		for(var i=0; i<xmlp.length; i++) {
+			var textNodeList = checkForInsert(xmlp[i]);
+			if(textNodeList !== undefined) {
+				xmlp.splice(i, 1);
+				for (var j=textNodeList.length-1; j>=0; j--) {
+					xmlp.splice(i, 0, textNodeList[j]);
+				}
+			}
+		}
+		
 		return {
 			kind: "element",
 			nodeName: openTag.name,
@@ -214,7 +252,8 @@
 	function makeTextElement (text) {
 		return {
 			kind: "textElement",
-			nodeValue: text
+			//take off leading '>'
+			nodeValue: text.substr(1),
 		};
 	}
 
@@ -228,6 +267,27 @@
 	function push (list, item) {
 		list.push(item);
 		return list;
+	}
+	
+	function pushOrConcat (list, itemOrList) {
+		if (arrayLike(itemOrList)) {
+			forEach(itemOrList, function(item) {
+				if (item !== undefined) {
+					list.push(item);
+				}
+			});
+		} else {
+			list.push(item);
+		}
+		return list;
+	}	
+
+	function flatten (itemOrList) {
+		if(arrayLike(itemOrList)) {
+			return itemOrList[0];
+		} else {
+			return itemOrList;
+		}
 	}
 	
 	function addLet (letObj, let) {
@@ -251,7 +311,7 @@
 	;
 
 /~	Grammar Tokens			~/
-
+	'>[^<^>]*[^<^>^ ^\r^\n^\t^\}][^<^>]*'	TEXTNODE
 	'template'
 	'function'
 	'state'
@@ -267,7 +327,7 @@
 	':'
 	'='
 	'</'
-	'/>'
+	'/'
 	'<'
 	'>'
 	'\"'					QUOTE
@@ -315,7 +375,7 @@ STMT:
 	| EXPR 												[* %% = makeExpr(%1); *]
 	| STATE
 	| LETLISTBLOCK
-	| XML
+	| XML												[* %% = flatten(%1); *]
 	;
 
 EXPR:
@@ -356,16 +416,14 @@ VARIABLE:
 	;
 
 XML:
-	OPENFOREACH LETLIST STMT CLOSEFOREACH				[* %% = makeForEach(%1, %2, %3); *]
-	| OPENCALL LETLIST STMT CLOSECALL					[* %% = makeCall(%2, %3); *]
-	| OPENTAG XMLLIST CLOSETAG							[* %% = makeNode(%1, %2); *]
-	| SINGLETAG											[* %% = makeNode(%1); *]
-	| TEXT												[* %% = makeTextElement(%1); *]
-	| INSERT
+	OPENFOREACH LETLIST STMT CLOSEFOREACH				[* %% = [makeForEach(%1, %2, %3), %4]; *]
+	| OPENCALL LETLIST STMT CLOSECALL					[* %% = [makeCall(%2, %3), %4]; *]
+	| OPENTAG XMLLIST CLOSETAG							[* %% = [makeNode(%1, %2), %3]; *]
+	| SINGLETAG											[* %% = [makeNode(%1['openTag'], []), %1['textNode']]; *]
 	;
 
 XMLLIST:
-	XMLLIST XML											[* %% = push(%1, %2); *]
+	XMLLIST XML											[* %% = pushOrConcat(%1, %2); *]
 	| 													[* %% = []; *]
 	;
 
@@ -390,7 +448,8 @@ OPENFOREACH:
 	;
 
 CLOSEFOREACH:
-	'</' 'f:each' '>'
+	'</' 'f:each' '>'									[* %% = undefined; *]
+	| '</' 'f:each' TEXTNODE							[* %% = makeTextElement(%3); *]
 	;
 
 OPENCALL:
@@ -398,20 +457,24 @@ OPENCALL:
 	;
 
 CLOSECALL:
-	'</' 'f:call' '>'
+	'</' 'f:call' '>'									[* %% = undefined; *]
+	| '</' 'f:call' '>'									[* %% = makeTextElement(%3); *]
 	;
 
 
 OPENTAG:
 	'<' TAGNAME ATTRIBUTES '>'							[* %% = makeOpenTag(%2, %3); *]
+	| '<' TAGNAME ATTRIBUTES TEXTNODE					[* %% = makeOpenTag(%2, %3, makeTextElement(%4)); *]
 	;
 	
 CLOSETAG:
-	'</' TAGNAME '>'
+	'</' TAGNAME '>'									[* %% = undefined; *]
+	| '</' TAGNAME TEXTNODE								[* %% = makeTextElement(%3); *]
 	;
 	
 SINGLETAG:
-	'<' TAGNAME ATTRIBUTES '/>'							[* %% = makeOpenTag(%2, %3); *]
+	'<' TAGNAME ATTRIBUTES '/' '>'						[* %% = {openTag: makeOpenTag(%2, %3)}; *]
+	| '<' TAGNAME ATTRIBUTES '/' TEXTNODE				[* %% = {openTag: makeOpenTag(%2, %3), textNode: %5}; *]
 	;
 
 TAGNAME:

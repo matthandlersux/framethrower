@@ -6,6 +6,12 @@ template () {
 	result = jsfun 5,
 
 	<div>
-		Hello There
+		
+		Look a this one! (haha) {a}
+		
+		<div>
+			What's going on?
+		</div>
+		hey there bub
 	</div>
 }
