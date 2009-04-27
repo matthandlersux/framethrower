@@ -44,7 +44,7 @@ var mainTemplate = {
 				kind: "lineXML",
 				xml: {
 					kind: "element",
-					nodeName: "f:wrapper",
+					nodeName: "p:wrapper",
 					attributes: {
 
 					},
@@ -52,7 +52,18 @@ var mainTemplate = {
 
 					},
 					children: [
-
+						{
+							kind: "textElement",
+							nodeValue: "
+	"
+						},
+						{
+							kind: "textElement",
+							nodeValue: {
+								kind: "insert",
+								expr: "result"
+							}
+						}
 					]
 				}
 			}
@@ -84,7 +95,7 @@ var mainTemplate = {
 				kind: "lineXML",
 				xml: {
 					kind: "element",
-					nodeName: "f:wrapper",
+					nodeName: "p:wrapper",
 					attributes: {
 
 					},
@@ -92,7 +103,18 @@ var mainTemplate = {
 
 					},
 					children: [
-
+						{
+							kind: "textElement",
+							nodeValue: "
+	"
+						},
+						{
+							kind: "textElement",
+							nodeValue: {
+								kind: "insert",
+								expr: "result"
+							}
+						}
 					]
 				}
 			}
@@ -122,11 +144,15 @@ var mainTemplate = {
 					children: [
 						{
 							kind: "textElement",
-							nodeValue: "Here is the result :"
+							nodeValue: "
+			Here is the result:"
 						},
 						{
-							kind: "insert",
-							expr: " result "
+							kind: "textElement",
+							nodeValue: {
+								kind: "insert",
+								expr: "result"
+							}
 						}
 					]
 				},
@@ -142,7 +168,9 @@ var mainTemplate = {
 					children: [
 						{
 							kind: "textElement",
-							nodeValue: "Here is ( letfile1 result ) :"
+							nodeValue: "
+			Here is (letfile1 result):
+		 	"
 						},
 						{
 							kind: "call",
@@ -178,7 +206,9 @@ var mainTemplate = {
 					children: [
 						{
 							kind: "textElement",
-							nodeValue: "Here is ( subfolder1 result ) :"
+							nodeValue: "
+			Here is (subfolder1 result):
+		 	"
 						},
 						{
 							kind: "call",

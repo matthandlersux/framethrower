@@ -95,11 +95,19 @@ function compileFolder(folder) {
 	return mainJSON;
 }
 
+function preParse(string) {
+	string = string.replace(/(<(f[^:^\/^>]|[^f^\/^>])[^<^>^\/]*>)([^<^>]*[^<^>^ ^\r^\t^\n][^<^>]*)/g, "$1<p:textnode>$3</p:textnode>");
+	string = string.replace(/(<\/[^<^>]+>)(([^<^>^\{^\}]|\{[^\}]*\})*([^<^>^\{^\}^ ^\r^\t^\n]|\{[^\}]*\})([^<^>^\{^\}]|\{[^\}]*\})*)/g, "$1<p:textnode>$2</p:textnode>");
+	return string;
+}
+
+
 function compileFile (file) {
-	var str = readFile(file.getAbsolutePath()); 
+	var str = readFile(file.getAbsolutePath());
 	var error_cnt = 0; 
 	var error_off = new Array(); 
 	var error_la = new Array(); 
+	str = preParse(str);
 	if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) { 
 		for( i = 0; i < error_cnt; i++ ) {
 			print( "Parse error near \"" + str.substr( error_off[i], 10 ) + ( ( str.length > error_off[i] + 10 ) ? "..." : "" ) + "\", expecting \"" + error_la[i].join() + "\"" ); 

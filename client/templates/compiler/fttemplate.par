@@ -181,11 +181,10 @@
 		};
 	}
 
-	function makeOpenTag(name, attributes, textNode) {
+	function makeOpenTag(name, attributes) {
 		return {
 			name: name,
-			attributes: attributes,
-			textNode: textNode
+			attributes: attributes
 		};
 	}
 
@@ -203,7 +202,7 @@
 			var insert = text.substr(index+1, rindex-index-1);
 			text = text.substr(rindex+1);
 			output.push(makeTextElement(first));
-			output.push(makeInsert(insert));
+			output.push(makeTextElement(makeInsert(insert)));
 			index = text.indexOf('{');
 		}
 		return output;
@@ -232,13 +231,16 @@
 		}
 		
 		//deal with inserts in textNodes
-		for(var i=0; i<xmlp.length; i++) {
+		for(var i=0; i<xmlp.length; ) {
 			var textNodeList = checkForInsert(xmlp[i]);
 			if(textNodeList !== undefined) {
 				xmlp.splice(i, 1);
 				for (var j=textNodeList.length-1; j>=0; j--) {
 					xmlp.splice(i, 0, textNodeList[j]);
 				}
+				i += textNodeList.length;
+			} else {
+				i++;
 			}
 		}
 		
@@ -257,10 +259,10 @@
 		return a;
 	}
 
-	function makeTextElement (text) {
+	function makeTextElement (nodeVal) {
 		return {
 			kind: "textElement",
-			nodeValue: text,
+			nodeValue: nodeVal,
 		};
 	}
 
@@ -281,27 +283,6 @@
 	function push (list, item) {
 		list.push(item);
 		return list;
-	}
-	
-	function pushOrConcat (list, itemOrList) {
-		if (arrayLike(itemOrList)) {
-			forEach(itemOrList, function(item) {
-				if (item !== undefined) {
-					list.push(item);
-				}
-			});
-		} else {
-			list.push(item);
-		}
-		return list;
-	}	
-
-	function flatten (itemOrList) {
-		if(arrayLike(itemOrList)) {
-			return itemOrList[0];
-		} else {
-			return itemOrList;
-		}
 	}
 	
 	function addLet (letObj, let) {
@@ -325,6 +306,7 @@
 	;
 
 /~	Grammar Tokens			~/
+	'(<p:textnode>([^<^>]*)</p:textnode>)'			TEXTNODE   [* %match = %match.substr(12, %match.length - 25); *] 	
 	'template'
 	'function'
 	'state'
@@ -388,7 +370,7 @@ STMT:
 	| EXPR 												[* %% = makeExpr(%1); *]
 	| STATE
 	| LETLISTBLOCK
-	| XML												[* %% = makeXMLLine(flatten(%1)); *]
+	| XML												[* %% = makeXMLLine(%1); *]
 	;
 
 EXPR:
@@ -429,15 +411,15 @@ VARIABLE:
 	;
 
 XML:
-	OPENFOREACH LETLIST STMT CLOSEFOREACH				[* %% = [makeForEach(%1, %2, %3), %4]; *]
-	| OPENCALL LETLIST STMT CLOSECALL					[* %% = [makeCall(%2, %3), %4]; *]
-	| OPENTAG XMLLIST CLOSETAG							[* %% = [makeNode(%1, %2), %3]; *]
-	| SINGLETAG											[* %% = [makeNode(%1['openTag'], []), %1['textNode']]; *]
-	| TEXT												[* %% = [makeTextElement(%1)]; *]
+	OPENFOREACH LETLIST STMT CLOSEFOREACH				[* %% = makeForEach(%1, %2, %3); *]
+	| OPENCALL LETLIST STMT CLOSECALL					[* %% = makeCall(%2, %3); *]
+	| OPENTAG XMLLIST CLOSETAG							[* %% = makeNode(%1, %2); *]
+	| SINGLETAG											[* %% = makeNode(%1, []); *]
+	| TEXTNODE											[* %% = makeTextElement(%1); *]
 	;
 
 XMLLIST:
-	XMLLIST XML											[* %% = pushOrConcat(%1, %2); *]
+	XMLLIST XML											[* %% = push(%1, %2); *]
 	| 													[* %% = []; *]
 	;
 

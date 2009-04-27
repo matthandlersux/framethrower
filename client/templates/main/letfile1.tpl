@@ -4,7 +4,7 @@ template (a::Number) {
 		return a * 10;
 	},
 	result = jsfun a,
-	<f:wrapper>
+	<p:wrapper>
 		{result}
-	</f:wrapper>
+	</p:wrapper>
 }
