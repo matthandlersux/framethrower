@@ -98,7 +98,7 @@
 
 		return {
 			kind: "templateCode",
-			params: params,
+			params: paramList,
 			type: typeString,
 			let: lets,
 			output: output
@@ -178,10 +178,10 @@
 	function makeForEach(attributes, lets, output) {
 		var params = [];
 		if (attributes.key !== undefined) {
-			params.push(attributes.key);
+			params.push({name:attributes.key});
 		}
 		if (attributes.value !== undefined) {
-			params.push(attributes.value);
+			params.push({name:attributes.value});
 		}
 		var templateCode = makeTemplateCode(params, lets, output);
 		return {
