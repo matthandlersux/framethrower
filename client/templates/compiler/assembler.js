@@ -122,8 +122,7 @@ function compileFile (file) {
 if( arguments.length > 0 ) { 
 	var rootFolder = java.io.File("../" + arguments[0]);
 	var totalCompiledJSON = compileFolder(rootFolder);
-	var totalCompiledString = JSONtoString(totalCompiledJSON, 0);
-	
+	var totalCompiledString = "var mainTemplate = " + JSONtoString(totalCompiledJSON, 0);
 
 	var fw = new java.io.FileWriter("../bin/" + arguments[0] + ".js");
 	var bw = new java.io.BufferedWriter(fw);
