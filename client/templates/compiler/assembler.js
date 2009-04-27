@@ -116,8 +116,8 @@ function compileFile (file) {
 //MAIN
 //COMPILE COMMAND: rhino jscc.js -o tplparser.js fttemplate.par
 //java -jar js.jar jscc.js -o tplparser.js fttemplate.par
-//RUN COMMAND: rhino tplparser.js <root folder>
-//java -jar js.jar tplparser.js <root folder>
+//RUN COMMAND: rhino assembler.js <root folder>
+//java -jar js.jar assembler.js <root folder>
 
 if( arguments.length > 0 ) { 
 	var rootFolder = java.io.File("../" + arguments[0]);
