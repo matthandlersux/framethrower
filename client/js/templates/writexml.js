@@ -18,7 +18,7 @@ XMLINSERT
 
 
 /*
-This takes some xml (in js form) and creates a DOM Node, returning
+This takes some xml (in js form) and an environment and creates a DOM Node, returning
 	{node: NODE, cleanup: FUNCTION}
 By calling this function, endCaps may be created which will update the node reactively.
 When cleanup() is called, these endCaps are removed.
@@ -68,18 +68,35 @@ function xmlToDOM(xml, env) {
 		
 		var type = getType(result);
 		var constructor = getTypeConstructor(type);
+		var isNumber = (constructor === "Map" && type.left.right.value === "Number") || type.right.value === "Number";
 		function cmp(a, b) {
 			// returns -1 if a < b, 0 if a = b, 1 if a > b
-			
+			if (isNumber) {
+				return a - b;
+			} else {
+				if (a < b) return -1;
+				else if (a > b) return 1;
+				else return 0;
+			}
 		}
 		
-		var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to {node: NODE, cleanup: FUNCTION}
+		var innerTemplate = makeClosure(xml.templateCode, env);
+		
+		var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to the evaluated template's {node: NODE, cleanup: FUNCTION}
 		
 		result.inject(emptyFunction, function (value) {
-			var newNode; // TODO
+			var newNode, keyString;
 			
+			if (constructor === "Map") {
+				newNode = evaluate(makeApply(makeApply(innerTemplate, value.key), value.val));
+				keyString = stringify(value.key);
+			} else {
+				newNode = evaluate(makeApply(innerTemplate, value));
+				keyString = stringify(value);
+			}
 			
-			var keyString = stringify(value);
+			newNode = xmlToDOM(newNode.xml, newNode.env);
+
 			
 			// find where to put the new node
 			// NOTE: this is linear time but could be log time with clever algorithm
@@ -101,13 +118,19 @@ function xmlToDOM(xml, env) {
 			entries[keyString] = newNode;
 			
 			return function () {
-				newNode.cleanup();
+				if (newNode.cleanup) newNode.cleanup();
 				wrapper.removeChild(newNode.node);
 				delete entries[keyString];
 			};
 		});
 		
-		return wrapper;
+		function cleanupAllEntries() {
+			forEach(entries, function (entry) {
+				if (entry.cleanup) entry.cleanup();
+			});
+		}
+		
+		return {node: wrapper, cleanup: cleanupAllEntries};
 	} else if (xml.kind === "call") {
 		var xmlp = makeClosure(xml.templateCode, env);
 		return xmlToDOM(xmlp.xml, xmlp.env);
@@ -145,7 +168,8 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		callback(xmlInsert);
 		return null;
 	} else {
-		var expr = parseExpression(xmlInsert.expr, env);
+		//var expr = parseExpression(xmlInsert.expr, env);
+		var expr = parseExpression(parse(xmlInsert.expr), env);
 		var result = evaluate(expr);
 
 		// if result is a cell, hook it into an endcap that converts it to a string
