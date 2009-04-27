@@ -7,7 +7,7 @@
 	
 	<f:param name="realTimeline" type="UI.pane.realTimeline" />
 	<f:param name="closePane" type="Unit JS" />
-	<f:param name="newPane" type="a -> Unit JS" />
+	<f:param name="showBadge" type="a -> b -> c -> d -> e -> f -> Unit JS" />
 
 	<f:param name="width" type="Number" />
 	<f:param name="height" type="Number" />
@@ -124,7 +124,7 @@
 			<xsl:variable name="ratio" select="$zoomWidth/@value div ($endDate/@value - $startDate/@value)" />
 			
 			<html:div>
-				<html:div>
+				<!-- <html:div>
 					<f:each select="$dates" key="sit" value="days">
 						<f:each select="$days" key="day">
 							<html:div class="dateblob">
@@ -138,7 +138,7 @@
 							</html:div>
 						</f:each>
 					</f:each>
-				</html:div>
+				</html:div> -->
 				
 				<f:each select="$focus">
 					<f:thunk url="ruler.xml">
@@ -229,12 +229,23 @@
 								width: <xsl:value-of select="($endDay/@value - $startDay/@value) * $ratio" />px;
 								background-color: <xsl:value-of select="$color" />;
 							</xsl:attribute>
-							<f:on event="click" with-action="$openObject" />
+							<!-- <f:on event="click" with-action="$openObject" /> -->
+							<f:each select="$object">
+								<f:on event="click" with-action="$showBadge">
+									<f:with-param name="focus" select="$object" />
+									<f:with-param-browser name="elemX" prop="elemX" />
+									<f:with-param-browser name="elemY" prop="elemY" />
+									<f:with-param-browser name="elemWidth" prop="elemWidth" />
+									<f:with-param-browser name="elemHeight" prop="elemHeight" />
+									<f:with-param name="openObject" select="$openObject" />
+								</f:on>
+							</f:each>
 						</html:div>
 					</f:each></f:each></f:each></f:each>
 				</f:each></f:each>
 				
 				<f:action name="openObject">
+					<f:param name="focus" type="Object" />
 					<f:derive name="columns" d="ui.mainPaneSet.columns" />
 					<f:derive name="lastPaneKey" d="takeLastKey (UI.pane.set:panes columns)" />
 					

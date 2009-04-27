@@ -97,12 +97,22 @@
 			<html:th>Pictures</html:th>
 			<html:td>
 				<f:each select="$thumbnail">
-					<html:div>
-						<f:thunk url="../view2/media/picture.xml">
-							<f:with-param name="focus" select="$thumbnail" />
-							<f:with-param name="transform"><f:transform width="240" height="240" /></f:with-param>
-						</f:thunk>
-					</html:div>
+					<html:div class="entry"><html:div class="entry-row">
+						<html:div class="entry-cell">
+							<f:thunk url="../view2/media/picture.xml">
+								<f:with-param name="focus" select="$thumbnail" />
+								<f:with-param name="transform"><f:transform width="240" height="240" /></f:with-param>
+							</f:thunk>
+						</html:div>
+						<html:div class="entry-button">
+							<html:button>
+								Remove
+								<f:on event="click" with-action="$removeThumbnail">
+									<f:with-param name="thumbnail" select="$thumbnail" />
+								</f:on>
+							</html:button>
+						</html:div>
+					</html:div></html:div>
 				</f:each>
 			</html:td>
 		</html:tr>
@@ -111,12 +121,22 @@
 			<html:th>Videos</html:th>
 			<html:td>
 				<f:each select="$video">
-					<html:div>
-						<f:thunk url="../view2/media/video.xml">
-							<f:with-param name="focus" select="$video" />
-							<f:with-param name="transform"><f:transform width="240" height="240" /></f:with-param>
-						</f:thunk>
-					</html:div>
+					<html:div class="entry"><html:div class="entry-row">
+						<html:div class="entry-cell">
+							<f:thunk url="../view2/media/video.xml">
+								<f:with-param name="focus" select="$video" />
+								<f:with-param name="transform"><f:transform width="240" height="240" /></f:with-param>
+							</f:thunk>
+						</html:div>
+						<html:div class="entry-button">
+							<html:button>
+								Remove
+								<f:on event="click" with-action="$removeVideo">
+									<f:with-param name="video" select="$video" />
+								</f:on>
+							</html:button>
+						</html:div>
+					</html:div></html:div>
 				</f:each>
 			</html:td>
 		</html:tr>
@@ -128,6 +148,24 @@
 	<f:action name="removeType">
 		<f:param name="type" type="Object" />
 		<f:derive name="ontInfon" d="bindUnit getObjectInOnt (mapUnit Cons~Object (bindUnit (swap Cons::lookup type) (mapUnit Cons~Object (Cons::lookup shared.isA focus))))" />
+		
+		<f:each select="$ontInfon">
+			<f:intact object="$ontInfon" action="remove" property="truth" key="null" />
+		</f:each>
+	</f:action>
+	
+	<f:action name="removeThumbnail">
+		<f:param name="thumbnail" type="X.picture" />
+		<f:derive name="ontInfon" d="bindUnit getObjectInOnt (mapUnit Cons~Object (bindUnit (swap Cons::lookup (X.picture~Object thumbnail)) (mapUnit Cons~Object (Cons::lookup shared.thumbnail focus))))" />
+		
+		<f:each select="$ontInfon">
+			<f:intact object="$ontInfon" action="remove" property="truth" key="null" />
+		</f:each>
+	</f:action>
+	
+	<f:action name="removeVideo">
+		<f:param name="video" type="X.video" />
+		<f:derive name="ontInfon" d="bindUnit getObjectInOnt (mapUnit Cons~Object (bindUnit (swap Cons::lookup (X.video~Object video)) (mapUnit Cons~Object (Cons::lookup shared.video focus))))" />
 		
 		<f:each select="$ontInfon">
 			<f:intact object="$ontInfon" action="remove" property="truth" key="null" />

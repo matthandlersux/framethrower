@@ -357,12 +357,28 @@ var exprLib = {
 
 	getInfonsAbout: {
 		type: "Object -> Set Cons",
-		//expr: "compose (filter (cons -> reactiveNot (bindUnit (reactiveEqual shared.ont) (leftRight cons)))) stepOne",
-		expr: "stepOne",
+		expr: "compose (filter (cons -> reactiveNot (bindUnit (reactiveEqual shared.ont) (leftRight cons)))) stepOne",
+		//expr: "stepOne",
 		where: {
 			stepOne: {
 				type: "Object -> Set Cons",
-				expr: "x -> filterByTruth ((bindSet getAllInfonsAboveCons) (setDifference (Object:upLeft x) (returnUnitSet (Cons::lookup shared.in x))))"
+				expr: "x -> filterByTruth ((bindSet getAllInfonsAboveCons) (filter consNotIn (Object:upLeft x)))",
+				where: {
+					consNotIn: {
+						type: "Cons -> Unit Null",
+						expr: "cons -> reactiveNot (reactiveOr (bindUnit (reactiveEqual shared.in) (left cons)) (bindUnit (reactiveEqual shared.in) (leftLeft cons)))",
+						where: {
+							left: {
+								type: "Cons -> Unit Object",
+								chain: ["Cons:left"]
+							},
+							leftLeft: {
+								type: "Cons -> Unit Object",
+								chain: ["Cons:left", "Cons:left"]
+							}
+						}
+					}
+				}
 			},
 			leftRight: {
 				type: "Cons -> Unit Object",

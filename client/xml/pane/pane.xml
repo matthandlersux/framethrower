@@ -6,6 +6,7 @@
 	
 	<f:param name="pane" type="UI.pane.pane" />
 	<f:param name="closePane" type="Unit JS" />
+	<f:param name="showBadge" type="a -> b -> c -> d -> e -> f -> Unit JS" />
 	<f:param name="newPane" type="a -> Unit JS" />
 	<f:param name="width" type="Number" />
 	<f:param name="height" type="Number" />
@@ -87,7 +88,7 @@
 								<html:div class="icon">
 									<xsl:attribute name="style">background-color: <xsl:value-of select="$color" /></xsl:attribute>
 								</html:div>
-								Infons In
+								Infons in
 								<f:thunk with-template="$infonCount">
 									<f:with-param name="focus" select="$focus" />
 								</f:thunk>
@@ -134,12 +135,14 @@
 						<f:thunk url="objectsIn.xml">
 							<f:with-param name="focus" select="$focus" />
 							<f:with-param name="pane" select="$pane" />
+							<f:with-param name="showBadge" select="$showBadge" />
 							<f:with-param name="newPane" select="$newPane" />
 						</f:thunk>
 					</xsl:when>
 					<xsl:when test="$tab/@value = 'infonsIn'">
 						<f:thunk url="infonsIn.xml">
 							<f:with-param name="focus" select="$focus" />
+							<f:with-param name="showBadge" select="$showBadge" />							
 							<f:with-param name="newPane" select="$newPane" />
 							<f:with-param name="pane" select="$pane" />
 						</f:thunk>
@@ -147,6 +150,7 @@
 					<xsl:when test="$tab/@value = 'about'">
 						<f:thunk url="about.xml">
 							<f:with-param name="focus" select="$focus" />
+							<f:with-param name="showBadge" select="$showBadge" />							
 							<f:with-param name="newPane" select="$newPane" />
 							<f:with-param name="pane" select="$pane" />
 						</f:thunk>

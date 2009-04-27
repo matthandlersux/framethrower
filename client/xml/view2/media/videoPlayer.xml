@@ -34,8 +34,11 @@
 		<xsl:variable name="w" select="round($mult * $pw/@value)" />
 		<xsl:variable name="h" select="round($mult * $ph/@value)" />
 		
-		<html:img src="http://media.eversplosion.com/crop.php?file={$url/@value}&amp;time=100&amp;width={$w}&amp;height={$h}" width="{$w}" height="{$h}" />
-	
+		<html:embed
+			src="http://media.eversplosion.com/tmp/{$url/@value}"
+			width="{$w}" height="{$h}" enablejavascript="true" postdomevents="true" scale="aspect" controller="false" autoplay="true"
+			/>
+				
 	</f:each></f:each></f:each>
 	
 </f:template>

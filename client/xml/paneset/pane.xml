@@ -4,6 +4,7 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:svg="http://www.w3.org/2000/svg">
 	
+	<f:param name="showBadge" type="a -> b -> c -> d -> e -> f -> Unit JS" />
 	<f:param name="newPane" type="a -> Unit JS" />
 	<f:param name="closePane" type="Unit JS" />
 	<f:param name="pane" type="UI.pane" />
@@ -26,6 +27,7 @@
 		<f:thunk url="../pane/pane.xml">
 			<f:with-param name="pane" select="$asPane" />
 			<f:with-param name="newPane" select="$newPane" />
+			<f:with-param name="showBadge" select="$showBadge" />
 			<f:with-param name="closePane" select="$closePane" />
 			<f:with-param name="width" select="$width" />
 			<f:with-param name="height" select="$height" />
@@ -34,7 +36,7 @@
 	<f:each select="$asTimeline">
 		<f:thunk url="../timeline/timeline.xml">
 			<f:with-param name="timeline" select="$asTimeline" />
-			<f:with-param name="newPane" select="$newPane" />
+			<f:with-param name="showBadge" select="$showBadge" />
 			<f:with-param name="closePane" select="$closePane" />
 			<f:with-param name="width" select="$width" />
 			<f:with-param name="height" select="$height" />
@@ -43,7 +45,7 @@
 	<f:each select="$asRealTimeline">
 		<f:thunk url="../realTimeline/realTimeline.xml">
 			<f:with-param name="realTimeline" select="$asRealTimeline" />
-			<f:with-param name="newPane" select="$newPane" />
+			<f:with-param name="showBadge" select="$showBadge" />			
 			<f:with-param name="closePane" select="$closePane" />
 			<f:with-param name="width" select="$width" />
 			<f:with-param name="height" select="$height" />
