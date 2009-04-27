@@ -90,7 +90,11 @@
 			}
 			typeString += type;
 		});
-		typeString += " -> XMLP";
+		if (first) {
+			typeString += "XMLP";
+		} else {
+			typeString += " -> XMLP";
+		}
 
 		return {
 			kind: "templateCode",
@@ -225,14 +229,18 @@
 
 	function makeNode(openTag, xmlp) {
 		var attributes = openTag.attributes;
-		var style = attributes.style;
+		var style;
+		if (attributes.style !== undefined) {
+			style = attributes.style;	
+		} else {
+			style = {};
+		}
+		
 		attributes.style = undefined;
-		var attributeList = [];
+		var attributeObject = {};
 		for (name in attributes) {
 			if(attributes[name] !== undefined) {
-				var att = {};
-				att[name] = attributes[name];
-				attributeList.push(att);
+				attributeObject[name] = attributes[name];
 			}
 		}
 		
@@ -255,7 +263,7 @@
 		return {
 			kind: "element",
 			nodeName: openTag.name,
-			attributes: attributeList,
+			attributes: attributeObject,
 			style: style,
 			children: xmlp
 		};
@@ -278,6 +286,13 @@
 		return {
 			kind: "insert",
 			expr: expr
+		};
+	}
+
+	function makeXMLLine (node) {
+		return {
+			kind: "lineXML",
+			xml: node
 		};
 	}
 
@@ -1481,7 +1496,7 @@ switch( act )
 	break;
 	case 17:
 	{
-		 rval = flatten(vstack[ vstack.length - 1 ]); 
+		 rval = makeXMLLine(flatten(vstack[ vstack.length - 1 ])); 
 	}
 	break;
 	case 18:
