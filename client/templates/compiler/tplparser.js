@@ -178,10 +178,10 @@
 	function makeForEach(attributes, lets, output) {
 		var params = [];
 		if (attributes.key !== undefined) {
-			params.push({name:attributes.key});
+			params.push(attributes.key);
 		}
 		if (attributes.value !== undefined) {
-			params.push({name:attributes.value});
+			params.push(attributes.value);
 		}
 		var templateCode = makeTemplateCode(params, lets, output);
 		return {
