@@ -133,104 +133,39 @@ var mainTemplate = {
 			},
 			children: [
 				{
-					kind: "element",
-					nodeName: "div",
-					attributes: {
-
-					},
-					style: {
-
-					},
-					children: [
-						{
-							kind: "textElement",
-							nodeValue: "
-			Here is the result:"
-						},
-						{
-							kind: "textElement",
-							nodeValue: {
-								kind: "insert",
-								expr: "result"
+					kind: "for-each",
+					select: "testCell",
+					templateCode: {
+						kind: "templateCode",
+						params: [
+							{
+								name: "entry"
 							}
-						}
-					]
-				},
-				{
-					kind: "element",
-					nodeName: "div",
-					attributes: {
+						],
+						type: "t0 -> XMLP",
+						let: {
 
-					},
-					style: {
-
-					},
-					children: [
-						{
-							kind: "textElement",
-							nodeValue: "
-			Here is (letfile1 result):
-		 	"
 						},
-						{
-							kind: "call",
-							templateCode: {
-								kind: "templateCode",
-								params: [
-
-								],
-								type: "XMLP",
-								let: {
+						output: {
+							kind: "lineXML",
+							xml: {
+								kind: "element",
+								nodeName: "div",
+								attributes: {
 
 								},
-								output: {
-									kind: "lineExpr",
-									expr: "letfile1 result",
-									let: {
-
-									}
-								}
-							}
-						}
-					]
-				},
-				{
-					kind: "element",
-					nodeName: "div",
-					attributes: {
-
-					},
-					style: {
-
-					},
-					children: [
-						{
-							kind: "textElement",
-							nodeValue: "
-			Here is (subfolder1 result):
-		 	"
-						},
-						{
-							kind: "call",
-							templateCode: {
-								kind: "templateCode",
-								params: [
-
-								],
-								type: "XMLP",
-								let: {
+								style: {
 
 								},
-								output: {
-									kind: "lineExpr",
-									expr: "subfolder1 result",
-									let: {
-
+								children: [
+									{
+										kind: "textElement",
+										nodeValue: "Text Here"
 									}
-								}
+								]
 							}
 						}
-					]
+					}
 				}
 			]
 		}

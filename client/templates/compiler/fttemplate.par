@@ -429,7 +429,6 @@ INSERT:
 	
 TEXT:
 	IDENTIFIER
-	| QUOTE
 	| ','
 	| '('
 	| ')'

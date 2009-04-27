@@ -964,7 +964,6 @@ var pop_tab = new Array(
 	new Array( 48/* TEXT */, 1 ),
 	new Array( 48/* TEXT */, 1 ),
 	new Array( 48/* TEXT */, 1 ),
-	new Array( 48/* TEXT */, 1 ),
 	new Array( 48/* TEXT */, 2 ),
 	new Array( 39/* OPENFOREACH */, 4 ),
 	new Array( 40/* CLOSEFOREACH */, 3 ),
@@ -1022,19 +1021,19 @@ var act_tab = new Array(
 	/* State 30 */ new Array( 17/* "</" */,-45 , 2/* "TEXTNODE" */,-45 , 19/* "<" */,-45 ),
 	/* State 31 */ new Array( 13/* "," */,-42 , 10/* "}" */,-42 , 17/* "</" */,-42 , 2/* "TEXTNODE" */,-42 , 19/* "<" */,-42 ),
 	/* State 32 */ new Array( 13/* "," */,-43 , 10/* "}" */,-43 , 17/* "</" */,-43 , 2/* "TEXTNODE" */,-43 , 19/* "<" */,-43 ),
-	/* State 33 */ new Array( 23/* "IDENTIFIER" */,46 , 21/* "QUOTE" */,47 , 13/* "," */,48 , 11/* "(" */,49 , 12/* ")" */,50 , 15/* ":" */,51 , 14/* ";" */,52 , 16/* "=" */,53 , 10/* "}" */,54 , 9/* "{" */,55 ),
-	/* State 34 */ new Array( 7/* "f:call" */,57 , 6/* "f:each" */,58 , 23/* "IDENTIFIER" */,59 ),
-	/* State 35 */ new Array( 23/* "IDENTIFIER" */,61 ),
+	/* State 33 */ new Array( 23/* "IDENTIFIER" */,46 , 13/* "," */,47 , 11/* "(" */,48 , 12/* ")" */,49 , 15/* ":" */,50 , 14/* ";" */,51 , 16/* "=" */,52 , 10/* "}" */,53 , 9/* "{" */,54 ),
+	/* State 34 */ new Array( 7/* "f:call" */,56 , 6/* "f:each" */,57 , 23/* "IDENTIFIER" */,58 ),
+	/* State 35 */ new Array( 23/* "IDENTIFIER" */,60 ),
 	/* State 36 */ new Array( 23/* "IDENTIFIER" */,7 ),
-	/* State 37 */ new Array( 9/* "{" */,63 ),
+	/* State 37 */ new Array( 9/* "{" */,62 ),
 	/* State 38 */ new Array( 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,24 , 21/* "QUOTE" */,33 , 13/* "," */,-22 , 10/* "}" */,-22 , 17/* "</" */,-22 ),
 	/* State 39 */ new Array( 23/* "IDENTIFIER" */,7 , 12/* ")" */,-6 , 13/* "," */,-6 ),
 	/* State 40 */ new Array( 21/* "QUOTE" */,33 ),
-	/* State 41 */ new Array( 4/* "function" */,21 , 3/* "template" */,4 , 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,67 , 5/* "state" */,26 , 9/* "{" */,27 , 2/* "TEXTNODE" */,32 , 21/* "QUOTE" */,33 , 19/* "<" */,34 ),
-	/* State 42 */ new Array( 4/* "function" */,21 , 3/* "template" */,4 , 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,67 , 5/* "state" */,26 , 9/* "{" */,27 , 2/* "TEXTNODE" */,32 , 21/* "QUOTE" */,33 , 19/* "<" */,34 ),
-	/* State 43 */ new Array( 4/* "function" */,21 , 3/* "template" */,4 , 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,67 , 5/* "state" */,26 , 9/* "{" */,27 , 2/* "TEXTNODE" */,32 , 21/* "QUOTE" */,33 , 19/* "<" */,34 ),
-	/* State 44 */ new Array( 17/* "</" */,72 , 2/* "TEXTNODE" */,32 , 19/* "<" */,34 ),
-	/* State 45 */ new Array( 21/* "QUOTE" */,74 , 23/* "IDENTIFIER" */,46 , 13/* "," */,48 , 11/* "(" */,49 , 12/* ")" */,50 , 15/* ":" */,51 , 14/* ";" */,52 , 16/* "=" */,53 , 10/* "}" */,54 , 9/* "{" */,55 ),
+	/* State 41 */ new Array( 4/* "function" */,21 , 3/* "template" */,4 , 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,66 , 5/* "state" */,26 , 9/* "{" */,27 , 2/* "TEXTNODE" */,32 , 21/* "QUOTE" */,33 , 19/* "<" */,34 ),
+	/* State 42 */ new Array( 4/* "function" */,21 , 3/* "template" */,4 , 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,66 , 5/* "state" */,26 , 9/* "{" */,27 , 2/* "TEXTNODE" */,32 , 21/* "QUOTE" */,33 , 19/* "<" */,34 ),
+	/* State 43 */ new Array( 4/* "function" */,21 , 3/* "template" */,4 , 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,66 , 5/* "state" */,26 , 9/* "{" */,27 , 2/* "TEXTNODE" */,32 , 21/* "QUOTE" */,33 , 19/* "<" */,34 ),
+	/* State 44 */ new Array( 17/* "</" */,71 , 2/* "TEXTNODE" */,32 , 19/* "<" */,34 ),
+	/* State 45 */ new Array( 21/* "QUOTE" */,73 , 23/* "IDENTIFIER" */,46 , 13/* "," */,47 , 11/* "(" */,48 , 12/* ")" */,49 , 15/* ":" */,50 , 14/* ";" */,51 , 16/* "=" */,52 , 10/* "}" */,53 , 9/* "{" */,54 ),
 	/* State 46 */ new Array( 21/* "QUOTE" */,-47 , 23/* "IDENTIFIER" */,-47 , 13/* "," */,-47 , 11/* "(" */,-47 , 12/* ")" */,-47 , 15/* ":" */,-47 , 14/* ";" */,-47 , 16/* "=" */,-47 , 10/* "}" */,-47 , 9/* "{" */,-47 ),
 	/* State 47 */ new Array( 21/* "QUOTE" */,-48 , 23/* "IDENTIFIER" */,-48 , 13/* "," */,-48 , 11/* "(" */,-48 , 12/* ")" */,-48 , 15/* ":" */,-48 , 14/* ";" */,-48 , 16/* "=" */,-48 , 10/* "}" */,-48 , 9/* "{" */,-48 ),
 	/* State 48 */ new Array( 21/* "QUOTE" */,-49 , 23/* "IDENTIFIER" */,-49 , 13/* "," */,-49 , 11/* "(" */,-49 , 12/* ")" */,-49 , 15/* ":" */,-49 , 14/* ";" */,-49 , 16/* "=" */,-49 , 10/* "}" */,-49 , 9/* "{" */,-49 ),
@@ -1044,97 +1043,96 @@ var act_tab = new Array(
 	/* State 52 */ new Array( 21/* "QUOTE" */,-53 , 23/* "IDENTIFIER" */,-53 , 13/* "," */,-53 , 11/* "(" */,-53 , 12/* ")" */,-53 , 15/* ":" */,-53 , 14/* ";" */,-53 , 16/* "=" */,-53 , 10/* "}" */,-53 , 9/* "{" */,-53 ),
 	/* State 53 */ new Array( 21/* "QUOTE" */,-54 , 23/* "IDENTIFIER" */,-54 , 13/* "," */,-54 , 11/* "(" */,-54 , 12/* ")" */,-54 , 15/* ":" */,-54 , 14/* ";" */,-54 , 16/* "=" */,-54 , 10/* "}" */,-54 , 9/* "{" */,-54 ),
 	/* State 54 */ new Array( 21/* "QUOTE" */,-55 , 23/* "IDENTIFIER" */,-55 , 13/* "," */,-55 , 11/* "(" */,-55 , 12/* ")" */,-55 , 15/* ":" */,-55 , 14/* ";" */,-55 , 16/* "=" */,-55 , 10/* "}" */,-55 , 9/* "{" */,-55 ),
-	/* State 55 */ new Array( 21/* "QUOTE" */,-56 , 23/* "IDENTIFIER" */,-56 , 13/* "," */,-56 , 11/* "(" */,-56 , 12/* ")" */,-56 , 15/* ":" */,-56 , 14/* ";" */,-56 , 16/* "=" */,-56 , 10/* "}" */,-56 , 9/* "{" */,-56 ),
-	/* State 56 */ new Array( 18/* "/" */,-69 , 20/* ">" */,-69 , 8/* "style" */,-69 , 23/* "IDENTIFIER" */,-69 ),
-	/* State 57 */ new Array( 20/* ">" */,76 ),
-	/* State 58 */ new Array( 20/* ">" */,-69 , 8/* "style" */,-69 , 23/* "IDENTIFIER" */,-69 ),
-	/* State 59 */ new Array( 15/* ":" */,78 , 8/* "style" */,-65 , 23/* "IDENTIFIER" */,-65 , 20/* ">" */,-65 , 18/* "/" */,-65 ),
-	/* State 60 */ new Array( 23/* "IDENTIFIER" */,79 , 16/* "=" */,-38 , 12/* ")" */,-38 , 13/* "," */,-38 ),
-	/* State 61 */ new Array( 16/* "=" */,-8 , 12/* ")" */,-8 , 13/* "," */,-8 , 23/* "IDENTIFIER" */,-8 , 9/* "{" */,-8 ),
-	/* State 62 */ new Array( 12/* ")" */,-4 , 13/* "," */,-4 ),
-	/* State 63 */ new Array( 3/* "template" */,-10 , 4/* "function" */,-10 , 11/* "(" */,-10 , 12/* ")" */,-10 , 23/* "IDENTIFIER" */,-10 , 5/* "state" */,-10 , 9/* "{" */,-10 , 2/* "TEXTNODE" */,-10 , 21/* "QUOTE" */,-10 , 19/* "<" */,-10 ),
-	/* State 64 */ new Array( 13/* "," */,36 , 12/* ")" */,81 ),
-	/* State 65 */ new Array( 13/* "," */,82 ),
-	/* State 66 */ new Array( 10/* "}" */,83 ),
-	/* State 67 */ new Array( 15/* ":" */,11 , 10/* "}" */,-20 , 11/* "(" */,-20 , 12/* ")" */,-20 , 23/* "IDENTIFIER" */,-20 , 21/* "QUOTE" */,-20 , 17/* "</" */,-20 , 16/* "=" */,-37 ),
-	/* State 68 */ new Array( 17/* "</" */,85 ),
-	/* State 69 */ new Array( 17/* "</" */,87 ),
-	/* State 70 */ new Array( 17/* "</" */,-44 , 2/* "TEXTNODE" */,-44 , 19/* "<" */,-44 ),
-	/* State 71 */ new Array( 13/* "," */,-41 , 10/* "}" */,-41 , 17/* "</" */,-41 , 2/* "TEXTNODE" */,-41 , 19/* "<" */,-41 ),
-	/* State 72 */ new Array( 23/* "IDENTIFIER" */,59 ),
-	/* State 73 */ new Array( 23/* "IDENTIFIER" */,46 , 21/* "QUOTE" */,47 , 13/* "," */,48 , 11/* "(" */,49 , 12/* ")" */,50 , 15/* ":" */,51 , 14/* ";" */,52 , 16/* "=" */,53 , 10/* "}" */,54 , 9/* "{" */,55 ),
-	/* State 74 */ new Array( 13/* "," */,-48 , 11/* "(" */,-48 , 12/* ")" */,-48 , 23/* "IDENTIFIER" */,-48 , 21/* "QUOTE" */,-48 , 10/* "}" */,-48 , 17/* "</" */,-72 , 9/* "{" */,-48 , 16/* "=" */,-48 , 14/* ";" */,-48 , 22/* "JSSEP" */,-72 , 18/* "/" */,-72 , 20/* ">" */,-72 , 8/* "style" */,-72 , 15/* ":" */,-48 ),
-	/* State 75 */ new Array( 23/* "IDENTIFIER" */,89 , 8/* "style" */,90 , 18/* "/" */,91 , 20/* ">" */,92 ),
-	/* State 76 */ new Array( 23/* "IDENTIFIER" */,-60 , 3/* "template" */,-60 , 4/* "function" */,-60 , 11/* "(" */,-60 , 12/* ")" */,-60 , 5/* "state" */,-60 , 9/* "{" */,-60 , 2/* "TEXTNODE" */,-60 , 21/* "QUOTE" */,-60 , 19/* "<" */,-60 ),
-	/* State 77 */ new Array( 23/* "IDENTIFIER" */,89 , 8/* "style" */,90 , 20/* ">" */,93 ),
-	/* State 78 */ new Array( 23/* "IDENTIFIER" */,94 ),
-	/* State 79 */ new Array( 16/* "=" */,-7 , 12/* ")" */,-7 , 13/* "," */,-7 , 23/* "IDENTIFIER" */,-7 , 9/* "{" */,-7 ),
-	/* State 80 */ new Array( 4/* "function" */,21 , 3/* "template" */,4 , 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,67 , 5/* "state" */,26 , 9/* "{" */,27 , 2/* "TEXTNODE" */,32 , 21/* "QUOTE" */,33 , 19/* "<" */,34 ),
-	/* State 81 */ new Array( 9/* "{" */,96 , 15/* ":" */,97 ),
-	/* State 82 */ new Array( 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,24 , 21/* "QUOTE" */,33 ),
-	/* State 83 */ new Array( 13/* "," */,-23 , 10/* "}" */,-23 , 17/* "</" */,-23 ),
-	/* State 84 */ new Array( 13/* "," */,-39 , 10/* "}" */,-39 , 17/* "</" */,-39 , 2/* "TEXTNODE" */,-39 , 19/* "<" */,-39 ),
-	/* State 85 */ new Array( 6/* "f:each" */,99 ),
-	/* State 86 */ new Array( 13/* "," */,-40 , 10/* "}" */,-40 , 17/* "</" */,-40 , 2/* "TEXTNODE" */,-40 , 19/* "<" */,-40 ),
-	/* State 87 */ new Array( 7/* "f:call" */,100 ),
-	/* State 88 */ new Array( 20/* ">" */,101 ),
+	/* State 55 */ new Array( 18/* "/" */,-68 , 20/* ">" */,-68 , 8/* "style" */,-68 , 23/* "IDENTIFIER" */,-68 ),
+	/* State 56 */ new Array( 20/* ">" */,75 ),
+	/* State 57 */ new Array( 20/* ">" */,-68 , 8/* "style" */,-68 , 23/* "IDENTIFIER" */,-68 ),
+	/* State 58 */ new Array( 15/* ":" */,77 , 8/* "style" */,-64 , 23/* "IDENTIFIER" */,-64 , 20/* ">" */,-64 , 18/* "/" */,-64 ),
+	/* State 59 */ new Array( 23/* "IDENTIFIER" */,78 , 16/* "=" */,-38 , 12/* ")" */,-38 , 13/* "," */,-38 ),
+	/* State 60 */ new Array( 16/* "=" */,-8 , 12/* ")" */,-8 , 13/* "," */,-8 , 23/* "IDENTIFIER" */,-8 , 9/* "{" */,-8 ),
+	/* State 61 */ new Array( 12/* ")" */,-4 , 13/* "," */,-4 ),
+	/* State 62 */ new Array( 3/* "template" */,-10 , 4/* "function" */,-10 , 11/* "(" */,-10 , 12/* ")" */,-10 , 23/* "IDENTIFIER" */,-10 , 5/* "state" */,-10 , 9/* "{" */,-10 , 2/* "TEXTNODE" */,-10 , 21/* "QUOTE" */,-10 , 19/* "<" */,-10 ),
+	/* State 63 */ new Array( 13/* "," */,36 , 12/* ")" */,80 ),
+	/* State 64 */ new Array( 13/* "," */,81 ),
+	/* State 65 */ new Array( 10/* "}" */,82 ),
+	/* State 66 */ new Array( 15/* ":" */,11 , 10/* "}" */,-20 , 11/* "(" */,-20 , 12/* ")" */,-20 , 23/* "IDENTIFIER" */,-20 , 21/* "QUOTE" */,-20 , 17/* "</" */,-20 , 16/* "=" */,-37 ),
+	/* State 67 */ new Array( 17/* "</" */,84 ),
+	/* State 68 */ new Array( 17/* "</" */,86 ),
+	/* State 69 */ new Array( 17/* "</" */,-44 , 2/* "TEXTNODE" */,-44 , 19/* "<" */,-44 ),
+	/* State 70 */ new Array( 13/* "," */,-41 , 10/* "}" */,-41 , 17/* "</" */,-41 , 2/* "TEXTNODE" */,-41 , 19/* "<" */,-41 ),
+	/* State 71 */ new Array( 23/* "IDENTIFIER" */,58 ),
+	/* State 72 */ new Array( 23/* "IDENTIFIER" */,46 , 13/* "," */,47 , 11/* "(" */,48 , 12/* ")" */,49 , 15/* ":" */,50 , 14/* ";" */,51 , 16/* "=" */,52 , 10/* "}" */,53 , 9/* "{" */,54 , 21/* "QUOTE" */,-56 ),
+	/* State 73 */ new Array( 13/* "," */,-71 , 11/* "(" */,-71 , 12/* ")" */,-71 , 23/* "IDENTIFIER" */,-71 , 21/* "QUOTE" */,-71 , 10/* "}" */,-71 , 17/* "</" */,-71 , 9/* "{" */,-71 , 16/* "=" */,-71 , 14/* ";" */,-71 , 22/* "JSSEP" */,-71 , 18/* "/" */,-71 , 20/* ">" */,-71 , 8/* "style" */,-71 ),
+	/* State 74 */ new Array( 23/* "IDENTIFIER" */,88 , 8/* "style" */,89 , 18/* "/" */,90 , 20/* ">" */,91 ),
+	/* State 75 */ new Array( 23/* "IDENTIFIER" */,-59 , 3/* "template" */,-59 , 4/* "function" */,-59 , 11/* "(" */,-59 , 12/* ")" */,-59 , 5/* "state" */,-59 , 9/* "{" */,-59 , 2/* "TEXTNODE" */,-59 , 21/* "QUOTE" */,-59 , 19/* "<" */,-59 ),
+	/* State 76 */ new Array( 23/* "IDENTIFIER" */,88 , 8/* "style" */,89 , 20/* ">" */,92 ),
+	/* State 77 */ new Array( 23/* "IDENTIFIER" */,93 ),
+	/* State 78 */ new Array( 16/* "=" */,-7 , 12/* ")" */,-7 , 13/* "," */,-7 , 23/* "IDENTIFIER" */,-7 , 9/* "{" */,-7 ),
+	/* State 79 */ new Array( 4/* "function" */,21 , 3/* "template" */,4 , 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,66 , 5/* "state" */,26 , 9/* "{" */,27 , 2/* "TEXTNODE" */,32 , 21/* "QUOTE" */,33 , 19/* "<" */,34 ),
+	/* State 80 */ new Array( 9/* "{" */,95 , 15/* ":" */,96 ),
+	/* State 81 */ new Array( 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,24 , 21/* "QUOTE" */,33 ),
+	/* State 82 */ new Array( 13/* "," */,-23 , 10/* "}" */,-23 , 17/* "</" */,-23 ),
+	/* State 83 */ new Array( 13/* "," */,-39 , 10/* "}" */,-39 , 17/* "</" */,-39 , 2/* "TEXTNODE" */,-39 , 19/* "<" */,-39 ),
+	/* State 84 */ new Array( 6/* "f:each" */,98 ),
+	/* State 85 */ new Array( 13/* "," */,-40 , 10/* "}" */,-40 , 17/* "</" */,-40 , 2/* "TEXTNODE" */,-40 , 19/* "<" */,-40 ),
+	/* State 86 */ new Array( 7/* "f:call" */,99 ),
+	/* State 87 */ new Array( 20/* ">" */,100 ),
+	/* State 88 */ new Array( 16/* "=" */,101 ),
 	/* State 89 */ new Array( 16/* "=" */,102 ),
-	/* State 90 */ new Array( 16/* "=" */,103 ),
-	/* State 91 */ new Array( 20/* ">" */,104 ),
-	/* State 92 */ new Array( 2/* "TEXTNODE" */,-62 , 19/* "<" */,-62 , 17/* "</" */,-62 ),
-	/* State 93 */ new Array( 23/* "IDENTIFIER" */,-58 , 3/* "template" */,-58 , 4/* "function" */,-58 , 11/* "(" */,-58 , 12/* ")" */,-58 , 5/* "state" */,-58 , 9/* "{" */,-58 , 2/* "TEXTNODE" */,-58 , 21/* "QUOTE" */,-58 , 19/* "<" */,-58 ),
-	/* State 94 */ new Array( 8/* "style" */,-66 , 23/* "IDENTIFIER" */,-66 , 20/* ">" */,-66 , 18/* "/" */,-66 ),
-	/* State 95 */ new Array( 10/* "}" */,105 ),
-	/* State 96 */ new Array( 23/* "IDENTIFIER" */,107 , 11/* "(" */,109 , 9/* "{" */,110 , 13/* "," */,111 , 16/* "=" */,112 , 14/* ";" */,113 , 22/* "JSSEP" */,114 , 21/* "QUOTE" */,33 , 10/* "}" */,-35 ),
-	/* State 97 */ new Array( 15/* ":" */,115 ),
-	/* State 98 */ new Array( 12/* ")" */,116 , 11/* "(" */,22 , 23/* "IDENTIFIER" */,24 , 21/* "QUOTE" */,33 ),
+	/* State 90 */ new Array( 20/* ">" */,103 ),
+	/* State 91 */ new Array( 2/* "TEXTNODE" */,-61 , 19/* "<" */,-61 , 17/* "</" */,-61 ),
+	/* State 92 */ new Array( 23/* "IDENTIFIER" */,-57 , 3/* "template" */,-57 , 4/* "function" */,-57 , 11/* "(" */,-57 , 12/* ")" */,-57 , 5/* "state" */,-57 , 9/* "{" */,-57 , 2/* "TEXTNODE" */,-57 , 21/* "QUOTE" */,-57 , 19/* "<" */,-57 ),
+	/* State 93 */ new Array( 8/* "style" */,-65 , 23/* "IDENTIFIER" */,-65 , 20/* ">" */,-65 , 18/* "/" */,-65 ),
+	/* State 94 */ new Array( 10/* "}" */,104 ),
+	/* State 95 */ new Array( 23/* "IDENTIFIER" */,106 , 11/* "(" */,108 , 9/* "{" */,109 , 13/* "," */,110 , 16/* "=" */,111 , 14/* ";" */,112 , 22/* "JSSEP" */,113 , 21/* "QUOTE" */,33 , 10/* "}" */,-35 ),
+	/* State 96 */ new Array( 15/* ":" */,114 ),
+	/* State 97 */ new Array( 12/* ")" */,115 , 11/* "(" */,22 , 23/* "IDENTIFIER" */,24 , 21/* "QUOTE" */,33 ),
+	/* State 98 */ new Array( 20/* ">" */,116 ),
 	/* State 99 */ new Array( 20/* ">" */,117 ),
-	/* State 100 */ new Array( 20/* ">" */,118 ),
-	/* State 101 */ new Array( 13/* "," */,-63 , 10/* "}" */,-63 , 17/* "</" */,-63 , 2/* "TEXTNODE" */,-63 , 19/* "<" */,-63 ),
+	/* State 100 */ new Array( 13/* "," */,-62 , 10/* "}" */,-62 , 17/* "</" */,-62 , 2/* "TEXTNODE" */,-62 , 19/* "<" */,-62 ),
+	/* State 101 */ new Array( 21/* "QUOTE" */,120 ),
 	/* State 102 */ new Array( 21/* "QUOTE" */,121 ),
-	/* State 103 */ new Array( 21/* "QUOTE" */,122 ),
-	/* State 104 */ new Array( 13/* "," */,-64 , 10/* "}" */,-64 , 17/* "</" */,-64 , 2/* "TEXTNODE" */,-64 , 19/* "<" */,-64 ),
-	/* State 105 */ new Array( 54/* "$" */,-3 , 13/* "," */,-3 , 10/* "}" */,-3 , 17/* "</" */,-3 ),
-	/* State 106 */ new Array( 10/* "}" */,124 , 23/* "IDENTIFIER" */,107 , 11/* "(" */,109 , 9/* "{" */,110 , 13/* "," */,111 , 16/* "=" */,112 , 14/* ";" */,113 , 22/* "JSSEP" */,114 , 21/* "QUOTE" */,33 ),
-	/* State 107 */ new Array( 10/* "}" */,-26 , 23/* "IDENTIFIER" */,-26 , 21/* "QUOTE" */,-26 , 11/* "(" */,-26 , 9/* "{" */,-26 , 13/* "," */,-26 , 16/* "=" */,-26 , 14/* ";" */,-26 , 22/* "JSSEP" */,-26 , 12/* ")" */,-26 ),
-	/* State 108 */ new Array( 10/* "}" */,-27 , 23/* "IDENTIFIER" */,-27 , 21/* "QUOTE" */,-27 , 11/* "(" */,-27 , 9/* "{" */,-27 , 13/* "," */,-27 , 16/* "=" */,-27 , 14/* ";" */,-27 , 22/* "JSSEP" */,-27 , 12/* ")" */,-27 ),
-	/* State 109 */ new Array( 23/* "IDENTIFIER" */,107 , 11/* "(" */,109 , 9/* "{" */,110 , 13/* "," */,111 , 16/* "=" */,112 , 14/* ";" */,113 , 22/* "JSSEP" */,114 , 21/* "QUOTE" */,33 , 12/* ")" */,-35 ),
-	/* State 110 */ new Array( 23/* "IDENTIFIER" */,107 , 11/* "(" */,109 , 9/* "{" */,110 , 13/* "," */,111 , 16/* "=" */,112 , 14/* ";" */,113 , 22/* "JSSEP" */,114 , 21/* "QUOTE" */,33 , 10/* "}" */,-35 ),
-	/* State 111 */ new Array( 10/* "}" */,-30 , 23/* "IDENTIFIER" */,-30 , 21/* "QUOTE" */,-30 , 11/* "(" */,-30 , 9/* "{" */,-30 , 13/* "," */,-30 , 16/* "=" */,-30 , 14/* ";" */,-30 , 22/* "JSSEP" */,-30 , 12/* ")" */,-30 ),
-	/* State 112 */ new Array( 10/* "}" */,-31 , 23/* "IDENTIFIER" */,-31 , 21/* "QUOTE" */,-31 , 11/* "(" */,-31 , 9/* "{" */,-31 , 13/* "," */,-31 , 16/* "=" */,-31 , 14/* ";" */,-31 , 22/* "JSSEP" */,-31 , 12/* ")" */,-31 ),
-	/* State 113 */ new Array( 10/* "}" */,-32 , 23/* "IDENTIFIER" */,-32 , 21/* "QUOTE" */,-32 , 11/* "(" */,-32 , 9/* "{" */,-32 , 13/* "," */,-32 , 16/* "=" */,-32 , 14/* ";" */,-32 , 22/* "JSSEP" */,-32 , 12/* ")" */,-32 ),
-	/* State 114 */ new Array( 10/* "}" */,-33 , 23/* "IDENTIFIER" */,-33 , 21/* "QUOTE" */,-33 , 11/* "(" */,-33 , 9/* "{" */,-33 , 13/* "," */,-33 , 16/* "=" */,-33 , 14/* ";" */,-33 , 22/* "JSSEP" */,-33 , 12/* ")" */,-33 ),
-	/* State 115 */ new Array( 23/* "IDENTIFIER" */,61 ),
-	/* State 116 */ new Array( 13/* "," */,-36 , 10/* "}" */,-36 , 17/* "</" */,-36 , 12/* ")" */,-19 , 11/* "(" */,-19 , 23/* "IDENTIFIER" */,-19 , 21/* "QUOTE" */,-19 ),
-	/* State 117 */ new Array( 13/* "," */,-59 , 10/* "}" */,-59 , 17/* "</" */,-59 , 2/* "TEXTNODE" */,-59 , 19/* "<" */,-59 ),
-	/* State 118 */ new Array( 13/* "," */,-61 , 10/* "}" */,-61 , 17/* "</" */,-61 , 2/* "TEXTNODE" */,-61 , 19/* "<" */,-61 ),
-	/* State 119 */ new Array( 18/* "/" */,-68 , 20/* ">" */,-68 , 8/* "style" */,-68 , 23/* "IDENTIFIER" */,-68 ),
-	/* State 120 */ new Array( 18/* "/" */,-70 , 20/* ">" */,-70 , 8/* "style" */,-70 , 23/* "IDENTIFIER" */,-70 ),
-	/* State 121 */ new Array( 9/* "{" */,129 , 23/* "IDENTIFIER" */,46 , 21/* "QUOTE" */,47 , 13/* "," */,48 , 11/* "(" */,49 , 12/* ")" */,50 , 15/* ":" */,51 , 14/* ";" */,52 , 16/* "=" */,53 , 10/* "}" */,54 ),
-	/* State 122 */ new Array( 23/* "IDENTIFIER" */,132 , 21/* "QUOTE" */,-75 , 14/* ";" */,-75 ),
-	/* State 123 */ new Array( 23/* "IDENTIFIER" */,107 , 11/* "(" */,109 , 9/* "{" */,110 , 13/* "," */,111 , 16/* "=" */,112 , 14/* ";" */,113 , 22/* "JSSEP" */,114 , 21/* "QUOTE" */,33 , 10/* "}" */,-34 , 12/* ")" */,-34 ),
-	/* State 124 */ new Array( 13/* "," */,-24 , 10/* "}" */,-24 , 17/* "</" */,-24 ),
-	/* State 125 */ new Array( 12/* ")" */,133 , 23/* "IDENTIFIER" */,107 , 11/* "(" */,109 , 9/* "{" */,110 , 13/* "," */,111 , 16/* "=" */,112 , 14/* ";" */,113 , 22/* "JSSEP" */,114 , 21/* "QUOTE" */,33 ),
-	/* State 126 */ new Array( 10/* "}" */,134 , 23/* "IDENTIFIER" */,107 , 11/* "(" */,109 , 9/* "{" */,110 , 13/* "," */,111 , 16/* "=" */,112 , 14/* ";" */,113 , 22/* "JSSEP" */,114 , 21/* "QUOTE" */,33 ),
-	/* State 127 */ new Array( 23/* "IDENTIFIER" */,79 , 9/* "{" */,135 ),
-	/* State 128 */ new Array( 21/* "QUOTE" */,136 ),
-	/* State 129 */ new Array( 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,24 , 21/* "QUOTE" */,33 , 13/* "," */,-56 , 15/* ":" */,-56 , 14/* ";" */,-56 , 16/* "=" */,-56 , 10/* "}" */,-56 , 9/* "{" */,-56 ),
-	/* State 130 */ new Array( 14/* ";" */,138 , 21/* "QUOTE" */,139 ),
-	/* State 131 */ new Array( 21/* "QUOTE" */,-74 , 14/* ";" */,-74 ),
-	/* State 132 */ new Array( 15/* ":" */,140 ),
-	/* State 133 */ new Array( 10/* "}" */,-28 , 23/* "IDENTIFIER" */,-28 , 21/* "QUOTE" */,-28 , 11/* "(" */,-28 , 9/* "{" */,-28 , 13/* "," */,-28 , 16/* "=" */,-28 , 14/* ";" */,-28 , 22/* "JSSEP" */,-28 , 12/* ")" */,-28 ),
-	/* State 134 */ new Array( 10/* "}" */,-29 , 23/* "IDENTIFIER" */,-29 , 21/* "QUOTE" */,-29 , 11/* "(" */,-29 , 9/* "{" */,-29 , 13/* "," */,-29 , 16/* "=" */,-29 , 14/* ";" */,-29 , 22/* "JSSEP" */,-29 , 12/* ")" */,-29 ),
-	/* State 135 */ new Array( 23/* "IDENTIFIER" */,107 , 11/* "(" */,109 , 9/* "{" */,110 , 13/* "," */,111 , 16/* "=" */,112 , 14/* ";" */,113 , 22/* "JSSEP" */,114 , 21/* "QUOTE" */,33 , 10/* "}" */,-35 ),
-	/* State 136 */ new Array( 18/* "/" */,-71 , 20/* ">" */,-71 , 8/* "style" */,-71 , 23/* "IDENTIFIER" */,-71 ),
-	/* State 137 */ new Array( 10/* "}" */,142 , 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,24 , 21/* "QUOTE" */,33 ),
-	/* State 138 */ new Array( 23/* "IDENTIFIER" */,132 ),
-	/* State 139 */ new Array( 18/* "/" */,-67 , 20/* ">" */,-67 , 8/* "style" */,-67 , 23/* "IDENTIFIER" */,-67 ),
-	/* State 140 */ new Array( 23/* "IDENTIFIER" */,46 , 21/* "QUOTE" */,47 , 13/* "," */,48 , 11/* "(" */,49 , 12/* ")" */,50 , 15/* ":" */,51 , 14/* ";" */,52 , 16/* "=" */,53 , 10/* "}" */,54 , 9/* "{" */,55 ),
-	/* State 141 */ new Array( 10/* "}" */,145 , 23/* "IDENTIFIER" */,107 , 11/* "(" */,109 , 9/* "{" */,110 , 13/* "," */,111 , 16/* "=" */,112 , 14/* ";" */,113 , 22/* "JSSEP" */,114 , 21/* "QUOTE" */,33 ),
-	/* State 142 */ new Array( 21/* "QUOTE" */,-46 ),
-	/* State 143 */ new Array( 21/* "QUOTE" */,-73 , 14/* ";" */,-73 ),
-	/* State 144 */ new Array( 23/* "IDENTIFIER" */,46 , 21/* "QUOTE" */,47 , 13/* "," */,48 , 11/* "(" */,49 , 12/* ")" */,50 , 15/* ":" */,51 , 14/* ";" */,52 , 16/* "=" */,53 , 10/* "}" */,54 , 9/* "{" */,55 ),
-	/* State 145 */ new Array( 13/* "," */,-25 , 10/* "}" */,-25 , 17/* "</" */,-25 )
+	/* State 103 */ new Array( 13/* "," */,-63 , 10/* "}" */,-63 , 17/* "</" */,-63 , 2/* "TEXTNODE" */,-63 , 19/* "<" */,-63 ),
+	/* State 104 */ new Array( 54/* "$" */,-3 , 13/* "," */,-3 , 10/* "}" */,-3 , 17/* "</" */,-3 ),
+	/* State 105 */ new Array( 10/* "}" */,123 , 23/* "IDENTIFIER" */,106 , 11/* "(" */,108 , 9/* "{" */,109 , 13/* "," */,110 , 16/* "=" */,111 , 14/* ";" */,112 , 22/* "JSSEP" */,113 , 21/* "QUOTE" */,33 ),
+	/* State 106 */ new Array( 10/* "}" */,-26 , 23/* "IDENTIFIER" */,-26 , 21/* "QUOTE" */,-26 , 11/* "(" */,-26 , 9/* "{" */,-26 , 13/* "," */,-26 , 16/* "=" */,-26 , 14/* ";" */,-26 , 22/* "JSSEP" */,-26 , 12/* ")" */,-26 ),
+	/* State 107 */ new Array( 10/* "}" */,-27 , 23/* "IDENTIFIER" */,-27 , 21/* "QUOTE" */,-27 , 11/* "(" */,-27 , 9/* "{" */,-27 , 13/* "," */,-27 , 16/* "=" */,-27 , 14/* ";" */,-27 , 22/* "JSSEP" */,-27 , 12/* ")" */,-27 ),
+	/* State 108 */ new Array( 23/* "IDENTIFIER" */,106 , 11/* "(" */,108 , 9/* "{" */,109 , 13/* "," */,110 , 16/* "=" */,111 , 14/* ";" */,112 , 22/* "JSSEP" */,113 , 21/* "QUOTE" */,33 , 12/* ")" */,-35 ),
+	/* State 109 */ new Array( 23/* "IDENTIFIER" */,106 , 11/* "(" */,108 , 9/* "{" */,109 , 13/* "," */,110 , 16/* "=" */,111 , 14/* ";" */,112 , 22/* "JSSEP" */,113 , 21/* "QUOTE" */,33 , 10/* "}" */,-35 ),
+	/* State 110 */ new Array( 10/* "}" */,-30 , 23/* "IDENTIFIER" */,-30 , 21/* "QUOTE" */,-30 , 11/* "(" */,-30 , 9/* "{" */,-30 , 13/* "," */,-30 , 16/* "=" */,-30 , 14/* ";" */,-30 , 22/* "JSSEP" */,-30 , 12/* ")" */,-30 ),
+	/* State 111 */ new Array( 10/* "}" */,-31 , 23/* "IDENTIFIER" */,-31 , 21/* "QUOTE" */,-31 , 11/* "(" */,-31 , 9/* "{" */,-31 , 13/* "," */,-31 , 16/* "=" */,-31 , 14/* ";" */,-31 , 22/* "JSSEP" */,-31 , 12/* ")" */,-31 ),
+	/* State 112 */ new Array( 10/* "}" */,-32 , 23/* "IDENTIFIER" */,-32 , 21/* "QUOTE" */,-32 , 11/* "(" */,-32 , 9/* "{" */,-32 , 13/* "," */,-32 , 16/* "=" */,-32 , 14/* ";" */,-32 , 22/* "JSSEP" */,-32 , 12/* ")" */,-32 ),
+	/* State 113 */ new Array( 10/* "}" */,-33 , 23/* "IDENTIFIER" */,-33 , 21/* "QUOTE" */,-33 , 11/* "(" */,-33 , 9/* "{" */,-33 , 13/* "," */,-33 , 16/* "=" */,-33 , 14/* ";" */,-33 , 22/* "JSSEP" */,-33 , 12/* ")" */,-33 ),
+	/* State 114 */ new Array( 23/* "IDENTIFIER" */,60 ),
+	/* State 115 */ new Array( 13/* "," */,-36 , 10/* "}" */,-36 , 17/* "</" */,-36 , 12/* ")" */,-19 , 11/* "(" */,-19 , 23/* "IDENTIFIER" */,-19 , 21/* "QUOTE" */,-19 ),
+	/* State 116 */ new Array( 13/* "," */,-58 , 10/* "}" */,-58 , 17/* "</" */,-58 , 2/* "TEXTNODE" */,-58 , 19/* "<" */,-58 ),
+	/* State 117 */ new Array( 13/* "," */,-60 , 10/* "}" */,-60 , 17/* "</" */,-60 , 2/* "TEXTNODE" */,-60 , 19/* "<" */,-60 ),
+	/* State 118 */ new Array( 18/* "/" */,-67 , 20/* ">" */,-67 , 8/* "style" */,-67 , 23/* "IDENTIFIER" */,-67 ),
+	/* State 119 */ new Array( 18/* "/" */,-69 , 20/* ">" */,-69 , 8/* "style" */,-69 , 23/* "IDENTIFIER" */,-69 ),
+	/* State 120 */ new Array( 9/* "{" */,128 , 23/* "IDENTIFIER" */,46 , 13/* "," */,47 , 11/* "(" */,48 , 12/* ")" */,49 , 15/* ":" */,50 , 14/* ";" */,51 , 16/* "=" */,52 , 10/* "}" */,53 ),
+	/* State 121 */ new Array( 23/* "IDENTIFIER" */,131 , 21/* "QUOTE" */,-74 , 14/* ";" */,-74 ),
+	/* State 122 */ new Array( 23/* "IDENTIFIER" */,106 , 11/* "(" */,108 , 9/* "{" */,109 , 13/* "," */,110 , 16/* "=" */,111 , 14/* ";" */,112 , 22/* "JSSEP" */,113 , 21/* "QUOTE" */,33 , 10/* "}" */,-34 , 12/* ")" */,-34 ),
+	/* State 123 */ new Array( 13/* "," */,-24 , 10/* "}" */,-24 , 17/* "</" */,-24 ),
+	/* State 124 */ new Array( 12/* ")" */,132 , 23/* "IDENTIFIER" */,106 , 11/* "(" */,108 , 9/* "{" */,109 , 13/* "," */,110 , 16/* "=" */,111 , 14/* ";" */,112 , 22/* "JSSEP" */,113 , 21/* "QUOTE" */,33 ),
+	/* State 125 */ new Array( 10/* "}" */,133 , 23/* "IDENTIFIER" */,106 , 11/* "(" */,108 , 9/* "{" */,109 , 13/* "," */,110 , 16/* "=" */,111 , 14/* ";" */,112 , 22/* "JSSEP" */,113 , 21/* "QUOTE" */,33 ),
+	/* State 126 */ new Array( 23/* "IDENTIFIER" */,78 , 9/* "{" */,134 ),
+	/* State 127 */ new Array( 21/* "QUOTE" */,135 ),
+	/* State 128 */ new Array( 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,24 , 21/* "QUOTE" */,33 , 13/* "," */,-55 , 15/* ":" */,-55 , 14/* ";" */,-55 , 16/* "=" */,-55 , 10/* "}" */,-55 , 9/* "{" */,-55 ),
+	/* State 129 */ new Array( 14/* ";" */,137 , 21/* "QUOTE" */,138 ),
+	/* State 130 */ new Array( 21/* "QUOTE" */,-73 , 14/* ";" */,-73 ),
+	/* State 131 */ new Array( 15/* ":" */,139 ),
+	/* State 132 */ new Array( 10/* "}" */,-28 , 23/* "IDENTIFIER" */,-28 , 21/* "QUOTE" */,-28 , 11/* "(" */,-28 , 9/* "{" */,-28 , 13/* "," */,-28 , 16/* "=" */,-28 , 14/* ";" */,-28 , 22/* "JSSEP" */,-28 , 12/* ")" */,-28 ),
+	/* State 133 */ new Array( 10/* "}" */,-29 , 23/* "IDENTIFIER" */,-29 , 21/* "QUOTE" */,-29 , 11/* "(" */,-29 , 9/* "{" */,-29 , 13/* "," */,-29 , 16/* "=" */,-29 , 14/* ";" */,-29 , 22/* "JSSEP" */,-29 , 12/* ")" */,-29 ),
+	/* State 134 */ new Array( 23/* "IDENTIFIER" */,106 , 11/* "(" */,108 , 9/* "{" */,109 , 13/* "," */,110 , 16/* "=" */,111 , 14/* ";" */,112 , 22/* "JSSEP" */,113 , 21/* "QUOTE" */,33 , 10/* "}" */,-35 ),
+	/* State 135 */ new Array( 18/* "/" */,-70 , 20/* ">" */,-70 , 8/* "style" */,-70 , 23/* "IDENTIFIER" */,-70 ),
+	/* State 136 */ new Array( 10/* "}" */,141 , 11/* "(" */,22 , 12/* ")" */,23 , 23/* "IDENTIFIER" */,24 , 21/* "QUOTE" */,33 ),
+	/* State 137 */ new Array( 23/* "IDENTIFIER" */,131 ),
+	/* State 138 */ new Array( 18/* "/" */,-66 , 20/* ">" */,-66 , 8/* "style" */,-66 , 23/* "IDENTIFIER" */,-66 ),
+	/* State 139 */ new Array( 23/* "IDENTIFIER" */,46 , 13/* "," */,47 , 11/* "(" */,48 , 12/* ")" */,49 , 15/* ":" */,50 , 14/* ";" */,51 , 16/* "=" */,52 , 10/* "}" */,53 , 9/* "{" */,54 ),
+	/* State 140 */ new Array( 10/* "}" */,144 , 23/* "IDENTIFIER" */,106 , 11/* "(" */,108 , 9/* "{" */,109 , 13/* "," */,110 , 16/* "=" */,111 , 14/* ";" */,112 , 22/* "JSSEP" */,113 , 21/* "QUOTE" */,33 ),
+	/* State 141 */ new Array( 21/* "QUOTE" */,-46 ),
+	/* State 142 */ new Array( 21/* "QUOTE" */,-72 , 14/* ";" */,-72 ),
+	/* State 143 */ new Array( 23/* "IDENTIFIER" */,46 , 13/* "," */,47 , 11/* "(" */,48 , 12/* ")" */,49 , 15/* ":" */,50 , 14/* ";" */,51 , 16/* "=" */,52 , 10/* "}" */,53 , 9/* "{" */,54 , 21/* "QUOTE" */,-75 ),
+	/* State 144 */ new Array( 13/* "," */,-25 , 10/* "}" */,-25 , 17/* "</" */,-25 )
 );
 
 /* Goto-Table */
@@ -1173,18 +1171,18 @@ var goto_tab = new Array(
 	/* State 31 */ new Array(  ),
 	/* State 32 */ new Array(  ),
 	/* State 33 */ new Array( 48/* TEXT */,45 ),
-	/* State 34 */ new Array( 50/* TAGNAME */,56 ),
-	/* State 35 */ new Array( 30/* TYPE */,60 ),
-	/* State 36 */ new Array( 29/* VARIABLE */,62 ),
+	/* State 34 */ new Array( 50/* TAGNAME */,55 ),
+	/* State 35 */ new Array( 30/* TYPE */,59 ),
+	/* State 36 */ new Array( 29/* VARIABLE */,61 ),
 	/* State 37 */ new Array(  ),
 	/* State 38 */ new Array( 33/* EXPR */,38 , 37/* STRING */,25 ),
-	/* State 39 */ new Array( 27/* ARGLIST */,64 , 29/* VARIABLE */,13 ),
-	/* State 40 */ new Array( 37/* STRING */,65 ),
-	/* State 41 */ new Array( 31/* LET */,5 , 28/* STMT */,66 , 32/* JSFUN */,15 , 24/* TEMPLATE */,16 , 33/* EXPR */,17 , 34/* STATE */,18 , 35/* LETLISTBLOCK */,19 , 36/* XML */,20 , 29/* VARIABLE */,6 , 37/* STRING */,25 , 39/* OPENFOREACH */,28 , 41/* OPENCALL */,29 , 43/* OPENTAG */,30 , 46/* SINGLETAG */,31 ),
-	/* State 42 */ new Array( 31/* LET */,5 , 28/* STMT */,68 , 32/* JSFUN */,15 , 24/* TEMPLATE */,16 , 33/* EXPR */,17 , 34/* STATE */,18 , 35/* LETLISTBLOCK */,19 , 36/* XML */,20 , 29/* VARIABLE */,6 , 37/* STRING */,25 , 39/* OPENFOREACH */,28 , 41/* OPENCALL */,29 , 43/* OPENTAG */,30 , 46/* SINGLETAG */,31 ),
-	/* State 43 */ new Array( 31/* LET */,5 , 28/* STMT */,69 , 32/* JSFUN */,15 , 24/* TEMPLATE */,16 , 33/* EXPR */,17 , 34/* STATE */,18 , 35/* LETLISTBLOCK */,19 , 36/* XML */,20 , 29/* VARIABLE */,6 , 37/* STRING */,25 , 39/* OPENFOREACH */,28 , 41/* OPENCALL */,29 , 43/* OPENTAG */,30 , 46/* SINGLETAG */,31 ),
-	/* State 44 */ new Array( 36/* XML */,70 , 45/* CLOSETAG */,71 , 39/* OPENFOREACH */,28 , 41/* OPENCALL */,29 , 43/* OPENTAG */,30 , 46/* SINGLETAG */,31 ),
-	/* State 45 */ new Array( 48/* TEXT */,73 ),
+	/* State 39 */ new Array( 27/* ARGLIST */,63 , 29/* VARIABLE */,13 ),
+	/* State 40 */ new Array( 37/* STRING */,64 ),
+	/* State 41 */ new Array( 31/* LET */,5 , 28/* STMT */,65 , 32/* JSFUN */,15 , 24/* TEMPLATE */,16 , 33/* EXPR */,17 , 34/* STATE */,18 , 35/* LETLISTBLOCK */,19 , 36/* XML */,20 , 29/* VARIABLE */,6 , 37/* STRING */,25 , 39/* OPENFOREACH */,28 , 41/* OPENCALL */,29 , 43/* OPENTAG */,30 , 46/* SINGLETAG */,31 ),
+	/* State 42 */ new Array( 31/* LET */,5 , 28/* STMT */,67 , 32/* JSFUN */,15 , 24/* TEMPLATE */,16 , 33/* EXPR */,17 , 34/* STATE */,18 , 35/* LETLISTBLOCK */,19 , 36/* XML */,20 , 29/* VARIABLE */,6 , 37/* STRING */,25 , 39/* OPENFOREACH */,28 , 41/* OPENCALL */,29 , 43/* OPENTAG */,30 , 46/* SINGLETAG */,31 ),
+	/* State 43 */ new Array( 31/* LET */,5 , 28/* STMT */,68 , 32/* JSFUN */,15 , 24/* TEMPLATE */,16 , 33/* EXPR */,17 , 34/* STATE */,18 , 35/* LETLISTBLOCK */,19 , 36/* XML */,20 , 29/* VARIABLE */,6 , 37/* STRING */,25 , 39/* OPENFOREACH */,28 , 41/* OPENCALL */,29 , 43/* OPENTAG */,30 , 46/* SINGLETAG */,31 ),
+	/* State 44 */ new Array( 36/* XML */,69 , 45/* CLOSETAG */,70 , 39/* OPENFOREACH */,28 , 41/* OPENCALL */,29 , 43/* OPENTAG */,30 , 46/* SINGLETAG */,31 ),
+	/* State 45 */ new Array( 48/* TEXT */,72 ),
 	/* State 46 */ new Array(  ),
 	/* State 47 */ new Array(  ),
 	/* State 48 */ new Array(  ),
@@ -1194,34 +1192,34 @@ var goto_tab = new Array(
 	/* State 52 */ new Array(  ),
 	/* State 53 */ new Array(  ),
 	/* State 54 */ new Array(  ),
-	/* State 55 */ new Array(  ),
-	/* State 56 */ new Array( 49/* ATTRIBUTES */,75 ),
-	/* State 57 */ new Array(  ),
-	/* State 58 */ new Array( 49/* ATTRIBUTES */,77 ),
+	/* State 55 */ new Array( 49/* ATTRIBUTES */,74 ),
+	/* State 56 */ new Array(  ),
+	/* State 57 */ new Array( 49/* ATTRIBUTES */,76 ),
+	/* State 58 */ new Array(  ),
 	/* State 59 */ new Array(  ),
 	/* State 60 */ new Array(  ),
 	/* State 61 */ new Array(  ),
-	/* State 62 */ new Array(  ),
-	/* State 63 */ new Array( 25/* LETLIST */,80 ),
+	/* State 62 */ new Array( 25/* LETLIST */,79 ),
+	/* State 63 */ new Array(  ),
 	/* State 64 */ new Array(  ),
 	/* State 65 */ new Array(  ),
 	/* State 66 */ new Array(  ),
-	/* State 67 */ new Array(  ),
-	/* State 68 */ new Array( 40/* CLOSEFOREACH */,84 ),
-	/* State 69 */ new Array( 42/* CLOSECALL */,86 ),
+	/* State 67 */ new Array( 40/* CLOSEFOREACH */,83 ),
+	/* State 68 */ new Array( 42/* CLOSECALL */,85 ),
+	/* State 69 */ new Array(  ),
 	/* State 70 */ new Array(  ),
-	/* State 71 */ new Array(  ),
-	/* State 72 */ new Array( 50/* TAGNAME */,88 ),
-	/* State 73 */ new Array( 48/* TEXT */,73 ),
+	/* State 71 */ new Array( 50/* TAGNAME */,87 ),
+	/* State 72 */ new Array( 48/* TEXT */,72 ),
+	/* State 73 */ new Array(  ),
 	/* State 74 */ new Array(  ),
 	/* State 75 */ new Array(  ),
 	/* State 76 */ new Array(  ),
 	/* State 77 */ new Array(  ),
 	/* State 78 */ new Array(  ),
-	/* State 79 */ new Array(  ),
-	/* State 80 */ new Array( 31/* LET */,5 , 28/* STMT */,95 , 32/* JSFUN */,15 , 24/* TEMPLATE */,16 , 33/* EXPR */,17 , 34/* STATE */,18 , 35/* LETLISTBLOCK */,19 , 36/* XML */,20 , 29/* VARIABLE */,6 , 37/* STRING */,25 , 39/* OPENFOREACH */,28 , 41/* OPENCALL */,29 , 43/* OPENTAG */,30 , 46/* SINGLETAG */,31 ),
-	/* State 81 */ new Array(  ),
-	/* State 82 */ new Array( 33/* EXPR */,98 , 37/* STRING */,25 ),
+	/* State 79 */ new Array( 31/* LET */,5 , 28/* STMT */,94 , 32/* JSFUN */,15 , 24/* TEMPLATE */,16 , 33/* EXPR */,17 , 34/* STATE */,18 , 35/* LETLISTBLOCK */,19 , 36/* XML */,20 , 29/* VARIABLE */,6 , 37/* STRING */,25 , 39/* OPENFOREACH */,28 , 41/* OPENCALL */,29 , 43/* OPENTAG */,30 , 46/* SINGLETAG */,31 ),
+	/* State 80 */ new Array(  ),
+	/* State 81 */ new Array( 33/* EXPR */,97 , 37/* STRING */,25 ),
+	/* State 82 */ new Array(  ),
 	/* State 83 */ new Array(  ),
 	/* State 84 */ new Array(  ),
 	/* State 85 */ new Array(  ),
@@ -1234,57 +1232,56 @@ var goto_tab = new Array(
 	/* State 92 */ new Array(  ),
 	/* State 93 */ new Array(  ),
 	/* State 94 */ new Array(  ),
-	/* State 95 */ new Array(  ),
-	/* State 96 */ new Array( 38/* JS */,106 , 37/* STRING */,108 ),
-	/* State 97 */ new Array(  ),
-	/* State 98 */ new Array( 33/* EXPR */,38 , 37/* STRING */,25 ),
+	/* State 95 */ new Array( 38/* JS */,105 , 37/* STRING */,107 ),
+	/* State 96 */ new Array(  ),
+	/* State 97 */ new Array( 33/* EXPR */,38 , 37/* STRING */,25 ),
+	/* State 98 */ new Array(  ),
 	/* State 99 */ new Array(  ),
 	/* State 100 */ new Array(  ),
-	/* State 101 */ new Array(  ),
-	/* State 102 */ new Array( 52/* ATTRIBUTE */,119 , 37/* STRING */,120 ),
+	/* State 101 */ new Array( 52/* ATTRIBUTE */,118 , 37/* STRING */,119 ),
+	/* State 102 */ new Array(  ),
 	/* State 103 */ new Array(  ),
 	/* State 104 */ new Array(  ),
-	/* State 105 */ new Array(  ),
-	/* State 106 */ new Array( 38/* JS */,123 , 37/* STRING */,108 ),
+	/* State 105 */ new Array( 38/* JS */,122 , 37/* STRING */,107 ),
+	/* State 106 */ new Array(  ),
 	/* State 107 */ new Array(  ),
-	/* State 108 */ new Array(  ),
-	/* State 109 */ new Array( 38/* JS */,125 , 37/* STRING */,108 ),
-	/* State 110 */ new Array( 38/* JS */,126 , 37/* STRING */,108 ),
+	/* State 108 */ new Array( 38/* JS */,124 , 37/* STRING */,107 ),
+	/* State 109 */ new Array( 38/* JS */,125 , 37/* STRING */,107 ),
+	/* State 110 */ new Array(  ),
 	/* State 111 */ new Array(  ),
 	/* State 112 */ new Array(  ),
 	/* State 113 */ new Array(  ),
-	/* State 114 */ new Array(  ),
-	/* State 115 */ new Array( 30/* TYPE */,127 ),
+	/* State 114 */ new Array( 30/* TYPE */,126 ),
+	/* State 115 */ new Array(  ),
 	/* State 116 */ new Array(  ),
 	/* State 117 */ new Array(  ),
 	/* State 118 */ new Array(  ),
 	/* State 119 */ new Array(  ),
-	/* State 120 */ new Array(  ),
-	/* State 121 */ new Array( 48/* TEXT */,45 , 47/* INSERT */,128 ),
-	/* State 122 */ new Array( 51/* STYLE */,130 , 53/* STYLEATTRIBUTE */,131 ),
-	/* State 123 */ new Array( 38/* JS */,123 , 37/* STRING */,108 ),
-	/* State 124 */ new Array(  ),
-	/* State 125 */ new Array( 38/* JS */,123 , 37/* STRING */,108 ),
-	/* State 126 */ new Array( 38/* JS */,123 , 37/* STRING */,108 ),
+	/* State 120 */ new Array( 48/* TEXT */,45 , 47/* INSERT */,127 ),
+	/* State 121 */ new Array( 51/* STYLE */,129 , 53/* STYLEATTRIBUTE */,130 ),
+	/* State 122 */ new Array( 38/* JS */,122 , 37/* STRING */,107 ),
+	/* State 123 */ new Array(  ),
+	/* State 124 */ new Array( 38/* JS */,122 , 37/* STRING */,107 ),
+	/* State 125 */ new Array( 38/* JS */,122 , 37/* STRING */,107 ),
+	/* State 126 */ new Array(  ),
 	/* State 127 */ new Array(  ),
-	/* State 128 */ new Array(  ),
-	/* State 129 */ new Array( 33/* EXPR */,137 , 37/* STRING */,25 ),
+	/* State 128 */ new Array( 33/* EXPR */,136 , 37/* STRING */,25 ),
+	/* State 129 */ new Array(  ),
 	/* State 130 */ new Array(  ),
 	/* State 131 */ new Array(  ),
 	/* State 132 */ new Array(  ),
 	/* State 133 */ new Array(  ),
-	/* State 134 */ new Array(  ),
-	/* State 135 */ new Array( 38/* JS */,141 , 37/* STRING */,108 ),
-	/* State 136 */ new Array(  ),
-	/* State 137 */ new Array( 33/* EXPR */,38 , 37/* STRING */,25 ),
-	/* State 138 */ new Array( 53/* STYLEATTRIBUTE */,143 ),
-	/* State 139 */ new Array(  ),
-	/* State 140 */ new Array( 48/* TEXT */,144 ),
-	/* State 141 */ new Array( 38/* JS */,123 , 37/* STRING */,108 ),
+	/* State 134 */ new Array( 38/* JS */,140 , 37/* STRING */,107 ),
+	/* State 135 */ new Array(  ),
+	/* State 136 */ new Array( 33/* EXPR */,38 , 37/* STRING */,25 ),
+	/* State 137 */ new Array( 53/* STYLEATTRIBUTE */,142 ),
+	/* State 138 */ new Array(  ),
+	/* State 139 */ new Array( 48/* TEXT */,143 ),
+	/* State 140 */ new Array( 38/* JS */,122 , 37/* STRING */,107 ),
+	/* State 141 */ new Array(  ),
 	/* State 142 */ new Array(  ),
-	/* State 143 */ new Array(  ),
-	/* State 144 */ new Array( 48/* TEXT */,73 ),
-	/* State 145 */ new Array(  )
+	/* State 143 */ new Array( 48/* TEXT */,72 ),
+	/* State 144 */ new Array(  )
 );
 
 
@@ -1366,7 +1363,7 @@ var labels = new Array(
 			
 	while( true )
 	{
-		act = 147;
+		act = 146;
 		for( var i = 0; i < act_tab[sstack[sstack.length-1]].length; i+=2 )
 		{
 			if( act_tab[sstack[sstack.length-1]][i] == la )
@@ -1398,7 +1395,7 @@ var labels = new Array(
 		
 			
 		//Panic-mode: Try recovery when parse-error occurs!
-		if( act == 147 )
+		if( act == 146 )
 		{
 			if( _dbg_withtrace )
 				__dbg_print( "Error detected: There is no reduce or shift on the symbol " + labels[la] );
@@ -1418,7 +1415,7 @@ var labels = new Array(
 				rvstack[i] = vstack[i];
 			}
 			
-			while( act == 147 && la != 54 )
+			while( act == 146 && la != 54 )
 			{
 				if( _dbg_withtrace )
 					__dbg_print( "\tError recovery\n" +
@@ -1427,7 +1424,7 @@ var labels = new Array(
 				if( la == -1 )
 					info.offset++;
 					
-				while( act == 147 && sstack.length > 0 )
+				while( act == 146 && sstack.length > 0 )
 				{
 					sstack.pop();
 					vstack.pop();
@@ -1435,7 +1432,7 @@ var labels = new Array(
 					if( sstack.length == 0 )
 						break;
 						
-					act = 147;
+					act = 146;
 					for( var i = 0; i < act_tab[sstack[sstack.length-1]].length; i+=2 )
 					{
 						if( act_tab[sstack[sstack.length-1]][i] == la )
@@ -1446,7 +1443,7 @@ var labels = new Array(
 					}
 				}
 				
-				if( act != 147 )
+				if( act != 146 )
 					break;
 				
 				for( var i = 0; i < rsstack.length; i++ )
@@ -1458,7 +1455,7 @@ var labels = new Array(
 				la = __lex( info );
 			}
 			
-			if( act == 147 )
+			if( act == 146 )
 			{
 				if( _dbg_withtrace )
 					__dbg_print( "\tError recovery failed, terminating parse process..." );
@@ -1471,7 +1468,7 @@ var labels = new Array(
 		}
 		
 		/*
-		if( act == 147 )
+		if( act == 146 )
 			break;
 		*/
 		
@@ -1798,77 +1795,77 @@ switch( act )
 	break;
 	case 56:
 	{
-		rval = vstack[ vstack.length - 1 ];
+		 rval = "" + vstack[ vstack.length - 2 ] + " " + vstack[ vstack.length - 1 ]; 
 	}
 	break;
 	case 57:
 	{
-		 rval = "" + vstack[ vstack.length - 2 ] + " " + vstack[ vstack.length - 1 ]; 
+		 rval = vstack[ vstack.length - 2 ]; 
 	}
 	break;
 	case 58:
 	{
-		 rval = vstack[ vstack.length - 2 ]; 
+		 rval = undefined; 
 	}
 	break;
 	case 59:
 	{
-		 rval = undefined; 
+		rval = vstack[ vstack.length - 3 ];
 	}
 	break;
 	case 60:
 	{
-		rval = vstack[ vstack.length - 3 ];
+		 rval = undefined; 
 	}
 	break;
 	case 61:
 	{
-		 rval = undefined; 
+		 rval = makeOpenTag(vstack[ vstack.length - 3 ], vstack[ vstack.length - 2 ]); 
 	}
 	break;
 	case 62:
 	{
-		 rval = makeOpenTag(vstack[ vstack.length - 3 ], vstack[ vstack.length - 2 ]); 
+		 rval = undefined; 
 	}
 	break;
 	case 63:
 	{
-		 rval = undefined; 
+		 rval = {openTag: makeOpenTag(vstack[ vstack.length - 4 ], vstack[ vstack.length - 3 ])}; 
 	}
 	break;
 	case 64:
 	{
-		 rval = {openTag: makeOpenTag(vstack[ vstack.length - 4 ], vstack[ vstack.length - 3 ])}; 
+		rval = vstack[ vstack.length - 1 ];
 	}
 	break;
 	case 65:
 	{
-		rval = vstack[ vstack.length - 1 ];
+		 rval = vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ]; 
 	}
 	break;
 	case 66:
 	{
-		 rval = vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ]; 
+		 vstack[ vstack.length - 6 ][vstack[ vstack.length - 5 ]] = vstack[ vstack.length - 2 ]; rval = vstack[ vstack.length - 6 ];
 	}
 	break;
 	case 67:
 	{
-		 vstack[ vstack.length - 6 ][vstack[ vstack.length - 5 ]] = vstack[ vstack.length - 2 ]; rval = vstack[ vstack.length - 6 ];
+		 vstack[ vstack.length - 4 ][vstack[ vstack.length - 3 ]] = vstack[ vstack.length - 1 ]; rval = vstack[ vstack.length - 4 ];
 	}
 	break;
 	case 68:
 	{
-		 vstack[ vstack.length - 4 ][vstack[ vstack.length - 3 ]] = vstack[ vstack.length - 1 ]; rval = vstack[ vstack.length - 4 ];
+		 rval = {}; 
 	}
 	break;
 	case 69:
 	{
-		 rval = {}; 
+		rval = vstack[ vstack.length - 1 ];
 	}
 	break;
 	case 70:
 	{
-		rval = vstack[ vstack.length - 1 ];
+		 rval = vstack[ vstack.length - 2 ]; 
 	}
 	break;
 	case 71:
@@ -1878,25 +1875,20 @@ switch( act )
 	break;
 	case 72:
 	{
-		 rval = vstack[ vstack.length - 2 ]; 
+		 rval = push(vstack[ vstack.length - 3 ], vstack[ vstack.length - 1 ]); 
 	}
 	break;
 	case 73:
 	{
-		 rval = push(vstack[ vstack.length - 3 ], vstack[ vstack.length - 1 ]); 
+		 rval = [vstack[ vstack.length - 1 ]]; 
 	}
 	break;
 	case 74:
 	{
-		 rval = [vstack[ vstack.length - 1 ]]; 
-	}
-	break;
-	case 75:
-	{
 		 rval = []; 
 	}
 	break;
-	case 76:
+	case 75:
 	{
 		 rval = makeAttribute(vstack[ vstack.length - 3 ], vstack[ vstack.length - 1 ]); 
 	}
