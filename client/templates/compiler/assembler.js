@@ -50,7 +50,7 @@ function JSONtoString(object, tabs) {
 				return output;
 			}
 		} else if (typeOf(object) === "string"){
-			return "\"" + object + "\"";
+			return "\"" + object.replace(/\n/g, "\\n") + "\"";
 		} else {
 			return object;
 		}
