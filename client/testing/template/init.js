@@ -1,6 +1,4 @@
-function initialize() {
-	
-}
+
 
 
 
@@ -12,3 +10,18 @@ testCell.control.add(88);
 
 
 base.add("testCell", testCell);
+
+
+
+
+var compiledTemplate = makeClosure(mainTemplate, base.env);
+
+
+
+function initialize() {
+	var node = xmlToDOM(compiledTemplate.xml, compiledTemplate.env);
+	
+	document.body.appendChild(node.node);
+}
+
+

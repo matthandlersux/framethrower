@@ -64,16 +64,14 @@ function makeXMLP(xml, env) {
 
 function makeClosure(templateCode, env) {
 	var params = templateCode.params;
-	
-	var funType = xmlpType;
-	forEachReverse(params, function (param) {
-		funType = makeTypeLambda(param.type, funType);
-	});
+	//var type = templateCode.type;
+	var type = parseType(templateCode.type);
 	
 	var f = curry(function () {
 		var scope = {};
+		var args = arguments;
 		forEach(params, function (param, i) {
-			scope[param.name] = arguments[i];
+			scope[param] = args[i];
 		});
 		var envWithParams = extendEnv(env, scope);
 		
@@ -83,7 +81,7 @@ function makeClosure(templateCode, env) {
 	}, params.length);
 	
 	if (params.length > 0) {
-		return makeFun(funType, f);
+		return makeFun(type, f);
 	} else {
 		return f;
 	}
@@ -118,7 +116,8 @@ function evaluateLine(line, env) {
 	
 	if (line.kind === "lineExpr") {
 		var newEnv = addLets(line.let, env);
-		var expr = parseExpression(line.expr, newEnv);
+		//var expr = parseExpression(line.expr, newEnv);
+		var expr = parseExpression(parse(line.expr), newEnv);
 		return evaluate(expr);
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line.template, env);
