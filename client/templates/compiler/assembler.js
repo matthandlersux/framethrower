@@ -96,6 +96,7 @@ function compileFolder(folder) {
 }
 
 function preParse(string) {
+	//textnodes
 	string = string.replace(/(<(f[^:^\/^>]|[^f^\/^>])[^<^>^\/]*>)([^<^>]*[^<^>^ ^\r^\t^\n][^<^>]*)/g, "$1<p:textnode>$3</p:textnode>");
 	string = string.replace(/(<\/[^<^>]+>)(([^<^>^\{^\}]|\{[^\}]*\})*([^<^>^\{^\}^ ^\r^\t^\n]|\{[^\}]*\})([^<^>^\{^\}]|\{[^\}]*\})*)/g, "$1<p:textnode>$2</p:textnode>");
 	return string;

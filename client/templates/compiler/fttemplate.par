@@ -326,7 +326,7 @@
 	'<'
 	'>'
 	'\"'					QUOTE
-	'[\-\*\+\/\.]'			JSSEP
+	'[\-\*\+\^\%\.\!\&\|\?]' JSSEP
 	'[A-Za-z0-9_\.]+'		IDENTIFIER
 	;
 ##
@@ -374,7 +374,7 @@ STMT:
 	;
 
 EXPR:
-	'(' | ')' | IDENTIFIER | STRING
+	'(' | ')' | IDENTIFIER | STRINGKEEPQUOTES
 	| EXPR EXPR												[* %% = %1 + " " + %2; *]
 	;
 
@@ -390,12 +390,16 @@ JSFUN:
 	
 JS:
 	IDENTIFIER 
-	| STRING 
+	| STRINGKEEPQUOTES
 	| '(' JS ')' 										[* %% = "(" + %2 + ")" *]
 	| '{' JS '}' 										[* %% = "{" + %2 + "}"; *]
 	| ',' 
 	| '=' 
 	| ';'
+	| ':'
+	| '<'
+	| '>'
+	| '/'
 	| JSSEP 
 	| JS JS 											[* %% = %1 + " " + %2; *]
 	|
@@ -484,6 +488,11 @@ ATTRIBUTE:
 	STRING
 	| QUOTE INSERT QUOTE								[* %% = %2; *]
 	;
+
+STRINGKEEPQUOTES:
+	QUOTE TEXT QUOTE									[* %% = %1 + %2 + %3; *]
+	;
+
 	
 STRING:
 	QUOTE TEXT QUOTE									[* %% = %2; *]
