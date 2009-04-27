@@ -65,7 +65,47 @@ function xmlToDOM(xml, env) {
 		var wrapper = createEl("f:wrapper");
 		
 		// set up an endCap to listen to result and change the children of the wrapper
-		// TODO
+		
+		var type = getType(result);
+		var constructor = getTypeConstructor(type);
+		function cmp(a, b) {
+			// returns -1 if a < b, 0 if a = b, 1 if a > b
+			
+		}
+		
+		var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to {node: NODE, cleanup: FUNCTION}
+		
+		result.inject(emptyFunction, function (value) {
+			var newNode; // TODO
+			
+			
+			var keyString = stringify(value);
+			
+			// find where to put the new node
+			// NOTE: this is linear time but could be log time with clever algorithm
+			var place = null; // this will be the key which comes immediately after the new node
+			forEach(entries, function (entry, entryKey) {
+				if (cmp(keyString, entryKey) < 0 && (place === null || cmp(entryKey, place) < 0)) {
+					place = entryKey;
+				}
+			});
+			
+			if (place === null) {
+				// tack it on at the end
+				wrapper.appendChild(newNode.node);
+			} else {
+				// put it before the one that comes immediately afterwards
+				wrapper.insertBefore(newNode.node, entries[place].node);
+			}
+			
+			entries[keyString] = newNode;
+			
+			return function () {
+				newNode.cleanup();
+				wrapper.removeChild(newNode.node);
+				delete entries[keyString];
+			};
+		});
 		
 		return wrapper;
 	} else if (xml.kind === "call") {
@@ -112,7 +152,7 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		if (result.kind === "startCap") {
 			var serialized = makeApply(serializeCell, result);
 			
-			return evaluateAndInject(serialized, emptyFunction, callback).func;
+			return evaluateAndInject(serialized, emptyFunction, callback).func; // NOTE: might want to wrap callback so that it returns an empty function?
 		} else {
 			callback(result);
 			return null;
