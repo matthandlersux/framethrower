@@ -1,0 +1,509 @@
+[*
+//UTIL - from util.js. TODO: import these functions util.js at compile time
+			function typeOf(value){
+			    var s = typeof value;
+			    if (s === 'object') {
+			        if (value) {
+			            if (value instanceof Array) {
+			                s = 'array';
+			            }
+			        }
+			        else {
+			            s = 'null';
+			        }
+			    }
+			    return s;
+			}
+
+			function arrayLike(o) {
+				if (typeOf(o.length) === "number" && typeof o !== "string") {
+					return true;
+				} else {
+					return false;
+				}
+			}
+			function objectLike(o) {
+				if (typeOf(o) === "object") {
+					return true;
+				} else {
+					return false;
+				}
+			}
+
+			function forEach(o, f) {
+				if (arrayLike(o)) {
+					for (var i = 0, len = o.length; i < len; i++) {
+						f(o[i], i);
+					}
+				} else if (objectLike(o)) {
+					for (var i in o) if (o.hasOwnProperty(i)) {
+						f(o[i], i);
+					}
+				}
+			}
+
+
+	var result; //global variable
+
+	function makeTemplate(template) {
+		//serialize template JSON to string
+		result = template;
+		return template;
+	}
+
+	function makeTemplateCode(params, lets, output) {
+		//give undefined param types a letter
+		var counter = 0;
+		var paramList = [];
+		var typeString = "";
+		var first = true;
+		
+		forEach(params, function(param) {
+			paramList.push(param.name);
+			var type = param.type;
+			if(type == undefined) {
+				type = "t" + counter;
+				counter++;
+			}
+			if (!first) {
+				typeString += " -> ";
+			} else {
+				first = false;
+			}
+			typeString += type;
+		});
+		typeString += " -> XMLP";
+
+		return {
+			kind: "templateCode",
+			params: params,
+			type: typeString,
+			let: lets,
+			output: output
+		};
+	}
+
+	function makeVariable(name, type) {
+		return {
+			name: name,
+			type: type
+		};
+	}
+
+	function makeLet(variable, line) {
+		return {
+			name: variable.name,
+			type: variable.type,
+			value: line
+		};
+	}
+
+	function makeExpr(expr, lets) {
+		if (lets == undefined) {
+			lets = {};
+		}
+		return {
+			kind: "lineExpr",
+			expr: expr,
+			let: lets
+		};
+	}
+
+	function makeState(typeString, initExpr) {
+		return {
+			kind: "lineState",
+			type: typeString,
+			init: initExpr
+		};
+	}
+
+	function makeJSFun(argList, JS, outputType) {
+		var funcString = "function (";
+		var first = true;
+		var typeString = "";
+		var typeCounter = 0;
+		forEach(argList, function(arg) {
+			if(!first) {
+				funcString += ", ";
+				typeString += " -> ";
+			} else {
+				first = false;
+			}
+			funcString += arg.name;
+			if (arg.type !== undefined) {
+				typeString += arg.type;
+			} else {
+				typeString += "t" + typeCounter;
+				typeCounter++;
+			}
+		});
+		funcString += ") {" + JS + "}";
+		if (outputType !== undefined) {
+			typeString += " -> " + outputType;
+		} else {
+			typeString += " -> " + "t" + typeCounter;
+		}
+		return {
+			kind: "lineJavascript",
+			type: typeString,
+			f: {
+				kind: "jsFunction",
+				func: funcString
+			}
+		};
+	}
+
+	function makeForEach(attributes, lets, output) {
+		var params = [];
+		if (attributes.key !== undefined) {
+			params.push({name:attributes.key});
+		}
+		if (attributes.value !== undefined) {
+			params.push({name:attributes.value});
+		}
+		var templateCode = makeTemplateCode(params, lets, output);
+		return {
+			kind: "for-each",
+			select: attributes.select,
+			templateCode: templateCode
+		};
+	}
+
+	function makeCall(lets, output) {
+		var templateCode = makeTemplateCode([], lets, output);
+		return {
+			kind: "call",
+			templateCode: templateCode
+		};
+	}
+
+	function makeOpenTag(name, attributes, textNode) {
+		return {
+			name: name,
+			attributes: attributes,
+			textNode: textNode
+		};
+	}
+
+	function checkForInsert (node) {
+		var text = node.nodeValue;
+		if(text == undefined) return undefined;
+		var index = text.indexOf('{');
+		var output = [];
+		if(index == -1) {
+			return undefined;
+		}
+		while(index > 0) {
+			var rindex = text.indexOf('}');
+			var first = text.substr(0, index-1);
+			var insert = text.substr(index+1, rindex-index-1);
+			text = text.substr(rindex+1);
+			output.push(makeTextElement(first));
+			output.push(makeInsert(insert));
+			index = text.indexOf('{');
+		}
+		return output;
+	}
+
+	function makeNode(openTag, xmlp) {
+		var attributes = openTag.attributes;
+		var style = attributes.style;
+		attributes.style = undefined;
+		var attributeList = [];
+		for (name in attributes) {
+			if(attributes[name] !== undefined) {
+				var att = {};
+				att[name] = attributes[name];
+				attributeList.push(att);
+			}
+		}
+		
+		//prepend textNode to xmlp
+		if(openTag.textNode !== undefined) {
+			xmlp.unshift(openTag.textNode);
+		}
+		
+		//deal with inserts in textNodes
+		for(var i=0; i<xmlp.length; i++) {
+			var textNodeList = checkForInsert(xmlp[i]);
+			if(textNodeList !== undefined) {
+				xmlp.splice(i, 1);
+				for (var j=textNodeList.length-1; j>=0; j--) {
+					xmlp.splice(i, 0, textNodeList[j]);
+				}
+			}
+		}
+		
+		return {
+			kind: "element",
+			nodeName: openTag.name,
+			attributes: attributeList,
+			style: style,
+			children: xmlp
+		};
+	}
+
+	function makeAttribute (name, value) {
+		var a = {};
+		a[name] = value;
+		return a;
+	}
+
+	function makeTextElement (text) {
+		return {
+			kind: "textElement",
+			//take off leading '>'
+			nodeValue: text.substr(1),
+		};
+	}
+
+	function makeInsert (expr) {
+		return {
+			kind: "insert",
+			expr: expr
+		};
+	}
+
+	function push (list, item) {
+		list.push(item);
+		return list;
+	}
+	
+	function pushOrConcat (list, itemOrList) {
+		if (arrayLike(itemOrList)) {
+			forEach(itemOrList, function(item) {
+				if (item !== undefined) {
+					list.push(item);
+				}
+			});
+		} else {
+			list.push(item);
+		}
+		return list;
+	}	
+
+	function flatten (itemOrList) {
+		if(arrayLike(itemOrList)) {
+			return itemOrList[0];
+		} else {
+			return itemOrList;
+		}
+	}
+	
+	function addLet (letObj, let) {
+		letObj[let.name] = let.value;
+		return letObj;
+	}
+
+	function stripQuotes (string) {
+		return string.substr(1, string.length-2);
+	}
+	
+*]
+
+
+/~
+	--- These are the token definitions ---
+~/
+
+/~ Characters to be ignored... ~/
+!	' |\r|\n|\t|//[^\n]*\n'
+	;
+
+/~	Grammar Tokens			~/
+	'>[^<^>]*[^<^>^ ^\r^\n^\t^\}][^<^>]*'	TEXTNODE
+	'template'
+	'function'
+	'state'
+	'f:each'
+	'f:call'
+	'style'
+	'\{'
+	'\}'
+	'\('
+	'\)'
+	','
+	';'
+	':'
+	'='
+	'</'
+	'/'
+	'<'
+	'>'
+	'\"'					QUOTE
+	'[\-\*\+\/\.]'			JSSEP
+	'[A-Za-z0-9_\.]+'		IDENTIFIER
+	;
+##
+
+/~
+	--- And here's the grammar specification ---
+~/
+
+TOP:
+	TEMPLATE											[* %% = makeTemplate( %1 ); *]
+	| LETLIST
+	;
+
+TEMPLATE:
+	'template' '(' ARGLIST ')' '{' LETLIST STMT '}'		[* %% = makeTemplateCode( %3, %6, %7); *]
+	;
+
+ARGLIST:
+	ARGLIST ',' VARIABLE								[* %% = push(%1, %3); *]
+	| VARIABLE											[* %% = [%1] ; *]
+	|													[* %% = [] ; *]
+	;
+
+TYPE:
+	TYPE IDENTIFIER 									[* %% = %1 + " " + %2; *]
+	| IDENTIFIER
+	;
+
+LETLIST:
+	LETLIST LET ','										[* %% = addLet(%1, %2); *]
+	|													[* %% = {}; *]
+	;
+
+LET:
+	VARIABLE '=' STMT									[* %% = makeLet(%1, %3); *]
+	;
+
+STMT:
+	JSFUN
+	| TEMPLATE 											[* %% = {kind: "lineTemplate", template: %1} ; *]
+	| EXPR 												[* %% = makeExpr(%1); *]
+	| STATE
+	| LETLISTBLOCK
+	| XML												[* %% = flatten(%1); *]
+	;
+
+EXPR:
+	'(' | ')' | IDENTIFIER | STRING
+	| EXPR EXPR												[* %% = %1 + " " + %2; *]
+	;
+
+LETLISTBLOCK:
+	'{' LETLIST STMT '}'									[* %% = makeExpr(%3, %2); *]
+	;
+
+
+JSFUN:
+	'function' '(' ARGLIST ')' '{' JS '}'					[* %% = makeJSFun(%3, %6); *]
+	| 'function' '(' ARGLIST ')' ':' ':' TYPE '{' JS '}'	[* %% = makeJSFun(%3, %9, %7); *]
+	;
+	
+JS:
+	IDENTIFIER 
+	| STRING 
+	| '(' JS ')' 										[* %% = "(" + %2 + ")" *]
+	| '{' JS '}' 										[* %% = "{" + %2 + "}"; *]
+	| ',' 
+	| '=' 
+	| ';'
+	| JSSEP 
+	| JS JS 											[* %% = %1 + " " + %2; *]
+	|
+	;
+	
+STATE:
+	'state' '(' STRING ',' EXPR ')'						[* %% = makeState(%3, makeExpr(%5)); *]
+	;
+
+VARIABLE:
+	IDENTIFIER											[* %% = makeVariable( %1 ); *]
+	| IDENTIFIER ':' ':' TYPE							[* %% = makeVariable( %1, %4); *]
+	;
+
+XML:
+	OPENFOREACH LETLIST STMT CLOSEFOREACH				[* %% = [makeForEach(%1, %2, %3), %4]; *]
+	| OPENCALL LETLIST STMT CLOSECALL					[* %% = [makeCall(%2, %3), %4]; *]
+	| OPENTAG XMLLIST CLOSETAG							[* %% = [makeNode(%1, %2), %3]; *]
+	| SINGLETAG											[* %% = [makeNode(%1['openTag'], []), %1['textNode']]; *]
+	;
+
+XMLLIST:
+	XMLLIST XML											[* %% = pushOrConcat(%1, %2); *]
+	| 													[* %% = []; *]
+	;
+
+INSERT:
+	'{' EXPR '}'										[* %% = makeInsert(%2); *]
+	;
+	
+TEXT:
+	IDENTIFIER
+	| QUOTE
+	| ','
+	| '('
+	| ')'
+	| ':'
+	| ';'
+	| '='
+	| TEXT TEXT											[* %% = "" + %1 + " " + %2; *]
+	;
+
+OPENFOREACH:
+	'<' 'f:each' ATTRIBUTES '>'							[* %% = %3; *]
+	;
+
+CLOSEFOREACH:
+	'</' 'f:each' '>'									[* %% = undefined; *]
+	| '</' 'f:each' TEXTNODE							[* %% = makeTextElement(%3); *]
+	;
+
+OPENCALL:
+	'<' 'f:call' '>'
+	;
+
+CLOSECALL:
+	'</' 'f:call' '>'									[* %% = undefined; *]
+	| '</' 'f:call' '>'									[* %% = makeTextElement(%3); *]
+	;
+
+
+OPENTAG:
+	'<' TAGNAME ATTRIBUTES '>'							[* %% = makeOpenTag(%2, %3); *]
+	| '<' TAGNAME ATTRIBUTES TEXTNODE					[* %% = makeOpenTag(%2, %3, makeTextElement(%4)); *]
+	;
+	
+CLOSETAG:
+	'</' TAGNAME '>'									[* %% = undefined; *]
+	| '</' TAGNAME TEXTNODE								[* %% = makeTextElement(%3); *]
+	;
+	
+SINGLETAG:
+	'<' TAGNAME ATTRIBUTES '/' '>'						[* %% = {openTag: makeOpenTag(%2, %3)}; *]
+	| '<' TAGNAME ATTRIBUTES '/' TEXTNODE				[* %% = {openTag: makeOpenTag(%2, %3), textNode: %5}; *]
+	;
+
+TAGNAME:
+	IDENTIFIER
+	| IDENTIFIER ':' IDENTIFIER							[* %% = %1 + %2 + %3; *]
+	;
+
+ATTRIBUTES:
+	ATTRIBUTES 'style' '=' QUOTE STYLE QUOTE			[* %1[%2] = %5; %% = %1;*]
+	| ATTRIBUTES IDENTIFIER '=' ATTRIBUTE				[* %1[%2] = %4; %% = %1;*]
+	|													[* %% = {}; *]
+	;
+
+ATTRIBUTE:
+	STRING
+	| QUOTE INSERT QUOTE								[* %% = %2; *]
+	;
+	
+STRING:
+	QUOTE TEXT QUOTE									[* %% = %2; *]
+	;
+	
+STYLE:
+	STYLE ';' STYLEATTRIBUTE							[* %% = push(%1, %3); *]
+	| STYLEATTRIBUTE									[* %% = [%1]; *]
+	|													[* %% = []; *]
+	;
+
+STYLEATTRIBUTE:
+	IDENTIFIER ':' TEXT									[* %% = makeAttribute(%1, %3); *]
+	;
+	
