@@ -97,7 +97,7 @@ function addLets(lets, env) {
 		if (memo[s]) {
 			return memo[s];
 		} else if (lets[s]) {
-			memo[s] = evaluateLet(lets[s], newEnv);
+			memo[s] = evaluateLine(lets[s], newEnv);
 			return memo[s];
 		} else {
 			return env(s);
