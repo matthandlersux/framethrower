@@ -252,8 +252,7 @@
 	function makeTextElement (text) {
 		return {
 			kind: "textElement",
-			//take off leading '>'
-			nodeValue: text.substr(1),
+			nodeValue: text,
 		};
 	}
 
@@ -311,7 +310,6 @@
 	;
 
 /~	Grammar Tokens			~/
-	'>[^<^>]*[^<^>^ ^\r^\n^\t^\}][^<^>]*'	TEXTNODE
 	'template'
 	'function'
 	'state'
@@ -420,6 +418,7 @@ XML:
 	| OPENCALL LETLIST STMT CLOSECALL					[* %% = [makeCall(%2, %3), %4]; *]
 	| OPENTAG XMLLIST CLOSETAG							[* %% = [makeNode(%1, %2), %3]; *]
 	| SINGLETAG											[* %% = [makeNode(%1['openTag'], []), %1['textNode']]; *]
+	| TEXT												[* %% = [makeTextElement(%1)]; *]
 	;
 
 XMLLIST:
@@ -440,6 +439,8 @@ TEXT:
 	| ':'
 	| ';'
 	| '='
+	| '}'
+	| '{'
 	| TEXT TEXT											[* %% = "" + %1 + " " + %2; *]
 	;
 
@@ -449,7 +450,6 @@ OPENFOREACH:
 
 CLOSEFOREACH:
 	'</' 'f:each' '>'									[* %% = undefined; *]
-	| '</' 'f:each' TEXTNODE							[* %% = makeTextElement(%3); *]
 	;
 
 OPENCALL:
@@ -458,23 +458,19 @@ OPENCALL:
 
 CLOSECALL:
 	'</' 'f:call' '>'									[* %% = undefined; *]
-	| '</' 'f:call' '>'									[* %% = makeTextElement(%3); *]
 	;
 
 
 OPENTAG:
 	'<' TAGNAME ATTRIBUTES '>'							[* %% = makeOpenTag(%2, %3); *]
-	| '<' TAGNAME ATTRIBUTES TEXTNODE					[* %% = makeOpenTag(%2, %3, makeTextElement(%4)); *]
 	;
 	
 CLOSETAG:
 	'</' TAGNAME '>'									[* %% = undefined; *]
-	| '</' TAGNAME TEXTNODE								[* %% = makeTextElement(%3); *]
 	;
 	
 SINGLETAG:
 	'<' TAGNAME ATTRIBUTES '/' '>'						[* %% = {openTag: makeOpenTag(%2, %3)}; *]
-	| '<' TAGNAME ATTRIBUTES '/' TEXTNODE				[* %% = {openTag: makeOpenTag(%2, %3), textNode: %5}; *]
 	;
 
 TAGNAME:

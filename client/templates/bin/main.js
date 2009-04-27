@@ -48,10 +48,7 @@
 				],
 				style: undefined,
 				children: [
-					{
-						kind: "insert",
-						expr: "result"
-					}
+
 				]
 			}
 		},
@@ -86,10 +83,7 @@
 				],
 				style: undefined,
 				children: [
-					{
-						kind: "insert",
-						expr: "result"
-					}
+
 				]
 			}
 		}
@@ -116,7 +110,7 @@
 					},
 					{
 						kind: "insert",
-						expr: "result"
+						expr: " result "
 					}
 				]
 			},
