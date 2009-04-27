@@ -38,6 +38,7 @@
 		
 		"js/templates/funs.js",
 		"js/templates/closure.js",
+		"js/templates/style.js",
 		"js/templates/writexml.js"
 		 
 		// "js/browser/xsl.js",

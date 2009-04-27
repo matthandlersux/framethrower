@@ -263,7 +263,8 @@ function createEl(nodeName) {
 	if (n.length > 1) {
 		return document.createElementNS(xmlns[n[0]], nodeName);
 	} else {
-		return document.createElement(nodeName);
+		//return document.createElement(nodeName);
+		return document.createElementNS(xmlns["html"], nodeName);
 	}
 }
 
