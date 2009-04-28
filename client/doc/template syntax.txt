@@ -11,17 +11,23 @@ TEMPLATE
 		LINES
 	}
 
+
 PARAMS
 	comma separated list of PARAM
 
 PARAM
 	VARTOCREATE | VARTOCREATE::TYPE
 
+
 LINES
-	comma separated list of LINE. The last LINE always has significance (being the "output") but I don't think it needs any special highlighting.
+	comma separated list of LINE ending with a LASTLINE (the output)
 
 LINE
 	VARTOCREATE = TEMPLATE | EXPR | BLOCK | JAVASCRIPT | XML
+
+LASTLINE
+	TEMPLATE | EXPR | BLOCK | JAVASCRIPT | XML
+
 
 EXPR
 	you know what an expression looks like (words with spaces, end it on comma or close-brace)
