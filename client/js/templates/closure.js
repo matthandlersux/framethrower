@@ -126,5 +126,8 @@ function evaluateLine(line, env) {
 		return makeFun(parseType(line.type), line.f);
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);
+	} else if (line.kind === "lineState") {
+		//return makeCC(line.type);
+		return makeCC(parseType(line.type));
 	}
 }
