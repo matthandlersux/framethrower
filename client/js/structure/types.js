@@ -171,9 +171,11 @@ var basicTypes = {
 	number: makeTypeName("Number"),
 	"boolean": makeTypeName("Bool")
 };
-var jsType = makeTypeName("JS"); // this is for all miscellaneous types
-var xmlType = makeTypeName("XML");
-var unitJS = parseType("Unit JS");
+//var jsType = makeTypeName("JS"); // this is for all miscellaneous types
+//var xmlType = makeTypeName("XML");
+//var unitJS = parseType("Unit JS");
+
+var jsonType = makeTypeName("JSON");
 
 
 
@@ -423,12 +425,11 @@ function getType(o) {
 	var t = typeOf(o);
 	if (basicTypes[t]) {
 		return basicTypes[t];
-	} else if (o.nodeType) {
-		return xmlType;
 	} else { //object
 		if (!o.type) {
 			if (o.kind !== "exprApply" && o.kind !== "exprLambda") {
-				debug.error("Expected this expression to have a type: ", o);
+				//debug.error("Expected this expression to have a type: ", o);
+				return jsonType;
 			}
 			o.type = getTypeOfExpr(o);
 		}

@@ -42,6 +42,38 @@ function convertStateToString(cell) {
 
 
 
+/*
+uses cell.getState() recursively to generate a JSON-ish representation for the cell
+	Units, Futures, and Sets turn into arrays [],
+	Maps turn into arrays of {key: --, value: --}
+*/
+function convertStateToJSON(cell) {
+	var type = getType(cell);
+	if (isReactive(type)) {
+		var constructor = getTypeConstructor(type);
+		
+		cell.makeSorted();
+		var state = cell.getState();
+		
+		if (constructor === "Unit" || constructor === "Future" || constructor === "Set") {
+			var ret = [];
+			forEach(state, function (entry) {
+				ret.push(convertStateToJSON(entry));
+			});
+			return ret;
+		} else if (constructor === "Map") {
+			var ret = [];
+			forEach(state, function (entry) {
+				ret.push({key: convertStateToJSON(entry.key), value: convertStateToJSON(entry.val)});
+			});
+			return ret;
+		}
+	} else {
+		return cell;
+	}
+}
+
+
 
 
 /*
@@ -118,6 +150,17 @@ addFun("serialize", "a -> Unit String", function (cell) {
 	
 	callOnUpdate(cell, outputCell, function () {
 		var s = convertStateToString(cell);
+		outputCell.control.add(s);
+	});
+	
+	return outputCell;	
+});
+
+addFun("jsonify", "a -> Unit JSON", function (cell) {
+	var outputCell = makeControlledCell("Unit JSON");
+	
+	callOnUpdate(cell, outputCell, function () {
+		var s = convertStateToJSON(cell);
 		outputCell.control.add(s);
 	});
 	
