@@ -8,7 +8,7 @@ var mainTemplate = {
 		jsfun: {
 			kind: "lineJavascript",
 			type: "Number -> Number",
-			f: function (a) {return a * 2 ;}
+			f: function (a) {return a ^ 2 ;}
 		},
 		result: {
 			kind: "lineExpr",
@@ -20,10 +20,7 @@ var mainTemplate = {
 		letfile1: {
 			kind: "templateCode",
 			params: [
-				{
-					name: "a",
-					type: "Number"
-				}
+				"a"
 			],
 			type: "Number -> XMLP",
 			let: {
@@ -54,8 +51,7 @@ var mainTemplate = {
 					children: [
 						{
 							kind: "textElement",
-							nodeValue: "
-	"
+							nodeValue: "\n		"
 						},
 						{
 							kind: "textElement",
@@ -71,10 +67,7 @@ var mainTemplate = {
 		subfolder1: {
 			kind: "templateCode",
 			params: [
-				{
-					name: "a",
-					type: "Number"
-				}
+				"a"
 			],
 			type: "Number -> XMLP",
 			let: {
@@ -105,8 +98,7 @@ var mainTemplate = {
 					children: [
 						{
 							kind: "textElement",
-							nodeValue: "
-	"
+							nodeValue: "\n		"
 						},
 						{
 							kind: "textElement",
@@ -133,41 +125,17 @@ var mainTemplate = {
 			},
 			children: [
 				{
-					kind: "for-each",
-					select: "testCell",
-					templateCode: {
-						kind: "templateCode",
-						params: [
-							{
-								name: "entry"
-							}
-						],
-						type: "t0 -> XMLP",
-						let: {
-
-						},
-						output: {
-							kind: "lineXML",
-							xml: {
-								kind: "element",
-								nodeName: "div",
-								attributes: {
-
-								},
-								style: {
-
-								},
-								children: [
-									{
-										kind: "textElement",
-										nodeValue: "Text Here"
-									}
-								]
-							}
-						}
+					kind: "textElement",
+					nodeValue: "\n		Look at this: "
+				},
+				{
+					kind: "textElement",
+					nodeValue: {
+						kind: "insert",
+						expr: "variable"
 					}
 				}
 			]
 		}
 	}
-}
+};
