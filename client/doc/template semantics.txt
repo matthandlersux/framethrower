@@ -2,7 +2,7 @@ TEMPLATECODE
 	{
 		kind: "templateCode",
 		params: [VARTOCREATE],
-		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type XMLP or Action (for actions)
+		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type XMLP
 		let: LETS,
 		output: LINE
 	}
@@ -22,7 +22,12 @@ LINE
 
 
 ACTION
-	{kind: "action", actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}]}
+	{
+		kind: "action",
+		params: [VARTOCREATE],
+		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type Action
+		actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}]
+	}
 
 ACTIONUNIT
 	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: EXPR}} |
