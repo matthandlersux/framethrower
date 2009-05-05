@@ -1,0 +1,64 @@
+Here is a quick, informal first draft of the template syntax.
+
+A template (.tpl file) begins with a TEMPLATE.
+
+This file only contains syntax that I (Toby) have been told about. I know there exists some more syntax (for state, etc). This should be discussed with me and factored into this document.
+
+
+
+TEMPLATE
+	template(PARAMS) {
+		LINES
+	}
+
+
+PARAMS
+	comma separated list of PARAM
+
+PARAM
+	VARTOCREATE | VARTOCREATE::TYPE
+
+
+LINES
+	comma separated list of LINE ending with a LASTLINE (the output)
+
+LINE
+	VARTOCREATE = TEMPLATE | EXPR | BLOCK | JAVASCRIPT | XML
+
+LASTLINE
+	TEMPLATE | EXPR | BLOCK | JAVASCRIPT | XML
+
+
+EXPR
+	you know what an expression looks like (words with spaces, end it on comma or close-brace)
+
+BLOCK
+	{
+		LINES
+	}
+
+JAVASCRIPT
+	function (PARAMS) {
+		JSCODE
+	}
+
+JSCODE
+	not sure the best way to know when the JSCODE ends.. maybe by counting close-braces?
+
+XML
+	this starts with a open-angle-bracket, and ends when the XML ends (ie: matching closing tag)
+	there are a few special elements:
+		anywhere (in an attribute or in a text node) there can be {EXPR} (the stuff inside the braces should be highlighted like an EXPR)
+		<f:call>LINES</f:call>
+		<f:each select="EXPR" key="VARTOCREATE" value="VARTOCREATE">LINES</f:each>
+			(the value attribute is optional)
+
+
+
+
+VARTOCREATE
+	string with no spaces (these are where variables in scope get created)
+
+TYPE
+	you know what types look like (words with spaces, end it on comma or close-brace)
+
