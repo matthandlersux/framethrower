@@ -2,7 +2,7 @@ TEMPLATECODE
 	{
 		kind: "templateCode",
 		params: [VARTOCREATE],
-		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type XMLP
+		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type XMLP or Action (for actions)
 		let: LETS,
 		output: LINE
 	}
@@ -11,11 +11,24 @@ LETS
 	{VARTOCREATE: LINE}
 
 LINE
-	{kind: "lineExpr", let: LETS, expr: AST},
-	{kind: "lineTemplate", template: TEMPLATECODE},
-	{kind: "lineJavascript", type: TYPE, f: JAVASCRIPTFUNCTION},
-	{kind: "lineXML", xml: XML}
-	// TODO actions, state
+	{kind: "lineExpr", let: LETS, expr: AST} |
+	{kind: "lineTemplate", template: TEMPLATECODE} |
+	{kind: "lineJavascript", type: TYPE, f: JAVASCRIPTFUNCTION} |
+	{kind: "lineXML", xml: XML} |
+	{kind: "lineState", type: TYPE} |
+	{kind: "lineAction", action: ACTION}
+
+
+
+
+ACTION
+	{kind: "action", actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}]}
+
+ACTIONUNIT
+	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: EXPR}} |
+	{kind: "actionUpdate", target: EXPR, actionType: "add" | "remove", key?: EXPR, value?: EXPR}
+
+
 
 
 XML
@@ -39,5 +52,6 @@ JAVASCRIPTFUNCTION is a javascript function,
 TYPE is a string,
 AST is an string for an expression,
 VARTOCREATE is a STRING
+PROPERTYNAME is a STRING
 STRING is a string
 
