@@ -23,7 +23,7 @@ LINES
 	comma separated list of LINE ending with a LASTLINE (the output)
 
 LINE
-	VARTOCREATE = TEMPLATE | EXPR | BLOCK | JAVASCRIPT | XML
+	VARTOCREATE = TEMPLATE | EXPR | BLOCK | JAVASCRIPT | XML | STATE | ACTIONTPL
 
 LASTLINE
 	TEMPLATE | EXPR | BLOCK | JAVASCRIPT | XML
@@ -53,7 +53,9 @@ XML
 		<f:each select="EXPR" key="VARTOCREATE" value="VARTOCREATE">LINES</f:each>
 			(the value attribute is optional)
 
-
+STATE
+	state(TYPE)
+	ex: state(Unit Object)
 
 
 VARTOCREATE
@@ -62,3 +64,24 @@ VARTOCREATE
 TYPE
 	you know what types look like (words with spaces, end it on comma or close-brace)
 
+ACTIONTPL
+	action(PARAMS){
+		ACTLIST
+	}
+
+ACTLIST
+	comma separated list of ACTSTMT ending with a ACTION (the output)
+
+ACTSTMT
+	ACTION | VARIABLE = ACTION
+
+ACTION
+	CREATE | UPDATE	| EXPR
+
+CREATE
+	create(TYPE, JS)
+
+UPDATE
+	add(IDENTIFIER, EXPR)
+	| add(IDENTIFIER, EXPR, EXPR)
+	| remove(IDENTIFIER, EXPR)
