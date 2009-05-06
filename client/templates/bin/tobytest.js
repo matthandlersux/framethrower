@@ -37,7 +37,7 @@ var mainTemplate = {
 						children: [
 							{
 								kind: "textElement",
-								nodeValue: "Here's another template that has access to scope, see:"
+								nodeValue: "Here's another template that has access to scope, see: "
 							},
 							{
 								kind: "textElement",
@@ -48,7 +48,7 @@ var mainTemplate = {
 							},
 							{
 								kind: "textElement",
-								nodeValue: " , and here's a parameter:"
+								nodeValue: " , and here's a parameter: "
 							},
 							{
 								kind: "textElement",
@@ -66,6 +66,10 @@ var mainTemplate = {
 			kind: "lineJavascript",
 			type: "Number -> t0",
 			f: function (x) {return x + 99 ;}
+		},
+		stateTest: {
+			kind: "lineState",
+			type: "Set Number"
 		}
 	},
 	output: {
@@ -86,6 +90,29 @@ var mainTemplate = {
 				{
 					kind: "textElement",
 					nodeValue: "\n		Hello World.\n		"
+				},
+				{
+					kind: "element",
+					nodeName: "div",
+					attributes: {
+
+					},
+					style: {
+
+					},
+					children: [
+						{
+							kind: "textElement",
+							nodeValue: "\n			Set test: "
+						},
+						{
+							kind: "textElement",
+							nodeValue: {
+								kind: "insert",
+								expr: "testCell"
+							}
+						}
+					]
 				},
 				{
 					kind: "for-each",
@@ -113,7 +140,7 @@ var mainTemplate = {
 								children: [
 									{
 										kind: "textElement",
-										nodeValue: "An entry:"
+										nodeValue: "An entry: "
 									},
 									{
 										kind: "textElement",
@@ -146,6 +173,29 @@ var mainTemplate = {
 							}
 						}
 					}
+				},
+				{
+					kind: "element",
+					nodeName: "div",
+					attributes: {
+
+					},
+					style: {
+
+					},
+					children: [
+						{
+							kind: "textElement",
+							nodeValue: "\n			State test: "
+						},
+						{
+							kind: "textElement",
+							nodeValue: {
+								kind: "insert",
+								expr: "stateTest"
+							}
+						}
+					]
 				}
 			]
 		}

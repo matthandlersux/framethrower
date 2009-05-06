@@ -165,6 +165,8 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		//var expr = parseExpression(xmlInsert.expr, env);
 		var expr = parseExpression(parse(xmlInsert.expr), env);
 		var result = evaluate(expr);
+		
+		//console.log("doing an insert", expr, result);
 
 		// if result is a cell, hook it into an endcap that converts it to a string
 		if (result.kind === "startCap") {

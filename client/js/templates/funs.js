@@ -145,16 +145,26 @@ function callOnUpdate(cell, depender, callback) {
 
 
 
-addFun("serialize", "a -> Unit String", function (cell) {
-	var outputCell = makeControlledCell("Unit String");
-	
-	callOnUpdate(cell, outputCell, function () {
-		var s = convertStateToString(cell);
-		outputCell.control.add(s);
-	});
-	
-	return outputCell;	
-});
+function convertHelper(converter) {
+	return function (cell) {
+		var outputCell = makeControlledCell("Unit String");
+
+		var called = false;
+		function callback() {
+			called = true;
+			var s = converter(cell);
+			outputCell.control.add(s);
+		}
+
+		callOnUpdate(cell, outputCell, callback);
+		if (!called) callback(); // so that it's at least called once
+
+		return outputCell;	
+	};
+}
+
+
+addFun("serialize", "a -> Unit String", convertHelper(convertStateToString));
 
 addFun("jsonify", "a -> Unit JSON", function (cell) {
 	var outputCell = makeControlledCell("Unit JSON");
