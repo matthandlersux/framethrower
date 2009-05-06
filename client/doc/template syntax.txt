@@ -79,9 +79,19 @@ ACTION
 	CREATE | UPDATE	| EXPR
 
 CREATE
-	create(TYPE, JS)
+	create(TYPE, PROPERTIES)
+
+PROPERTIES
+	this is a representation of properties of a created object (based on JSON notation). It looks like:
+	{STRING: EXPR}
 
 UPDATE
-	add(IDENTIFIER, EXPR)
-	| add(IDENTIFIER, EXPR, EXPR)
-	| remove(IDENTIFIER, EXPR)
+	add(EXPR, EXPR)
+	| add(EXPR, EXPR, EXPR)
+	| remove(EXPR, EXPR)
+	| remove(EXPR)
+
+
+
+
+

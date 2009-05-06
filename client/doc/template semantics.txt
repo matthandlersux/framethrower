@@ -40,7 +40,8 @@ XML
 	XMLNODE |
 	{kind: "for-each", select: AST, templateCode: TEMPLATECODE} | // this templateCode should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
 	{kind: "call", templateCode: TEMPLATECODE} // this templateCode should take zero parameters.
-	// TODO: case, on-action
+	{kind: "on", event: EVENT, action: ACTION} // this action should take zero parameters.
+	// TODO: case
 
 XMLNODE
 	{kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately
@@ -58,5 +59,6 @@ TYPE is a string,
 AST is an string for an expression,
 VARTOCREATE is a STRING
 PROPERTYNAME is a STRING
+EVENT is a STRING
 STRING is a string
 
