@@ -207,3 +207,10 @@ function emptyFunction() {
 	
 }
 
+function shallowCopy(o) {
+	var ret = {};
+	forEach(o, function (value, key) {
+		ret[key] = value;
+	});
+	return ret;
+}

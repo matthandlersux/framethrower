@@ -18,7 +18,7 @@ template () {
 		putObjectInSituation = action(object::Object, situation::Object) {
 			in = shared.in,
 			infon = makeInfon2 in situation object,
-			truth = Cons::truth infon,
+			truth = Cons:truth infon,
 			add(truth, null)
 		},
 
@@ -29,8 +29,8 @@ template () {
 
 		makeCons = action(left::Object, right::Object) {
 			cons = create(Cons, {left:left, right:right}),
-			upRight = Object::upRight left,
-			upLeft = Object::upLeft right,
+			upRight = Object:upRight left,
+			upLeft = Object:upLeft right,
 			add(upRight, cons),
 			add(upLeft, cons),
 			//return cons

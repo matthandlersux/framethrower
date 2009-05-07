@@ -44,6 +44,14 @@ function evaluate2(expr) {
 		} else {
 			// fun wasn't a lambda, and evaluate can't return an apply, so fun must be a Fun, so we can run it
 			
+			// check if input is an actionRef and fun is an object converter or property accessor,
+			// if so, just return the expression back (with actionRef = true)
+			if (input.actionRef && isObjectFun(fun)) {
+				var ret = shallowCopy(expr);
+				ret.actionRef = true;
+				return ret;
+			}
+			
 			var ret = fun.fun(input);
 
 			if (typeof ret === "function") {
@@ -96,4 +104,14 @@ function memoizeCell(exprString, cell) {
 function evaluateAndInject(expr, depender, func) {
 	var e = evaluate(expr);
 	return e.inject(depender, func);
+}
+
+
+
+
+
+
+function isObjectFun(fun) {
+	var name = stringify(fun);
+	return (name.indexOf(":") !== -1 || name.indexOf("~") !== -1);
 }
