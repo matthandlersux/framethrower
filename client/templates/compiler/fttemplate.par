@@ -102,6 +102,16 @@
 		};
 	}
 
+	function makeLineAction(variable, line) {
+		var output = {};
+		if (variable.name !== undefined) {
+			output.name = variable.name;
+		}
+		output.action = line;
+		return output;
+	}
+
+
 	function makeExpr(expr, lets) {
 		if (lets == undefined) {
 			lets = {};
@@ -321,9 +331,9 @@
 			typeString += type;
 		});
 		if (first) {
-			typeString += "ACTION";
+			typeString += "Action";
 		} else {
-			typeString += " -> ACTION";
+			typeString += " -> Action";
 		}
 
 		var actions = lets.concat([output]);
@@ -434,7 +444,7 @@ LET:
 	;
 
 ACTIONTPL:
-	'action' '(' ARGLIST ')' '{' ACTLIST ACTION '}'		[* %% = makeAction(%3, %6, makeLet({}, %7)); *]
+	'action' '(' ARGLIST ')' '{' ACTLIST ACTION '}'		[* %% = makeAction(%3, %6, makeLineAction({}, %7)); *]
 	;
 
 ACTLIST:
@@ -443,8 +453,8 @@ ACTLIST:
 	;	
 
 ACTSTMT:
-	VARIABLE '=' ACTION									[* %% = makeLet(%1, %3); *]
-	| ACTION											[* %% = makeLet({}, %1); *]
+	VARIABLE '=' ACTION									[* %% = makeLineAction(%1, %3); *]
+	| ACTION											[* %% = makeLineAction({}, %1); *]
 	;
 
 ACTION:
@@ -454,8 +464,19 @@ ACTION:
 	;
 
 CREATE:
-	'create' '(' TYPE ',' JS ')'						[* %% = makeCreate(%3, %5); *]
+	'create' '(' TYPE ',' PROP ')'						[* %% = makeCreate(%3, %5); *]
 	;
+
+PROP:
+	'{' PROPLIST '}'									[* %% = %2; *]
+	;
+	
+PROPLIST:
+	PROPLIST ',' IDENTIFIER ':' EXPR					[* %1[%3] = %5; %% = %1;*]
+	| IDENTIFIER ':' EXPR								[* var ret = {}; ret[%1] = %3; %% = ret;*]
+	| 													[* %% = {}; *]
+	;
+
 
 UPDATE:
 	'add' '(' EXPR ',' EXPR ')'							[* %% = makeUpdate(%1, %3, %5); *]
@@ -503,7 +524,7 @@ JS:
 	| '/'
 	| JSSEP 
 	| JS JS 											[* %% = %1 + " " + %2; *]
-	|
+	|													[* %% = ""; *]
 	;
 	
 STATE:
