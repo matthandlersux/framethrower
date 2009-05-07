@@ -495,7 +495,7 @@ STMT:
 	;
 
 EXPR:
-	'(' | ')' | IDENTIFIER | STRINGKEEPQUOTES 
+	'(' | ')' | IDENTIFIER | STRINGESCAPEQUOTES 
 	| IDENTIFIER ':' ':' IDENTIFIER							[* %% = %1 + "::" + %4; *]
 	| EXPR EXPR												[* %% = %1 + " " + %2; *]
 	;
@@ -622,6 +622,10 @@ ATTRIBUTE:
 
 STRINGKEEPQUOTES:
 	QUOTE TEXT QUOTE									[* %% = %1 + %2 + %3; *]
+	;
+
+STRINGESCAPEQUOTES:
+	QUOTE TEXT QUOTE									[* %% = "\\\"" + %2 + "\\\""; *]
 	;
 
 	

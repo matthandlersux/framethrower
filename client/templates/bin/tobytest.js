@@ -396,7 +396,7 @@ var mainTemplate = {
 					},
 					message: {
 						kind: "lineExpr",
-						expr: ""This is a new name"",
+						expr: "\"This is a new name\"",
 						let: {
 
 						}
