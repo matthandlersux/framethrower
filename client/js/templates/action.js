@@ -23,15 +23,19 @@ ACTIONREF
 	{kind: "actionRef", name: ACTIONVAR, type: TYPE} |
 	OBJECT/LITERAL |
 	an Expression involving only casting and property-accessing functions and ACTIONREFs
-	
-	ACTIONUNIT
-		{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: EXPR}} |
-		{kind: "actionUpdate", target: EXPR, actionType: "add" | "remove", key?: EXPR, value?: EXPR}
+
+
+TODO: change evaluate or object.js so that casting and property-accessing functions on ACTIONREFs just return their expression.
 
 */
 
 function makeActionRef(name, type) {
 	return {kind: "actionRef", name: name, type: type};
+}
+
+function isActionRef(expr) {
+	// returns true is expr is an actionRef or its right (recursively) is an actionRef
+	// TODO
 }
 
 function makeActionClosure(actionCode, env) {
@@ -95,7 +99,9 @@ function makeActionClosure(actionCode, env) {
 		var ret = {
 			kind: "action",
 			instructions: instructions,
-			output: output
+			output: output,
+			type: actionType,
+			remote: 2
 		};
 		console.log("made an action", ret);
 		return ret;
