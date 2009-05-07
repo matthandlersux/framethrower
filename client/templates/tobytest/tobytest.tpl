@@ -7,6 +7,10 @@ template () {
 		return x + 99;
 	},
 	stateTest = state(Set Number),
+	actionTest = action() {
+		ob = create(Object, {}),
+		ob
+	},
 	<div testatt="{test}">
 		Hello World.
 		<div>
@@ -18,6 +22,9 @@ template () {
 		<f:call>myTemplate (jsfun 9999)</f:call>
 		<div>
 			State test: {stateTest}
+		</div>
+		<div>
+			Action test: {actionTest}
 		</div>
 	</div>
 }

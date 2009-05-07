@@ -70,6 +70,35 @@ var mainTemplate = {
 		stateTest: {
 			kind: "lineState",
 			type: "Set Number"
+		},
+		actionTest: {
+			kind: "action",
+			params: [
+
+			],
+			type: "ACTION",
+			actions: [
+				{
+					name: "ob",
+					type: undefined,
+					value: {
+						kind: "actionCreate",
+						type: "Object",
+						prop: "{undefined}"
+					}
+				},
+				{
+					name: undefined,
+					type: undefined,
+					value: {
+						kind: "lineExpr",
+						expr: "ob",
+						let: {
+
+						}
+					}
+				}
+			]
 		}
 	},
 	output: {
@@ -193,6 +222,29 @@ var mainTemplate = {
 							nodeValue: {
 								kind: "insert",
 								expr: "stateTest"
+							}
+						}
+					]
+				},
+				{
+					kind: "element",
+					nodeName: "div",
+					attributes: {
+
+					},
+					style: {
+
+					},
+					children: [
+						{
+							kind: "textElement",
+							nodeValue: "\n			Action test: "
+						},
+						{
+							kind: "textElement",
+							nodeValue: {
+								kind: "insert",
+								expr: "actionTest"
 							}
 						}
 					]

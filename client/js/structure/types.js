@@ -176,6 +176,8 @@ var basicTypes = {
 //var unitJS = parseType("Unit JS");
 
 var jsonType = makeTypeName("JSON");
+var instructionType = makeTypeName("Instruction");
+var actionType = makeTypeName("Action");
 
 
 

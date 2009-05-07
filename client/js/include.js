@@ -37,6 +37,7 @@
 		"js/structure/exprLib.js",
 		
 		"js/templates/funs.js",
+		"js/templates/action.js",
 		"js/templates/closure.js",
 		"js/templates/style.js",
 		"js/templates/writexml.js"

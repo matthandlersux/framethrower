@@ -82,6 +82,9 @@ function makeLambda(varName, expr, type) {
 
 
 
+
+
+
 function getOutsideScope(expr) {
 	if (expr.outsideScope !== undefined) return expr.outsideScope;
 	else return 0;

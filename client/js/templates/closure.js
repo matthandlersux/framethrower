@@ -129,5 +129,7 @@ function evaluateLine(line, env) {
 	} else if (line.kind === "lineState") {
 		//return makeCC(line.type);
 		return makeCC(parseType(line.type));
+	} else if (line.kind === "actionCreate") {
+		return actionToInstruction(line, env);
 	}
 }
