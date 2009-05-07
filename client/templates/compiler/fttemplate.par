@@ -487,7 +487,7 @@ UPDATE:
 STMT:
 	JSFUN
 	| TEMPLATE 											[* %% = {kind: "lineTemplate", template: %1} ; *]
-	| ACTIONTPL
+	| ACTIONTPL											[* %% = {kind: "lineAction", action: %1} ; *]
 	| EXPR 												[* %% = makeExpr(%1); *]
 	| STATE
 	| LETLISTBLOCK

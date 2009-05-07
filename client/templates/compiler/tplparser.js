@@ -2089,7 +2089,7 @@ switch( act )
 	break;
 	case 30:
 	{
-		rval = vstack[ vstack.length - 1 ];
+		 rval = {kind: "lineAction", action: vstack[ vstack.length - 1 ]} ; 
 	}
 	break;
 	case 31:
