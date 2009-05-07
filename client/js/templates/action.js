@@ -64,7 +64,7 @@ function makeActionClosure(actionCode, env) {
 			if (action.kind === "actionCreate") {
 				var created = {
 					kind: "instructionCreate",
-					type: action.type,
+					type: parseType(action.type),
 					prop: map(action.prop, function (expr) {
 						return evaluate(expr, envWithParams);
 					}),

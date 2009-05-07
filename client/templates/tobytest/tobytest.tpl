@@ -51,7 +51,7 @@ template () {
 		nameObject = action(object::Object, name::String) {
 			nameRel = shared.name,
 			nameText = create(X.text, {string:name}),
-			makeOntProperty nameRel object nameText
+			makeOntProperty nameRel object (X.text~Object nameText)
 		},
 
 		changeName = action(focus::Object, newName::String) {
