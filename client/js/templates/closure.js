@@ -118,6 +118,7 @@ function evaluateLine(line, env) {
 		var newEnv = addLets(line.let, env);
 		//var expr = parseExpression(line.expr, newEnv);
 		var expr = parseExpression(parse(line.expr), newEnv);
+		console.log("evaluteLine'ing a lineExpr", expr, evaluate(expr));
 		return evaluate(expr);
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line.template, env);

@@ -30,12 +30,7 @@ TODO: change evaluate or object.js so that casting and property-accessing functi
 */
 
 function makeActionRef(name, type) {
-	return {kind: "actionRef", name: name, type: type};
-}
-
-function isActionRef(expr) {
-	// returns true is expr is an actionRef or its right (recursively) is an actionRef
-	// TODO
+	return {kind: "actionRef", actionRef: true, name: name, type: type};
 }
 
 function makeActionClosure(actionCode, env) {
@@ -82,6 +77,7 @@ function makeActionClosure(actionCode, env) {
 				});
 			} else {
 				var evaled = evaluateLine(action, envWithParams);
+				console.log("did an evaled", action, evaled);
 				if (evaled.kind === "action") {
 					instructions = instructions.concat(evaled.instructions);
 					result = evaled.output;
