@@ -90,7 +90,10 @@ template () {
 			State test: {stateTest}
 		</div>
 		<div>
-			<f:on event="click">myAction</f:on>
+			<f:on event="click">
+				something = myAction,
+				something
+			</f:on>
 			Action test
 		</div>
 	</div>
