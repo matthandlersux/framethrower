@@ -14,7 +14,7 @@ template () {
 	
 	
 	
-	actionTemplate = template () {
+	myAction = action() {
 		putObjectInSituation = action(object::Object, situation::Object) {
 			in = shared.in,
 			infon = makeInfon2 in situation object,
@@ -69,9 +69,7 @@ template () {
 
 		message = "This is a new name",
 
-		<div>
-			{changeName shared.realLife message}
-		</div>
+		changeName shared.realLife message
 	},
 	
 	
@@ -92,7 +90,8 @@ template () {
 			State test: {stateTest}
 		</div>
 		<div>
-			Action test: <f:call>actionTemplate</f:call>
+			<f:on event="click">myAction</f:on>
+			Action test
 		</div>
 	</div>
 }

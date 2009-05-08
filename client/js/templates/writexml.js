@@ -134,6 +134,16 @@ function xmlToDOM(xml, env) {
 	} else if (xml.kind === "call") {
 		var xmlp = makeClosure(xml.templateCode, env);
 		return xmlToDOM(xmlp.xml, xmlp.env);
+	} else if (xml.kind === "on") {
+		var node = createEl("f:on");
+		setAttr(node, "event", xml.event);
+		node.custom = {};
+		node.custom.action = xml.action;
+		node.custom.env = env;
+		function cleanup() {
+			node.custom = null; // for garbage collection in stupid browsers
+		}
+		return {node: node, cleanup: cleanup};
 	}
 	
 	var cleanup = null;
