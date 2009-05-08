@@ -61,7 +61,7 @@ function makeActionClosure(actionCode, env) {
 					prop: map(action.prop, function (expr) {
 						return evaluate(parseExpression(parse(expr), envWithParams));
 					}),
-					name: localIds()
+					label: localIds()
 				};
 				instructions.push(created);
 				result = makeActionRef(created.label, created.type);
@@ -120,7 +120,7 @@ function executeAction(action) {
 				var avar = scope[actionRef.label];
 				//DEBUG
 				if (avar == undefined) {
-					debug.error("Variable used in action not found in action scope, Variable Name: " + actionRef.label);
+					debug.error("Variable used in action not found in action scope, Variable Name: ", actionRef.label, actionRef);
 				}
 				return avar;
 			} else if (actionRef.left !== undefined) {
