@@ -24,7 +24,7 @@ template () {
 
 		makeTrueInOnt = action(infon::Cons) {
 			ont = shared.ont,
-			putObjectInSituation infon ont
+			putObjectInSituation (Cons~Object infon) ont
 		},	
 
 		makeCons = action(left::Object, right::Object) {
@@ -40,7 +40,7 @@ template () {
 		makeInfon2 = action(relation::Object, arg1::Object, arg2::Object) {
 			cons1 = makeCons relation arg1,
 			//return the second cons
-			makeCons cons1 arg2
+			makeCons (Cons~Object cons1) arg2
 		},
 
 		makeOntProperty = action(relation::Object, arg1::Object, arg2::Object) {

@@ -44,12 +44,15 @@ function evaluate2(expr) {
 		} else {
 			// fun wasn't a lambda, and evaluate can't return an apply, so fun must be a Fun, so we can run it
 			
-			// check if input is an actionRef and fun is an object converter or property accessor,
-			// if so, just return the expression back (with actionRef = true)
-			if (input.actionRef && isObjectFun(fun)) {
-				var ret = shallowCopy(expr);
-				ret.actionRef = true;
-				return ret;
+			// check if input is an actionRef and fun is an object converter or property accessor
+			if (input.kind === "actionRef" && isObjectFun(fun)) {
+				return {
+					kind: "actionRef",
+					type: resultType,
+					name: stringify(expr),
+					left: fun,
+					right: input
+				};
 			}
 			
 			var ret = fun.fun(input);
@@ -112,6 +115,7 @@ function evaluateAndInject(expr, depender, func) {
 
 
 function isObjectFun(fun) {
+	// TODO: would be nicer if this didn't check based on the name
 	var name = stringify(fun);
-	return (name.indexOf(":") !== -1 || name.indexOf("~") !== -1);
+	return name.indexOf(" ") === -1 && (name.indexOf(":") !== -1 || name.indexOf("~") !== -1);
 }

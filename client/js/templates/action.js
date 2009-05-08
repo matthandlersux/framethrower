@@ -21,8 +21,8 @@ INSTRUCTIONUPDATE
 
 ACTIONREF
 	{kind: "actionRef", name: ACTIONVAR, type: TYPE} |
-	OBJECT/LITERAL |
-	an Expression involving only casting and property-accessing functions and ACTIONREFs
+	{kind: "actionRef", left: OBJECTFUN, right: ACTIONREF} |
+	OBJECT/LITERAL
 
 
 TODO: change evaluate or object.js so that casting and property-accessing functions on ACTIONREFs just return their expression.
@@ -30,7 +30,7 @@ TODO: change evaluate or object.js so that casting and property-accessing functi
 */
 
 function makeActionRef(name, type) {
-	return {kind: "actionRef", actionRef: true, name: name, type: type};
+	return {kind: "actionRef", name: name, type: type};
 }
 
 function makeActionClosure(actionCode, env) {
@@ -61,7 +61,7 @@ function makeActionClosure(actionCode, env) {
 					kind: "instructionCreate",
 					type: parseType(action.type),
 					prop: map(action.prop, function (expr) {
-						return evaluate(expr, envWithParams);
+						return evaluate(parseExpression(parse(expr), envWithParams));
 					}),
 					name: localIds()
 				};
@@ -70,14 +70,13 @@ function makeActionClosure(actionCode, env) {
 			} else if (action.kind === "actionUpdate") {
 				instructions.push({
 					kind: "instructionUpdate",
-					target: evaluate(action.target, envWithParams),
+					target: evaluate(parseExpression(parse(action.target), envWithParams)),
 					actionType: action.actionType,
-					key: action.key ? evaluate(action.key, envWithParams) : undefined,
-					value: action.value ? evaluate(action.value, envWithParams) : undefined
+					key: action.key ? evaluate(parseExpression(parse(action.key), envWithParams)) : undefined,
+					value: action.value ? evaluate(parseExpression(parse(action.value), envWithParams)) : undefined
 				});
 			} else {
 				var evaled = evaluateLine(action, envWithParams);
-				console.log("did an evaled", action, evaled);
 				if (evaled.kind === "action") {
 					instructions = instructions.concat(evaled.instructions);
 					result = evaled.output;
@@ -100,6 +99,7 @@ function makeActionClosure(actionCode, env) {
 			remote: 2
 		};
 		console.log("made an action", ret);
+		lastAction = ret;
 		return ret;
 	}, params.length);
 	
@@ -109,3 +109,5 @@ function makeActionClosure(actionCode, env) {
 		return f;
 	}
 }
+
+var lastAction;
