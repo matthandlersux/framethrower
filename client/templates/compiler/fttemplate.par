@@ -459,8 +459,14 @@ ACTSTMT:
 
 ACTION:
 	CREATE
-	| EXPR
 	| UPDATE
+	| JSFUN
+	| TEMPLATE 											[* %% = {kind: "lineTemplate", template: %1} ; *]
+	| ACTIONTPL											[* %% = {kind: "lineAction", action: %1} ; *]
+	| EXPR 												[* %% = makeExpr(%1); *]
+	| STATE
+	| LETLISTBLOCK
+	| XML												[* %% = makeXMLLine(%1); *]
 	;
 
 CREATE:
