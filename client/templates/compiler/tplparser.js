@@ -2313,7 +2313,7 @@ switch( act )
 	break;
 	case 69:
 	{
-		 rval = makeOn(vstack[ vstack.length - 4 ], vstack[ vstack.length - 3 ], vstack[ vstack.length - 2 ]); 
+		 rval = makeOn(vstack[ vstack.length - 4 ], vstack[ vstack.length - 3 ], makeLineAction({}, vstack[ vstack.length - 2 ])); 
 	}
 	break;
 	case 70:

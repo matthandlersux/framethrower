@@ -594,10 +594,12 @@ var mainTemplate = {
 										}
 									},
 									{
-										kind: "lineExpr",
-										expr: "something",
-										let: {
+										action: {
+											kind: "lineExpr",
+											expr: "something",
+											let: {
 
+											}
 										}
 									}
 								]

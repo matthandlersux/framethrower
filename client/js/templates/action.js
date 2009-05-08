@@ -14,21 +14,21 @@ INSTRUCTION
 	INSTRUCTIONCREATE | INSTRUCTIONUPDATE
 
 INSTRUCTIONCREATE
-	{kind: "instructionCreate", type: TYPE, prop: {PROPERTYNAME: ACTIONREF}, name: ACTIONVARTOCREATE} |
+	{kind: "instructionCreate", type: TYPE, prop: {PROPERTYNAME: ACTIONREF}, label: ACTIONVARTOCREATE} |
 
 INSTRUCTIONUPDATE
 	{kind: "instructionUpdate", target: ACTIONREF, actionType: "add" | "remove", key?: ACTIONREF, value?: ACTIONREF}
 
 ACTIONREF
-	{kind: "actionRef", name: ACTIONVAR, type: TYPE} |
-	{kind: "actionRef", left: OBJECTFUN, right: ACTIONREF} |
+	{kind: "actionRef", label: ACTIONVAR, type: TYPE} |
+	{kind: "actionRef", label: STRING, left: OBJECTFUN, right: ACTIONREF} |
 	OBJECT/CELL/LITERAL
 
 
 */
 
-function makeActionRef(name, type) {
-	return {kind: "actionRef", name: name, type: type};
+function makeActionRef(label, type) {
+	return {kind: "actionRef", label: label, type: type};
 }
 
 function makeActionClosure(actionCode, env) {
@@ -64,7 +64,7 @@ function makeActionClosure(actionCode, env) {
 					name: localIds()
 				};
 				instructions.push(created);
-				result = makeActionRef(created.name, created.type);
+				result = makeActionRef(created.label, created.type);
 			} else if (action.kind === "actionUpdate") {
 				instructions.push({
 					kind: "instructionUpdate",
@@ -115,16 +115,16 @@ function executeAction(action) {
 	
 	var processActionRef = function(actionRef) {
 		if (actionRef.kind === "actionRef") {
-			if (actionRef.name !== undefined) {
-				//{kind: "actionRef", name: ACTIONVAR, type: TYPE}
-				var avar = scope[actionRef.name];
+			if (actionRef.left === undefined) {
+				//{kind: "actionRef", label: ACTIONVAR, type: TYPE}
+				var avar = scope[actionRef.label];
 				//DEBUG
 				if (avar == undefined) {
-					debug.error("Variable used in action not found in action scope, Variable Name: " + actionRef.name);
+					debug.error("Variable used in action not found in action scope, Variable Name: " + actionRef.label);
 				}
 				return avar;
 			} else if (actionRef.left !== undefined) {
-				//{kind: "actionRef", left: OBJECTFUN, right: ACTIONREF}
+				//{kind: "actionRef", label: STRING, left: OBJECTFUN, right: ACTIONREF}
 				var objectFun = actionRef.left;
 				var input = processActionRef(actionRef.right);
 				//TODO: check evaluate and makeapply syntax
@@ -145,8 +145,8 @@ function executeAction(action) {
 			});
 			
 			var made = objects.make(instruction.type.value, processedProp);
-			if (instruction.name !== undefined) {
-				scope[instruction.name] = made;
+			if (instruction.label !== undefined) {
+				scope[instruction.label] = made;
 			}
 		} else if (instruction.kind === "instructionUpdate") {
 			var target = processActionRef(instruction.target);
@@ -165,13 +165,4 @@ function executeAction(action) {
 			}
 		}
 	});
-}
-
-
-
-
-function intact(object, property, action, key, value) {
-	// params has properties key and value, or just key
-	objects.actOnProp(property, object, action, key, value);
-	//object.prop[property].control[action](key, value);
 }

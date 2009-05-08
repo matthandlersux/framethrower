@@ -545,7 +545,7 @@ VARIABLE:
 
 XML:
 	OPENFOREACH LETLIST STMT CLOSEFOREACH				[* %% = makeForEach(%1, %2, %3); *]
-	| OPENON ACTLIST ACTION CLOSEON						[* %% = makeOn(%1, %2, %3); *]
+	| OPENON ACTLIST ACTION CLOSEON						[* %% = makeOn(%1, %2, makeLineAction({}, %3)); *]
 	| OPENCALL LETLIST STMT CLOSECALL					[* %% = makeCall(%2, %3); *]
 	| OPENTAG XMLLIST CLOSETAG							[* %% = makeNode(%1, %2); *]
 	| SINGLETAG											[* %% = makeNode(%1, []); *]
