@@ -22,10 +22,8 @@ INSTRUCTIONUPDATE
 ACTIONREF
 	{kind: "actionRef", name: ACTIONVAR, type: TYPE} |
 	{kind: "actionRef", left: OBJECTFUN, right: ACTIONREF} |
-	OBJECT/LITERAL
+	OBJECT/CELL/LITERAL
 
-
-TODO: change evaluate or object.js so that casting and property-accessing functions on ACTIONREFs just return their expression.
 
 */
 
@@ -111,3 +109,69 @@ function makeActionClosure(actionCode, env) {
 }
 
 var lastAction;
+
+function executeAction(action) {
+	var scope = {};
+	
+	var processActionRef = function(actionRef) {
+		if (actionRef.kind === "actionRef") {
+			if (actionRef.name !== undefined) {
+				//{kind: "actionRef", name: ACTIONVAR, type: TYPE}
+				var avar = scope[actionRef.name];
+				//DEBUG
+				if (avar == undefined) {
+					debug.error("Variable used in action not found in action scope, Variable Name: " + actionRef.name);
+				}
+				return avar;
+			} else if (actionRef.left !== undefined) {
+				//{kind: "actionRef", left: OBJECTFUN, right: ACTIONREF}
+				var objectFun = actionRef.left;
+				var input = processActionRef(actionRef.right);
+				//TODO: check evaluate and makeapply syntax
+				return evaluate(makeApply(objectFun, input));
+			}
+		} else {
+			//OBJECT/CELL/LITERAL
+			return actionRef;
+		}
+	};
+	
+	
+	forEach(action.instructions, function(instruction) {
+		if (instruction.kind === "instructionCreate") {
+			var processedProp = {};
+			forEach(instruction.prop, function(property, propName) {
+				processedProp[propName] = processActionRef(property);
+			});
+			
+			var made = objects.make(instruction.type.value, processedProp);
+			if (instruction.name !== undefined) {
+				scope[instruction.name] = made;
+			}
+		} else if (instruction.kind === "instructionUpdate") {
+			var target = processActionRef(instruction.target);
+			var key, value;
+			if (instruction.key !== undefined) {
+				key = processActionRef(instruction.key);
+			}
+			if (instruction.value !== undefined) {
+				value = processActionRef(instruction.value);
+			}
+			//DEBUG
+			if (target.control === undefined) {
+				debug.error("Trying to do action update on non-controlled cell: " + target);
+			} else {
+				target.control[instruction.actionType](key, value);
+			}
+		}
+	});
+}
+
+
+
+
+function intact(object, property, action, key, value) {
+	// params has properties key and value, or just key
+	objects.actOnProp(property, object, action, key, value);
+	//object.prop[property].control[action](key, value);
+}

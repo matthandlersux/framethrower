@@ -191,11 +191,11 @@
 	}
 
 	function makeOn(attributes, lets, output) {
-		var templateCode = makeAction([], lets, output);
+		var action = makeAction([], lets, output);
 		return {
 			kind: "on",
 			event: attributes.event,
-			templateCode: templateCode
+			action: action
 		};
 	}
 
@@ -459,8 +459,8 @@ ACTSTMT:
 
 ACTION:
 	CREATE
+	| EXPR
 	| UPDATE
-	| EXPR												[* %% = makeExpr(%1); *]
 	;
 
 CREATE:
