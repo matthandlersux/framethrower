@@ -52,6 +52,7 @@ XML
 		<f:call>LINES</f:call>
 		<f:each select="EXPR" key="VARTOCREATE" value="VARTOCREATE">LINES</f:each>
 			(the value attribute is optional)
+		<f:on>ACTLIST</f:on>
 
 STATE
 	state(TYPE)
