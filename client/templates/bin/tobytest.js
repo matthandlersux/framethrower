@@ -584,19 +584,9 @@ var mainTemplate = {
 								type: "Action",
 								actions: [
 									{
-										name: "something",
 										action: {
 											kind: "lineExpr",
 											expr: "myAction",
-											let: {
-
-											}
-										}
-									},
-									{
-										action: {
-											kind: "lineExpr",
-											expr: "something",
 											let: {
 
 											}

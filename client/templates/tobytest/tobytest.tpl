@@ -91,8 +91,7 @@ template () {
 		</div>
 		<div>
 			<f:on event="click">
-				something = myAction,
-				something
+				myAction
 			</f:on>
 			Action test
 		</div>
