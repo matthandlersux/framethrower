@@ -69,57 +69,56 @@ var mainTemplate = {
 		},
 		stateTest: {
 			kind: "lineState",
-			type: "Set Number"
+			type: "Unit Number"
 		},
-		actionTest: {
+		changeState: {
 			kind: "lineAction",
 			action: {
 				kind: "action",
 				params: [
-
+					"newValue"
 				],
-				type: "Action",
-				actions: [
-					{
-						action: {
-							kind: "actionUpdate",
-							target: "testCell",
-							actionType: "add",
-							key: "9999",
-							val: undefined
-						}
-					},
-					{
-						action: {
-							kind: "actionCreate",
-							type: "Object",
-							prop: {
-
-							}
-						}
-					}
-				]
-			}
-		},
-		myAction: {
-			kind: "lineAction",
-			action: {
-				kind: "action",
-				params: [
-
-				],
-				type: "Action",
+				type: "Number -> Action",
 				actions: [
 					{
 						action: {
 							kind: "actionUpdate",
 							target: "stateTest",
 							actionType: "add",
-							key: "15",
+							key: "newValue",
 							val: undefined
 						}
 					}
 				]
+			}
+		},
+		counter: {
+			kind: "templateCode",
+			params: [
+
+			],
+			type: "XMLP",
+			let: {
+
+			},
+			output: {
+				kind: "lineXML",
+				xml: {
+					kind: "element",
+					nodeName: "div",
+					attributes: {
+
+					},
+					style: {
+
+					},
+					children: [
+						{
+							kind: "textElement",
+							nodeValue: "\n		just a test\n	"
+						}
+					]
+				}
 			}
 		}
 	},
@@ -236,53 +235,24 @@ var mainTemplate = {
 					},
 					children: [
 						{
-							kind: "textElement",
-							nodeValue: "\n			State test: "
-						},
-						{
-							kind: "textElement",
-							nodeValue: {
-								kind: "insert",
-								expr: "stateTest"
-							}
-						}
-					]
-				},
-				{
-					kind: "element",
-					nodeName: "div",
-					attributes: {
-
-					},
-					style: {
-
-					},
-					children: [
-						{
-							kind: "on",
-							event: "click",
-							action: {
-								kind: "action",
+							kind: "call",
+							templateCode: {
+								kind: "templateCode",
 								params: [
 
 								],
-								type: "Action",
-								actions: [
-									{
-										action: {
-											kind: "lineExpr",
-											expr: "myAction",
-											let: {
+								type: "XMLP",
+								let: {
 
-											}
-										}
+								},
+								output: {
+									kind: "lineExpr",
+									expr: "counter",
+									let: {
+
 									}
-								]
+								}
 							}
-						},
-						{
-							kind: "textElement",
-							nodeValue: "\n			Action test\n		"
 						}
 					]
 				}

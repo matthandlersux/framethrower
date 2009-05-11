@@ -295,7 +295,7 @@ var primFuncs = function () {
 		// ============================================================================
 		// Number utility functions
 		// ============================================================================
-		add : {
+		plus : {
 			type : "Number -> Number -> Number",
 			func : function (val1, val2) {
 				return val1 + val2;

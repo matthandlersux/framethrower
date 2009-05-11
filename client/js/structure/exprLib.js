@@ -116,7 +116,7 @@ var exprLib = {
 	
 	length: {
 		type: "Set a -> Unit Number",
-		expr: "fold (x -> sum -> add sum 1) (x -> sum -> subtract sum 1) 0"
+		expr: "fold (x -> sum -> plus sum 1) (x -> sum -> subtract sum 1) 0"
 	},
 	
 	
