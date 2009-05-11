@@ -78,6 +78,8 @@
 			
 			
 			console.log("about to execute an action!", action);
+			
+			executeAction(action);
 		}
 	}
 	
