@@ -19,12 +19,22 @@ template () {
 		</f:each>
 		<f:call>myTemplate (jsfun 9999)</f:call>
 		
+		<hr />
+		
 		<div>
 			<f:call>counter</f:call>
 		</div>
 		
+		<hr />
+		
 		<div>
 			<f:call>set</f:call>
+		</div>
+		
+		<hr />
+		
+		<div>
+			<f:call>dragging</f:call>
 		</div>
 		
 	</div>
