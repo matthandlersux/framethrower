@@ -2,13 +2,11 @@ Here is a quick, informal first draft of the template syntax.
 
 A template (.tpl file) begins with a TEMPLATE.
 
-This file only contains syntax that I (Toby) have been told about. I know there exists some more syntax (for state, etc). This should be discussed with me and factored into this document.
-
 
 
 TEMPLATE
 	template(PARAMS) {
-		LINES
+		LETLINES
 	}
 
 
@@ -19,14 +17,14 @@ PARAM
 	VARTOCREATE | VARTOCREATE::TYPE
 
 
-LINES
-	comma separated list of LINE ending with a LASTLINE (the output)
+LETLINES
+	comma separated list of LETLINEs ending with a LINE (the output)
+
+LETLINE
+	VARTOCREATE = LINE
 
 LINE
-	VARTOCREATE = TEMPLATE | EXPR | BLOCK | JAVASCRIPT | XML | STATE | ACTIONTPL
-
-LASTLINE
-	TEMPLATE | EXPR | BLOCK | JAVASCRIPT | XML
+	TEMPLATE | EXPR | BLOCK | JAVASCRIPT | XML | STATE | ACTIONTPL
 
 
 EXPR
@@ -34,7 +32,7 @@ EXPR
 
 BLOCK
 	{
-		LINES
+		LETLINES
 	}
 
 JAVASCRIPT
@@ -49,10 +47,10 @@ XML
 	this starts with a open-angle-bracket, and ends when the XML ends (ie: matching closing tag)
 	there are a few special elements:
 		anywhere (in an attribute or in a text node) there can be {EXPR} (the stuff inside the braces should be highlighted like an EXPR)
-		<f:call>LINES</f:call>
-		<f:each select="EXPR" key="VARTOCREATE" value="VARTOCREATE">LINES</f:each>
+		<f:call>LETLINES</f:call>
+		<f:each select="EXPR" key="VARTOCREATE" value="VARTOCREATE">LETLINES</f:each>
 			(the value attribute is optional)
-		<f:on>ACTLIST</f:on>
+		<f:on>ACTSTMTS</f:on>
 
 STATE
 	state(TYPE)
@@ -67,17 +65,17 @@ TYPE
 
 ACTIONTPL
 	action(PARAMS){
-		ACTLIST
+		ACTSTMTS
 	}
 
-ACTLIST
-	comma separated list of ACTSTMT ending with a ACTION (the output)
+ACTSTMTS
+	comma separated list of ACTSTMTs
 
 ACTSTMT
-	LINE | ACTION | VARTOCREATE = ACTION
+	ACTION | VARTOCREATE = ACTION
 
 ACTION
-	CREATE | UPDATE
+	CREATE | UPDATE | LINE
 
 CREATE
 	create(TYPE, PROPERTIES)
@@ -95,4 +93,8 @@ UPDATE
 
 
 
+Basically the idea is that templates have a bunch of lets: VARTOCREATE = LINE, with the very last one being just a LINE. Action "templates" are the same thing but can also have CREATE and UPDATE in addition to the normal things in LINE. Also, actions don't need to have the "VARTOCREATE = " at every line other than the last.
 
+So you have some idea of the semantics: in templates, the first bunch of lines are the let statements. They can be in any order and have mutual recursion. The last line is the output of the template, it can use the various things created with the let statements.
+
+An action template can be thought of as a function that returns an Action, which is a list of instructions to be run. In action templates, the order of the lines matter and all the lines affect the result, not just the last. When the action is run, the lines are "executed" in that order. Some actions (CREATE and actions templates that end in CREATE) have return values. When you see a VARTOCREATE = ACTION, it can be used in two ways. In one way, if the ACTION is a CREATE or an expression that evaluates to an Action, then that Action gets run and the return value gets put into VARTOCREATE. The other way is if ACTION is just a LINE (that doesn't return an Action), then this just serves as a let statement like in a template.
