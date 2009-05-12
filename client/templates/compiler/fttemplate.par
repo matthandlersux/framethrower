@@ -494,6 +494,7 @@ UPDATE:
 	'add' '(' EXPR ',' EXPR ')'							[* %% = makeUpdate(%1, %3, %5); *]
 	| 'add' '(' EXPR ',' EXPR ',' EXPR ')'				[* %% = makeUpdate(%1, %3, %5, %7); *]
 	| 'remove' '(' EXPR ',' EXPR ')'					[* %% = makeUpdate(%1, %3, %5); *]
+	| 'remove' '(' EXPR ')'								[* %% = makeUpdate(%1, %3); *]
 	;
 
 STMT:
