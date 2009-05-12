@@ -40,7 +40,7 @@ function JSONtoString(object, tabs) {
 					for (var i=0; i<=tabs; i++) {
 						output += "\t";
 					}
-					output += name + ": " + JSONtoString(value, tabs+1);
+					output += "'" + name + "'" + ": " + JSONtoString(value, tabs+1);
 				});
 				output += "\n";
 				for (var i=0; i<=tabs-1; i++) {
@@ -61,7 +61,7 @@ function JSONtoString(object, tabs) {
 function addLets(Json, lets) {
 	if(Json !== undefined) {
 		forEach(lets, function(let, name) {
-			Json.let[name] = let;
+			Json.let[name] = {kind: "lineTemplate", template: let};
 		});
 	}
 }
