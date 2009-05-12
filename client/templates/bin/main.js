@@ -1,138 +1,144 @@
 var mainTemplate = {
-	kind: "templateCode",
-	params: [
+	'kind': "templateCode",
+	'params': [
 
 	],
-	type: "XMLP",
-	let: {
-		jsfun: {
-			kind: "lineJavascript",
-			type: "Number -> Number",
-			f: function (a) {return a ^ 2 ;}
+	'type': "XMLP",
+	'let': {
+		'jsfun': {
+			'kind': "lineJavascript",
+			'type': "Number -> Number",
+			'f': function (a) {return a ^ 2 ;}
 		},
-		result: {
-			kind: "lineExpr",
-			expr: "jsfun 5",
-			let: {
+		'result': {
+			'kind': "lineExpr",
+			'expr': "jsfun 5",
+			'let': {
 
 			}
 		},
-		letfile1: {
-			kind: "templateCode",
-			params: [
-				"a"
-			],
-			type: "Number -> XMLP",
-			let: {
-				jsfun: {
-					kind: "lineJavascript",
-					type: "Number -> Number",
-					f: function (a) {return a * 10 ;}
-				},
-				result: {
-					kind: "lineExpr",
-					expr: "jsfun a",
-					let: {
-
-					}
-				}
-			},
-			output: {
-				kind: "lineXML",
-				xml: {
-					kind: "element",
-					nodeName: "p:wrapper",
-					attributes: {
-
+		'letfile1': {
+			'kind': "lineTemplate",
+			'template': {
+				'kind': "templateCode",
+				'params': [
+					"a"
+				],
+				'type': "Number -> XMLP",
+				'let': {
+					'jsfun': {
+						'kind': "lineJavascript",
+						'type': "Number -> Number",
+						'f': function (a) {return a * 10 ;}
 					},
-					style: {
+					'result': {
+						'kind': "lineExpr",
+						'expr': "jsfun a",
+						'let': {
 
-					},
-					children: [
-						{
-							kind: "textElement",
-							nodeValue: "\n		"
-						},
-						{
-							kind: "textElement",
-							nodeValue: {
-								kind: "insert",
-								expr: "result"
-							}
 						}
-					]
+					}
+				},
+				'output': {
+					'kind': "lineXML",
+					'xml': {
+						'kind': "element",
+						'nodeName': "p:wrapper",
+						'attributes': {
+
+						},
+						'style': {
+
+						},
+						'children': [
+							{
+								'kind': "textElement",
+								'nodeValue': "\n		"
+							},
+							{
+								'kind': "textElement",
+								'nodeValue': {
+									'kind': "insert",
+									'expr': "result"
+								}
+							}
+						]
+					}
 				}
 			}
 		},
-		subfolder1: {
-			kind: "templateCode",
-			params: [
-				"a"
-			],
-			type: "Number -> XMLP",
-			let: {
-				jsfun: {
-					kind: "lineJavascript",
-					type: "Number -> Number",
-					f: function (a) {return a + 10 ;}
-				},
-				result: {
-					kind: "lineExpr",
-					expr: "jsfun a",
-					let: {
-
-					}
-				}
-			},
-			output: {
-				kind: "lineXML",
-				xml: {
-					kind: "element",
-					nodeName: "p:wrapper",
-					attributes: {
-
+		'subfolder1': {
+			'kind': "lineTemplate",
+			'template': {
+				'kind': "templateCode",
+				'params': [
+					"a"
+				],
+				'type': "Number -> XMLP",
+				'let': {
+					'jsfun': {
+						'kind': "lineJavascript",
+						'type': "Number -> Number",
+						'f': function (a) {return a + 10 ;}
 					},
-					style: {
+					'result': {
+						'kind': "lineExpr",
+						'expr': "jsfun a",
+						'let': {
 
-					},
-					children: [
-						{
-							kind: "textElement",
-							nodeValue: "\n		"
-						},
-						{
-							kind: "textElement",
-							nodeValue: {
-								kind: "insert",
-								expr: "result"
-							}
 						}
-					]
+					}
+				},
+				'output': {
+					'kind': "lineXML",
+					'xml': {
+						'kind': "element",
+						'nodeName': "p:wrapper",
+						'attributes': {
+
+						},
+						'style': {
+
+						},
+						'children': [
+							{
+								'kind': "textElement",
+								'nodeValue': "\n		"
+							},
+							{
+								'kind': "textElement",
+								'nodeValue': {
+									'kind': "insert",
+									'expr': "result"
+								}
+							}
+						]
+					}
 				}
 			}
 		}
 	},
-	output: {
-		kind: "lineXML",
-		xml: {
-			kind: "element",
-			nodeName: "div",
-			attributes: {
+	'output': {
+		'kind': "lineXML",
+		'xml': {
+			'kind': "element",
+			'nodeName': "div",
+			'attributes': {
 
 			},
-			style: {
+			'style': {
 
 			},
-			children: [
+			'children': [
 				{
-					kind: "textElement",
-					nodeValue: "\n		Look at this: "
+					'kind': "textElement",
+					'nodeValue': "\n		Look at this: "
 				},
 				{
-					kind: "textElement",
-					nodeValue: {
-						kind: "insert",
-						expr: "variable"
+					'kind': "textElement",
+					'nodeValue': {
+						'kind': "insert",
+						'expr': "variable"
 					}
 				}
 			]

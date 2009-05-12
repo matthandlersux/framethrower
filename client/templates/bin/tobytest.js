@@ -237,6 +237,134 @@ var mainTemplate = {
 					}
 				}
 			}
+		},
+		'set': {
+			'kind': "lineTemplate",
+			'template': {
+				'kind': "templateCode",
+				'params': [
+
+				],
+				'type': "XMLP",
+				'let': {
+					'myset': {
+						'kind': "lineState",
+						'type': "Set Number"
+					},
+					'randomNumber': {
+						'kind': "lineJavascript",
+						'type': "t0 -> t1",
+						'f': function (n) {return Math.round (Math.random () * n) ;}
+					},
+					'addToSet': {
+						'kind': "lineAction",
+						'action': {
+							'kind': "action",
+							'params': [
+
+							],
+							'type': "Action",
+							'actions': [
+								{
+									'name': "r",
+									'action': {
+										'kind': "lineExpr",
+										'expr': "randomNumber 500",
+										'let': {
+
+										}
+									}
+								},
+								{
+									'action': {
+										'kind': "actionUpdate",
+										'target': "myset",
+										'actionType': "add",
+										'key': "r",
+										'val': undefined
+									}
+								}
+							]
+						}
+					}
+				},
+				'output': {
+					'kind': "lineXML",
+					'xml': {
+						'kind': "element",
+						'nodeName': "div",
+						'attributes': {
+
+						},
+						'style': {
+
+						},
+						'children': [
+							{
+								'kind': "element",
+								'nodeName': "div",
+								'attributes': {
+
+								},
+								'style': {
+
+								},
+								'children': [
+									{
+										'kind': "textElement",
+										'nodeValue': "The set: "
+									},
+									{
+										'kind': "textElement",
+										'nodeValue': {
+											'kind': "insert",
+											'expr': "myset"
+										}
+									}
+								]
+							},
+							{
+								'kind': "element",
+								'nodeName': "div",
+								'attributes': {
+
+								},
+								'style': {
+
+								},
+								'children': [
+									{
+										'kind': "on",
+										'event': "click",
+										'action': {
+											'kind': "action",
+											'params': [
+
+											],
+											'type': "Action",
+											'actions': [
+												{
+													'action': {
+														'kind': "lineExpr",
+														'expr': "addToSet",
+														'let': {
+
+														}
+													}
+												}
+											]
+										}
+									},
+									{
+										'kind': "textElement",
+										'nodeValue': "\n			Add a number to the set\n		"
+									}
+								]
+							}
+						]
+					}
+				}
+			}
 		}
 	},
 	'output': {
@@ -365,6 +493,38 @@ var mainTemplate = {
 								'output': {
 									'kind': "lineExpr",
 									'expr': "counter",
+									'let': {
+
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					'kind': "element",
+					'nodeName': "div",
+					'attributes': {
+
+					},
+					'style': {
+
+					},
+					'children': [
+						{
+							'kind': "call",
+							'templateCode': {
+								'kind': "templateCode",
+								'params': [
+
+								],
+								'type': "XMLP",
+								'let': {
+
+								},
+								'output': {
+									'kind': "lineExpr",
+									'expr': "set",
 									'let': {
 
 									}

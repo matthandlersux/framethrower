@@ -23,5 +23,9 @@ template () {
 			<f:call>counter</f:call>
 		</div>
 		
+		<div>
+			<f:call>set</f:call>
+		</div>
+		
 	</div>
 }
