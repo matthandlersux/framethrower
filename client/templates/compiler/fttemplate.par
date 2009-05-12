@@ -227,20 +227,32 @@
 		return output;
 	}
 
+	function toCamelCase(hyphenatedString) {
+		function cnvrt(string) {
+	        return string.substr(1, 1).toUpperCase();
+	    }
+		return hyphenatedString.replace(/\-./g, cnvrt);
+	}
+
 	function makeNode(openTag, xmlp) {
 		var attributes = openTag.attributes;
-		var style;
+		var style = {};
 		if (attributes.style !== undefined) {
-			style = attributes.style;	
-		} else {
-			style = {};
+			forEach(attributes.style, function(attribute, name) {
+				style[toCamelCase(name)] = attribute;
+			});
+			attributes.style = undefined;			
 		}
-		
-		attributes.style = undefined;
+
 		var attributeObject = {};
 		for (name in attributes) {
 			if(attributes[name] !== undefined) {
-				attributeObject[name] = attributes[name];
+				if(name.indexOf("style-") == 0) {
+					var styleAttName = name.substr(6);
+					style[toCamelCase(styleAttName)] = attributes[name];
+				} else {
+					attributeObject[name] = attributes[name];
+				}
 			}
 		}
 		
@@ -270,12 +282,6 @@
 			style: style,
 			children: xmlp
 		};
-	}
-
-	function makeAttribute (name, value) {
-		var a = {};
-		a[name] = value;
-		return a;
 	}
 
 	function makeTextElement (nodeVal) {
@@ -406,7 +412,7 @@
 	'>'
 	'\"'					QUOTE
 	'[\-\*\+\^\%\.\!\&\|\?]' JSSEP
-	'[A-Za-z0-9_\.\~]+'		IDENTIFIER
+	'[A-Za-z0-9_\.\~\-]+'		IDENTIFIER
 	;
 ##
 
@@ -642,12 +648,22 @@ STRING:
 	;
 	
 STYLE:
-	STYLE ';' STYLEATTRIBUTE							[* %% = push(%1, %3); *]
-	| STYLEATTRIBUTE									[* %% = [%1]; *]
-	|													[* %% = []; *]
+	STYLE ';' IDENTIFIER ':' STYLETEXT					[* %1[%3] = %5; %% = %1; *]
+	| STYLE ';' IDENTIFIER ':' INSERT						[* %1[%3] = %5; %% = %1; *]
+	| IDENTIFIER ':' STYLETEXT							[* var ret = {}; ret[%1] = %3; %% = ret; *]
+	| IDENTIFIER ':' INSERT								[* var ret = {}; ret[%1] = %3; %% = ret; *]
+	|													[* %% = {}; *]
 	;
 
-STYLEATTRIBUTE:
-	IDENTIFIER ':' TEXT									[* %% = makeAttribute(%1, %3); *]
+
+STYLETEXT:
+	IDENTIFIER
+	| ','
+	| '('
+	| ')'
+	| ':'
+	| '='
+	| '}'
+	| '{'
+	| STYLETEXT STYLETEXT								[* %% = "" + %1 + " " + %2; *]
 	;
-	

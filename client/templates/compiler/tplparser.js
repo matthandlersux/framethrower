@@ -245,20 +245,32 @@
 		return output;
 	}
 
+	function toCamelCase(hyphenatedString) {
+		function cnvrt(string) {
+	        return string.substr(1, 1).toUpperCase();
+	    }
+		return hyphenatedString.replace(/\-./g, cnvrt);
+	}
+
 	function makeNode(openTag, xmlp) {
 		var attributes = openTag.attributes;
-		var style;
+		var style = {};
 		if (attributes.style !== undefined) {
-			style = attributes.style;	
-		} else {
-			style = {};
+			forEach(attributes.style, function(attribute, name) {
+				style[toCamelCase(name)] = attribute;
+			});
+			attributes.style = undefined;			
 		}
-		
-		attributes.style = undefined;
+
 		var attributeObject = {};
 		for (name in attributes) {
 			if(attributes[name] !== undefined) {
-				attributeObject[name] = attributes[name];
+				if(name.indexOf("style-") == 0) {
+					var styleAttName = name.substr(6);
+					style[toCamelCase(styleAttName)] = attributes[name];
+				} else {
+					attributeObject[name] = attributes[name];
+				}
 			}
 		}
 		
@@ -288,12 +300,6 @@
 			style: style,
 			children: xmlp
 		};
-	}
-
-	function makeAttribute (name, value) {
-		var a = {};
-		a[name] = value;
-		return a;
 	}
 
 	function makeTextElement (nodeVal) {
@@ -430,7 +436,7 @@ switch( state )
 {
 	case 0:
 		if( ( info.src.charCodeAt( pos ) >= 9 && info.src.charCodeAt( pos ) <= 10 ) || info.src.charCodeAt( pos ) == 13 || info.src.charCodeAt( pos ) == 32 ) state = 1;
-		else if( info.src.charCodeAt( pos ) == 33 || ( info.src.charCodeAt( pos ) >= 37 && info.src.charCodeAt( pos ) <= 38 ) || ( info.src.charCodeAt( pos ) >= 42 && info.src.charCodeAt( pos ) <= 43 ) || info.src.charCodeAt( pos ) == 45 || info.src.charCodeAt( pos ) == 63 || info.src.charCodeAt( pos ) == 94 || info.src.charCodeAt( pos ) == 124 ) state = 2;
+		else if( info.src.charCodeAt( pos ) == 33 || ( info.src.charCodeAt( pos ) >= 37 && info.src.charCodeAt( pos ) <= 38 ) || ( info.src.charCodeAt( pos ) >= 42 && info.src.charCodeAt( pos ) <= 43 ) || info.src.charCodeAt( pos ) == 63 || info.src.charCodeAt( pos ) == 94 || info.src.charCodeAt( pos ) == 124 ) state = 2;
 		else if( info.src.charCodeAt( pos ) == 34 ) state = 3;
 		else if( info.src.charCodeAt( pos ) == 40 ) state = 4;
 		else if( info.src.charCodeAt( pos ) == 41 ) state = 5;
@@ -444,7 +450,7 @@ switch( state )
 		else if( info.src.charCodeAt( pos ) == 62 ) state = 13;
 		else if( info.src.charCodeAt( pos ) == 123 ) state = 14;
 		else if( info.src.charCodeAt( pos ) == 125 ) state = 15;
-		else if( info.src.charCodeAt( pos ) == 46 ) state = 30;
+		else if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) ) state = 30;
 		else if( info.src.charCodeAt( pos ) == 102 ) state = 31;
 		else if( info.src.charCodeAt( pos ) == 97 ) state = 70;
 		else if( info.src.charCodeAt( pos ) == 115 ) state = 85;
@@ -498,7 +504,7 @@ switch( state )
 		break;
 
 	case 8:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else state = -1;
 		match = 28;
 		match_pos = pos;
@@ -555,7 +561,7 @@ switch( state )
 		break;
 
 	case 17:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else state = -1;
 		match = 8;
 		match_pos = pos;
@@ -568,28 +574,28 @@ switch( state )
 		break;
 
 	case 19:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else state = -1;
 		match = 6;
 		match_pos = pos;
 		break;
 
 	case 20:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else state = -1;
 		match = 13;
 		match_pos = pos;
 		break;
 
 	case 21:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else state = -1;
 		match = 5;
 		match_pos = pos;
 		break;
 
 	case 22:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else state = -1;
 		match = 7;
 		match_pos = pos;
@@ -608,21 +614,21 @@ switch( state )
 		break;
 
 	case 25:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else state = -1;
 		match = 9;
 		match_pos = pos;
 		break;
 
 	case 26:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else state = -1;
 		match = 4;
 		match_pos = pos;
 		break;
 
 	case 27:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else state = -1;
 		match = 3;
 		match_pos = pos;
@@ -641,14 +647,14 @@ switch( state )
 		break;
 
 	case 30:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else state = -1;
 		match = 27;
 		match_pos = pos;
 		break;
 
 	case 31:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 116 ) || ( info.src.charCodeAt( pos ) >= 118 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 116 ) || ( info.src.charCodeAt( pos ) >= 118 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 58 ) state = 34;
 		else if( info.src.charCodeAt( pos ) == 117 ) state = 95;
 		else state = -1;
@@ -662,7 +668,7 @@ switch( state )
 		break;
 
 	case 33:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 99 ) || ( info.src.charCodeAt( pos ) >= 101 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 99 ) || ( info.src.charCodeAt( pos ) >= 101 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 100 ) state = 17;
 		else state = -1;
 		match = 28;
@@ -677,7 +683,7 @@ switch( state )
 		break;
 
 	case 35:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 101 ) state = 19;
 		else state = -1;
 		match = 28;
@@ -690,7 +696,7 @@ switch( state )
 		break;
 
 	case 37:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 101 ) state = 20;
 		else state = -1;
 		match = 28;
@@ -703,7 +709,7 @@ switch( state )
 		break;
 
 	case 39:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 109 ) || ( info.src.charCodeAt( pos ) >= 111 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 109 ) || ( info.src.charCodeAt( pos ) >= 111 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 110 ) state = 21;
 		else state = -1;
 		match = 28;
@@ -716,7 +722,7 @@ switch( state )
 		break;
 
 	case 41:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 101 ) state = 22;
 		else state = -1;
 		match = 28;
@@ -729,7 +735,7 @@ switch( state )
 		break;
 
 	case 43:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 101 ) state = 25;
 		else state = -1;
 		match = 28;
@@ -742,7 +748,7 @@ switch( state )
 		break;
 
 	case 45:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 109 ) || ( info.src.charCodeAt( pos ) >= 111 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 109 ) || ( info.src.charCodeAt( pos ) >= 111 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 110 ) state = 26;
 		else state = -1;
 		match = 28;
@@ -755,7 +761,7 @@ switch( state )
 		break;
 
 	case 47:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 101 ) state = 27;
 		else state = -1;
 		match = 28;
@@ -874,7 +880,7 @@ switch( state )
 		break;
 
 	case 70:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 98 ) || ( info.src.charCodeAt( pos ) >= 101 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 98 ) || ( info.src.charCodeAt( pos ) >= 101 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 100 ) state = 33;
 		else if( info.src.charCodeAt( pos ) == 99 ) state = 86;
 		else state = -1;
@@ -888,7 +894,7 @@ switch( state )
 		break;
 
 	case 72:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 116 ) state = 35;
 		else state = -1;
 		match = 28;
@@ -896,7 +902,7 @@ switch( state )
 		break;
 
 	case 73:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 107 ) || ( info.src.charCodeAt( pos ) >= 109 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 107 ) || ( info.src.charCodeAt( pos ) >= 109 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 108 ) state = 37;
 		else state = -1;
 		match = 28;
@@ -904,7 +910,7 @@ switch( state )
 		break;
 
 	case 74:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 110 ) || ( info.src.charCodeAt( pos ) >= 112 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 110 ) || ( info.src.charCodeAt( pos ) >= 112 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 111 ) state = 39;
 		else state = -1;
 		match = 28;
@@ -912,7 +918,7 @@ switch( state )
 		break;
 
 	case 75:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 116 ) state = 41;
 		else state = -1;
 		match = 28;
@@ -920,7 +926,7 @@ switch( state )
 		break;
 
 	case 76:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 117 ) || ( info.src.charCodeAt( pos ) >= 119 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 117 ) || ( info.src.charCodeAt( pos ) >= 119 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 118 ) state = 43;
 		else state = -1;
 		match = 28;
@@ -928,7 +934,7 @@ switch( state )
 		break;
 
 	case 77:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 110 ) || ( info.src.charCodeAt( pos ) >= 112 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 110 ) || ( info.src.charCodeAt( pos ) >= 112 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 111 ) state = 45;
 		else state = -1;
 		match = 28;
@@ -936,7 +942,7 @@ switch( state )
 		break;
 
 	case 78:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 116 ) state = 47;
 		else state = -1;
 		match = 28;
@@ -944,7 +950,7 @@ switch( state )
 		break;
 
 	case 79:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 98 && info.src.charCodeAt( pos ) <= 120 ) || info.src.charCodeAt( pos ) == 122 || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 98 && info.src.charCodeAt( pos ) <= 120 ) || info.src.charCodeAt( pos ) == 122 || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 97 ) state = 72;
 		else if( info.src.charCodeAt( pos ) == 121 ) state = 73;
 		else state = -1;
@@ -953,7 +959,7 @@ switch( state )
 		break;
 
 	case 80:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 104 ) || ( info.src.charCodeAt( pos ) >= 106 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 104 ) || ( info.src.charCodeAt( pos ) >= 106 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 105 ) state = 74;
 		else state = -1;
 		match = 28;
@@ -961,7 +967,7 @@ switch( state )
 		break;
 
 	case 81:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 98 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 98 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 97 ) state = 75;
 		else state = -1;
 		match = 28;
@@ -969,7 +975,7 @@ switch( state )
 		break;
 
 	case 82:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 110 ) || ( info.src.charCodeAt( pos ) >= 112 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 110 ) || ( info.src.charCodeAt( pos ) >= 112 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 111 ) state = 76;
 		else state = -1;
 		match = 28;
@@ -977,7 +983,7 @@ switch( state )
 		break;
 
 	case 83:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 104 ) || ( info.src.charCodeAt( pos ) >= 106 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 104 ) || ( info.src.charCodeAt( pos ) >= 106 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 105 ) state = 77;
 		else state = -1;
 		match = 28;
@@ -985,7 +991,7 @@ switch( state )
 		break;
 
 	case 84:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 98 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 98 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 97 ) state = 78;
 		else state = -1;
 		match = 28;
@@ -993,7 +999,7 @@ switch( state )
 		break;
 
 	case 85:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 116 ) state = 79;
 		else state = -1;
 		match = 28;
@@ -1001,7 +1007,7 @@ switch( state )
 		break;
 
 	case 86:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 116 ) state = 80;
 		else state = -1;
 		match = 28;
@@ -1009,7 +1015,7 @@ switch( state )
 		break;
 
 	case 87:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 101 ) state = 81;
 		else state = -1;
 		match = 28;
@@ -1017,7 +1023,7 @@ switch( state )
 		break;
 
 	case 88:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 108 ) || ( info.src.charCodeAt( pos ) >= 110 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 108 ) || ( info.src.charCodeAt( pos ) >= 110 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 109 ) state = 82;
 		else state = -1;
 		match = 28;
@@ -1025,7 +1031,7 @@ switch( state )
 		break;
 
 	case 89:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 115 ) || ( info.src.charCodeAt( pos ) >= 117 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 116 ) state = 83;
 		else state = -1;
 		match = 28;
@@ -1033,7 +1039,7 @@ switch( state )
 		break;
 
 	case 90:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 107 ) || ( info.src.charCodeAt( pos ) >= 109 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 107 ) || ( info.src.charCodeAt( pos ) >= 109 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 108 ) state = 84;
 		else state = -1;
 		match = 28;
@@ -1041,7 +1047,7 @@ switch( state )
 		break;
 
 	case 91:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 113 ) || ( info.src.charCodeAt( pos ) >= 115 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 113 ) || ( info.src.charCodeAt( pos ) >= 115 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 114 ) state = 87;
 		else state = -1;
 		match = 28;
@@ -1049,7 +1055,7 @@ switch( state )
 		break;
 
 	case 92:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 101 ) state = 88;
 		else state = -1;
 		match = 28;
@@ -1057,7 +1063,7 @@ switch( state )
 		break;
 
 	case 93:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 98 ) || ( info.src.charCodeAt( pos ) >= 100 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 98 ) || ( info.src.charCodeAt( pos ) >= 100 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 99 ) state = 89;
 		else state = -1;
 		match = 28;
@@ -1065,7 +1071,7 @@ switch( state )
 		break;
 
 	case 94:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 111 ) || ( info.src.charCodeAt( pos ) >= 113 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 111 ) || ( info.src.charCodeAt( pos ) >= 113 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 112 ) state = 90;
 		else state = -1;
 		match = 28;
@@ -1073,7 +1079,7 @@ switch( state )
 		break;
 
 	case 95:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 109 ) || ( info.src.charCodeAt( pos ) >= 111 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 109 ) || ( info.src.charCodeAt( pos ) >= 111 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 110 ) state = 93;
 		else state = -1;
 		match = 28;
@@ -1081,7 +1087,7 @@ switch( state )
 		break;
 
 	case 96:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 108 ) || ( info.src.charCodeAt( pos ) >= 110 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 108 ) || ( info.src.charCodeAt( pos ) >= 110 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 109 ) state = 94;
 		else state = -1;
 		match = 28;
@@ -1089,7 +1095,7 @@ switch( state )
 		break;
 
 	case 97:
-		if( info.src.charCodeAt( pos ) == 46 || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
+		if( ( info.src.charCodeAt( pos ) >= 45 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 57 ) || ( info.src.charCodeAt( pos ) >= 65 && info.src.charCodeAt( pos ) <= 90 ) || info.src.charCodeAt( pos ) == 95 || ( info.src.charCodeAt( pos ) >= 97 && info.src.charCodeAt( pos ) <= 100 ) || ( info.src.charCodeAt( pos ) >= 102 && info.src.charCodeAt( pos ) <= 122 ) || info.src.charCodeAt( pos ) == 126 ) state = 8;
 		else if( info.src.charCodeAt( pos ) == 101 ) state = 96;
 		else state = -1;
 		match = 28;
@@ -1259,10 +1265,20 @@ var pop_tab = new Array(
 	new Array( 52/* STRINGKEEPQUOTES */, 3 ),
 	new Array( 50/* STRINGESCAPEQUOTES */, 3 ),
 	new Array( 69/* STRING */, 3 ),
+	new Array( 67/* STYLE */, 5 ),
+	new Array( 67/* STYLE */, 5 ),
 	new Array( 67/* STYLE */, 3 ),
-	new Array( 67/* STYLE */, 1 ),
+	new Array( 67/* STYLE */, 3 ),
 	new Array( 67/* STYLE */, 0 ),
-	new Array( 70/* STYLEATTRIBUTE */, 3 )
+	new Array( 70/* STYLETEXT */, 1 ),
+	new Array( 70/* STYLETEXT */, 1 ),
+	new Array( 70/* STYLETEXT */, 1 ),
+	new Array( 70/* STYLETEXT */, 1 ),
+	new Array( 70/* STYLETEXT */, 1 ),
+	new Array( 70/* STYLETEXT */, 1 ),
+	new Array( 70/* STYLETEXT */, 1 ),
+	new Array( 70/* STYLETEXT */, 1 ),
+	new Array( 70/* STYLETEXT */, 2 )
 );
 
 /* Action-Table */
@@ -1442,55 +1458,68 @@ var act_tab = new Array(
 	/* State 172 */ new Array( 23/* "/" */,-98 , 25/* ">" */,-98 , 13/* "style" */,-98 , 28/* "IDENTIFIER" */,-98 ),
 	/* State 173 */ new Array( 23/* "/" */,-100 , 25/* ">" */,-100 , 13/* "style" */,-100 , 28/* "IDENTIFIER" */,-100 ),
 	/* State 174 */ new Array( 14/* "{" */,189 , 28/* "IDENTIFIER" */,52 , 18/* "," */,53 , 16/* "(" */,54 , 17/* ")" */,55 , 20/* ":" */,56 , 19/* ";" */,57 , 21/* "=" */,58 , 15/* "}" */,59 ),
-	/* State 175 */ new Array( 28/* "IDENTIFIER" */,192 , 26/* "QUOTE" */,-107 , 19/* ";" */,-107 ),
+	/* State 175 */ new Array( 28/* "IDENTIFIER" */,191 , 26/* "QUOTE" */,-109 , 19/* ";" */,-109 ),
 	/* State 176 */ new Array( 28/* "IDENTIFIER" */,150 , 16/* "(" */,152 , 14/* "{" */,153 , 18/* "," */,154 , 21/* "=" */,155 , 19/* ";" */,156 , 20/* ":" */,157 , 24/* "<" */,158 , 25/* ">" */,159 , 23/* "/" */,160 , 27/* "JSSEP" */,161 , 26/* "QUOTE" */,162 , 15/* "}" */,-62 , 17/* ")" */,-62 ),
 	/* State 177 */ new Array( 18/* "," */,-48 , 15/* "}" */,-48 , 22/* "</" */,-48 ),
-	/* State 178 */ new Array( 17/* ")" */,193 , 28/* "IDENTIFIER" */,150 , 16/* "(" */,152 , 14/* "{" */,153 , 18/* "," */,154 , 21/* "=" */,155 , 19/* ";" */,156 , 20/* ":" */,157 , 24/* "<" */,158 , 25/* ">" */,159 , 23/* "/" */,160 , 27/* "JSSEP" */,161 , 26/* "QUOTE" */,162 ),
-	/* State 179 */ new Array( 15/* "}" */,194 , 28/* "IDENTIFIER" */,150 , 16/* "(" */,152 , 14/* "{" */,153 , 18/* "," */,154 , 21/* "=" */,155 , 19/* ";" */,156 , 20/* ":" */,157 , 24/* "<" */,158 , 25/* ">" */,159 , 23/* "/" */,160 , 27/* "JSSEP" */,161 , 26/* "QUOTE" */,162 ),
-	/* State 180 */ new Array( 26/* "QUOTE" */,195 , 28/* "IDENTIFIER" */,52 , 18/* "," */,53 , 16/* "(" */,54 , 17/* ")" */,55 , 20/* ":" */,56 , 19/* ";" */,57 , 21/* "=" */,58 , 15/* "}" */,59 , 14/* "{" */,60 ),
-	/* State 181 */ new Array( 28/* "IDENTIFIER" */,105 , 14/* "{" */,196 ),
-	/* State 182 */ new Array( 15/* "}" */,197 , 18/* "," */,-16 ),
-	/* State 183 */ new Array( 17/* ")" */,198 ),
-	/* State 184 */ new Array( 28/* "IDENTIFIER" */,200 , 15/* "}" */,-30 , 18/* "," */,-30 ),
-	/* State 185 */ new Array( 18/* "," */,201 , 17/* ")" */,202 , 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
-	/* State 186 */ new Array( 17/* ")" */,203 , 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
-	/* State 187 */ new Array( 26/* "QUOTE" */,204 , 28/* "IDENTIFIER" */,52 , 18/* "," */,53 , 16/* "(" */,54 , 17/* ")" */,55 , 20/* ":" */,56 , 19/* ";" */,57 , 21/* "=" */,58 , 15/* "}" */,59 , 14/* "{" */,60 ),
-	/* State 188 */ new Array( 26/* "QUOTE" */,205 ),
+	/* State 178 */ new Array( 17/* ")" */,192 , 28/* "IDENTIFIER" */,150 , 16/* "(" */,152 , 14/* "{" */,153 , 18/* "," */,154 , 21/* "=" */,155 , 19/* ";" */,156 , 20/* ":" */,157 , 24/* "<" */,158 , 25/* ">" */,159 , 23/* "/" */,160 , 27/* "JSSEP" */,161 , 26/* "QUOTE" */,162 ),
+	/* State 179 */ new Array( 15/* "}" */,193 , 28/* "IDENTIFIER" */,150 , 16/* "(" */,152 , 14/* "{" */,153 , 18/* "," */,154 , 21/* "=" */,155 , 19/* ";" */,156 , 20/* ":" */,157 , 24/* "<" */,158 , 25/* ">" */,159 , 23/* "/" */,160 , 27/* "JSSEP" */,161 , 26/* "QUOTE" */,162 ),
+	/* State 180 */ new Array( 26/* "QUOTE" */,194 , 28/* "IDENTIFIER" */,52 , 18/* "," */,53 , 16/* "(" */,54 , 17/* ")" */,55 , 20/* ":" */,56 , 19/* ";" */,57 , 21/* "=" */,58 , 15/* "}" */,59 , 14/* "{" */,60 ),
+	/* State 181 */ new Array( 28/* "IDENTIFIER" */,105 , 14/* "{" */,195 ),
+	/* State 182 */ new Array( 15/* "}" */,196 , 18/* "," */,-16 ),
+	/* State 183 */ new Array( 17/* ")" */,197 ),
+	/* State 184 */ new Array( 28/* "IDENTIFIER" */,199 , 15/* "}" */,-30 , 18/* "," */,-30 ),
+	/* State 185 */ new Array( 18/* "," */,200 , 17/* ")" */,201 , 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
+	/* State 186 */ new Array( 17/* ")" */,202 , 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
+	/* State 187 */ new Array( 26/* "QUOTE" */,203 , 28/* "IDENTIFIER" */,52 , 18/* "," */,53 , 16/* "(" */,54 , 17/* ")" */,55 , 20/* ":" */,56 , 19/* ";" */,57 , 21/* "=" */,58 , 15/* "}" */,59 , 14/* "{" */,60 ),
+	/* State 188 */ new Array( 26/* "QUOTE" */,204 ),
 	/* State 189 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 , 18/* "," */,-84 , 17/* ")" */,-84 , 20/* ":" */,-84 , 19/* ";" */,-84 , 21/* "=" */,-84 , 15/* "}" */,-84 , 14/* "{" */,-84 ),
-	/* State 190 */ new Array( 19/* ";" */,207 , 26/* "QUOTE" */,208 ),
-	/* State 191 */ new Array( 26/* "QUOTE" */,-106 , 19/* ";" */,-106 ),
-	/* State 192 */ new Array( 20/* ":" */,209 ),
-	/* State 193 */ new Array( 15/* "}" */,-52 , 28/* "IDENTIFIER" */,-52 , 16/* "(" */,-52 , 14/* "{" */,-52 , 18/* "," */,-52 , 21/* "=" */,-52 , 19/* ";" */,-52 , 20/* ":" */,-52 , 24/* "<" */,-52 , 25/* ">" */,-52 , 23/* "/" */,-52 , 27/* "JSSEP" */,-52 , 26/* "QUOTE" */,-52 , 17/* ")" */,-52 ),
-	/* State 194 */ new Array( 15/* "}" */,-53 , 28/* "IDENTIFIER" */,-53 , 16/* "(" */,-53 , 14/* "{" */,-53 , 18/* "," */,-53 , 21/* "=" */,-53 , 19/* ";" */,-53 , 20/* ":" */,-53 , 24/* "<" */,-53 , 25/* ">" */,-53 , 23/* "/" */,-53 , 27/* "JSSEP" */,-53 , 26/* "QUOTE" */,-53 , 17/* ")" */,-53 ),
-	/* State 195 */ new Array( 15/* "}" */,-102 , 28/* "IDENTIFIER" */,-102 , 16/* "(" */,-102 , 14/* "{" */,-102 , 18/* "," */,-102 , 21/* "=" */,-102 , 19/* ";" */,-102 , 20/* ":" */,-102 , 24/* "<" */,-102 , 25/* ">" */,-102 , 23/* "/" */,-102 , 27/* "JSSEP" */,-102 , 26/* "QUOTE" */,-102 , 17/* ")" */,-102 ),
-	/* State 196 */ new Array( 28/* "IDENTIFIER" */,150 , 16/* "(" */,152 , 14/* "{" */,153 , 18/* "," */,154 , 21/* "=" */,155 , 19/* ";" */,156 , 20/* ":" */,157 , 24/* "<" */,158 , 25/* ">" */,159 , 23/* "/" */,160 , 27/* "JSSEP" */,161 , 26/* "QUOTE" */,162 , 15/* "}" */,-63 ),
-	/* State 197 */ new Array( 18/* "," */,-12 , 15/* "}" */,-12 , 22/* "</" */,-12 ),
-	/* State 198 */ new Array( 22/* "</" */,-26 , 18/* "," */,-26 , 15/* "}" */,-26 ),
-	/* State 199 */ new Array( 18/* "," */,211 , 15/* "}" */,212 ),
-	/* State 200 */ new Array( 20/* ":" */,213 ),
-	/* State 201 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
-	/* State 202 */ new Array( 22/* "</" */,-31 , 18/* "," */,-31 , 15/* "}" */,-31 ),
-	/* State 203 */ new Array( 22/* "</" */,-33 , 18/* "," */,-33 , 15/* "}" */,-33 ),
-	/* State 204 */ new Array( 23/* "/" */,-104 , 25/* ">" */,-104 , 13/* "style" */,-104 , 28/* "IDENTIFIER" */,-104 ),
-	/* State 205 */ new Array( 23/* "/" */,-101 , 25/* ">" */,-101 , 13/* "style" */,-101 , 28/* "IDENTIFIER" */,-101 ),
-	/* State 206 */ new Array( 15/* "}" */,215 , 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
-	/* State 207 */ new Array( 28/* "IDENTIFIER" */,192 ),
-	/* State 208 */ new Array( 23/* "/" */,-97 , 25/* ">" */,-97 , 13/* "style" */,-97 , 28/* "IDENTIFIER" */,-97 ),
-	/* State 209 */ new Array( 28/* "IDENTIFIER" */,52 , 18/* "," */,53 , 16/* "(" */,54 , 17/* ")" */,55 , 20/* ":" */,56 , 19/* ";" */,57 , 21/* "=" */,58 , 15/* "}" */,59 , 14/* "{" */,60 ),
-	/* State 210 */ new Array( 15/* "}" */,218 , 28/* "IDENTIFIER" */,150 , 16/* "(" */,152 , 14/* "{" */,153 , 18/* "," */,154 , 21/* "=" */,155 , 19/* ";" */,156 , 20/* ":" */,157 , 24/* "<" */,158 , 25/* ">" */,159 , 23/* "/" */,160 , 27/* "JSSEP" */,161 , 26/* "QUOTE" */,162 ),
-	/* State 211 */ new Array( 28/* "IDENTIFIER" */,219 ),
-	/* State 212 */ new Array( 17/* ")" */,-27 ),
-	/* State 213 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
-	/* State 214 */ new Array( 17/* ")" */,221 , 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
-	/* State 215 */ new Array( 26/* "QUOTE" */,-75 ),
-	/* State 216 */ new Array( 26/* "QUOTE" */,-105 , 19/* ";" */,-105 ),
-	/* State 217 */ new Array( 28/* "IDENTIFIER" */,52 , 18/* "," */,53 , 16/* "(" */,54 , 17/* ")" */,55 , 20/* ":" */,56 , 19/* ";" */,57 , 21/* "=" */,58 , 15/* "}" */,59 , 14/* "{" */,60 , 26/* "QUOTE" */,-108 ),
-	/* State 218 */ new Array( 18/* "," */,-49 , 15/* "}" */,-49 , 22/* "</" */,-49 ),
-	/* State 219 */ new Array( 20/* ":" */,222 ),
-	/* State 220 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 , 15/* "}" */,-29 , 18/* "," */,-29 ),
-	/* State 221 */ new Array( 22/* "</" */,-32 , 18/* "," */,-32 , 15/* "}" */,-32 ),
-	/* State 222 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
-	/* State 223 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 , 15/* "}" */,-28 , 18/* "," */,-28 )
+	/* State 190 */ new Array( 19/* ";" */,206 , 26/* "QUOTE" */,207 ),
+	/* State 191 */ new Array( 20/* ":" */,208 ),
+	/* State 192 */ new Array( 15/* "}" */,-52 , 28/* "IDENTIFIER" */,-52 , 16/* "(" */,-52 , 14/* "{" */,-52 , 18/* "," */,-52 , 21/* "=" */,-52 , 19/* ";" */,-52 , 20/* ":" */,-52 , 24/* "<" */,-52 , 25/* ">" */,-52 , 23/* "/" */,-52 , 27/* "JSSEP" */,-52 , 26/* "QUOTE" */,-52 , 17/* ")" */,-52 ),
+	/* State 193 */ new Array( 15/* "}" */,-53 , 28/* "IDENTIFIER" */,-53 , 16/* "(" */,-53 , 14/* "{" */,-53 , 18/* "," */,-53 , 21/* "=" */,-53 , 19/* ";" */,-53 , 20/* ":" */,-53 , 24/* "<" */,-53 , 25/* ">" */,-53 , 23/* "/" */,-53 , 27/* "JSSEP" */,-53 , 26/* "QUOTE" */,-53 , 17/* ")" */,-53 ),
+	/* State 194 */ new Array( 15/* "}" */,-102 , 28/* "IDENTIFIER" */,-102 , 16/* "(" */,-102 , 14/* "{" */,-102 , 18/* "," */,-102 , 21/* "=" */,-102 , 19/* ";" */,-102 , 20/* ":" */,-102 , 24/* "<" */,-102 , 25/* ">" */,-102 , 23/* "/" */,-102 , 27/* "JSSEP" */,-102 , 26/* "QUOTE" */,-102 , 17/* ")" */,-102 ),
+	/* State 195 */ new Array( 28/* "IDENTIFIER" */,150 , 16/* "(" */,152 , 14/* "{" */,153 , 18/* "," */,154 , 21/* "=" */,155 , 19/* ";" */,156 , 20/* ":" */,157 , 24/* "<" */,158 , 25/* ">" */,159 , 23/* "/" */,160 , 27/* "JSSEP" */,161 , 26/* "QUOTE" */,162 , 15/* "}" */,-63 ),
+	/* State 196 */ new Array( 18/* "," */,-12 , 15/* "}" */,-12 , 22/* "</" */,-12 ),
+	/* State 197 */ new Array( 22/* "</" */,-26 , 18/* "," */,-26 , 15/* "}" */,-26 ),
+	/* State 198 */ new Array( 18/* "," */,210 , 15/* "}" */,211 ),
+	/* State 199 */ new Array( 20/* ":" */,212 ),
+	/* State 200 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
+	/* State 201 */ new Array( 22/* "</" */,-31 , 18/* "," */,-31 , 15/* "}" */,-31 ),
+	/* State 202 */ new Array( 22/* "</" */,-33 , 18/* "," */,-33 , 15/* "}" */,-33 ),
+	/* State 203 */ new Array( 23/* "/" */,-104 , 25/* ">" */,-104 , 13/* "style" */,-104 , 28/* "IDENTIFIER" */,-104 ),
+	/* State 204 */ new Array( 23/* "/" */,-101 , 25/* ">" */,-101 , 13/* "style" */,-101 , 28/* "IDENTIFIER" */,-101 ),
+	/* State 205 */ new Array( 15/* "}" */,214 , 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
+	/* State 206 */ new Array( 28/* "IDENTIFIER" */,215 ),
+	/* State 207 */ new Array( 23/* "/" */,-97 , 25/* ">" */,-97 , 13/* "style" */,-97 , 28/* "IDENTIFIER" */,-97 ),
+	/* State 208 */ new Array( 14/* "{" */,218 , 28/* "IDENTIFIER" */,219 , 18/* "," */,220 , 16/* "(" */,221 , 17/* ")" */,222 , 20/* ":" */,223 , 21/* "=" */,224 , 15/* "}" */,225 ),
+	/* State 209 */ new Array( 15/* "}" */,226 , 28/* "IDENTIFIER" */,150 , 16/* "(" */,152 , 14/* "{" */,153 , 18/* "," */,154 , 21/* "=" */,155 , 19/* ";" */,156 , 20/* ":" */,157 , 24/* "<" */,158 , 25/* ">" */,159 , 23/* "/" */,160 , 27/* "JSSEP" */,161 , 26/* "QUOTE" */,162 ),
+	/* State 210 */ new Array( 28/* "IDENTIFIER" */,227 ),
+	/* State 211 */ new Array( 17/* ")" */,-27 ),
+	/* State 212 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
+	/* State 213 */ new Array( 17/* ")" */,229 , 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
+	/* State 214 */ new Array( 26/* "QUOTE" */,-75 , 19/* ";" */,-75 ),
+	/* State 215 */ new Array( 20/* ":" */,230 ),
+	/* State 216 */ new Array( 28/* "IDENTIFIER" */,219 , 18/* "," */,220 , 16/* "(" */,221 , 17/* ")" */,222 , 20/* ":" */,223 , 21/* "=" */,224 , 15/* "}" */,225 , 14/* "{" */,232 , 26/* "QUOTE" */,-107 , 19/* ";" */,-107 ),
+	/* State 217 */ new Array( 26/* "QUOTE" */,-108 , 19/* ";" */,-108 ),
+	/* State 218 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 , 19/* ";" */,-117 , 18/* "," */,-117 , 17/* ")" */,-117 , 20/* ":" */,-117 , 21/* "=" */,-117 , 15/* "}" */,-117 , 14/* "{" */,-117 ),
+	/* State 219 */ new Array( 26/* "QUOTE" */,-110 , 19/* ";" */,-110 , 28/* "IDENTIFIER" */,-110 , 18/* "," */,-110 , 16/* "(" */,-110 , 17/* ")" */,-110 , 20/* ":" */,-110 , 21/* "=" */,-110 , 15/* "}" */,-110 , 14/* "{" */,-110 ),
+	/* State 220 */ new Array( 26/* "QUOTE" */,-111 , 19/* ";" */,-111 , 28/* "IDENTIFIER" */,-111 , 18/* "," */,-111 , 16/* "(" */,-111 , 17/* ")" */,-111 , 20/* ":" */,-111 , 21/* "=" */,-111 , 15/* "}" */,-111 , 14/* "{" */,-111 ),
+	/* State 221 */ new Array( 26/* "QUOTE" */,-112 , 19/* ";" */,-112 , 28/* "IDENTIFIER" */,-112 , 18/* "," */,-112 , 16/* "(" */,-112 , 17/* ")" */,-112 , 20/* ":" */,-112 , 21/* "=" */,-112 , 15/* "}" */,-112 , 14/* "{" */,-112 ),
+	/* State 222 */ new Array( 26/* "QUOTE" */,-113 , 19/* ";" */,-113 , 28/* "IDENTIFIER" */,-113 , 18/* "," */,-113 , 16/* "(" */,-113 , 17/* ")" */,-113 , 20/* ":" */,-113 , 21/* "=" */,-113 , 15/* "}" */,-113 , 14/* "{" */,-113 ),
+	/* State 223 */ new Array( 26/* "QUOTE" */,-114 , 19/* ";" */,-114 , 28/* "IDENTIFIER" */,-114 , 18/* "," */,-114 , 16/* "(" */,-114 , 17/* ")" */,-114 , 20/* ":" */,-114 , 21/* "=" */,-114 , 15/* "}" */,-114 , 14/* "{" */,-114 ),
+	/* State 224 */ new Array( 26/* "QUOTE" */,-115 , 19/* ";" */,-115 , 28/* "IDENTIFIER" */,-115 , 18/* "," */,-115 , 16/* "(" */,-115 , 17/* ")" */,-115 , 20/* ":" */,-115 , 21/* "=" */,-115 , 15/* "}" */,-115 , 14/* "{" */,-115 ),
+	/* State 225 */ new Array( 26/* "QUOTE" */,-116 , 19/* ";" */,-116 , 28/* "IDENTIFIER" */,-116 , 18/* "," */,-116 , 16/* "(" */,-116 , 17/* ")" */,-116 , 20/* ":" */,-116 , 21/* "=" */,-116 , 15/* "}" */,-116 , 14/* "{" */,-116 ),
+	/* State 226 */ new Array( 18/* "," */,-49 , 15/* "}" */,-49 , 22/* "</" */,-49 ),
+	/* State 227 */ new Array( 20/* ":" */,233 ),
+	/* State 228 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 , 15/* "}" */,-29 , 18/* "," */,-29 ),
+	/* State 229 */ new Array( 22/* "</" */,-32 , 18/* "," */,-32 , 15/* "}" */,-32 ),
+	/* State 230 */ new Array( 14/* "{" */,218 , 28/* "IDENTIFIER" */,219 , 18/* "," */,220 , 16/* "(" */,221 , 17/* ")" */,222 , 20/* ":" */,223 , 21/* "=" */,224 , 15/* "}" */,225 ),
+	/* State 231 */ new Array( 28/* "IDENTIFIER" */,219 , 18/* "," */,220 , 16/* "(" */,221 , 17/* ")" */,222 , 20/* ":" */,223 , 21/* "=" */,224 , 15/* "}" */,225 , 14/* "{" */,232 , 26/* "QUOTE" */,-118 , 19/* ";" */,-118 ),
+	/* State 232 */ new Array( 26/* "QUOTE" */,-117 , 19/* ";" */,-117 , 28/* "IDENTIFIER" */,-117 , 18/* "," */,-117 , 16/* "(" */,-117 , 17/* ")" */,-117 , 20/* ":" */,-117 , 21/* "=" */,-117 , 15/* "}" */,-117 , 14/* "{" */,-117 ),
+	/* State 233 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 ),
+	/* State 234 */ new Array( 28/* "IDENTIFIER" */,219 , 18/* "," */,220 , 16/* "(" */,221 , 17/* ")" */,222 , 20/* ":" */,223 , 21/* "=" */,224 , 15/* "}" */,225 , 14/* "{" */,232 , 26/* "QUOTE" */,-105 , 19/* ";" */,-105 ),
+	/* State 235 */ new Array( 26/* "QUOTE" */,-106 , 19/* ";" */,-106 ),
+	/* State 236 */ new Array( 28/* "IDENTIFIER" */,24 , 16/* "(" */,26 , 26/* "QUOTE" */,35 , 15/* "}" */,-28 , 18/* "," */,-28 )
 );
 
 /* Goto-Table */
@@ -1670,7 +1699,7 @@ var goto_tab = new Array(
 	/* State 172 */ new Array(  ),
 	/* State 173 */ new Array(  ),
 	/* State 174 */ new Array( 64/* TEXT */,187 , 63/* INSERT */,188 ),
-	/* State 175 */ new Array( 67/* STYLE */,190 , 70/* STYLEATTRIBUTE */,191 ),
+	/* State 175 */ new Array( 67/* STYLE */,190 ),
 	/* State 176 */ new Array( 51/* JS */,176 , 52/* STRINGKEEPQUOTES */,151 ),
 	/* State 177 */ new Array(  ),
 	/* State 178 */ new Array( 51/* JS */,176 , 52/* STRINGKEEPQUOTES */,151 ),
@@ -1679,46 +1708,59 @@ var goto_tab = new Array(
 	/* State 181 */ new Array(  ),
 	/* State 182 */ new Array(  ),
 	/* State 183 */ new Array(  ),
-	/* State 184 */ new Array( 49/* PROPLIST */,199 ),
+	/* State 184 */ new Array( 49/* PROPLIST */,198 ),
 	/* State 185 */ new Array( 44/* EXPR */,40 , 50/* STRINGESCAPEQUOTES */,25 ),
 	/* State 186 */ new Array( 44/* EXPR */,40 , 50/* STRINGESCAPEQUOTES */,25 ),
 	/* State 187 */ new Array( 64/* TEXT */,98 ),
 	/* State 188 */ new Array(  ),
-	/* State 189 */ new Array( 44/* EXPR */,206 , 50/* STRINGESCAPEQUOTES */,25 ),
+	/* State 189 */ new Array( 44/* EXPR */,205 , 50/* STRINGESCAPEQUOTES */,25 ),
 	/* State 190 */ new Array(  ),
 	/* State 191 */ new Array(  ),
 	/* State 192 */ new Array(  ),
 	/* State 193 */ new Array(  ),
 	/* State 194 */ new Array(  ),
-	/* State 195 */ new Array(  ),
-	/* State 196 */ new Array( 51/* JS */,210 , 52/* STRINGKEEPQUOTES */,151 ),
+	/* State 195 */ new Array( 51/* JS */,209 , 52/* STRINGKEEPQUOTES */,151 ),
+	/* State 196 */ new Array(  ),
 	/* State 197 */ new Array(  ),
 	/* State 198 */ new Array(  ),
 	/* State 199 */ new Array(  ),
-	/* State 200 */ new Array(  ),
-	/* State 201 */ new Array( 44/* EXPR */,214 , 50/* STRINGESCAPEQUOTES */,25 ),
+	/* State 200 */ new Array( 44/* EXPR */,213 , 50/* STRINGESCAPEQUOTES */,25 ),
+	/* State 201 */ new Array(  ),
 	/* State 202 */ new Array(  ),
 	/* State 203 */ new Array(  ),
 	/* State 204 */ new Array(  ),
-	/* State 205 */ new Array(  ),
-	/* State 206 */ new Array( 44/* EXPR */,40 , 50/* STRINGESCAPEQUOTES */,25 ),
-	/* State 207 */ new Array( 70/* STYLEATTRIBUTE */,216 ),
-	/* State 208 */ new Array(  ),
-	/* State 209 */ new Array( 64/* TEXT */,217 ),
-	/* State 210 */ new Array( 51/* JS */,176 , 52/* STRINGKEEPQUOTES */,151 ),
+	/* State 205 */ new Array( 44/* EXPR */,40 , 50/* STRINGESCAPEQUOTES */,25 ),
+	/* State 206 */ new Array(  ),
+	/* State 207 */ new Array(  ),
+	/* State 208 */ new Array( 70/* STYLETEXT */,216 , 63/* INSERT */,217 ),
+	/* State 209 */ new Array( 51/* JS */,176 , 52/* STRINGKEEPQUOTES */,151 ),
+	/* State 210 */ new Array(  ),
 	/* State 211 */ new Array(  ),
-	/* State 212 */ new Array(  ),
-	/* State 213 */ new Array( 44/* EXPR */,220 , 50/* STRINGESCAPEQUOTES */,25 ),
-	/* State 214 */ new Array( 44/* EXPR */,40 , 50/* STRINGESCAPEQUOTES */,25 ),
+	/* State 212 */ new Array( 44/* EXPR */,228 , 50/* STRINGESCAPEQUOTES */,25 ),
+	/* State 213 */ new Array( 44/* EXPR */,40 , 50/* STRINGESCAPEQUOTES */,25 ),
+	/* State 214 */ new Array(  ),
 	/* State 215 */ new Array(  ),
-	/* State 216 */ new Array(  ),
-	/* State 217 */ new Array( 64/* TEXT */,98 ),
-	/* State 218 */ new Array(  ),
+	/* State 216 */ new Array( 70/* STYLETEXT */,231 ),
+	/* State 217 */ new Array(  ),
+	/* State 218 */ new Array( 44/* EXPR */,205 , 50/* STRINGESCAPEQUOTES */,25 ),
 	/* State 219 */ new Array(  ),
-	/* State 220 */ new Array( 44/* EXPR */,40 , 50/* STRINGESCAPEQUOTES */,25 ),
+	/* State 220 */ new Array(  ),
 	/* State 221 */ new Array(  ),
-	/* State 222 */ new Array( 44/* EXPR */,223 , 50/* STRINGESCAPEQUOTES */,25 ),
-	/* State 223 */ new Array( 44/* EXPR */,40 , 50/* STRINGESCAPEQUOTES */,25 )
+	/* State 222 */ new Array(  ),
+	/* State 223 */ new Array(  ),
+	/* State 224 */ new Array(  ),
+	/* State 225 */ new Array(  ),
+	/* State 226 */ new Array(  ),
+	/* State 227 */ new Array(  ),
+	/* State 228 */ new Array( 44/* EXPR */,40 , 50/* STRINGESCAPEQUOTES */,25 ),
+	/* State 229 */ new Array(  ),
+	/* State 230 */ new Array( 70/* STYLETEXT */,234 , 63/* INSERT */,235 ),
+	/* State 231 */ new Array( 70/* STYLETEXT */,231 ),
+	/* State 232 */ new Array(  ),
+	/* State 233 */ new Array( 44/* EXPR */,236 , 50/* STRINGESCAPEQUOTES */,25 ),
+	/* State 234 */ new Array( 70/* STYLETEXT */,231 ),
+	/* State 235 */ new Array(  ),
+	/* State 236 */ new Array( 44/* EXPR */,40 , 50/* STRINGESCAPEQUOTES */,25 )
 );
 
 
@@ -1795,7 +1837,7 @@ var labels = new Array(
 	"STYLE" /* Non-terminal symbol */,
 	"ATTRIBUTE" /* Non-terminal symbol */,
 	"STRING" /* Non-terminal symbol */,
-	"STYLEATTRIBUTE" /* Non-terminal symbol */,
+	"STYLETEXT" /* Non-terminal symbol */,
 	"$" /* Terminal symbol */
 );
 
@@ -1817,7 +1859,7 @@ var labels = new Array(
 			
 	while( true )
 	{
-		act = 225;
+		act = 238;
 		for( var i = 0; i < act_tab[sstack[sstack.length-1]].length; i+=2 )
 		{
 			if( act_tab[sstack[sstack.length-1]][i] == la )
@@ -1849,7 +1891,7 @@ var labels = new Array(
 		
 			
 		//Panic-mode: Try recovery when parse-error occurs!
-		if( act == 225 )
+		if( act == 238 )
 		{
 			if( _dbg_withtrace )
 				__dbg_print( "Error detected: There is no reduce or shift on the symbol " + labels[la] );
@@ -1869,7 +1911,7 @@ var labels = new Array(
 				rvstack[i] = vstack[i];
 			}
 			
-			while( act == 225 && la != 71 )
+			while( act == 238 && la != 71 )
 			{
 				if( _dbg_withtrace )
 					__dbg_print( "\tError recovery\n" +
@@ -1878,7 +1920,7 @@ var labels = new Array(
 				if( la == -1 )
 					info.offset++;
 					
-				while( act == 225 && sstack.length > 0 )
+				while( act == 238 && sstack.length > 0 )
 				{
 					sstack.pop();
 					vstack.pop();
@@ -1886,7 +1928,7 @@ var labels = new Array(
 					if( sstack.length == 0 )
 						break;
 						
-					act = 225;
+					act = 238;
 					for( var i = 0; i < act_tab[sstack[sstack.length-1]].length; i+=2 )
 					{
 						if( act_tab[sstack[sstack.length-1]][i] == la )
@@ -1897,7 +1939,7 @@ var labels = new Array(
 					}
 				}
 				
-				if( act != 225 )
+				if( act != 238 )
 					break;
 				
 				for( var i = 0; i < rsstack.length; i++ )
@@ -1909,7 +1951,7 @@ var labels = new Array(
 				la = __lex( info );
 			}
 			
-			if( act == 225 )
+			if( act == 238 )
 			{
 				if( _dbg_withtrace )
 					__dbg_print( "\tError recovery failed, terminating parse process..." );
@@ -1922,7 +1964,7 @@ var labels = new Array(
 		}
 		
 		/*
-		if( act == 225 )
+		if( act == 238 )
 			break;
 		*/
 		
@@ -2494,22 +2536,72 @@ switch( act )
 	break;
 	case 105:
 	{
-		 rval = push(vstack[ vstack.length - 3 ], vstack[ vstack.length - 1 ]); 
+		 vstack[ vstack.length - 5 ][vstack[ vstack.length - 3 ]] = vstack[ vstack.length - 1 ]; rval = vstack[ vstack.length - 5 ]; 
 	}
 	break;
 	case 106:
 	{
-		 rval = [vstack[ vstack.length - 1 ]]; 
+		 vstack[ vstack.length - 5 ][vstack[ vstack.length - 3 ]] = vstack[ vstack.length - 1 ]; rval = vstack[ vstack.length - 5 ]; 
 	}
 	break;
 	case 107:
 	{
-		 rval = []; 
+		 var ret = {}; ret[vstack[ vstack.length - 3 ]] = vstack[ vstack.length - 1 ]; rval = ret; 
 	}
 	break;
 	case 108:
 	{
-		 rval = makeAttribute(vstack[ vstack.length - 3 ], vstack[ vstack.length - 1 ]); 
+		 var ret = {}; ret[vstack[ vstack.length - 3 ]] = vstack[ vstack.length - 1 ]; rval = ret; 
+	}
+	break;
+	case 109:
+	{
+		 rval = {}; 
+	}
+	break;
+	case 110:
+	{
+		rval = vstack[ vstack.length - 1 ];
+	}
+	break;
+	case 111:
+	{
+		rval = vstack[ vstack.length - 1 ];
+	}
+	break;
+	case 112:
+	{
+		rval = vstack[ vstack.length - 1 ];
+	}
+	break;
+	case 113:
+	{
+		rval = vstack[ vstack.length - 1 ];
+	}
+	break;
+	case 114:
+	{
+		rval = vstack[ vstack.length - 1 ];
+	}
+	break;
+	case 115:
+	{
+		rval = vstack[ vstack.length - 1 ];
+	}
+	break;
+	case 116:
+	{
+		rval = vstack[ vstack.length - 1 ];
+	}
+	break;
+	case 117:
+	{
+		rval = vstack[ vstack.length - 1 ];
+	}
+	break;
+	case 118:
+	{
+		 rval = "" + vstack[ vstack.length - 2 ] + " " + vstack[ vstack.length - 1 ]; 
 	}
 	break;
 }
