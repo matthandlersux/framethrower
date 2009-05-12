@@ -96,7 +96,7 @@ function makeActionClosure(actionCode, env) {
 			type: actionType,
 			remote: 2
 		};
-		console.log("made an action", ret);
+		//console.log("made an action", ret);
 		lastAction = ret;
 		return ret;
 	}, params.length);

@@ -261,26 +261,16 @@ var mainTemplate = {
 						'action': {
 							'kind': "action",
 							'params': [
-
+								"n"
 							],
-							'type': "Action",
+							'type': "t0 -> Action",
 							'actions': [
-								{
-									'name': "r",
-									'action': {
-										'kind': "lineExpr",
-										'expr': "randomNumber 500",
-										'let': {
-
-										}
-									}
-								},
 								{
 									'action': {
 										'kind': "actionUpdate",
 										'target': "myset",
 										'actionType': "add",
-										'key': "r",
+										'key': "n",
 										'val': undefined
 									}
 								}
@@ -346,7 +336,7 @@ var mainTemplate = {
 												{
 													'action': {
 														'kind': "lineExpr",
-														'expr': "addToSet",
+														'expr': "addToSet 30",
 														'let': {
 
 														}
@@ -358,6 +348,44 @@ var mainTemplate = {
 									{
 										'kind': "textElement",
 										'nodeValue': "\n			Add a number to the set\n		"
+									}
+								]
+							},
+							{
+								'kind': "element",
+								'nodeName': "div",
+								'attributes': {
+
+								},
+								'style': {
+
+								},
+								'children': [
+									{
+										'kind': "on",
+										'event': "click",
+										'action': {
+											'kind': "action",
+											'params': [
+
+											],
+											'type': "Action",
+											'actions': [
+												{
+													'action': {
+														'kind': "lineExpr",
+														'expr': "addToSet 22",
+														'let': {
+
+														}
+													}
+												}
+											]
+										}
+									},
+									{
+										'kind': "textElement",
+										'nodeValue': "\n			Add a different number\n		"
 									}
 								]
 							}

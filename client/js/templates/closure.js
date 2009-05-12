@@ -117,10 +117,6 @@ function evaluateLine(line, env) {
 	if (line.kind === "lineExpr") {
 		var newEnv = addLets(line.let, env);
 		//var expr = parseExpression(line.expr, newEnv);
-		if (line.expr==="counter") {
-			console.log("hit counter call", line, parse(line.expr));
-			console.log("counter is", newEnv("counter"));
-		}
 		var expr = parseExpression(parse(line.expr), newEnv);
 		return evaluate(expr);
 	} else if (line.kind === "lineTemplate") {
