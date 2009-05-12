@@ -215,7 +215,7 @@ var mainTemplate = {
 															{
 																'action': {
 																	'kind': "lineExpr",
-																	'expr': "changeState ( plus currentState 1 )",
+																	'expr': "changeState (plus currentState 1)",
 																	'let': {
 
 																	}
@@ -266,21 +266,11 @@ var mainTemplate = {
 							'type': "Action",
 							'actions': [
 								{
-									'name': "r",
-									'action': {
-										'kind': "lineExpr",
-										'expr': "randomNumber 500",
-										'let': {
-
-										}
-									}
-								},
-								{
 									'action': {
 										'kind': "actionUpdate",
 										'target': "myset",
 										'actionType': "add",
-										'key': "r",
+										'key': "randomNumber 500",
 										'val': undefined
 									}
 								}
@@ -462,7 +452,7 @@ var mainTemplate = {
 						},
 						'output': {
 							'kind': "lineExpr",
-							'expr': "myTemplate ( jsfun 9999 )",
+							'expr': "myTemplate (jsfun 9999)",
 							'let': {
 
 							}
