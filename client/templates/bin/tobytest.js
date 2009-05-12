@@ -215,7 +215,7 @@ var mainTemplate = {
 															{
 																'action': {
 																	'kind': "lineExpr",
-																	'expr': "changeState ( plus currentState 1 )",
+																	'expr': "changeState (plus currentState 1)",
 																	'let': {
 
 																	}
@@ -232,6 +232,101 @@ var mainTemplate = {
 										'nodeValue': "\n			Increment Counter\n		"
 									}
 								]
+							}
+						]
+					}
+				}
+			}
+		},
+		'dragging': {
+			'kind': "lineTemplate",
+			'template': {
+				'kind': "templateCode",
+				'params': [
+
+				],
+				'type': "XMLP",
+				'let': {
+					'dragging': {
+						'kind': "lineState",
+						'type': "Unit Null"
+					},
+					'startDrag': {
+						'kind': "lineAction",
+						'action': {
+							'kind': "action",
+							'params': [
+
+							],
+							'type': "Action",
+							'actions': [
+								{
+									'action': {
+										'kind': "actionUpdate",
+										'target': "dragging",
+										'actionType': "add",
+										'key': "null",
+										'val': undefined
+									}
+								}
+							]
+						}
+					},
+					'stopDrag': {
+						'kind': "lineAction",
+						'action': {
+							'kind': "action",
+							'params': [
+
+							],
+							'type': "Action",
+							'actions': [
+								{
+									'action': {
+										'kind': "actionUpdate",
+										'target': "dragging",
+										'actionType': "remove",
+										'key': undefined,
+										'val': undefined
+									}
+								}
+							]
+						}
+					}
+				},
+				'output': {
+					'kind': "lineXML",
+					'xml': {
+						'kind': "element",
+						'nodeName': "div",
+						'attributes': {
+
+						},
+						'style': {
+
+						},
+						'children': [
+							{
+								'kind': "textElement",
+								'nodeValue': "\n		Draggin "
+							},
+							{
+								'kind': "textElement",
+								'nodeValue': {
+									'kind': "insert",
+									'expr': "UI.ui:mouseX ui.ui"
+								}
+							},
+							{
+								'kind': "textElement",
+								'nodeValue': " "
+							},
+							{
+								'kind': "textElement",
+								'nodeValue': {
+									'kind': "insert",
+									'expr': "UI.ui:mouseY ui.ui"
+								}
 							}
 						]
 					}
@@ -490,12 +585,25 @@ var mainTemplate = {
 						},
 						'output': {
 							'kind': "lineExpr",
-							'expr': "myTemplate ( jsfun 9999 )",
+							'expr': "myTemplate (jsfun 9999)",
 							'let': {
 
 							}
 						}
 					}
+				},
+				{
+					'kind': "element",
+					'nodeName': "hr",
+					'attributes': {
+
+					},
+					'style': {
+
+					},
+					'children': [
+
+					]
 				},
 				{
 					'kind': "element",
@@ -531,6 +639,19 @@ var mainTemplate = {
 				},
 				{
 					'kind': "element",
+					'nodeName': "hr",
+					'attributes': {
+
+					},
+					'style': {
+
+					},
+					'children': [
+
+					]
+				},
+				{
+					'kind': "element",
 					'nodeName': "div",
 					'attributes': {
 
@@ -553,6 +674,51 @@ var mainTemplate = {
 								'output': {
 									'kind': "lineExpr",
 									'expr': "set",
+									'let': {
+
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					'kind': "element",
+					'nodeName': "hr",
+					'attributes': {
+
+					},
+					'style': {
+
+					},
+					'children': [
+
+					]
+				},
+				{
+					'kind': "element",
+					'nodeName': "div",
+					'attributes': {
+
+					},
+					'style': {
+
+					},
+					'children': [
+						{
+							'kind': "call",
+							'templateCode': {
+								'kind': "templateCode",
+								'params': [
+
+								],
+								'type': "XMLP",
+								'let': {
+
+								},
+								'output': {
+									'kind': "lineExpr",
+									'expr': "dragging",
 									'let': {
 
 									}
