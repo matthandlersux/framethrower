@@ -608,7 +608,7 @@ CLOSETAG:
 	;
 	
 SINGLETAG:
-	'<' TAGNAME ATTRIBUTES '/' '>'						[* %% = {openTag: makeOpenTag(%2, %3)}; *]
+	'<' TAGNAME ATTRIBUTES '/' '>'						[* %% = makeOpenTag(%2, %3); *]
 	;
 
 TAGNAME:

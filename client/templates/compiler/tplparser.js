@@ -2443,7 +2443,7 @@ switch( act )
 	break;
 	case 95:
 	{
-		 rval = {openTag: makeOpenTag(vstack[ vstack.length - 4 ], vstack[ vstack.length - 3 ])}; 
+		 rval = makeOpenTag(vstack[ vstack.length - 4 ], vstack[ vstack.length - 3 ]); 
 	}
 	break;
 	case 96:
