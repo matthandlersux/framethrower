@@ -238,6 +238,101 @@ var mainTemplate = {
 				}
 			}
 		},
+		'dragging': {
+			'kind': "lineTemplate",
+			'template': {
+				'kind': "templateCode",
+				'params': [
+
+				],
+				'type': "XMLP",
+				'let': {
+					'dragging': {
+						'kind': "lineState",
+						'type': "Unit Null"
+					},
+					'startDrag': {
+						'kind': "lineAction",
+						'action': {
+							'kind': "action",
+							'params': [
+
+							],
+							'type': "Action",
+							'actions': [
+								{
+									'action': {
+										'kind': "actionUpdate",
+										'target': "dragging",
+										'actionType': "add",
+										'key': "null",
+										'val': undefined
+									}
+								}
+							]
+						}
+					},
+					'stopDrag': {
+						'kind': "lineAction",
+						'action': {
+							'kind': "action",
+							'params': [
+
+							],
+							'type': "Action",
+							'actions': [
+								{
+									'action': {
+										'kind': "actionUpdate",
+										'target': "dragging",
+										'actionType': "remove",
+										'key': undefined,
+										'val': undefined
+									}
+								}
+							]
+						}
+					}
+				},
+				'output': {
+					'kind': "lineXML",
+					'xml': {
+						'kind': "element",
+						'nodeName': "div",
+						'attributes': {
+
+						},
+						'style': {
+
+						},
+						'children': [
+							{
+								'kind': "textElement",
+								'nodeValue': "\n		Draggin "
+							},
+							{
+								'kind': "textElement",
+								'nodeValue': {
+									'kind': "insert",
+									'expr': "UI.ui:mouseX ui.ui"
+								}
+							},
+							{
+								'kind': "textElement",
+								'nodeValue': " "
+							},
+							{
+								'kind': "textElement",
+								'nodeValue': {
+									'kind': "insert",
+									'expr': "UI.ui:mouseY ui.ui"
+								}
+							}
+						]
+					}
+				}
+			}
+		},
 		'set': {
 			'kind': "lineTemplate",
 			'template': {
@@ -261,16 +356,16 @@ var mainTemplate = {
 						'action': {
 							'kind': "action",
 							'params': [
-
+								"n"
 							],
-							'type': "Action",
+							'type': "t0 -> Action",
 							'actions': [
 								{
 									'action': {
 										'kind': "actionUpdate",
 										'target': "myset",
 										'actionType': "add",
-										'key': "randomNumber 500",
+										'key': "n",
 										'val': undefined
 									}
 								}
@@ -336,7 +431,7 @@ var mainTemplate = {
 												{
 													'action': {
 														'kind': "lineExpr",
-														'expr': "addToSet",
+														'expr': "addToSet 30",
 														'let': {
 
 														}
@@ -348,6 +443,44 @@ var mainTemplate = {
 									{
 										'kind': "textElement",
 										'nodeValue': "\n			Add a number to the set\n		"
+									}
+								]
+							},
+							{
+								'kind': "element",
+								'nodeName': "div",
+								'attributes': {
+
+								},
+								'style': {
+
+								},
+								'children': [
+									{
+										'kind': "on",
+										'event': "click",
+										'action': {
+											'kind': "action",
+											'params': [
+
+											],
+											'type': "Action",
+											'actions': [
+												{
+													'action': {
+														'kind': "lineExpr",
+														'expr': "addToSet 22",
+														'let': {
+
+														}
+													}
+												}
+											]
+										}
+									},
+									{
+										'kind': "textElement",
+										'nodeValue': "\n			Add a different number\n		"
 									}
 								]
 							}
@@ -461,6 +594,19 @@ var mainTemplate = {
 				},
 				{
 					'kind': "element",
+					'nodeName': "hr",
+					'attributes': {
+
+					},
+					'style': {
+
+					},
+					'children': [
+
+					]
+				},
+				{
+					'kind': "element",
 					'nodeName': "div",
 					'attributes': {
 
@@ -493,6 +639,19 @@ var mainTemplate = {
 				},
 				{
 					'kind': "element",
+					'nodeName': "hr",
+					'attributes': {
+
+					},
+					'style': {
+
+					},
+					'children': [
+
+					]
+				},
+				{
+					'kind': "element",
 					'nodeName': "div",
 					'attributes': {
 
@@ -515,6 +674,51 @@ var mainTemplate = {
 								'output': {
 									'kind': "lineExpr",
 									'expr': "set",
+									'let': {
+
+									}
+								}
+							}
+						}
+					]
+				},
+				{
+					'kind': "element",
+					'nodeName': "hr",
+					'attributes': {
+
+					},
+					'style': {
+
+					},
+					'children': [
+
+					]
+				},
+				{
+					'kind': "element",
+					'nodeName': "div",
+					'attributes': {
+
+					},
+					'style': {
+
+					},
+					'children': [
+						{
+							'kind': "call",
+							'templateCode': {
+								'kind': "templateCode",
+								'params': [
+
+								],
+								'type': "XMLP",
+								'let': {
+
+								},
+								'output': {
+									'kind': "lineExpr",
+									'expr': "dragging",
 									'let': {
 
 									}

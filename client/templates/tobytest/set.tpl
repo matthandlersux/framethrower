@@ -3,16 +3,18 @@ template () {
 	randomNumber = function (n) {
 		return Math.round(Math.random() * n);
 	},
-	addToSet = action () {
-		r = randomNumber 500,
-		add(myset, r)
-		// add(myset, randomNumber 500)
+	addToSet = action (n) {
+		add(myset, n)
 	},
 	<div>
 		<div>The set: {myset}</div>
 		<div>
-			<f:on event="click">addToSet</f:on>
+			<f:on event="click">addToSet 30</f:on>
 			Add a number to the set
+		</div>
+		<div>
+			<f:on event="click">addToSet 22</f:on>
+			Add a different number
 		</div>
 	</div>
 }
