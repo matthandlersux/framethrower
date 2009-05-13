@@ -66,14 +66,21 @@ function addLets(Json, lets) {
 	}
 }
 
-function compileFolder(folder) {
+
+function compileFolder(folderPath) {
+	var folder = java.io.File("../" + folderPath);
+	var binfolder = java.io.File("../bin/" + folderPath);
+	if(!binfolder.exists()) {
+		binfolder.mkdir();
+	}
+	
 	var children = folder.listFiles();
 	var lets = {};
 	var mainJSON;
 	if (children !== null) { 
 		forEach(children, function(child) {
 			if (child.isDirectory()) {
-				var let = compileFolder(child);
+				var let = compileFolder(folderPath + "/" + child.getName());
 				if (let !== undefined) {
 					lets[child.getName()] = let;
 				}
@@ -81,9 +88,9 @@ function compileFolder(folder) {
 				var nameWithExt = child.getName();
 				var name = nameWithExt.substr(0, nameWithExt.length() - 4);
 				if(name == (folder.getName())) {
-					mainJSON = compileFile(child);
+					mainJSON = compileFile(folderPath + "/" + child.getName());
 				} else {
-					var let = compileFile(child);
+					var let = compileFile(folderPath + "/" + child.getName());
 					if (let !== undefined) {
 						lets[name] = let;
 					}
@@ -95,6 +102,7 @@ function compileFolder(folder) {
 	return mainJSON;
 }
 
+
 function preParse(string) {
 	//textnodes
 	string = string.replace(/\/\/[^\n]*\n/g, "");
@@ -105,22 +113,30 @@ function preParse(string) {
 }
 
 
-function compileFile (file) {
-	var str = readFile(file.getAbsolutePath());
-	var error_cnt = 0; 
-	var error_off = new Array(); 
-	var error_la = new Array(); 
-	str = preParse(str);
-	if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) { 
-		for( i = 0; i < error_cnt; i++ ) {
-			print( "Parse error near \"" + str.substr( error_off[i], 10 ) + ( ( str.length > error_off[i] + 10 ) ? "..." : "" ) + "\", expecting \"" + error_la[i].join() + "\"" ); 
-		} 
+function compileFile (filePath) {
+	var file = java.io.File("../" + filePath);
+	var binfile = java.io.File("../bin/" + filePath + ".ser");
+	
+	if (binfile.exists() && (binfile.lastModified() > file.lastModified())) {
+		return deserialize(binfile.getAbsolutePath());
 	} else {
-		print('success');
-		//result is a global variable that holds the result from parsing
-		var answer = result;
-		result = undefined;
-		return answer;
+		var str = readFile(file.getAbsolutePath());
+		var error_cnt = 0; 
+		var error_off = new Array(); 
+		var error_la = new Array(); 
+		str = preParse(str);
+		if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) { 
+			for( i = 0; i < error_cnt; i++ ) {
+				print( "Parse error near \"" + str.substr( error_off[i], 10 ) + ( ( str.length > error_off[i] + 10 ) ? "..." : "" ) + "\", expecting \"" + error_la[i].join() + "\"" ); 
+			} 
+		} else {
+			print('success');
+			//result is a global variable that holds the result from parsing
+			var answer = result;
+			result = undefined;
+			serialize(answer, binfile.getAbsolutePath());
+			return answer;
+		}
 	}
 }
 
@@ -131,8 +147,7 @@ function compileFile (file) {
 //java -jar js.jar assembler.js <root folder>
 
 if( arguments.length > 0 ) { 
-	var rootFolder = java.io.File("../" + arguments[0]);
-	var totalCompiledJSON = compileFolder(rootFolder);
+	var totalCompiledJSON = compileFolder(arguments[0]);
 	var totalCompiledString = "var mainTemplate = " + JSONtoString(totalCompiledJSON, 0) + ";";
 
 	var fw = new java.io.FileWriter("../bin/" + arguments[0] + ".js");

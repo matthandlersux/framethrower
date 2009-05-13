@@ -2,3 +2,4 @@
 server/erl_crash.dump
 *.tmproj
 *~
+client/templates/bin/*
