@@ -136,13 +136,31 @@ function xmlToDOM(xml, env) {
 		return xmlToDOM(xmlp.xml, xmlp.env);
 	} else if (xml.kind === "on") {
 		var node = createEl("f:on");
-		setAttr(node, "event", xml.event);
-		node.custom = {};
-		node.custom.action = xml.action;
-		node.custom.env = env;
-		function cleanup() {
-			node.custom = null; // for garbage collection in stupid browsers
+		if (xml.event === "init") {
+			var action = makeActionClosure(xml.action, env);
+			executeAction(action);
+			return {node: node, cleanup: null};
+		} else {
+			setAttr(node, "event", xml.event);
+			node.custom = {};
+			node.custom.action = xml.action;
+			node.custom.env = env;
+			function cleanup() {
+				node.custom = null; // for garbage collection in stupid browsers
+			}
+			return {node: node, cleanup: cleanup};
 		}
+	} else if (xml.kind === "trigger") {
+		var node = createEl("f:trigger"); // I just need to return something
+		
+		var actionClosure = makeActionClosure(xml.action, env);
+		
+		var expr = parseExpression(parse(xml.trigger), env);
+		var cleanup = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
+			var action = evaluate(makeApply(actionClosure, val));
+			executeAction(action);
+		});
+		
 		return {node: node, cleanup: cleanup};
 	}
 	

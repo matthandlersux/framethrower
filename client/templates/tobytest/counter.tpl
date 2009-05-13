@@ -7,6 +7,9 @@ template () {
 	},
 	
 	<div testatt="{test}">
+		<f:on event="init">
+			changeState 100
+		</f:on>
 		<div>
 			Counter value: {counterValue}
 		</div>

@@ -11,7 +11,7 @@ template () {
 	
 	<div style-position="absolute" style-left="{UI.ui:mouseX ui.ui}" style-top="{UI.ui:mouseY ui.ui}">
 		<f:on event="click">startDrag</f:on>
-		<f:each select="dragging" key="blah">
+		<f:each select="dragging" key="_">
 			<div>blah</div>
 			// <f:on trigger="UI.ui:mouseX ui.ui" as="mouseX">
 			// 	add(currentPosX, mouseX)
