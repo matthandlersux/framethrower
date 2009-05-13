@@ -131,7 +131,8 @@ var classesToMake = {
 			"screenWidth": "Unit Number",
 			"screenHeight": "Unit Number",
 			"mouseX": "Unit Number",
-			"mouseY": "Unit Number"
+			"mouseY": "Unit Number",
+			"mouseDown": "Unit Null"
 		}
 	},
 	
