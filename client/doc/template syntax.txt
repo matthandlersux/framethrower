@@ -50,7 +50,8 @@ XML
 		<f:call>LETLINES</f:call>
 		<f:each select="EXPR" key="VARTOCREATE" value="VARTOCREATE">LETLINES</f:each>
 			(the value attribute is optional)
-		<f:on>ACTSTMTS</f:on>
+		<f:on event="STRING">ACTSTMTS</f:on>
+		<f:on trigger="EXPR" as="VARTOCREATE">ACTSTMTS</f:on>
 
 STATE
 	state(TYPE)

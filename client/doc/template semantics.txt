@@ -41,6 +41,7 @@ XML
 	{kind: "for-each", select: AST, templateCode: TEMPLATECODE} | // this templateCode should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
 	{kind: "call", templateCode: TEMPLATECODE} // this templateCode should take zero parameters.
 	{kind: "on", event: EVENT, action: ACTION} // this action should take zero parameters.
+	{kind: "trigger", trigger: AST, action: ACTION} // trigger should evaluate to a reactive value, action should take one parameter
 	// TODO: case
 
 XMLNODE
