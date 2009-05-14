@@ -77,7 +77,7 @@
 			var action = makeActionClosure(fonEl.custom.action, fonEl.custom.env);
 			
 			
-			console.log("about to execute an action!", action);
+			//console.log("about to execute an action!", action);
 			
 			executeAction(action);
 		}
@@ -207,10 +207,19 @@
 		ui["mouseY"].control.add(e.clientY);
 	}
 	
+	function mousedown(e) {
+		ui["mouseDown"].control.add(nullObject);
+	}
+	function mouseup(e) {
+		ui["mouseDown"].control.remove();
+	}
+	
 	window.addEventListener("resize", resizeScreen, true);
 	document.addEventListener("load", resizeScreen, true);
 	
 	document.addEventListener("mousemove", mousemove, true);
+	document.addEventListener("mousedown", mousedown, true);
+	document.addEventListener("mouseup", mouseup, true);
 })();
 
 
