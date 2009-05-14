@@ -9,21 +9,24 @@ template () {
 	currentPosX = state(Unit Number),
 	currentPosY = state(Unit Number),
 	
-	down = UI.ui:mouseDown ui.ui2,
+	down = UI.ui:mouseDown ui.ui,
 	
 	<div style-position="absolute" style-left="{UI.ui:mouseX ui.ui}" style-top="{UI.ui:mouseY ui.ui}">
 		<f:on click>startDrag</f:on>
 		<f:each dragging as _>
 			<div>blah</div>
-			// <f:on trigger="UI.ui:mouseX ui.ui" as="mouseX">
-			// 	add(currentPosX, mouseX)
-			// </f:on>
-			// <f:on trigger="UI.ui:mouseY ui.ui" as="mouseY">
-			// 	add(currentPosY, mouseY)
-			// </f:on>
-			// <f:on trigger="reactiveNot UI.ui:mouseDown ui.ui">stopDrag</f:on>
+			<f:trigger UI.ui:mouseX ui.ui as mouseX>
+				add(currentPosX, mouseX)
+			</f:trigger>
+			<f:trigger UI.ui:mouseY ui.ui as mouseY>
+				add(currentPosY, mouseY)
+			</f:trigger>
+			<f:trigger reactiveNot UI.ui:mouseDown ui.ui as blah>stopDrag</f:trigger>
 		</f:each>
 		Draggin {UI.ui:mouseX ui.ui} {UI.ui:mouseY ui.ui}
+		<div>
+			current pos: {currentPosX}, {currentPosY}
+		</div>
 		
 		// <f:each UI.ui:mouseDown ui.ui as _>
 		<f:each down as _>
