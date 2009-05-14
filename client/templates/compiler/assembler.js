@@ -105,6 +105,7 @@ function compileFolder(folderPath, rebuild) {
 
 function preParse(string) {
 	//textnodes
+	string = string.replace(/\t/g, "    ");
 	string = string.replace(/\/\/[^\n]*\n/g, "");
 	string = string.replace(/\/\*[^\*\/]*\*\//g, "");
 	string = string.replace(/(<(f[^:^\/^>]|[^f^\/^>])[^<^>^\/]*>)([^<^>]*[^<^>^ ^\r^\t^\n][^<^>]*)/g, "$1<p:textnode>$3</p:textnode>");
@@ -126,12 +127,12 @@ function compileFile (filePath, rebuild) {
 		var error_la = new Array(); 
 		str = preParse(str);
 		if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) { 
+			print("Parse errors, File: " + file.getName());
 			for( i = 0; i < error_cnt; i++ ) {
 				var lineInfo = countLines(str, error_off[i]);
-				print("Parse error on line ", lineInfo.line, ", column: ", lineInfo.column, "near \"", "expecting \"" + error_la[i].join() + "\"" ); 
+				print("    error on line", lineInfo.lines + ", column:", lineInfo.column, "expecting \"" + error_la[i].join() + "\" near:", "\n" + lineInfo.line + "\n                                  ^\n");
 			} 
 		} else {
-			print('success');
 			//result is a global variable that holds the result from parsing
 			var answer = result;
 			result = undefined;
@@ -142,19 +143,35 @@ function compileFile (filePath, rebuild) {
 }
 
 
-function countLines(string, position) {
+function countLines(wholeString, position) {
 	var column;
-	function countHelper(string) {
+	var line;
+	function countHelper(string, startIndex) {
 		var index = string.indexOf('\n');
 		if (index !== -1) {
-			return 1 + countLines(string.substr(index))
+			return 1 + countHelper(string.substr(index+1), startIndex + index + 1)
 		} else {
+			var rest = wholeString.substr(startIndex);
+			line = rest.substr(0, rest.indexOf("\n"));
 			column = string.length;
+			
+			var min = column - 30;
+			var filler = "";
+			if (min < 0) {
+				line = line.substr(0, 60 + min);
+				for (var i = 0; i < -min; i++) {
+					filler += " ";
+				}
+			} else {
+				line = line.substr(min, 60);
+			}
+			line = filler + line;
 			return 0;
 		}
 	}
 	return {
-		line: countHelper(string.substr(0, position)),
+		lines: 1 + countHelper(wholeString.substr(0, position), 0),
+		line: line,
 		column: column
 	};
 }
