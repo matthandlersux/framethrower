@@ -12,16 +12,18 @@ template () {
 	down = UI.ui:mouseDown ui.ui,
 	
 	<div style-position="absolute" style-left="{UI.ui:mouseX ui.ui}" style-top="{UI.ui:mouseY ui.ui}">
-		<f:on click>startDrag</f:on>
+		<f:on mousedown>startDrag</f:on>
 		<f:each dragging as _>
-			<div>blah</div>
-			<f:trigger UI.ui:mouseX ui.ui as mouseX>
-				add(currentPosX, mouseX)
-			</f:trigger>
-			<f:trigger UI.ui:mouseY ui.ui as mouseY>
-				add(currentPosY, mouseY)
-			</f:trigger>
-			<f:trigger reactiveNot UI.ui:mouseDown ui.ui as blah>stopDrag</f:trigger>
+			<div>
+				blah
+				<f:trigger UI.ui:mouseX ui.ui as mouseX>
+					add(currentPosX, mouseX)
+				</f:trigger>
+				<f:trigger UI.ui:mouseY ui.ui as mouseY>
+					add(currentPosY, mouseY)
+				</f:trigger>
+				<f:trigger reactiveNot (UI.ui:mouseDown ui.ui) as blah>stopDrag</f:trigger>
+			</div>
 		</f:each>
 		Draggin {UI.ui:mouseX ui.ui} {UI.ui:mouseY ui.ui}
 		<div>
