@@ -127,7 +127,8 @@ function compileFile (filePath, rebuild) {
 		str = preParse(str);
 		if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) { 
 			for( i = 0; i < error_cnt; i++ ) {
-				print( "Parse error near \"" + str.substr( error_off[i], 10 ) + ( ( str.length > error_off[i] + 10 ) ? "..." : "" ) + "\", expecting \"" + error_la[i].join() + "\"" ); 
+				var lineInfo = countLines(str, error_off[i]);
+				print("Parse error on line ", lineInfo.line, ", column: ", lineInfo.column, "near \"", "expecting \"" + error_la[i].join() + "\"" ); 
 			} 
 		} else {
 			print('success');
@@ -139,6 +140,25 @@ function compileFile (filePath, rebuild) {
 		}
 	}
 }
+
+
+function countLines(string, position) {
+	var column;
+	function countHelper(string) {
+		var index = string.indexOf('\n');
+		if (index !== -1) {
+			return 1 + countLines(string.substr(index))
+		} else {
+			column = string.length;
+			return 0;
+		}
+	}
+	return {
+		line: countHelper(string.substr(0, position)),
+		column: column
+	};
+}
+
 
 //MAIN
 //COMPILE COMMAND: rhino jscc.js -o tplparser.js fttemplate.par
