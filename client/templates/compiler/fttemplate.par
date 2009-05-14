@@ -392,6 +392,8 @@
 	'action'
 	'state'
 	'create'
+	'trigger'
+	'select'
 	'add'
 	'remove'
 	'f:each'
@@ -626,6 +628,8 @@ TAGNAME:
 
 ATTRIBUTES:
 	ATTRIBUTES 'style' '=' QUOTE STYLE QUOTE			[* %1[%2] = %5; %% = %1;*]
+	| ATTRIBUTES 'select' '=' QUOTE EXPR QUOTE			[* %1[%2] = %5; %% = %1;*]
+	| ATTRIBUTES 'trigger' '=' QUOTE EXPR QUOTE			[* %1[%2] = %5; %% = %1;*]
 	| ATTRIBUTES IDENTIFIER '=' ATTRIBUTE				[* %1[%2] = %4; %% = %1;*]
 	|													[* %% = {}; *]
 	;
