@@ -67,7 +67,7 @@ function addLets(Json, lets) {
 }
 
 
-function compileFolder(folderPath) {
+function compileFolder(folderPath, rebuild) {
 	var folder = java.io.File("../" + folderPath);
 	var binfolder = java.io.File("../bin/" + folderPath);
 	if(!binfolder.exists()) {
@@ -80,7 +80,7 @@ function compileFolder(folderPath) {
 	if (children !== null) { 
 		forEach(children, function(child) {
 			if (child.isDirectory()) {
-				var let = compileFolder(folderPath + "/" + child.getName());
+				var let = compileFolder(folderPath + "/" + child.getName(), rebuild);
 				if (let !== undefined) {
 					lets[child.getName()] = let;
 				}
@@ -88,9 +88,9 @@ function compileFolder(folderPath) {
 				var nameWithExt = child.getName();
 				var name = nameWithExt.substr(0, nameWithExt.length() - 4);
 				if(name == (folder.getName())) {
-					mainJSON = compileFile(folderPath + "/" + child.getName());
+					mainJSON = compileFile(folderPath + "/" + child.getName(), rebuild);
 				} else {
-					var let = compileFile(folderPath + "/" + child.getName());
+					var let = compileFile(folderPath + "/" + child.getName(), rebuild);
 					if (let !== undefined) {
 						lets[name] = let;
 					}
@@ -113,11 +113,11 @@ function preParse(string) {
 }
 
 
-function compileFile (filePath) {
+function compileFile (filePath, rebuild) {
 	var file = java.io.File("../" + filePath);
 	var binfile = java.io.File("../bin/" + filePath + ".ser");
 	
-	if (binfile.exists() && (binfile.lastModified() > file.lastModified())) {
+	if (!rebuild && binfile.exists() && (binfile.lastModified() > file.lastModified())) {
 		return deserialize(binfile.getAbsolutePath());
 	} else {
 		var str = readFile(file.getAbsolutePath());
@@ -147,7 +147,12 @@ function compileFile (filePath) {
 //java -jar js.jar assembler.js <root folder>
 
 if( arguments.length > 0 ) { 
-	var totalCompiledJSON = compileFolder(arguments[0]);
+	var rebuild = false;
+	if (arguments[1] == "rebuild") {
+		rebuild = true;
+	}
+	
+	var totalCompiledJSON = compileFolder(arguments[0], rebuild);
 	var totalCompiledString = "var mainTemplate = " + JSONtoString(totalCompiledJSON, 0) + ";";
 
 	var fw = new java.io.FileWriter("../bin/" + arguments[0] + ".js");
@@ -156,5 +161,5 @@ if( arguments.length > 0 ) {
 	bw.write(totalCompiledString);
 	bw.close();
 } else {
-	print( 'usage: rhino assembler.js <root folder>' );
+	print( 'usage: rhino assembler.js <root folder> [rebuild]' );
 }

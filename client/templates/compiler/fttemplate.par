@@ -544,7 +544,8 @@ JSFUN:
 	;
 	
 JS:
-	IDENTIFIER 
+	KEYWORD
+	| IDENTIFIER 
 	| STRINGKEEPQUOTES
 	| '(' JS ')' 										[* %% = "(" + %2 + ")" *]
 	| '{' JS '}' 										[* %% = "{" + %2 + "}"; *]
@@ -660,21 +661,40 @@ INSERT:
 	;
 
 TEXT:
-	IDENTIFIER
+	KEYWORD
+	| '\{'
+	| '\}'
+	| '\('
+	| '\)'
 	| ','
-	| '('
-	| ')'
-	| ':'
 	| ';'
+	| ':'
 	| '='
-	| '}'
-	| '{'
+	| '</'
+	| '/'
+	| '<'
+	| '>'
+	| JSSEP
+	| IDENTIFIER
 	| TEXT TEXT											[* %% = "" + %1 + " " + %2; *]
 	;
 
-
-
-
+KEYWORD:
+	TEXTNODE
+	| 'template'
+	| 'function'
+	| 'action'
+	| 'state'
+	| 'create'
+	| 'add'
+	| 'remove'
+	| 'style'
+	| 'as'
+	| 'f:each'
+	| 'f:call'
+	| 'f:on'
+	| 'f:trigger'
+	;
 
 STRINGKEEPQUOTES:
 	QUOTE TEXT QUOTE									[* %% = %1 + %2 + %3; *]
@@ -699,13 +719,12 @@ STYLE:
 
 
 STYLETEXT:
-	IDENTIFIER
+	KEYWORD
+	| IDENTIFIER
 	| ','
 	| '('
 	| ')'
 	| ':'
 	| '='
-	| '}'
-	| '{'
 	| STYLETEXT STYLETEXT								[* %% = "" + %1 + " " + %2; *]
 	;

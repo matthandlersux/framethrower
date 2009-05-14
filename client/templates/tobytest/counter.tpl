@@ -7,22 +7,21 @@ template () {
 	},
 	
 	<div testatt="{test}">
-		<f:on event="init">
+		<f:on init>
 			changeState 100
 		</f:on>
 		<div>
 			Counter value: {counterValue}
 		</div>
 		<div>
-			<f:on event="click">
+			<f:on click>
 				changeState 0
 			</f:on>
 			Reset Counter
 		</div>
 		<div>
-			<f:each select="counterValue" key="currentState">
-				
-				<f:on event="click">
+			<f:each counterValue as currentState>
+				<f:on click>
 					changeState (plus currentState 1)
 				</f:on>
 			</f:each>
