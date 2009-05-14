@@ -130,7 +130,7 @@ function compileFile (filePath, rebuild) {
 			print("Parse errors, File: " + file.getName());
 			for( i = 0; i < error_cnt; i++ ) {
 				var lineInfo = countLines(str, error_off[i]);
-				print("    error on line", lineInfo.lines + ", column:", lineInfo.column, "expecting \"" + error_la[i].join() + "\" near:", "\n" + lineInfo.line + "\n                                  ^\n");
+				print("    error on line", lineInfo.lines + ", column:", lineInfo.column, "expecting \"" + error_la[i].join() + "\" near:", "\n" + lineInfo.line + "\n                              ^\n");
 			} 
 		} else {
 			//result is a global variable that holds the result from parsing
