@@ -14,7 +14,7 @@ template () {
 		<div>
 			Set test: {testCell}
 		</div>
-		<f:each select="testCell" key="entry">
+		<f:each testCell as entry>
 			<div>An entry: {entry}</div>
 		</f:each>
 		<f:call>myTemplate (jsfun 9999)</f:call>

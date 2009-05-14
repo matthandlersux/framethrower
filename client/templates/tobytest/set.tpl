@@ -9,11 +9,11 @@ template () {
 	<div>
 		<div>The set: {myset}</div>
 		<div>
-			<f:on event="click">addToSet 30</f:on>
+			<f:on click>addToSet 30</f:on>
 			Add a number to the set
 		</div>
 		<div>
-			<f:on event="click">addToSet 22</f:on>
+			<f:on click>addToSet 22</f:on>
 			Add a different number
 		</div>
 	</div>

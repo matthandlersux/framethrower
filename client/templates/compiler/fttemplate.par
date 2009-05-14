@@ -166,18 +166,18 @@
 		};
 	}
 
-	function makeForEach(attributes, lets, output) {
+	function makeForEach(openTag, lets, output) {
 		var params = [];
-		if (attributes.key !== undefined) {
-			params.push({name:attributes.key});
+		if (openTag.as.key !== undefined) {
+			params.push({name:openTag.as.key});
 		}
-		if (attributes.value !== undefined) {
-			params.push({name:attributes.value});
+		if (openTag.as.val !== undefined) {
+			params.push({name:openTag.as.val});
 		}
 		var templateCode = makeTemplateCode(params, lets, output);
 		return {
 			kind: "for-each",
-			select: attributes.select,
+			select: openTag.expr,
 			templateCode: templateCode
 		};
 	}
@@ -190,11 +190,27 @@
 		};
 	}
 
-	function makeOn(attributes, lets, output) {
+	function makeOn(event, lets, output) {
 		var action = makeAction([], lets, output);
 		return {
 			kind: "on",
-			event: attributes.event,
+			event: event,
+			action: action
+		};
+	}
+
+	function makeTrigger(openTag, lets, output) {
+		var params = [];
+		if (openTag.as.key !== undefined) {
+			params.push({name:openTag.as.key});
+		}
+		if (openTag.as.val !== undefined) {
+			params.push({name:openTag.as.val});
+		}	
+		var action = makeAction(params, lets, output);
+		return {
+			kind: "trigger",
+			trigger: openTag.expr,
 			action: action
 		};
 	}
@@ -392,14 +408,14 @@
 	'action'
 	'state'
 	'create'
-	'trigger'
-	'select'
 	'add'
 	'remove'
+	'style'
+	'as'
 	'f:each'
 	'f:call'
 	'f:on'
-	'style'
+	'f:trigger'
 	'\{'
 	'\}'
 	'\('
@@ -555,6 +571,7 @@ VARIABLE:
 
 XML:
 	OPENFOREACH LETLIST STMT CLOSEFOREACH				[* %% = makeForEach(%1, %2, %3); *]
+	| OPENTRIGGER ACTLIST ACTION CLOSETRIGGER			[* %% = makeTrigger(%1, %2, makeLineAction({}, %3)); *]
 	| OPENON ACTLIST ACTION CLOSEON						[* %% = makeOn(%1, %2, makeLineAction({}, %3)); *]
 	| OPENCALL LETLIST STMT CLOSECALL					[* %% = makeCall(%2, %3); *]
 	| OPENTAG XMLLIST CLOSETAG							[* %% = makeNode(%1, %2); *]
@@ -567,29 +584,30 @@ XMLLIST:
 	| 													[* %% = []; *]
 	;
 
-INSERT:
-	'{' EXPR '}'										[* %% = makeInsert(%2); *]
-	;
-	
-TEXT:
-	IDENTIFIER
-	| ','
-	| '('
-	| ')'
-	| ':'
-	| ';'
-	| '='
-	| '}'
-	| '{'
-	| TEXT TEXT											[* %% = "" + %1 + " " + %2; *]
-	;
-
 OPENFOREACH:
-	'<' 'f:each' ATTRIBUTES '>'							[* %% = %3; *]
+	'<' 'f:each' EXPR 'as' ASKEYVAL '>'					[* %% = {expr:%3, as:%5}; *]
 	;
 
 CLOSEFOREACH:
 	'</' 'f:each' '>'									[* %% = undefined; *]
+	;
+
+OPENTRIGGER:
+	'<' 'f:trigger' EXPR 'as' ASKEYVAL '>'				[* %% = {expr:%3, as:%5}; *]
+	;
+
+CLOSETRIGGER:
+	'</' 'f:trigger' '>'								[* %% = undefined; *]
+	;
+
+CLOSEFOREACH:
+	'</' 'f:each' '>'									[* %% = undefined; *]
+	;
+
+
+ASKEYVAL:
+	IDENTIFIER											[* %% = {key: %1}; *]
+	| IDENTIFIER ',' IDENTIFIER							[* %% = {key: %1, val: %3}; *]
 	;
 
 OPENCALL:
@@ -601,7 +619,7 @@ CLOSECALL:
 	;
 
 OPENON:
-	'<' 'f:on' ATTRIBUTES '>'							[* %% = %3; *]
+	'<' 'f:on' IDENTIFIER '>'							[* %% = %3; *]
 	;
 
 CLOSEON:
@@ -628,8 +646,6 @@ TAGNAME:
 
 ATTRIBUTES:
 	ATTRIBUTES 'style' '=' QUOTE STYLE QUOTE			[* %1[%2] = %5; %% = %1;*]
-	| ATTRIBUTES 'select' '=' QUOTE EXPR QUOTE			[* %1[%2] = %5; %% = %1;*]
-	| ATTRIBUTES 'trigger' '=' QUOTE EXPR QUOTE			[* %1[%2] = %5; %% = %1;*]
 	| ATTRIBUTES IDENTIFIER '=' ATTRIBUTE				[* %1[%2] = %4; %% = %1;*]
 	|													[* %% = {}; *]
 	;
@@ -638,6 +654,27 @@ ATTRIBUTE:
 	STRING
 	| QUOTE INSERT QUOTE								[* %% = %2; *]
 	;
+
+INSERT:
+	'{' EXPR '}'										[* %% = makeInsert(%2); *]
+	;
+
+TEXT:
+	IDENTIFIER
+	| ','
+	| '('
+	| ')'
+	| ':'
+	| ';'
+	| '='
+	| '}'
+	| '{'
+	| TEXT TEXT											[* %% = "" + %1 + " " + %2; *]
+	;
+
+
+
+
 
 STRINGKEEPQUOTES:
 	QUOTE TEXT QUOTE									[* %% = %1 + %2 + %3; *]

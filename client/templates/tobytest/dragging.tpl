@@ -9,11 +9,11 @@ template () {
 	currentPosX = state(Unit Number),
 	currentPosY = state(Unit Number),
 	
-	down = UI.ui:mouseDown ui.ui,
+	down = UI.ui:mouseDown ui.ui2,
 	
 	<div style-position="absolute" style-left="{UI.ui:mouseX ui.ui}" style-top="{UI.ui:mouseY ui.ui}">
-		<f:on event="click">startDrag</f:on>
-		<f:each select="dragging" key="_">
+		<f:on click>startDrag</f:on>
+		<f:each dragging as _>
 			<div>blah</div>
 			// <f:on trigger="UI.ui:mouseX ui.ui" as="mouseX">
 			// 	add(currentPosX, mouseX)
@@ -25,8 +25,8 @@ template () {
 		</f:each>
 		Draggin {UI.ui:mouseX ui.ui} {UI.ui:mouseY ui.ui}
 		
-		// <f:each select="UI.ui:mouseDown ui.ui" key="_">
-		<f:each select="down" key="_">
+		// <f:each UI.ui:mouseDown ui.ui as _>
+		<f:each down as _>
 			<div>Get down!</div>
 		</f:each>
 	</div>
