@@ -1,10 +1,8 @@
 template (focus::Object) {
 	name = getName focus,
 	<div>
-	Name!
-	{name}
-		<f:each name as theName>
-			<span>{theName}</span>
+		<f:each name as name>
+			<span>{name}</span>
 		</f:each>
 	</div>
 }

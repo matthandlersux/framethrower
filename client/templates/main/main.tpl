@@ -81,7 +81,8 @@ template () {
 		typeObject shared.ont shared.type.situation,
 		nameObject shared.realLife "Real Life",
 		typeObject shared.realLife shared.type.situation,
-
+		
+		nameObject shared.test.walleMovie "Wall-E",
 		putObjectInSituation shared.test.walleMovie shared.realLife
 	},
 	
