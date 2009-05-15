@@ -45,10 +45,9 @@
 
 	var result; //global variable
 
-	function makeTemplate(template) {
-		//serialize template JSON to string
-		result = template;
-		return template;
+	function makeTop(topLine) {
+		result = topLine;
+		return topLine;
 	}
 
 	function makeTemplateCode(params, lets, output) {
@@ -439,8 +438,18 @@
 ~/
 
 TOP:
-	TEMPLATE											[* %% = makeTemplate( %1 ); *]
-	| LETLIST
+	STMT												[* %% = makeTop( %1 ); *]
+	;
+
+
+STMT:
+	JSFUN
+	| TEMPLATE 											[* %% = {kind: "lineTemplate", template: %1} ; *]
+	| ACTIONTPL											[* %% = {kind: "lineAction", action: %1} ; *]
+	| EXPR 												[* %% = makeExpr(%1); *]
+	| STATE
+	| LETLISTBLOCK
+	| XML												[* %% = makeXMLLine(%1); *]
 	;
 
 TEMPLATE:
@@ -495,6 +504,7 @@ ACTION:
 
 CREATE:
 	'create' '(' TYPE ',' PROP ')'						[* %% = makeCreate(%3, %5); *]
+	| 'create' '(' TYPE ')'								[* %% = makeCreate(%3, {}); *]
 	;
 
 PROP:
@@ -513,16 +523,6 @@ UPDATE:
 	| 'add' '(' EXPR ',' EXPR ',' EXPR ')'				[* %% = makeUpdate(%1, %3, %5, %7); *]
 	| 'remove' '(' EXPR ',' EXPR ')'					[* %% = makeUpdate(%1, %3, %5); *]
 	| 'remove' '(' EXPR ')'								[* %% = makeUpdate(%1, %3); *]
-	;
-
-STMT:
-	JSFUN
-	| TEMPLATE 											[* %% = {kind: "lineTemplate", template: %1} ; *]
-	| ACTIONTPL											[* %% = {kind: "lineAction", action: %1} ; *]
-	| EXPR 												[* %% = makeExpr(%1); *]
-	| STATE
-	| LETLISTBLOCK
-	| XML												[* %% = makeXMLLine(%1); *]
 	;
 
 EXPR:
@@ -574,10 +574,16 @@ XML:
 	OPENFOREACH LETLIST STMT CLOSEFOREACH				[* %% = makeForEach(%1, %2, %3); *]
 	| OPENTRIGGER ACTLIST ACTION CLOSETRIGGER			[* %% = makeTrigger(%1, %2, makeLineAction({}, %3)); *]
 	| OPENON ACTLIST ACTION CLOSEON						[* %% = makeOn(%1, %2, makeLineAction({}, %3)); *]
-	| OPENCALL LETLIST STMT CLOSECALL					[* %% = makeCall(%2, %3); *]
+	| OPENCALL LETLIST ENDCALL CLOSECALL				[* %% = makeCall(%2, %3); *]
 	| OPENTAG XMLLIST CLOSETAG							[* %% = makeNode(%1, %2); *]
 	| SINGLETAG											[* %% = makeNode(%1, []); *]
 	| TEXTNODE											[* %% = makeTextElement(%1); *]
+	;
+
+ENDCALL:
+	EXPR 												[* %% = makeExpr(%1); *]
+	| LETLISTBLOCK
+	| XMLLIST											[* %% = makeNode(makeOpenTag("wrapper", {}), %2); *]
 	;
 
 XMLLIST:
@@ -587,6 +593,7 @@ XMLLIST:
 
 OPENFOREACH:
 	'<' 'f:each' EXPR 'as' ASKEYVAL '>'					[* %% = {expr:%3, as:%5}; *]
+	| '<' 'f:each' EXPR '>'								[* %% = {expr:%3, as:"_"}; *]
 	;
 
 CLOSEFOREACH:
@@ -595,6 +602,7 @@ CLOSEFOREACH:
 
 OPENTRIGGER:
 	'<' 'f:trigger' EXPR 'as' ASKEYVAL '>'				[* %% = {expr:%3, as:%5}; *]
+	| 	'<' 'f:trigger' EXPR '>'						[* %% = {expr:%3, as:"_"}; *]
 	;
 
 CLOSETRIGGER:
