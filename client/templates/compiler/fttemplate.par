@@ -230,12 +230,14 @@
 		if(index == -1) {
 			return undefined;
 		}
-		while(index > 0) {
+		while(index !== -1) {
 			var rindex = text.indexOf('}');
 			var first = text.substr(0, index);
 			var insert = text.substr(index+1, rindex-index-1);
 			text = text.substr(rindex+1);
-			output.push(makeTextElement(first));
+			if (first.length > 0) {
+				output.push(makeTextElement(first));
+			}
 			output.push(makeTextElement(makeInsert(insert)));
 			index = text.indexOf('{');
 		}
