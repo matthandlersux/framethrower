@@ -60,8 +60,8 @@ function JSONtoString(object, tabs) {
 
 function addLets(Json, lets) {
 	if(Json !== undefined) {
-		forEach(lets, function(let, name) {
-			Json.template.let[name] = {kind: "lineTemplate", template: let};
+		forEach(lets, function(line, name) {
+			Json.template.let[name] = line;
 		});
 	}
 }
