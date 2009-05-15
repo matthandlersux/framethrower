@@ -152,14 +152,26 @@ function xmlToDOM(xml, env) {
 		}
 	} else if (xml.kind === "trigger") {
 		var node = createEl("f:trigger"); // I just need to return something
+		var cleanupFunc = null;
+		function cleanup() {
+			if (cleanupFunc) cleanupFunc();
+		}
 		
-		var actionClosure = makeActionClosure(xml.action, env);
-		
-		var expr = parseExpression(parse(xml.trigger), env);
-		var cleanup = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
-			var action = evaluate(makeApply(actionClosure, val));
-			executeAction(action);
-		});
+		// I wrap the registering of triggers in a setTimeout to ensure that they come after everything else. Otherwise there are timing bugs.
+		setTimeout(function () {
+			var actionClosure = makeActionClosure(xml.action, env);
+
+			var expr = parseExpression(parse(xml.trigger), env);
+			//var cell = evaluate(expr);
+			var removeTrigger = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
+
+				//console.log("doing a trigger", val, cell.isDone);
+
+				var action = evaluate(makeApply(actionClosure, val));
+				executeAction(action);
+			});
+			cleanupFunc = removeTrigger.func;
+		}, 0);
 		
 		return {node: node, cleanup: cleanup};
 	}
