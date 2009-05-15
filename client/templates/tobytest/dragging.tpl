@@ -1,7 +1,7 @@
 template () {
-	dragging = state(Unit Null),
+	dragging = state(Unit Number),
 	startDrag = action () {
-		add(dragging, null)
+		add(dragging, 6)
 	},
 	stopDrag = action () {
 		remove(dragging)
@@ -11,7 +11,7 @@ template () {
 	
 	down = UI.ui:mouseDown ui.ui,
 	
-	<div style-position="absolute" style-left="{UI.ui:mouseX ui.ui}" style-top="{UI.ui:mouseY ui.ui}">
+	<div style-position="absolute" style-left="{currentPosX}" style-top="{currentPosY}">
 		<f:on mousedown>startDrag</f:on>
 		<f:each dragging as _>
 			<div>

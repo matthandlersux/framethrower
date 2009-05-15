@@ -44,7 +44,7 @@ JSCODE
 	not sure the best way to know when the JSCODE ends.. maybe by counting close-braces?
 
 XML
-	this starts with a open-angle-bracket, and ends when the XML ends (ie: matching closing tag)
+	this starts with a open-angle-bracket, and ends when the XML ends (ie: matching closing tag) (not quite right: see note about syntactic sugar below)
 	there are a few special elements:
 		anywhere (in an attribute or in a text node) there can be {EXPR} (the stuff inside the braces should be highlighted like an EXPR)
 		
@@ -54,6 +54,8 @@ XML
 		<f:on EVENT>ACTSTMTS</f:on>
 		<f:trigger EXPR as VARTOCREATE>ACTSTMTS</f:trigger>
 		<f:trigger EXPR as VARTOCREATE, VARTOCREATE>ACTSTMTS</f:trigger> // for key, value when responding to Map changes
+	
+	there is syntactic sugar for having multiple XML elements top-level. If XML is on its own (ie: not part of a LETLINE), then after the XML ends, there can be more text that gets interpreted as XML. The XML thus ends only when there is the ending. This ending can be </f:call>, </f:each>, or } depending on context. Note that each should only end it if it is at the top-level in terms of XML nesting. Also, the } should only end it if it is unbalanced (ie: no preceding { which would imply a {EXPR}).
 	
 EVENT
 	for now treat this as a string. We'll eventually have a list of acceptable events (click, mouseover, etc). We may add parameterized events too (keydown (G key) with shift held, for example).
@@ -86,7 +88,8 @@ ACTION
 	CREATE | UPDATE | LINE
 
 CREATE
-	create(TYPE, PROPERTIES)
+	create(TYPE, PROPERTIES) |
+	create(TYPE)
 
 PROPERTIES
 	this is a representation of properties of a created object (based on JSON notation). It looks like:
