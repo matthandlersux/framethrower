@@ -59,7 +59,7 @@ function xmlToDOM(xml, env) {
 			node.nodeValue = value;
 		}));
 	} else if (xml.kind === "for-each") {
-		var select = parseExpression(xml.select, env);
+		var select = parseExpression(parse(xml.select), env);
 		var result = evaluate(select);
 		
 		var wrapper = createEl("f:wrapper");

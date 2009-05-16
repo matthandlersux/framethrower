@@ -90,5 +90,8 @@ template () {
 		<f:on init>prepareState</f:on>
 		Hello.
 		<f:call>printObject shared.realLife</f:call>
+		<div>
+			<f:call>outline shared.realLife printObject getAllIn</f:call>
+		</div>
 	</div>
 }
