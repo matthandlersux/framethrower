@@ -1,0 +1,93 @@
+[*
+
+var preParser = function() {
+
+	var output = "";
+
+	function makeTextNode(text) {
+		return "<p:textnode>" + text + "</p:textnode>";
+	}
+
+*]
+
+
+/~
+	--- These are the token definitions ---
+~/
+
+/~ Characters to be ignored... ~/
+!	'//[^\n]*\n'
+	;
+
+/~	Grammar Tokens			~/
+	'<f\:[^<^>]*>'	FTAG
+	'</'
+	'/>'
+	'<'
+	'\->'
+	'>'
+	'[^<^>]+'	IDENTIFIER
+	;
+##
+
+/~
+	--- And here's the grammar specification ---
+~/
+
+TOP:
+	CONTENT											[* output = %1; *]
+	;
+
+CONTENT:
+	CONTENT TEXT									[* %% = %1 + %2; *]
+	| CONTENT XML									[* %% = %1 + %2; *]
+	| 												[* %% = ""; *]
+	;
+
+TEXT:
+	TEXT IDENTIFIER									[* %% = %1 + %2; *]
+	| TEXT '>'										[* %% = %1 + %2; *]
+	| TEXT '/>'										[* %% = %1 + %2; *]
+	| TEXT '->'										[* %% = %1 + %2; *]
+	| 												[* %% = ""; *]
+	;
+
+XML:
+	FTAG CONTENT '</' IDENTIFIER '>'				[* %% = %1 + %2 + %3 + %4 + %5; *]
+	| '<' INTAG '>' INXMLCONTENT '</' IDENTIFIER '>'[* %% = %1 + %2 + %3 + %4 + %5 + %6 + %7; *]
+	| '<' INTAG '/>'								[* %% = %1 + %2 + %3; *]
+	;
+
+INTAG:
+	INTAG IDENTIFIER								[* %% = %1 + %2; *]
+	| INTAG '->'									[* %% = %1 + %2; *]
+	| 												[* %% = ""; *]
+	;
+
+INXMLCONTENT:
+	INXMLCONTENT TEXT								[* %% = %1 + makeTextNode(%2); *]
+	| INXMLCONTENT XML								[* %% = %1 + %2; *]
+	| 												[* %% = ""; *]
+	;
+	
+	
+[*
+
+	return {
+		parse: function(str) {
+			var error_cnt = 0; 
+			var error_off = new Array(); 
+			var error_la = new Array();
+			if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) { 
+				print("PreParse errors");
+				for( i = 0; i < error_cnt; i++ ) {
+					var lineInfo = countLines(str, error_off[i]);
+					print("    error on line", lineInfo.lines + ", column:", lineInfo.column, "expecting \"" + error_la[i].join() + "\" near:", "\n" + lineInfo.line + "\n                              ^\n");
+				}
+			}
+			return output;
+		}
+	};
+}();
+
+*]

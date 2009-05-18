@@ -1,6 +1,7 @@
 //load is rhino command. When running in browser, have to load the file with <script> tag
 if (load !== undefined) {
 	load(["tplparser.js"]);
+	load(["preparse.js"]);
 }
 
 function JSONtoString(object, tabs) {
@@ -104,12 +105,15 @@ function compileFolder(folderPath, rebuild) {
 
 
 function preParse(string) {
-	//textnodes
+	//textnodes	
+	string = preParser.parse(string);
+	
 	string = string.replace(/\t/g, "    ");
 	string = string.replace(/\/\/[^\n]*\n/g, "");
 	string = string.replace(/\/\*[^\*\/]*\*\//g, "");
-	string = string.replace(/(<(f[^:^\/^>]|[^f^\/^>])[^<^>^\/]*>)([^<^>]*[^<^>^ ^\r^\t^\n][^<^>]*)/g, "$1<p:textnode>$3</p:textnode>");
-	string = string.replace(/(<\/[^<^>]+>)(([^<^>^\{^\}]|\{[^\}]*\})*([^<^>^\{^\}^ ^\r^\t^\n]|\{[^\}]*\})([^<^>^\{^\}]|\{[^\}]*\})*)/g, "$1<p:textnode>$2</p:textnode>");
+	// string = string.replace(/(<(f[^:^\/^>]|[^f^\/^>])[^<^>^\/]*>)([^<^>]*[^<^>^ ^\r^\t^\n][^<^>]*)/g, "$1<p:textnode>$3</p:textnode>");
+	// string = string.replace(/(<\/[^<^>]+>)(([^<^>^\{^\}]|\{[^\}]*\})*([^<^>^\{^\}^ ^\r^\t^\n]|\{[^\}]*\})([^<^>^\{^\}]|\{[^\}]*\})*)/g, "$1<p:textnode>$2</p:textnode>");
+
 	return string;
 }
 
@@ -131,7 +135,7 @@ function compileFile (filePath, rebuild) {
 			for( i = 0; i < error_cnt; i++ ) {
 				var lineInfo = countLines(str, error_off[i]);
 				print("    error on line", lineInfo.lines + ", column:", lineInfo.column, "expecting \"" + error_la[i].join() + "\" near:", "\n" + lineInfo.line + "\n                              ^\n");
-			} 
+			}
 		} else {
 			//result is a global variable that holds the result from parsing
 			var answer = result;
@@ -181,7 +185,7 @@ function countLines(wholeString, position) {
 //COMPILE COMMAND: rhino jscc.js -o tplparser.js fttemplate.par
 //java -jar js.jar jscc.js -o tplparser.js fttemplate.par
 //RUN COMMAND: rhino assembler.js <root folder>
-//java -jar js.jar assembler.js <root folder>
+//java -jar js.jar -opt -1 assembler.js <root folder> rebuild
 
 if( arguments.length > 0 ) { 
 	var rebuild = false;

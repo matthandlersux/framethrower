@@ -277,7 +277,7 @@
 		if(openTag.textNode !== undefined) {
 			xmlp.unshift(openTag.textNode);
 		}
-		
+				
 		//deal with inserts in textNodes
 		for(var i=0; i<xmlp.length; ) {
 			var textNodeList = checkForInsert(xmlp[i]);
@@ -429,9 +429,10 @@
 	'/'
 	'<'
 	'>'
+	'-'
 	'\"'					QUOTE
-	'[\-\*\+\^\%\.\!\&\|\?]' JSSEP
-	'[A-Za-z0-9_\.\~\-]+'		IDENTIFIER
+	'[\*\+\^\%\.\!\&\|\?]'	JSSEP
+	'[A-Za-z0-9_\.\~\#]+'	IDENTIFIER
 	;
 ##
 
@@ -465,8 +466,9 @@ ARGLIST:
 	;
 
 TYPE:
-	TYPE IDENTIFIER 									[* %% = %1 + " " + %2; *]
+	TYPE TYPE		 									[* %% = %1 + " " + %2; *]
 	| IDENTIFIER
+	| '-' '>'											[* %% = "->"; *]
 	;
 
 LETLIST:
@@ -532,6 +534,7 @@ EXPR:
 	| '(' EXPR ')'											[* %% = %1 + %2 + %3; *]
 	| IDENTIFIER ':' ':' IDENTIFIER							[* %% = %1 + "::" + %4; *]
 	| IDENTIFIER ':' IDENTIFIER								[* %% = %1 + ":" + %3; *]
+	| '-' '>'												[* %% = "->"; *]
 	| EXPR EXPR												[* %% = %1 + " " + %2; *]
 	;
 
@@ -558,6 +561,7 @@ JS:
 	| '<'
 	| '>'
 	| '/'
+	| '-'
 	| JSSEP 
 	| JS JS 											[* %% = %1 + " " + %2; *]
 	|													[* %% = ""; *]
@@ -585,7 +589,7 @@ XML:
 ENDCALL:
 	EXPR 												[* %% = makeExpr(%1); *]
 	| LETLISTBLOCK
-	| XMLLIST											[* %% = makeNode(makeOpenTag("wrapper", {}), %2); *]
+	| XMLLIST											[* %% = makeNode(makeOpenTag("wrapper", {}), %1); *]
 	;
 
 XMLLIST:
@@ -657,8 +661,13 @@ TAGNAME:
 
 ATTRIBUTES:
 	ATTRIBUTES 'style' '=' QUOTE STYLE QUOTE			[* %1[%2] = %5; %% = %1;*]
-	| ATTRIBUTES IDENTIFIER '=' ATTRIBUTE				[* %1[%2] = %4; %% = %1;*]
+	| ATTRIBUTES ATTNAME '=' ATTRIBUTE					[* %1[%2] = %4; %% = %1;*]
 	|													[* %% = {}; *]
+	;
+
+ATTNAME:
+	IDENTIFIER
+	| ATTNAME '-' IDENTIFIER							[* %% = %1 + %2 + %3; *]
 	;
 
 ATTRIBUTE:
@@ -686,6 +695,7 @@ TEXT:
 	| '>'
 	| JSSEP
 	| IDENTIFIER
+	| TEXT '-' TEXT										[* %% = "" + %1 + "-" + %3; *]
 	| TEXT TEXT											[* %% = "" + %1 + " " + %2; *]
 	;
 
@@ -720,10 +730,10 @@ STRING:
 	;
 	
 STYLE:
-	STYLE ';' IDENTIFIER ':' STYLETEXT					[* %1[%3] = %5; %% = %1; *]
-	| STYLE ';' IDENTIFIER ':' INSERT						[* %1[%3] = %5; %% = %1; *]
-	| IDENTIFIER ':' STYLETEXT							[* var ret = {}; ret[%1] = %3; %% = ret; *]
-	| IDENTIFIER ':' INSERT								[* var ret = {}; ret[%1] = %3; %% = ret; *]
+	STYLE ';' ATTNAME ':' STYLETEXT						[* %1[%3] = %5; %% = %1; *]
+	| STYLE ';' ATTNAME ':' INSERT						[* %1[%3] = %5; %% = %1; *]
+	| ATTNAME ':' STYLETEXT								[* var ret = {}; ret[%1] = %3; %% = ret; *]
+	| ATTNAME ':' INSERT								[* var ret = {}; ret[%1] = %3; %% = ret; *]
 	|													[* %% = {}; *]
 	;
 
@@ -734,7 +744,7 @@ STYLETEXT:
 	| ','
 	| '('
 	| ')'
-	| ':'
 	| '='
+	| STYLETEXT '-' STYLETEXT							[* %% = "" + %1 + "-" + %3; *]
 	| STYLETEXT STYLETEXT								[* %% = "" + %1 + " " + %2; *]
 	;
