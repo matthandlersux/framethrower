@@ -667,6 +667,7 @@ ATTRIBUTES:
 
 ATTNAME:
 	IDENTIFIER
+	| KEYWORD
 	| ATTNAME '-' IDENTIFIER							[* %% = %1 + %2 + %3; *]
 	;
 
