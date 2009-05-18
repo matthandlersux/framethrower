@@ -93,5 +93,12 @@ template () {
 		<div>
 			<f:call>outline shared.realLife printObject getAllIn</f:call>
 		</div>
+		<div>
+			<f:call>
+				x = state(Unit Number),
+				y = state(Unit Number),
+				dragdrop (printObject shared.realLife) x y
+			</f:call>
+		</div>
 	</div>
 }
