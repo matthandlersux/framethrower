@@ -1,3 +1,5 @@
+var GLOBAL_ERRORS = false;
+
 //load is rhino command. When running in browser, have to load the file with <script> tag
 if (load !== undefined) {
 	load(["tplparser.js"]);
@@ -130,7 +132,8 @@ function compileFile (filePath, rebuild) {
 		var error_off = new Array(); 
 		var error_la = new Array(); 
 		str = preParse(str);
-		if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) { 
+		if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) {
+			GLOBAL_ERRORS = true;
 			print("Parse errors, File: " + file.getName());
 			for( i = 0; i < error_cnt; i++ ) {
 				var lineInfo = countLines(str, error_off[i]);
@@ -194,13 +197,16 @@ if( arguments.length > 0 ) {
 	}
 	
 	var totalCompiledJSON = compileFolder(arguments[0], rebuild);
-	var totalCompiledString = "var mainTemplate = " + JSONtoString(totalCompiledJSON, 0) + ";";
+	if(!GLOBAL_ERRORS) {
+		var totalCompiledString = "var mainTemplate = " + JSONtoString(totalCompiledJSON, 0) + ";";
 
-	var fw = new java.io.FileWriter("../bin/" + arguments[0] + ".js");
-	var bw = new java.io.BufferedWriter(fw);
-		
-	bw.write(totalCompiledString);
-	bw.close();
+		var fw = new java.io.FileWriter("../bin/" + arguments[0] + ".js");
+		var bw = new java.io.BufferedWriter(fw);
+
+		bw.write(totalCompiledString);
+		bw.close();
+		print('success');		
+	}
 } else {
 	print( 'usage: rhino assembler.js <root folder> [rebuild]' );
 }

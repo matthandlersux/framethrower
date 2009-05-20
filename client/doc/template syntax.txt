@@ -24,8 +24,17 @@ LETLINE
 	VARTOCREATE = LINE
 
 LINE
-	TEMPLATE | EXPR | BLOCK | JAVASCRIPT | XML | STATE | ACTIONTPL
+	TEMPLATE | EXPR | BLOCK | JAVASCRIPT | CASE | XML | STATE | ACTIONTPL
 
+CASE
+	if EXPR as VARTOCREATE {
+		LETLINES
+	} else if EXPR as VARTOCREATE {
+		LETLINES
+	} ...
+	} else {
+		LETLINES
+	}
 
 EXPR
 	you know what an expression looks like (words with spaces, end it on comma or close-brace)

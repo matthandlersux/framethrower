@@ -2,6 +2,16 @@ template (content::XMLP, x::Unit Number, y::Unit Number) {
 	offsetX = state(Unit Number),
 	offsetY = state(Unit Number),
 	dragging = state(Unit Null),
+	someXML = if dragdrop 6 as drg {
+		title = "6 it is:",
+		<div>
+			{title} {drg}
+		</div>
+	} else {
+		<div>
+			Not this time
+		</div>
+	},
 	<div style-position="absolute" style-left="{x}" style-top="{y}">
 		<f:on mousedown>
 			add(offsetX, event.offsetX),
