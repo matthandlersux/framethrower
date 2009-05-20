@@ -617,6 +617,8 @@ XML:
 ENDCALL:
 	EXPR 												[* %% = makeExpr(%1); *]
 	| LETLISTBLOCK
+	| IFBLOCK											[* %% = makeXMLLine(%1); *]
+	| XML												[* %% = makeXMLLine(%1); *]
 	| XMLLIST											[* %% = makeNode(makeOpenTag("wrapper", {}), %1); *]
 	;
 
