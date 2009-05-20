@@ -1,3 +1,5 @@
+var GLOBAL_ERRORS = false;
+
 //load is rhino command. When running in browser, have to load the file with <script> tag
 if (load !== undefined) {
 	load(["tplparser.js"]);
@@ -125,6 +127,7 @@ function compileFile (filePath, rebuild) {
 	if (!rebuild && binfile.exists() && (binfile.lastModified() > file.lastModified())) {
 		return deserialize(binfile.getAbsolutePath());
 	} else {
+		GLOBAL_ERRORS = true;
 		var str = readFile(file.getAbsolutePath());
 		var error_cnt = 0; 
 		var error_off = new Array(); 
@@ -194,13 +197,16 @@ if( arguments.length > 0 ) {
 	}
 	
 	var totalCompiledJSON = compileFolder(arguments[0], rebuild);
-	var totalCompiledString = "var mainTemplate = " + JSONtoString(totalCompiledJSON, 0) + ";";
+	if(!GLOBAL_ERRORS) {
+		var totalCompiledString = "var mainTemplate = " + JSONtoString(totalCompiledJSON, 0) + ";";
 
-	var fw = new java.io.FileWriter("../bin/" + arguments[0] + ".js");
-	var bw = new java.io.BufferedWriter(fw);
-		
-	bw.write(totalCompiledString);
-	bw.close();
+		var fw = new java.io.FileWriter("../bin/" + arguments[0] + ".js");
+		var bw = new java.io.BufferedWriter(fw);
+
+		bw.write(totalCompiledString);
+		bw.close();
+		print('success');		
+	}
 } else {
 	print( 'usage: rhino assembler.js <root folder> [rebuild]' );
 }
