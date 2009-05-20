@@ -7,9 +7,13 @@ template (content::XMLP, x::Unit Number, y::Unit Number) {
 		<div>
 			{title} {drg}
 		</div>
+	} else if dragdrop 7 as drg {
+		<div>
+			Not this time either
+		</div>
 	} else {
 		<div>
-			Not this time
+			Whats up?
 		</div>
 	},
 	<div style-position="absolute" style-left="{x}" style-top="{y}">
