@@ -36,6 +36,11 @@
 		"js/structure/exprChainer.js",
 		"js/structure/exprLib.js",
 		
+		
+		"js/browser/position.js",
+		
+		"js/templates/preparse.js", // might want to do this at compile time?
+		
 		"js/templates/funs.js",
 		"js/templates/action.js",
 		"js/templates/closure.js",

@@ -1,5 +1,5 @@
 
-
+preparse(mainTemplate);
 
 
 var testCell = makeControlledCell("Set Number");

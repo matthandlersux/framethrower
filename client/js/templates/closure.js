@@ -64,8 +64,8 @@ function makeXMLP(xml, env) {
 
 function makeClosure(templateCode, env) {
 	var params = templateCode.params;
-	//var type = templateCode.type;
-	var type = parseType(templateCode.type);
+	var type = templateCode.type;
+	//var type = parseType(templateCode.type);
 	
 	var f = curry(function () {
 		var scope = {};
@@ -116,19 +116,19 @@ function evaluateLine(line, env) {
 	
 	if (line.kind === "lineExpr") {
 		var newEnv = addLets(line.let, env);
-		//var expr = parseExpression(line.expr, newEnv);
-		var expr = parseExpression(parse(line.expr), newEnv);
+		var expr = parseExpression(line.expr, newEnv);
+		//var expr = parseExpression(parse(line.expr), newEnv);
 		return evaluate(expr);
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line.template, env);
 	} else if (line.kind === "lineJavascript") {
-		//return makeFun(line.type, line.f);
-		return makeFun(parseType(line.type), line.f);
+		return makeFun(line.type, line.f);
+		//return makeFun(parseType(line.type), line.f);
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);
 	} else if (line.kind === "lineState") {
-		//return makeCC(line.type);
-		return makeCC(parseType(line.type));
+		return makeCC(line.type);
+		//return makeCC(parseType(line.type));
 	} else if (line.kind === "lineAction") {
 		return makeActionClosure(line.action, env);
 	}

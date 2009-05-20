@@ -59,7 +59,8 @@ function xmlToDOM(xml, env) {
 			node.nodeValue = value;
 		}));
 	} else if (xml.kind === "for-each") {
-		var select = parseExpression(parse(xml.select), env);
+		//var select = parseExpression(parse(xml.select), env);
+		var select = parseExpression(xml.select, env);
 		var result = evaluate(select);
 		
 		var wrapper = createEl("f:wrapper");
@@ -161,7 +162,8 @@ function xmlToDOM(xml, env) {
 		setTimeout(function () {
 			var actionClosure = makeActionClosure(xml.action, env);
 
-			var expr = parseExpression(parse(xml.trigger), env);
+			//var expr = parseExpression(parse(xml.trigger), env);
+			var expr = parseExpression(xml.trigger, env);
 			//var cell = evaluate(expr);
 			var removeTrigger = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
 
@@ -202,8 +204,8 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		callback(xmlInsert);
 		return null;
 	} else {
-		//var expr = parseExpression(xmlInsert.expr, env);
-		var expr = parseExpression(parse(xmlInsert.expr), env);
+		var expr = parseExpression(xmlInsert.expr, env);
+		//var expr = parseExpression(parse(xmlInsert.expr), env);
 		var result = evaluate(expr);
 		
 		//console.log("doing an insert", expr, result);

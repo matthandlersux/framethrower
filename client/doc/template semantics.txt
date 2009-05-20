@@ -42,7 +42,7 @@ XML
 	{kind: "call", templateCode: TEMPLATECODE} // this templateCode should take zero parameters.
 	{kind: "on", event: EVENT, action: ACTION} // this action should take zero parameters.
 	{kind: "trigger", trigger: AST, action: ACTION} // trigger should evaluate to a reactive value, action should take one (or two) parameters
-	{kind: "case", when: [{test: AST, templateCode: TEMPLATECODE}], otherwise?: TEMPLATECODE}
+	{kind: "case", when: [{kind: "when", test: AST, templateCode: TEMPLATECODE}], otherwise?: TEMPLATECODE}
 		// otherwise's templateCode should take zero parameters
 		// test should evaluate to a cell, if it is non-empty then templateCode is run as if it were a for-each. If it is empty, the next one is tried.
 		// when's templateCode should take one parameter

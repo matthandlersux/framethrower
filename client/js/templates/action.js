@@ -33,8 +33,8 @@ function makeActionRef(label, type) {
 
 function makeActionClosure(actionCode, env) {
 	var params = actionCode.params;
-	//var type = actionCode.type;
-	var type = parseType(actionCode.type);
+	var type = actionCode.type;
+	//var type = parseType(actionCode.type);
 	
 	var f = curry(function () {
 		var scope = {};
@@ -57,7 +57,8 @@ function makeActionClosure(actionCode, env) {
 			if (action.kind === "actionCreate") {
 				var created = {
 					kind: "instructionCreate",
-					type: parseType(action.type),
+					//type: parseType(action.type),
+					type: action.type,
 					prop: map(action.prop, function (expr) {
 						return evaluate(parseExpression(parse(expr), envWithParams));
 					}),
@@ -70,8 +71,10 @@ function makeActionClosure(actionCode, env) {
 					kind: "instructionUpdate",
 					target: evaluate(parseExpression(parse(action.target), envWithParams)),
 					actionType: action.actionType,
-					key: action.key ? evaluate(parseExpression(parse(action.key), envWithParams)) : undefined,
-					value: action.value ? evaluate(parseExpression(parse(action.value), envWithParams)) : undefined
+					//key: action.key ? evaluate(parseExpression(parse(action.key), envWithParams)) : undefined,
+					//value: action.value ? evaluate(parseExpression(parse(action.value), envWithParams)) : undefined
+					key: action.key ? evaluate(parseExpression(action.key, envWithParams)) : undefined,
+					value: action.value ? evaluate(parseExpression(action.value, envWithParams)) : undefined
 				});
 			} else {
 				var evaled = evaluateLine(action, envWithParams);
