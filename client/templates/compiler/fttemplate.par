@@ -387,6 +387,24 @@
 		};
 	}
 
+	function makeCase(test, as, letlist, output, otherwise) {
+		var params = [];
+		if (as.key !== undefined) {
+			params.push({name:as.key});
+		}
+		if (as.val !== undefined) {
+			params.push({name:as.val});
+		}
+		var templateCode = makeTemplateCode(params, letlist, output);
+		
+		return {
+			kind: "case", 
+			test: test,
+			templateCode: templateCode,
+			otherwise: otherwise
+		};
+	}
+
 	function stripQuotes (string) {
 		return string.substr(1, string.length-2);
 	}
@@ -413,6 +431,8 @@
 	'remove'
 	'style'
 	'as'
+	'if'
+	'else'
 	'f:each'
 	'f:call'
 	'f:on'
@@ -441,22 +461,30 @@
 ~/
 
 TOP:
-	STMT												[* %% = makeTop( %1 ); *]
+	LINE												[* %% = makeTop( %1 ); *]
 	;
 
 
-STMT:
+LINE:
 	JSFUN
 	| TEMPLATE 											[* %% = {kind: "lineTemplate", template: %1} ; *]
 	| ACTIONTPL											[* %% = {kind: "lineAction", action: %1} ; *]
 	| EXPR 												[* %% = makeExpr(%1); *]
 	| STATE
 	| LETLISTBLOCK
+	| IFBLOCK											[* %% = makeXMLLine(%1); *]
 	| XML												[* %% = makeXMLLine(%1); *]
 	;
 
+
+IFBLOCK:
+	'if' EXPR 'as' ASKEYVAL '{' LETLIST LINE '}' 'else' IFBLOCK					[* %% = makeCase(%2, %4, %6, %7, %10); *]
+	| 'if' EXPR 'as' ASKEYVAL '{' LETLIST LINE '}' 'else' '{' LETLIST LINE '}'	[* %% = makeCase(%2, %4, %6, %7, makeTemplateCode([], %11, %12)); *]
+	;
+
+
 TEMPLATE:
-	'template' '(' ARGLIST ')' '{' LETLIST STMT '}'		[* %% = makeTemplateCode( %3, %6, %7); *]
+	'template' '(' ARGLIST ')' '{' LETLIST LINE '}'		[* %% = makeTemplateCode( %3, %6, %7); *]
 	;
 
 ARGLIST:
@@ -477,7 +505,7 @@ LETLIST:
 	;
 
 LET:
-	VARIABLE '=' STMT									[* %% = makeLet(%1, %3); *]
+	VARIABLE '=' LINE									[* %% = makeLet(%1, %3); *]
 	;
 
 ACTIONTPL:
@@ -485,11 +513,11 @@ ACTIONTPL:
 	;
 
 ACTLIST:
-	ACTLIST ACTSTMT ','									[* %% = push(%1, %2); *]
+	ACTLIST ACTLINE ','									[* %% = push(%1, %2); *]
 	|													[* %% = []; *]
 	;	
 
-ACTSTMT:
+ACTLINE:
 	VARIABLE '=' ACTION									[* %% = makeLineAction(%1, %3); *]
 	| ACTION											[* %% = makeLineAction({}, %1); *]
 	;
@@ -539,7 +567,7 @@ EXPR:
 	;
 
 LETLISTBLOCK:
-	'{' LETLIST STMT '}'									[* %% = makeExpr(%3, %2); *]
+	'{' LETLIST LINE '}'									[* %% = makeExpr(%3, %2); *]
 	;
 
 
@@ -577,7 +605,7 @@ VARIABLE:
 	;
 
 XML:
-	OPENFOREACH LETLIST STMT CLOSEFOREACH				[* %% = makeForEach(%1, %2, %3); *]
+	OPENFOREACH LETLIST LINE CLOSEFOREACH				[* %% = makeForEach(%1, %2, %3); *]
 	| OPENTRIGGER ACTLIST ACTION CLOSETRIGGER			[* %% = makeTrigger(%1, %2, makeLineAction({}, %3)); *]
 	| OPENON ACTLIST ACTION CLOSEON						[* %% = makeOn(%1, %2, makeLineAction({}, %3)); *]
 	| OPENCALL LETLIST ENDCALL CLOSECALL				[* %% = makeCall(%2, %3); *]
@@ -711,6 +739,8 @@ KEYWORD:
 	| 'remove'
 	| 'style'
 	| 'as'
+	| 'if'
+	| 'else'
 	| 'f:each'
 	| 'f:call'
 	| 'f:on'

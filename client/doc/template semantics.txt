@@ -37,16 +37,18 @@ ACTIONUNIT
 
 
 XML
-	XMLNODE |
+	XMLNODE | 
+	CASE |
 	{kind: "for-each", select: AST, templateCode: TEMPLATECODE} | // this templateCode should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
 	{kind: "call", templateCode: TEMPLATECODE} // this templateCode should take zero parameters.
 	{kind: "on", event: EVENT, action: ACTION} // this action should take zero parameters.
 	{kind: "trigger", trigger: AST, action: ACTION} // trigger should evaluate to a reactive value, action should take one (or two) parameters
-	{kind: "case", when: [{test: AST, templateCode: TEMPLATECODE}], otherwise?: TEMPLATECODE}
-		// otherwise's templateCode should take zero parameters
-		// test should evaluate to a cell, if it is non-empty then templateCode is run as if it were a for-each. If it is empty, the next one is tried.
-		// when's templateCode should take one parameter
 
+CASE
+	{kind: "case", test: AST, templateCode: TEMPLATECODE, otherwise?: TEMPLATECODE | CASE}
+	// test should evaluate to a cell, if it is non-empty then templateCode is run as if it were a for-each. If it is empty, otherwise is called.
+	// templateCode should take one parameter
+	// if otherwise is TEMPLATECODE, it should take zero parameters
 
 XMLNODE
 	{kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately

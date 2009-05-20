@@ -127,13 +127,13 @@ function compileFile (filePath, rebuild) {
 	if (!rebuild && binfile.exists() && (binfile.lastModified() > file.lastModified())) {
 		return deserialize(binfile.getAbsolutePath());
 	} else {
-		GLOBAL_ERRORS = true;
 		var str = readFile(file.getAbsolutePath());
 		var error_cnt = 0; 
 		var error_off = new Array(); 
 		var error_la = new Array(); 
 		str = preParse(str);
-		if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) { 
+		if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) {
+			GLOBAL_ERRORS = true;
 			print("Parse errors, File: " + file.getName());
 			for( i = 0; i < error_cnt; i++ ) {
 				var lineInfo = countLines(str, error_off[i]);
