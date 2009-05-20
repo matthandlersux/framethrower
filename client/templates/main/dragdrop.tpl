@@ -20,6 +20,17 @@ template (content::XMLP, x::Unit Number, y::Unit Number) {
 		<f:on mousedown>
 			add(dragging, null)
 		</f:on>
+		<f:call>
+			if whatever as crap {
+				<div>
+					hi
+				</div>
+			} else {
+				<div>
+					nada
+				</div>
+			}
+		</f:call>
 		<f:each dragging as _>
 			<span>
 				<f:trigger UI.ui:mouseX ui.ui as mouseX>
