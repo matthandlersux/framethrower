@@ -308,14 +308,13 @@ function compileTemplate(templateNode, url) {
 				}
 			});
 
-			cell.inject(
-				function() {
-					update();
-					if(url.indexOf("#") == -1) {
-						//only send "top level" urls
-						// session.serverAdviceRequest(url, p);
-					}
-				}, function(){});
+			cell.injectDependency(function() {
+				update();
+				if(url.indexOf("#") == -1) {
+					//only send "top level" urls
+					// session.serverAdviceRequest(url, p);
+				}
+			});
 			update();
 			return cell;
 		}, params.length);

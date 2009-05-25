@@ -208,11 +208,12 @@ function testFile(filename) {
 	
 	function parseAndRun(xml) {
 		var testNodes = xpath("test", xml);
+		var output = "";
 
 		forEach(testNodes, function (testNode) {
 			var testWorld = {startCaps:{}, endCaps:{}, outMessages:[], testOutput:"", testEnv:makeDynamicEnv(base.env)};
 			var testName = testNode.getAttribute("name");
-			console.log("Test", testName, "starting.");
+			output += "\nTest " + testName + " starting. \n";
 			forEach(children(testNode), function (actionNode) {
 				var action = actionNode.nodeName;
 				if (action == 'startcap') {
@@ -227,18 +228,16 @@ function testFile(filename) {
 					testWorld = parseRemoveCap(actionNode, testWorld);
 				}
 			});
-			console.log("Test", testName, "complete. Results: ");
-			console.log(testWorld.testOutput);
+			output += "Test " + testName + " complete. Results: \n";
+			output += testWorld.testOutput;
 			forEach(testWorld.startCaps, function(startCap) {
 				startCap.setDone();
 			});
 		});
+		return output;
 	}
 
-	
-	
-	return function () {
-		var xml = loadXMLNow(filename);
-		parseAndRun(xml);
-	}();
+	//main execution
+	var xml = loadXMLNow(filename);
+	return parseAndRun(xml);
 }
