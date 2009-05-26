@@ -120,7 +120,7 @@ function xmlToDOM(xml, env) {
 			entries[keyString] = newNode;
 			
 			return function () {
-				//console.log("cleaning up a f:each", keys(entries));
+				//console.log("cleaning up a f:each", keys(entries), xml.select);
 				
 				if (newNode.cleanup) newNode.cleanup();
 				wrapper.removeChild(newNode.node);
@@ -129,10 +129,14 @@ function xmlToDOM(xml, env) {
 		});
 		
 		function cleanupAllEntries() {
-			//console.log("cleaning up an entire f:each", keys(entries));
-			forEach(entries, function (entry) {
-				if (entry.cleanup) entry.cleanup();
-			});
+			//console.log("cleaning up an entire f:each", entries);
+			
+			// I don't need the below because when feachCleanup.func is called, all entries are removed, one-by-one, automatically (by cell logic)
+			// forEach(entries, function (entry, entryKey) {
+			// 	console.log("cleaning up an entry", entry, entryKey);
+			// 	if (entry.cleanup) entry.cleanup();
+			// });
+			
 			feachCleanup.func();
 		}
 		
@@ -160,7 +164,6 @@ function xmlToDOM(xml, env) {
 		var node = createEl("f:trigger"); // I just need to return something
 		var cleanupFunc = null;
 		function cleanup() {
-			//console.log("cleaning up a trigger", xml.trigger, cleanupFunc);
 			if (cleanupFunc) cleanupFunc();
 		}
 		

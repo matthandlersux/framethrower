@@ -10,11 +10,12 @@ template (content::XMLP, x::Unit Number, y::Unit Number) {
 		</f:on>
 		<f:each dragging as _>
 			<span>
-				<f:each offsetX as offsetX>
+
+				<f:each offsetX as offsetX><f:each offsetY as offsetY>
 					<f:trigger UI.ui:mouseX ui.ui as mouseX>
 						add(x, mouseX)
 					</f:trigger>
-				</f:each>
+				</f:each></f:each>
 				//<f:each offsetY as offsetY>
 					<f:trigger UI.ui:mouseY ui.ui as mouseY>
 						add(y, mouseY)
