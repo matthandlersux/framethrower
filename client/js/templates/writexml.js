@@ -85,7 +85,8 @@ function xmlToDOM(xml, env) {
 		
 		var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to the evaluated template's {node: NODE, cleanup: FUNCTION}
 		
-		result.inject(emptyFunction, function (value) {
+		
+		var feachCleanup = result.inject(emptyFunction, function (value) {
 			var newNode, keyString;
 			
 			if (constructor === "Map") {
@@ -119,6 +120,8 @@ function xmlToDOM(xml, env) {
 			entries[keyString] = newNode;
 			
 			return function () {
+				//console.log("cleaning up a f:each", keys(entries));
+				
 				if (newNode.cleanup) newNode.cleanup();
 				wrapper.removeChild(newNode.node);
 				delete entries[keyString];
@@ -126,9 +129,11 @@ function xmlToDOM(xml, env) {
 		});
 		
 		function cleanupAllEntries() {
+			//console.log("cleaning up an entire f:each", keys(entries));
 			forEach(entries, function (entry) {
 				if (entry.cleanup) entry.cleanup();
 			});
+			feachCleanup.func();
 		}
 		
 		return {node: wrapper, cleanup: cleanupAllEntries};
@@ -155,6 +160,7 @@ function xmlToDOM(xml, env) {
 		var node = createEl("f:trigger"); // I just need to return something
 		var cleanupFunc = null;
 		function cleanup() {
+			//console.log("cleaning up a trigger", xml.trigger, cleanupFunc);
 			if (cleanupFunc) cleanupFunc();
 		}
 		

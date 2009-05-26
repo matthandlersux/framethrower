@@ -100,5 +100,13 @@ template () {
 				dragdrop (printObject shared.realLife) x y
 			</f:call>
 		</div>
+		// <div>blah blah</div>
+		// <div>
+		// 	<f:call>
+		// 		x = state(Unit Number),
+		// 		y = state(Unit Number),
+		// 		dragdrop2 (printObject shared.test.walleMovie) x y
+		// 	</f:call>
+		// </div>
 	</div>
 }
