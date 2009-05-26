@@ -10,31 +10,23 @@ template (content::XMLP, x::Unit Number, y::Unit Number) {
 		</f:on>
 		<f:each dragging as _>
 			<span>
-
-				<f:each offsetX as offsetX><f:each offsetY as offsetY>
+				<f:each offsetX as offsetX>
 					<f:trigger UI.ui:mouseX ui.ui as mouseX>
-						add(x, mouseX)
+						add(x, subtract mouseX offsetX)
 					</f:trigger>
-				</f:each></f:each>
-				//<f:each offsetY as offsetY>
+				</f:each>
+				<f:each offsetY as offsetY>
 					<f:trigger UI.ui:mouseY ui.ui as mouseY>
-						add(y, mouseY)
+						add(y, subtract mouseY offsetY)
 					</f:trigger>
-				//</f:each>
+				</f:each>
 				<f:trigger reactiveNot (UI.ui:mouseDown ui.ui) as _>
 					remove(offsetX),
 					remove(offsetY),
 					remove(dragging)
 				</f:trigger>
-				// <f:each offsetX as offsetX>
-				// 	<div> </div>
-				// </f:each>
-				// <f:each offsetY as offsetY>
-				// 	<div> </div>
-				// </f:each>
 			</span>
 		</f:each>
-		//{offsetX}
 		<f:call>content</f:call>
 	</div>
 }
