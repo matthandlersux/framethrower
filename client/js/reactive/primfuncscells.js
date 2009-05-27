@@ -322,7 +322,7 @@ var primFuncs = function () {
 		// Null Type Functions
 		// ============================================================================
 		reactiveNot: {
-			type: "Unit Null -> Unit Null",
+			type: "Unit a -> Unit Null",
 			func: function (cell) {
 				var outputCell = makeCell();
 				outputCell.addLine(nullObject);

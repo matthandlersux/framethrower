@@ -5,16 +5,12 @@ template (width::Number, height::Number, video::X.video) {
 	url = X.video:url video,
 	
 	
+	previewTime = state(Unit Number),
+	zoomWidth = state(Unit Number),
+	
+	
 	<f:each videoWidth as videoWidth><f:each videoHeight as videoHeight><f:each duration as duration><f:each url as url>
 	
-		
-		// ratio = {
-		// 	tmp = function (width, height) {
-		// 		return width / height;
-		// 	},
-		// 	tmp videoWidth videoHeight
-		// },
-		
 		divide = function (x, y) {
 			return x / y;
 		},
@@ -23,17 +19,20 @@ template (width::Number, height::Number, video::X.video) {
 		},
 		ratio = divide videoWidth videoHeight,
 		scaledHeight = height,
-		scaledWidth = multiply ratio (divide scaledHeight height),
+		scaledWidth = multiply ratio scaledHeight,
+		
+		timelineLeft = subtract width scaledWidth,
 	
 	
 		<div style-width="{width}" style-height="{height}">
-			{ratio}
-			// <div class="timeline" style-width="{subtract width scaledWidth}" style-height="{height}">
-			// 	timeline
-			// </div>
-			// <div class="preview" style-width="{scaledWidth}" style-height="{height}">
-			// 	preview
-			// </div>
+			<div class="timeline-left" style-width="{timelineLeft}" style-height="{height}">
+				<div class="timeline-container" style-width="{timelineLeft}" style-height="{height}">
+				
+				</div>
+			</div>
+			<div class="timeline-preview" style-width="{scaledWidth}" style-height="{height}" style-left="{timelineLeft}">
+				preview
+			</div>
 		</div>
 	
 	
