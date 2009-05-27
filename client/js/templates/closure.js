@@ -94,9 +94,9 @@ function makeClosure(templateCode, env) {
 function addLets(lets, env) {
 	var memo = {};
 	function newEnv(s) {
-		if (memo[s]) {
+		if (memo[s] !== undefined) {
 			return memo[s];
-		} else if (lets[s]) {
+		} else if (lets[s] !== undefined) {
 			memo[s] = evaluateLine(lets[s], newEnv);
 			return memo[s];
 		} else {
