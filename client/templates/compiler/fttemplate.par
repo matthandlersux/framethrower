@@ -629,7 +629,7 @@ XMLLIST:
 
 OPENFOREACH:
 	'<' 'f:each' EXPR 'as' ASKEYVAL '>'					[* %% = {expr:%3, as:%5}; *]
-	| '<' 'f:each' EXPR '>'								[* %% = {expr:%3, as:"_"}; *]
+	| '<' 'f:each' EXPR '>'								[* %% = {expr:%3, as:{key: "_"}}; *]
 	;
 
 CLOSEFOREACH:
@@ -638,7 +638,7 @@ CLOSEFOREACH:
 
 OPENTRIGGER:
 	'<' 'f:trigger' EXPR 'as' ASKEYVAL '>'				[* %% = {expr:%3, as:%5}; *]
-	| 	'<' 'f:trigger' EXPR '>'						[* %% = {expr:%3, as:"_"}; *]
+	| 	'<' 'f:trigger' EXPR '>'						[* %% = {expr:%3, as:{key: "_"}}; *]
 	;
 
 CLOSETRIGGER:
