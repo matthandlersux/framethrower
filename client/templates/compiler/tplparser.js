@@ -2402,7 +2402,7 @@ switch( act )
 	break;
 	case 10:
 	{
-		 rval = makeCase(vstack[ vstack.length - 9 ], vstack[ vstack.length - 7 ], vstack[ vstack.length - 5 ], vstack[ vstack.length - 4 ], vstack[ vstack.length - 1 ]); 
+		 rval = makeCase(vstack[ vstack.length - 9 ], vstack[ vstack.length - 7 ], vstack[ vstack.length - 5 ], vstack[ vstack.length - 4 ], makeXMLLine(vstack[ vstack.length - 1 ])); 
 	}
 	break;
 	case 11:
