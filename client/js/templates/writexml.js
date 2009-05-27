@@ -59,7 +59,8 @@ function xmlToDOM(xml, env) {
 			node.nodeValue = value;
 		}));
 	} else if (xml.kind === "for-each") {
-		var select = parseExpression(parse(xml.select), env);
+		//var select = parseExpression(parse(xml.select), env);
+		var select = parseExpression(xml.select, env);
 		var result = evaluate(select);
 		
 		var wrapper = createEl("f:wrapper");
@@ -84,7 +85,8 @@ function xmlToDOM(xml, env) {
 		
 		var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to the evaluated template's {node: NODE, cleanup: FUNCTION}
 		
-		result.inject(emptyFunction, function (value) {
+		
+		var feachCleanup = result.inject(emptyFunction, function (value) {
 			var newNode, keyString;
 			
 			if (constructor === "Map") {
@@ -118,6 +120,8 @@ function xmlToDOM(xml, env) {
 			entries[keyString] = newNode;
 			
 			return function () {
+				//console.log("cleaning up a f:each", keys(entries), xml.select);
+				
 				if (newNode.cleanup) newNode.cleanup();
 				wrapper.removeChild(newNode.node);
 				delete entries[keyString];
@@ -125,9 +129,15 @@ function xmlToDOM(xml, env) {
 		});
 		
 		function cleanupAllEntries() {
-			forEach(entries, function (entry) {
-				if (entry.cleanup) entry.cleanup();
-			});
+			//console.log("cleaning up an entire f:each", entries);
+			
+			// I don't need the below because when feachCleanup is called, all entries are removed, one-by-one, automatically (by cell logic)
+			// forEach(entries, function (entry, entryKey) {
+			// 	console.log("cleaning up an entry", entry, entryKey);
+			// 	if (entry.cleanup) entry.cleanup();
+			// });
+			
+			feachCleanup();
 		}
 		
 		return {node: wrapper, cleanup: cleanupAllEntries};
@@ -161,7 +171,8 @@ function xmlToDOM(xml, env) {
 		setTimeout(function () {
 			var actionClosure = makeActionClosure(xml.action, env);
 
-			var expr = parseExpression(parse(xml.trigger), env);
+			//var expr = parseExpression(parse(xml.trigger), env);
+			var expr = parseExpression(xml.trigger, env);
 			//var cell = evaluate(expr);
 			var removeTrigger = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
 
@@ -170,7 +181,7 @@ function xmlToDOM(xml, env) {
 				var action = evaluate(makeApply(actionClosure, val));
 				executeAction(action);
 			});
-			cleanupFunc = removeTrigger.func;
+			cleanupFunc = removeTrigger;
 		}, 0);
 		
 		return {node: node, cleanup: cleanup};
@@ -202,8 +213,8 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		callback(xmlInsert);
 		return null;
 	} else {
-		//var expr = parseExpression(xmlInsert.expr, env);
-		var expr = parseExpression(parse(xmlInsert.expr), env);
+		var expr = parseExpression(xmlInsert.expr, env);
+		//var expr = parseExpression(parse(xmlInsert.expr), env);
 		var result = evaluate(expr);
 		
 		//console.log("doing an insert", expr, result);
@@ -212,7 +223,7 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		if (result.kind === "startCap") {
 			var serialized = makeApply(serializeCell, result);
 			
-			return evaluateAndInject(serialized, emptyFunction, callback).func; // NOTE: might want to wrap callback so that it returns an empty function?
+			return evaluateAndInject(serialized, emptyFunction, callback); // NOTE: might want to wrap callback so that it returns an empty function?
 		} else {
 			callback(result);
 			return null;

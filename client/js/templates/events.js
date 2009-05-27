@@ -33,6 +33,16 @@
 		if (fon.length > 0) {
 			var fonEl = xpath("f:on[@event='" + eventName + "'] | f:wrapper/f:on[@event='" + eventName + "'] | f:wrapper/f:wrapper/f:on[@event='" + eventName + "']", fon[0])[0];
 			
+			var env = function (s) {
+				if (s === "event.offsetX") {
+					return mouseCurrentPos[0] - getPosition(fonEl.parentNode)[0];
+				} else if (s === "event.offsetY") {
+					return mouseCurrentPos[1] - getPosition(fonEl.parentNode)[1];
+				} else {
+					return fonEl.custom.env(s);
+				}
+			};
+			
 			
 			// var browserParams = xpath("f:with-param-browser", fonEl);
 			// var form;
@@ -74,7 +84,7 @@
 			// 	}
 			// });
 			
-			var action = makeActionClosure(fonEl.custom.action, fonEl.custom.env);
+			var action = makeActionClosure(fonEl.custom.action, env);
 			
 			
 			//console.log("about to execute an action!", action);
