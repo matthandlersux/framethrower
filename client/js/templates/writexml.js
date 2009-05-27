@@ -141,6 +141,66 @@ function xmlToDOM(xml, env) {
 		}
 		
 		return {node: wrapper, cleanup: cleanupAllEntries};
+	} else if (xml.kind === "case") {
+		// TODO: right now, case only works if the predicate is of type Unit a. Figure out what we want it to do for other types...
+		
+		// TODO: test this for memory leaks, I think it's good though.
+		
+		// {kind: "case", test: AST, templateCode: TEMPLATECODE, otherwise?: TEMPLATECODE | CASE}
+		
+		var select = parseExpression(xml.test, env);
+		var result = evaluate(select);
+		
+		var wrapper = createEl("f:wrapper");
+		
+		// set up an endCap to listen to result and change the children of the wrapper
+		
+		var innerTemplate = makeClosure(xml.templateCode, env);
+		var otherwiseTemplate = xml.otherwise ? makeClosure(xml.otherwise, env) : undefined;
+		
+		var childNode = null;
+		
+		function clearIt() {
+			if (childNode) {
+				if (childNode.cleanup) childNode.cleanup();
+				wrapper.removeChild(childNode.node);
+				childNode = null;
+			}
+		}
+		
+		function printOccupied(value) {
+			clearIt();
+			var tmp = evaluate(makeApply(innerTemplate, value));
+			childNode = xmlToDOM(tmp.xml, tmp.env);
+			wrapper.appendChild(childNode.node);
+		}
+		function printOtherwise() {
+			clearIt();
+			if (otherwiseTemplate) {
+				childNode = xmlToDOM(otherwiseTemplate.xml, otherwiseTemplate.env);
+				wrapper.appendChild(childNode.node);
+			}
+		}
+		
+		var occupied = false;
+		var cleanupInjection = result.inject(emptyFunction, function (value) {
+			occupied = true;
+			printOccupied(value);
+			return function () {
+				printOtherwise();
+			};
+		});
+		
+		function cleanup() {
+			cleanupInjection();
+			clearIt();
+		}
+		
+		if (!occupied) {
+			printOtherwise();
+		}
+		
+		return {node: wrapper, cleanup: cleanup};
 	} else if (xml.kind === "call") {
 		var xmlp = makeClosure(xml.templateCode, env);
 		return xmlToDOM(xmlp.xml, xmlp.env);
