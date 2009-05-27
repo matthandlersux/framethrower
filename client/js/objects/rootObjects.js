@@ -88,6 +88,11 @@ var rootObjects = {};
 	
 	m("shared.test.walleMovie");
 
+
+	//andrew test objects
+	m("shared.test.andrew");
+	m("shared.test.toby");
+
 	
 	// m("test.1");
 	// m("test.2");
