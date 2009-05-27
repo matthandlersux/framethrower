@@ -1,0 +1,15 @@
+.situationView-situation {
+	position:absolute;
+	width: 400px;
+	height: 400px;
+	background-color: blue;
+	border:1px solid black;
+}
+
+.situationView-object {
+	position:absolute;
+	width: 100px;
+	height: 100px;
+	background-color: green;
+	border:1px solid black;
+}
