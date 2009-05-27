@@ -201,7 +201,7 @@ boolToUnit(Val) ->
 %% add:: Number -> Number -> Number
 %% 
 
-add(Val1, Val2) ->
+plus(Val1, Val2) ->
 	Val1 + Val2.
 
 %% 

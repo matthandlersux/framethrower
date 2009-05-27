@@ -32,38 +32,27 @@ var primFuncs = function () {
 				outputCell.clearRange();
 			}
 		};
-		
-		injects(outputCell, [
-			{
-				cell: startCell,
-				f: function(val) {
-					start = val;
-					updateRange();
-					return function () {
-						start = undefined;
-						updateRange();
-					};
-				}
-			},
-			{
-				cell: endCell,
-				f: function(val) {
-					end = val;
-					updateRange();
-					return function () {
-						end = undefined;
-						updateRange();
-					};
-				}
-			},
-			{
-				cell: cell,
-				f: function (val) {
-					return outputCell.addLine(val);
-				}
-			}
-		]);
-		
+		outputCell.leash();
+		startCell.inject(outputCell, function(val) {
+			start = val;
+			updateRange();
+			return function () {
+				start = undefined;
+				updateRange();
+			};
+		});
+		endCell.inject(outputCell, function(val) {
+			end = val;
+			updateRange();
+			return function () {
+				end = undefined;
+				updateRange();
+			};
+		});
+		cell.inject(outputCell, function (val) {
+			return outputCell.addLine(val);
+		});
+		outputCell.unleash();
 		return outputCell;
 	};
 	
@@ -161,22 +150,14 @@ var primFuncs = function () {
 			type : "Set a -> Set a -> Set a",
 			func : function (cell1, cell2) {
 				var outputCell = makeCell();
-				
-				injects(outputCell, [
-					{
-						cell: cell1,
-						f: function (val) {
-							return outputCell.addLine(val);
-						}
-					},
-					{
-						cell: cell2,
-						f: function (val) {
-							return outputCell.addLine(val);
-						}
-					}
-				]);
-
+				outputCell.leash();
+				cell1.inject(outputCell, function (val) {
+					return outputCell.addLine(val);
+				});
+				cell2.inject(outputCell, function (val) {
+					return outputCell.addLine(val);
+				});
+				outputCell.unleash();
 				return outputCell;
 			}
 		},
@@ -201,30 +182,22 @@ var primFuncs = function () {
 						return {num:0};
 					});
 				};
-
-				injects(outputCell, [
-					{
-						cell: cell1,
-						f: function (value) {
-							var count = getOrMake(value);
-							add(count, value);
-							return function () {
-								sub(count);
-							};
-						}
-					},
-					{
-						cell: cell2,
-						f: function (value) {
-							var count = getOrMake(value);
-							sub(count);
-							return function () {
-								add(count, value);
-							};
-						}
-					}
-				]);
-
+				outputCell.leash();
+				cell1.inject(outputCell, function (value) {
+					var count = getOrMake(value);
+					add(count, value);
+					return function () {
+						sub(count);
+					};
+				});
+				cell2.inject(outputCell, function (value) {
+					var count = getOrMake(value);
+					sub(count);
+					return function () {
+						add(count, value);
+					};
+				});
+				outputCell.unleash();
 				return outputCell;
 			}
 		},
@@ -379,32 +352,24 @@ var primFuncs = function () {
 						isSet = false;
 					}
 				}
-				
-				injects(outputCell, [
-					{
-						cell: cell1,
-						f: function (val) {
-							bool1 = true;
-							updateOutputCell();
-							return function () {
-								bool1 = false;
-								updateOutputCell();
-							};
-						}
-					},
-					{
-						cell: cell2,
-						f: function (val) {
-							bool2 = true;
-							updateOutputCell();
-							return function () {
-								bool2 = false;
-								updateOutputCell();
-							};
-						}
-					}
-				]);				
-				
+				outputCell.leash();
+				cell1.inject(outputCell, function (val) {
+					bool1 = true;
+					updateOutputCell();
+					return function () {
+						bool1 = false;
+						updateOutputCell();
+					};
+				});
+				cell2.inject(outputCell, function (val) {
+					bool2 = true;
+					updateOutputCell();
+					return function () {
+						bool2 = false;
+						updateOutputCell();
+					};
+				});
+				outputCell.unleash();
 				return outputCell;
 			}
 		},
@@ -425,32 +390,24 @@ var primFuncs = function () {
 						isSet = false;
 					}
 				}
-
-				injects(outputCell, [
-					{
-						cell: cell1,
-						f: function (val) {
-							bool1 = true;
-							updateOutputCell();
-							return function () {
-								bool1 = false;
-								updateOutputCell();
-							};
-						}
-					},
-					{
-						cell: cell2,
-						f: function (val) {
-							bool2 = true;
-							updateOutputCell();
-							return function () {
-								bool2 = false;
-								updateOutputCell();
-							};
-						}
-					}
-				]);
-
+				outputCell.leash();
+				cell1.inject(outputCell, function (val) {
+					bool1 = true;
+					updateOutputCell();
+					return function () {
+						bool1 = false;
+						updateOutputCell();
+					};
+				});
+				cell2.inject(outputCell, function (val) {
+					bool2 = true;
+					updateOutputCell();
+					return function () {
+						bool2 = false;
+						updateOutputCell();
+					};
+				});
+				outputCell.unleash();
 				return outputCell;				
 			}
 		},

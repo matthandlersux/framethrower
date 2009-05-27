@@ -6,7 +6,8 @@ function makeBaseCell (toKey) {
 	CELLSCREATED++;
 	var cell = {kind: "startCap", remote: 2, name: localIds()};
 	var funcs = makeObjectHash();
-	var onRemoves = makeObjectHash();
+	var onRemoves = [];
+	var dependencies = makeObjectHash();
 	var funcColor = 0; //counter for coloring injected functions
 	cell.isDone = false;
 
@@ -15,19 +16,19 @@ function makeBaseCell (toKey) {
 	//temp debug functions
 	cell.getFuncs = function(){return funcs;};
 
-	var onAdd = function (dot) {
+	var addFirstLine = function (dot) {
 		funcs.forEach(function (func, id) {
-			addLineResponse(dot, func.func, id);
+			runFunOnDot(dot, func.func, id);
 		});
 	};
 
-	var onRemove = function(dot) {
+	var removeLastLine = function(dot) {
 		funcs.forEach(function (func, id) {
-			removeLineResponse(dot, id);
+			undoFunOnDot(dot, id);
 		});
 	};
 
-	var dots = makeRangedSet(onAdd, onRemove);
+	var dots = makeRangedSet(addFirstLine, removeLastLine);
 
 	cell.clearRange = function () {
 		dots.clearRange();
@@ -49,142 +50,115 @@ function makeBaseCell (toKey) {
 		dots.makeSorted();
 	};
 	
-	
-	
-	cell.injectOnRemove = function (depender) {
-		var id = funcColor++;
-		var onRemove = {
-			func:function () {
-				cell.removeFunc(id);
-			},
-			cell:cell,
-			id:id,
-			done:false
-		};
-		if (depender.addOnRemove) {
-			depender.addOnRemove(onRemove);
-		}
-		return onRemove;
+	cell.leash = function() {
+		cell.addDependency("leash", 1);
 	};
 	
-	cell.injectHelper = function (depender, f, id) {
-		funcs.set(id, {func:f, depender:depender});		
-		dots.forRange(function (dot, key) {
-			if(dot.num > 0) {
-				addLineResponse(dot, f, id);
-			}
-		});
-		if (cell.isDone) {
-			if (depender.done) {
-				depender.done(cell, id);
-			} else {
-				//depender is a function
-				depender();
-			}
-		}
+	cell.unleash = function() {
+		cell.done("leash", 1);
 	};
 	
+	
+	// ----------------------------------------------------------------------
+	//  Function: inject
+	//  Purpose: Injects a function to be run on all dots in the cell, and a depender to inform when the cell is done
+	//  			If the depender is a cell, this also injects on onRemove into depender to inform this cell when depender dies
+	//  Args: Depender is cell | function (use an empty function if there is no dependency behavior))
+	//  Returns: A function to remove this injected function
+	// ----------------------------------------------------------------------	
 	//if cell is of type Unit a or Set a, f is a function that takes one argument key::a
 	//if cell is of type Map a b, f is a function that takes one javascript object: {key::a, val::b}
 	//f(k) or f{key=k,val=v}) returns a callback function that will be called when k is removed from the Unit/Set/Map
 	cell.inject = function (depender, f) {
-		var onRemove = cell.injectOnRemove(depender);
-		var id = onRemove.id;
-		cell.injectHelper(depender, f, id);
+		var id = funcColor++;
+		if (depender.addDependency) {
+			depender.addDependency(cell, id);
+		}
+		funcs.set(id, {func:f, depender:depender});
+		if (f !== undefined) {
+			dots.forRange(function (dot, key) {
+				if(dot.num > 0) {
+					runFunOnDot(dot, f, id);
+				}
+			});
+		}
+		informDepender(depender, cell, id);
+		var onRemove = function () {
+			cell.removeFunc(id);
+		};
 		return onRemove;
 	};
-	
-	injects = function (depender, cellFuncs) {
-		forEach(cellFuncs, function (cellFunc) {
-			var onRemove = cellFunc.cell.injectOnRemove(depender);
-			cellFunc.id = onRemove.id;
-		});
-		forEach(cellFuncs, function (cellFuncId) {
-			cellFuncId.cell.injectHelper(depender, cellFuncId.f, cellFuncId.id);
-		});
-	};
-		
-	
-	cell.addOnRemove = function (onRemove) {
-		if (onRemove.cell) {
-			onRemoves.set(onRemove.cell.name + "," + onRemove.id, onRemove);
+
+	// ----------------------------------------------------------------------
+	//  Function: injectDependency
+	//  Purpose: Set up the same dependency behavior as with inject, but not tied to any injected function
+	//  Args: Depender is cellPointer | function
+	//  Returns: A function to remove this dependency
+	// ----------------------------------------------------------------------
+	cell.injectDependency = function (depender) {
+		cell.inject(depender, undefined);
+	}
+
+
+	function informDepender(depender, cell, funcId) {
+		if (depender.done) {
+			depender.done(cell, funcId);
 		} else {
-			onRemoves.set(onRemove, onRemove);
+			//depender is a function
+			depender();
 		}
-		if (onRemove.done == false) {
-			cell.isDone = false;
+	}
+
+
+	cell.addOnRemove = function (onRemove) {
+		onRemoves.push(onRemove);
+	};
+	
+	cell.addDependency = function (depCell, id) {
+		if(depCell.name !== undefined) {
+			dependencies.set(depCell.name + "," + id, true);
+		} else {
+			dependencies.set(depCell + "," + id, true);
 		}
 	};
 	
 	cell.removeFunc = function (id) {
 		var depender = funcs.get(id).depender;
-		if (depender.removeDependency) {
-			depender.removeDependency(cell, id);
+		if (depender.done !== undefined) {
+			depender.done(cell, id);
 		}
 		funcs.remove(id);
 		dots.forRange(function (dot, key) {
-			removeLineResponse(dot, id);
+			undoFunOnDot(dot, id);
 		});
 		if (funcs.isEmpty() && !cell.persist) {
 			// console.log("removing a cell");
 			CELLCOUNT--;
-			onRemoves.forEach(function(onRemove) {
-				if (onRemove.func) {
-					onRemove.func();
-				} else {
-					onRemove();
-				}
+			forEach(onRemoves, function(onRemove) {
+				onRemove();
 			});
 		}
 	};
 
 	function checkDone() {
-		var allDone = true;
-		onRemoves.forEach(function(onRemove, key) {
-			if (onRemove.done !== undefined) {
-				allDone = allDone && onRemove.done;
-			}
-		});
-		if (allDone) {
+		if (dependencies.isEmpty()) {
 			cell.isDone = true;
 			funcs.forEach(function(func, funcId) {
-				if (func.depender) {
-					if (func.depender.done) {
-						func.depender.done(cell, funcId);
-					} else {
-						func.depender();
-					}
-				}
+				informDepender(func.depender, cell, funcId);
 			});
 		}
 	};
 
-	cell.removeDependency = function (inputCell, inputId) {
-		onRemoves.remove(inputCell.name + "," + inputId);
-		checkDone();
-	};
-
 	cell.done = function (doneCell, id) {
-		if (!cell.isDone) {
-			var onRemove = onRemoves.get(doneCell.name + "," + id);
-			if (onRemove) {
-				onRemove.done = true;
-			}
-			checkDone();
-		}
+		dependencies.remove(doneCell.name + "," + id);
+		checkDone();
 	};
 
 	cell.setDone = function () {
 		if (!cell.isDone) {
 			cell.isDone = true;
 			funcs.forEach(function(func, funcId) {
-				if (func.depender) {
-					if (func.depender.done) {
-						func.depender.done(cell, funcId);
-					} else {
-						func.depender();
-					}
-				}
+				informDepender(func.depender, cell, funcId);
 			});
 		}
 	};
@@ -198,7 +172,7 @@ function makeBaseCell (toKey) {
 			dot = {val:value, num:1, lines:makeObjectHash()};
 			dots.set(key, dot);
 			if (dots.inRange(key)) {
-				onAdd(dot);
+				addFirstLine(dot);
 			}
 		}
 		return function () {
@@ -213,25 +187,29 @@ function makeBaseCell (toKey) {
 			if(dot.num == 0) {
 				dots.remove(key);
 				if (dots.inRange(key)) {
-					onRemove(dot);
+					removeLastLine(dot);
 				}
 			}
 		}
 	};
 	
-	var addLineResponse = function (dot, func, id) {
+	var runFunOnDot = function (dot, func, id) {
 		var value = dot.val;
 		var onRemove = func(value);
 		if (onRemove !== undefined) {
 			if (onRemove.func) {
 				dots.get(toKey(value)).lines.set(id, onRemove.func);
 			} else {
-				dots.get(toKey(value)).lines.set(id, onRemove);
+				var temp = dots.get(toKey(value));
+				if(temp == undefined) {
+					console.log("Dot num", dot.num);
+				}
+				temp.lines.set(id, onRemove);
 			}
 		}
 	};
 	
-	var removeLineResponse = function (dot, id) {
+	var undoFunOnDot = function (dot, id) {
 		if (dot !== undefined) {
 			var removeFunc = dot.lines.get(id);
 			if (removeFunc) {

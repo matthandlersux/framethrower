@@ -33,9 +33,6 @@ sendIntercept(IntPid, Message) ->
 addDependency(IntPid, Dependency) ->
 	gen_server:cast(IntPid, {addDependency, Dependency}).
 
-removeDependency(IntPid, Dependency) ->
-	gen_server:cast(IntPid, {removeDependency, Dependency}).	
-
 done(IntPid, DoneDepender) ->
 	gen_server:cast(IntPid, {done, DoneDepender}).
 
