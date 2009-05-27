@@ -2802,7 +2802,7 @@ switch( act )
 	break;
 	case 90:
 	{
-		 rval = {expr:vstack[ vstack.length - 2 ], as:"_"}; 
+		 rval = {expr:vstack[ vstack.length - 2 ], as:{key: "_"}}; 
 	}
 	break;
 	case 91:
@@ -2817,7 +2817,7 @@ switch( act )
 	break;
 	case 93:
 	{
-		 rval = {expr:vstack[ vstack.length - 2 ], as:"_"}; 
+		 rval = {expr:vstack[ vstack.length - 2 ], as:{key: "_"}}; 
 	}
 	break;
 	case 94:
