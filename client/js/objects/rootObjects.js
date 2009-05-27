@@ -125,6 +125,20 @@ var rootObjects = {};
 	m("test.relationCreator", "UI.relationCreator", {"typeExplorer": rootObjects["test.typeExplorer"]});
 	rootObjects["test.relationCreator"].prop["words"].control.add("b", rootObjects["test.word"]);
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	m("test.walleVideo", "X.video", {"url": 'devise-walle.mp4', "width": 720, "height": 304, "duration": 5894.139, "frameRate": 23.976024627686});
+	
+	
+	
+	
 	// m("test.pane", "UI.pane.pane");
 	// rootObjects["test.pane"].prop["focus"].control.add(rootObjects["shared.realLife"]);
 	// objects.cast(rootObjects["test.pane"], "UI.pane").prop["width"].control.add(200);	
