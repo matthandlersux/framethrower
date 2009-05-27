@@ -49,7 +49,13 @@ function xmlToDOM(xml, env) {
 		
 		forEach(xml.children, function (child) {
 			var childNodeCleanup = xmlToDOM(child, env);
-			node.appendChild(childNodeCleanup.node);
+			try {
+				node.appendChild(childNodeCleanup.node);
+			} catch (e) {
+				console.log("had a problem", childNodeCleanup, xml, child);
+				throw e;
+			}
+			
 			pushCleanup(childNodeCleanup.cleanup);
 		});
 	} else if (xml.kind === "textElement") {

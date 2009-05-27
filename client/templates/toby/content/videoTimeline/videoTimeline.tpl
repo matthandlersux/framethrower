@@ -45,7 +45,8 @@ template (width::Number, height::Number, video::X.video) {
 					</div>
 				</div>
 				<div class="timeline-preview" style-width="{scaledWidth}" style-height="{height}" style-left="{timelineLeft}">
-					preview {previewTime}
+					//preview {previewTime}
+					<f:call>quicktime scaledWidth scaledHeight url</f:call>
 				</div>
 			</div>
 		</f:wrapper>

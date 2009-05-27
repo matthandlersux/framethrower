@@ -17,6 +17,8 @@ function preparse(template) {
 	} else if (kind === "actionUpdate") {
 		template.key = template.key ? parse(template.key) : undefined;
 		template.value = template.value ? parse(template.value) : undefined;
+	} else if (kind === "case") {
+		template.test = parse(template.test);
 	} else if (kind === "for-each") {
 		template.select= parse(template.select);
 	} else if (kind === "trigger") {
