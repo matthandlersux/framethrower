@@ -25,6 +25,9 @@ When cleanup() is called, these endCaps are removed.
 cleanup may be returned as null, in which case there's nothing to clean up.
 */ 
 function xmlToDOM(xml, env) {
+	
+	// I've added this convenience, XMLP can have as its xml property a {node: --, cleanup: --} in which case it is already DOM.
+	// I use this for javascript creating quicktime embeds.
 	if (xml.node) {
 		return xml;
 	}

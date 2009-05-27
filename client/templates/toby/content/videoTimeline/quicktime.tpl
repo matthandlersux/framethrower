@@ -1,4 +1,4 @@
-function (width::Number, height::Number, src::String) {
+function (width::Number, height::Number, src::String, gotoTime::Unit Number) {
 	
 	function makeQTMovie(src, width, height, autoplay) {
 		var mov = createEl("embed");
@@ -34,7 +34,25 @@ function (width::Number, height::Number, src::String) {
 	
 	var mov = makeQTMovie(src, width, height, false);
 	
-	var ret = makeXMLP({node: mov, cleanup: emptyFunction});
+	var cleanupFuncs = new Array();
+	
+	cleanupFuncs.push(evaluateAndInject(gotoTime, emptyFunction, function (time) {
+		try {
+			mov.SetTime(time * mov.GetTimeScale());
+		} catch (e) {
+			
+		}
+	}));
+	
+	function cleanup() {
+		forEach(cleanupFuncs, function (f) {
+			f();
+		});
+	}
+	
+	
+	
+	var ret = makeXMLP({node: mov, cleanup: cleanup});
 	
 	console.log("made mov", ret);
 	
