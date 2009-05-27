@@ -131,13 +131,13 @@ function xmlToDOM(xml, env) {
 		function cleanupAllEntries() {
 			//console.log("cleaning up an entire f:each", entries);
 			
-			// I don't need the below because when feachCleanup.func is called, all entries are removed, one-by-one, automatically (by cell logic)
+			// I don't need the below because when feachCleanup is called, all entries are removed, one-by-one, automatically (by cell logic)
 			// forEach(entries, function (entry, entryKey) {
 			// 	console.log("cleaning up an entry", entry, entryKey);
 			// 	if (entry.cleanup) entry.cleanup();
 			// });
 			
-			feachCleanup.func();
+			feachCleanup();
 		}
 		
 		return {node: wrapper, cleanup: cleanupAllEntries};
@@ -181,7 +181,7 @@ function xmlToDOM(xml, env) {
 				var action = evaluate(makeApply(actionClosure, val));
 				executeAction(action);
 			});
-			cleanupFunc = removeTrigger.func;
+			cleanupFunc = removeTrigger;
 		}, 0);
 		
 		return {node: node, cleanup: cleanup};
@@ -223,7 +223,7 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		if (result.kind === "startCap") {
 			var serialized = makeApply(serializeCell, result);
 			
-			return evaluateAndInject(serialized, emptyFunction, callback).func; // NOTE: might want to wrap callback so that it returns an empty function?
+			return evaluateAndInject(serialized, emptyFunction, callback); // NOTE: might want to wrap callback so that it returns an empty function?
 		} else {
 			callback(result);
 			return null;
