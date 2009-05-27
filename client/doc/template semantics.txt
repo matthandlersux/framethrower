@@ -45,10 +45,10 @@ XML
 	{kind: "trigger", trigger: AST, action: ACTION} // trigger should evaluate to a reactive value, action should take one (or two) parameters
 
 CASE
-	{kind: "case", test: AST, templateCode: TEMPLATECODE, otherwise?: TEMPLATECODE | CASE}
+	{kind: "case", test: AST, templateCode: TEMPLATECODE, otherwise?: TEMPLATECODE}
 	// test should evaluate to a cell, if it is non-empty then templateCode is run as if it were a for-each. If it is empty, otherwise is called.
 	// templateCode should take one parameter
-	// if otherwise is TEMPLATECODE, it should take zero parameters
+	// otherwise, if it exists, should take zero parameters
 
 XMLNODE
 	{kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately
