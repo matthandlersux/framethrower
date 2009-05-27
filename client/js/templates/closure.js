@@ -122,7 +122,7 @@ function evaluateLine(line, env) {
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line.template, env);
 	} else if (line.kind === "lineJavascript") {
-		return makeFun(line.type, line.f);
+		return makeFun(line.type, curry(line.f));
 		//return makeFun(parseType(line.type), line.f);
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);
