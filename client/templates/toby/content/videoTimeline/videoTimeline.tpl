@@ -23,17 +23,35 @@ template (width::Number, height::Number, video::X.video) {
 		
 		timelineLeft = subtract width scaledWidth,
 	
-	
-		<div style-width="{width}" style-height="{height}">
-			<div class="timeline-left" style-width="{timelineLeft}" style-height="{height}">
-				<div class="timeline-container" style-width="{timelineLeft}" style-height="{height}">
-				
+		<f:wrapper>
+			<f:each reactiveNot zoomWidth as _>
+				<f:on init>
+					add(zoomWidth, 3000)
+				</f:on>
+			</f:each>
+			
+			<div style-width="{width}" style-height="{height}">
+
+				<div class="timeline-left" style-width="{timelineLeft}" style-height="{height}">
+					<div class="timeline-container" style-width="{timelineLeft}" style-height="{height}">
+						<f:each zoomWidth as zoomWidth>
+							timeMultiplier = divide duration zoomWidth,
+							<div class="ruler-container" style-width="{zoomWidth}">
+								<f:on mousemove>
+									add(previewTime, multiply timeMultiplier event.offsetX)
+								</f:on>
+							</div>
+						</f:each>
+					</div>
+				</div>
+				<div class="timeline-preview" style-width="{scaledWidth}" style-height="{height}" style-left="{timelineLeft}">
+					preview {previewTime}
 				</div>
 			</div>
-			<div class="timeline-preview" style-width="{scaledWidth}" style-height="{height}" style-left="{timelineLeft}">
-				preview
-			</div>
-		</div>
+		</f:wrapper>
+		
+		
+
 	
 	
 	</f:each></f:each></f:each></f:each>	

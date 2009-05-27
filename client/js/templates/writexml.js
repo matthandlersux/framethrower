@@ -147,8 +147,10 @@ function xmlToDOM(xml, env) {
 	} else if (xml.kind === "on") {
 		var node = createEl("f:on");
 		if (xml.event === "init") {
-			var action = makeActionClosure(xml.action, env);
-			executeAction(action);
+			setTimeout(function () {
+				var action = makeActionClosure(xml.action, env);
+				executeAction(action);
+			}, 0);
 			return {node: node, cleanup: null};
 		} else {
 			setAttr(node, "event", xml.event);
