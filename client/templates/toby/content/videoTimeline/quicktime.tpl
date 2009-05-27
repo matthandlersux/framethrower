@@ -32,9 +32,9 @@ function (width::Number, height::Number, src::String) {
 	}
 	
 	
-	var mov = makeQTMovie(src, width, height, true);
+	var mov = makeQTMovie(src, width, height, false);
 	
-	var ret = makeXMLP({xml: mov, cleanup: emptyFunction});
+	var ret = makeXMLP({node: mov, cleanup: emptyFunction});
 	
 	console.log("made mov", ret);
 	

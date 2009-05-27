@@ -25,6 +25,10 @@ When cleanup() is called, these endCaps are removed.
 cleanup may be returned as null, in which case there's nothing to clean up.
 */ 
 function xmlToDOM(xml, env) {
+	if (xml.node) {
+		return xml;
+	}
+	
 	var cleanupFunctions = [];
 	function pushCleanup(f) {
 		if (f) cleanupFunctions.push(f);
