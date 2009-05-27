@@ -1,6 +1,6 @@
 Here is a quick, informal first draft of the template syntax.
 
-A template (.tpl file) begins with a TEMPLATE.
+A template (.tpl file) begins with a LINE.
 
 
 

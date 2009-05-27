@@ -57,6 +57,7 @@ XMLP is XML along with an environment
 var xmlpType = parseType("XMLP");
 
 function makeXMLP(xml, env) {
+	if (env === undefined) env = emptyEnv;
 	return {kind: "xmlp", type: xmlpType, name: localIds(), remote: 2,
 		xml: xml, env: env};
 }
