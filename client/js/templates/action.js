@@ -86,7 +86,7 @@ function makeActionClosure(actionCode, env) {
 				}
 			}
 			
-			if (result && actionLet.name) {
+			if (result !== undefined && actionLet.name) {
 				scope[actionLet.name] = result;
 			}
 			output = result;
