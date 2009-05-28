@@ -127,10 +127,11 @@
 		};
 	}
 
-	function makeState(typeString) {
+	function makeState(lets, output) {
+		var action = makeAction([], lets, output);
 		return {
 			kind: "lineState",
-			type: typeString
+			action: action
 		};
 	}
 
@@ -601,7 +602,8 @@ JS:
 	;
 	
 STATE:
-	'state' '(' TYPE ')'								[* %% = makeState(%3); *]
+	'state' '{' ACTLIST ACTION '}'						[* %% = makeState(%3, makeLineAction({}, %4)); *]
+	| 'state' '(' TYPE ')'								[* %% = makeState({}, makeLineAction({}, "create(" + %3 + ")")); *]
 	;
 
 VARIABLE:

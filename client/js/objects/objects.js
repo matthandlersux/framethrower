@@ -256,6 +256,19 @@ var classesToMake = {
 			"typeDisplay": "Map Object String",
 			"timelineLayers": "Map String Object"
 		}
+	},
+	
+	// ====================================================
+	// SV (Situation View)
+	// ====================================================
+	"SV.shape": {
+		prop: {
+			"top": "Unit Number",
+			"left": "Unit Number",
+			"width": "Unit Number",
+			"height": "Unit Number",
+			"focus": "Object"
+		}
 	}
 };
 

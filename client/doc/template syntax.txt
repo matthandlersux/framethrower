@@ -72,7 +72,8 @@ EVENT
 
 
 STATE
-	state(TYPE)
+	state{ACTSTMTS}
+	| state(TYPE)
 	ex: state(Unit Object)
 
 
