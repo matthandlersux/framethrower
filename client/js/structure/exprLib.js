@@ -119,6 +119,10 @@ var exprLib = {
 		expr: "fold (x -> sum -> plus sum 1) (x -> sum -> subtract sum 1) 0"
 	},
 	
+	contains: {
+		type: "Set a -> a -> Unit Null",
+		expr: "s -> elem -> gate (takeOne (filter (reactiveEqual elem) s)) null"
+	},
 	
 	// ========================================================================
 	// Map utility
@@ -407,6 +411,18 @@ var exprLib = {
 	getInfonsIn: {
 		type: "Object -> Set Object",
 		expr: "x -> filter isInfon (downRight (filterByTruth (getConsUsingIn x)))",
+		where: {
+			downRight: {
+				type: "Set Cons -> Set Object",
+				chain: ["Cons:right"]
+			}
+		}
+	},
+
+	//this gets everything in a situation, even cons
+	getEveryIn: {
+		type: "Object -> Set Object",
+		expr: "x -> downRight (filterByTruth (getConsUsingIn x))",
 		where: {
 			downRight: {
 				type: "Set Cons -> Set Object",

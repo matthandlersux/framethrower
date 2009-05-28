@@ -484,7 +484,7 @@ LINE:
 
 
 IFBLOCK:
-	'if' EXPR 'as' ASKEYVAL '{' LETLIST LINE '}' 'else' IFBLOCK					[* %% = makeCase(%2, %4, %6, %7, makeXMLLine(%10)); *]
+	'if' EXPR 'as' ASKEYVAL '{' LETLIST LINE '}' 'else' IFBLOCK					[* %% = makeCase(%2, %4, %6, %7, makeTemplateCode([], {}, makeXMLLine(%10))); *]
 	| 'if' EXPR 'as' ASKEYVAL '{' LETLIST LINE '}' 'else' '{' LETLIST LINE '}'	[* %% = makeCase(%2, %4, %6, %7, makeTemplateCode([], %11, %12)); *]
 	;
 

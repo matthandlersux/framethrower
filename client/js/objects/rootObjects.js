@@ -90,8 +90,10 @@ var rootObjects = {};
 
 
 	//andrew test objects
-	m("shared.test.andrew");
-	m("shared.test.toby");
+	m("shared.test.romeo");
+	m("shared.test.juliet");
+	
+	m("shared.test.loves");
 
 	
 	// m("test.1");

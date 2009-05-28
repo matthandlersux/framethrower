@@ -25,12 +25,12 @@ template () {
 	},
 	
 	makeType = action (object::Object) {
-		infon = makeInfon1 shared.isType object,
+		infon = makeCons1 shared.isType object,
 		makeTrueInOnt infon
 	},
 	
 	makeOntProperty = action (relation::Object, arg1::Object, arg2::Object) {
-		infon = makeInfon2 relation arg1 arg2,
+		infon = makeCons2 relation arg1 arg2,
 		makeTrueInOnt infon
 	},
 	
@@ -39,7 +39,7 @@ template () {
 	},
 	
 	putObjectInSituation = action (object::Object, situation::Object) {
-		infon = makeInfon2 shared.in situation object,
+		infon = makeCons2 shared.in situation object,
 		add(Cons:truth infon, null)
 	},
 	
@@ -50,20 +50,27 @@ template () {
 		cons
 	},
 	
-	makeInfon1 = makeCons,
-	makeInfon2 = action (relation::Object, arg1::Object, arg2::Object) {
+	makeCons1 = makeCons,
+	makeCons2 = action (relation::Object, arg1::Object, arg2::Object) {
 		cons1 = makeCons relation arg1,
 		makeCons (Cons~Object cons1) arg2
 	},
-	makeInfon3 = action (relation::Object, arg1::Object, arg2::Object, arg3::Object) {
+	makeCons3 = action (relation::Object, arg1::Object, arg2::Object, arg3::Object) {
 		cons1 = makeCons relation arg1,
 		cons2 = makeCons (Cons~Object cons1) arg2,
 		makeCons (Cons~Object cons2) arg3
 	},
+	makeInfon2 = action(relation::Object, arg1::Object, arg2::Object) {
+		infon = makeCons2 relation arg1 arg2,
+		typeObject (Cons~Object infon) shared.type.infon,
+		infon
+	},
+	
 	prepareState = action () {
 		makeType shared.type,
 		makeType shared.type.situation,
 		makeType shared.type.entity,
+		
 		nameObject shared.type "Type",
 		nameObject shared.type.situation "Situation",
 		nameObject shared.type.entity "Entity",
@@ -74,11 +81,17 @@ template () {
 		typeObject shared.ont shared.type.situation,
 		nameObject shared.realLife "Real Life",
 		typeObject shared.realLife shared.type.situation,
-	
-		nameObject shared.test.andrew "Andrew",
-		putObjectInSituation shared.test.andrew shared.realLife,
-		nameObject shared.test.toby "Toby",
-		putObjectInSituation shared.test.toby shared.realLife
+
+		nameObject shared.test.loves "Loves",
+		putObjectInSituation shared.test.loves shared.realLife,
+		nameObject shared.test.romeo "Romeo",
+		putObjectInSituation shared.test.romeo shared.realLife,
+		nameObject shared.test.juliet "Juliet",
+		putObjectInSituation shared.test.juliet shared.realLife,
+		
+		RLJ = makeInfon2 shared.test.loves shared.test.romeo shared.test.juliet,
+		nameObject (Cons~Object RLJ) "Romeo Loves Juliet",
+		putObjectInSituation (Cons~Object RLJ) shared.realLife
 	},
 	<f:on init>prepareState</f:on>
 }
