@@ -142,12 +142,17 @@ function executeAction(action) {
 	
 	forEach(action.instructions, function(instruction) {
 		if (instruction.kind === "instructionCreate") {
-			var processedProp = {};
-			forEach(instruction.prop, function(property, propName) {
-				processedProp[propName] = processActionRef(property);
-			});
+			var made;
+			if (isReactive(instruction.type)) {
+				made = makeControlledCell(unparseType(instruction.type));
+			} else {
+				var processedProp = {};
+				forEach(instruction.prop, function(property, propName) {
+					processedProp[propName] = processActionRef(property);
+				});
 			
-			var made = objects.make(instruction.type.value, processedProp);
+				var made = objects.make(instruction.type.value, processedProp);
+			}
 			if (instruction.label !== undefined) {
 				scope[instruction.label] = made;
 			}

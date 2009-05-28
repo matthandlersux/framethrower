@@ -603,7 +603,7 @@ JS:
 	
 STATE:
 	'state' '{' ACTLIST ACTION '}'						[* %% = makeState(%3, makeLineAction({}, %4)); *]
-	| 'state' '(' TYPE ')'								[* %% = makeState([], makeLineAction({}, "create(" + %3 + ")")); *]
+	| 'state' '(' TYPE ')'								[* %% = makeState([], makeLineAction({}, makeCreate(%3, {}))); *]
 	;
 
 VARIABLE:

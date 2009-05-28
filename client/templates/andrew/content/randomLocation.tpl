@@ -1,4 +1,4 @@
-action(myposition::SV.shape, widthbound, heightbound) {
+action(mytop, myleft, mywidth, myheight, widthbound, heightbound) {
 	random = function(x::Number) {
 		return Math.floor(x * Math.random());
 	},
@@ -9,8 +9,8 @@ action(myposition::SV.shape, widthbound, heightbound) {
 	newleft = random (subtract widthbound newwidth),
 	newheight = random(heightbound),
 	newtop = random (subtract heightbound newheight),
-	add(SV.shape:left myposition, newleft),
-	add(SV.shape:top myposition, newtop),
-	add(SV.shape:width myposition, newwidth),
-	add(SV.shape:height myposition, newheight)
+	add(myleft, newleft),
+	add(mytop, newtop),
+	add(mywidth, newwidth),
+	add(myheight, newheight)
 }
