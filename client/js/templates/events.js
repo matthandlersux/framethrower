@@ -10,7 +10,7 @@
 
 	// http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/XHIGDragDrop/chapter_12_section_5.html
 	var dragRadius=3;
-	var currentFocus=null;
+	
 
 	// =========================================================
 	// Processing Events
@@ -28,7 +28,15 @@
 		
 		
 		// note the hackery here
-		var fon = xpath("ancestor-or-self::*[f:on/@event='" + eventName + "' or f:wrapper/f:on/@event='" + eventName + "' or f:wrapper/f:wrapper/f:on/@event='" + eventName + "'][1]", target);
+		var xpathExp = "*[f:on/@event='" + eventName + "' or f:wrapper/f:on/@event='" + eventName + "' or f:wrapper/f:wrapper/f:on/@event='" + eventName + "'][1]";
+		if (eventName !== "mouseover" && eventName !== "mouseout") {
+			xpathExp = "ancestor-or-self::"+xpathExp;
+		}
+		// if (eventName === "mouseout") {
+		// 	console.log("registered mouseout", target);
+		// }
+		
+		var fon = xpath(xpathExp, target);
 		
 		if (fon.length > 0) {
 			var fonEl = xpath("f:on[@event='" + eventName + "'] | f:wrapper/f:on[@event='" + eventName + "'] | f:wrapper/f:wrapper/f:on[@event='" + eventName + "']", fon[0])[0];
@@ -93,20 +101,6 @@
 		}
 	}
 	
-		
-	// =========================================================
-	// Copying Events
-	// =========================================================
-	
-	var eventPropertiesToCopy = ["target", "clientX", "clientY", "button", "detail", "charCode", "keyCode", "altKey", "ctrlKey", "metaKey", "shiftKey"];
-	function copyEvent(e) {
-		var ret = {};
-		forEach(eventPropertiesToCopy, function (prop) {
-			ret[prop] = e[prop];
-		});
-		return ret;
-	}
-	
 	// =========================================================
 	// Event Logic
 	// =========================================================
@@ -114,7 +108,11 @@
 	var mouseIsDown = false;
 	var mouseIsDragging = false;
 	var mouseDownPos = [0,0];
-	var mouseCurrentPos = [0,0]; // TODO fill this in everywhere below...
+	var mouseCurrentPos = [0,0];
+	
+	var mouseOverTarget = null;
+	
+	var currentFocus = null;
 	
 	function mousedown(e) {
 		mouseIsDown = copyEvent(e);
@@ -200,6 +198,10 @@
 })();
 
 
+
+// =========================================================
+// Global UI Cells
+// =========================================================
 
 (function () {
 	var ui = rootObjects["ui.ui"].prop;
