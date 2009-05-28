@@ -15,7 +15,7 @@ LINE
 	{kind: "lineTemplate", template: TEMPLATECODE} |
 	{kind: "lineJavascript", type: TYPE, f: JAVASCRIPTFUNCTION} |
 	{kind: "lineXML", xml: XML} |
-	{kind: "lineState", type: TYPE} |
+	{kind: "lineState", action: ACTION} | // action takes no parameters
 	{kind: "lineAction", action: ACTION}
 
 
