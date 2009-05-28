@@ -127,8 +127,8 @@
 		};
 	}
 
-	function makeState(lets, output) {
-		var action = makeAction([], lets, output);
+	function makeState(actions) {
+		var action = makeAction([], actions);
 		return {
 			kind: "lineState",
 			action: action
@@ -195,8 +195,8 @@
 		};
 	}
 
-	function makeOn(event, lets, output) {
-		var action = makeAction([], lets, output);
+	function makeOn(event, actions) {
+		var action = makeAction([], actions);
 		return {
 			kind: "on",
 			event: event,
@@ -204,7 +204,7 @@
 		};
 	}
 
-	function makeTrigger(openTag, lets, output) {
+	function makeTrigger(openTag, actions) {
 		var params = [];
 		if (openTag.as.key !== undefined) {
 			params.push({name:openTag.as.key});
@@ -212,7 +212,7 @@
 		if (openTag.as.value !== undefined) {
 			params.push({name:openTag.as.value});
 		}	
-		var action = makeAction(params, lets, output);
+		var action = makeAction(params, actions);
 		return {
 			kind: "trigger",
 			trigger: openTag.expr,
@@ -338,8 +338,9 @@
 		return letObj;
 	}
 
-	function makeAction(params, lets, output) {
+	function makeAction(params, actions) {
 		//give undefined param types a letter
+		
 		var counter = 0;
 		var paramList = [];
 		var typeString = "";
@@ -364,8 +365,6 @@
 		} else {
 			typeString += " -> Action";
 		}
-
-		var actions = lets.concat([output]);
 
 		return {
 			kind: "action",
@@ -484,13 +483,18 @@ LINE:
 
 
 IFBLOCK:
-	'if' EXPR 'as' ASKEYVAL '{' LETLIST LINE '}' 'else' IFBLOCK					[* %% = makeCase(%2, %4, %6, %7, makeTemplateCode([], {}, makeXMLLine(%10))); *]
-	| 'if' EXPR 'as' ASKEYVAL '{' LETLIST LINE '}' 'else' '{' LETLIST LINE '}'	[* %% = makeCase(%2, %4, %6, %7, makeTemplateCode([], %11, %12)); *]
+	'if' EXPR 'as' ASKEYVAL '{' FULLLETLIST '}' 'else' IFBLOCK					[* %% = makeCase(%2, %4, %6.list, %6.line, makeTemplateCode([], {}, makeXMLLine(%9))); *]
+	| 'if' EXPR 'as' ASKEYVAL '{' FULLLETLIST '}' 'else' '{' FULLLETLIST '}'	[* %% = makeCase(%2, %4, %6.list, %6.line, makeTemplateCode([], %10.list, %10.line)); *]
 	;
 
 
 TEMPLATE:
-	'template' '(' ARGLIST ')' '{' LETLIST LINE '}'		[* %% = makeTemplateCode( %3, %6, %7); *]
+	'template' '(' ARGLIST ')' '{' FULLLETLIST '}'		[* %% = makeTemplateCode( %3, %6.list, %6.line); *]
+	;
+
+FULLLETLIST:
+	LETLIST LINE										[* %% = {list:%1, line:%2}; *]
+	| LETLIST LINE ','									[* %% = {list:%1, line:%2}; *]
 	;
 
 ARGLIST:
@@ -515,7 +519,12 @@ LET:
 	;
 
 ACTIONTPL:
-	'action' '(' ARGLIST ')' '{' ACTLIST ACTION '}'		[* %% = makeAction(%3, %6, makeLineAction({}, %7)); *]
+	'action' '(' ARGLIST ')' '{' FULLACTLIST '}'		[* %% = makeAction(%3, %6); *]
+	;
+
+FULLACTLIST:
+	ACTLIST ACTION										[* %% = push(%1, makeLineAction({}, %2)); *]
+	| ACTLIST											[* %% = %1; *]
 	;
 
 ACTLIST:
@@ -603,8 +612,8 @@ JS:
 	;
 	
 STATE:
-	'state' '{' ACTLIST ACTION '}'						[* %% = makeState(%3, makeLineAction({}, %4)); *]
-	| 'state' '(' TYPE ')'								[* %% = makeState([], makeLineAction({}, makeCreate(%3, {}))); *]
+	'state' '{' FULLACTLIST '}'						[* %% = makeState(%3); *]
+	| 'state' '(' TYPE ')'								[* %% = makeState([makeLineAction({}, makeCreate(%3, {}))]); *]
 	;
 
 VARIABLE:
@@ -613,9 +622,9 @@ VARIABLE:
 	;
 
 XML:
-	OPENFOREACH LETLIST LINE CLOSEFOREACH				[* %% = makeForEach(%1, %2, %3); *]
-	| OPENTRIGGER ACTLIST ACTION CLOSETRIGGER			[* %% = makeTrigger(%1, %2, makeLineAction({}, %3)); *]
-	| OPENON ACTLIST ACTION CLOSEON						[* %% = makeOn(%1, %2, makeLineAction({}, %3)); *]
+	OPENFOREACH FULLLETLIST CLOSEFOREACH				[* %% = makeForEach(%1, %2.list, %2.line); *]
+	| OPENTRIGGER FULLACTLIST CLOSETRIGGER				[* %% = makeTrigger(%1, %2); *]
+	| OPENON FULLACTLIST CLOSEON						[* %% = makeOn(%1, %2); *]
 	| OPENCALL LETLIST ENDCALL CLOSECALL				[* %% = makeCall(%2, %3); *]
 	| OPENTAG XMLLIST CLOSETAG							[* %% = makeNode(%1, %2); *]
 	| SINGLETAG											[* %% = makeNode(%1, []); *]
@@ -652,11 +661,6 @@ OPENTRIGGER:
 CLOSETRIGGER:
 	'</' 'f:trigger' '>'								[* %% = undefined; *]
 	;
-
-CLOSEFOREACH:
-	'</' 'f:each' '>'									[* %% = undefined; *]
-	;
-
 
 ASKEYVAL:
 	IDENTIFIER											[* %% = {key: %1}; *]

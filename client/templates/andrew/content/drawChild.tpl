@@ -3,7 +3,7 @@ template (focus::Object, width::Number, height::Number) {
 	pos = state{
 		thePosition = create(SV.shape, {focus: focus}),
 		randomLocation thePosition width height,
-		thePosition
+		thePosition,
 	},
 	
 	<div>
