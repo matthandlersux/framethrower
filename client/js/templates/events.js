@@ -39,17 +39,28 @@
 		var fon = xpath(xpathExp, target);
 		
 		if (fon.length > 0) {
-			var fonEl = xpath("f:on[@event='" + eventName + "'] | f:wrapper/f:on[@event='" + eventName + "'] | f:wrapper/f:wrapper/f:on[@event='" + eventName + "']", fon[0])[0];
+			var fonEls = xpath("f:on[@event='" + eventName + "'] | f:wrapper/f:on[@event='" + eventName + "'] | f:wrapper/f:wrapper/f:on[@event='" + eventName + "']", fon[0]);
 			
-			var env = function (s) {
-				if (s === "event.offsetX") {
-					return mouseCurrentPos[0] - getPosition(fonEl.parentNode)[0];
-				} else if (s === "event.offsetY") {
-					return mouseCurrentPos[1] - getPosition(fonEl.parentNode)[1];
-				} else {
-					return fonEl.custom.env(s);
-				}
-			};
+			forEach(fonEls, function (fonEl) {
+				var env = function (s) {
+					if (s === "event.offsetX") {
+						return mouseCurrentPos[0] - getPosition(fonEl.parentNode)[0];
+					} else if (s === "event.offsetY") {
+						return mouseCurrentPos[1] - getPosition(fonEl.parentNode)[1];
+					} else {
+						return fonEl.custom.env(s);
+					}
+				};
+				
+				var action = makeActionClosure(fonEl.custom.action, env);
+
+				//console.log("about to execute an action!", action);
+
+				executeAction(action);
+				
+			});
+			
+
 			
 			
 			// var browserParams = xpath("f:with-param-browser", fonEl);
@@ -92,12 +103,7 @@
 			// 	}
 			// });
 			
-			var action = makeActionClosure(fonEl.custom.action, env);
-			
-			
-			//console.log("about to execute an action!", action);
-			
-			executeAction(action);
+
 		}
 	}
 	
@@ -143,7 +149,7 @@
 	function mouseup(e) {
 		processEvent("mouseup", e);
 		if (mouseIsDragging) {
-			processEvent("dragEnd", e);
+			processEvent("dragend", e);
 		} else {
 			processEvent("click", mouseIsDown, {clientX: mouseIsDown.clientX, clientY: mouseIsDown.clientY});
 		}
@@ -160,19 +166,20 @@
 			if (xdiff*xdiff + ydiff*ydiff >= dragRadius*dragRadius) {
 				//console.log(mouseDownPos,e.clientX,e.clientY);
 				mouseIsDragging = true;
-				processEvent("dragStart", mouseIsDown);
+				console.log("doing dragstart");
+				processEvent("dragstart", mouseIsDown);
 			}
 		}
 		if (mouseIsDragging) {
-			processEvent("mouseDrag", e, {clientX: e.clientX, clientY: e.clientY});
+			processEvent("mousedrag", e, {clientX: e.clientX, clientY: e.clientY});
 		}
 	}
 	function mouseover(e) {
-		var oldTarget = mouseOverTarget;
+		//var oldTarget = mouseOverTarget;
 		mouseOverTarget = e.target;
-		if (oldTarget) {
-			
-		}
+		// if (oldTarget) {
+		// 	
+		// }
 		//console.log(mouseOverTarget, oldTarget);
 		processEvent("mouseover", e);
 	}

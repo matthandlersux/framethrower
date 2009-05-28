@@ -411,26 +411,26 @@ var primFuncs = function () {
 				return outputCell;				
 			}
 		},
-		// defaultValue: {
-		// 	type: "a -> Unit a -> Unit a",
-		// 	func: function (defaultValue, cell) {
-		// 		// TODO: add this server-side
-		// 		var outputCell = makeCell();
-		// 		var current = defaultValue;
-		// 		outputCell.addLine(defaultValue);
-		// 		cell.inject(outputCell, function (val) {
-		// 			outputCell.removeLine(current);
-		// 			current = val;
-		// 			outputCell.addLine(current);
-		// 			return function () {
-		// 				outputCell.removeLine(current);
-		// 				current = defaultValue;
-		// 				outputCell.addLine(current);
-		// 			};
-		// 		});
-		// 		return outputCell;
-		// 	}
-		// },
+		defaultValue: {
+			type: "a -> Unit a -> Unit a",
+			func: function (defaultValue, cell) {
+				// TODO: add this server-side
+				var outputCell = makeCell();
+				var current = defaultValue;
+				outputCell.addLine(defaultValue);
+				cell.inject(outputCell, function (val) {
+					outputCell.removeLine(current);
+					current = val;
+					outputCell.addLine(current);
+					return function () {
+						outputCell.removeLine(current);
+						current = defaultValue;
+						outputCell.addLine(current);
+					};
+				});
+				return outputCell;
+			}
+		},
 		isEmpty: {
 			type: "Set a -> Unit Null",
 			func: function (cell) {
