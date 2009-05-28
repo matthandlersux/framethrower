@@ -79,7 +79,7 @@ switch( state )
 
 	case 1:
 		if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 59 ) || info.src.charCodeAt( pos ) == 61 || ( info.src.charCodeAt( pos ) >= 63 && info.src.charCodeAt( pos ) <= 93 ) || ( info.src.charCodeAt( pos ) >= 95 && info.src.charCodeAt( pos ) <= 254 ) ) state = 1;
-		else if( info.src.charCodeAt( pos ) == 47 ) state = 12;
+		else if( info.src.charCodeAt( pos ) == 47 ) state = 11;
 		else state = -1;
 		match = 8;
 		match_pos = pos;
@@ -87,7 +87,7 @@ switch( state )
 
 	case 2:
 		if( info.src.charCodeAt( pos ) == 47 ) state = 6;
-		else if( info.src.charCodeAt( pos ) == 102 ) state = 14;
+		else if( info.src.charCodeAt( pos ) == 102 ) state = 13;
 		else state = -1;
 		match = 5;
 		match_pos = pos;
@@ -118,9 +118,7 @@ switch( state )
 		break;
 
 	case 7:
-		if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 59 ) || info.src.charCodeAt( pos ) == 61 || ( info.src.charCodeAt( pos ) >= 63 && info.src.charCodeAt( pos ) <= 93 ) || ( info.src.charCodeAt( pos ) >= 95 && info.src.charCodeAt( pos ) <= 254 ) ) state = 1;
-		else if( info.src.charCodeAt( pos ) == 47 ) state = 12;
-		else state = -1;
+		state = -1;
 		match = 1;
 		match_pos = pos;
 		break;
@@ -132,63 +130,40 @@ switch( state )
 		break;
 
 	case 9:
-		if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 61 ) || ( info.src.charCodeAt( pos ) >= 63 && info.src.charCodeAt( pos ) <= 254 ) ) state = 1;
+		if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 61 ) || ( info.src.charCodeAt( pos ) >= 63 && info.src.charCodeAt( pos ) <= 93 ) || ( info.src.charCodeAt( pos ) >= 95 && info.src.charCodeAt( pos ) <= 254 ) ) state = 1;
 		else if( info.src.charCodeAt( pos ) == 62 ) state = 5;
-		else if( info.src.charCodeAt( pos ) == 47 ) state = 13;
+		else if( info.src.charCodeAt( pos ) == 47 ) state = 12;
 		else state = -1;
 		break;
 
 	case 10:
 		if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 59 ) || info.src.charCodeAt( pos ) == 61 || ( info.src.charCodeAt( pos ) >= 63 && info.src.charCodeAt( pos ) <= 93 ) || ( info.src.charCodeAt( pos ) >= 95 && info.src.charCodeAt( pos ) <= 254 ) ) state = 1;
 		else if( info.src.charCodeAt( pos ) == 62 ) state = 4;
-		else if( info.src.charCodeAt( pos ) == 47 ) state = 12;
+		else if( info.src.charCodeAt( pos ) == 47 ) state = 11;
 		else state = -1;
 		match = 8;
 		match_pos = pos;
 		break;
 
 	case 11:
-		state = -1;
-		match = 1;
-		match_pos = pos;
+		if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 61 ) || ( info.src.charCodeAt( pos ) >= 63 && info.src.charCodeAt( pos ) <= 93 ) || ( info.src.charCodeAt( pos ) >= 95 && info.src.charCodeAt( pos ) <= 254 ) ) state = 1;
+		else state = -1;
 		break;
 
 	case 12:
-		if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 61 ) || ( info.src.charCodeAt( pos ) >= 63 && info.src.charCodeAt( pos ) <= 254 ) ) state = 1;
+		if( info.src.charCodeAt( pos ) == 10 ) state = 7;
+		else if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 9 ) || ( info.src.charCodeAt( pos ) >= 11 && info.src.charCodeAt( pos ) <= 254 ) ) state = 12;
 		else state = -1;
 		break;
 
 	case 13:
-		if( info.src.charCodeAt( pos ) == 10 ) state = 7;
-		else if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 9 ) || ( info.src.charCodeAt( pos ) >= 11 && info.src.charCodeAt( pos ) <= 46 ) || ( info.src.charCodeAt( pos ) >= 48 && info.src.charCodeAt( pos ) <= 59 ) || info.src.charCodeAt( pos ) == 61 || ( info.src.charCodeAt( pos ) >= 63 && info.src.charCodeAt( pos ) <= 93 ) || ( info.src.charCodeAt( pos ) >= 95 && info.src.charCodeAt( pos ) <= 254 ) ) state = 13;
-		else if( info.src.charCodeAt( pos ) == 47 ) state = 15;
-		else if( info.src.charCodeAt( pos ) == 60 || info.src.charCodeAt( pos ) == 62 || info.src.charCodeAt( pos ) == 94 ) state = 16;
+		if( info.src.charCodeAt( pos ) == 58 ) state = 14;
 		else state = -1;
-		match = 8;
-		match_pos = pos;
 		break;
 
 	case 14:
-		if( info.src.charCodeAt( pos ) == 58 ) state = 17;
-		else state = -1;
-		break;
-
-	case 15:
-		if( info.src.charCodeAt( pos ) == 10 ) state = 7;
-		else if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 9 ) || ( info.src.charCodeAt( pos ) >= 11 && info.src.charCodeAt( pos ) <= 61 ) || ( info.src.charCodeAt( pos ) >= 63 && info.src.charCodeAt( pos ) <= 254 ) ) state = 13;
-		else if( info.src.charCodeAt( pos ) == 62 ) state = 16;
-		else state = -1;
-		break;
-
-	case 16:
-		if( info.src.charCodeAt( pos ) == 10 ) state = 11;
-		else if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 9 ) || ( info.src.charCodeAt( pos ) >= 11 && info.src.charCodeAt( pos ) <= 254 ) ) state = 16;
-		else state = -1;
-		break;
-
-	case 17:
 		if( info.src.charCodeAt( pos ) == 62 ) state = 8;
-		else if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 59 ) || info.src.charCodeAt( pos ) == 61 || ( info.src.charCodeAt( pos ) >= 63 && info.src.charCodeAt( pos ) <= 93 ) || ( info.src.charCodeAt( pos ) >= 95 && info.src.charCodeAt( pos ) <= 254 ) ) state = 17;
+		else if( ( info.src.charCodeAt( pos ) >= 0 && info.src.charCodeAt( pos ) <= 59 ) || info.src.charCodeAt( pos ) == 61 || ( info.src.charCodeAt( pos ) >= 63 && info.src.charCodeAt( pos ) <= 93 ) || ( info.src.charCodeAt( pos ) >= 95 && info.src.charCodeAt( pos ) <= 254 ) ) state = 14;
 		else state = -1;
 		break;
 

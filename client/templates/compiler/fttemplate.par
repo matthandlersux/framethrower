@@ -111,10 +111,15 @@
 	}
 
 
-	function makeExpr(expr, lets) {
-		if (lets == undefined) {
-			lets = {};
-		}
+	function makeExpr(expr) {
+		return {
+			kind: "lineExpr",
+			expr: expr,
+			let: {}
+		};
+	}
+
+	function makeLetList(expr, lets) {
 		return {
 			kind: "lineExpr",
 			expr: expr,
@@ -450,9 +455,9 @@
 	'<'
 	'>'
 	'-'
-	'\"'					QUOTE
-	'[\*\+\^\%\.\!\&\|\?]'	JSSEP
-	'[A-Za-z0-9_\.\~\#]+'	IDENTIFIER
+	'\"'						QUOTE
+	'[\*\+\^\%\.\!\&\|\?\[\]]'	JSSEP
+	'[A-Za-z0-9_\.\~\#]+'		IDENTIFIER
 	;
 ##
 
@@ -567,7 +572,7 @@ EXPR:
 	;
 
 LETLISTBLOCK:
-	'{' LETLIST LINE '}'									[* %% = makeExpr(%3, %2); *]
+	'{' LETLIST EXPR '}'									[* %% = makeLetList(%3, %2); *]
 	;
 
 
