@@ -2732,7 +2732,7 @@ switch( act )
 	break;
 	case 73:
 	{
-		 rval = makeState({}, makeLineAction({}, "create(" + vstack[ vstack.length - 2 ] + ")")); 
+		 rval = makeState([], makeLineAction({}, "create(" + vstack[ vstack.length - 2 ] + ")")); 
 	}
 	break;
 	case 74:
