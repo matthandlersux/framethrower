@@ -90,7 +90,6 @@ template () {
 		putObjectInSituation shared.test.juliet shared.realLife,
 		
 		RLJ = makeInfon2 shared.test.loves shared.test.romeo shared.test.juliet,
-		nameObject (Cons~Object RLJ) "Romeo Loves Juliet",
 		putObjectInSituation (Cons~Object RLJ) shared.realLife
 	},
 	<f:on init>prepareState</f:on>

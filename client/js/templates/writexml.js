@@ -103,6 +103,8 @@ function xmlToDOM(xml, env) {
 			var newNode, keyString;
 			
 			if (constructor === "Map") {
+				//DEBUG
+				if (xml.templateCode.params.length !== 2) debug.error("f:each running on map, but as doesn't have key, value");
 				newNode = evaluate(makeApply(makeApply(innerTemplate, value.key), value.val));
 				keyString = stringify(value.key);
 			} else {
