@@ -29,9 +29,9 @@
 		
 		// note the hackery here
 		var xpathExp = "*[f:on/@event='" + eventName + "' or f:wrapper/f:on/@event='" + eventName + "' or f:wrapper/f:wrapper/f:on/@event='" + eventName + "'][1]";
-		if (eventName !== "mouseover" && eventName !== "mouseout") {
+		//if (eventName !== "mouseover" && eventName !== "mouseout") {
 			xpathExp = "ancestor-or-self::"+xpathExp;
-		}
+		//}
 		// if (eventName === "mouseout") {
 		// 	console.log("registered mouseout", target);
 		// }
@@ -102,6 +102,19 @@
 	}
 	
 	// =========================================================
+	// Copying Events
+	// =========================================================
+	
+	var eventPropertiesToCopy = ["target", "clientX", "clientY", "button", "detail", "charCode", "keyCode", "altKey", "ctrlKey", "metaKey", "shiftKey"];
+	function copyEvent(e) {
+		var ret = {};
+		forEach(eventPropertiesToCopy, function (prop) {
+			ret[prop] = e[prop];
+		});
+		return ret;
+	}
+	
+	// =========================================================
 	// Event Logic
 	// =========================================================
 	
@@ -155,10 +168,23 @@
 		}
 	}
 	function mouseover(e) {
+		var oldTarget = mouseOverTarget;
+		mouseOverTarget = e.target;
+		if (oldTarget) {
+			
+		}
+		//console.log(mouseOverTarget, oldTarget);
 		processEvent("mouseover", e);
 	}
 	function mouseout(e) {
-		processEvent("mouseout", e);
+		function isAncestor(child, grandparent) {
+			if (!child) return false;
+			else if (child === grandparent) return true;
+			else return isAncestor(child.parentNode, grandparent);
+		}
+		if (!isAncestor(e.relatedTarget, e.target)) {
+			processEvent("mouseout", e);
+		}
 	}
 	function mousescroll(e) {
 		

@@ -128,7 +128,10 @@ function evaluateLine(line, env) {
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);
 	} else if (line.kind === "lineState") {
-		return makeCC(line.type);
+		var ac = makeActionClosure(line.action, env);
+		return executeAction(ac);
+		
+		//return makeCC(line.type);
 		//return makeCC(parseType(line.type));
 	} else if (line.kind === "lineAction") {
 		return makeActionClosure(line.action, env);

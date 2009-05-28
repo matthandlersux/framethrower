@@ -55,12 +55,14 @@ template (width::Number, height::Number, video::X.video) {
 									<div class="ruler-cursor" style-left="{divide previewTime timeMultiplier}"></div>
 								</f:each>
 								
+								<f:each currentTime as currentTime><f:on mouseout>
+									add(previewTime, currentTime)
+								</f:on></f:each>
+								
 								
 							</div>
 						</f:each>
-						// <f:each currentTime as currentTime><f:on mouseout>
-						// 	add(previewTime, currentTime)
-						// </f:on></f:each>
+
 					</div>
 
 				</div>

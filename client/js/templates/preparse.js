@@ -9,7 +9,7 @@ function preparse(template) {
 	} else if (kind === "lineJavascript") {
 		template.type = parseType(template.type);
 	} else if (kind === "lineState") {
-		template.type = parseType(template.type);
+		//template.type = parseType(template.type);
 	} else if (kind === "action") {
 		template.type = parseType(template.type);
 	} else if (kind === "actionCreate") {

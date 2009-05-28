@@ -168,4 +168,8 @@ function executeAction(action) {
 			}
 		}
 	});
+	
+	if (action.output) {
+		return processActionRef(action.output);
+	}
 }
