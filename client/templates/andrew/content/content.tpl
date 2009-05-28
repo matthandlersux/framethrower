@@ -1,18 +1,13 @@
 template () {
 	//abstraction layer functions
-	getChildren = getAllIn,
+	getChildren = getEveryIn,
 	getArtifacts = getName,	//make this get pictures and such later
 	// getType
-	getKindHelper = function (numChildren::Number) {
-		if (numChildren > 0) {
-			return "Situation";
-		} else {
-			return "Object";
-		}
-	},
-	getKind = (focus -> bindUnit (x -> returnUnit (getKindHelper x)) (length (getChildren focus))),
 	// isSituation = (focus -> mapUnit (equal "Situation") (getKind focus)),
-	isSituation = (focus -> (bindUnit (x -> boolToUnit (equal "Situation" x)) (getKind focus))),
+	isSituation = focus -> contains (getTypes focus) shared.type.situation,
+	isInfon = focus -> contains (getTypes focus) shared.type.infon,
+	
+	allPositions = state(Set SV.shape),
 	
 	<div>
 		<f:call>prepareState</f:call>

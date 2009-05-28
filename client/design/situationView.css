@@ -1,15 +1,17 @@
 .situationView-situation {
 	position:absolute;
-	width: 400px;
-	height: 400px;
 	background-color: silver;
 	border:1px solid black;
 }
 
 .situationView-object {
 	position:absolute;
-	width: 100px;
-	height: 100px;
 	background-color: chartreuse;
+	border:1px solid black;
+}
+
+.situationView-infon {
+	position:absolute;
+	background-color: magenta;
 	border:1px solid black;
 }
