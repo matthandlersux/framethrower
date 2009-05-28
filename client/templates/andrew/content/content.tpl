@@ -10,11 +10,12 @@ template () {
 			return "Object";
 		}
 	},
-	getKind = (focus -> bindUnit (x -> returnUnit (getKindHelper x)) (getChildren focus)),
-	isSituation = (focus -> equal (getKind focus) "Situation"),
+	getKind = (focus -> bindUnit (x -> returnUnit (getKindHelper x)) (length (getChildren focus))),
+	// isSituation = (focus -> mapUnit (equal "Situation") (getKind focus)),
+	isSituation = (focus -> (bindUnit (x -> boolToUnit (equal "Situation" x)) (getKind focus))),
 	
 	<div>
 		<f:call>prepareState</f:call>
-		<f:call>drawSituation shared.realLife 300 300</f:call>
+		<f:call>drawSituation shared.realLife 600 400</f:call>
 	</div>
 }

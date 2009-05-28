@@ -1,4 +1,4 @@
-action(myleft, mytop, mywidth, myheight, widthbound, heightbound) {
+action(mytop, myleft, mywidth, myheight, widthbound, heightbound) {
 	random = function(x::Number) {
 		return Math.floor(x * Math.random());
 	},
@@ -6,8 +6,7 @@ action(myleft, mytop, mywidth, myheight, widthbound, heightbound) {
 		return x - y;
 	},
 	newwidth = random(widthbound),
-	// newleft = random (subtract widthbound newwidth),
-	newleft = 0,
+	newleft = random (subtract widthbound newwidth),
 	newheight = random(heightbound),
 	newtop = random (subtract heightbound newheight),
 	add(myleft, newleft),
