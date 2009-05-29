@@ -25,6 +25,76 @@ template (width::Number, height::Number, video::X.video) {
 		scaledWidth = multiply ratio scaledHeight,
 		
 		timelineLeft = subtract width scaledWidth,
+		
+		drawTimeline = template (width, height) {
+			<div class="timeline-container" style-width="{width}" style-height="{height}" style-color="white">
+				<f:each zoomWidth as zoomWidth>
+					timeMultiplier = divide duration zoomWidth,
+					<div class="ruler-container" style-width="{zoomWidth}">
+						<f:on mousemove>
+							add(previewTime, multiply timeMultiplier event.offsetX)
+						</f:on>
+						<f:on click>
+							add(currentTime, multiply timeMultiplier event.offsetX),
+							remove(selectionStart),
+							remove(selectionEnd)
+						</f:on>
+						
+						<f:on mousedown>
+							start = multiply timeMultiplier event.offsetX,
+							add(selectionStart, start),
+							add(selectionEnd, start),
+							add(selecting, null),
+							remove(currentTime)
+						</f:on>
+						<f:on mouseup>
+							remove(selecting)
+						</f:on>
+						<f:each selecting>
+							<f:on mousemove>
+								add(selectionEnd, multiply timeMultiplier event.offsetX)
+							</f:on>
+						</f:each>
+						
+						// <f:each currentTime as currentTime>
+						// 	<f:on mouseout>
+						// 		add(previewTime, currentTime)
+						// 	</f:on>
+						// </f:each>
+						
+						
+						<f:each X.video:cuts video as cuts>
+							<f:call>drawCuts cuts (divide 0.0417083322 timeMultiplier)</f:call>
+						</f:each>
+						
+						
+						
+						// TODO: decide if this method with defaultValue is faster or slower than f:each and the div gets recomputed
+						
+						<div class="ruler-cursor" style-left="{defaultValue -10 (mapUnit (swap divide timeMultiplier) previewTime)}" />
+						
+						<div class="ruler-selected" style-left="{defaultValue -10 (mapUnit (swap divide timeMultiplier) currentTime)}" />
+						
+						<div class="ruler-selected-range" style-left="{defaultValue -10 (mapUnit (swap divide timeMultiplier) selectionMin)}" style-width="{defaultValue 0 (mapUnit (swap divide timeMultiplier) selectionDur)}" />
+
+						// <f:each selectionStart as selectionStart><f:each selectionEnd as selectionEnd>
+						// 	t1 = min selectionStart selectionEnd,
+						// 	t2 = max selectionStart selectionEnd,
+						// 	<div class="ruler-selected-range" style-left="{divide t1 timeMultiplier}" style-width="{divide (subtract t2 t1) timeMultiplier}" />
+						// </f:each></f:each>
+						
+
+						
+					</div>
+				</f:each>
+
+			</div>
+		},
+		drawPreview = template (width, height) {
+			<div class="timeline-preview" style-width="{width}" style-height="{height}">
+				<f:call>quicktime width height url previewTime</f:call>
+			</div>
+		},
 	
 		<f:wrapper>
 			<f:on init>
@@ -32,68 +102,12 @@ template (width::Number, height::Number, video::X.video) {
 			</f:on>
 			
 			<div style-width="{width}" style-height="{height}">
-
 				<div class="timeline-left" style-width="{timelineLeft}" style-height="{height}">
-					<div class="timeline-container" style-width="{timelineLeft}" style-height="{height}" style-color="white">
-						<f:each zoomWidth as zoomWidth>
-							timeMultiplier = divide duration zoomWidth,
-							<div class="ruler-container" style-width="{zoomWidth}">
-								<f:on mousemove>
-									add(previewTime, multiply timeMultiplier event.offsetX)
-								</f:on>
-								<f:on click>
-									add(currentTime, multiply timeMultiplier event.offsetX),
-									remove(selectionStart),
-									remove(selectionEnd)
-								</f:on>
-								
-								<f:on mousedown>
-									add(selectionStart, multiply timeMultiplier event.offsetX),
-									add(selecting, null),
-									remove(currentTime)
-								</f:on>
-								<f:on mouseup>
-									remove(selecting)
-								</f:on>
-								<f:each selecting>
-									<f:on mousemove>
-										add(selectionEnd, multiply timeMultiplier event.offsetX)
-									</f:on>
-								</f:each>
-								
-								
-								<f:each previewTime as previewTime>
-									<div class="ruler-cursor" style-left="{divide previewTime timeMultiplier}" />
-								</f:each>
-								
-								<f:each currentTime as currentTime>
-									<f:wrapper>
-										<f:on mouseout>
-											add(previewTime, currentTime)
-										</f:on>
-										<div class="ruler-selected" style-left="{divide currentTime timeMultiplier}" />
-									</f:wrapper>
-									
-								</f:each>
-
-								// <f:each selectionStart as selectionStart><f:each selectionEnd as selectionEnd>
-								// 	t1 = min selectionStart selectionEnd,
-								// 	t2 = max selectionStart selectionEnd,
-								// 	<div class="ruler-selected-range" style-left="{divide t1 timeMultiplier}" style-width="{divide (subtract t2 t1) timeMultiplier}" />
-								// </f:each></f:each>
-								
-								<div class="ruler-selected-range"
-									style-left="{defaultValue 10 (mapUnit (swap divide timeMultiplier) selectionMin)}"
-									style-width="{defaultValue 10 (mapUnit (swap divide timeMultiplier) selectionDur)}" />
-								
-							</div>
-						</f:each>
-
-					</div>
-
+					<f:call>drawTimeline timelineLeft height</f:call>
 				</div>
-				<div class="timeline-preview" style-width="{scaledWidth}" style-height="{height}" style-left="{timelineLeft}">
-					<f:call>quicktime scaledWidth scaledHeight url previewTime</f:call>
+				
+				<div style-position="absolute" style-left="{timelineLeft}">
+					<f:call>drawPreview scaledWidth scaledHeight</f:call>
 				</div>
 			</div>
 		</f:wrapper>

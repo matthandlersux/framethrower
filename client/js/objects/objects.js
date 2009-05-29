@@ -53,7 +53,8 @@ var classesToMake = {
 			"height": "Number",
 			//"frameCount": "Number",
 			"frameRate": "Number",
-			"duration": "Number"
+			"duration": "Number",
+			"cuts": "Unit JSON"
 		}
 	},
 	"X.picture": {
