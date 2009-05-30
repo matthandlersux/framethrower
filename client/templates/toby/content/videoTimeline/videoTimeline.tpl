@@ -5,6 +5,8 @@ template (width::Number, height::Number, video::X.video) {
 	url = X.video:url video,
 	
 	
+	timeLoaded = state(Unit Number),
+	
 	previewTime = state(Unit Number),
 	currentTime = state(Unit Number),
 	
@@ -12,7 +14,6 @@ template (width::Number, height::Number, video::X.video) {
 	selectionEnd = state(Unit Number),
 	selecting = state(Unit Null),
 	
-	mapUnit2 = f -> x -> bindUnit (reactiveApply (mapUnit f x)),
 	selectionMin = mapUnit2 min selectionStart selectionEnd,
 	selectionDur = mapUnit2 (x -> y -> abs (subtract x y)) selectionStart selectionEnd,
 	
@@ -20,11 +21,6 @@ template (width::Number, height::Number, video::X.video) {
 	zoomWidth = state(Unit Number),
 	
 	<f:each videoWidth as videoWidth><f:each videoHeight as videoHeight><f:each duration as duration><f:each url as url>
-		ratio = divide videoWidth videoHeight,
-		scaledHeight = height,
-		scaledWidth = multiply ratio scaledHeight,
-		
-		timelineLeft = subtract width scaledWidth,
 		
 		drawTimeline = template (width, height) {
 			<div class="timeline-container" style-width="{width}" style-height="{height}" style-color="white">
@@ -62,11 +58,12 @@ template (width::Number, height::Number, video::X.video) {
 						// 	</f:on>
 						// </f:each>
 						
+						<div class="timeline-loading" style-width="{mapUnit (swap divide timeMultiplier) timeLoaded}" />
+
 						
 						<f:each X.video:cuts video as cuts>
 							<f:call>drawCuts cuts (divide 0.0417083322 timeMultiplier)</f:call>
 						</f:each>
-						
 						
 						
 						// TODO: decide if this method with defaultValue is faster or slower than f:each and the div gets recomputed
@@ -90,26 +87,48 @@ template (width::Number, height::Number, video::X.video) {
 
 			</div>
 		},
+		
+		
 		drawPreview = template (width, height) {
 			<div class="timeline-preview" style-width="{width}" style-height="{height}">
-				<f:call>quicktime width height url previewTime</f:call>
+				<f:call>quicktime width height url previewTime timeLoaded</f:call>
 			</div>
 		},
+		
+		
+		
+		ratio = divide videoWidth videoHeight,
+		scaledHeight = height,
+		scaledWidth = multiply ratio scaledHeight,
+		
+		timelineWidth = subtract width scaledWidth,
+		timelineControlsWidth = 20,
 	
-		<f:wrapper>
+		<div style-width="{width}" style-height="{height}">
 			<f:on init>
 				add(zoomWidth, 3000)
 			</f:on>
-			
-			<div style-width="{width}" style-height="{height}">
-				<div class="timeline-left" style-width="{timelineLeft}" style-height="{height}">
-					<f:call>drawTimeline timelineLeft height</f:call>
+			<div class="timeline-left" style-width="{timelineWidth}" style-height="{height}">
+				<div class="timeline-controls" style-width="{timelineControlsWidth}" style-height="{height}">
+					<f:each zoomWidth as zoomWidthValue>
+						<f:wrapper>
+							<div class="button-zoomIn">
+								<f:on click>add(zoomWidth, multiply zoomWidthValue 1.5)</f:on>
+							</div>
+							<div class="button-zoomOut">
+								<f:on click>add(zoomWidth, divide zoomWidthValue 1.5)</f:on>
+							</div>
+						</f:wrapper>
+					</f:each>
 				</div>
-				
-				<div style-position="absolute" style-left="{timelineLeft}">
-					<f:call>drawPreview scaledWidth scaledHeight</f:call>
+				<div style-position="absolute" style-left="{timelineControlsWidth}">
+					<f:call>drawTimeline (subtract timelineWidth timelineControlsWidth) height</f:call>
 				</div>
 			</div>
-		</f:wrapper>
+			
+			<div style-position="absolute" style-left="{timelineWidth}">
+				<f:call>drawPreview scaledWidth scaledHeight</f:call>
+			</div>
+		</div>
 	</f:each></f:each></f:each></f:each>	
 }

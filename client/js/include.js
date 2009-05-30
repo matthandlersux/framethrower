@@ -16,8 +16,9 @@
 		"js/structure/env.js",
 		"js/structure/types.js",
 		"js/structure/expr.js",
-
+		
 		"js/structure/literalTypes.js",
+		"js/structure/ord.js",
 		"js/structure/baseEnv.js",
 
 		"js/structure/evaluate.js",
