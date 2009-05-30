@@ -7,6 +7,10 @@ var preParser = function() {
 	function makeTextNode(text) {
 		return "<p:textnode>" + text + "</p:textnode>";
 	}
+	
+	function makeFunction(text) {
+		return "<p:function>" + text + "</p:function>"
+	}
 
 *]
 
@@ -16,7 +20,7 @@ var preParser = function() {
 ~/
 
 /~ Characters to be ignored... ~/
-!	'//[^\n]*\n'
+!	'\ \t\r\n//[^\n]*\n'
 	;
 
 /~	Grammar Tokens			~/
@@ -26,7 +30,15 @@ var preParser = function() {
 	'<'
 	'\->'
 	'>'
-	'([^<^>^/]|/[^>^/])+'	IDENTIFIER
+	'{'
+	'}'
+	'//[^\n]*\n'		COMMENT
+	'/'
+	'function'
+	'\('
+	'\)'
+	'[\ \t\r\n]+'		WS
+	'([^\(^\)^{^}^\ ^\t^\r^\n^<^>^/])+'	IDENTIFIER
 	;
 ##
 
@@ -41,14 +53,47 @@ TOP:
 CONTENT:
 	CONTENT TEXT									[* %% = %1 + %2; *]
 	| CONTENT XML									[* %% = %1 + %2; *]
+	| CONTENT 'function' ARGS '{' FUNCTIONBODY '}'	[* %% = %1 + makeFunction(%2 + %3 + %4 + %5 + %6); *]
+	| CONTENT COMMENT								[* %% = %1; *]
 	| 												[* %% = ""; *]
+	;
+
+FUNCTIONBODY:
+	FUNCTIONBODY IDENTIFIER							[* %% = %1 + %2; *]
+	| FUNCTIONBODY NONBRACKET						[* %% = %1 + %2; *]
+	| FUNCTIONBODY '{' FUNCTIONBODY '}'
+	|												[* %% = ""; *]
+	;
+
+ARGS:
+	ARGS IDENTIFIER									[* %% = %1 + %2; *]
+	| ARGS NONBRACKET								[* %% = %1 + %2; *]
+	| 												[* %% = ""; *]
+	;
+
+NONBRACKET:
+	| '>'
+	| '/>'
+	| '->'
+	| '/'
+	| '('
+	| ')'
+	| WS
+	| FTAG
+	| 'function'
 	;
 
 TEXT:
 	TEXT IDENTIFIER									[* %% = %1 + %2; *]
+	| TEXT WS										[* %% = %1 + %2; *]
 	| TEXT '>'										[* %% = %1 + %2; *]
 	| TEXT '/>'										[* %% = %1 + %2; *]
 	| TEXT '->'										[* %% = %1 + %2; *]
+	| TEXT '/'
+	| TEXT '{'										[* %% = %1 + %2; *]
+	| TEXT '}'										[* %% = %1 + %2; *]
+	| TEXT '('										[* %% = %1 + %2; *]
+	| TEXT ')'										[* %% = %1 + %2; *]
 	| 												[* %% = ""; *]
 	;
 
@@ -58,15 +103,27 @@ XML:
 	| '<' INTAG '/>'								[* %% = %1 + %2 + %3; *]
 	;
 
+NONGT:
+	'->'
+	| '{'
+	| '}'
+	| '('
+	| ')'
+	| WS
+	| 'function'
+	;
+
 INTAG:
 	INTAG IDENTIFIER								[* %% = %1 + %2; *]
-	| INTAG '->'									[* %% = %1 + %2; *]
+	| INTAG NONGT									[* %% = %1 + %2; *]
 	| 												[* %% = ""; *]
 	;
 
 INXMLCONTENT:
 	INXMLCONTENT TEXT								[* %% = %1 + makeTextNode(%2); *]
 	| INXMLCONTENT XML								[* %% = %1 + %2; *]
+	| INXMLCONTENT 'function' ARGS '{' FUNCTIONBODY '}'	[* %% = %1 + makeFunction(%2 + %3 + %4 + %5 + %6); *]
+	| INXMLCONTENT COMMENT								[* %% = %1; *]
 	| 												[* %% = ""; *]
 	;
 	

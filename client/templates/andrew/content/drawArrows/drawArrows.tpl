@@ -1,18 +1,15 @@
-template (allPositions::Map Object SV.shape) {
+template (allPositions::Set SV.shape) {
 	
-	infons = filter isInfon (keys allPositions),
-		
-	<div>
-		Positions:
-		<f:each allPositions as key, position>
-			<div>
-				1 Position
-			</div>
-		</f:each>
-		<f:each infons as infon>
-			<div>
-				1 Infon
-			</div>
-		</f:each>
-	</div>
+	infons = filter (x -> bindUnit isInfon (returnFutureUnit (SV.shape:focus x))) allPositions,
+	
+	<svg:svg id="svgelements">
+		<svg:g>
+			<svg:path d="M 0,5  T800,800" class="link"/>
+		</svg:g>
+		<svg:g>
+			<f:each infons as infon>
+				drawInfonArrows infon
+			</f:each>
+		</svg:g>
+	</svg:svg>
 }
