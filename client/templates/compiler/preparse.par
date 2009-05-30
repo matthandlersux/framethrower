@@ -50,23 +50,27 @@ TOP:
 	CONTENT											[* output = %1; *]
 	;
 
+WORD:
+	IDENTIFIER
+	| COMMENT										[* %% = ""; *]
+	;
+
 CONTENT:
 	CONTENT TEXT									[* %% = %1 + %2; *]
 	| CONTENT XML									[* %% = %1 + %2; *]
 	| CONTENT 'function' ARGS '{' FUNCTIONBODY '}'	[* %% = %1 + makeFunction(%2 + %3 + %4 + %5 + %6); *]
-	| CONTENT COMMENT								[* %% = %1; *]
 	| 												[* %% = ""; *]
 	;
 
 FUNCTIONBODY:
-	FUNCTIONBODY IDENTIFIER							[* %% = %1 + %2; *]
+	FUNCTIONBODY WORD							[* %% = %1 + %2; *]
 	| FUNCTIONBODY NONBRACKET						[* %% = %1 + %2; *]
-	| FUNCTIONBODY '{' FUNCTIONBODY '}'
+	| FUNCTIONBODY '{' FUNCTIONBODY '}'				[* %% = %1 + %2 + %3 + %4; *]
 	|												[* %% = ""; *]
 	;
 
 ARGS:
-	ARGS IDENTIFIER									[* %% = %1 + %2; *]
+	ARGS WORD									[* %% = %1 + %2; *]
 	| ARGS NONBRACKET								[* %% = %1 + %2; *]
 	| 												[* %% = ""; *]
 	;
@@ -84,7 +88,7 @@ NONBRACKET:
 	;
 
 TEXT:
-	TEXT IDENTIFIER									[* %% = %1 + %2; *]
+	TEXT WORD									[* %% = %1 + %2; *]
 	| TEXT WS										[* %% = %1 + %2; *]
 	| TEXT '>'										[* %% = %1 + %2; *]
 	| TEXT '/>'										[* %% = %1 + %2; *]
@@ -98,8 +102,8 @@ TEXT:
 	;
 
 XML:
-	FTAG CONTENT '</' IDENTIFIER '>'				[* %% = %1 + %2 + %3 + %4 + %5; *]
-	| '<' INTAG '>' INXMLCONTENT '</' IDENTIFIER '>'[* %% = %1 + %2 + %3 + %4 + %5 + %6 + %7; *]
+	FTAG CONTENT '</' WORD '>'				[* %% = %1 + %2 + %3 + %4 + %5; *]
+	| '<' INTAG '>' INXMLCONTENT '</' WORD '>'[* %% = %1 + %2 + %3 + %4 + %5 + %6 + %7; *]
 	| '<' INTAG '/>'								[* %% = %1 + %2 + %3; *]
 	;
 
@@ -114,7 +118,7 @@ NONGT:
 	;
 
 INTAG:
-	INTAG IDENTIFIER								[* %% = %1 + %2; *]
+	INTAG WORD								[* %% = %1 + %2; *]
 	| INTAG NONGT									[* %% = %1 + %2; *]
 	| 												[* %% = ""; *]
 	;
@@ -123,7 +127,6 @@ INXMLCONTENT:
 	INXMLCONTENT TEXT								[* %% = %1 + makeTextNode(%2); *]
 	| INXMLCONTENT XML								[* %% = %1 + %2; *]
 	| INXMLCONTENT 'function' ARGS '{' FUNCTIONBODY '}'	[* %% = %1 + makeFunction(%2 + %3 + %4 + %5 + %6); *]
-	| INXMLCONTENT COMMENT								[* %% = %1; *]
 	| 												[* %% = ""; *]
 	;
 	
