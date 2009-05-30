@@ -79,10 +79,10 @@ var exprLib = {
 		expr: "f -> bindUnit (compose returnFutureUnit f)"
 	},
 	
-	// mapBinaryUnit: {
-	// 	type: "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
-	// 	expr: "f -> compose (compose bindUnit reactiveApply) (mapUnit f)"
-	// },
+	mapUnit2: {
+		type: "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
+		expr: "f -> compose (compose bindUnit reactiveApply) (mapUnit f)"
+	},
 	
 	
 	// ========================================================================
