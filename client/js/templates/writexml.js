@@ -24,12 +24,19 @@ By calling this function, endCaps may be created which will update the node reac
 When cleanup() is called, these endCaps are removed.
 cleanup may be returned as null, in which case there's nothing to clean up.
 */ 
-function xmlToDOM(xml, env) {
+function xmlToDOM(xml, env, context) {
 	
 	// I've added this convenience, XMLP can have as its xml property a {node: --, cleanup: --} in which case it is already DOM.
 	// I use this for javascript creating quicktime embeds.
 	if (xml.node) {
 		return xml;
+	}
+	
+	if (context === undefined) context = "html";
+	
+	function createWrapper() {
+		if (context === "html") return createEl("f:wrapper");
+		else if (context === "svg") return createEl("svg:wrapper");
 	}
 	
 	var cleanupFunctions = [];
@@ -40,7 +47,9 @@ function xmlToDOM(xml, env) {
 	var node;
 	
 	if (xml.kind === "element") {
-		node = createEl(xml.nodeName);
+		node = (xml.nodeName === "f:wrapper") ? createWrapper() : createEl(xml.nodeName);
+		
+		var newContext = (xml.nodeName.substring(0,4) === "svg:") ? "svg" : context;
 		
 		forEach(xml.attributes, function (att, attName) {
 			pushCleanup(evaluateXMLInsert(att, env, function (value) {
@@ -55,7 +64,7 @@ function xmlToDOM(xml, env) {
 		});
 		
 		forEach(xml.children, function (child) {
-			var childNodeCleanup = xmlToDOM(child, env);
+			var childNodeCleanup = xmlToDOM(child, env, newContext);
 			try {
 				node.appendChild(childNodeCleanup.node);
 			} catch (e) {
@@ -76,7 +85,7 @@ function xmlToDOM(xml, env) {
 		var select = parseExpression(xml.select, env);
 		var result = evaluate(select);
 		
-		var wrapper = createEl("f:wrapper");
+		var wrapper = createWrapper();
 		
 		// set up an endCap to listen to result and change the children of the wrapper
 		
@@ -112,7 +121,7 @@ function xmlToDOM(xml, env) {
 				keyString = stringify(value);
 			}
 			
-			newNode = xmlToDOM(newNode.xml, newNode.env);
+			newNode = xmlToDOM(newNode.xml, newNode.env, context);
 
 			
 			// find where to put the new node
@@ -166,7 +175,7 @@ function xmlToDOM(xml, env) {
 		var select = parseExpression(xml.test, env);
 		var result = evaluate(select);
 		
-		var wrapper = createEl("f:wrapper");
+		var wrapper = createWrapper();
 		
 		// set up an endCap to listen to result and change the children of the wrapper
 		
@@ -186,13 +195,13 @@ function xmlToDOM(xml, env) {
 		function printOccupied(value) {
 			clearIt();
 			var tmp = evaluate(makeApply(innerTemplate, value));
-			childNode = xmlToDOM(tmp.xml, tmp.env);
+			childNode = xmlToDOM(tmp.xml, tmp.env, context);
 			wrapper.appendChild(childNode.node);
 		}
 		function printOtherwise() {
 			clearIt();
 			if (otherwiseTemplate) {
-				childNode = xmlToDOM(otherwiseTemplate.xml, otherwiseTemplate.env);
+				childNode = xmlToDOM(otherwiseTemplate.xml, otherwiseTemplate.env, context);
 				wrapper.appendChild(childNode.node);
 			}
 		}
@@ -218,7 +227,7 @@ function xmlToDOM(xml, env) {
 		return {node: wrapper, cleanup: cleanup};
 	} else if (xml.kind === "call") {
 		var xmlp = makeClosure(xml.templateCode, env);
-		return xmlToDOM(xmlp.xml, xmlp.env);
+		return xmlToDOM(xmlp.xml, xmlp.env, context);
 	} else if (xml.kind === "on") {
 		var node = createEl("f:on");
 		if (xml.event === "init") {
@@ -238,7 +247,7 @@ function xmlToDOM(xml, env) {
 			return {node: node, cleanup: cleanup};
 		}
 	} else if (xml.kind === "trigger") {
-		var node = createEl("f:trigger"); // I just need to return something
+		var node = createWrapper(); // I just need to return something
 		var cleanupFunc = null;
 		function cleanup() {
 			if (cleanupFunc) cleanupFunc();
