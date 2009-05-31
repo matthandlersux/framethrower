@@ -449,6 +449,43 @@ var primFuncs = function () {
 				return outputCell;				
 			}
 		},
+		getPosition: {
+			type: "a -> Set a -> Unit Number",
+			func: function (element, cell) {
+				var outputCell = makeCell();
+				
+				cell.makeSorted();
+				
+				var current = null;
+				function update() {
+					var a = cell.getState();
+					var found = false;
+					forEach(a, function (x, i) {
+						if (x === element) {
+							found = true;
+							if (current !== i) {
+								if (current !== null) {
+									outputCell.removeLine(current);						
+								}
+								outputCell.addLine(i);
+								current = i;								
+							}
+						}
+					});
+					if (!found) {
+						if (current !== null) {
+							outputCell.removeLine(current);
+							current = null;
+						}
+					}
+				}
+				cell.inject(outputCell, function (val) {
+					update();
+					return update;
+				});
+				return outputCell;
+			}
+		},
 		gate: {
 			type: "Unit b -> a -> Unit a",
 			func: function (gatekeeper, passer) {
