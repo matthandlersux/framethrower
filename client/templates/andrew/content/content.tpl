@@ -6,14 +6,16 @@ template () {
 	isInfon = focus -> contains (getTypes focus) shared.type.infon,
 	getArguments = getInfonArguments,
 	
+
+	equalsFocus = obj -> shape -> bindUnit (reactiveEqual obj) (returnFutureUnit (SV.shape:focus shape)),
+	findBestMatch = arg -> allPositions -> takeOne (filter (equalsFocus arg) allPositions),
+	
 	//UI state
-	allPositions = state(Map Object SV.shape),
+	allPositions = state(Set SV.shape),
 	
 	<div>
 		<f:call>prepareState</f:call>
 		<f:call>drawSituation shared.realLife 600 400</f:call>
-		<div class = "situationView-arrows">
-			<f:call>drawArrows allPositions</f:call>
-		</div>
+		<f:call>drawArrows allPositions</f:call>
 	</div>
 }

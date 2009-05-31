@@ -8,7 +8,7 @@ template (focus::Object, width::Number, height::Number) {
 	
 	<div>
 		//add case statement here
-		<f:on init>add(allPositions, focus, pos)</f:on>
+		<f:on init>add(allPositions, pos)</f:on>
 		<f:each SV.shape:width pos as mywidth><f:each SV.shape:height pos as myheight>
 			<f:call>
 				content = if isSituation focus as _ {

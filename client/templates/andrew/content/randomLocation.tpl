@@ -1,5 +1,5 @@
 action(pos::SV.shape, widthbound, heightbound) {
-	random = function(x::Number) {
+	random = function(x::Number)::Number {
 		return Math.floor(x * Math.random());
 	},
 	subtract = function(x::Number, y::Number) {
