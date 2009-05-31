@@ -121,6 +121,8 @@ template () {
 		
 		test: {Situation:name tobytest.realLife}
 		
+		<f:call>svg</f:call>
+		
 		
 		// <svg:svg id="svgelements" style-position="absolute" style-left="100" style-top="400" style-width="500" style-height="500">
 		// 	<svg:g>

@@ -26,9 +26,13 @@
 		// 	console.log("multiple targets", test);
 		// }
 		
+		function addWrappers(xp, or) {
+			return xp + " "+or+" f:wrapper/"+xp + " "+or+" svg:wrapper/"+xp + " "+or+" f:wrapper/f:wrapper/"+xp + " "+or+" svg:wrapper/svg:wrapper/"+xp;
+		}
+		
 		
 		// note the hackery here
-		var xpathExp = "*[f:on/@event='" + eventName + "' or f:wrapper/f:on/@event='" + eventName + "' or f:wrapper/f:wrapper/f:on/@event='" + eventName + "'][1]";
+		var xpathExp = "*[" + addWrappers("f:on/@event='" + eventName + "'", "or") + "][1]";
 		//if (eventName !== "mouseover" && eventName !== "mouseout") {
 			xpathExp = "ancestor-or-self::"+xpathExp;
 		//}
@@ -39,7 +43,7 @@
 		var fon = xpath(xpathExp, target);
 		
 		if (fon.length > 0) {
-			var fonEls = xpath("f:on[@event='" + eventName + "'] | f:wrapper/f:on[@event='" + eventName + "'] | f:wrapper/f:wrapper/f:on[@event='" + eventName + "']", fon[0]);
+			var fonEls = xpath(addWrappers("f:on[@event='" + eventName + "']", "|"), fon[0]);
 			
 			forEach(fonEls, function (fonEl) {
 				var env = function (s) {

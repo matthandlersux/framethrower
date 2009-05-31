@@ -450,7 +450,7 @@ var primFuncs = function () {
 			}
 		},
 		getPosition: {
-			type: "a -> Set a -> Unit Number",
+			type: "a -> Set a -> Unit Number", // TODO: add to server
 			func: function (element, cell) {
 				var outputCell = makeCell();
 				
