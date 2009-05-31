@@ -14,6 +14,28 @@ An Object looks like:
 var classesToMake = {
 	
 	// ====================================================
+	// New
+	// ====================================================
+	
+	"Situation": {
+		prop: {
+			"container": "Unit Situation",
+			"contains": "Set Situation",
+			"name": "Unit String" // this will be changed!
+		}
+	},
+
+	"Pipe": {
+		prop: {
+			"type": "Situation",
+			"instance": "Situation",
+			"container": "Map Ord Pipe",
+			"contains": "Set Pipe",
+			"truth": "Unit Number"
+		}
+	},
+	
+	// ====================================================
 	// Core
 	// ====================================================
 	

@@ -73,3 +73,22 @@ function ordBetween(smaller, bigger) {
 	}
 }
 
+function numToOrd(num) {
+	// takes an integer
+	if (num === 0) return ordOrigin;
+	else if (num > 0) {
+		var ret = [];
+		for (var i = 0; i < num; i++) {
+			ret.push(true);
+		}
+		ret.push(true);
+		return makeOrd(ret);
+	} else {
+		var ret = [];
+		for (var i = 0; i < -num; i++) {
+			ret.push(false);
+		}
+		ret.push(true);
+		return makeOrd(ret);
+	}
+}

@@ -69,6 +69,7 @@ function addExpr(name, exprString, optionalTypeString, dynamicEnv) {
 addFun("ordBigger", "Ord -> Ord", ordBigger);
 addFun("ordSmaller", "Ord -> Ord", ordSmaller);
 addFun("ordBetween", "Ord -> Ord -> Ord", ordBetween);
+addFun("numToOrd", "Number -> Ord", numToOrd);
 base.add("ordOrigin", ordOrigin);
 
 addExpr("compose", "f -> g -> x -> f (g x)", "(b -> c) -> (a -> b) -> a -> c", base);
