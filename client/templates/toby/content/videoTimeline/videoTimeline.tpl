@@ -21,7 +21,7 @@ template (width::Number, height::Number, video::X.video) {
 	zoomWidth = state(Unit Number),
 	
 	<f:each videoWidth as videoWidth><f:each videoHeight as videoHeight><f:each duration as duration><f:each url as url>
-		
+	
 		drawTimeline = template (width, height) {
 			<div class="timeline-container" style-width="{width}" style-height="{height}" style-color="white">
 				<f:each zoomWidth as zoomWidth>
