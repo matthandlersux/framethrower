@@ -1,4 +1,6 @@
 template(shape1::SV.shape, shape2::SV.shape) {
+	dstring = state(Unit String),
+	
 	left1 = SV.shape:left shape1,
 	top1 = SV.shape:top shape1,
 	width1 = SV.shape:width shape1,
