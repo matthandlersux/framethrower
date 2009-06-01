@@ -756,6 +756,15 @@ var primFuncs = function () {
 				});
 				return outputCell;
 			}
+		},
+		
+		
+		
+		getType: {
+			type: "a -> String",
+			func: function (x) {
+				return unparseType(getType(x));
+			}
 		}
 	};
 }();
