@@ -6,7 +6,8 @@ uses cell.getState() recursively to generate a string representation for the cel
 function convertStateToString(cell) {
 	var lit = unparseLiteral(cell);
 	if (lit !== undefined) {
-		return lit;
+		if (typeOf(cell) === "string") return cell;
+		else return lit;
 	} else {
 		var type = getType(cell);
 		if (isReactive(type)) {

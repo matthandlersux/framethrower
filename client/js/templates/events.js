@@ -164,6 +164,9 @@
 		mouseIsDown = false;
 		mouseIsDragging = false;
 	}
+	function dblclick(e) {
+		processEvent("dblclick", e); // TODO integrate this better?
+	}
 	function mousemove(e) {
 		mouseCurrentPos[0] = e.clientX;
 		mouseCurrentPos[1] = e.clientY;
@@ -228,6 +231,7 @@
 	
 	document.addEventListener("mousedown", mousedown, true);
 	document.addEventListener("mouseup", mouseup, true);
+	document.addEventListener("dblclick", dblclick, true);
 	document.addEventListener("mousemove", mousemove, true);
 	document.addEventListener("mouseover", mouseover, true);
 	document.addEventListener("mouseout", mouseout, true);
