@@ -15,6 +15,8 @@ template () {
 	
 	rootWidth = state{rw = create(Unit Number), add(rw, 600), rw},
 	rootHeight = state{rh = create(Unit Number), add(rh, 400), rh},
+	rootTop = state{rt = create(Unit Number), add(rt, 0), rt},
+	rootLeft = state{rl = create(Unit Number), add(rl, 0), rl},
 	
 	containSVG = template (x::Unit Number, y::Unit Number, content::XMLP) {
 		makeTranslateString = function(x, y) {
@@ -36,7 +38,7 @@ template () {
 	<div>
 		<f:call>prepareState</f:call>
 		<svg:svg id="svgelements">
-			<f:call>drawSituation shared.realLife rootWidth rootHeight</f:call>
+			<f:call>drawSituation shared.realLife rootWidth rootHeight rootTop rootLeft</f:call>
 			<f:call>drawArrows allPositions</f:call>
 		</svg:svg>
 	</div>

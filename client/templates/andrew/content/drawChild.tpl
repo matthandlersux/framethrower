@@ -1,5 +1,5 @@
 //width, height are the bounds imposed by the parent
-template (focus::Object, widthBound::Number, heightBound::Number) {
+template (focus::Object, widthBound::Number, heightBound::Number, globalTop::Unit Number, globalLeft::Unit Number) {
 	pos = state{
 		thePosition = create(SV.shape, {focus: focus}),
 		randomLocation thePosition widthBound heightBound,
@@ -10,12 +10,19 @@ template (focus::Object, widthBound::Number, heightBound::Number) {
 	left = SV.shape:left pos,
 	top = SV.shape:top pos,
 	
+	totalTop = mapUnit2 plus globalTop top,
+	totalLeft = mapUnit2 plus globalLeft left,
+	
+	globalPos = state{
+		create(SV.shape, {focus: focus, left:totalLeft, top:totalTop, width:width, height:height})
+	},
+	
 	<f:wrapper>
 		//add case statement here
-		<f:on init>add(allPositions, pos)</f:on>
+		<f:on init>add(allPositions, globalPos)</f:on>
 		<f:call>
 			content = if isSituation focus as _ {
-				<f:call>drawSituation focus width height</f:call>
+				<f:call>drawSituation focus width height totalTop totalLeft</f:call>
 			} else if isInfon focus as _ {
 				asCons = (Object~Cons focus),
 				<f:each asCons as asCons>

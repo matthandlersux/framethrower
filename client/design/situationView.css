@@ -1,37 +1,28 @@
 .situationView-situation {
-	z-index:-2;
 	fill:silver;
 	stroke:black;
-	stroke-width:1;
+	stroke-width:2;
 }
 
 .situationView-object {
 	fill: chartreuse;
 	stroke:black;
-	stroke-width:1;
+	stroke-width:2;
 }
 
 .situationView-infon {
-	z-index: 7;
 	fill: magenta;
 	stroke:black;
-	stroke-width:1;
+	stroke-width:2;
 }
 
-.situationView-dragrect {
-	background-color: transparent;
-	border:1px solid black;
-}
 
 #svgelements {
-	width:80%;
+	width:100%;
 	height:100%;
 	position:absolute;
 	top:0;
 	left:0;
-	z-index:-1;
-	border: solid black 1px;
-	background: teal;
 }
 
 .link {
