@@ -1,15 +1,23 @@
-template (content::XMLP, x::Unit Number, y::Unit Number) {
+template (x::Unit Number, y::Unit Number) {
 	offsetX = state(Unit Number),
 	offsetY = state(Unit Number),
 	dragging = state(Unit Null),
-	<div style-position="absolute" style-left="{x}" style-top="{y}">
+	<f:wrapper>
+		<f:each x as x>
+			<f:on mousedown>
+				add(offsetX, subtract event.mouseX x),			
+			</f:on>
+		</f:each>
+		<f:each y as y>
+			<f:on mousedown>
+				add(offsetY, subtract event.mouseY y),
+			</f:on>
+		</f:each>
 		<f:on mousedown>
-			add(offsetX, event.offsetX),
-			add(offsetY, event.offsetY),
 			add(dragging, null)
 		</f:on>
 		<f:each dragging as _>
-			<span>
+			<f:wrapper>
 				<f:each offsetX as offsetX>
 					<f:trigger UI.ui:mouseX ui.ui as mouseX>
 						add(x, subtract mouseX offsetX)
@@ -21,12 +29,13 @@ template (content::XMLP, x::Unit Number, y::Unit Number) {
 					</f:trigger>
 				</f:each>
 				<f:trigger reactiveNot (UI.ui:mouseDown ui.ui) as _>
+					add(x, 0),
+					add(y, 0),
 					remove(offsetX),
 					remove(offsetY),
-					remove(dragging)
+					remove(dragging),
 				</f:trigger>
-			</span>
+			</f:wrapper>
 		</f:each>
-		<f:call>content</f:call>
-	</div>
+	</f:wrapper>
 }

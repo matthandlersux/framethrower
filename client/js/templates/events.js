@@ -27,7 +27,7 @@
 		// }
 		
 		function addWrappers(xp, or) {
-			return xp + " "+or+" f:wrapper/"+xp + " "+or+" svg:wrapper/"+xp + " "+or+" f:wrapper/f:wrapper/"+xp + " "+or+" svg:wrapper/svg:wrapper/"+xp;
+			return xp + " "+or+" f:wrapper/"+xp + " "+or+" svg:g/"+xp + " "+or+" f:wrapper/f:wrapper/"+xp + " "+or+" svg:g/svg:g/"+xp;
 		}
 		
 		
@@ -51,6 +51,10 @@
 						return mouseCurrentPos[0] - getPosition(fonEl.parentNode)[0];
 					} else if (s === "event.offsetY") {
 						return mouseCurrentPos[1] - getPosition(fonEl.parentNode)[1];
+					} else if (s === "event.mouseX") {
+						return mouseCurrentPos[0];
+					} else if (s === "event.mouseY") {
+						return mouseCurrentPos[1];
 					} else {
 						return fonEl.custom.env(s);
 					}
@@ -160,6 +164,9 @@
 		mouseIsDown = false;
 		mouseIsDragging = false;
 	}
+	function dblclick(e) {
+		processEvent("dblclick", e); // TODO integrate this better?
+	}
 	function mousemove(e) {
 		mouseCurrentPos[0] = e.clientX;
 		mouseCurrentPos[1] = e.clientY;
@@ -224,6 +231,7 @@
 	
 	document.addEventListener("mousedown", mousedown, true);
 	document.addEventListener("mouseup", mouseup, true);
+	document.addEventListener("dblclick", dblclick, true);
 	document.addEventListener("mousemove", mousemove, true);
 	document.addEventListener("mouseover", mouseover, true);
 	document.addEventListener("mouseout", mouseout, true);

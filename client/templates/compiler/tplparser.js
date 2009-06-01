@@ -87,7 +87,7 @@
 			} else {
 				first = false;
 			}
-			typeString += type;
+			typeString += "(" + type + ")";
 		});
 		if (first) {
 			typeString += "XMLP";
@@ -194,7 +194,7 @@
 			}
 			funcString += arg.name;
 			if (arg.type !== undefined) {
-				typeString += arg.type;
+				typeString += "(" + arg.type + ")";
 			} else {
 				typeString += "t" + typeCounter;
 				typeCounter++;
@@ -202,7 +202,7 @@
 		});
 		funcString += ") " + JS + "";
 		if (outputType !== undefined) {
-			typeString += " -> " + outputType;
+			typeString += " -> " + "(" + outputType + ")";
 		} else {
 			typeString += " -> " + "t" + typeCounter;
 		}
@@ -403,7 +403,7 @@
 			} else {
 				first = false;
 			}
-			typeString += type;
+			typeString += "(" + type + ")";
 		});
 		if (first) {
 			typeString += "Action";

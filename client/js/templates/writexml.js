@@ -36,7 +36,7 @@ function xmlToDOM(xml, env, context) {
 	
 	function createWrapper() {
 		if (context === "html") return createEl("f:wrapper");
-		else if (context === "svg") return createEl("svg:wrapper");
+		else if (context === "svg") return createEl("svg:g");
 	}
 	
 	var cleanupFunctions = [];
@@ -249,12 +249,12 @@ function xmlToDOM(xml, env, context) {
 	} else if (xml.kind === "trigger") {
 		var node = createWrapper(); // I just need to return something
 		var cleanupFunc = null;
-		function cleanup() {
-			if (cleanupFunc) cleanupFunc();
-		}
 		
 		// I wrap the registering of triggers in a setTimeout to ensure that they come after everything else. Otherwise there are timing bugs.
-		setTimeout(function () {
+		var myTimer = setTimeout(function () {
+			
+			cleanupFunc = false;
+			
 			var actionClosure = makeActionClosure(xml.action, env);
 
 			//var expr = parseExpression(parse(xml.trigger), env);
@@ -267,8 +267,20 @@ function xmlToDOM(xml, env, context) {
 				var action = evaluate(makeApply(actionClosure, val));
 				executeAction(action);
 			});
-			cleanupFunc = removeTrigger;
+			cleanupFunc = function () {
+				removeTrigger();
+			};
 		}, 0);
+		
+		function cleanup() {
+			if (cleanupFunc) cleanupFunc();
+			else if (cleanupFunc === null) {
+				clearTimeout(myTimer);
+			} else if (cleanupFunc === false) {
+				debug.error("A trigger has triggered its own removal. The culprit:", unparse(xml.trigger));
+				//setTimeout(cleanup, 0);
+			}
+		}
 		
 		return {node: node, cleanup: cleanup};
 	}

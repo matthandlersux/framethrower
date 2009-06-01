@@ -112,6 +112,12 @@ template () {
 	},
 	
 	
+	print = template(sit::Situation) {
+		<div>{Situation:name sit}</div>
+	},
+	
+	testState = state(Unit Number),
+	
 	<div>Hello world.asdf
 	
 		//<f:call>videoTimeline 1200 160 test.walleVideo</f:call>
@@ -121,7 +127,19 @@ template () {
 		
 		test: {Situation:name tobytest.realLife}
 		
-		<f:call>svg</f:call>
+		<div>
+			<f:on dblclick>
+				add(testState, 400)
+			</f:on>
+			bleh: {testState}
+			<svg:svg style-width="500" style-height="300">
+				<svg:g transform="translate(250, 150)">
+					<f:call>svg tobytest.realLife print Situation:contains 150</f:call>
+				</svg:g>
+			</svg:svg>
+		</div>
+		
+		//<f:call>svg</f:call>
 		
 		
 		// <svg:svg id="svgelements" style-position="absolute" style-left="100" style-top="400" style-width="500" style-height="500">
