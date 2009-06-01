@@ -537,7 +537,8 @@ var objects = (function (classDefs) {
 							debug.error("Property type mismatch. Expected `"+propTypeString+"` but got `"+unparseType(getType(instanceValue))+"`");
 						}
 						// TODO: I don't think the makeFuture is right here, but it's what is expected when passing around Unit JS's.
-						obj.prop[propName] = makeFuture(instanceValue);
+						//obj.prop[propName] = makeFuture(instanceValue);
+						obj.prop[propName] = instanceValue;
 					}
 				} else {
 					if (instanceValue === undefined) {
