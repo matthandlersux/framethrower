@@ -51,6 +51,10 @@
 						return mouseCurrentPos[0] - getPosition(fonEl.parentNode)[0];
 					} else if (s === "event.offsetY") {
 						return mouseCurrentPos[1] - getPosition(fonEl.parentNode)[1];
+					} else if (s === "event.mouseX") {
+						return mouseCurrentPos[0];
+					} else if (s === "event.mouseY") {
+						return mouseCurrentPos[1];
 					} else {
 						return fonEl.custom.env(s);
 					}

@@ -15,7 +15,9 @@ template () {
 	
 	<div>
 		<f:call>prepareState</f:call>
-		<f:call>drawSituation shared.realLife 600 400</f:call>
-		<f:call>drawArrows allPositions</f:call>
+		<svg:svg id="svgelements">
+			<f:call>drawSituation shared.realLife 0 0 600 400</f:call>
+			<f:call>drawArrows allPositions</f:call>
+		</svg:svg>
 	</div>
 }

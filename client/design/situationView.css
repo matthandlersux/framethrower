@@ -1,24 +1,25 @@
 .situationView-situation {
-	position:absolute;
-	background-color: silver;
-	border:1px solid black;
+	z-index:-2;
+	fill:silver;
+	stroke:black;
+	stroke-width:1;
 }
 
 .situationView-object {
-	position:absolute;
-	background-color: chartreuse;
-	border:1px solid black;
+	fill: chartreuse;
+	stroke:black;
+	stroke-width:1;
 }
 
 .situationView-infon {
-	position:absolute;
-	background-color: magenta;
-	border:1px solid black;
+	z-index: 7;
+	fill: magenta;
+	stroke:black;
+	stroke-width:1;
 }
 
-.situationView-arrows {
-	position:absolute;
-	background-color: grey;
+.situationView-dragrect {
+	background-color: transparent;
 	border:1px solid black;
 }
 
@@ -34,6 +35,7 @@
 }
 
 .link {
+	z-index:5;
 	fill:none;
 	stroke:#FFC426;
 	stroke-width:5;
