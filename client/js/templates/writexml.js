@@ -36,7 +36,7 @@ function xmlToDOM(xml, env, context) {
 	
 	function createWrapper() {
 		if (context === "html") return createEl("f:wrapper");
-		else if (context === "svg") return createEl("svg:wrapper");
+		else if (context === "svg") return createEl("svg:g");
 	}
 	
 	var cleanupFunctions = [];

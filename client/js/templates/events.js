@@ -27,7 +27,7 @@
 		// }
 		
 		function addWrappers(xp, or) {
-			return xp + " "+or+" f:wrapper/"+xp + " "+or+" svg:wrapper/"+xp + " "+or+" f:wrapper/f:wrapper/"+xp + " "+or+" svg:wrapper/svg:wrapper/"+xp;
+			return xp + " "+or+" f:wrapper/"+xp + " "+or+" svg:g/"+xp + " "+or+" f:wrapper/f:wrapper/"+xp + " "+or+" svg:g/svg:g/"+xp;
 		}
 		
 		
