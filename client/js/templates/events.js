@@ -1,5 +1,11 @@
 (function () {
 	
+	function isDOMAncestor(child, grandparent) {
+		if (!child) return false;
+		else if (child === grandparent) return true;
+		else return isDOMAncestor(child.parentNode, grandparent);
+	}
+	
 	// =========================================================
 	// "Preferences"
 	// =========================================================
@@ -32,17 +38,18 @@
 		
 		
 		// note the hackery here
-		var xpathExp = "*[" + addWrappers("f:on/@event='" + eventName + "'", "or") + "][1]";
-		//if (eventName !== "mouseover" && eventName !== "mouseout") {
-			xpathExp = "ancestor-or-self::"+xpathExp;
-		//}
-		// if (eventName === "mouseout") {
-		// 	console.log("registered mouseout", target);
-		// }
+		var xpathExp = "ancestor-or-self::*[" + addWrappers("f:on/@event='" + eventName + "'", "or") + "][1]";
 		
 		var fon = xpath(xpathExp, target);
 		
 		if (fon.length > 0) {
+			if (eventName === "mouseout") {
+				var rt = e.relatedTarget;
+				if (isDOMAncestor(fon[0].parentNode, rt)) {
+					return;
+				}
+			}
+			
 			var fonEls = xpath(addWrappers("f:on[@event='" + eventName + "']", "|"), fon[0]);
 			
 			forEach(fonEls, function (fonEl) {
@@ -195,12 +202,7 @@
 		processEvent("mouseover", e);
 	}
 	function mouseout(e) {
-		function isAncestor(child, grandparent) {
-			if (!child) return false;
-			else if (child === grandparent) return true;
-			else return isAncestor(child.parentNode, grandparent);
-		}
-		if (!isAncestor(e.relatedTarget, e.target)) {
+		if (!isDOMAncestor(e.relatedTarget, e.target)) {
 			processEvent("mouseout", e);
 		}
 	}
