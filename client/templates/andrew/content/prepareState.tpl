@@ -1,7 +1,10 @@
 template () {
+	
 	// Situation
 	// 	container: Unit Situation
 	// 	contains: Set Situation
+	//	pipesIn: Set Pipe
+	//	pipesOut: Set Pipe
 	//	propName: Unit String
 	//	propTime: Unit Number
 	// 
@@ -43,8 +46,8 @@ template () {
 		sit
 	},
 	putSituationIn = action (parent::Situation, child::Situation) {
-		add(Situation:contains child, parent),
-		add(Situation:container parent, child)
+		add(Situation:contains parent, child),
+		add(Situation:container child, parent)
 	},
 	makeSituationNamedIn = action (name::String, parent::Situation) {
 		sit = makeSituationNamed name,
@@ -55,6 +58,8 @@ template () {
 	makePipe = action (instance::Situation, type::Situation) {
 		pipe = create(Pipe, {instance:instance, type:type}),
 		add(Pipe:truth pipe, 1),
+		add(Situation:pipesOut instance, pipe),
+		add(Situation:pipesIn type, pipe),
 		pipe
 	},
 	putPipeIn1 = action (pipe::Pipe, pipe0::Pipe) {
@@ -171,7 +176,17 @@ template () {
 			timelineTointerval = makePipe timeline interval,
 			
 			
-
+		//second level pipes
+			//connecting to/from timeline
+			timepointTobtimepoint1 = makePipeIn1 timelineTimepoint btimepoint1 timelineToisBefore,
+			timepointTobtimepoint2 = makePipeIn1 timelineTimepoint btimepoint2 timelineToisBefore,
+			timepointTostimepoint1 = makePipeIn1 timelineTimepoint stimepoint1 timelineTosameTimeAs,
+			timepointTostimepoint2 = makePipeIn1 timelineTimepoint stimepoint2 timelineTosameTimeAs,
+			timepointToitimepoint1 = makePipeIn1 timelineTimepoint itimepoint1 timelineTointerval,
+			timepointToitimepoint2 = makePipeIn1 timelineTimepoint itimepoint2 timelineTointerval,
+			intervalToOnScreen1 = makePipeIn1 interval onScreen1 timelineToWalleStory,
+			intervalToOnScreen2 = makePipeIn1 interval onScreen2 timelineToWalleStory,
+			timepointToCanHappenTimepoint = makePipeIn1 timelineTimepoint timepoint timelineToCanHappen,
 			
 			//connection to/from onscreen
 			evaToEvaInfon = makePipeIn1 eva evaInfon onScreen1ToInfon,
