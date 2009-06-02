@@ -21,7 +21,8 @@ var classesToMake = {
 		prop: {
 			"container": "Unit Situation",
 			"contains": "Set Situation",
-			"name": "Unit String" // this will be changed!
+			"propName": "Unit String", // these prop*s will be refactored!
+			"propTime": "Unit Number"
 		}
 	},
 
