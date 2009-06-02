@@ -21,7 +21,8 @@ var classesToMake = {
 		prop: {
 			"container": "Unit Situation",
 			"contains": "Set Situation",
-			"name": "Unit String" // this will be changed!
+			"propName": "Unit String", // these prop*s will be refactored!
+			"propTime": "Unit Number"
 		}
 	},
 
@@ -537,7 +538,8 @@ var objects = (function (classDefs) {
 							debug.error("Property type mismatch. Expected `"+propTypeString+"` but got `"+unparseType(getType(instanceValue))+"`");
 						}
 						// TODO: I don't think the makeFuture is right here, but it's what is expected when passing around Unit JS's.
-						obj.prop[propName] = makeFuture(instanceValue);
+						//obj.prop[propName] = makeFuture(instanceValue);
+						obj.prop[propName] = instanceValue;
 					}
 				} else {
 					if (instanceValue === undefined) {

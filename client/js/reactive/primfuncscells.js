@@ -318,6 +318,35 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
+		testMapUnit2 : {
+			type : "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
+			func : function(func, cell1, cell2) {
+				// var outputCell = makeCell();
+				// var a, b, removeLast;
+				// 
+				// function runFunc(){
+				// 	if(removeLast !== undefined) removeLast();
+				// 	removeLast = outputCell.addLine(applyFunc(applyFunc(func, a), b));
+				// }
+				// 
+				// outputCell.leash();
+				// cell1.inject(outputCell, function (val) {
+				// 	a = val;
+				// 	runFunc();
+				// });
+				// cell2.inject(outputCell, function (val) {
+				// 	b = val;
+				// 	runFunc();
+				// });
+				// outputCell.unleash();
+				// 
+				// return outputCell;
+				
+				return mapUnitJS(function (x, y) {
+					return evaluate(makeApply(makeApply(func, x), y));
+				})(cell1, cell2);
+			}
+		},
 		// ============================================================================
 		// Null Type Functions
 		// ============================================================================

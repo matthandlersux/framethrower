@@ -17,6 +17,10 @@ XMLINSERT
 */
 
 
+var DEBUGSPEED = false;
+
+
+
 /*
 This takes some xml (in js form) and an environment and creates a DOM Node, returning
 	{node: NODE, cleanup: FUNCTION}
@@ -109,6 +113,11 @@ function xmlToDOM(xml, env, context) {
 		
 		
 		var feachCleanup = result.inject(emptyFunction, function (value) {
+			
+			if (DEBUGSPEED) {
+				console.log("f:each", unparse(xml.select));
+			}
+			
 			var newNode, keyString;
 			
 			if (constructor === "Map") {

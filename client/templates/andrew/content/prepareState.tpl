@@ -82,15 +82,23 @@ template () {
 		nameObject shared.realLife "Real Life",
 		typeObject shared.realLife shared.type.situation,
 
-		nameObject shared.test.loves "Loves",
-		putObjectInSituation shared.test.loves shared.realLife,
-		nameObject shared.test.romeo "Romeo",
-		putObjectInSituation shared.test.romeo shared.realLife,
-		nameObject shared.test.juliet "Juliet",
-		putObjectInSituation shared.test.juliet shared.realLife,
+		verona = create(Object),
+		nameObject verona "Verona",
+		typeObject verona shared.type.situation,
+		putObjectInSituation verona shared.realLife,
+
+		loves = create(Object),
+		nameObject loves "Loves",
+		putObjectInSituation loves verona,
+		romeo = create(Object),
+		nameObject romeo "Romeo",
+		putObjectInSituation romeo verona,
+		juliet = create(Object),
+		nameObject juliet "Juliet",
+		putObjectInSituation juliet verona,
 		
-		RLJ = makeInfon2 shared.test.loves shared.test.romeo shared.test.juliet,
-		putObjectInSituation (Cons~Object RLJ) shared.realLife
+		RLJ = makeInfon2 loves romeo juliet,
+		putObjectInSituation (Cons~Object RLJ) verona
 	},
 	<f:on init>prepareState</f:on>
 }

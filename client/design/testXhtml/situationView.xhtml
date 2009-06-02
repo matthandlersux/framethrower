@@ -16,9 +16,15 @@
 
 	<svg:svg id="svgelements">
 		<svg:g>
-			<svg:path d="M 0,50  T300,50" class="link"/>
-			<svg:rect class="situationView-infon" width="600" height="400" x="0" y="0" />
-			<svg:rect class="situationView-situation" width="300" height="200" x="0" y="0" />
+			<svg:defs>
+				<svg:mask id="Mask" maskUnits="userSpaceOnUse"
+			          x="0" y="0" width="800" height="300">
+			      <svg:circle x="100" y="100" radius="100" fill="green"  />
+			    </svg:mask>
+			</svg:defs>
+			<!-- <svg:path d="M 0,50  T300,50" class="link"/> -->
+			<svg:rect class="situationView-infon" width="600" height="400" x="0" y="0" mask="url(#Mask)"/>
+			<!-- <svg:rect class="situationView-situation" width="300" height="200" x="0" y="0" /> -->
 			<svg:text x="0" y="20">
 			    Hello, out there
 			</svg:text>

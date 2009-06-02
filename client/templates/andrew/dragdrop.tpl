@@ -1,4 +1,4 @@
-template (x::Unit Number, y::Unit Number) {
+template (contain::Unit Number -> Unit Number -> XMLP -> XMLP, content::XMLP, x::Unit Number, y::Unit Number) {
 	offsetX = state(Unit Number),
 	offsetY = state(Unit Number),
 	dragging = state(Unit Null),
@@ -29,13 +29,12 @@ template (x::Unit Number, y::Unit Number) {
 					</f:trigger>
 				</f:each>
 				<f:trigger reactiveNot (UI.ui:mouseDown ui.ui) as _>
-					add(x, 0),
-					add(y, 0),
 					remove(offsetX),
 					remove(offsetY),
-					remove(dragging),
+					remove(dragging)
 				</f:trigger>
 			</f:wrapper>
 		</f:each>
+		<f:call>contain x y content</f:call>
 	</f:wrapper>
 }

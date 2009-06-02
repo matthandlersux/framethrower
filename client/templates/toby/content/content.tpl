@@ -3,6 +3,8 @@ template () {
 	// Situation
 	// 	container: Unit Situation
 	// 	contains: Set Situation
+	//	propName: Unit String
+	//	propTime: Unit Number
 	// 
 	// Pipe
 	// 	type: Situation
@@ -31,7 +33,10 @@ template () {
 		create(Situation, {})
 	},
 	nameSituation = action (sit::Situation, name::String) {
-		add(Situation:name sit, name)
+		add(Situation:propName sit, name)
+	},
+	timeSituation = action (sit::Situation, time::Number) {
+		add(Situation:propTime sit, time)
 	},
 	makeSituationNamed = action (name::String) {
 		sit = makeSituation,
