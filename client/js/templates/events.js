@@ -5,6 +5,19 @@
 		else if (child === grandparent) return true;
 		else return isDOMAncestor(child.parentNode, grandparent);
 	}
+	function DOMCommonAncestor(child1, child2) {
+		var ancestors = [];
+		while(child1) {
+			ancestors.push(child1);
+			child1 = child1.parentNode;
+		}
+		while(child2) {
+			if (any(ancestors, function (ancestor) {
+				return ancestor === child2;
+			})) return child2;
+			child2 = child2.parentNode;
+		}
+	}
 	
 	// =========================================================
 	// "Preferences"
@@ -45,7 +58,8 @@
 		if (fon.length > 0) {
 			if (eventName === "mouseout") {
 				var rt = e.relatedTarget;
-				if (isDOMAncestor(fon[0].parentNode, rt)) {
+				var commonAncestor = DOMCommonAncestor(target, rt);
+				if (!isDOMAncestor(fon[0].parentNode, commonAncestor)) {
 					return;
 				}
 			}
