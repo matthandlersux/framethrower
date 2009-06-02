@@ -1,45 +1,57 @@
 template () {
 	//"abstraction layer functions" - interface to the ontology which will likely change a lot
-	getChildren = getEveryIn,
-	getArtifacts = getName,	//make this get pictures and such later
-	isSituation = focus -> contains (getTypes focus) shared.type.situation,
-	isInfon = focus -> contains (getTypes focus) shared.type.infon,
-	getArguments = getInfonArguments,
+	// getChildren = getEveryIn,
+	getArtifacts = Situation:propName,	//make this get pictures and such later
+	// isSituation = focus -> contains (getTypes focus) shared.type.situation,
+	// isInfon = focus -> contains (getTypes focus) shared.type.infon,
+	// getArguments = getInfonArguments,
 	
 
-	equalsFocus = obj -> shape -> bindUnit (reactiveEqual obj) (returnFutureUnit (SV.shape:focus shape)),
-	findBestMatch = arg -> allPositions -> takeOne (filter (equalsFocus arg) allPositions),
+	divBy = function (d::Number, q::Number)::Number {
+		return q/d;
+	},
 	
 	//UI state
-	allPositions = state(Set SV.shape),
-	
+	locations = state(Map Situation ShapePosition),
+	situations = state(Map Situation ChildProp),
+
 	rootWidth = state{rw = create(Unit Number), add(rw, 600), rw},
 	rootHeight = state{rh = create(Unit Number), add(rh, 400), rh},
-	rootTop = state{rt = create(Unit Number), add(rt, 0), rt},
-	rootLeft = state{rl = create(Unit Number), add(rl, 0), rl},
-	
-	containSVG = template (x::Unit Number, y::Unit Number, content::XMLP) {
-		makeTranslateString = function(x, y) {
-			return "translate(" + x + "," + y + ")";
-		},
-		translate = mapUnit2 makeTranslateString x y,
-		<svg:g transform="{translate}">
-			<f:call>content</f:call>
-		</svg:g>
-	},
-	containHTML = template (x::Unit Number, y::Unit Number, content::XMLP) {
-		<div style-left="{x}" style-top="{y}">
-			<f:call>content</f:call>
-		</div>
-	},
-	dragdropSVG = dragdrop containSVG,
-	dragdropHTML = dragdrop containHTML,
+	rootScale = state{rs = create(Unit Number), add(rs, 200), rs},
 
 	<div>
 		<f:call>prepareState</f:call>
+		<f:on init>
+			position = create(Position),
+			add(Position:x position, 0),
+			add(Position:y position, 0),
+			childProp = create(ChildProp, {position:position}),
+			add(situations, tobytest.realLife, childProp)
+		</f:on>
 		<svg:svg id="svgelements">
-			<f:call>drawSituation shared.realLife rootWidth rootHeight rootTop rootLeft</f:call>
-			<f:call>drawArrows allPositions</f:call>
+			<f:each situations as situation, childProp>
+				position = state(Position),
+				<f:wrapper>
+					<f:on init>
+						// need to make this initialize the locations based on rootWidth and rootHeight
+						// need ability to extract in actions to do this I think
+						x = divBy 2 600,
+						y = divBy 2 400,
+						add(Position:x position, x),
+						add(Position:y position, y),
+					</f:on>
+					<f:call>
+						content = drawSituation situation position rootScale,
+						childPosition = ChildProp:position childProp,
+						<f:each childPosition as childPosition>
+							xToDraw = testMapUnit2 plus (Position:x childPosition) (Position:x position),
+							yToDraw = testMapUnit2 plus (Position:y childPosition) (Position:y position),
+							dragdropSVG content xToDraw yToDraw
+						</f:each>
+					</f:call>
+				</f:wrapper>
+			</f:each>
+			// <f:call>drawArrows allPositions</f:call>
 		</svg:svg>
 	</div>
 }

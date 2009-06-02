@@ -305,15 +305,27 @@ var classesToMake = {
 	// ====================================================
 	// SV (Situation View)
 	// ====================================================
-	"SV.shape": {
+	"Position": {
 		prop: {
-			"top": "Unit Number",
-			"left": "Unit Number",
-			"width": "Unit Number",
-			"height": "Unit Number",
-			"focus": "Object"
+			"x": "Unit Number",
+			"y": "Unit Number"
+		}
+	},	
+
+	"ShapePosition": {
+		prop: {
+			"scale": "Unit Number",
+			"position": "Position"
+		}
+	},
+
+	"ChildProp": {
+		prop: {
+			"hidden": "Unit Null",
+			"position": "Position"
 		}
 	}
+	
 };
 
 

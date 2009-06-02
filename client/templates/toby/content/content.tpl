@@ -117,7 +117,7 @@ template () {
 	
 	init = action () {
 		nameSituation tobytest.realLife "Real Life",
-		walleStory = makeSituationNamedIn "Wall-E Story" tobyttest.realLife,
+		walleStory = makeSituationNamedIn "Wall-E Story" tobytest.realLife,
 		
 		kills = makeSituationNamedIn "kills" walleStory,
 		relation = makeSituationNamedIn "relation" walleStory,
