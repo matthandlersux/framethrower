@@ -10,8 +10,8 @@ template (focus::Object, widthBound::Number, heightBound::Number, globalTop::Uni
 	left = SV.shape:left pos,
 	top = SV.shape:top pos,
 	
-	totalTop = mapUnit2 plus globalTop top,
-	totalLeft = mapUnit2 plus globalLeft left,
+	totalTop = testMapUnit2 plus globalTop top,
+	totalLeft = testMapUnit2 plus globalLeft left,
 	
 	globalPos = state{
 		create(SV.shape, {focus: focus, left:totalLeft, top:totalTop, width:width, height:height})
