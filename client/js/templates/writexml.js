@@ -114,9 +114,9 @@ function xmlToDOM(xml, env, context) {
 		
 		var feachCleanup = result.inject(emptyFunction, function (value) {
 			
-			if (DEBUGSPEED) {
-				console.log("f:each", unparse(xml.select));
-			}
+			// if (DEBUGSPEED) {
+			// 	console.log("f:each", unparse(xml.select));
+			// }
 			
 			var newNode, keyString;
 			
@@ -157,6 +157,14 @@ function xmlToDOM(xml, env, context) {
 				
 				if (newNode.cleanup) newNode.cleanup();
 				wrapper.removeChild(newNode.node);
+				
+				if (DEBUGSPEED) {
+					if (newNode.node.localName !== "on") {
+						console.log("removing a node!", newNode.node, unparse(xml.select));
+					}
+					
+				}
+				
 				delete entries[keyString];
 			};
 		});

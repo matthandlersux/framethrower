@@ -44,8 +44,8 @@ template () {
 		sit
 	},
 	putSituationIn = action (parent::Situation, child::Situation) {
-		add(Situation:contains child, parent),
-		add(Situation:container parent, child)
+		add(Situation:contains parent, child),
+		add(Situation:container child, parent)
 	},
 	makeSituationNamedIn = action (name::String, parent::Situation) {
 		sit = makeSituationNamed name,

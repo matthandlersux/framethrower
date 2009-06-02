@@ -36,6 +36,7 @@ function convertStateToString(cell) {
 				return "{" + ret.join(", ") + "}";
 			}
 		} else {
+			console.log("stringifying (shouldn't need to?)", cell);
 			return stringify(cell);
 		}
 	}
