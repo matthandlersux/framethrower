@@ -3,6 +3,8 @@ template () {
 	// Situation
 	// 	container: Unit Situation
 	// 	contains: Set Situation
+	//	pipesIn: Set Pipe
+	//	pipesOut: Set Pipe
 	//	propName: Unit String
 	//	propTime: Unit Number
 	// 
@@ -44,8 +46,8 @@ template () {
 		sit
 	},
 	putSituationIn = action (parent::Situation, child::Situation) {
-		add(Situation:contains child, parent),
-		add(Situation:container parent, child)
+		add(Situation:contains parent, child),
+		add(Situation:container child, parent)
 	},
 	makeSituationNamedIn = action (name::String, parent::Situation) {
 		sit = makeSituationNamed name,
@@ -56,6 +58,8 @@ template () {
 	makePipe = action (instance::Situation, type::Situation) {
 		pipe = create(Pipe, {instance:instance, type:type}),
 		add(Pipe:truth pipe, 1),
+		add(Situation:pipesOut instance, pipe),
+		add(Situation:pipesIn type, pipe),
 		pipe
 	},
 	putPipeIn1 = action (pipe::Pipe, pipe0::Pipe) {
