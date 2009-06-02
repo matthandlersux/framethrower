@@ -22,7 +22,9 @@ var classesToMake = {
 			"container": "Unit Situation",
 			"contains": "Set Situation",
 			"propName": "Unit String", // these prop*s will be refactored!
-			"propTime": "Unit Number"
+			"propTime": "Unit Number",
+			"pipesIn": "Set Pipe",
+			"pipesOut": "Set Pipe"
 		}
 	},
 

@@ -3,6 +3,8 @@ template () {
 	// Situation
 	// 	container: Unit Situation
 	// 	contains: Set Situation
+	//	pipesIn: Set Pipe
+	//	pipesOut: Set Pipe
 	//	propName: Unit String
 	//	propTime: Unit Number
 	// 
@@ -56,6 +58,8 @@ template () {
 	makePipe = action (instance::Situation, type::Situation) {
 		pipe = create(Pipe, {instance:instance, type:type}),
 		add(Pipe:truth pipe, 1),
+		add(Situation:pipesOut instance, pipe),
+		add(Situation:pipesIn type, pipe),
 		pipe
 	},
 	putPipeIn1 = action (pipe::Pipe, pipe0::Pipe) {
