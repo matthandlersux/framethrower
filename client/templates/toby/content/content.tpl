@@ -113,7 +113,86 @@ template () {
 	
 	init = action () {
 		nameSituation tobytest.realLife "Real Life",
-		makeSituationNamedIn "kills"
+		walleStory = makeSituationNamedIn "Wall-E Story" tobyttest.realLife,
+		
+		kills = makeSituationNamedIn "kills" walleStory,
+		relation = makeSituationNamedIn "relation" walleStory,
+		canHappenAtTime = makeSituationNamedIn "can happen at time" walleStory,
+		timeline = makeSituationNamedIn "timeline" walleStory,
+		onScreen1 = makeSituationNamedIn "On Screen {T1, T2}" walleStory,
+		onScreen2 = makeSituationNamedIn "On Screen {T3, T4}" walleStory,
+		someInfon = makeSituationNamedIn "Infon 1" walleStory,
+		
+		//on screen t1, t2
+			eva = makeSituationNamedIn "Eva" onScreen1,
+		
+		//on screen t3, t4
+			walle = makeSituationNamedIn "Wall-E" onScreen2,
+		
+		//some infon
+			evaInfon = makeSituationNamedIn "Eva" someInfon,
+			walleInfon = makeSituationNamedIn "Wall-E" someInfon,
+			timePointInfon = makeSituationNamedIn "time point" someInfon,
+		
+		//relation
+			relator = makeSituationNamedIn "relator" relation,
+			relatee = makeSituationNamedIn "relatee" relation,
+		
+		//can happen at time
+			timePoint = makeSituationNamedIn "time point" canHappenAtTime,
+		
+		//timeline
+			timelineTimePoint = makeSituationNamedIn "time point" timeline,
+			isBefore = makeSituationNamedIn "is before" timeline,
+			sameTimeAs = makeSituationNamedIn "same time as" timeline,
+			interval = makeSituationNamedIn "interval" timeline,
+		
+		//isBefore
+				btimePoint1 = makeSituationNamedIn "time point" isBefore,
+				btimepoint2 = makeSituationNamedIn "time point" isBefore,
+				
+		//sameTimeAs
+				stimepoint1 = makeSituationNamedIn "time point" sameTimeAs,
+				stimepoint2 = makeSituationNamedIn "time point" sameTimeAs,
+				
+		//interval 
+				itimepoint2 = makeSituationNamedIn "time point" interval,
+				itimepoint2 = makeSituationNamedIn "time point" interval,
+				interior = makeSituationNamedIn "interior" interval,
+			
+		//first level pipes
+			onScreen1ToInfon = makePipe onScreen1 someInfon,
+			onScreen2ToInfon = makePipe onScreen2 someInfon,
+			timelineToCanHappen = makePipe timeline canHappenAtTime,
+			timelineToWalleStory = makePipe timeline walleStory,
+			canHappenToRelation = makePipe canHappenAtTime relation,
+			relationToInfon = makePipe relation someInfon,
+			timelineToisBefore = makePipe timeline isBefore,
+			timelineTosameTimeAs = makePipe timeline sameTimeAs,
+			timelineTointerval = makePipe timeline interval,
+			
+			
+		//second level pipes
+			//connecting to/from timeline
+			timepointTobtimepoint1 = makePipeIn1 timelineTimepoint btimepoint1 timelineToisBefore,
+			timepointTobtimepoint2 = makePipeIn1 timelineTimepoint btimepoint2 timelineToisBefore,
+			timepointTostimepoint1 = makePipeIn1 timelineTimepoint stimepoint1 timelineTosameTimeAs,
+			timepointTostimepoint2 = makePipeIn1 timelineTimepoint stimepoint2 timelineTosameTimeAs,
+			timepointToitimepoint1 = makePipeIn1 timelineTimepoint itimepoint1 timelineTointerval,
+			timepointToitimepoint2 = makePipeIn1 timelineTimepoint itimepoint2 timelineTointerval,
+			intervalToOnScreen1 = makePipeIn1 interval onScreen1 timelineToWalleStory,
+			intervalToOnScreen2 = makePipeIn1 interval onScreen2 timelineToWalleStory,
+			timepointToCanHappenTimepoint = makePipeIn1 timelineTimepoint timepoint timelineToCanHappen,
+			
+			//connection to/from onscreen
+			evaToEvaInfon = makePipeIn1 eva evaInfon onScreen1ToInfon,
+			walleToWalleInfon = makePipeIn1 walle walleInfon onScreen2ToInfon,
+			
+			//conection to/from infon
+			canHappenTimePointToEvaInfon = makePipeIn2 timePoint timePointInfon canHappenToRelation relationToInfon,
+			relatorToEvaInfon = makePipeIn1 relator evaInfon relationToInfon,
+			relateeToWalleInfon = makePipeIn1 relatee walleInfon relationToInfon,
+			tobytest.realLife
 	},
 	
 	
