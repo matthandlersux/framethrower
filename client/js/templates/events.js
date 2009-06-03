@@ -1,5 +1,24 @@
 (function () {
 	
+	function isDOMAncestor(child, grandparent) {
+		if (!child) return false;
+		else if (child === grandparent) return true;
+		else return isDOMAncestor(child.parentNode, grandparent);
+	}
+	function DOMCommonAncestor(child1, child2) {
+		var ancestors = [];
+		while(child1) {
+			ancestors.push(child1);
+			child1 = child1.parentNode;
+		}
+		while(child2) {
+			if (any(ancestors, function (ancestor) {
+				return ancestor === child2;
+			})) return child2;
+			child2 = child2.parentNode;
+		}
+	}
+	
 	// =========================================================
 	// "Preferences"
 	// =========================================================
@@ -27,22 +46,37 @@
 		// }
 		
 		function addWrappers(xp, or) {
-			return xp + " "+or+" f:wrapper/"+xp + " "+or+" svg:g/"+xp + " "+or+" f:wrapper/f:wrapper/"+xp + " "+or+" svg:g/svg:g/"+xp;
+			function repeat(s, n) {
+				var ret = "";
+				for (var i = 0; i < n; i++) {
+					ret += s;
+				}
+				return ret;
+			}
+			var ret = xp;
+			for (var i = 0; i < 10; i++) {
+				
+				ret += " "+or+" " + repeat("f:wrapper/", i)+xp + " "+or+" " + repeat("svg:g/", i)+xp;
+			}
+			return ret;
+			//return xp + " "+or+" f:wrapper/"+xp + " "+or+" svg:g/"+xp + " "+or+" f:wrapper/f:wrapper/"+xp + " "+or+" svg:g/svg:g/"+xp;
 		}
 		
 		
 		// note the hackery here
-		var xpathExp = "*[" + addWrappers("f:on/@event='" + eventName + "'", "or") + "][1]";
-		//if (eventName !== "mouseover" && eventName !== "mouseout") {
-			xpathExp = "ancestor-or-self::"+xpathExp;
-		//}
-		// if (eventName === "mouseout") {
-		// 	console.log("registered mouseout", target);
-		// }
+		var xpathExp = "ancestor-or-self::*[" + addWrappers("f:on/@event='" + eventName + "'", "or") + "][1]";
 		
 		var fon = xpath(xpathExp, target);
 		
 		if (fon.length > 0) {
+			if (eventName === "mouseout") {
+				var rt = e.relatedTarget;
+				var commonAncestor = DOMCommonAncestor(target, rt);
+				if (!isDOMAncestor(fon[0].parentNode, commonAncestor)) {
+					return;
+				}
+			}
+			
 			var fonEls = xpath(addWrappers("f:on[@event='" + eventName + "']", "|"), fon[0]);
 			
 			forEach(fonEls, function (fonEl) {
@@ -195,12 +229,7 @@
 		processEvent("mouseover", e);
 	}
 	function mouseout(e) {
-		function isAncestor(child, grandparent) {
-			if (!child) return false;
-			else if (child === grandparent) return true;
-			else return isAncestor(child.parentNode, grandparent);
-		}
-		if (!isAncestor(e.relatedTarget, e.target)) {
+		if (!isDOMAncestor(e.relatedTarget, e.target)) {
 			processEvent("mouseout", e);
 		}
 	}

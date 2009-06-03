@@ -23,10 +23,12 @@ var classesToMake = {
 			"contains": "Set Situation",
 			"propName": "Unit String", // these prop*s will be refactored!
 			"propTime": "Unit Number",
+			"propTimeline": "Unit Timeline",
 			"pipesIn": "Set Pipe",
 			"pipesOut": "Set Pipe"
 		}
 	},
+	
 
 	"Pipe": {
 		prop: {
@@ -37,6 +39,22 @@ var classesToMake = {
 			"truth": "Unit Number"
 		}
 	},
+	
+	
+	"TimeSelection": {
+		prop: {
+			"start": "Unit Number",
+			"duration": "Unit Number"
+		}
+	},
+	
+	"Timeline": {
+		prop: {
+			"duration": "Number",
+			"video": "Unit X.video"
+		}
+	},
+	
 	
 	// ====================================================
 	// Core
