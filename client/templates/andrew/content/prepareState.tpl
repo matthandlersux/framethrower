@@ -31,9 +31,9 @@ template () {
 	// makePipeIn3 :: Situation -> Situation -> Pipe -> Pipe -> Pipe -> Action Pipe
 	// makePipeIn4 :: Situation -> Situation -> Pipe -> Pipe -> Pipe -> Pipe -> Action Pipe
 	
-	makeSituation = action () {
-		create(Situation, {})
-	},
+	// makeSituation = action () {
+	// 	create(Situation, {})
+	// },
 	nameSituation = action (sit::Situation, name::String) {
 		add(Situation:propName sit, name)
 	},
@@ -41,7 +41,7 @@ template () {
 		add(Situation:propTime sit, time)
 	},
 	makeSituationNamed = action (name::String) {
-		sit = makeSituation,
+		sit = create(Situation, {}),
 		nameSituation sit name,
 		sit
 	},
@@ -178,24 +178,24 @@ template () {
 			
 		//second level pipes
 			//connecting to/from timeline
-			timepointTobtimepoint1 = makePipeIn1 timelineTimepoint btimepoint1 timelineToisBefore,
-			timepointTobtimepoint2 = makePipeIn1 timelineTimepoint btimepoint2 timelineToisBefore,
-			timepointTostimepoint1 = makePipeIn1 timelineTimepoint stimepoint1 timelineTosameTimeAs,
-			timepointTostimepoint2 = makePipeIn1 timelineTimepoint stimepoint2 timelineTosameTimeAs,
-			timepointToitimepoint1 = makePipeIn1 timelineTimepoint itimepoint1 timelineTointerval,
-			timepointToitimepoint2 = makePipeIn1 timelineTimepoint itimepoint2 timelineTointerval,
-			intervalToOnScreen1 = makePipeIn1 interval onScreen1 timelineToWalleStory,
-			intervalToOnScreen2 = makePipeIn1 interval onScreen2 timelineToWalleStory,
-			timepointToCanHappenTimepoint = makePipeIn1 timelineTimepoint timepoint timelineToCanHappen,
+			// timepointTobtimepoint1 = makePipeIn1 timelineTimepoint btimepoint1 timelineToisBefore,
+			// timepointTobtimepoint2 = makePipeIn1 timelineTimepoint btimepoint2 timelineToisBefore,
+			// timepointTostimepoint1 = makePipeIn1 timelineTimepoint stimepoint1 timelineTosameTimeAs,
+			// timepointTostimepoint2 = makePipeIn1 timelineTimepoint stimepoint2 timelineTosameTimeAs,
+			// timepointToitimepoint1 = makePipeIn1 timelineTimepoint itimepoint1 timelineTointerval,
+			// timepointToitimepoint2 = makePipeIn1 timelineTimepoint itimepoint2 timelineTointerval,
+			// intervalToOnScreen1 = makePipeIn1 interval onScreen1 timelineToWalleStory,
+			// intervalToOnScreen2 = makePipeIn1 interval onScreen2 timelineToWalleStory,
+			// timepointToCanHappenTimepoint = makePipeIn1 timelineTimepoint timepoint timelineToCanHappen,
 			
-			//connection to/from onscreen
-			evaToEvaInfon = makePipeIn1 eva evaInfon onScreen1ToInfon,
-			walleToWalleInfon = makePipeIn1 walle walleInfon onScreen2ToInfon,
-			
-			//conection to/from infon
-			canHappenTimePointToEvaInfon = makePipeIn2 timePoint timePointInfon canHappenToRelation relationToInfon,
-			relatorToEvaInfon = makePipeIn1 relator evaInfon relationToInfon,
-			relateeToWalleInfon = makePipeIn1 relatee walleInfon relationToInfon,
+			// //connection to/from onscreen
+			// evaToEvaInfon = makePipeIn1 eva evaInfon onScreen1ToInfon,
+			// walleToWalleInfon = makePipeIn1 walle walleInfon onScreen2ToInfon,
+			// 
+			// //conection to/from infon
+			// canHappenTimePointToEvaInfon = makePipeIn2 timePoint timePointInfon canHappenToRelation relationToInfon,
+			// relatorToEvaInfon = makePipeIn1 relator evaInfon relationToInfon,
+			// relateeToWalleInfon = makePipeIn1 relatee walleInfon relationToInfon,
 			tobytest.realLife
 	},
 	<f:on init>init</f:on>

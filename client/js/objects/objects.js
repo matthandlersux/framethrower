@@ -304,7 +304,9 @@ var classesToMake = {
 	"ChildProp": {
 		prop: {
 			"hidden": "Unit Null",
-			"position": "Position"
+			"position": "Position",
+			"dragPosition": "Position",
+			"scale": "Unit Number"
 		}
 	}
 	

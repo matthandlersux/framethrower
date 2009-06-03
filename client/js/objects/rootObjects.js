@@ -141,6 +141,7 @@ var rootObjects = {};
 	
 	
 	m("tobytest.realLife", "Situation");
+	m("tobytest.walleStory", "Situation");
 	
 	
 	rootObjects["test.walleVideo"].prop["cuts"].control.add([

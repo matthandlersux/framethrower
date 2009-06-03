@@ -11,6 +11,20 @@ template () {
 		return q/d;
 	},
 	
+	mult = function (x::Number, y::Number)::Number {
+		return x*y;
+	},
+	
+	containSVG = template (x::Unit Number, y::Unit Number, content::XMLP) {
+		makeTranslateString = function(x, y) {
+			return "translate(" + x + "," + y + ")";
+		},
+		translate = mapUnit2 makeTranslateString x y,
+		<svg:g transform="{translate}">
+			<f:call>content</f:call>
+		</svg:g>
+	},
+	
 	//UI state
 	locations = state(Map Situation ShapePosition),
 	situations = state(Map Situation ChildProp),
@@ -23,9 +37,10 @@ template () {
 		<f:call>prepareState</f:call>
 		<f:on init>
 			position = create(Position),
+			dragPosition = create(Position),
 			add(Position:x position, 0),
 			add(Position:y position, 0),
-			childProp = create(ChildProp, {position:position}),
+			childProp = create(ChildProp, {position:position, dragPosition:dragPosition}),
 			add(situations, tobytest.realLife, childProp)
 		</f:on>
 		<svg:svg id="svgelements">
@@ -46,7 +61,8 @@ template () {
 						<f:each childPosition as childPosition>
 							xToDraw = testMapUnit2 plus (Position:x childPosition) (Position:x position),
 							yToDraw = testMapUnit2 plus (Position:y childPosition) (Position:y position),
-							dragdropSVG content xToDraw yToDraw
+							<f:call>content</f:call>
+							// dragdropSVG content xToDraw yToDraw
 						</f:each>
 					</f:call>
 				</f:wrapper>

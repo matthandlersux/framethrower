@@ -1,19 +1,19 @@
 .situationView-situation {
 	fill:silver;
 	stroke:black;
-	stroke-width:2;
+	stroke-width:1;
 }
 
 .situationView-object {
 	fill: chartreuse;
 	stroke:black;
-	stroke-width:2;
+	stroke-width:1;
 }
 
 .situationView-infon {
 	fill: magenta;
 	stroke:black;
-	stroke-width:2;
+	stroke-width:1;
 }
 
 
