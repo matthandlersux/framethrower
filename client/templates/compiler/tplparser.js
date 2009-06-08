@@ -2722,7 +2722,7 @@ switch( act )
 	break;
 	case 52:
 	{
-		 rval = makeExtractSugar(vstack[ vstack.length - 1 ], {key:vstack[ vstack.length - 4 ]}); 
+		 rval = makeExtractSugar(vstack[ vstack.length - 1 ], {key:vstack[ vstack.length - 4 ].name}); 
 	}
 	break;
 	case 53:

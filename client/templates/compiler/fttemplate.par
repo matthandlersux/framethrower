@@ -627,7 +627,7 @@ UPDATE:
 
 EXTRACT:
 	'extract' EXPR 'as' ASKEYVAL '{' FULLACTLIST '}'	[* %% = makeExtract(%2, %4, %6); *]
-	| VARIABLE '=' 'extract' EXPR						[* %% = makeExtractSugar(%4, {key:%1}); *]
+	| VARIABLE '=' 'extract' EXPR						[* %% = makeExtractSugar(%4, {key:%1.name}); *]
 	;
 
 EXPR:
