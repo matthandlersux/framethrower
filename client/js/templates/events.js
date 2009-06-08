@@ -56,7 +56,7 @@
 			var ret = xp;
 			for (var i = 0; i < 10; i++) {
 				
-				ret += " "+or+" " + repeat("f:wrapper/", i)+xp + " "+or+" " + repeat("svg:g/", i)+xp;
+				ret += " "+or+" " + repeat("f:wrapper/", i)+xp + " "+or+" " + repeat("svg:g[not(@*)]/", i)+xp;
 			}
 			return ret;
 			//return xp + " "+or+" f:wrapper/"+xp + " "+or+" svg:g/"+xp + " "+or+" f:wrapper/f:wrapper/"+xp + " "+or+" svg:g/svg:g/"+xp;

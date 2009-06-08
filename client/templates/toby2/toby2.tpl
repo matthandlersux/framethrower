@@ -120,7 +120,9 @@ template () {
 		nameSituation tobytest.myTimelineSit "wall-e timeline",
 		timeline = create(Timeline, {duration: 5894.139}),
 		add(Timeline:video timeline, test.walleVideo),
-		add(Situation:propTimeline tobytest.myTimelineSit, timeline)
+		add(Situation:propTimeline tobytest.myTimelineSit, timeline),
+		
+		makeSituationNamedIn "blah" tobytest.realLife
 	},
 	
 	

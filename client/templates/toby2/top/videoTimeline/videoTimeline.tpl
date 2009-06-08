@@ -48,7 +48,7 @@ template (width::Number, height::Number, video::X.video, timeSelection::TimeSele
 							add(sel1, event.offsetX),
 							add(sel2, event.offsetX)
 						</f:on>
-						<f:on mouseup>
+						<f:on globalmouseup>
 							remove(selecting)
 						</f:on>
 						<f:each selecting>
