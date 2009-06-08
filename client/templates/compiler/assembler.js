@@ -119,6 +119,35 @@ function preParse(string) {
 	return string;
 }
 
+//handle extractSugar
+function postParse(object) {
+	if(object !== undefined) {
+		if(arrayLike(object)) {
+			var output = [];
+			var i = 0;
+			while (i < object.length) {
+				var value = object[i];
+				if(value.action !== undefined && value.action.kind !== undefined && value.action.kind == "extractSugar") {
+					output.push(makeLineAction({}, makeExtract(value.action.select, value.action.as, postParse(object.slice(i+1)))));
+					i = object.length;
+				} else {
+					output.push(postParse(value));
+					i++
+				}
+			}
+			return output;			
+		} else if (objectLike(object)) {
+			var output = {};
+			forEach(object, function (value, name) {
+				output[name] = postParse(value);
+			});
+			return output;
+		} else {
+			return object;
+		}
+	}
+}
+
 
 function compileFile (filePath, rebuild) {
 	var file = java.io.File("../" + filePath);
@@ -143,6 +172,7 @@ function compileFile (filePath, rebuild) {
 			//result is a global variable that holds the result from parsing
 			var answer = result;
 			result = undefined;
+			answer = postParse(answer);
 			serialize(answer, binfile.getAbsolutePath());
 			return answer;
 		}

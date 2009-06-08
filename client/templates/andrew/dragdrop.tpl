@@ -12,25 +12,17 @@ template (dragX::Unit Number, dragY::Unit Number, onDrop::Number -> Number -> Ac
 		</f:on>
 		<f:each dragging as _>
 			<f:wrapper>
-				<f:each offsetX as offsetX>
-					<f:trigger UI.ui:mouseX ui.ui as mouseX>
-						add(dragX, subtract mouseX offsetX)
-					</f:trigger>
-				</f:each>
-				<f:each offsetY as offsetY>
-					<f:trigger UI.ui:mouseY ui.ui as mouseY>
-						add(dragY, subtract mouseY offsetY)
-					</f:trigger>
-				</f:each>
-				<f:each reactiveNot (UI.ui:mouseDown ui.ui) as _>
-					<f:on init>
-						extract dragX as finalX {
-							extract dragY as finalY {
-								onDrop finalX finalY
-							}
-						}
+				<f:each offsetX as offsetX><f:each offsetY as offsetY>
+					<f:on globalmousemove>
+						add(dragX, subtract event.mouseX offsetX),
+						add(dragY, subtract event.mouseY offsetY)
 					</f:on>
-				</f:each>
+				</f:each></f:each>
+				<f:on globalmouseup>
+					finalX = extract dragX,
+					finalY = extract dragY,
+					onDrop finalX finalY
+				</f:on>
 				// <f:trigger reactiveNot (UI.ui:mouseDown ui.ui) as _>
 				// 	// remove(dragX),
 				// 	// remove(dragY),

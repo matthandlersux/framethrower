@@ -114,7 +114,8 @@ UPDATE
 EXTRACT
 	(extract works like f:each within an action.)
 	extract EXPR as VARTOCREATE {ACTSTMTS}
-	extract EXPR as VARTOCREATE, VARTOCREATE {ACTSTMTS} // for key, value when extracting from Maps
+	| extract EXPR as VARTOCREATE, VARTOCREATE {ACTSTMTS} // for key, value when extracting from Maps
+	| VARTOCREATE = extract EXPR, ACTSTMTS	//"sugar" syntax, can only be used for extracting from a Unit
 
 
 Basically the idea is that templates have a bunch of lets: VARTOCREATE = LINE, with the very last one being just a LINE. Action "templates" are the same thing but can also have CREATE, UPDATE and EXTRACT in addition to the normal things in LINE. Also, actions don't need to have the "VARTOCREATE = " at every line other than the last.
