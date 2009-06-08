@@ -29,8 +29,6 @@ template () {
 	locations = state(Map Situation ShapePosition),
 	situations = state(Map Situation ChildProp),
 
-	rootWidth = state{rw = create(Unit Number), add(rw, 600), rw},
-	rootHeight = state{rh = create(Unit Number), add(rh, 400), rh},
 	rootScale = state{rs = create(Unit Number), add(rs, 200), rs},
 
 	<div>
@@ -38,35 +36,16 @@ template () {
 		<f:on init>
 			position = create(Position),
 			dragPosition = create(Position),
-			add(Position:x position, 0),
-			add(Position:y position, 0),
+			add(Position:x position, 200),
+			add(Position:y position, 200),
 			childProp = create(ChildProp, {position:position, dragPosition:dragPosition}),
 			add(situations, tobytest.realLife, childProp)
 		</f:on>
 		<svg:svg id="svgelements">
-			<f:each situations as situation, childProp>
-				position = state(Position),
-				<f:wrapper>
-					<f:on init>
-						// need to make this initialize the locations based on rootWidth and rootHeight
-						// need ability to extract in actions to do this I think
-						x = divBy 2 600,
-						y = divBy 2 400,
-						add(Position:x position, x),
-						add(Position:y position, y),
-					</f:on>
-					<f:call>
-						content = drawSituation situation position rootScale,
-						childPosition = ChildProp:position childProp,
-						<f:each childPosition as childPosition>
-							xToDraw = testMapUnit2 plus (Position:x childPosition) (Position:x position),
-							yToDraw = testMapUnit2 plus (Position:y childPosition) (Position:y position),
-							<f:call>content</f:call>
-							// dragdropSVG content xToDraw yToDraw
-						</f:each>
-					</f:call>
-				</f:wrapper>
-			</f:each>
+			<f:each situations as situation, childProp><f:each ChildProp:position childProp as position>
+				content = drawSituation situation position rootScale,
+				<f:call>containSVG (Position:x position) (Position:y position) content</f:call>
+			</f:each></f:each>
 			// <f:call>drawArrows allPositions</f:call>
 		</svg:svg>
 	</div>

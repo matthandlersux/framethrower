@@ -365,6 +365,23 @@
 		return letObj;
 	}
 
+
+	function makeExtract(select, as, actions) {
+		var params = [];
+		if (as.key !== undefined) {
+			params.push({name:as.key});
+		}
+		if (as.value !== undefined) {
+			params.push({name:as.value});
+		}
+		var action = makeAction(params, actions);
+		return {
+			kind: "extract",
+			select: select,
+			action: action
+		};
+	}
+
 	function makeAction(params, actions) {
 		//give undefined param types a letter
 		
@@ -460,6 +477,7 @@
 	'state'
 	'create'
 	'add'
+	'extract'
 	'remove'
 	'style'
 	'as'
@@ -566,6 +584,7 @@ ACTLINE:
 ACTION:
 	CREATE
 	| UPDATE
+	| EXTRACT
 	| JSFUN
 	| TEMPLATE 											[* %% = {kind: "lineTemplate", template: %1} ; *]
 	| ACTIONTPL											[* %% = {kind: "lineAction", action: %1} ; *]
@@ -590,12 +609,15 @@ PROPLIST:
 	| 													[* %% = {}; *]
 	;
 
-
 UPDATE:
 	'add' '(' EXPR ',' EXPR ')'							[* %% = makeUpdate(%1, %3, %5); *]
 	| 'add' '(' EXPR ',' EXPR ',' EXPR ')'				[* %% = makeUpdate(%1, %3, %5, %7); *]
 	| 'remove' '(' EXPR ',' EXPR ')'					[* %% = makeUpdate(%1, %3, %5); *]
 	| 'remove' '(' EXPR ')'								[* %% = makeUpdate(%1, %3); *]
+	;
+
+EXTRACT:
+	'extract' EXPR 'as' ASKEYVAL '{' FULLACTLIST '}'	[* %% = makeExtract(%2, %4, %6); *]
 	;
 
 EXPR:
@@ -755,6 +777,7 @@ KEYWORD:
 	| 'state'
 	| 'create'
 	| 'add'
+	| 'extract'
 	| 'remove'
 	| 'style'
 	| 'as'

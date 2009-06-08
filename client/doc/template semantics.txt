@@ -31,7 +31,8 @@ ACTION
 
 ACTIONUNIT
 	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: EXPR}} |
-	{kind: "actionUpdate", target: EXPR, actionType: "add" | "remove", key?: EXPR, value?: EXPR}
+	{kind: "actionUpdate", target: EXPR, actionType: "add" | "remove", key?: EXPR, value?: EXPR} |
+	{kind: "extract", select: AST, action: ACTION}
 
 
 

@@ -33,35 +33,25 @@ template (focus::Situation, globalPosition::Position, scale::Unit Number) {
 		<f:each children as situation, childProp>
 			childPosition = ChildProp:position childProp,
 			<f:each childPosition as childPosition>
-				<f:wrapper>
-					<f:each Position:x childPosition as currentX><f:each Position:y childPosition as currentY>
-						dragX = state(Unit Number),
-						dragY = state(Unit Number),
-						onDrop = action(x::Number, y::Number) {
-							add(Position:x childPosition, divBy scale (plus currentX x)),
-							add(Position:y childPosition, divBy scale (plus currentY y))
-						},
-						dragdrop dragX dragY onDrop
-					</f:each></f:each>
-					// <f:each Position:x childPosition as initX><f:each Position:y childPosition as initY>
-					// 	dragUpdateX = action(x::Number) {
-					// 		add(Position:x dragPosition, divBy scale (plus initX x))
-					// 	},
-					// 	dragUpdateY = action(y::Number) {
-					// 		add(Position:y childPosition, divBy scale (plus initY y))
-					// 	},
-					// 	dragdrop dragUpdateX dragUpdateY
-					// </f:each></f:each>
-					<f:call>
-						scaledX = testMapUnit2 mult scale (Position:x childPosition),
-						scaledY = testMapUnit2 mult scale (Position:y childPosition),
-						globalX = testMapUnit2 plus scaledX (Position:x globalPosition),
-						globalY = testMapUnit2 plus scaledY (Position:y globalPosition),
-						position = state{create(Position, {x:globalX, y:globalY})},
-						content = drawSituation situation position expandedScale,
-						<f:call>containSVG scaledX scaledY</f:call>
-					</f:call>
-				</f:wrapper>
+				scaledX = testMapUnit2 mult scale (Position:x childPosition),
+				scaledY = testMapUnit2 mult scale (Position:y childPosition),
+				globalX = testMapUnit2 plus scaledX (Position:x globalPosition),
+				globalY = testMapUnit2 plus scaledY (Position:y globalPosition),
+				position = state{create(Position, {x:globalX, y:globalY})},
+				content = 
+					<f:wrapper>
+						<f:each scale as scale><f:each Position:x childPosition as currentX><f:each Position:y childPosition as currentY>
+							dragX = state(Unit Number),
+							dragY = state(Unit Number),
+							onDrop = action(x::Number, y::Number) {
+								add(Position:x childPosition, plus currentX (divBy scale x)),
+								add(Position:y childPosition, plus currentY (divBy scale y))
+							},
+							dragdrop dragX dragY onDrop
+						</f:each></f:each></f:each>
+						<f:call>drawSituation situation position expandedScale</f:call>
+					</f:wrapper>,
+				<f:call>containSVG scaledX scaledY content</f:call>
 			</f:each>
 		</f:each>
 		
