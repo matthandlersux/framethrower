@@ -11,13 +11,16 @@ ACTION
 	{kind: "action", instructions: [INSTRUCTION], output?: ACTIONREF}
 
 INSTRUCTION
-	INSTRUCTIONCREATE | INSTRUCTIONUPDATE
+	INSTRUCTIONCREATE | INSTRUCTIONUPDATE | INSTRUCTIONEXTRACT
 
 INSTRUCTIONCREATE
 	{kind: "instructionCreate", type: TYPE, prop: {PROPERTYNAME: ACTIONREF}, label: ACTIONVARTOCREATE} |
 
 INSTRUCTIONUPDATE
 	{kind: "instructionUpdate", target: ACTIONREF, actionType: "add" | "remove", key?: ACTIONREF, value?: ACTIONREF}
+
+INSTRUCTIONEXTRACT
+	{kind: "instructionExtract", select: EXPR, inner: FUNCTION} // FUNCTION returns ACTION
 
 ACTIONREF
 	{kind: "actionRef", label: ACTIONVAR, type: TYPE} |
@@ -76,6 +79,25 @@ function makeActionClosure(actionCode, env) {
 					key: action.key ? evaluate(parseExpression(action.key, envWithParams)) : undefined,
 					value: action.value ? evaluate(parseExpression(action.value, envWithParams)) : undefined
 				});
+			} else if (action.kind === "extract") {
+				var actionClosure = makeActionClosure(action.action, envWithParams);
+				var inner;
+				var isMap = !!actionClosure.type.left.left;
+				if (isMap) {
+					inner = function (o) {
+						return evaluate(makeApply(makeApply(actionClosure, o.key), o.val));
+					};
+				} else {
+					inner = function (key) {
+						return evaluate(makeApply(actionClosure, key));
+					};
+				}
+				var ret = ({
+					kind: "instructionExtract",
+					select: parseExpression(parse(action.select), envWithParams),
+					inner: inner
+				});
+				instructions.push(ret);
 			} else {
 				var evaled = evaluateLine(action, envWithParams);
 				if (evaled.kind === "action") {
@@ -113,8 +135,8 @@ function makeActionClosure(actionCode, env) {
 
 var lastAction;
 
-function executeAction(action) {
-	var scope = {};
+function executeAction(action, scope) {
+	if (scope === undefined) scope = {};
 	
 	var processActionRef = function(actionRef) {
 		if (actionRef.kind === "actionRef") {
@@ -171,6 +193,16 @@ function executeAction(action) {
 			} else {
 				target.control[instruction.actionType](key, value);
 			}
+		} else if (instruction.kind === "instructionExtract") {
+			var done = false;
+			var myRemove = evaluateAndInject(instruction.select, function () {
+				// on done... cleanup
+				if (myRemove) myRemove();
+				else done = true;
+			}, function (element) {
+				executeAction(instruction.inner(element), shallowCopy(scope));
+			});
+			if (done) myRemove();
 		}
 	});
 	
