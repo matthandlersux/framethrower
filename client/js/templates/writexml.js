@@ -254,14 +254,32 @@ function xmlToDOM(xml, env, context) {
 			}, 0);
 			return {node: node, cleanup: null};
 		} else {
-			setAttr(node, "event", xml.event);
+			var eventName, eventGlobal;
+			if (xml.event.substr(0, 6) === "global") {
+				eventName = xml.event.substr(6);
+				eventGlobal = true;
+			} else {
+				eventName = xml.event;
+				eventGlobal = false;
+			}
+			setAttr(node, "event", eventName);
 			node.custom = {};
 			node.custom.action = xml.action;
 			node.custom.env = env;
-			function cleanup() {
-				node.custom = null; // for garbage collection in stupid browsers
+			
+			if (eventGlobal) {
+				document.body.appendChild(node);
+				function cleanup() {
+					node.custom = null;
+					document.body.removeChild(node);
+				}
+				return {node: createWrapper(), cleanup: cleanup};
+			} else {
+				function cleanup() {
+					node.custom = null; // for garbage collection in stupid browsers
+				}
+				return {node: node, cleanup: cleanup};				
 			}
-			return {node: node, cleanup: cleanup};
 		}
 	} else if (xml.kind === "trigger") {
 		var node = createWrapper(); // I just need to return something
@@ -345,3 +363,7 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		}
 	}
 }
+
+
+
+
