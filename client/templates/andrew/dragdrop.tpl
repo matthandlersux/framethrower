@@ -22,6 +22,11 @@ template (dragX::Unit Number, dragY::Unit Number, onDrop::Number -> Number -> Ac
 					finalX = extract dragX,
 					finalY = extract dragY,
 					onDrop finalX finalY
+					// extract dragX as finalX {
+					// 	extract dragY as finalY {
+					// 		onDrop finalX finalY
+					// 	}
+					// }
 				</f:on>
 				// <f:trigger reactiveNot (UI.ui:mouseDown ui.ui) as _>
 				// 	// remove(dragX),
