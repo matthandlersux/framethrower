@@ -40,15 +40,18 @@ template (focus::Situation, globalPosition::Position, scale::Unit Number) {
 				position = state{create(Position, {x:globalX, y:globalY})},
 				content = 
 					<f:wrapper>
-						<f:each scale as scale><f:each Position:x childPosition as currentX><f:each Position:y childPosition as currentY>
+						<f:call>
 							dragX = state(Unit Number),
 							dragY = state(Unit Number),
 							onDrop = action(x::Number, y::Number) {
+								scale = extract scale,
+								currentX = extract Position:x childPosition,
+								currentY = extract Position:y childPosition,
 								add(Position:x childPosition, plus currentX (divBy scale x)),
 								add(Position:y childPosition, plus currentY (divBy scale y))
 							},
 							dragdrop dragX dragY onDrop
-						</f:each></f:each></f:each>
+						</f:call>
 						<f:call>drawSituation situation position expandedScale</f:call>
 					</f:wrapper>,
 				<f:call>containSVG scaledX scaledY content</f:call>
