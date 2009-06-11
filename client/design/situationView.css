@@ -1,8 +1,24 @@
-.situationView-situation {
+.situationView-situation circle {
 	fill:silver;
 	stroke:black;
 	stroke-width:1;
 }
+
+.situationView-situation:hover circle {
+	stroke: orange;
+	stroke-width:2;
+}
+
+
+.dragCircle {
+	fill:none;
+	stroke:black;
+	stroke-width:1;
+	stroke-dasharray:4,4;
+}
+
+
+
 
 .situationView-object {
 	fill: chartreuse;

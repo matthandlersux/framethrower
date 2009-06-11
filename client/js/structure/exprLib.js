@@ -81,7 +81,8 @@ var exprLib = {
 	
 	mapUnit2: {
 		type: "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
-		expr: "f -> compose (compose bindUnit reactiveApply) (mapUnit f)"
+		//expr: "f -> compose (compose bindUnit reactiveApply) (mapUnit f)"
+		expr: "testMapUnit2"
 	},
 	
 	

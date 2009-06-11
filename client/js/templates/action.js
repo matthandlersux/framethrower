@@ -194,14 +194,24 @@ function executeAction(action, scope) {
 				target.control[instruction.actionType](key, value);
 			}
 		} else if (instruction.kind === "instructionExtract") {
+			// var done = false;
+			// var myRemove = evaluateAndInject(instruction.select, function () {
+			// 	// on done... cleanup
+			// 	if (myRemove) myRemove();
+			// 	else done = true;
+			// }, function (element) {
+			// 	executeAction(instruction.inner(element), shallowCopy(scope));
+			// });
+			// if (done) myRemove();
 			var done = false;
-			var myRemove = evaluateAndInject(instruction.select, function () {
-				// on done... cleanup
+			var cell = evaluate(instruction.select);
+			var myRemove = cell.inject(function () {
+				forEach(cell.getState(), function (element) {
+					executeAction(instruction.inner(element), shallowCopy(scope));
+				});
 				if (myRemove) myRemove();
 				else done = true;
-			}, function (element) {
-				executeAction(instruction.inner(element), shallowCopy(scope));
-			});
+			}, emptyFunction);
 			if (done) myRemove();
 		}
 	});

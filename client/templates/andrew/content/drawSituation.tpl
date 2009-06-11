@@ -42,12 +42,10 @@ template (focus::Situation, globalPosition::Position, scale::Unit Number) {
 							dragY = state(Unit Number),
 							onDrop = action(x::Number, y::Number) {
 								scale = extract scale,
-								newX = bindUnit (r -> returnUnit (plus (divBy scale x) r)) (Position:x childPosition),
-								newY = bindUnit (r -> returnUnit (plus (divBy scale y) r)) (Position:y childPosition),
-								currentNewX = extract newX,
-								currentNewY = extract newY,
-								add(Position:x childPosition, currentNewX),
-								add(Position:y childPosition, currentNewY)
+								currentX = extract Position:x childPosition,
+								currentY = extract Position:y childPosition,
+								add(Position:x childPosition, plus currentX (divBy scale x)),
+								add(Position:y childPosition, plus currentY (divBy scale y))
 							},
 							dragdrop dragX dragY onDrop
 						</f:call>
