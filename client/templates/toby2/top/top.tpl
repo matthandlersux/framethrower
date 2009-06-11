@@ -14,10 +14,9 @@ template (width::Unit Number, height::Unit Number) {
 	initChildren = state {
 		children = create(Map Situation ChildProp),
 		position = create(Position),
-		dragPosition = create(Position),
 		add(Position:x position, 0),
 		add(Position:y position, 0),
-		childProp = create(ChildProp, {position:position, dragPosition:dragPosition}),
+		childProp = create(ChildProp, {position:position}),
 		add(ChildProp:scale childProp, 0.9),
 		add(children, tobytest.realLife, childProp),
 		children

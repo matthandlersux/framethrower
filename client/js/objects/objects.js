@@ -77,7 +77,6 @@ var classesToMake = {
 		prop: {
 			"hidden": "Unit Null",
 			"position": "Position",
-			"dragPosition": "Position",
 			"scale": "Unit Number"
 		}
 	},

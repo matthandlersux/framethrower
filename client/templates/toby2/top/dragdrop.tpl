@@ -1,4 +1,4 @@
-template (dragX::Unit Number, dragY::Unit Number, onDrop::Number -> Number -> Action) {
+template (dragX::Unit Number, dragY::Unit Number, onDrop::Action) {
 	offsetX = state(Unit Number),
 	offsetY = state(Unit Number),
 	dragging = state(Unit Null),
@@ -18,17 +18,15 @@ template (dragX::Unit Number, dragY::Unit Number, onDrop::Number -> Number -> Ac
 					</f:on>
 				</f:each></f:each>
 				<f:on globalmouseup>
-					finalX = extract dragX,
-					finalY = extract dragY,
+					onDrop,
 					
 					remove(dragging),
 					remove(dragX),
 					remove(dragY),
 					remove(offsetX),
-					remove(offsetY),
-					//onDrop finalX finalY
+					remove(offsetY)
+					
 				</f:on>
-				<svg:circle cx="-250" cy="0" r="20" fill="blue" />
 			</f:wrapper>
 		</f:each>
 	</f:wrapper>
