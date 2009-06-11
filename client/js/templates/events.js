@@ -236,6 +236,7 @@
 		}
 	}
 	function mousescroll(e) {
+		console.log("got mouse scroll event");
 		processEvent("mousescroll", e);
 	}
 	function focus(e) {
@@ -267,6 +268,7 @@
 	document.addEventListener("mouseover", mouseover, true);
 	document.addEventListener("mouseout", mouseout, true);
 	document.addEventListener("DOMMouseScroll", mousescroll, true);
+	document.addEventListener("mousewheel", mousescroll, true);
 	document.addEventListener("blur", blur, true);
 	document.addEventListener("focus", focus, true);
 	document.addEventListener("change", change, true);
