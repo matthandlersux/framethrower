@@ -20,13 +20,15 @@ template (dragX::Unit Number, dragY::Unit Number, onDrop::Number -> Number -> Ac
 				<f:on globalmouseup>
 					finalX = extract dragX,
 					finalY = extract dragY,
-					onDrop finalX finalY,
+					
+					remove(dragging),
 					remove(dragX),
 					remove(dragY),
 					remove(offsetX),
 					remove(offsetY),
-					remove(dragging)
+					//onDrop finalX finalY
 				</f:on>
+				<svg:circle cx="-250" cy="0" r="20" fill="blue" />
 			</f:wrapper>
 		</f:each>
 	</f:wrapper>
