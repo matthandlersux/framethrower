@@ -8,28 +8,25 @@ template (focus::Situation, globalPosition::Position, scale::Unit Number) {
 	
 	
 	<f:wrapper>
-		<f:trigger Situation:contains focus as child>
-			position = create(Position),
-			dragPosition = create(Position),
-			add(Position:x position, 0),
-			add(Position:y position, 0),
-			childProp = create(ChildProp, {position:position, dragPosition:dragPosition}),
-			add(children, child, childProp)
-		</f:trigger>
+		<f:each Situation:contains focus as child><f:on init>
+				position = create(Position),
+				dragPosition = create(Position),
+				add(Position:x position, 0),
+				add(Position:y position, 0),
+				childProp = create(ChildProp, {position:position, dragPosition:dragPosition}),
+				add(children, child, childProp)
+		</f:on></f:each>
 		
-		<f:each reactiveNot initialized as _>
-			<f:each scale as scale>
-				<f:on init>
-					add(expandedScale, divBy 2 scale),
-					add(collapsedScale, divBy 3 scale),
-					add(initialized, null)
-				</f:on>
-			</f:each>
-		</f:each>
+		<f:on init>
+			scale = extract scale,
+			add(expandedScale, divBy 2 scale),
+			add(collapsedScale, divBy 3 scale),
+			add(initialized, null)
+		</f:on>
 	
 		<svg:circle class="situationView-situation" r="{scale}" cx="0" cy="0" shape-rendering="optimizeSpeed" />
 		<f:call>drawArtifacts focus</f:call>
-		
+
 		<f:each children as situation, childProp>
 			childPosition = ChildProp:position childProp,
 			<f:each childPosition as childPosition>
@@ -40,21 +37,26 @@ template (focus::Situation, globalPosition::Position, scale::Unit Number) {
 				position = state{create(Position, {x:globalX, y:globalY})},
 				content = 
 					<f:wrapper>
-						<f:each scale as scale><f:each Position:x childPosition as currentX><f:each Position:y childPosition as currentY>
+						<f:call>
 							dragX = state(Unit Number),
 							dragY = state(Unit Number),
 							onDrop = action(x::Number, y::Number) {
-								add(Position:x childPosition, plus currentX (divBy scale x)),
-								add(Position:y childPosition, plus currentY (divBy scale y))
+								scale = extract scale,
+								newX = bindUnit (r -> returnUnit (plus (divBy scale x) r)) (Position:x childPosition),
+								newY = bindUnit (r -> returnUnit (plus (divBy scale y) r)) (Position:y childPosition),
+								currentNewX = extract newX,
+								currentNewY = extract newY,
+								add(Position:x childPosition, currentNewX),
+								add(Position:y childPosition, currentNewY)
 							},
 							dragdrop dragX dragY onDrop
-						</f:each></f:each></f:each>
+						</f:call>
 						<f:call>drawSituation situation position expandedScale</f:call>
 					</f:wrapper>,
 				<f:call>containSVG scaledX scaledY content</f:call>
 			</f:each>
 		</f:each>
 		
-	</f:wrapper>	
+	</f:wrapper>
 	
 }
