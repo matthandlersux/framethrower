@@ -23,13 +23,15 @@ template (width::Number, height::Number, video::X.video, timeSelection::TimeSele
 	
 		drawTimeline = template (width, height) {
 			<div class="timeline-container" style-width="{width}" style-height="{height}" style-color="white">
-				<f:each selStart as selStart><f:each selDuration as selDuration>
-					<f:on mouseout>
-						add(previewTime, selStart),
-						add(TimeSelection:start timeSelection, selStart),
-						add(TimeSelection:duration timeSelection, selDuration)
-					</f:on>
-				</f:each></f:each>
+				<f:on mouseout>
+					extract selStart as selStart {
+						extract selDuration as selDuration {
+							add(previewTime, selStart),
+							add(TimeSelection:start timeSelection, selStart),
+							add(TimeSelection:duration timeSelection, selDuration)
+						}
+					}
+				</f:on>
 				<f:each zoomWidth as zoomWidth>
 					timeMultiplier = divide duration zoomWidth,
 					<div class="ruler-container" style-width="{zoomWidth}">

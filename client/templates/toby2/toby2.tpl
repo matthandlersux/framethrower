@@ -4,7 +4,7 @@ template () {
 	// Utility Functions
 	// ==============================================================
 	
-	divide = function (x, y) {
+	divide = function (x::Number, y::Number)::Number {
 		return x / y;
 	},
 	swapDivide = function (x, y) {

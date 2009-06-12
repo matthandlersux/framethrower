@@ -89,6 +89,8 @@
 						return mouseCurrentPos[0];
 					} else if (s === "event.mouseY") {
 						return mouseCurrentPos[1];
+					} else if (s === "event.wheelDelta") {
+						return e.detail ? e.detail * -1 : e.wheelDelta / 40;
 					} else {
 						return fonEl.custom.env(s);
 					}
@@ -234,7 +236,8 @@
 		}
 	}
 	function mousescroll(e) {
-		
+		console.log("got mouse scroll event");
+		processEvent("mousescroll", e);
 	}
 	function focus(e) {
 		currentFocus=e.target;
@@ -265,6 +268,7 @@
 	document.addEventListener("mouseover", mouseover, true);
 	document.addEventListener("mouseout", mouseout, true);
 	document.addEventListener("DOMMouseScroll", mousescroll, true);
+	document.addEventListener("mousewheel", mousescroll, true);
 	document.addEventListener("blur", blur, true);
 	document.addEventListener("focus", focus, true);
 	document.addEventListener("change", change, true);

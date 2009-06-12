@@ -460,6 +460,22 @@ var primFuncs = function () {
 				return outputCell;
 			}
 		},
+		reactiveIfThen: {
+			type: "Unit a -> b -> b -> Unit b",
+			func: function (predicate, consequent, alternative) {
+				var outputCell = makeCell();
+				outputCell.addLine(alternative);
+				predicate.inject(outputCell, function (val) {
+					outputCell.removeLine(alternative);
+					outputCell.addLine(consequent);
+					return function () {
+						outputCell.removeLine(consequent);
+						outputCell.addLine(alternative);
+					};
+				});
+				return outputCell;
+			}
+		},
 		isEmpty: {
 			type: "Set a -> Unit Null",
 			func: function (cell) {

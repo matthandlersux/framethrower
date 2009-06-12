@@ -57,6 +57,50 @@ var classesToMake = {
 	
 	
 	// ====================================================
+	// SV (Situation View)
+	// ====================================================
+	"Position": {
+		prop: {
+			"x": "Unit Number",
+			"y": "Unit Number"
+		}
+	},	
+
+	"ShapePosition": {
+		prop: {
+			"scale": "Unit Number",
+			"position": "Position"
+		}
+	},
+
+	"ChildProp": {
+		prop: {
+			"hidden": "Unit Null",
+			"position": "Position",
+			"scale": "Unit Number"
+		}
+	},
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	// OOOOOOOLLLLLLDDDDDD......
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	// ====================================================
 	// Core
 	// ====================================================
 	
@@ -300,33 +344,9 @@ var classesToMake = {
 			"typeDisplay": "Map Object String",
 			"timelineLayers": "Map String Object"
 		}
-	},
-	
-	// ====================================================
-	// SV (Situation View)
-	// ====================================================
-	"Position": {
-		prop: {
-			"x": "Unit Number",
-			"y": "Unit Number"
-		}
-	},	
-
-	"ShapePosition": {
-		prop: {
-			"scale": "Unit Number",
-			"position": "Position"
-		}
-	},
-
-	"ChildProp": {
-		prop: {
-			"hidden": "Unit Null",
-			"position": "Position",
-			"dragPosition": "Position",
-			"scale": "Unit Number"
-		}
 	}
+	
+
 	
 };
 

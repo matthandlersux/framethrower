@@ -153,9 +153,10 @@ function xmlToDOM(xml, env, context) {
 			entries[keyString] = newNode;
 			
 			return function () {
-				//console.log("cleaning up a f:each", keys(entries), xml.select);
 				
-				if (newNode.cleanup) newNode.cleanup();
+				if (newNode.cleanup) {
+					newNode.cleanup();
+				}
 				wrapper.removeChild(newNode.node);
 				
 				if (DEBUGSPEED) {
@@ -232,7 +233,7 @@ function xmlToDOM(xml, env, context) {
 			};
 		});
 		
-		function cleanup() {
+		function cleanupCase() {
 			cleanupInjection();
 			clearIt();
 		}
@@ -241,7 +242,7 @@ function xmlToDOM(xml, env, context) {
 			printOtherwise();
 		}
 		
-		return {node: wrapper, cleanup: cleanup};
+		return {node: wrapper, cleanup: cleanupCase};
 	} else if (xml.kind === "call") {
 		var xmlp = makeClosure(xml.templateCode, env);
 		return xmlToDOM(xmlp.xml, xmlp.env, context);
@@ -269,16 +270,16 @@ function xmlToDOM(xml, env, context) {
 			
 			if (eventGlobal) {
 				document.body.appendChild(node);
-				function cleanup() {
+				function cleanupGlobal() {
 					node.custom = null;
 					document.body.removeChild(node);
 				}
-				return {node: createWrapper(), cleanup: cleanup};
+				return {node: createWrapper(), cleanup: cleanupGlobal};
 			} else {
-				function cleanup() {
+				function cleanupOn() {
 					node.custom = null; // for garbage collection in stupid browsers
 				}
-				return {node: node, cleanup: cleanup};				
+				return {node: node, cleanup: cleanupOn};				
 			}
 		}
 	} else if (xml.kind === "trigger") {
@@ -307,7 +308,7 @@ function xmlToDOM(xml, env, context) {
 			};
 		}, 0);
 		
-		function cleanup() {
+		function cleanupTrigger() {
 			if (cleanupFunc) cleanupFunc();
 			else if (cleanupFunc === null) {
 				clearTimeout(myTimer);
@@ -317,19 +318,19 @@ function xmlToDOM(xml, env, context) {
 			}
 		}
 		
-		return {node: node, cleanup: cleanup};
+		return {node: node, cleanup: cleanupTrigger};
 	}
 	
-	var cleanup = null;
+	var cleanupDefault = null;
 	if (cleanupFunctions.length > 0) {
-		cleanup = function () {
+		cleanupDefault = function () {
 			forEach(cleanupFunctions, function (cleanupFunction) {
 				cleanupFunction();
 			});
 		};
 	}
 	
-	return {node: node, cleanup: cleanup};
+	return {node: node, cleanup: cleanupDefault};
 }
 
 

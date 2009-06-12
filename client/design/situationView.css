@@ -1,8 +1,44 @@
-.situationView-situation {
-	fill:silver;
+.gsv-situation .gsv-icon {
+	pointer-events: none;
+	fill:rgba(0,0,0,0.05);
 	stroke:black;
 	stroke-width:1;
 }
+.gsv-situation:hover .gsv-icon {
+	stroke: orange;
+	stroke-width:2;
+}
+
+.gsv-situation .gsv-hit {
+	pointer-events: all;
+	visibility: hidden;
+}
+
+
+
+
+
+.situationView-situation circle {
+	fill:rgba(0,0,0,0.1);
+	stroke:black;
+	stroke-width:1;
+}
+
+.situationView-situation:hover circle {
+	stroke: orange;
+	stroke-width:2;
+}
+
+
+.dragCircle {
+	fill:none;
+	stroke:black;
+	stroke-width:1;
+	stroke-dasharray:4,4;
+}
+
+
+
 
 .situationView-object {
 	fill: chartreuse;

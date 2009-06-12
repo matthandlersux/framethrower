@@ -381,6 +381,15 @@
 			action: action
 		};
 	}
+	
+	function makeExtractSugar(select, as) {
+		return {
+			kind: "extractSugar",
+			select: select,
+			as: as
+		};
+	}
+	
 
 	function makeAction(params, actions) {
 		//give undefined param types a letter
@@ -618,6 +627,7 @@ UPDATE:
 
 EXTRACT:
 	'extract' EXPR 'as' ASKEYVAL '{' FULLACTLIST '}'	[* %% = makeExtract(%2, %4, %6); *]
+	| VARIABLE '=' 'extract' EXPR						[* %% = makeExtractSugar(%4, {key:%1.name}); *]
 	;
 
 EXPR:
