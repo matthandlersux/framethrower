@@ -1,19 +1,10 @@
 template (width::Unit Number, height::Unit Number, children::Map Situation ChildProp) {
 	
-	dragStartSit = state(Unit Situation),
-	dragEndSit = state(Unit Situation),
-	dragEndInside = state(Unit Null),
-	
-	
-	globalScale = state{s=create(Unit Number), add(s, 1), s},
-	globalTranslateX = state{x=create(Unit Number), add(x, 0), x},
-	globalTranslateY = state{y=create(Unit Number), add(y, 0), y},
-	
-	
 	// Utility
 	makeTranslate = function(x, y) {
 		return "translate(" + x + "," + y + ")";
 	},
+	reactiveDisplay = pred -> reactiveIfThen pred "block" "none",
 	// placeWithinBoundsX = function (outerRadius, x, y, innerRadius) {
 	// 	if (x^2 + y^2 > (outerRadius - innerRadius)^2) {
 	// 		return Math.sqrt((outerRadius - innerRadius)^2 * x^2 / (x^2 + y^2));
@@ -28,6 +19,18 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 	// 		return y;
 	// 	}
 	// },
+	
+	
+	
+	
+	dragStartSit = state(Unit Situation),
+	dragEndSit = state(Unit Situation),
+	dragEndInside = state(Unit Null),
+	
+	
+	globalScale = state{s=create(Unit Number), add(s, 1), s},
+	globalTranslateX = state{x=create(Unit Number), add(x, 0), x},
+	globalTranslateY = state{y=create(Unit Number), add(y, 0), y},
 	
 	
 	// x and y represent, in global coordinates, the center of where the situation should be drawn
@@ -47,11 +50,10 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 				add(children, child, childProp)
 			</f:trigger>
 			
-			<svg:g class="situationView-situation">
+			<svg:g class="gsv-situation">
 				<f:call>dragHandler</f:call>
-				<svg:circle r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed">
-					
-				</svg:circle>
+				<svg:circle class="gsv-icon" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed" />
+				<svg:circle class="gsv-hit" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed" />
 				<svg:text x="{x}" y="{mapUnit2 subtract y scale}" text-anchor="middle" shape-rendering="optimizeSpeed">
 					{scale}
 				</svg:text>
@@ -88,11 +90,9 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 			},
 			dragHandler = dragdrop dragX dragY onDrop,
 			
-			draggerDisplay = reactiveIfThen dragX "block" "none",
-			
 			<f:wrapper>
 				<f:call>drawSituation childAbsX childAbsY childScale child dragHandler</f:call>
-				<svg:circle class="dragCircle" style-display="{draggerDisplay}" r="{childScale}" cx="{relToAbsX draggedToX}" cy="{relToAbsY draggedToY}" />
+				<svg:circle class="dragCircle" style-display="{reactiveDisplay dragX}" r="{childScale}" cx="{relToAbsX draggedToX}" cy="{relToAbsY draggedToY}" pointer-events="none" />
 			</f:wrapper>
 		</f:each>
 	},
