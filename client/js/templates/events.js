@@ -236,7 +236,6 @@
 		}
 	}
 	function mousescroll(e) {
-		console.log("got mouse scroll event");
 		processEvent("mousescroll", e);
 	}
 	function focus(e) {
