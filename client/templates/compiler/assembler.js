@@ -135,7 +135,6 @@ function compileFile (filePath, rebuild) {
 		str = preParse(str);
 		var parseResult = fttemplate.parse( str, error_off, error_la );
 		if( !parseResult.success ) {
-			print(str);
 			error_cnt = parseResult.result;
 			GLOBAL_ERRORS = true;
 			print("Parse errors, File: " + file.getName());
@@ -196,6 +195,12 @@ if( arguments.length > 0 ) {
 	var rebuild = false;
 	if (arguments[1] == "rebuild") {
 		rebuild = true;
+	}
+	
+	//create bin folder if it doesn't exist
+	var binfolder = java.io.File("../bin");
+	if(!binfolder.exists()) {
+		binfolder.mkdir();
 	}
 	
 	var totalCompiledJSON = compileFolder(arguments[0], rebuild);

@@ -44,7 +44,7 @@
 	'>([\r\n\t\ ]*)'											GT
 	'-([\r\n\t\ ]*)'											DASH
 	'\"([\r\n\t\ ]*)'											QUOTE
-	'[A-Za-z0-9_\.\~\#\*\+\^\%\.\!\&\|\?\[\]]+([\r\n\t\ ]*)'	IDENTIFIER
+	'[A-Za-z0-9_\.\'\~\#\*\+\^\%\.\!\&\|\?\[\]]+([\r\n\t\ ]*)'	IDENTIFIER
 	;
 ##
 
@@ -90,7 +90,7 @@ FULLLETLIST:
 	;
 
 LETLISTBLOCK:
-	LBRACKET LETLIST EXPR RBRACKET						
+	LBRACKET LETLIST LINE RBRACKET						
 	;
 
 LETLIST:
