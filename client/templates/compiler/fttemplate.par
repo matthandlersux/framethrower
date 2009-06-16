@@ -1,472 +1,6 @@
 [*
-//UTIL - from util.js. TODO: import these functions util.js at compile time
-			function typeOf(value){
-			    var s = typeof value;
-			    if (s === 'object') {
-			        if (value) {
-			            if (value instanceof Array) {
-			                s = 'array';
-			            }
-			        }
-			        else {
-			            s = 'null';
-			        }
-			    }
-			    return s;
-			}
-
-			function arrayLike(o) {
-				if (typeOf(o.length) === "number" && typeof o !== "string") {
-					return true;
-				} else {
-					return false;
-				}
-			}
-			function objectLike(o) {
-				if (typeOf(o) === "object") {
-					return true;
-				} else {
-					return false;
-				}
-			}
-
-			function forEach(o, f) {
-				if (arrayLike(o)) {
-					for (var i = 0, len = o.length; i < len; i++) {
-						f(o[i], i);
-					}
-				} else if (objectLike(o)) {
-					for (var i in o) if (o.hasOwnProperty(i)) {
-						f(o[i], i);
-					}
-				}
-			}
-
-
-	var result; //global variable
-
-	function makeTop(topLine) {
-		result = topLine;
-		return topLine;
-	}
-
-	function makeTemplateCode(params, lets, output) {
-		//give undefined param types a letter
-		var counter = 0;
-		var paramList = [];
-		var typeString = "";
-		var first = true;
-		
-		forEach(params, function(param) {
-			paramList.push(param.name);
-			var type = param.type;
-			if(type == undefined) {
-				type = "t" + counter;
-				counter++;
-			}
-			if (!first) {
-				typeString += " -> ";
-			} else {
-				first = false;
-			}
-			typeString += "(" + type + ")";
-		});
-		if (first) {
-			typeString += "XMLP";
-		} else {
-			typeString += " -> XMLP";
-		}
-
-		return {
-			kind: "templateCode",
-			params: paramList,
-			type: typeString,
-			let: lets,
-			output: output
-		};
-	}
-
-	function makeVariable(name, type) {
-		return {
-			name: name,
-			type: type
-		};
-	}
-
-	function makeLet(variable, line) {
-		return {
-			name: variable.name,
-			type: variable.type,
-			value: line
-		};
-	}
-
-	function makeLineAction(variable, line) {
-		var output = {};
-		if (variable.name !== undefined) {
-			output.name = variable.name;
-		}
-		output.action = line;
-		return output;
-	}
-
-
-	function makeExpr(expr) {
-		return {
-			kind: "lineExpr",
-			expr: expr,
-			let: {}
-		};
-	}
-
-	function makeLetList(expr, lets) {
-		return {
-			kind: "lineExpr",
-			expr: expr,
-			let: lets
-		};
-	}
-
-	function makeState(actions) {
-		var action = makeAction([], actions);
-		return {
-			kind: "lineState",
-			action: action
-		};
-	}
-
-	function makeJSFun(funcText) {
-		//8 characters in 'function'
-		var bracketIndex = funcText.indexOf('{');
-		var args = funcText.substr(8, bracketIndex - 8);
-		var JS = funcText.substr(bracketIndex);
-		var parenIndex = args.indexOf(")");
-		var outputType = args.substr(parenIndex+3);
-		if (outputType.length == 0) {
-			outputType = undefined;
-		}
-		args = args.substr(0, parenIndex);
-
-		//remove parens
-		args = args.replace(/[\(\)]/g, "");
-		args = args.split(",");
-		var argList = [];
-		forEach(args, function(arg) {
-			var newArg = {};
-			argList.push(newArg);
-			var parts = arg.split("::");
-			if(parts[0] !== undefined) {
-				newArg.name = parts[0];
-			}
-			if(parts[1] !== undefined) {
-				newArg.type = parts[1];
-			}
-		});
-	
-		var funcString = "function (";
-		var first = true;
-		var typeString = "";
-		var typeCounter = 0;
-		forEach(argList, function(arg) {
-			if(!first) {
-				funcString += ", ";
-				typeString += " -> ";
-			} else {
-				first = false;
-			}
-			funcString += arg.name;
-			if (arg.type !== undefined) {
-				typeString += "(" + arg.type + ")";
-			} else {
-				typeString += "t" + typeCounter;
-				typeCounter++;
-			}
-		});
-		funcString += ") " + JS + "";
-		if (outputType !== undefined) {
-			typeString += " -> " + "(" + outputType + ")";
-		} else {
-			typeString += " -> " + "t" + typeCounter;
-		}
-		return {
-			kind: "lineJavascript",
-			type: typeString,
-			f: {
-				kind: "jsFunction",
-				func: funcString
-			}
-		};
-	}
-
-	function makeForEach(openTag, lets, output) {
-		var params = [];
-		if (openTag.as.key !== undefined) {
-			params.push({name:openTag.as.key});
-		}
-		if (openTag.as.value !== undefined) {
-			params.push({name:openTag.as.value});
-		}
-		var templateCode = makeTemplateCode(params, lets, output);
-		return {
-			kind: "for-each",
-			select: openTag.expr,
-			templateCode: templateCode
-		};
-	}
-
-	function makeCall(lets, output) {
-		var templateCode = makeTemplateCode([], lets, output);
-		return {
-			kind: "call",
-			templateCode: templateCode
-		};
-	}
-
-	function makeOn(event, actions) {
-		var action = makeAction([], actions);
-		return {
-			kind: "on",
-			event: event,
-			action: action
-		};
-	}
-
-	function makeTrigger(openTag, actions) {
-		var params = [];
-		if (openTag.as.key !== undefined) {
-			params.push({name:openTag.as.key});
-		}
-		if (openTag.as.value !== undefined) {
-			params.push({name:openTag.as.value});
-		}	
-		var action = makeAction(params, actions);
-		return {
-			kind: "trigger",
-			trigger: openTag.expr,
-			action: action
-		};
-	}
-
-
-	function makeOpenTag(name, attributes) {
-		return {
-			name: name,
-			attributes: attributes
-		};
-	}
-
-	function checkForInsert (node) {
-		var text = node.nodeValue;
-		if(text == undefined) return undefined;
-		var index = text.indexOf('{');
-		var output = [];
-		if(index == -1) {
-			return undefined;
-		}
-		while(index !== -1) {
-			var rindex = text.indexOf('}');
-			var first = text.substr(0, index);
-			var insert = text.substr(index+1, rindex-index-1);
-			text = text.substr(rindex+1);
-			if (first.length > 0) {
-				output.push(makeTextElement(first));
-			}
-			output.push(makeTextElement(makeInsert(insert)));
-			index = text.indexOf('{');
-		}
-		return output;
-	}
-
-	function toCamelCase(hyphenatedString) {
-		function cnvrt(string) {
-	        return string.substr(1, 1).toUpperCase();
-	    }
-		return hyphenatedString.replace(/\-./g, cnvrt);
-	}
-
-	function makeNode(openTag, xmlp) {
-		var attributes = openTag.attributes;
-		var style = {};
-		if (attributes.style !== undefined) {
-			forEach(attributes.style, function(attribute, name) {
-				style[toCamelCase(name)] = attribute;
-			});
-			attributes.style = undefined;			
-		}
-
-		var attributeObject = {};
-		for (name in attributes) {
-			if(attributes[name] !== undefined) {
-				if(name.indexOf("style-") == 0) {
-					var styleAttName = name.substr(6);
-					style[toCamelCase(styleAttName)] = attributes[name];
-				} else {
-					attributeObject[name] = attributes[name];
-				}
-			}
-		}
-		
-		//prepend textNode to xmlp
-		if(openTag.textNode !== undefined) {
-			xmlp.unshift(openTag.textNode);
-		}
-				
-		//deal with inserts in textNodes
-		for(var i=0; i<xmlp.length; ) {
-			var textNodeList = checkForInsert(xmlp[i]);
-			if(textNodeList !== undefined) {
-				xmlp.splice(i, 1);
-				for (var j=textNodeList.length-1; j>=0; j--) {
-					xmlp.splice(i, 0, textNodeList[j]);
-				}
-				i += textNodeList.length;
-			} else {
-				i++;
-			}
-		}
-		
-		return {
-			kind: "element",
-			nodeName: openTag.name,
-			attributes: attributeObject,
-			style: style,
-			children: xmlp
-		};
-	}
-
-	function makeTextElement (nodeVal) {
-		return {
-			kind: "textElement",
-			nodeValue: nodeVal,
-		};
-	}
-
-	function makeInsert (expr) {
-		return {
-			kind: "insert",
-			expr: expr
-		};
-	}
-
-	function makeXMLLine (node) {
-		return {
-			kind: "lineXML",
-			xml: node
-		};
-	}
-
-	function push (list, item) {
-		list.push(item);
-		return list;
-	}
-	
-	function addLet (letObj, let) {
-		letObj[let.name] = let.value;
-		return letObj;
-	}
-
-
-	function makeExtract(select, as, actions) {
-		var params = [];
-		if (as.key !== undefined) {
-			params.push({name:as.key});
-		}
-		if (as.value !== undefined) {
-			params.push({name:as.value});
-		}
-		var action = makeAction(params, actions);
-		return {
-			kind: "extract",
-			select: select,
-			action: action
-		};
-	}
-	
-	function makeExtractSugar(select, as) {
-		return {
-			kind: "extractSugar",
-			select: select,
-			as: as
-		};
-	}
-	
-
-	function makeAction(params, actions) {
-		//give undefined param types a letter
-		
-		var counter = 0;
-		var paramList = [];
-		var typeString = "";
-		var first = true;
-		
-		forEach(params, function(param) {
-			paramList.push(param.name);
-			var type = param.type;
-			if(type == undefined) {
-				type = "t" + counter;
-				counter++;
-			}
-			if (!first) {
-				typeString += " -> ";
-			} else {
-				first = false;
-			}
-			typeString += "(" + type + ")";
-		});
-		if (first) {
-			typeString += "Action";
-		} else {
-			typeString += " -> Action";
-		}
-
-		return {
-			kind: "action",
-			params: paramList,
-			type: typeString,
-			actions: actions
-		};
-	}
-
-	function makeCreate(type, json) {
-		return {
-			kind: "actionCreate",
-			type: type,
-			prop: json
-		};
-	}
-
-	function makeUpdate(actionType, target, key, value) {
-		return {
-			kind: "actionUpdate",
-			target: target,
-			actionType: actionType,
-			key: key,
-			value: value
-		};
-	}
-
-	function makeCase(test, as, letlist, output, otherwise) {
-		var params = [];
-		if (as.key !== undefined) {
-			params.push({name:as.key});
-		}
-		if (as.value !== undefined) {
-			params.push({name:as.value});
-		}
-		var templateCode = makeTemplateCode(params, letlist, output);
-		
-		return {
-			kind: "case", 
-			test: test,
-			templateCode: templateCode,
-			otherwise: otherwise
-		};
-	}
-
-	function stripQuotes (string) {
-		return string.substr(1, string.length-2);
-	}
-	
+	var fttemplate = function() {
+		var result;
 *]
 
 
@@ -475,42 +9,42 @@
 ~/
 
 /~ Characters to be ignored... ~/
-!	' |\r|\n|\t|//[^\n]*\n'
+!	'//[^\n]*\n'
 	;
 
 /~	Grammar Tokens			~/
-	'(<p:textnode>([^<^>]*)</p:textnode>)'			TEXTNODE   [* %match = %match.substr(12, %match.length - 25); *] 	
-	'(<p:function>(([^<]|<[^/])*)</p:function>)'	FUNCTION   [* %match = %match.substr(12, %match.length - 25); *] 	
-	'template'
-	'action'
-	'state'
-	'create'
-	'add'
-	'extract'
-	'remove'
-	'style'
-	'as'
-	'if'
-	'else'
-	'f:each'
-	'f:call'
-	'f:on'
-	'f:trigger'
-	'\{'
-	'\}'
-	'\('
-	'\)'
-	','
-	';'
-	':'
-	'='
-	'</'
-	'/'
-	'<'
-	'>'
-	'-'
-	'\"'						QUOTE
-	'[A-Za-z0-9_\.\~\#\*\+\^\%\.\!\&\|\?\[\]]+'		IDENTIFIER
+	'(<p:textnode>([^<^>]*)</p:textnode>)'						TEXTNODE   [* %match = %match.substr(12, %match.length - 25); *] 	
+	'(<p:function>(([^<]|<[^/])*)</p:function>)'				JSFUN	   [* %match = %match.substr(12, %match.length - 25); *] 	
+	'template([\r\n\t\ ]*)'										WTEMPLATE
+	'action([\r\n\t\ ]*)'										WACTION
+	'state([\r\n\t\ ]*)'										WSTATE
+	'create([\r\n\t\ ]*)'										WCREATE
+	'add([\r\n\t\ ]*)'											WADD
+	'extract([\r\n\t\ ]*)'										WEXTRACT
+	'remove([\r\n\t\ ]*)'										WREMOVE
+	'style([\r\n\t\ ]*)'										WSTYLE
+	'as([\r\n\t\ ]*)'											WAS
+	'if([\r\n\t\ ]*)'											WIF
+	'else([\r\n\t\ ]*)'											WELSE
+	'f:each([\r\n\t\ ]*)'										FEACH
+	'f:call([\r\n\t\ ]*)'										FCALL
+	'f:on([\r\n\t\ ]*)'											FON
+	'f:trigger([\r\n\t\ ]*)'									FTRIGGER
+	'\{([\r\n\t\ ]*)'											LBRACKET
+	'\}([\r\n\t\ ]*)'											RBRACKET
+	'\(([\r\n\t\ ]*)'											LPAREN
+	'\)([\r\n\t\ ]*)'											RPAREN
+	',([\r\n\t\ ]*)'											COMMA
+	';([\r\n\t\ ]*)'											SEMICOLON
+	':([\r\n\t\ ]*)'											COLON
+	'=([\r\n\t\ ]*)'											EQUALS
+	'</([\r\n\t\ ]*)'											LTSLASH
+	'/([\r\n\t\ ]*)'											SLASH
+	'<([\r\n\t\ ]*)'											LT
+	'>([\r\n\t\ ]*)'											GT
+	'-([\r\n\t\ ]*)'											DASH
+	'\"([\r\n\t\ ]*)'											QUOTE
+	'[A-Za-z0-9_\.\~\#\*\+\^\%\.\!\&\|\?\[\]]+([\r\n\t\ ]*)'	IDENTIFIER
 	;
 ##
 
@@ -519,75 +53,88 @@
 ~/
 
 TOP:
-	LINE												[* %% = makeTop( %1 ); *]
+	LINE												[* result = {line: %1}; *]
 	;
 
 
 LINE:
 	JSFUN
-	| TEMPLATE 											[* %% = {kind: "lineTemplate", template: %1} ; *]
-	| ACTIONTPL											[* %% = {kind: "lineAction", action: %1} ; *]
-	| EXPR 												[* %% = makeExpr(%1); *]
+	| TEMPLATE
 	| STATE
 	| LETLISTBLOCK
-	| IFBLOCK											[* %% = makeXMLLine(%1); *]
-	| XML												[* %% = makeXMLLine(%1); *]
-	;
-
-
-IFBLOCK:
-	'if' EXPR 'as' ASKEYVAL '{' FULLLETLIST '}' 'else' IFBLOCK					[* %% = makeCase(%2, %4, %6.list, %6.line, makeTemplateCode([], {}, makeXMLLine(%9))); *]
-	| 'if' EXPR 'as' ASKEYVAL '{' FULLLETLIST '}' 'else' '{' FULLLETLIST '}'	[* %% = makeCase(%2, %4, %6.list, %6.line, makeTemplateCode([], %10.list, %10.line)); *]
+	| IFBLOCK
+	| ACTIONTPL
+	| EXPR
+	| XML
 	;
 
 
 TEMPLATE:
-	'template' '(' ARGLIST ')' '{' FULLLETLIST '}'		[* %% = makeTemplateCode( %3, %6.list, %6.line); *]
-	;
-
-FULLLETLIST:
-	LETLIST LINE										[* %% = {list:%1, line:%2}; *]
-	| LETLIST LINE ','									[* %% = {list:%1, line:%2}; *]
+	WTEMPLATE LPAREN ARGLIST RPAREN LBRACKET FULLLETLIST RBRACKET
 	;
 
 ARGLIST:
-	ARGLIST ',' VARIABLE								[* %% = push(%1, %3); *]
-	| VARIABLE											[* %% = [%1] ; *]
-	|													[* %% = [] ; *]
+	ARGLIST COMMA VARIABLE								
+	| VARIABLE											
+	|													
 	;
 
-TYPE:
-	TYPE TYPE		 									[* %% = %1 + " " + %2; *]
-	| IDENTIFIER
-	| '-' '>'											[* %% = "->"; *]
+VARIABLE:
+	IDENTIFIER											
+	| IDENTIFIER COLON COLON TYPE						
+	;
+
+FULLLETLIST:
+	LETLIST LINE										
+	| LETLIST LINE COMMA								
+	;
+
+LETLISTBLOCK:
+	LBRACKET LETLIST EXPR RBRACKET						
 	;
 
 LETLIST:
-	LETLIST LET ','										[* %% = addLet(%1, %2); *]
-	|													[* %% = {}; *]
+	LETLIST LET COMMA									
+	|													
 	;
 
 LET:
-	VARIABLE '=' LINE									[* %% = makeLet(%1, %3); *]
+	VARIABLE EQUALS LINE								
+	;
+
+STATE:
+	WSTATE LPAREN TYPE RPAREN							
+	| WSTATE LBRACKET FULLACTLIST RBRACKET				
+	;
+
+TYPE:
+	TYPE TYPE
+	| IDENTIFIER
+	| DASH GT
+	;
+
+IFBLOCK:
+	WIF EXPR WAS ASKEYVAL LBRACKET FULLLETLIST RBRACKET WELSE IFBLOCK
+	| WIF EXPR WAS ASKEYVAL LBRACKET FULLLETLIST RBRACKET WELSE LBRACKET FULLLETLIST RBRACKET
 	;
 
 ACTIONTPL:
-	'action' '(' ARGLIST ')' '{' FULLACTLIST '}'		[* %% = makeAction(%3, %6); *]
+	WACTION LPAREN ARGLIST RPAREN LBRACKET FULLACTLIST RBRACKET
 	;
 
 FULLACTLIST:
-	ACTLIST ACTION										[* %% = push(%1, makeLineAction({}, %2)); *]
-	| ACTLIST											[* %% = %1; *]
+	ACTLIST ACTION
+	| ACTLIST
 	;
 
 ACTLIST:
-	ACTLIST ACTLINE ','									[* %% = push(%1, %2); *]
-	|													[* %% = []; *]
-	;	
+	ACTLIST ACTLINE COMMA
+	|
+	;
 
 ACTLINE:
-	VARIABLE '=' ACTION									[* %% = makeLineAction(%1, %3); *]
-	| ACTION											[* %% = makeLineAction({}, %1); *]
+	VARIABLE EQUALS ACTION
+	| ACTION
 	;
 
 ACTION:
@@ -595,239 +142,220 @@ ACTION:
 	| UPDATE
 	| EXTRACT
 	| JSFUN
-	| TEMPLATE 											[* %% = {kind: "lineTemplate", template: %1} ; *]
-	| ACTIONTPL											[* %% = {kind: "lineAction", action: %1} ; *]
-	| EXPR 												[* %% = makeExpr(%1); *]
+	| TEMPLATE
+	| ACTIONTPL
+	| EXPR
 	| STATE
 	| LETLISTBLOCK
-	| XML												[* %% = makeXMLLine(%1); *]
+	| XML
 	;
 
 CREATE:
-	'create' '(' TYPE ',' PROP ')'						[* %% = makeCreate(%3, %5); *]
-	| 'create' '(' TYPE ')'								[* %% = makeCreate(%3, {}); *]
+	WCREATE LPAREN TYPE COMMA LBRACKET PROPLIST RBRACKET RPAREN
+	| WCREATE LPAREN TYPE RPAREN
+	;
+
+PROPLIST:
+	PROPLIST COMMA PROP
+	| PROP
+	|
 	;
 
 PROP:
-	'{' PROPLIST '}'									[* %% = %2; *]
-	;
-	
-PROPLIST:
-	PROPLIST ',' IDENTIFIER ':' EXPR					[* %1[%3] = %5; %% = %1;*]
-	| IDENTIFIER ':' EXPR								[* var ret = {}; ret[%1] = %3; %% = ret;*]
-	| 													[* %% = {}; *]
+	IDENTIFIER COLON EXPR
 	;
 
+
 UPDATE:
-	'add' '(' EXPR ',' EXPR ')'							[* %% = makeUpdate(%1, %3, %5); *]
-	| 'add' '(' EXPR ',' EXPR ',' EXPR ')'				[* %% = makeUpdate(%1, %3, %5, %7); *]
-	| 'remove' '(' EXPR ',' EXPR ')'					[* %% = makeUpdate(%1, %3, %5); *]
-	| 'remove' '(' EXPR ')'								[* %% = makeUpdate(%1, %3); *]
+	ADD
+	| REMOVE
+	;
+
+ADD:
+	WADD LPAREN EXPR COMMA EXPR RPAREN
+	| WADD LPAREN EXPR COMMA EXPR COMMA EXPR RPAREN
+	;
+
+REMOVE:
+	WREMOVE LPAREN EXPR COMMA EXPR RPAREN
+	| WREMOVE LPAREN EXPR RPAREN
 	;
 
 EXTRACT:
-	'extract' EXPR 'as' ASKEYVAL '{' FULLACTLIST '}'	[* %% = makeExtract(%2, %4, %6); *]
-	| VARIABLE '=' 'extract' EXPR						[* %% = makeExtractSugar(%4, {key:%1.name}); *]
+	WEXTRACT EXPR WAS ASKEYVAL LBRACKET FULLACTLIST RBRACKET
+	| VARIABLE EQUALS WEXTRACT EXPR
 	;
 
 EXPR:
-	IDENTIFIER | STRINGESCAPEQUOTES 
-	| '(' EXPR ')'											[* %% = %1 + %2 + %3; *]
-	| IDENTIFIER ':' ':' IDENTIFIER							[* %% = %1 + "::" + %4; *]
-	| IDENTIFIER ':' IDENTIFIER								[* %% = %1 + ":" + %3; *]
-	| '-' '>'												[* %% = "->"; *]
-	| '-' IDENTIFIER										[* %% = "-" + %2; *]
-	| EXPR EXPR												[* %% = %1 + " " + %2; *]
-	;
-
-LETLISTBLOCK:
-	'{' LETLIST EXPR '}'									[* %% = makeLetList(%3, %2); *]
-	;
-
-
-JSFUN:
-	FUNCTION												[* %% = makeJSFun(%1); *]
-	;
-	
-STATE:
-	'state' '{' FULLACTLIST '}'						[* %% = makeState(%3); *]
-	| 'state' '(' TYPE ')'								[* %% = makeState([makeLineAction({}, makeCreate(%3, {}))]); *]
-	;
-
-VARIABLE:
-	IDENTIFIER											[* %% = makeVariable( %1 ); *]
-	| IDENTIFIER ':' ':' TYPE							[* %% = makeVariable( %1, %4); *]
+	IDENTIFIER 
+	| STRINGESCAPEQUOTES 
+	| LPAREN EXPR RPAREN
+	| IDENTIFIER COLON COLON IDENTIFIER
+	| IDENTIFIER COLON IDENTIFIER
+	| DASH GT
+	| DASH IDENTIFIER
+	| EXPR EXPR
 	;
 
 XML:
-	OPENFOREACH FULLLETLIST CLOSEFOREACH				[* %% = makeForEach(%1, %2.list, %2.line); *]
-	| OPENTRIGGER FULLACTLIST CLOSETRIGGER				[* %% = makeTrigger(%1, %2); *]
-	| OPENON FULLACTLIST CLOSEON						[* %% = makeOn(%1, %2); *]
-	| OPENCALL LETLIST ENDCALL CLOSECALL				[* %% = makeCall(%2, %3); *]
-	| OPENTAG XMLLIST CLOSETAG							[* %% = makeNode(%1, %2); *]
-	| SINGLETAG											[* %% = makeNode(%1, []); *]
-	| TEXTNODE											[* %% = makeTextElement(%1); *]
+	FOREACH												
+	| TRIGGER											
+	| ON												
+	| CALL												
+	| TAG												
+	| TEXTNODE												
 	;
 
-ENDCALL:
-	EXPR 												[* %% = makeExpr(%1); *]
-	| LETLISTBLOCK
-	| IFBLOCK											[* %% = makeXMLLine(%1); *]
-	| XML												[* %% = makeXMLLine(%1); *]
-	| XMLLIST											[* %% = makeNode(makeOpenTag("wrapper", {}), %1); *]
+FOREACH:
+	LT FEACH EXPR WAS ASKEYVAL GT FULLLETLIST LTSLASH FEACH GT	
+	| LT FEACH EXPR GT FULLLETLIST LTSLASH FEACH GT				
 	;
 
-XMLLIST:
-	XMLLIST XML											[* %% = push(%1, %2); *]
-	| 													[* %% = []; *]
+TRIGGER:
+	LT FTRIGGER EXPR WAS ASKEYVAL GT FULLACTLIST LTSLASH FTRIGGER GT	
+	| LT FTRIGGER EXPR GT FULLACTLIST LTSLASH FTRIGGER GT				
 	;
 
-OPENFOREACH:
-	'<' 'f:each' EXPR 'as' ASKEYVAL '>'					[* %% = {expr:%3, as:%5}; *]
-	| '<' 'f:each' EXPR '>'								[* %% = {expr:%3, as:{key: "_"}}; *]
+ON:
+	LT FON IDENTIFIER GT FULLACTLIST LTSLASH FON GT			
 	;
 
-CLOSEFOREACH:
-	'</' 'f:each' '>'									[* %% = undefined; *]
+CALL:
+	LT FCALL GT FULLLETLIST LTSLASH FCALL GT				
 	;
 
-OPENTRIGGER:
-	'<' 'f:trigger' EXPR 'as' ASKEYVAL '>'				[* %% = {expr:%3, as:%5}; *]
-	| 	'<' 'f:trigger' EXPR '>'						[* %% = {expr:%3, as:{key: "_"}}; *]
-	;
-
-CLOSETRIGGER:
-	'</' 'f:trigger' '>'								[* %% = undefined; *]
-	;
-
-ASKEYVAL:
-	IDENTIFIER											[* %% = {key: %1}; *]
-	| IDENTIFIER ',' IDENTIFIER							[* %% = {key: %1, value: %3}; *]
-	;
-
-OPENCALL:
-	'<' 'f:call' '>'
-	;
-
-CLOSECALL:
-	'</' 'f:call' '>'									[* %% = undefined; *]
-	;
-
-OPENON:
-	'<' 'f:on' IDENTIFIER '>'							[* %% = %3; *]
-	;
-
-CLOSEON:
-	'</' 'f:on' '>'										[* %% = undefined; *]
-	;
-
-
-OPENTAG:
-	'<' TAGNAME ATTRIBUTES '>'							[* %% = makeOpenTag(%2, %3); *]
-	;
-	
-CLOSETAG:
-	'</' TAGNAME '>'									[* %% = undefined; *]
-	;
-	
-SINGLETAG:
-	'<' TAGNAME ATTRIBUTES '/' '>'						[* %% = makeOpenTag(%2, %3); *]
+TAG:
+	LT TAGNAME ATTRIBUTES GT XMLLIST LTSLASH TAGNAME GT		
+	| LT TAGNAME ATTRIBUTES SLASH GT						
 	;
 
 TAGNAME:
 	IDENTIFIER
-	| IDENTIFIER ':' IDENTIFIER							[* %% = %1 + %2 + %3; *]
+	| IDENTIFIER COLON IDENTIFIER							
+	;
+
+
+ASKEYVAL:
+	IDENTIFIER											
+	| IDENTIFIER COMMA IDENTIFIER						
+	;
+
+XMLLIST:
+	XMLLIST XML											
+	| 													
 	;
 
 ATTRIBUTES:
-	ATTRIBUTES 'style' '=' QUOTE STYLE QUOTE			[* %1[%2] = %5; %% = %1;*]
-	| ATTRIBUTES ATTNAME '=' ATTRIBUTE					[* %1[%2] = %4; %% = %1;*]
-	|													[* %% = {}; *]
+	ATTRIBUTES ATTASSIGN								
+	|													
+	;
+
+ATTASSIGN:
+	WSTYLE EQUALS QUOTE STYLELIST QUOTE					
+	| ATTNAME EQUALS ATTRIBUTE							
 	;
 
 ATTNAME:
 	IDENTIFIER
 	| KEYWORD
-	| ATTNAME '-' IDENTIFIER							[* %% = %1 + %2 + %3; *]
+	| ATTNAME DASH IDENTIFIER							
 	;
 
 ATTRIBUTE:
-	STRING
-	| QUOTE INSERT QUOTE								[* %% = %2; *]
+	STRING												
+	| QUOTE INSERT QUOTE								
 	;
 
 INSERT:
-	'{' EXPR '}'										[* %% = makeInsert(%2); *]
+	LBRACKET EXPR RBRACKET								
 	;
 
-TEXT:
-	KEYWORD
-	| '\{'
-	| '\}'
-	| '\('
-	| '\)'
-	| ','
-	| ';'
-	| ':'
-	| '='
-	| '</'
-	| '/'
-	| '<'
-	| '>'
-	| IDENTIFIER
-	| TEXT '-' TEXT										[* %% = "" + %1 + "-" + %3; *]
-	| TEXT TEXT											[* %% = "" + %1 + " " + %2; *]
-	| 													[* %% = ""; *]
+STYLELIST:
+	STYLELIST SEMICOLON STYLEASSIGN
+	| STYLEASSIGN
+	|
 	;
 
-KEYWORD:
-	TEXTNODE
-	| 'template'
-	| 'action'
-	| 'state'
-	| 'create'
-	| 'add'
-	| 'extract'
-	| 'remove'
-	| 'style'
-	| 'as'
-	| 'if'
-	| 'else'
-	| 'f:each'
-	| 'f:call'
-	| 'f:on'
-	| 'f:trigger'
+STYLEASSIGN:
+	ATTNAME COLON STYLETEXT
+	| ATTNAME COLON INSERT
 	;
-
-STRINGKEEPQUOTES:
-	QUOTE TEXT QUOTE									[* %% = %1 + %2 + %3; *]
-	;
-
-STRINGESCAPEQUOTES:
-	QUOTE TEXT QUOTE									[* %% = "\\\"" + %2 + "\\\""; *]
-	;
-
-	
-STRING:
-	QUOTE TEXT QUOTE									[* %% = %2; *]
-	;
-	
-STYLE:
-	STYLE ';' ATTNAME ':' STYLETEXT						[* %1[%3] = %5; %% = %1; *]
-	| STYLE ';' ATTNAME ':' INSERT						[* %1[%3] = %5; %% = %1; *]
-	| ATTNAME ':' STYLETEXT								[* var ret = {}; ret[%1] = %3; %% = ret; *]
-	| ATTNAME ':' INSERT								[* var ret = {}; ret[%1] = %3; %% = ret; *]
-	|													[* %% = {}; *]
-	;
-
 
 STYLETEXT:
 	KEYWORD
 	| IDENTIFIER
-	| ','
-	| '('
-	| ')'
-	| '='
-	| STYLETEXT '-' STYLETEXT							[* %% = "" + %1 + "-" + %3; *]
-	| STYLETEXT STYLETEXT								[* %% = "" + %1 + " " + %2; *]
+	| COMMA
+	| LPAREN
+	| RPAREN
+	| EQUALS
+	| STYLETEXT DASH STYLETEXT							
+	| STYLETEXT STYLETEXT								
 	;
+
+TEXT:
+	KEYWORD
+	| LBRACKET
+	| RBRACKET
+	| LPAREN
+	| RPAREN
+	| COMMA
+	| SEMICOLON
+	| COLON
+	| EQUALS
+	| LTSLASH
+	| SLASH
+	| LT
+	| GT
+	| IDENTIFIER
+	| TEXT DASH TEXT
+	| TEXT TEXT
+	|
+	;
+
+KEYWORD:
+	TEXTNODE
+	| WTEMPLATE
+	| WACTION
+	| WSTATE
+	| WCREATE
+	| WADD
+	| WEXTRACT
+	| WREMOVE
+	| WSTYLE
+	| WAS
+	| WIF
+	| WELSE
+	| FEACH
+	| FCALL
+	| FON
+	| FTRIGGER
+	;
+
+STRINGESCAPEQUOTES:
+	QUOTE TEXT QUOTE
+	;
+
+STRING:
+	QUOTE TEXT QUOTE
+	;
+		
+	
+[*
+		return {
+			parse:function(arg1, arg2, arg3) {
+				var errcount = __parse(arg1, arg2, arg3);
+				if (errcount == 0) {
+					return {
+						success:true,
+						result:result
+					};
+				} else {
+					return {
+						success:false,
+						result:errcount
+					};
+				}
+			}
+		};
+	}();
+*]

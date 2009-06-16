@@ -19,7 +19,7 @@ template (dragX::Unit Number, dragY::Unit Number, onDrop::Action) {
 				</f:each></f:each>
 				<f:on globalmouseup>
 					onDrop,
-					
+				
 					remove(dragging),
 					remove(dragX),
 					remove(dragY),

@@ -3,10 +3,11 @@ var GLOBAL_ERRORS = false;
 //load is rhino command. When running in browser, have to load the file with <script> tag
 if (load !== undefined) {
 	load(["tplparser.js"]);
+	load(["semantics.js"]);
 	load(["preparse.js"]);
 }
 
-function JSONtoString(object, tabs) {
+function outputJSON(object, tabs) {
 	if(object !== undefined) {
 		if(arrayLike(object)) {
 			var output = "[\n";
@@ -20,7 +21,7 @@ function JSONtoString(object, tabs) {
 				for (var i=0; i<=tabs; i++) {
 					output += "\t";
 				}
-				output += JSONtoString(value, tabs+1);
+				output += outputJSON(value, tabs+1);
 			});
 			output += "\n";
 			for (var i=0; i<=tabs-1; i++) {
@@ -43,7 +44,7 @@ function JSONtoString(object, tabs) {
 					for (var i=0; i<=tabs; i++) {
 						output += "\t";
 					}
-					output += "'" + name + "'" + ": " + JSONtoString(value, tabs+1);
+					output += "'" + name + "'" + ": " + outputJSON(value, tabs+1);
 				});
 				output += "\n";
 				for (var i=0; i<=tabs-1; i++) {
@@ -119,35 +120,6 @@ function preParse(string) {
 	return string;
 }
 
-//handle extractSugar
-function postParse(object) {
-	if(object !== undefined) {
-		if(arrayLike(object)) {
-			var output = [];
-			var i = 0;
-			while (i < object.length) {
-				var value = object[i];
-				if(value.action !== undefined && value.action.kind !== undefined && value.action.kind == "extractSugar") {
-					output.push(makeLineAction({}, makeExtract(value.action.select, value.action.as, postParse(object.slice(i+1)))));
-					i = object.length;
-				} else {
-					output.push(postParse(value));
-					i++
-				}
-			}
-			return output;			
-		} else if (objectLike(object)) {
-			var output = {};
-			forEach(object, function (value, name) {
-				output[name] = postParse(value);
-			});
-			return output;
-		} else {
-			return object;
-		}
-	}
-}
-
 
 function compileFile (filePath, rebuild) {
 	var file = java.io.File("../" + filePath);
@@ -161,7 +133,10 @@ function compileFile (filePath, rebuild) {
 		var error_off = new Array(); 
 		var error_la = new Array(); 
 		str = preParse(str);
-		if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) {
+		var parseResult = fttemplate.parse( str, error_off, error_la );
+		if( !parseResult.success ) {
+			print(str);
+			error_cnt = parseResult.result;
 			GLOBAL_ERRORS = true;
 			print("Parse errors, File: " + file.getName());
 			for( i = 0; i < error_cnt; i++ ) {
@@ -169,12 +144,9 @@ function compileFile (filePath, rebuild) {
 				print("    error on line", lineInfo.lines + ", column:", lineInfo.column, "expecting \"" + error_la[i].join() + "\" near:", "\n" + lineInfo.line + "\n                              ^\n");
 			}
 		} else {
-			//result is a global variable that holds the result from parsing
-			var answer = result;
-			result = undefined;
-			answer = postParse(answer);
-			serialize(answer, binfile.getAbsolutePath());
-			return answer;
+			result = semantics.processTree(parseResult.result);
+			serialize(result, binfile.getAbsolutePath());
+			return result;
 		}
 	}
 }
@@ -228,7 +200,7 @@ if( arguments.length > 0 ) {
 	
 	var totalCompiledJSON = compileFolder(arguments[0], rebuild);
 	if(!GLOBAL_ERRORS) {
-		var totalCompiledString = "var mainTemplate = " + JSONtoString(totalCompiledJSON, 0) + ";";
+		var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
 
 		var fw = new java.io.FileWriter("../bin/" + arguments[0] + ".js");
 		var bw = new java.io.BufferedWriter(fw);
