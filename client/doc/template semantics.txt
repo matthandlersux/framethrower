@@ -11,14 +11,13 @@ LETS
 	{VARTOCREATE: LINE}
 
 LINE
-	{kind: "lineExpr", let: LETS, expr: AST} |
+	{kind: "lineExpr", expr: AST} |
 	{kind: "lineTemplate", template: TEMPLATECODE} |
 	{kind: "lineJavascript", type: TYPE, f: JAVASCRIPTFUNCTION} |
 	{kind: "lineXML", xml: XML} |
 	{kind: "lineState", action: ACTION} | // action takes no parameters
-	{kind: "lineAction", action: ACTION}
-
-
+	{kind: "lineAction", action: ACTION} |
+	{kind: "lineBlock", let: LETS, output: LINE}
 
 
 ACTION
