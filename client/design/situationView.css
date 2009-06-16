@@ -8,11 +8,40 @@
 	stroke: orange;
 	stroke-width:2;
 }
+.gsv-dragging .gsv-situation:hover .gsv-icon {
+	stroke: black;
+	stroke-width:1;
+}
 
-.gsv-situation .gsv-hit {
-	pointer-events: all;
+.gsv-situation .gsv-hit-inner {
+	pointer-events: fill;
 	visibility: hidden;
 }
+.gsv-dragging .gsv-situation .gsv-hit-inner {
+	pointer-events: fill;
+}
+.gsv-situation .gsv-hit-border {
+	pointer-events: stroke;
+	visibility: hidden;
+}
+
+.gsv-dragStart {
+	pointer-events: none;
+	opacity: 0.5;
+}
+.gsv-offsetting {
+	opacity: 0.1;
+}
+
+
+
+.dragCircle {
+	fill:none;
+	stroke:black;
+	stroke-width:1;
+	stroke-dasharray:4,4;
+}
+
 
 
 
@@ -30,12 +59,6 @@
 }
 
 
-.dragCircle {
-	fill:none;
-	stroke:black;
-	stroke-width:1;
-	stroke-dasharray:4,4;
-}
 
 
 

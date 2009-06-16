@@ -38,6 +38,8 @@
 	function processEvent(eventName, e, eventParams) {
 		var target = e.target;
 		
+		if (!target) return;
+		
 		// var fon = xpath("(ancestor-or-self::*/f:on[@event='" + eventName + "'])[last()]", target);
 		// 
 		// var test = xpath("(ancestor-or-self::*/f:on[@event='" + eventName + "'])", target);
@@ -187,7 +189,8 @@
 			tmp.blur();
 		}		
 		if (e.target.localName !== "input" && e.target.localName !== "button") {
-			dont(e);
+			document.body.focus();
+			//dont(e);
 		}
 	}
 	function mouseup(e) {
@@ -256,6 +259,17 @@
 		dont(e);
 	}
 	
+	function keydown(e) {
+		processEvent("keydown", e);
+		console.log("key down happened", e.target);
+	}
+	function keyup(e) {
+		processEvent("keyup", e);
+	}
+	function keypress(e) {
+		processEvent("keypress", e);
+	}
+	
 	function dont(e) {
 		e.preventDefault();
 	}
@@ -272,6 +286,10 @@
 	document.addEventListener("focus", focus, true);
 	document.addEventListener("change", change, true);
 	document.addEventListener("submit", submit, true);
+	
+	document.addEventListener("keydown", keydown, true);
+	document.addEventListener("keyup", keydown, true);
+	document.addEventListener("keypress", keydown, true);
 })();
 
 
@@ -282,6 +300,11 @@
 
 (function () {
 	var ui = rootObjects["ui.ui"].prop;
+	
+	function onload() {
+		document.body.focus();
+		resizeScreen();
+	}
 	
 	function resizeScreen(e) {
 		//console.log("detected screen resize");
@@ -304,7 +327,7 @@
 	}
 	
 	window.addEventListener("resize", resizeScreen, true);
-	document.addEventListener("load", resizeScreen, true);
+	document.addEventListener("load", onload, true);
 	
 	document.addEventListener("mousemove", mousemove, true);
 	document.addEventListener("mousedown", mousedown, true);

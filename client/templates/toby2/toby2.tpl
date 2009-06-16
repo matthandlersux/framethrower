@@ -22,6 +22,9 @@ template () {
 	abs = function (x) {
 		return Math.abs(x);
 	},
+	concat = function (s::String, t::String)::String {
+		return s+t;
+	},
 	
 	
 	// ==============================================================
