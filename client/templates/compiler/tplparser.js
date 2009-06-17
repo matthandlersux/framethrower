@@ -1250,6 +1250,7 @@ var pop_tab = new Array(
 	new Array( 76/* INSERT */, 3 ),
 	new Array( 71/* STYLELIST */, 3 ),
 	new Array( 71/* STYLELIST */, 1 ),
+	new Array( 71/* STYLELIST */, 2 ),
 	new Array( 71/* STYLELIST */, 0 ),
 	new Array( 77/* STYLEASSIGN */, 3 ),
 	new Array( 77/* STYLEASSIGN */, 3 ),
@@ -1326,7 +1327,7 @@ var act_tab = new Array(
 	/* State 23 */ new Array( 80/* "$" */,-71 , 20/* "RBRACKET" */,-71 , 23/* "COMMA" */,-71 , 27/* "LTSLASH" */,-71 , 2/* "TEXTNODE" */,-71 , 29/* "LT" */,-71 ),
 	/* State 24 */ new Array( 80/* "$" */,-72 , 20/* "RBRACKET" */,-72 , 23/* "COMMA" */,-72 , 27/* "LTSLASH" */,-72 , 2/* "TEXTNODE" */,-72 , 29/* "LT" */,-72 ),
 	/* State 25 */ new Array( 80/* "$" */,-73 , 20/* "RBRACKET" */,-73 , 23/* "COMMA" */,-73 , 27/* "LTSLASH" */,-73 , 2/* "TEXTNODE" */,-73 , 29/* "LT" */,-73 ),
-	/* State 26 */ new Array( 19/* "LBRACKET" */,42 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-127 , 31/* "DASH" */,-127 ),
+	/* State 26 */ new Array( 19/* "LBRACKET" */,42 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-128 , 31/* "DASH" */,-128 ),
 	/* State 27 */ new Array( 16/* "FCALL" */,72 , 17/* "FON" */,73 , 18/* "FTRIGGER" */,74 , 15/* "FEACH" */,75 , 33/* "IDENTIFIER" */,76 ),
 	/* State 28 */ new Array( 33/* "IDENTIFIER" */,16 , 21/* "LPAREN" */,18 , 31/* "DASH" */,19 , 32/* "QUOTE" */,26 , 80/* "$" */,-67 , 20/* "RBRACKET" */,-67 , 23/* "COMMA" */,-67 , 12/* "WAS" */,-67 , 22/* "RPAREN" */,-67 , 27/* "LTSLASH" */,-67 , 30/* "GT" */,-67 ),
 	/* State 29 */ new Array( 33/* "IDENTIFIER" */,79 , 22/* "RPAREN" */,-13 , 23/* "COMMA" */,-13 ),
@@ -1341,36 +1342,36 @@ var act_tab = new Array(
 	/* State 38 */ new Array( 80/* "$" */,-66 , 33/* "IDENTIFIER" */,-66 , 21/* "LPAREN" */,-66 , 31/* "DASH" */,-66 , 32/* "QUOTE" */,-66 , 12/* "WAS" */,-66 , 22/* "RPAREN" */,-66 , 20/* "RBRACKET" */,-66 , 23/* "COMMA" */,-66 , 30/* "GT" */,-66 , 27/* "LTSLASH" */,-66 ),
 	/* State 39 */ new Array( 80/* "$" */,-65 , 33/* "IDENTIFIER" */,-65 , 21/* "LPAREN" */,-65 , 31/* "DASH" */,-65 , 32/* "QUOTE" */,-65 , 12/* "WAS" */,-65 , 22/* "RPAREN" */,-65 , 20/* "RBRACKET" */,-65 , 23/* "COMMA" */,-65 , 30/* "GT" */,-65 , 27/* "LTSLASH" */,-65 ),
 	/* State 40 */ new Array( 31/* "DASH" */,96 , 32/* "QUOTE" */,97 , 19/* "LBRACKET" */,42 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 ),
-	/* State 41 */ new Array( 32/* "QUOTE" */,-111 , 31/* "DASH" */,-111 , 2/* "TEXTNODE" */,-111 , 4/* "WTEMPLATE" */,-111 , 5/* "WACTION" */,-111 , 6/* "WSTATE" */,-111 , 7/* "WCREATE" */,-111 , 8/* "WADD" */,-111 , 9/* "WEXTRACT" */,-111 , 10/* "WREMOVE" */,-111 , 11/* "WSTYLE" */,-111 , 12/* "WAS" */,-111 , 13/* "WIF" */,-111 , 14/* "WELSE" */,-111 , 15/* "FEACH" */,-111 , 16/* "FCALL" */,-111 , 17/* "FON" */,-111 , 18/* "FTRIGGER" */,-111 , 19/* "LBRACKET" */,-111 , 20/* "RBRACKET" */,-111 , 21/* "LPAREN" */,-111 , 22/* "RPAREN" */,-111 , 23/* "COMMA" */,-111 , 24/* "SEMICOLON" */,-111 , 25/* "COLON" */,-111 , 26/* "EQUALS" */,-111 , 27/* "LTSLASH" */,-111 , 28/* "SLASH" */,-111 , 29/* "LT" */,-111 , 30/* "GT" */,-111 , 33/* "IDENTIFIER" */,-111 ),
-	/* State 42 */ new Array( 32/* "QUOTE" */,-112 , 31/* "DASH" */,-112 , 2/* "TEXTNODE" */,-112 , 4/* "WTEMPLATE" */,-112 , 5/* "WACTION" */,-112 , 6/* "WSTATE" */,-112 , 7/* "WCREATE" */,-112 , 8/* "WADD" */,-112 , 9/* "WEXTRACT" */,-112 , 10/* "WREMOVE" */,-112 , 11/* "WSTYLE" */,-112 , 12/* "WAS" */,-112 , 13/* "WIF" */,-112 , 14/* "WELSE" */,-112 , 15/* "FEACH" */,-112 , 16/* "FCALL" */,-112 , 17/* "FON" */,-112 , 18/* "FTRIGGER" */,-112 , 19/* "LBRACKET" */,-112 , 20/* "RBRACKET" */,-112 , 21/* "LPAREN" */,-112 , 22/* "RPAREN" */,-112 , 23/* "COMMA" */,-112 , 24/* "SEMICOLON" */,-112 , 25/* "COLON" */,-112 , 26/* "EQUALS" */,-112 , 27/* "LTSLASH" */,-112 , 28/* "SLASH" */,-112 , 29/* "LT" */,-112 , 30/* "GT" */,-112 , 33/* "IDENTIFIER" */,-112 ),
-	/* State 43 */ new Array( 32/* "QUOTE" */,-113 , 31/* "DASH" */,-113 , 2/* "TEXTNODE" */,-113 , 4/* "WTEMPLATE" */,-113 , 5/* "WACTION" */,-113 , 6/* "WSTATE" */,-113 , 7/* "WCREATE" */,-113 , 8/* "WADD" */,-113 , 9/* "WEXTRACT" */,-113 , 10/* "WREMOVE" */,-113 , 11/* "WSTYLE" */,-113 , 12/* "WAS" */,-113 , 13/* "WIF" */,-113 , 14/* "WELSE" */,-113 , 15/* "FEACH" */,-113 , 16/* "FCALL" */,-113 , 17/* "FON" */,-113 , 18/* "FTRIGGER" */,-113 , 19/* "LBRACKET" */,-113 , 20/* "RBRACKET" */,-113 , 21/* "LPAREN" */,-113 , 22/* "RPAREN" */,-113 , 23/* "COMMA" */,-113 , 24/* "SEMICOLON" */,-113 , 25/* "COLON" */,-113 , 26/* "EQUALS" */,-113 , 27/* "LTSLASH" */,-113 , 28/* "SLASH" */,-113 , 29/* "LT" */,-113 , 30/* "GT" */,-113 , 33/* "IDENTIFIER" */,-113 ),
-	/* State 44 */ new Array( 32/* "QUOTE" */,-114 , 31/* "DASH" */,-114 , 2/* "TEXTNODE" */,-114 , 4/* "WTEMPLATE" */,-114 , 5/* "WACTION" */,-114 , 6/* "WSTATE" */,-114 , 7/* "WCREATE" */,-114 , 8/* "WADD" */,-114 , 9/* "WEXTRACT" */,-114 , 10/* "WREMOVE" */,-114 , 11/* "WSTYLE" */,-114 , 12/* "WAS" */,-114 , 13/* "WIF" */,-114 , 14/* "WELSE" */,-114 , 15/* "FEACH" */,-114 , 16/* "FCALL" */,-114 , 17/* "FON" */,-114 , 18/* "FTRIGGER" */,-114 , 19/* "LBRACKET" */,-114 , 20/* "RBRACKET" */,-114 , 21/* "LPAREN" */,-114 , 22/* "RPAREN" */,-114 , 23/* "COMMA" */,-114 , 24/* "SEMICOLON" */,-114 , 25/* "COLON" */,-114 , 26/* "EQUALS" */,-114 , 27/* "LTSLASH" */,-114 , 28/* "SLASH" */,-114 , 29/* "LT" */,-114 , 30/* "GT" */,-114 , 33/* "IDENTIFIER" */,-114 ),
-	/* State 45 */ new Array( 32/* "QUOTE" */,-115 , 31/* "DASH" */,-115 , 2/* "TEXTNODE" */,-115 , 4/* "WTEMPLATE" */,-115 , 5/* "WACTION" */,-115 , 6/* "WSTATE" */,-115 , 7/* "WCREATE" */,-115 , 8/* "WADD" */,-115 , 9/* "WEXTRACT" */,-115 , 10/* "WREMOVE" */,-115 , 11/* "WSTYLE" */,-115 , 12/* "WAS" */,-115 , 13/* "WIF" */,-115 , 14/* "WELSE" */,-115 , 15/* "FEACH" */,-115 , 16/* "FCALL" */,-115 , 17/* "FON" */,-115 , 18/* "FTRIGGER" */,-115 , 19/* "LBRACKET" */,-115 , 20/* "RBRACKET" */,-115 , 21/* "LPAREN" */,-115 , 22/* "RPAREN" */,-115 , 23/* "COMMA" */,-115 , 24/* "SEMICOLON" */,-115 , 25/* "COLON" */,-115 , 26/* "EQUALS" */,-115 , 27/* "LTSLASH" */,-115 , 28/* "SLASH" */,-115 , 29/* "LT" */,-115 , 30/* "GT" */,-115 , 33/* "IDENTIFIER" */,-115 ),
-	/* State 46 */ new Array( 32/* "QUOTE" */,-116 , 31/* "DASH" */,-116 , 2/* "TEXTNODE" */,-116 , 4/* "WTEMPLATE" */,-116 , 5/* "WACTION" */,-116 , 6/* "WSTATE" */,-116 , 7/* "WCREATE" */,-116 , 8/* "WADD" */,-116 , 9/* "WEXTRACT" */,-116 , 10/* "WREMOVE" */,-116 , 11/* "WSTYLE" */,-116 , 12/* "WAS" */,-116 , 13/* "WIF" */,-116 , 14/* "WELSE" */,-116 , 15/* "FEACH" */,-116 , 16/* "FCALL" */,-116 , 17/* "FON" */,-116 , 18/* "FTRIGGER" */,-116 , 19/* "LBRACKET" */,-116 , 20/* "RBRACKET" */,-116 , 21/* "LPAREN" */,-116 , 22/* "RPAREN" */,-116 , 23/* "COMMA" */,-116 , 24/* "SEMICOLON" */,-116 , 25/* "COLON" */,-116 , 26/* "EQUALS" */,-116 , 27/* "LTSLASH" */,-116 , 28/* "SLASH" */,-116 , 29/* "LT" */,-116 , 30/* "GT" */,-116 , 33/* "IDENTIFIER" */,-116 ),
-	/* State 47 */ new Array( 32/* "QUOTE" */,-117 , 31/* "DASH" */,-117 , 2/* "TEXTNODE" */,-117 , 4/* "WTEMPLATE" */,-117 , 5/* "WACTION" */,-117 , 6/* "WSTATE" */,-117 , 7/* "WCREATE" */,-117 , 8/* "WADD" */,-117 , 9/* "WEXTRACT" */,-117 , 10/* "WREMOVE" */,-117 , 11/* "WSTYLE" */,-117 , 12/* "WAS" */,-117 , 13/* "WIF" */,-117 , 14/* "WELSE" */,-117 , 15/* "FEACH" */,-117 , 16/* "FCALL" */,-117 , 17/* "FON" */,-117 , 18/* "FTRIGGER" */,-117 , 19/* "LBRACKET" */,-117 , 20/* "RBRACKET" */,-117 , 21/* "LPAREN" */,-117 , 22/* "RPAREN" */,-117 , 23/* "COMMA" */,-117 , 24/* "SEMICOLON" */,-117 , 25/* "COLON" */,-117 , 26/* "EQUALS" */,-117 , 27/* "LTSLASH" */,-117 , 28/* "SLASH" */,-117 , 29/* "LT" */,-117 , 30/* "GT" */,-117 , 33/* "IDENTIFIER" */,-117 ),
-	/* State 48 */ new Array( 32/* "QUOTE" */,-118 , 31/* "DASH" */,-118 , 2/* "TEXTNODE" */,-118 , 4/* "WTEMPLATE" */,-118 , 5/* "WACTION" */,-118 , 6/* "WSTATE" */,-118 , 7/* "WCREATE" */,-118 , 8/* "WADD" */,-118 , 9/* "WEXTRACT" */,-118 , 10/* "WREMOVE" */,-118 , 11/* "WSTYLE" */,-118 , 12/* "WAS" */,-118 , 13/* "WIF" */,-118 , 14/* "WELSE" */,-118 , 15/* "FEACH" */,-118 , 16/* "FCALL" */,-118 , 17/* "FON" */,-118 , 18/* "FTRIGGER" */,-118 , 19/* "LBRACKET" */,-118 , 20/* "RBRACKET" */,-118 , 21/* "LPAREN" */,-118 , 22/* "RPAREN" */,-118 , 23/* "COMMA" */,-118 , 24/* "SEMICOLON" */,-118 , 25/* "COLON" */,-118 , 26/* "EQUALS" */,-118 , 27/* "LTSLASH" */,-118 , 28/* "SLASH" */,-118 , 29/* "LT" */,-118 , 30/* "GT" */,-118 , 33/* "IDENTIFIER" */,-118 ),
-	/* State 49 */ new Array( 32/* "QUOTE" */,-119 , 31/* "DASH" */,-119 , 2/* "TEXTNODE" */,-119 , 4/* "WTEMPLATE" */,-119 , 5/* "WACTION" */,-119 , 6/* "WSTATE" */,-119 , 7/* "WCREATE" */,-119 , 8/* "WADD" */,-119 , 9/* "WEXTRACT" */,-119 , 10/* "WREMOVE" */,-119 , 11/* "WSTYLE" */,-119 , 12/* "WAS" */,-119 , 13/* "WIF" */,-119 , 14/* "WELSE" */,-119 , 15/* "FEACH" */,-119 , 16/* "FCALL" */,-119 , 17/* "FON" */,-119 , 18/* "FTRIGGER" */,-119 , 19/* "LBRACKET" */,-119 , 20/* "RBRACKET" */,-119 , 21/* "LPAREN" */,-119 , 22/* "RPAREN" */,-119 , 23/* "COMMA" */,-119 , 24/* "SEMICOLON" */,-119 , 25/* "COLON" */,-119 , 26/* "EQUALS" */,-119 , 27/* "LTSLASH" */,-119 , 28/* "SLASH" */,-119 , 29/* "LT" */,-119 , 30/* "GT" */,-119 , 33/* "IDENTIFIER" */,-119 ),
-	/* State 50 */ new Array( 32/* "QUOTE" */,-120 , 31/* "DASH" */,-120 , 2/* "TEXTNODE" */,-120 , 4/* "WTEMPLATE" */,-120 , 5/* "WACTION" */,-120 , 6/* "WSTATE" */,-120 , 7/* "WCREATE" */,-120 , 8/* "WADD" */,-120 , 9/* "WEXTRACT" */,-120 , 10/* "WREMOVE" */,-120 , 11/* "WSTYLE" */,-120 , 12/* "WAS" */,-120 , 13/* "WIF" */,-120 , 14/* "WELSE" */,-120 , 15/* "FEACH" */,-120 , 16/* "FCALL" */,-120 , 17/* "FON" */,-120 , 18/* "FTRIGGER" */,-120 , 19/* "LBRACKET" */,-120 , 20/* "RBRACKET" */,-120 , 21/* "LPAREN" */,-120 , 22/* "RPAREN" */,-120 , 23/* "COMMA" */,-120 , 24/* "SEMICOLON" */,-120 , 25/* "COLON" */,-120 , 26/* "EQUALS" */,-120 , 27/* "LTSLASH" */,-120 , 28/* "SLASH" */,-120 , 29/* "LT" */,-120 , 30/* "GT" */,-120 , 33/* "IDENTIFIER" */,-120 ),
-	/* State 51 */ new Array( 32/* "QUOTE" */,-121 , 31/* "DASH" */,-121 , 2/* "TEXTNODE" */,-121 , 4/* "WTEMPLATE" */,-121 , 5/* "WACTION" */,-121 , 6/* "WSTATE" */,-121 , 7/* "WCREATE" */,-121 , 8/* "WADD" */,-121 , 9/* "WEXTRACT" */,-121 , 10/* "WREMOVE" */,-121 , 11/* "WSTYLE" */,-121 , 12/* "WAS" */,-121 , 13/* "WIF" */,-121 , 14/* "WELSE" */,-121 , 15/* "FEACH" */,-121 , 16/* "FCALL" */,-121 , 17/* "FON" */,-121 , 18/* "FTRIGGER" */,-121 , 19/* "LBRACKET" */,-121 , 20/* "RBRACKET" */,-121 , 21/* "LPAREN" */,-121 , 22/* "RPAREN" */,-121 , 23/* "COMMA" */,-121 , 24/* "SEMICOLON" */,-121 , 25/* "COLON" */,-121 , 26/* "EQUALS" */,-121 , 27/* "LTSLASH" */,-121 , 28/* "SLASH" */,-121 , 29/* "LT" */,-121 , 30/* "GT" */,-121 , 33/* "IDENTIFIER" */,-121 ),
-	/* State 52 */ new Array( 32/* "QUOTE" */,-122 , 31/* "DASH" */,-122 , 2/* "TEXTNODE" */,-122 , 4/* "WTEMPLATE" */,-122 , 5/* "WACTION" */,-122 , 6/* "WSTATE" */,-122 , 7/* "WCREATE" */,-122 , 8/* "WADD" */,-122 , 9/* "WEXTRACT" */,-122 , 10/* "WREMOVE" */,-122 , 11/* "WSTYLE" */,-122 , 12/* "WAS" */,-122 , 13/* "WIF" */,-122 , 14/* "WELSE" */,-122 , 15/* "FEACH" */,-122 , 16/* "FCALL" */,-122 , 17/* "FON" */,-122 , 18/* "FTRIGGER" */,-122 , 19/* "LBRACKET" */,-122 , 20/* "RBRACKET" */,-122 , 21/* "LPAREN" */,-122 , 22/* "RPAREN" */,-122 , 23/* "COMMA" */,-122 , 24/* "SEMICOLON" */,-122 , 25/* "COLON" */,-122 , 26/* "EQUALS" */,-122 , 27/* "LTSLASH" */,-122 , 28/* "SLASH" */,-122 , 29/* "LT" */,-122 , 30/* "GT" */,-122 , 33/* "IDENTIFIER" */,-122 ),
-	/* State 53 */ new Array( 32/* "QUOTE" */,-123 , 31/* "DASH" */,-123 , 2/* "TEXTNODE" */,-123 , 4/* "WTEMPLATE" */,-123 , 5/* "WACTION" */,-123 , 6/* "WSTATE" */,-123 , 7/* "WCREATE" */,-123 , 8/* "WADD" */,-123 , 9/* "WEXTRACT" */,-123 , 10/* "WREMOVE" */,-123 , 11/* "WSTYLE" */,-123 , 12/* "WAS" */,-123 , 13/* "WIF" */,-123 , 14/* "WELSE" */,-123 , 15/* "FEACH" */,-123 , 16/* "FCALL" */,-123 , 17/* "FON" */,-123 , 18/* "FTRIGGER" */,-123 , 19/* "LBRACKET" */,-123 , 20/* "RBRACKET" */,-123 , 21/* "LPAREN" */,-123 , 22/* "RPAREN" */,-123 , 23/* "COMMA" */,-123 , 24/* "SEMICOLON" */,-123 , 25/* "COLON" */,-123 , 26/* "EQUALS" */,-123 , 27/* "LTSLASH" */,-123 , 28/* "SLASH" */,-123 , 29/* "LT" */,-123 , 30/* "GT" */,-123 , 33/* "IDENTIFIER" */,-123 ),
-	/* State 54 */ new Array( 32/* "QUOTE" */,-124 , 31/* "DASH" */,-124 , 2/* "TEXTNODE" */,-124 , 4/* "WTEMPLATE" */,-124 , 5/* "WACTION" */,-124 , 6/* "WSTATE" */,-124 , 7/* "WCREATE" */,-124 , 8/* "WADD" */,-124 , 9/* "WEXTRACT" */,-124 , 10/* "WREMOVE" */,-124 , 11/* "WSTYLE" */,-124 , 12/* "WAS" */,-124 , 13/* "WIF" */,-124 , 14/* "WELSE" */,-124 , 15/* "FEACH" */,-124 , 16/* "FCALL" */,-124 , 17/* "FON" */,-124 , 18/* "FTRIGGER" */,-124 , 19/* "LBRACKET" */,-124 , 20/* "RBRACKET" */,-124 , 21/* "LPAREN" */,-124 , 22/* "RPAREN" */,-124 , 23/* "COMMA" */,-124 , 24/* "SEMICOLON" */,-124 , 25/* "COLON" */,-124 , 26/* "EQUALS" */,-124 , 27/* "LTSLASH" */,-124 , 28/* "SLASH" */,-124 , 29/* "LT" */,-124 , 30/* "GT" */,-124 , 33/* "IDENTIFIER" */,-124 ),
-	/* State 55 */ new Array( 32/* "QUOTE" */,-128 , 31/* "DASH" */,-128 , 2/* "TEXTNODE" */,-128 , 4/* "WTEMPLATE" */,-128 , 5/* "WACTION" */,-128 , 6/* "WSTATE" */,-128 , 7/* "WCREATE" */,-128 , 8/* "WADD" */,-128 , 9/* "WEXTRACT" */,-128 , 10/* "WREMOVE" */,-128 , 11/* "WSTYLE" */,-128 , 12/* "WAS" */,-128 , 13/* "WIF" */,-128 , 14/* "WELSE" */,-128 , 15/* "FEACH" */,-128 , 16/* "FCALL" */,-128 , 17/* "FON" */,-128 , 18/* "FTRIGGER" */,-128 , 19/* "LBRACKET" */,-128 , 20/* "RBRACKET" */,-128 , 21/* "LPAREN" */,-128 , 22/* "RPAREN" */,-128 , 23/* "COMMA" */,-128 , 24/* "SEMICOLON" */,-128 , 25/* "COLON" */,-128 , 26/* "EQUALS" */,-128 , 27/* "LTSLASH" */,-128 , 28/* "SLASH" */,-128 , 29/* "LT" */,-128 , 30/* "GT" */,-128 , 33/* "IDENTIFIER" */,-128 ),
-	/* State 56 */ new Array( 32/* "QUOTE" */,-129 , 31/* "DASH" */,-129 , 2/* "TEXTNODE" */,-129 , 4/* "WTEMPLATE" */,-129 , 5/* "WACTION" */,-129 , 6/* "WSTATE" */,-129 , 7/* "WCREATE" */,-129 , 8/* "WADD" */,-129 , 9/* "WEXTRACT" */,-129 , 10/* "WREMOVE" */,-129 , 11/* "WSTYLE" */,-129 , 12/* "WAS" */,-129 , 13/* "WIF" */,-129 , 14/* "WELSE" */,-129 , 15/* "FEACH" */,-129 , 16/* "FCALL" */,-129 , 17/* "FON" */,-129 , 18/* "FTRIGGER" */,-129 , 19/* "LBRACKET" */,-129 , 20/* "RBRACKET" */,-129 , 21/* "LPAREN" */,-129 , 22/* "RPAREN" */,-129 , 23/* "COMMA" */,-129 , 24/* "SEMICOLON" */,-129 , 25/* "COLON" */,-129 , 26/* "EQUALS" */,-129 , 27/* "LTSLASH" */,-129 , 28/* "SLASH" */,-129 , 29/* "LT" */,-129 , 30/* "GT" */,-129 , 33/* "IDENTIFIER" */,-129 ),
-	/* State 57 */ new Array( 32/* "QUOTE" */,-130 , 31/* "DASH" */,-130 , 2/* "TEXTNODE" */,-130 , 4/* "WTEMPLATE" */,-130 , 5/* "WACTION" */,-130 , 6/* "WSTATE" */,-130 , 7/* "WCREATE" */,-130 , 8/* "WADD" */,-130 , 9/* "WEXTRACT" */,-130 , 10/* "WREMOVE" */,-130 , 11/* "WSTYLE" */,-130 , 12/* "WAS" */,-130 , 13/* "WIF" */,-130 , 14/* "WELSE" */,-130 , 15/* "FEACH" */,-130 , 16/* "FCALL" */,-130 , 17/* "FON" */,-130 , 18/* "FTRIGGER" */,-130 , 19/* "LBRACKET" */,-130 , 20/* "RBRACKET" */,-130 , 21/* "LPAREN" */,-130 , 22/* "RPAREN" */,-130 , 23/* "COMMA" */,-130 , 24/* "SEMICOLON" */,-130 , 25/* "COLON" */,-130 , 26/* "EQUALS" */,-130 , 27/* "LTSLASH" */,-130 , 28/* "SLASH" */,-130 , 29/* "LT" */,-130 , 30/* "GT" */,-130 , 33/* "IDENTIFIER" */,-130 ),
-	/* State 58 */ new Array( 32/* "QUOTE" */,-131 , 31/* "DASH" */,-131 , 2/* "TEXTNODE" */,-131 , 4/* "WTEMPLATE" */,-131 , 5/* "WACTION" */,-131 , 6/* "WSTATE" */,-131 , 7/* "WCREATE" */,-131 , 8/* "WADD" */,-131 , 9/* "WEXTRACT" */,-131 , 10/* "WREMOVE" */,-131 , 11/* "WSTYLE" */,-131 , 12/* "WAS" */,-131 , 13/* "WIF" */,-131 , 14/* "WELSE" */,-131 , 15/* "FEACH" */,-131 , 16/* "FCALL" */,-131 , 17/* "FON" */,-131 , 18/* "FTRIGGER" */,-131 , 19/* "LBRACKET" */,-131 , 20/* "RBRACKET" */,-131 , 21/* "LPAREN" */,-131 , 22/* "RPAREN" */,-131 , 23/* "COMMA" */,-131 , 24/* "SEMICOLON" */,-131 , 25/* "COLON" */,-131 , 26/* "EQUALS" */,-131 , 27/* "LTSLASH" */,-131 , 28/* "SLASH" */,-131 , 29/* "LT" */,-131 , 30/* "GT" */,-131 , 33/* "IDENTIFIER" */,-131 ),
-	/* State 59 */ new Array( 32/* "QUOTE" */,-132 , 31/* "DASH" */,-132 , 2/* "TEXTNODE" */,-132 , 4/* "WTEMPLATE" */,-132 , 5/* "WACTION" */,-132 , 6/* "WSTATE" */,-132 , 7/* "WCREATE" */,-132 , 8/* "WADD" */,-132 , 9/* "WEXTRACT" */,-132 , 10/* "WREMOVE" */,-132 , 11/* "WSTYLE" */,-132 , 12/* "WAS" */,-132 , 13/* "WIF" */,-132 , 14/* "WELSE" */,-132 , 15/* "FEACH" */,-132 , 16/* "FCALL" */,-132 , 17/* "FON" */,-132 , 18/* "FTRIGGER" */,-132 , 19/* "LBRACKET" */,-132 , 20/* "RBRACKET" */,-132 , 21/* "LPAREN" */,-132 , 22/* "RPAREN" */,-132 , 23/* "COMMA" */,-132 , 24/* "SEMICOLON" */,-132 , 25/* "COLON" */,-132 , 26/* "EQUALS" */,-132 , 27/* "LTSLASH" */,-132 , 28/* "SLASH" */,-132 , 29/* "LT" */,-132 , 30/* "GT" */,-132 , 33/* "IDENTIFIER" */,-132 ),
-	/* State 60 */ new Array( 32/* "QUOTE" */,-133 , 31/* "DASH" */,-133 , 2/* "TEXTNODE" */,-133 , 4/* "WTEMPLATE" */,-133 , 5/* "WACTION" */,-133 , 6/* "WSTATE" */,-133 , 7/* "WCREATE" */,-133 , 8/* "WADD" */,-133 , 9/* "WEXTRACT" */,-133 , 10/* "WREMOVE" */,-133 , 11/* "WSTYLE" */,-133 , 12/* "WAS" */,-133 , 13/* "WIF" */,-133 , 14/* "WELSE" */,-133 , 15/* "FEACH" */,-133 , 16/* "FCALL" */,-133 , 17/* "FON" */,-133 , 18/* "FTRIGGER" */,-133 , 19/* "LBRACKET" */,-133 , 20/* "RBRACKET" */,-133 , 21/* "LPAREN" */,-133 , 22/* "RPAREN" */,-133 , 23/* "COMMA" */,-133 , 24/* "SEMICOLON" */,-133 , 25/* "COLON" */,-133 , 26/* "EQUALS" */,-133 , 27/* "LTSLASH" */,-133 , 28/* "SLASH" */,-133 , 29/* "LT" */,-133 , 30/* "GT" */,-133 , 33/* "IDENTIFIER" */,-133 ),
-	/* State 61 */ new Array( 32/* "QUOTE" */,-134 , 31/* "DASH" */,-134 , 2/* "TEXTNODE" */,-134 , 4/* "WTEMPLATE" */,-134 , 5/* "WACTION" */,-134 , 6/* "WSTATE" */,-134 , 7/* "WCREATE" */,-134 , 8/* "WADD" */,-134 , 9/* "WEXTRACT" */,-134 , 10/* "WREMOVE" */,-134 , 11/* "WSTYLE" */,-134 , 12/* "WAS" */,-134 , 13/* "WIF" */,-134 , 14/* "WELSE" */,-134 , 15/* "FEACH" */,-134 , 16/* "FCALL" */,-134 , 17/* "FON" */,-134 , 18/* "FTRIGGER" */,-134 , 19/* "LBRACKET" */,-134 , 20/* "RBRACKET" */,-134 , 21/* "LPAREN" */,-134 , 22/* "RPAREN" */,-134 , 23/* "COMMA" */,-134 , 24/* "SEMICOLON" */,-134 , 25/* "COLON" */,-134 , 26/* "EQUALS" */,-134 , 27/* "LTSLASH" */,-134 , 28/* "SLASH" */,-134 , 29/* "LT" */,-134 , 30/* "GT" */,-134 , 33/* "IDENTIFIER" */,-134 ),
-	/* State 62 */ new Array( 32/* "QUOTE" */,-135 , 31/* "DASH" */,-135 , 2/* "TEXTNODE" */,-135 , 4/* "WTEMPLATE" */,-135 , 5/* "WACTION" */,-135 , 6/* "WSTATE" */,-135 , 7/* "WCREATE" */,-135 , 8/* "WADD" */,-135 , 9/* "WEXTRACT" */,-135 , 10/* "WREMOVE" */,-135 , 11/* "WSTYLE" */,-135 , 12/* "WAS" */,-135 , 13/* "WIF" */,-135 , 14/* "WELSE" */,-135 , 15/* "FEACH" */,-135 , 16/* "FCALL" */,-135 , 17/* "FON" */,-135 , 18/* "FTRIGGER" */,-135 , 19/* "LBRACKET" */,-135 , 20/* "RBRACKET" */,-135 , 21/* "LPAREN" */,-135 , 22/* "RPAREN" */,-135 , 23/* "COMMA" */,-135 , 24/* "SEMICOLON" */,-135 , 25/* "COLON" */,-135 , 26/* "EQUALS" */,-135 , 27/* "LTSLASH" */,-135 , 28/* "SLASH" */,-135 , 29/* "LT" */,-135 , 30/* "GT" */,-135 , 33/* "IDENTIFIER" */,-135 ),
-	/* State 63 */ new Array( 32/* "QUOTE" */,-136 , 31/* "DASH" */,-136 , 2/* "TEXTNODE" */,-136 , 4/* "WTEMPLATE" */,-136 , 5/* "WACTION" */,-136 , 6/* "WSTATE" */,-136 , 7/* "WCREATE" */,-136 , 8/* "WADD" */,-136 , 9/* "WEXTRACT" */,-136 , 10/* "WREMOVE" */,-136 , 11/* "WSTYLE" */,-136 , 12/* "WAS" */,-136 , 13/* "WIF" */,-136 , 14/* "WELSE" */,-136 , 15/* "FEACH" */,-136 , 16/* "FCALL" */,-136 , 17/* "FON" */,-136 , 18/* "FTRIGGER" */,-136 , 19/* "LBRACKET" */,-136 , 20/* "RBRACKET" */,-136 , 21/* "LPAREN" */,-136 , 22/* "RPAREN" */,-136 , 23/* "COMMA" */,-136 , 24/* "SEMICOLON" */,-136 , 25/* "COLON" */,-136 , 26/* "EQUALS" */,-136 , 27/* "LTSLASH" */,-136 , 28/* "SLASH" */,-136 , 29/* "LT" */,-136 , 30/* "GT" */,-136 , 33/* "IDENTIFIER" */,-136 ),
-	/* State 64 */ new Array( 32/* "QUOTE" */,-137 , 31/* "DASH" */,-137 , 2/* "TEXTNODE" */,-137 , 4/* "WTEMPLATE" */,-137 , 5/* "WACTION" */,-137 , 6/* "WSTATE" */,-137 , 7/* "WCREATE" */,-137 , 8/* "WADD" */,-137 , 9/* "WEXTRACT" */,-137 , 10/* "WREMOVE" */,-137 , 11/* "WSTYLE" */,-137 , 12/* "WAS" */,-137 , 13/* "WIF" */,-137 , 14/* "WELSE" */,-137 , 15/* "FEACH" */,-137 , 16/* "FCALL" */,-137 , 17/* "FON" */,-137 , 18/* "FTRIGGER" */,-137 , 19/* "LBRACKET" */,-137 , 20/* "RBRACKET" */,-137 , 21/* "LPAREN" */,-137 , 22/* "RPAREN" */,-137 , 23/* "COMMA" */,-137 , 24/* "SEMICOLON" */,-137 , 25/* "COLON" */,-137 , 26/* "EQUALS" */,-137 , 27/* "LTSLASH" */,-137 , 28/* "SLASH" */,-137 , 29/* "LT" */,-137 , 30/* "GT" */,-137 , 33/* "IDENTIFIER" */,-137 ),
-	/* State 65 */ new Array( 32/* "QUOTE" */,-138 , 31/* "DASH" */,-138 , 2/* "TEXTNODE" */,-138 , 4/* "WTEMPLATE" */,-138 , 5/* "WACTION" */,-138 , 6/* "WSTATE" */,-138 , 7/* "WCREATE" */,-138 , 8/* "WADD" */,-138 , 9/* "WEXTRACT" */,-138 , 10/* "WREMOVE" */,-138 , 11/* "WSTYLE" */,-138 , 12/* "WAS" */,-138 , 13/* "WIF" */,-138 , 14/* "WELSE" */,-138 , 15/* "FEACH" */,-138 , 16/* "FCALL" */,-138 , 17/* "FON" */,-138 , 18/* "FTRIGGER" */,-138 , 19/* "LBRACKET" */,-138 , 20/* "RBRACKET" */,-138 , 21/* "LPAREN" */,-138 , 22/* "RPAREN" */,-138 , 23/* "COMMA" */,-138 , 24/* "SEMICOLON" */,-138 , 25/* "COLON" */,-138 , 26/* "EQUALS" */,-138 , 27/* "LTSLASH" */,-138 , 28/* "SLASH" */,-138 , 29/* "LT" */,-138 , 30/* "GT" */,-138 , 33/* "IDENTIFIER" */,-138 ),
-	/* State 66 */ new Array( 32/* "QUOTE" */,-139 , 31/* "DASH" */,-139 , 2/* "TEXTNODE" */,-139 , 4/* "WTEMPLATE" */,-139 , 5/* "WACTION" */,-139 , 6/* "WSTATE" */,-139 , 7/* "WCREATE" */,-139 , 8/* "WADD" */,-139 , 9/* "WEXTRACT" */,-139 , 10/* "WREMOVE" */,-139 , 11/* "WSTYLE" */,-139 , 12/* "WAS" */,-139 , 13/* "WIF" */,-139 , 14/* "WELSE" */,-139 , 15/* "FEACH" */,-139 , 16/* "FCALL" */,-139 , 17/* "FON" */,-139 , 18/* "FTRIGGER" */,-139 , 19/* "LBRACKET" */,-139 , 20/* "RBRACKET" */,-139 , 21/* "LPAREN" */,-139 , 22/* "RPAREN" */,-139 , 23/* "COMMA" */,-139 , 24/* "SEMICOLON" */,-139 , 25/* "COLON" */,-139 , 26/* "EQUALS" */,-139 , 27/* "LTSLASH" */,-139 , 28/* "SLASH" */,-139 , 29/* "LT" */,-139 , 30/* "GT" */,-139 , 33/* "IDENTIFIER" */,-139 ),
-	/* State 67 */ new Array( 32/* "QUOTE" */,-140 , 31/* "DASH" */,-140 , 2/* "TEXTNODE" */,-140 , 4/* "WTEMPLATE" */,-140 , 5/* "WACTION" */,-140 , 6/* "WSTATE" */,-140 , 7/* "WCREATE" */,-140 , 8/* "WADD" */,-140 , 9/* "WEXTRACT" */,-140 , 10/* "WREMOVE" */,-140 , 11/* "WSTYLE" */,-140 , 12/* "WAS" */,-140 , 13/* "WIF" */,-140 , 14/* "WELSE" */,-140 , 15/* "FEACH" */,-140 , 16/* "FCALL" */,-140 , 17/* "FON" */,-140 , 18/* "FTRIGGER" */,-140 , 19/* "LBRACKET" */,-140 , 20/* "RBRACKET" */,-140 , 21/* "LPAREN" */,-140 , 22/* "RPAREN" */,-140 , 23/* "COMMA" */,-140 , 24/* "SEMICOLON" */,-140 , 25/* "COLON" */,-140 , 26/* "EQUALS" */,-140 , 27/* "LTSLASH" */,-140 , 28/* "SLASH" */,-140 , 29/* "LT" */,-140 , 30/* "GT" */,-140 , 33/* "IDENTIFIER" */,-140 ),
-	/* State 68 */ new Array( 32/* "QUOTE" */,-141 , 31/* "DASH" */,-141 , 2/* "TEXTNODE" */,-141 , 4/* "WTEMPLATE" */,-141 , 5/* "WACTION" */,-141 , 6/* "WSTATE" */,-141 , 7/* "WCREATE" */,-141 , 8/* "WADD" */,-141 , 9/* "WEXTRACT" */,-141 , 10/* "WREMOVE" */,-141 , 11/* "WSTYLE" */,-141 , 12/* "WAS" */,-141 , 13/* "WIF" */,-141 , 14/* "WELSE" */,-141 , 15/* "FEACH" */,-141 , 16/* "FCALL" */,-141 , 17/* "FON" */,-141 , 18/* "FTRIGGER" */,-141 , 19/* "LBRACKET" */,-141 , 20/* "RBRACKET" */,-141 , 21/* "LPAREN" */,-141 , 22/* "RPAREN" */,-141 , 23/* "COMMA" */,-141 , 24/* "SEMICOLON" */,-141 , 25/* "COLON" */,-141 , 26/* "EQUALS" */,-141 , 27/* "LTSLASH" */,-141 , 28/* "SLASH" */,-141 , 29/* "LT" */,-141 , 30/* "GT" */,-141 , 33/* "IDENTIFIER" */,-141 ),
-	/* State 69 */ new Array( 32/* "QUOTE" */,-142 , 31/* "DASH" */,-142 , 2/* "TEXTNODE" */,-142 , 4/* "WTEMPLATE" */,-142 , 5/* "WACTION" */,-142 , 6/* "WSTATE" */,-142 , 7/* "WCREATE" */,-142 , 8/* "WADD" */,-142 , 9/* "WEXTRACT" */,-142 , 10/* "WREMOVE" */,-142 , 11/* "WSTYLE" */,-142 , 12/* "WAS" */,-142 , 13/* "WIF" */,-142 , 14/* "WELSE" */,-142 , 15/* "FEACH" */,-142 , 16/* "FCALL" */,-142 , 17/* "FON" */,-142 , 18/* "FTRIGGER" */,-142 , 19/* "LBRACKET" */,-142 , 20/* "RBRACKET" */,-142 , 21/* "LPAREN" */,-142 , 22/* "RPAREN" */,-142 , 23/* "COMMA" */,-142 , 24/* "SEMICOLON" */,-142 , 25/* "COLON" */,-142 , 26/* "EQUALS" */,-142 , 27/* "LTSLASH" */,-142 , 28/* "SLASH" */,-142 , 29/* "LT" */,-142 , 30/* "GT" */,-142 , 33/* "IDENTIFIER" */,-142 ),
-	/* State 70 */ new Array( 32/* "QUOTE" */,-143 , 31/* "DASH" */,-143 , 2/* "TEXTNODE" */,-143 , 4/* "WTEMPLATE" */,-143 , 5/* "WACTION" */,-143 , 6/* "WSTATE" */,-143 , 7/* "WCREATE" */,-143 , 8/* "WADD" */,-143 , 9/* "WEXTRACT" */,-143 , 10/* "WREMOVE" */,-143 , 11/* "WSTYLE" */,-143 , 12/* "WAS" */,-143 , 13/* "WIF" */,-143 , 14/* "WELSE" */,-143 , 15/* "FEACH" */,-143 , 16/* "FCALL" */,-143 , 17/* "FON" */,-143 , 18/* "FTRIGGER" */,-143 , 19/* "LBRACKET" */,-143 , 20/* "RBRACKET" */,-143 , 21/* "LPAREN" */,-143 , 22/* "RPAREN" */,-143 , 23/* "COMMA" */,-143 , 24/* "SEMICOLON" */,-143 , 25/* "COLON" */,-143 , 26/* "EQUALS" */,-143 , 27/* "LTSLASH" */,-143 , 28/* "SLASH" */,-143 , 29/* "LT" */,-143 , 30/* "GT" */,-143 , 33/* "IDENTIFIER" */,-143 ),
+	/* State 41 */ new Array( 32/* "QUOTE" */,-112 , 31/* "DASH" */,-112 , 2/* "TEXTNODE" */,-112 , 4/* "WTEMPLATE" */,-112 , 5/* "WACTION" */,-112 , 6/* "WSTATE" */,-112 , 7/* "WCREATE" */,-112 , 8/* "WADD" */,-112 , 9/* "WEXTRACT" */,-112 , 10/* "WREMOVE" */,-112 , 11/* "WSTYLE" */,-112 , 12/* "WAS" */,-112 , 13/* "WIF" */,-112 , 14/* "WELSE" */,-112 , 15/* "FEACH" */,-112 , 16/* "FCALL" */,-112 , 17/* "FON" */,-112 , 18/* "FTRIGGER" */,-112 , 19/* "LBRACKET" */,-112 , 20/* "RBRACKET" */,-112 , 21/* "LPAREN" */,-112 , 22/* "RPAREN" */,-112 , 23/* "COMMA" */,-112 , 24/* "SEMICOLON" */,-112 , 25/* "COLON" */,-112 , 26/* "EQUALS" */,-112 , 27/* "LTSLASH" */,-112 , 28/* "SLASH" */,-112 , 29/* "LT" */,-112 , 30/* "GT" */,-112 , 33/* "IDENTIFIER" */,-112 ),
+	/* State 42 */ new Array( 32/* "QUOTE" */,-113 , 31/* "DASH" */,-113 , 2/* "TEXTNODE" */,-113 , 4/* "WTEMPLATE" */,-113 , 5/* "WACTION" */,-113 , 6/* "WSTATE" */,-113 , 7/* "WCREATE" */,-113 , 8/* "WADD" */,-113 , 9/* "WEXTRACT" */,-113 , 10/* "WREMOVE" */,-113 , 11/* "WSTYLE" */,-113 , 12/* "WAS" */,-113 , 13/* "WIF" */,-113 , 14/* "WELSE" */,-113 , 15/* "FEACH" */,-113 , 16/* "FCALL" */,-113 , 17/* "FON" */,-113 , 18/* "FTRIGGER" */,-113 , 19/* "LBRACKET" */,-113 , 20/* "RBRACKET" */,-113 , 21/* "LPAREN" */,-113 , 22/* "RPAREN" */,-113 , 23/* "COMMA" */,-113 , 24/* "SEMICOLON" */,-113 , 25/* "COLON" */,-113 , 26/* "EQUALS" */,-113 , 27/* "LTSLASH" */,-113 , 28/* "SLASH" */,-113 , 29/* "LT" */,-113 , 30/* "GT" */,-113 , 33/* "IDENTIFIER" */,-113 ),
+	/* State 43 */ new Array( 32/* "QUOTE" */,-114 , 31/* "DASH" */,-114 , 2/* "TEXTNODE" */,-114 , 4/* "WTEMPLATE" */,-114 , 5/* "WACTION" */,-114 , 6/* "WSTATE" */,-114 , 7/* "WCREATE" */,-114 , 8/* "WADD" */,-114 , 9/* "WEXTRACT" */,-114 , 10/* "WREMOVE" */,-114 , 11/* "WSTYLE" */,-114 , 12/* "WAS" */,-114 , 13/* "WIF" */,-114 , 14/* "WELSE" */,-114 , 15/* "FEACH" */,-114 , 16/* "FCALL" */,-114 , 17/* "FON" */,-114 , 18/* "FTRIGGER" */,-114 , 19/* "LBRACKET" */,-114 , 20/* "RBRACKET" */,-114 , 21/* "LPAREN" */,-114 , 22/* "RPAREN" */,-114 , 23/* "COMMA" */,-114 , 24/* "SEMICOLON" */,-114 , 25/* "COLON" */,-114 , 26/* "EQUALS" */,-114 , 27/* "LTSLASH" */,-114 , 28/* "SLASH" */,-114 , 29/* "LT" */,-114 , 30/* "GT" */,-114 , 33/* "IDENTIFIER" */,-114 ),
+	/* State 44 */ new Array( 32/* "QUOTE" */,-115 , 31/* "DASH" */,-115 , 2/* "TEXTNODE" */,-115 , 4/* "WTEMPLATE" */,-115 , 5/* "WACTION" */,-115 , 6/* "WSTATE" */,-115 , 7/* "WCREATE" */,-115 , 8/* "WADD" */,-115 , 9/* "WEXTRACT" */,-115 , 10/* "WREMOVE" */,-115 , 11/* "WSTYLE" */,-115 , 12/* "WAS" */,-115 , 13/* "WIF" */,-115 , 14/* "WELSE" */,-115 , 15/* "FEACH" */,-115 , 16/* "FCALL" */,-115 , 17/* "FON" */,-115 , 18/* "FTRIGGER" */,-115 , 19/* "LBRACKET" */,-115 , 20/* "RBRACKET" */,-115 , 21/* "LPAREN" */,-115 , 22/* "RPAREN" */,-115 , 23/* "COMMA" */,-115 , 24/* "SEMICOLON" */,-115 , 25/* "COLON" */,-115 , 26/* "EQUALS" */,-115 , 27/* "LTSLASH" */,-115 , 28/* "SLASH" */,-115 , 29/* "LT" */,-115 , 30/* "GT" */,-115 , 33/* "IDENTIFIER" */,-115 ),
+	/* State 45 */ new Array( 32/* "QUOTE" */,-116 , 31/* "DASH" */,-116 , 2/* "TEXTNODE" */,-116 , 4/* "WTEMPLATE" */,-116 , 5/* "WACTION" */,-116 , 6/* "WSTATE" */,-116 , 7/* "WCREATE" */,-116 , 8/* "WADD" */,-116 , 9/* "WEXTRACT" */,-116 , 10/* "WREMOVE" */,-116 , 11/* "WSTYLE" */,-116 , 12/* "WAS" */,-116 , 13/* "WIF" */,-116 , 14/* "WELSE" */,-116 , 15/* "FEACH" */,-116 , 16/* "FCALL" */,-116 , 17/* "FON" */,-116 , 18/* "FTRIGGER" */,-116 , 19/* "LBRACKET" */,-116 , 20/* "RBRACKET" */,-116 , 21/* "LPAREN" */,-116 , 22/* "RPAREN" */,-116 , 23/* "COMMA" */,-116 , 24/* "SEMICOLON" */,-116 , 25/* "COLON" */,-116 , 26/* "EQUALS" */,-116 , 27/* "LTSLASH" */,-116 , 28/* "SLASH" */,-116 , 29/* "LT" */,-116 , 30/* "GT" */,-116 , 33/* "IDENTIFIER" */,-116 ),
+	/* State 46 */ new Array( 32/* "QUOTE" */,-117 , 31/* "DASH" */,-117 , 2/* "TEXTNODE" */,-117 , 4/* "WTEMPLATE" */,-117 , 5/* "WACTION" */,-117 , 6/* "WSTATE" */,-117 , 7/* "WCREATE" */,-117 , 8/* "WADD" */,-117 , 9/* "WEXTRACT" */,-117 , 10/* "WREMOVE" */,-117 , 11/* "WSTYLE" */,-117 , 12/* "WAS" */,-117 , 13/* "WIF" */,-117 , 14/* "WELSE" */,-117 , 15/* "FEACH" */,-117 , 16/* "FCALL" */,-117 , 17/* "FON" */,-117 , 18/* "FTRIGGER" */,-117 , 19/* "LBRACKET" */,-117 , 20/* "RBRACKET" */,-117 , 21/* "LPAREN" */,-117 , 22/* "RPAREN" */,-117 , 23/* "COMMA" */,-117 , 24/* "SEMICOLON" */,-117 , 25/* "COLON" */,-117 , 26/* "EQUALS" */,-117 , 27/* "LTSLASH" */,-117 , 28/* "SLASH" */,-117 , 29/* "LT" */,-117 , 30/* "GT" */,-117 , 33/* "IDENTIFIER" */,-117 ),
+	/* State 47 */ new Array( 32/* "QUOTE" */,-118 , 31/* "DASH" */,-118 , 2/* "TEXTNODE" */,-118 , 4/* "WTEMPLATE" */,-118 , 5/* "WACTION" */,-118 , 6/* "WSTATE" */,-118 , 7/* "WCREATE" */,-118 , 8/* "WADD" */,-118 , 9/* "WEXTRACT" */,-118 , 10/* "WREMOVE" */,-118 , 11/* "WSTYLE" */,-118 , 12/* "WAS" */,-118 , 13/* "WIF" */,-118 , 14/* "WELSE" */,-118 , 15/* "FEACH" */,-118 , 16/* "FCALL" */,-118 , 17/* "FON" */,-118 , 18/* "FTRIGGER" */,-118 , 19/* "LBRACKET" */,-118 , 20/* "RBRACKET" */,-118 , 21/* "LPAREN" */,-118 , 22/* "RPAREN" */,-118 , 23/* "COMMA" */,-118 , 24/* "SEMICOLON" */,-118 , 25/* "COLON" */,-118 , 26/* "EQUALS" */,-118 , 27/* "LTSLASH" */,-118 , 28/* "SLASH" */,-118 , 29/* "LT" */,-118 , 30/* "GT" */,-118 , 33/* "IDENTIFIER" */,-118 ),
+	/* State 48 */ new Array( 32/* "QUOTE" */,-119 , 31/* "DASH" */,-119 , 2/* "TEXTNODE" */,-119 , 4/* "WTEMPLATE" */,-119 , 5/* "WACTION" */,-119 , 6/* "WSTATE" */,-119 , 7/* "WCREATE" */,-119 , 8/* "WADD" */,-119 , 9/* "WEXTRACT" */,-119 , 10/* "WREMOVE" */,-119 , 11/* "WSTYLE" */,-119 , 12/* "WAS" */,-119 , 13/* "WIF" */,-119 , 14/* "WELSE" */,-119 , 15/* "FEACH" */,-119 , 16/* "FCALL" */,-119 , 17/* "FON" */,-119 , 18/* "FTRIGGER" */,-119 , 19/* "LBRACKET" */,-119 , 20/* "RBRACKET" */,-119 , 21/* "LPAREN" */,-119 , 22/* "RPAREN" */,-119 , 23/* "COMMA" */,-119 , 24/* "SEMICOLON" */,-119 , 25/* "COLON" */,-119 , 26/* "EQUALS" */,-119 , 27/* "LTSLASH" */,-119 , 28/* "SLASH" */,-119 , 29/* "LT" */,-119 , 30/* "GT" */,-119 , 33/* "IDENTIFIER" */,-119 ),
+	/* State 49 */ new Array( 32/* "QUOTE" */,-120 , 31/* "DASH" */,-120 , 2/* "TEXTNODE" */,-120 , 4/* "WTEMPLATE" */,-120 , 5/* "WACTION" */,-120 , 6/* "WSTATE" */,-120 , 7/* "WCREATE" */,-120 , 8/* "WADD" */,-120 , 9/* "WEXTRACT" */,-120 , 10/* "WREMOVE" */,-120 , 11/* "WSTYLE" */,-120 , 12/* "WAS" */,-120 , 13/* "WIF" */,-120 , 14/* "WELSE" */,-120 , 15/* "FEACH" */,-120 , 16/* "FCALL" */,-120 , 17/* "FON" */,-120 , 18/* "FTRIGGER" */,-120 , 19/* "LBRACKET" */,-120 , 20/* "RBRACKET" */,-120 , 21/* "LPAREN" */,-120 , 22/* "RPAREN" */,-120 , 23/* "COMMA" */,-120 , 24/* "SEMICOLON" */,-120 , 25/* "COLON" */,-120 , 26/* "EQUALS" */,-120 , 27/* "LTSLASH" */,-120 , 28/* "SLASH" */,-120 , 29/* "LT" */,-120 , 30/* "GT" */,-120 , 33/* "IDENTIFIER" */,-120 ),
+	/* State 50 */ new Array( 32/* "QUOTE" */,-121 , 31/* "DASH" */,-121 , 2/* "TEXTNODE" */,-121 , 4/* "WTEMPLATE" */,-121 , 5/* "WACTION" */,-121 , 6/* "WSTATE" */,-121 , 7/* "WCREATE" */,-121 , 8/* "WADD" */,-121 , 9/* "WEXTRACT" */,-121 , 10/* "WREMOVE" */,-121 , 11/* "WSTYLE" */,-121 , 12/* "WAS" */,-121 , 13/* "WIF" */,-121 , 14/* "WELSE" */,-121 , 15/* "FEACH" */,-121 , 16/* "FCALL" */,-121 , 17/* "FON" */,-121 , 18/* "FTRIGGER" */,-121 , 19/* "LBRACKET" */,-121 , 20/* "RBRACKET" */,-121 , 21/* "LPAREN" */,-121 , 22/* "RPAREN" */,-121 , 23/* "COMMA" */,-121 , 24/* "SEMICOLON" */,-121 , 25/* "COLON" */,-121 , 26/* "EQUALS" */,-121 , 27/* "LTSLASH" */,-121 , 28/* "SLASH" */,-121 , 29/* "LT" */,-121 , 30/* "GT" */,-121 , 33/* "IDENTIFIER" */,-121 ),
+	/* State 51 */ new Array( 32/* "QUOTE" */,-122 , 31/* "DASH" */,-122 , 2/* "TEXTNODE" */,-122 , 4/* "WTEMPLATE" */,-122 , 5/* "WACTION" */,-122 , 6/* "WSTATE" */,-122 , 7/* "WCREATE" */,-122 , 8/* "WADD" */,-122 , 9/* "WEXTRACT" */,-122 , 10/* "WREMOVE" */,-122 , 11/* "WSTYLE" */,-122 , 12/* "WAS" */,-122 , 13/* "WIF" */,-122 , 14/* "WELSE" */,-122 , 15/* "FEACH" */,-122 , 16/* "FCALL" */,-122 , 17/* "FON" */,-122 , 18/* "FTRIGGER" */,-122 , 19/* "LBRACKET" */,-122 , 20/* "RBRACKET" */,-122 , 21/* "LPAREN" */,-122 , 22/* "RPAREN" */,-122 , 23/* "COMMA" */,-122 , 24/* "SEMICOLON" */,-122 , 25/* "COLON" */,-122 , 26/* "EQUALS" */,-122 , 27/* "LTSLASH" */,-122 , 28/* "SLASH" */,-122 , 29/* "LT" */,-122 , 30/* "GT" */,-122 , 33/* "IDENTIFIER" */,-122 ),
+	/* State 52 */ new Array( 32/* "QUOTE" */,-123 , 31/* "DASH" */,-123 , 2/* "TEXTNODE" */,-123 , 4/* "WTEMPLATE" */,-123 , 5/* "WACTION" */,-123 , 6/* "WSTATE" */,-123 , 7/* "WCREATE" */,-123 , 8/* "WADD" */,-123 , 9/* "WEXTRACT" */,-123 , 10/* "WREMOVE" */,-123 , 11/* "WSTYLE" */,-123 , 12/* "WAS" */,-123 , 13/* "WIF" */,-123 , 14/* "WELSE" */,-123 , 15/* "FEACH" */,-123 , 16/* "FCALL" */,-123 , 17/* "FON" */,-123 , 18/* "FTRIGGER" */,-123 , 19/* "LBRACKET" */,-123 , 20/* "RBRACKET" */,-123 , 21/* "LPAREN" */,-123 , 22/* "RPAREN" */,-123 , 23/* "COMMA" */,-123 , 24/* "SEMICOLON" */,-123 , 25/* "COLON" */,-123 , 26/* "EQUALS" */,-123 , 27/* "LTSLASH" */,-123 , 28/* "SLASH" */,-123 , 29/* "LT" */,-123 , 30/* "GT" */,-123 , 33/* "IDENTIFIER" */,-123 ),
+	/* State 53 */ new Array( 32/* "QUOTE" */,-124 , 31/* "DASH" */,-124 , 2/* "TEXTNODE" */,-124 , 4/* "WTEMPLATE" */,-124 , 5/* "WACTION" */,-124 , 6/* "WSTATE" */,-124 , 7/* "WCREATE" */,-124 , 8/* "WADD" */,-124 , 9/* "WEXTRACT" */,-124 , 10/* "WREMOVE" */,-124 , 11/* "WSTYLE" */,-124 , 12/* "WAS" */,-124 , 13/* "WIF" */,-124 , 14/* "WELSE" */,-124 , 15/* "FEACH" */,-124 , 16/* "FCALL" */,-124 , 17/* "FON" */,-124 , 18/* "FTRIGGER" */,-124 , 19/* "LBRACKET" */,-124 , 20/* "RBRACKET" */,-124 , 21/* "LPAREN" */,-124 , 22/* "RPAREN" */,-124 , 23/* "COMMA" */,-124 , 24/* "SEMICOLON" */,-124 , 25/* "COLON" */,-124 , 26/* "EQUALS" */,-124 , 27/* "LTSLASH" */,-124 , 28/* "SLASH" */,-124 , 29/* "LT" */,-124 , 30/* "GT" */,-124 , 33/* "IDENTIFIER" */,-124 ),
+	/* State 54 */ new Array( 32/* "QUOTE" */,-125 , 31/* "DASH" */,-125 , 2/* "TEXTNODE" */,-125 , 4/* "WTEMPLATE" */,-125 , 5/* "WACTION" */,-125 , 6/* "WSTATE" */,-125 , 7/* "WCREATE" */,-125 , 8/* "WADD" */,-125 , 9/* "WEXTRACT" */,-125 , 10/* "WREMOVE" */,-125 , 11/* "WSTYLE" */,-125 , 12/* "WAS" */,-125 , 13/* "WIF" */,-125 , 14/* "WELSE" */,-125 , 15/* "FEACH" */,-125 , 16/* "FCALL" */,-125 , 17/* "FON" */,-125 , 18/* "FTRIGGER" */,-125 , 19/* "LBRACKET" */,-125 , 20/* "RBRACKET" */,-125 , 21/* "LPAREN" */,-125 , 22/* "RPAREN" */,-125 , 23/* "COMMA" */,-125 , 24/* "SEMICOLON" */,-125 , 25/* "COLON" */,-125 , 26/* "EQUALS" */,-125 , 27/* "LTSLASH" */,-125 , 28/* "SLASH" */,-125 , 29/* "LT" */,-125 , 30/* "GT" */,-125 , 33/* "IDENTIFIER" */,-125 ),
+	/* State 55 */ new Array( 32/* "QUOTE" */,-129 , 31/* "DASH" */,-129 , 2/* "TEXTNODE" */,-129 , 4/* "WTEMPLATE" */,-129 , 5/* "WACTION" */,-129 , 6/* "WSTATE" */,-129 , 7/* "WCREATE" */,-129 , 8/* "WADD" */,-129 , 9/* "WEXTRACT" */,-129 , 10/* "WREMOVE" */,-129 , 11/* "WSTYLE" */,-129 , 12/* "WAS" */,-129 , 13/* "WIF" */,-129 , 14/* "WELSE" */,-129 , 15/* "FEACH" */,-129 , 16/* "FCALL" */,-129 , 17/* "FON" */,-129 , 18/* "FTRIGGER" */,-129 , 19/* "LBRACKET" */,-129 , 20/* "RBRACKET" */,-129 , 21/* "LPAREN" */,-129 , 22/* "RPAREN" */,-129 , 23/* "COMMA" */,-129 , 24/* "SEMICOLON" */,-129 , 25/* "COLON" */,-129 , 26/* "EQUALS" */,-129 , 27/* "LTSLASH" */,-129 , 28/* "SLASH" */,-129 , 29/* "LT" */,-129 , 30/* "GT" */,-129 , 33/* "IDENTIFIER" */,-129 ),
+	/* State 56 */ new Array( 32/* "QUOTE" */,-130 , 31/* "DASH" */,-130 , 2/* "TEXTNODE" */,-130 , 4/* "WTEMPLATE" */,-130 , 5/* "WACTION" */,-130 , 6/* "WSTATE" */,-130 , 7/* "WCREATE" */,-130 , 8/* "WADD" */,-130 , 9/* "WEXTRACT" */,-130 , 10/* "WREMOVE" */,-130 , 11/* "WSTYLE" */,-130 , 12/* "WAS" */,-130 , 13/* "WIF" */,-130 , 14/* "WELSE" */,-130 , 15/* "FEACH" */,-130 , 16/* "FCALL" */,-130 , 17/* "FON" */,-130 , 18/* "FTRIGGER" */,-130 , 19/* "LBRACKET" */,-130 , 20/* "RBRACKET" */,-130 , 21/* "LPAREN" */,-130 , 22/* "RPAREN" */,-130 , 23/* "COMMA" */,-130 , 24/* "SEMICOLON" */,-130 , 25/* "COLON" */,-130 , 26/* "EQUALS" */,-130 , 27/* "LTSLASH" */,-130 , 28/* "SLASH" */,-130 , 29/* "LT" */,-130 , 30/* "GT" */,-130 , 33/* "IDENTIFIER" */,-130 ),
+	/* State 57 */ new Array( 32/* "QUOTE" */,-131 , 31/* "DASH" */,-131 , 2/* "TEXTNODE" */,-131 , 4/* "WTEMPLATE" */,-131 , 5/* "WACTION" */,-131 , 6/* "WSTATE" */,-131 , 7/* "WCREATE" */,-131 , 8/* "WADD" */,-131 , 9/* "WEXTRACT" */,-131 , 10/* "WREMOVE" */,-131 , 11/* "WSTYLE" */,-131 , 12/* "WAS" */,-131 , 13/* "WIF" */,-131 , 14/* "WELSE" */,-131 , 15/* "FEACH" */,-131 , 16/* "FCALL" */,-131 , 17/* "FON" */,-131 , 18/* "FTRIGGER" */,-131 , 19/* "LBRACKET" */,-131 , 20/* "RBRACKET" */,-131 , 21/* "LPAREN" */,-131 , 22/* "RPAREN" */,-131 , 23/* "COMMA" */,-131 , 24/* "SEMICOLON" */,-131 , 25/* "COLON" */,-131 , 26/* "EQUALS" */,-131 , 27/* "LTSLASH" */,-131 , 28/* "SLASH" */,-131 , 29/* "LT" */,-131 , 30/* "GT" */,-131 , 33/* "IDENTIFIER" */,-131 ),
+	/* State 58 */ new Array( 32/* "QUOTE" */,-132 , 31/* "DASH" */,-132 , 2/* "TEXTNODE" */,-132 , 4/* "WTEMPLATE" */,-132 , 5/* "WACTION" */,-132 , 6/* "WSTATE" */,-132 , 7/* "WCREATE" */,-132 , 8/* "WADD" */,-132 , 9/* "WEXTRACT" */,-132 , 10/* "WREMOVE" */,-132 , 11/* "WSTYLE" */,-132 , 12/* "WAS" */,-132 , 13/* "WIF" */,-132 , 14/* "WELSE" */,-132 , 15/* "FEACH" */,-132 , 16/* "FCALL" */,-132 , 17/* "FON" */,-132 , 18/* "FTRIGGER" */,-132 , 19/* "LBRACKET" */,-132 , 20/* "RBRACKET" */,-132 , 21/* "LPAREN" */,-132 , 22/* "RPAREN" */,-132 , 23/* "COMMA" */,-132 , 24/* "SEMICOLON" */,-132 , 25/* "COLON" */,-132 , 26/* "EQUALS" */,-132 , 27/* "LTSLASH" */,-132 , 28/* "SLASH" */,-132 , 29/* "LT" */,-132 , 30/* "GT" */,-132 , 33/* "IDENTIFIER" */,-132 ),
+	/* State 59 */ new Array( 32/* "QUOTE" */,-133 , 31/* "DASH" */,-133 , 2/* "TEXTNODE" */,-133 , 4/* "WTEMPLATE" */,-133 , 5/* "WACTION" */,-133 , 6/* "WSTATE" */,-133 , 7/* "WCREATE" */,-133 , 8/* "WADD" */,-133 , 9/* "WEXTRACT" */,-133 , 10/* "WREMOVE" */,-133 , 11/* "WSTYLE" */,-133 , 12/* "WAS" */,-133 , 13/* "WIF" */,-133 , 14/* "WELSE" */,-133 , 15/* "FEACH" */,-133 , 16/* "FCALL" */,-133 , 17/* "FON" */,-133 , 18/* "FTRIGGER" */,-133 , 19/* "LBRACKET" */,-133 , 20/* "RBRACKET" */,-133 , 21/* "LPAREN" */,-133 , 22/* "RPAREN" */,-133 , 23/* "COMMA" */,-133 , 24/* "SEMICOLON" */,-133 , 25/* "COLON" */,-133 , 26/* "EQUALS" */,-133 , 27/* "LTSLASH" */,-133 , 28/* "SLASH" */,-133 , 29/* "LT" */,-133 , 30/* "GT" */,-133 , 33/* "IDENTIFIER" */,-133 ),
+	/* State 60 */ new Array( 32/* "QUOTE" */,-134 , 31/* "DASH" */,-134 , 2/* "TEXTNODE" */,-134 , 4/* "WTEMPLATE" */,-134 , 5/* "WACTION" */,-134 , 6/* "WSTATE" */,-134 , 7/* "WCREATE" */,-134 , 8/* "WADD" */,-134 , 9/* "WEXTRACT" */,-134 , 10/* "WREMOVE" */,-134 , 11/* "WSTYLE" */,-134 , 12/* "WAS" */,-134 , 13/* "WIF" */,-134 , 14/* "WELSE" */,-134 , 15/* "FEACH" */,-134 , 16/* "FCALL" */,-134 , 17/* "FON" */,-134 , 18/* "FTRIGGER" */,-134 , 19/* "LBRACKET" */,-134 , 20/* "RBRACKET" */,-134 , 21/* "LPAREN" */,-134 , 22/* "RPAREN" */,-134 , 23/* "COMMA" */,-134 , 24/* "SEMICOLON" */,-134 , 25/* "COLON" */,-134 , 26/* "EQUALS" */,-134 , 27/* "LTSLASH" */,-134 , 28/* "SLASH" */,-134 , 29/* "LT" */,-134 , 30/* "GT" */,-134 , 33/* "IDENTIFIER" */,-134 ),
+	/* State 61 */ new Array( 32/* "QUOTE" */,-135 , 31/* "DASH" */,-135 , 2/* "TEXTNODE" */,-135 , 4/* "WTEMPLATE" */,-135 , 5/* "WACTION" */,-135 , 6/* "WSTATE" */,-135 , 7/* "WCREATE" */,-135 , 8/* "WADD" */,-135 , 9/* "WEXTRACT" */,-135 , 10/* "WREMOVE" */,-135 , 11/* "WSTYLE" */,-135 , 12/* "WAS" */,-135 , 13/* "WIF" */,-135 , 14/* "WELSE" */,-135 , 15/* "FEACH" */,-135 , 16/* "FCALL" */,-135 , 17/* "FON" */,-135 , 18/* "FTRIGGER" */,-135 , 19/* "LBRACKET" */,-135 , 20/* "RBRACKET" */,-135 , 21/* "LPAREN" */,-135 , 22/* "RPAREN" */,-135 , 23/* "COMMA" */,-135 , 24/* "SEMICOLON" */,-135 , 25/* "COLON" */,-135 , 26/* "EQUALS" */,-135 , 27/* "LTSLASH" */,-135 , 28/* "SLASH" */,-135 , 29/* "LT" */,-135 , 30/* "GT" */,-135 , 33/* "IDENTIFIER" */,-135 ),
+	/* State 62 */ new Array( 32/* "QUOTE" */,-136 , 31/* "DASH" */,-136 , 2/* "TEXTNODE" */,-136 , 4/* "WTEMPLATE" */,-136 , 5/* "WACTION" */,-136 , 6/* "WSTATE" */,-136 , 7/* "WCREATE" */,-136 , 8/* "WADD" */,-136 , 9/* "WEXTRACT" */,-136 , 10/* "WREMOVE" */,-136 , 11/* "WSTYLE" */,-136 , 12/* "WAS" */,-136 , 13/* "WIF" */,-136 , 14/* "WELSE" */,-136 , 15/* "FEACH" */,-136 , 16/* "FCALL" */,-136 , 17/* "FON" */,-136 , 18/* "FTRIGGER" */,-136 , 19/* "LBRACKET" */,-136 , 20/* "RBRACKET" */,-136 , 21/* "LPAREN" */,-136 , 22/* "RPAREN" */,-136 , 23/* "COMMA" */,-136 , 24/* "SEMICOLON" */,-136 , 25/* "COLON" */,-136 , 26/* "EQUALS" */,-136 , 27/* "LTSLASH" */,-136 , 28/* "SLASH" */,-136 , 29/* "LT" */,-136 , 30/* "GT" */,-136 , 33/* "IDENTIFIER" */,-136 ),
+	/* State 63 */ new Array( 32/* "QUOTE" */,-137 , 31/* "DASH" */,-137 , 2/* "TEXTNODE" */,-137 , 4/* "WTEMPLATE" */,-137 , 5/* "WACTION" */,-137 , 6/* "WSTATE" */,-137 , 7/* "WCREATE" */,-137 , 8/* "WADD" */,-137 , 9/* "WEXTRACT" */,-137 , 10/* "WREMOVE" */,-137 , 11/* "WSTYLE" */,-137 , 12/* "WAS" */,-137 , 13/* "WIF" */,-137 , 14/* "WELSE" */,-137 , 15/* "FEACH" */,-137 , 16/* "FCALL" */,-137 , 17/* "FON" */,-137 , 18/* "FTRIGGER" */,-137 , 19/* "LBRACKET" */,-137 , 20/* "RBRACKET" */,-137 , 21/* "LPAREN" */,-137 , 22/* "RPAREN" */,-137 , 23/* "COMMA" */,-137 , 24/* "SEMICOLON" */,-137 , 25/* "COLON" */,-137 , 26/* "EQUALS" */,-137 , 27/* "LTSLASH" */,-137 , 28/* "SLASH" */,-137 , 29/* "LT" */,-137 , 30/* "GT" */,-137 , 33/* "IDENTIFIER" */,-137 ),
+	/* State 64 */ new Array( 32/* "QUOTE" */,-138 , 31/* "DASH" */,-138 , 2/* "TEXTNODE" */,-138 , 4/* "WTEMPLATE" */,-138 , 5/* "WACTION" */,-138 , 6/* "WSTATE" */,-138 , 7/* "WCREATE" */,-138 , 8/* "WADD" */,-138 , 9/* "WEXTRACT" */,-138 , 10/* "WREMOVE" */,-138 , 11/* "WSTYLE" */,-138 , 12/* "WAS" */,-138 , 13/* "WIF" */,-138 , 14/* "WELSE" */,-138 , 15/* "FEACH" */,-138 , 16/* "FCALL" */,-138 , 17/* "FON" */,-138 , 18/* "FTRIGGER" */,-138 , 19/* "LBRACKET" */,-138 , 20/* "RBRACKET" */,-138 , 21/* "LPAREN" */,-138 , 22/* "RPAREN" */,-138 , 23/* "COMMA" */,-138 , 24/* "SEMICOLON" */,-138 , 25/* "COLON" */,-138 , 26/* "EQUALS" */,-138 , 27/* "LTSLASH" */,-138 , 28/* "SLASH" */,-138 , 29/* "LT" */,-138 , 30/* "GT" */,-138 , 33/* "IDENTIFIER" */,-138 ),
+	/* State 65 */ new Array( 32/* "QUOTE" */,-139 , 31/* "DASH" */,-139 , 2/* "TEXTNODE" */,-139 , 4/* "WTEMPLATE" */,-139 , 5/* "WACTION" */,-139 , 6/* "WSTATE" */,-139 , 7/* "WCREATE" */,-139 , 8/* "WADD" */,-139 , 9/* "WEXTRACT" */,-139 , 10/* "WREMOVE" */,-139 , 11/* "WSTYLE" */,-139 , 12/* "WAS" */,-139 , 13/* "WIF" */,-139 , 14/* "WELSE" */,-139 , 15/* "FEACH" */,-139 , 16/* "FCALL" */,-139 , 17/* "FON" */,-139 , 18/* "FTRIGGER" */,-139 , 19/* "LBRACKET" */,-139 , 20/* "RBRACKET" */,-139 , 21/* "LPAREN" */,-139 , 22/* "RPAREN" */,-139 , 23/* "COMMA" */,-139 , 24/* "SEMICOLON" */,-139 , 25/* "COLON" */,-139 , 26/* "EQUALS" */,-139 , 27/* "LTSLASH" */,-139 , 28/* "SLASH" */,-139 , 29/* "LT" */,-139 , 30/* "GT" */,-139 , 33/* "IDENTIFIER" */,-139 ),
+	/* State 66 */ new Array( 32/* "QUOTE" */,-140 , 31/* "DASH" */,-140 , 2/* "TEXTNODE" */,-140 , 4/* "WTEMPLATE" */,-140 , 5/* "WACTION" */,-140 , 6/* "WSTATE" */,-140 , 7/* "WCREATE" */,-140 , 8/* "WADD" */,-140 , 9/* "WEXTRACT" */,-140 , 10/* "WREMOVE" */,-140 , 11/* "WSTYLE" */,-140 , 12/* "WAS" */,-140 , 13/* "WIF" */,-140 , 14/* "WELSE" */,-140 , 15/* "FEACH" */,-140 , 16/* "FCALL" */,-140 , 17/* "FON" */,-140 , 18/* "FTRIGGER" */,-140 , 19/* "LBRACKET" */,-140 , 20/* "RBRACKET" */,-140 , 21/* "LPAREN" */,-140 , 22/* "RPAREN" */,-140 , 23/* "COMMA" */,-140 , 24/* "SEMICOLON" */,-140 , 25/* "COLON" */,-140 , 26/* "EQUALS" */,-140 , 27/* "LTSLASH" */,-140 , 28/* "SLASH" */,-140 , 29/* "LT" */,-140 , 30/* "GT" */,-140 , 33/* "IDENTIFIER" */,-140 ),
+	/* State 67 */ new Array( 32/* "QUOTE" */,-141 , 31/* "DASH" */,-141 , 2/* "TEXTNODE" */,-141 , 4/* "WTEMPLATE" */,-141 , 5/* "WACTION" */,-141 , 6/* "WSTATE" */,-141 , 7/* "WCREATE" */,-141 , 8/* "WADD" */,-141 , 9/* "WEXTRACT" */,-141 , 10/* "WREMOVE" */,-141 , 11/* "WSTYLE" */,-141 , 12/* "WAS" */,-141 , 13/* "WIF" */,-141 , 14/* "WELSE" */,-141 , 15/* "FEACH" */,-141 , 16/* "FCALL" */,-141 , 17/* "FON" */,-141 , 18/* "FTRIGGER" */,-141 , 19/* "LBRACKET" */,-141 , 20/* "RBRACKET" */,-141 , 21/* "LPAREN" */,-141 , 22/* "RPAREN" */,-141 , 23/* "COMMA" */,-141 , 24/* "SEMICOLON" */,-141 , 25/* "COLON" */,-141 , 26/* "EQUALS" */,-141 , 27/* "LTSLASH" */,-141 , 28/* "SLASH" */,-141 , 29/* "LT" */,-141 , 30/* "GT" */,-141 , 33/* "IDENTIFIER" */,-141 ),
+	/* State 68 */ new Array( 32/* "QUOTE" */,-142 , 31/* "DASH" */,-142 , 2/* "TEXTNODE" */,-142 , 4/* "WTEMPLATE" */,-142 , 5/* "WACTION" */,-142 , 6/* "WSTATE" */,-142 , 7/* "WCREATE" */,-142 , 8/* "WADD" */,-142 , 9/* "WEXTRACT" */,-142 , 10/* "WREMOVE" */,-142 , 11/* "WSTYLE" */,-142 , 12/* "WAS" */,-142 , 13/* "WIF" */,-142 , 14/* "WELSE" */,-142 , 15/* "FEACH" */,-142 , 16/* "FCALL" */,-142 , 17/* "FON" */,-142 , 18/* "FTRIGGER" */,-142 , 19/* "LBRACKET" */,-142 , 20/* "RBRACKET" */,-142 , 21/* "LPAREN" */,-142 , 22/* "RPAREN" */,-142 , 23/* "COMMA" */,-142 , 24/* "SEMICOLON" */,-142 , 25/* "COLON" */,-142 , 26/* "EQUALS" */,-142 , 27/* "LTSLASH" */,-142 , 28/* "SLASH" */,-142 , 29/* "LT" */,-142 , 30/* "GT" */,-142 , 33/* "IDENTIFIER" */,-142 ),
+	/* State 69 */ new Array( 32/* "QUOTE" */,-143 , 31/* "DASH" */,-143 , 2/* "TEXTNODE" */,-143 , 4/* "WTEMPLATE" */,-143 , 5/* "WACTION" */,-143 , 6/* "WSTATE" */,-143 , 7/* "WCREATE" */,-143 , 8/* "WADD" */,-143 , 9/* "WEXTRACT" */,-143 , 10/* "WREMOVE" */,-143 , 11/* "WSTYLE" */,-143 , 12/* "WAS" */,-143 , 13/* "WIF" */,-143 , 14/* "WELSE" */,-143 , 15/* "FEACH" */,-143 , 16/* "FCALL" */,-143 , 17/* "FON" */,-143 , 18/* "FTRIGGER" */,-143 , 19/* "LBRACKET" */,-143 , 20/* "RBRACKET" */,-143 , 21/* "LPAREN" */,-143 , 22/* "RPAREN" */,-143 , 23/* "COMMA" */,-143 , 24/* "SEMICOLON" */,-143 , 25/* "COLON" */,-143 , 26/* "EQUALS" */,-143 , 27/* "LTSLASH" */,-143 , 28/* "SLASH" */,-143 , 29/* "LT" */,-143 , 30/* "GT" */,-143 , 33/* "IDENTIFIER" */,-143 ),
+	/* State 70 */ new Array( 32/* "QUOTE" */,-144 , 31/* "DASH" */,-144 , 2/* "TEXTNODE" */,-144 , 4/* "WTEMPLATE" */,-144 , 5/* "WACTION" */,-144 , 6/* "WSTATE" */,-144 , 7/* "WCREATE" */,-144 , 8/* "WADD" */,-144 , 9/* "WEXTRACT" */,-144 , 10/* "WREMOVE" */,-144 , 11/* "WSTYLE" */,-144 , 12/* "WAS" */,-144 , 13/* "WIF" */,-144 , 14/* "WELSE" */,-144 , 15/* "FEACH" */,-144 , 16/* "FCALL" */,-144 , 17/* "FON" */,-144 , 18/* "FTRIGGER" */,-144 , 19/* "LBRACKET" */,-144 , 20/* "RBRACKET" */,-144 , 21/* "LPAREN" */,-144 , 22/* "RPAREN" */,-144 , 23/* "COMMA" */,-144 , 24/* "SEMICOLON" */,-144 , 25/* "COLON" */,-144 , 26/* "EQUALS" */,-144 , 27/* "LTSLASH" */,-144 , 28/* "SLASH" */,-144 , 29/* "LT" */,-144 , 30/* "GT" */,-144 , 33/* "IDENTIFIER" */,-144 ),
 	/* State 71 */ new Array( 28/* "SLASH" */,-89 , 30/* "GT" */,-89 , 11/* "WSTYLE" */,-89 , 33/* "IDENTIFIER" */,-89 , 2/* "TEXTNODE" */,-89 , 4/* "WTEMPLATE" */,-89 , 5/* "WACTION" */,-89 , 6/* "WSTATE" */,-89 , 7/* "WCREATE" */,-89 , 8/* "WADD" */,-89 , 9/* "WEXTRACT" */,-89 , 10/* "WREMOVE" */,-89 , 12/* "WAS" */,-89 , 13/* "WIF" */,-89 , 14/* "WELSE" */,-89 , 15/* "FEACH" */,-89 , 16/* "FCALL" */,-89 , 17/* "FON" */,-89 , 18/* "FTRIGGER" */,-89 ),
 	/* State 72 */ new Array( 30/* "GT" */,99 ),
 	/* State 73 */ new Array( 33/* "IDENTIFIER" */,100 ),
@@ -1395,9 +1396,9 @@ var act_tab = new Array(
 	/* State 92 */ new Array( 33/* "IDENTIFIER" */,137 ),
 	/* State 93 */ new Array( 80/* "$" */,-64 , 33/* "IDENTIFIER" */,-64 , 21/* "LPAREN" */,-64 , 31/* "DASH" */,-64 , 32/* "QUOTE" */,-64 , 12/* "WAS" */,-64 , 22/* "RPAREN" */,-64 , 20/* "RBRACKET" */,-64 , 23/* "COMMA" */,-64 , 30/* "GT" */,-64 , 27/* "LTSLASH" */,-64 ),
 	/* State 94 */ new Array( 80/* "$" */,-62 , 33/* "IDENTIFIER" */,-62 , 21/* "LPAREN" */,-62 , 31/* "DASH" */,-62 , 32/* "QUOTE" */,-62 , 12/* "WAS" */,-62 , 22/* "RPAREN" */,-62 , 20/* "RBRACKET" */,-62 , 23/* "COMMA" */,-62 , 30/* "GT" */,-62 , 27/* "LTSLASH" */,-62 ),
-	/* State 95 */ new Array( 31/* "DASH" */,96 , 19/* "LBRACKET" */,42 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-126 ),
-	/* State 96 */ new Array( 19/* "LBRACKET" */,42 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-127 , 31/* "DASH" */,-127 ),
-	/* State 97 */ new Array( 80/* "$" */,-144 , 33/* "IDENTIFIER" */,-144 , 21/* "LPAREN" */,-144 , 31/* "DASH" */,-144 , 32/* "QUOTE" */,-144 , 12/* "WAS" */,-144 , 22/* "RPAREN" */,-144 , 20/* "RBRACKET" */,-144 , 23/* "COMMA" */,-144 , 30/* "GT" */,-144 , 27/* "LTSLASH" */,-144 ),
+	/* State 95 */ new Array( 31/* "DASH" */,96 , 19/* "LBRACKET" */,42 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-127 ),
+	/* State 96 */ new Array( 19/* "LBRACKET" */,42 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-128 , 31/* "DASH" */,-128 ),
+	/* State 97 */ new Array( 80/* "$" */,-145 , 33/* "IDENTIFIER" */,-145 , 21/* "LPAREN" */,-145 , 31/* "DASH" */,-145 , 32/* "QUOTE" */,-145 , 12/* "WAS" */,-145 , 22/* "RPAREN" */,-145 , 20/* "RBRACKET" */,-145 , 23/* "COMMA" */,-145 , 30/* "GT" */,-145 , 27/* "LTSLASH" */,-145 ),
 	/* State 98 */ new Array( 28/* "SLASH" */,140 , 30/* "GT" */,141 , 11/* "WSTYLE" */,142 , 33/* "IDENTIFIER" */,144 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 ),
 	/* State 99 */ new Array( 3/* "JSFUN" */,-20 , 4/* "WTEMPLATE" */,-20 , 6/* "WSTATE" */,-20 , 19/* "LBRACKET" */,-20 , 13/* "WIF" */,-20 , 5/* "WACTION" */,-20 , 33/* "IDENTIFIER" */,-20 , 21/* "LPAREN" */,-20 , 31/* "DASH" */,-20 , 2/* "TEXTNODE" */,-20 , 32/* "QUOTE" */,-20 , 29/* "LT" */,-20 ),
 	/* State 100 */ new Array( 30/* "GT" */,147 ),
@@ -1438,11 +1439,11 @@ var act_tab = new Array(
 	/* State 135 */ new Array( 23/* "COMMA" */,165 , 19/* "LBRACKET" */,-84 , 30/* "GT" */,-84 ),
 	/* State 136 */ new Array( 19/* "LBRACKET" */,166 ),
 	/* State 137 */ new Array( 80/* "$" */,-63 , 33/* "IDENTIFIER" */,-63 , 21/* "LPAREN" */,-63 , 31/* "DASH" */,-63 , 32/* "QUOTE" */,-63 , 12/* "WAS" */,-63 , 22/* "RPAREN" */,-63 , 20/* "RBRACKET" */,-63 , 23/* "COMMA" */,-63 , 30/* "GT" */,-63 , 27/* "LTSLASH" */,-63 ),
-	/* State 138 */ new Array( 31/* "DASH" */,96 , 19/* "LBRACKET" */,42 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-125 ),
+	/* State 138 */ new Array( 31/* "DASH" */,96 , 19/* "LBRACKET" */,42 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-126 ),
 	/* State 139 */ new Array( 28/* "SLASH" */,-88 , 30/* "GT" */,-88 , 11/* "WSTYLE" */,-88 , 33/* "IDENTIFIER" */,-88 , 2/* "TEXTNODE" */,-88 , 4/* "WTEMPLATE" */,-88 , 5/* "WACTION" */,-88 , 6/* "WSTATE" */,-88 , 7/* "WCREATE" */,-88 , 8/* "WADD" */,-88 , 9/* "WEXTRACT" */,-88 , 10/* "WREMOVE" */,-88 , 12/* "WAS" */,-88 , 13/* "WIF" */,-88 , 14/* "WELSE" */,-88 , 15/* "FEACH" */,-88 , 16/* "FCALL" */,-88 , 17/* "FON" */,-88 , 18/* "FTRIGGER" */,-88 ),
 	/* State 140 */ new Array( 30/* "GT" */,167 ),
 	/* State 141 */ new Array( 27/* "LTSLASH" */,-87 , 2/* "TEXTNODE" */,-87 , 29/* "LT" */,-87 ),
-	/* State 142 */ new Array( 26/* "EQUALS" */,169 , 31/* "DASH" */,-136 ),
+	/* State 142 */ new Array( 26/* "EQUALS" */,169 , 31/* "DASH" */,-137 ),
 	/* State 143 */ new Array( 31/* "DASH" */,170 , 26/* "EQUALS" */,171 ),
 	/* State 144 */ new Array( 26/* "EQUALS" */,-92 , 31/* "DASH" */,-92 , 25/* "COLON" */,-92 ),
 	/* State 145 */ new Array( 26/* "EQUALS" */,-93 , 31/* "DASH" */,-93 , 25/* "COLON" */,-93 ),
@@ -1493,11 +1494,11 @@ var act_tab = new Array(
 	/* State 190 */ new Array( 20/* "RBRACKET" */,214 ),
 	/* State 191 */ new Array( 27/* "LTSLASH" */,-86 , 2/* "TEXTNODE" */,-86 , 29/* "LT" */,-86 ),
 	/* State 192 */ new Array( 33/* "IDENTIFIER" */,76 ),
-	/* State 193 */ new Array( 33/* "IDENTIFIER" */,144 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-100 , 24/* "SEMICOLON" */,-100 ),
+	/* State 193 */ new Array( 33/* "IDENTIFIER" */,144 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-101 , 24/* "SEMICOLON" */,-101 ),
 	/* State 194 */ new Array( 26/* "EQUALS" */,-94 , 31/* "DASH" */,-94 , 25/* "COLON" */,-94 ),
 	/* State 195 */ new Array( 28/* "SLASH" */,-91 , 30/* "GT" */,-91 , 11/* "WSTYLE" */,-91 , 33/* "IDENTIFIER" */,-91 , 2/* "TEXTNODE" */,-91 , 4/* "WTEMPLATE" */,-91 , 5/* "WACTION" */,-91 , 6/* "WSTATE" */,-91 , 7/* "WCREATE" */,-91 , 8/* "WADD" */,-91 , 9/* "WEXTRACT" */,-91 , 10/* "WREMOVE" */,-91 , 12/* "WAS" */,-91 , 13/* "WIF" */,-91 , 14/* "WELSE" */,-91 , 15/* "FEACH" */,-91 , 16/* "FCALL" */,-91 , 17/* "FON" */,-91 , 18/* "FTRIGGER" */,-91 ),
 	/* State 196 */ new Array( 28/* "SLASH" */,-95 , 30/* "GT" */,-95 , 11/* "WSTYLE" */,-95 , 33/* "IDENTIFIER" */,-95 , 2/* "TEXTNODE" */,-95 , 4/* "WTEMPLATE" */,-95 , 5/* "WACTION" */,-95 , 6/* "WSTATE" */,-95 , 7/* "WCREATE" */,-95 , 8/* "WADD" */,-95 , 9/* "WEXTRACT" */,-95 , 10/* "WREMOVE" */,-95 , 12/* "WAS" */,-95 , 13/* "WIF" */,-95 , 14/* "WELSE" */,-95 , 15/* "FEACH" */,-95 , 16/* "FCALL" */,-95 , 17/* "FON" */,-95 , 18/* "FTRIGGER" */,-95 ),
-	/* State 197 */ new Array( 19/* "LBRACKET" */,221 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-127 , 31/* "DASH" */,-127 ),
+	/* State 197 */ new Array( 19/* "LBRACKET" */,221 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-128 , 31/* "DASH" */,-128 ),
 	/* State 198 */ new Array( 30/* "GT" */,222 ),
 	/* State 199 */ new Array( 17/* "FON" */,223 ),
 	/* State 200 */ new Array( 18/* "FTRIGGER" */,224 ),
@@ -1521,7 +1522,7 @@ var act_tab = new Array(
 	/* State 218 */ new Array( 31/* "DASH" */,170 , 25/* "COLON" */,237 ),
 	/* State 219 */ new Array( 31/* "DASH" */,96 , 32/* "QUOTE" */,238 , 19/* "LBRACKET" */,42 , 20/* "RBRACKET" */,43 , 21/* "LPAREN" */,44 , 22/* "RPAREN" */,45 , 23/* "COMMA" */,46 , 24/* "SEMICOLON" */,47 , 25/* "COLON" */,48 , 26/* "EQUALS" */,49 , 27/* "LTSLASH" */,50 , 28/* "SLASH" */,51 , 29/* "LT" */,52 , 30/* "GT" */,53 , 33/* "IDENTIFIER" */,54 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 ),
 	/* State 220 */ new Array( 32/* "QUOTE" */,239 ),
-	/* State 221 */ new Array( 33/* "IDENTIFIER" */,16 , 21/* "LPAREN" */,18 , 31/* "DASH" */,19 , 32/* "QUOTE" */,26 , 2/* "TEXTNODE" */,-112 , 4/* "WTEMPLATE" */,-112 , 5/* "WACTION" */,-112 , 6/* "WSTATE" */,-112 , 7/* "WCREATE" */,-112 , 8/* "WADD" */,-112 , 9/* "WEXTRACT" */,-112 , 10/* "WREMOVE" */,-112 , 11/* "WSTYLE" */,-112 , 12/* "WAS" */,-112 , 13/* "WIF" */,-112 , 14/* "WELSE" */,-112 , 15/* "FEACH" */,-112 , 16/* "FCALL" */,-112 , 17/* "FON" */,-112 , 18/* "FTRIGGER" */,-112 , 19/* "LBRACKET" */,-112 , 20/* "RBRACKET" */,-112 , 22/* "RPAREN" */,-112 , 23/* "COMMA" */,-112 , 24/* "SEMICOLON" */,-112 , 25/* "COLON" */,-112 , 26/* "EQUALS" */,-112 , 27/* "LTSLASH" */,-112 , 28/* "SLASH" */,-112 , 29/* "LT" */,-112 , 30/* "GT" */,-112 ),
+	/* State 221 */ new Array( 33/* "IDENTIFIER" */,16 , 21/* "LPAREN" */,18 , 31/* "DASH" */,19 , 32/* "QUOTE" */,26 , 2/* "TEXTNODE" */,-113 , 4/* "WTEMPLATE" */,-113 , 5/* "WACTION" */,-113 , 6/* "WSTATE" */,-113 , 7/* "WCREATE" */,-113 , 8/* "WADD" */,-113 , 9/* "WEXTRACT" */,-113 , 10/* "WREMOVE" */,-113 , 11/* "WSTYLE" */,-113 , 12/* "WAS" */,-113 , 13/* "WIF" */,-113 , 14/* "WELSE" */,-113 , 15/* "FEACH" */,-113 , 16/* "FCALL" */,-113 , 17/* "FON" */,-113 , 18/* "FTRIGGER" */,-113 , 19/* "LBRACKET" */,-113 , 20/* "RBRACKET" */,-113 , 22/* "RPAREN" */,-113 , 23/* "COMMA" */,-113 , 24/* "SEMICOLON" */,-113 , 25/* "COLON" */,-113 , 26/* "EQUALS" */,-113 , 27/* "LTSLASH" */,-113 , 28/* "SLASH" */,-113 , 29/* "LT" */,-113 , 30/* "GT" */,-113 ),
 	/* State 222 */ new Array( 80/* "$" */,-79 , 20/* "RBRACKET" */,-79 , 23/* "COMMA" */,-79 , 27/* "LTSLASH" */,-79 , 2/* "TEXTNODE" */,-79 , 29/* "LT" */,-79 ),
 	/* State 223 */ new Array( 30/* "GT" */,241 ),
 	/* State 224 */ new Array( 30/* "GT" */,242 ),
@@ -1535,10 +1536,10 @@ var act_tab = new Array(
 	/* State 232 */ new Array( 22/* "RPAREN" */,253 , 33/* "IDENTIFIER" */,16 , 21/* "LPAREN" */,18 , 31/* "DASH" */,19 , 32/* "QUOTE" */,26 ),
 	/* State 233 */ new Array( 19/* "LBRACKET" */,255 , 13/* "WIF" */,14 ),
 	/* State 234 */ new Array( 80/* "$" */,-80 , 20/* "RBRACKET" */,-80 , 23/* "COMMA" */,-80 , 27/* "LTSLASH" */,-80 , 2/* "TEXTNODE" */,-80 , 29/* "LT" */,-80 ),
-	/* State 235 */ new Array( 33/* "IDENTIFIER" */,144 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 ),
+	/* State 235 */ new Array( 33/* "IDENTIFIER" */,144 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-100 , 24/* "SEMICOLON" */,-100 ),
 	/* State 236 */ new Array( 28/* "SLASH" */,-90 , 30/* "GT" */,-90 , 11/* "WSTYLE" */,-90 , 33/* "IDENTIFIER" */,-90 , 2/* "TEXTNODE" */,-90 , 4/* "WTEMPLATE" */,-90 , 5/* "WACTION" */,-90 , 6/* "WSTATE" */,-90 , 7/* "WCREATE" */,-90 , 8/* "WADD" */,-90 , 9/* "WEXTRACT" */,-90 , 10/* "WREMOVE" */,-90 , 12/* "WAS" */,-90 , 13/* "WIF" */,-90 , 14/* "WELSE" */,-90 , 15/* "FEACH" */,-90 , 16/* "FCALL" */,-90 , 17/* "FON" */,-90 , 18/* "FTRIGGER" */,-90 ),
 	/* State 237 */ new Array( 19/* "LBRACKET" */,259 , 33/* "IDENTIFIER" */,261 , 23/* "COMMA" */,262 , 21/* "LPAREN" */,263 , 22/* "RPAREN" */,264 , 26/* "EQUALS" */,265 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 ),
-	/* State 238 */ new Array( 28/* "SLASH" */,-145 , 30/* "GT" */,-145 , 11/* "WSTYLE" */,-145 , 33/* "IDENTIFIER" */,-145 , 2/* "TEXTNODE" */,-145 , 4/* "WTEMPLATE" */,-145 , 5/* "WACTION" */,-145 , 6/* "WSTATE" */,-145 , 7/* "WCREATE" */,-145 , 8/* "WADD" */,-145 , 9/* "WEXTRACT" */,-145 , 10/* "WREMOVE" */,-145 , 12/* "WAS" */,-145 , 13/* "WIF" */,-145 , 14/* "WELSE" */,-145 , 15/* "FEACH" */,-145 , 16/* "FCALL" */,-145 , 17/* "FON" */,-145 , 18/* "FTRIGGER" */,-145 ),
+	/* State 238 */ new Array( 28/* "SLASH" */,-146 , 30/* "GT" */,-146 , 11/* "WSTYLE" */,-146 , 33/* "IDENTIFIER" */,-146 , 2/* "TEXTNODE" */,-146 , 4/* "WTEMPLATE" */,-146 , 5/* "WACTION" */,-146 , 6/* "WSTATE" */,-146 , 7/* "WCREATE" */,-146 , 8/* "WADD" */,-146 , 9/* "WEXTRACT" */,-146 , 10/* "WREMOVE" */,-146 , 12/* "WAS" */,-146 , 13/* "WIF" */,-146 , 14/* "WELSE" */,-146 , 15/* "FEACH" */,-146 , 16/* "FCALL" */,-146 , 17/* "FON" */,-146 , 18/* "FTRIGGER" */,-146 ),
 	/* State 239 */ new Array( 28/* "SLASH" */,-96 , 30/* "GT" */,-96 , 11/* "WSTYLE" */,-96 , 33/* "IDENTIFIER" */,-96 , 2/* "TEXTNODE" */,-96 , 4/* "WTEMPLATE" */,-96 , 5/* "WACTION" */,-96 , 6/* "WSTATE" */,-96 , 7/* "WCREATE" */,-96 , 8/* "WADD" */,-96 , 9/* "WEXTRACT" */,-96 , 10/* "WREMOVE" */,-96 , 12/* "WAS" */,-96 , 13/* "WIF" */,-96 , 14/* "WELSE" */,-96 , 15/* "FEACH" */,-96 , 16/* "FCALL" */,-96 , 17/* "FON" */,-96 , 18/* "FTRIGGER" */,-96 ),
 	/* State 240 */ new Array( 20/* "RBRACKET" */,266 , 33/* "IDENTIFIER" */,16 , 21/* "LPAREN" */,18 , 31/* "DASH" */,19 , 32/* "QUOTE" */,26 ),
 	/* State 241 */ new Array( 80/* "$" */,-78 , 20/* "RBRACKET" */,-78 , 23/* "COMMA" */,-78 , 27/* "LTSLASH" */,-78 , 2/* "TEXTNODE" */,-78 , 29/* "LT" */,-78 ),
@@ -1557,15 +1558,15 @@ var act_tab = new Array(
 	/* State 254 */ new Array( 80/* "$" */,-27 , 20/* "RBRACKET" */,-27 , 23/* "COMMA" */,-27 , 27/* "LTSLASH" */,-27 ),
 	/* State 255 */ new Array( 3/* "JSFUN" */,-20 , 4/* "WTEMPLATE" */,-20 , 6/* "WSTATE" */,-20 , 19/* "LBRACKET" */,-20 , 13/* "WIF" */,-20 , 5/* "WACTION" */,-20 , 33/* "IDENTIFIER" */,-20 , 21/* "LPAREN" */,-20 , 31/* "DASH" */,-20 , 2/* "TEXTNODE" */,-20 , 32/* "QUOTE" */,-20 , 29/* "LT" */,-20 ),
 	/* State 256 */ new Array( 32/* "QUOTE" */,-98 , 24/* "SEMICOLON" */,-98 ),
-	/* State 257 */ new Array( 31/* "DASH" */,276 , 33/* "IDENTIFIER" */,261 , 23/* "COMMA" */,262 , 21/* "LPAREN" */,263 , 22/* "RPAREN" */,264 , 26/* "EQUALS" */,265 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-101 , 24/* "SEMICOLON" */,-101 ),
-	/* State 258 */ new Array( 32/* "QUOTE" */,-102 , 24/* "SEMICOLON" */,-102 ),
+	/* State 257 */ new Array( 31/* "DASH" */,276 , 33/* "IDENTIFIER" */,261 , 23/* "COMMA" */,262 , 21/* "LPAREN" */,263 , 22/* "RPAREN" */,264 , 26/* "EQUALS" */,265 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-102 , 24/* "SEMICOLON" */,-102 ),
+	/* State 258 */ new Array( 32/* "QUOTE" */,-103 , 24/* "SEMICOLON" */,-103 ),
 	/* State 259 */ new Array( 33/* "IDENTIFIER" */,16 , 21/* "LPAREN" */,18 , 31/* "DASH" */,19 , 32/* "QUOTE" */,26 ),
-	/* State 260 */ new Array( 32/* "QUOTE" */,-103 , 24/* "SEMICOLON" */,-103 , 31/* "DASH" */,-103 , 2/* "TEXTNODE" */,-103 , 4/* "WTEMPLATE" */,-103 , 5/* "WACTION" */,-103 , 6/* "WSTATE" */,-103 , 7/* "WCREATE" */,-103 , 8/* "WADD" */,-103 , 9/* "WEXTRACT" */,-103 , 10/* "WREMOVE" */,-103 , 11/* "WSTYLE" */,-103 , 12/* "WAS" */,-103 , 13/* "WIF" */,-103 , 14/* "WELSE" */,-103 , 15/* "FEACH" */,-103 , 16/* "FCALL" */,-103 , 17/* "FON" */,-103 , 18/* "FTRIGGER" */,-103 , 33/* "IDENTIFIER" */,-103 , 23/* "COMMA" */,-103 , 21/* "LPAREN" */,-103 , 22/* "RPAREN" */,-103 , 26/* "EQUALS" */,-103 ),
-	/* State 261 */ new Array( 32/* "QUOTE" */,-104 , 24/* "SEMICOLON" */,-104 , 31/* "DASH" */,-104 , 2/* "TEXTNODE" */,-104 , 4/* "WTEMPLATE" */,-104 , 5/* "WACTION" */,-104 , 6/* "WSTATE" */,-104 , 7/* "WCREATE" */,-104 , 8/* "WADD" */,-104 , 9/* "WEXTRACT" */,-104 , 10/* "WREMOVE" */,-104 , 11/* "WSTYLE" */,-104 , 12/* "WAS" */,-104 , 13/* "WIF" */,-104 , 14/* "WELSE" */,-104 , 15/* "FEACH" */,-104 , 16/* "FCALL" */,-104 , 17/* "FON" */,-104 , 18/* "FTRIGGER" */,-104 , 33/* "IDENTIFIER" */,-104 , 23/* "COMMA" */,-104 , 21/* "LPAREN" */,-104 , 22/* "RPAREN" */,-104 , 26/* "EQUALS" */,-104 ),
-	/* State 262 */ new Array( 32/* "QUOTE" */,-105 , 24/* "SEMICOLON" */,-105 , 31/* "DASH" */,-105 , 2/* "TEXTNODE" */,-105 , 4/* "WTEMPLATE" */,-105 , 5/* "WACTION" */,-105 , 6/* "WSTATE" */,-105 , 7/* "WCREATE" */,-105 , 8/* "WADD" */,-105 , 9/* "WEXTRACT" */,-105 , 10/* "WREMOVE" */,-105 , 11/* "WSTYLE" */,-105 , 12/* "WAS" */,-105 , 13/* "WIF" */,-105 , 14/* "WELSE" */,-105 , 15/* "FEACH" */,-105 , 16/* "FCALL" */,-105 , 17/* "FON" */,-105 , 18/* "FTRIGGER" */,-105 , 33/* "IDENTIFIER" */,-105 , 23/* "COMMA" */,-105 , 21/* "LPAREN" */,-105 , 22/* "RPAREN" */,-105 , 26/* "EQUALS" */,-105 ),
-	/* State 263 */ new Array( 32/* "QUOTE" */,-106 , 24/* "SEMICOLON" */,-106 , 31/* "DASH" */,-106 , 2/* "TEXTNODE" */,-106 , 4/* "WTEMPLATE" */,-106 , 5/* "WACTION" */,-106 , 6/* "WSTATE" */,-106 , 7/* "WCREATE" */,-106 , 8/* "WADD" */,-106 , 9/* "WEXTRACT" */,-106 , 10/* "WREMOVE" */,-106 , 11/* "WSTYLE" */,-106 , 12/* "WAS" */,-106 , 13/* "WIF" */,-106 , 14/* "WELSE" */,-106 , 15/* "FEACH" */,-106 , 16/* "FCALL" */,-106 , 17/* "FON" */,-106 , 18/* "FTRIGGER" */,-106 , 33/* "IDENTIFIER" */,-106 , 23/* "COMMA" */,-106 , 21/* "LPAREN" */,-106 , 22/* "RPAREN" */,-106 , 26/* "EQUALS" */,-106 ),
-	/* State 264 */ new Array( 32/* "QUOTE" */,-107 , 24/* "SEMICOLON" */,-107 , 31/* "DASH" */,-107 , 2/* "TEXTNODE" */,-107 , 4/* "WTEMPLATE" */,-107 , 5/* "WACTION" */,-107 , 6/* "WSTATE" */,-107 , 7/* "WCREATE" */,-107 , 8/* "WADD" */,-107 , 9/* "WEXTRACT" */,-107 , 10/* "WREMOVE" */,-107 , 11/* "WSTYLE" */,-107 , 12/* "WAS" */,-107 , 13/* "WIF" */,-107 , 14/* "WELSE" */,-107 , 15/* "FEACH" */,-107 , 16/* "FCALL" */,-107 , 17/* "FON" */,-107 , 18/* "FTRIGGER" */,-107 , 33/* "IDENTIFIER" */,-107 , 23/* "COMMA" */,-107 , 21/* "LPAREN" */,-107 , 22/* "RPAREN" */,-107 , 26/* "EQUALS" */,-107 ),
-	/* State 265 */ new Array( 32/* "QUOTE" */,-108 , 24/* "SEMICOLON" */,-108 , 31/* "DASH" */,-108 , 2/* "TEXTNODE" */,-108 , 4/* "WTEMPLATE" */,-108 , 5/* "WACTION" */,-108 , 6/* "WSTATE" */,-108 , 7/* "WCREATE" */,-108 , 8/* "WADD" */,-108 , 9/* "WEXTRACT" */,-108 , 10/* "WREMOVE" */,-108 , 11/* "WSTYLE" */,-108 , 12/* "WAS" */,-108 , 13/* "WIF" */,-108 , 14/* "WELSE" */,-108 , 15/* "FEACH" */,-108 , 16/* "FCALL" */,-108 , 17/* "FON" */,-108 , 18/* "FTRIGGER" */,-108 , 33/* "IDENTIFIER" */,-108 , 23/* "COMMA" */,-108 , 21/* "LPAREN" */,-108 , 22/* "RPAREN" */,-108 , 26/* "EQUALS" */,-108 ),
+	/* State 260 */ new Array( 32/* "QUOTE" */,-104 , 24/* "SEMICOLON" */,-104 , 31/* "DASH" */,-104 , 2/* "TEXTNODE" */,-104 , 4/* "WTEMPLATE" */,-104 , 5/* "WACTION" */,-104 , 6/* "WSTATE" */,-104 , 7/* "WCREATE" */,-104 , 8/* "WADD" */,-104 , 9/* "WEXTRACT" */,-104 , 10/* "WREMOVE" */,-104 , 11/* "WSTYLE" */,-104 , 12/* "WAS" */,-104 , 13/* "WIF" */,-104 , 14/* "WELSE" */,-104 , 15/* "FEACH" */,-104 , 16/* "FCALL" */,-104 , 17/* "FON" */,-104 , 18/* "FTRIGGER" */,-104 , 33/* "IDENTIFIER" */,-104 , 23/* "COMMA" */,-104 , 21/* "LPAREN" */,-104 , 22/* "RPAREN" */,-104 , 26/* "EQUALS" */,-104 ),
+	/* State 261 */ new Array( 32/* "QUOTE" */,-105 , 24/* "SEMICOLON" */,-105 , 31/* "DASH" */,-105 , 2/* "TEXTNODE" */,-105 , 4/* "WTEMPLATE" */,-105 , 5/* "WACTION" */,-105 , 6/* "WSTATE" */,-105 , 7/* "WCREATE" */,-105 , 8/* "WADD" */,-105 , 9/* "WEXTRACT" */,-105 , 10/* "WREMOVE" */,-105 , 11/* "WSTYLE" */,-105 , 12/* "WAS" */,-105 , 13/* "WIF" */,-105 , 14/* "WELSE" */,-105 , 15/* "FEACH" */,-105 , 16/* "FCALL" */,-105 , 17/* "FON" */,-105 , 18/* "FTRIGGER" */,-105 , 33/* "IDENTIFIER" */,-105 , 23/* "COMMA" */,-105 , 21/* "LPAREN" */,-105 , 22/* "RPAREN" */,-105 , 26/* "EQUALS" */,-105 ),
+	/* State 262 */ new Array( 32/* "QUOTE" */,-106 , 24/* "SEMICOLON" */,-106 , 31/* "DASH" */,-106 , 2/* "TEXTNODE" */,-106 , 4/* "WTEMPLATE" */,-106 , 5/* "WACTION" */,-106 , 6/* "WSTATE" */,-106 , 7/* "WCREATE" */,-106 , 8/* "WADD" */,-106 , 9/* "WEXTRACT" */,-106 , 10/* "WREMOVE" */,-106 , 11/* "WSTYLE" */,-106 , 12/* "WAS" */,-106 , 13/* "WIF" */,-106 , 14/* "WELSE" */,-106 , 15/* "FEACH" */,-106 , 16/* "FCALL" */,-106 , 17/* "FON" */,-106 , 18/* "FTRIGGER" */,-106 , 33/* "IDENTIFIER" */,-106 , 23/* "COMMA" */,-106 , 21/* "LPAREN" */,-106 , 22/* "RPAREN" */,-106 , 26/* "EQUALS" */,-106 ),
+	/* State 263 */ new Array( 32/* "QUOTE" */,-107 , 24/* "SEMICOLON" */,-107 , 31/* "DASH" */,-107 , 2/* "TEXTNODE" */,-107 , 4/* "WTEMPLATE" */,-107 , 5/* "WACTION" */,-107 , 6/* "WSTATE" */,-107 , 7/* "WCREATE" */,-107 , 8/* "WADD" */,-107 , 9/* "WEXTRACT" */,-107 , 10/* "WREMOVE" */,-107 , 11/* "WSTYLE" */,-107 , 12/* "WAS" */,-107 , 13/* "WIF" */,-107 , 14/* "WELSE" */,-107 , 15/* "FEACH" */,-107 , 16/* "FCALL" */,-107 , 17/* "FON" */,-107 , 18/* "FTRIGGER" */,-107 , 33/* "IDENTIFIER" */,-107 , 23/* "COMMA" */,-107 , 21/* "LPAREN" */,-107 , 22/* "RPAREN" */,-107 , 26/* "EQUALS" */,-107 ),
+	/* State 264 */ new Array( 32/* "QUOTE" */,-108 , 24/* "SEMICOLON" */,-108 , 31/* "DASH" */,-108 , 2/* "TEXTNODE" */,-108 , 4/* "WTEMPLATE" */,-108 , 5/* "WACTION" */,-108 , 6/* "WSTATE" */,-108 , 7/* "WCREATE" */,-108 , 8/* "WADD" */,-108 , 9/* "WEXTRACT" */,-108 , 10/* "WREMOVE" */,-108 , 11/* "WSTYLE" */,-108 , 12/* "WAS" */,-108 , 13/* "WIF" */,-108 , 14/* "WELSE" */,-108 , 15/* "FEACH" */,-108 , 16/* "FCALL" */,-108 , 17/* "FON" */,-108 , 18/* "FTRIGGER" */,-108 , 33/* "IDENTIFIER" */,-108 , 23/* "COMMA" */,-108 , 21/* "LPAREN" */,-108 , 22/* "RPAREN" */,-108 , 26/* "EQUALS" */,-108 ),
+	/* State 265 */ new Array( 32/* "QUOTE" */,-109 , 24/* "SEMICOLON" */,-109 , 31/* "DASH" */,-109 , 2/* "TEXTNODE" */,-109 , 4/* "WTEMPLATE" */,-109 , 5/* "WACTION" */,-109 , 6/* "WSTATE" */,-109 , 7/* "WCREATE" */,-109 , 8/* "WADD" */,-109 , 9/* "WEXTRACT" */,-109 , 10/* "WREMOVE" */,-109 , 11/* "WSTYLE" */,-109 , 12/* "WAS" */,-109 , 13/* "WIF" */,-109 , 14/* "WELSE" */,-109 , 15/* "FEACH" */,-109 , 16/* "FCALL" */,-109 , 17/* "FON" */,-109 , 18/* "FTRIGGER" */,-109 , 33/* "IDENTIFIER" */,-109 , 23/* "COMMA" */,-109 , 21/* "LPAREN" */,-109 , 22/* "RPAREN" */,-109 , 26/* "EQUALS" */,-109 ),
 	/* State 266 */ new Array( 32/* "QUOTE" */,-97 , 24/* "SEMICOLON" */,-97 ),
 	/* State 267 */ new Array( 30/* "GT" */,277 ),
 	/* State 268 */ new Array( 30/* "GT" */,278 ),
@@ -1575,7 +1576,7 @@ var act_tab = new Array(
 	/* State 272 */ new Array( 20/* "RBRACKET" */,-58 , 23/* "COMMA" */,-58 , 27/* "LTSLASH" */,-58 ),
 	/* State 273 */ new Array( 22/* "RPAREN" */,282 , 33/* "IDENTIFIER" */,16 , 21/* "LPAREN" */,18 , 31/* "DASH" */,19 , 32/* "QUOTE" */,26 ),
 	/* State 274 */ new Array( 20/* "RBRACKET" */,283 ),
-	/* State 275 */ new Array( 31/* "DASH" */,276 , 33/* "IDENTIFIER" */,261 , 23/* "COMMA" */,262 , 21/* "LPAREN" */,263 , 22/* "RPAREN" */,264 , 26/* "EQUALS" */,265 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-110 , 24/* "SEMICOLON" */,-110 ),
+	/* State 275 */ new Array( 31/* "DASH" */,276 , 33/* "IDENTIFIER" */,261 , 23/* "COMMA" */,262 , 21/* "LPAREN" */,263 , 22/* "RPAREN" */,264 , 26/* "EQUALS" */,265 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-111 , 24/* "SEMICOLON" */,-111 ),
 	/* State 276 */ new Array( 33/* "IDENTIFIER" */,261 , 23/* "COMMA" */,262 , 21/* "LPAREN" */,263 , 22/* "RPAREN" */,264 , 26/* "EQUALS" */,265 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 ),
 	/* State 277 */ new Array( 80/* "$" */,-76 , 20/* "RBRACKET" */,-76 , 23/* "COMMA" */,-76 , 27/* "LTSLASH" */,-76 , 2/* "TEXTNODE" */,-76 , 29/* "LT" */,-76 ),
 	/* State 278 */ new Array( 80/* "$" */,-74 , 20/* "RBRACKET" */,-74 , 23/* "COMMA" */,-74 , 27/* "LTSLASH" */,-74 , 2/* "TEXTNODE" */,-74 , 29/* "LT" */,-74 ),
@@ -1584,7 +1585,7 @@ var act_tab = new Array(
 	/* State 281 */ new Array( 33/* "IDENTIFIER" */,16 , 21/* "LPAREN" */,18 , 31/* "DASH" */,19 , 32/* "QUOTE" */,26 , 20/* "RBRACKET" */,-51 , 23/* "COMMA" */,-51 ),
 	/* State 282 */ new Array( 20/* "RBRACKET" */,-55 , 23/* "COMMA" */,-55 , 27/* "LTSLASH" */,-55 ),
 	/* State 283 */ new Array( 80/* "$" */,-28 , 20/* "RBRACKET" */,-28 , 23/* "COMMA" */,-28 , 27/* "LTSLASH" */,-28 ),
-	/* State 284 */ new Array( 31/* "DASH" */,276 , 33/* "IDENTIFIER" */,261 , 23/* "COMMA" */,262 , 21/* "LPAREN" */,263 , 22/* "RPAREN" */,264 , 26/* "EQUALS" */,265 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-109 , 24/* "SEMICOLON" */,-109 )
+	/* State 284 */ new Array( 31/* "DASH" */,276 , 33/* "IDENTIFIER" */,261 , 23/* "COMMA" */,262 , 21/* "LPAREN" */,263 , 22/* "RPAREN" */,264 , 26/* "EQUALS" */,265 , 2/* "TEXTNODE" */,55 , 4/* "WTEMPLATE" */,56 , 5/* "WACTION" */,57 , 6/* "WSTATE" */,58 , 7/* "WCREATE" */,59 , 8/* "WADD" */,60 , 9/* "WEXTRACT" */,61 , 10/* "WREMOVE" */,62 , 11/* "WSTYLE" */,63 , 12/* "WAS" */,64 , 13/* "WIF" */,65 , 14/* "WELSE" */,66 , 15/* "FEACH" */,67 , 16/* "FCALL" */,68 , 17/* "FON" */,69 , 18/* "FTRIGGER" */,70 , 32/* "QUOTE" */,-110 , 24/* "SEMICOLON" */,-110 )
 );
 
 /* Goto-Table */
@@ -2633,230 +2634,235 @@ switch( act )
 	break;
 	case 100:
 	{
-		rval = {};
+		rval = {stylelist:vstack[ vstack.length - 2 ], semicolon:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 101:
 	{
-		rval = {attname:vstack[ vstack.length - 3 ], colon:vstack[ vstack.length - 2 ], styletext:vstack[ vstack.length - 1 ]};
+		rval = {};
 	}
 	break;
 	case 102:
 	{
-		rval = {attname:vstack[ vstack.length - 3 ], colon:vstack[ vstack.length - 2 ], insert:vstack[ vstack.length - 1 ]};
+		rval = {attname:vstack[ vstack.length - 3 ], colon:vstack[ vstack.length - 2 ], styletext:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 103:
 	{
-		rval = {keyword:vstack[ vstack.length - 1 ]};
+		rval = {attname:vstack[ vstack.length - 3 ], colon:vstack[ vstack.length - 2 ], insert:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 104:
 	{
-		rval = {identifier:vstack[ vstack.length - 1 ]};
+		rval = {keyword:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 105:
 	{
-		rval = {comma:vstack[ vstack.length - 1 ]};
+		rval = {identifier:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 106:
 	{
-		rval = {lparen:vstack[ vstack.length - 1 ]};
+		rval = {comma:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 107:
 	{
-		rval = {rparen:vstack[ vstack.length - 1 ]};
+		rval = {lparen:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 108:
 	{
-		rval = {equals:vstack[ vstack.length - 1 ]};
+		rval = {rparen:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 109:
 	{
-		rval = {styletext:vstack[ vstack.length - 3 ], dash:vstack[ vstack.length - 2 ], styletext2:vstack[ vstack.length - 1 ]};
+		rval = {equals:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 110:
 	{
-		rval = {styletext:vstack[ vstack.length - 2 ], styletext2:vstack[ vstack.length - 1 ]};
+		rval = {styletext:vstack[ vstack.length - 3 ], dash:vstack[ vstack.length - 2 ], styletext2:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 111:
 	{
-		rval = {keyword:vstack[ vstack.length - 1 ]};
+		rval = {styletext:vstack[ vstack.length - 2 ], styletext2:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 112:
 	{
-		rval = {lbracket:vstack[ vstack.length - 1 ]};
+		rval = {keyword:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 113:
 	{
-		rval = {rbracket:vstack[ vstack.length - 1 ]};
+		rval = {lbracket:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 114:
 	{
-		rval = {lparen:vstack[ vstack.length - 1 ]};
+		rval = {rbracket:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 115:
 	{
-		rval = {rparen:vstack[ vstack.length - 1 ]};
+		rval = {lparen:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 116:
 	{
-		rval = {comma:vstack[ vstack.length - 1 ]};
+		rval = {rparen:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 117:
 	{
-		rval = {semicolon:vstack[ vstack.length - 1 ]};
+		rval = {comma:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 118:
 	{
-		rval = {colon:vstack[ vstack.length - 1 ]};
+		rval = {semicolon:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 119:
 	{
-		rval = {equals:vstack[ vstack.length - 1 ]};
+		rval = {colon:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 120:
 	{
-		rval = {ltslash:vstack[ vstack.length - 1 ]};
+		rval = {equals:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 121:
 	{
-		rval = {slash:vstack[ vstack.length - 1 ]};
+		rval = {ltslash:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 122:
 	{
-		rval = {lt:vstack[ vstack.length - 1 ]};
+		rval = {slash:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 123:
 	{
-		rval = {gt:vstack[ vstack.length - 1 ]};
+		rval = {lt:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 124:
 	{
-		rval = {identifier:vstack[ vstack.length - 1 ]};
+		rval = {gt:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 125:
 	{
-		rval = {text:vstack[ vstack.length - 3 ], dash:vstack[ vstack.length - 2 ], text2:vstack[ vstack.length - 1 ]};
+		rval = {identifier:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 126:
 	{
-		rval = {text:vstack[ vstack.length - 2 ], text2:vstack[ vstack.length - 1 ]};
+		rval = {text:vstack[ vstack.length - 3 ], dash:vstack[ vstack.length - 2 ], text2:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 127:
 	{
-		rval = {};
+		rval = {text:vstack[ vstack.length - 2 ], text2:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 128:
 	{
-		rval = {textnode:vstack[ vstack.length - 1 ]};
+		rval = {};
 	}
 	break;
 	case 129:
 	{
-		rval = {wtemplate:vstack[ vstack.length - 1 ]};
+		rval = {textnode:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 130:
 	{
-		rval = {waction:vstack[ vstack.length - 1 ]};
+		rval = {wtemplate:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 131:
 	{
-		rval = {wstate:vstack[ vstack.length - 1 ]};
+		rval = {waction:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 132:
 	{
-		rval = {wcreate:vstack[ vstack.length - 1 ]};
+		rval = {wstate:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 133:
 	{
-		rval = {wadd:vstack[ vstack.length - 1 ]};
+		rval = {wcreate:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 134:
 	{
-		rval = {wextract:vstack[ vstack.length - 1 ]};
+		rval = {wadd:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 135:
 	{
-		rval = {wremove:vstack[ vstack.length - 1 ]};
+		rval = {wextract:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 136:
 	{
-		rval = {wstyle:vstack[ vstack.length - 1 ]};
+		rval = {wremove:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 137:
 	{
-		rval = {was:vstack[ vstack.length - 1 ]};
+		rval = {wstyle:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 138:
 	{
-		rval = {wif:vstack[ vstack.length - 1 ]};
+		rval = {was:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 139:
 	{
-		rval = {welse:vstack[ vstack.length - 1 ]};
+		rval = {wif:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 140:
 	{
-		rval = {feach:vstack[ vstack.length - 1 ]};
+		rval = {welse:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 141:
 	{
-		rval = {fcall:vstack[ vstack.length - 1 ]};
+		rval = {feach:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 142:
 	{
-		rval = {fon:vstack[ vstack.length - 1 ]};
+		rval = {fcall:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 143:
 	{
-		rval = {ftrigger:vstack[ vstack.length - 1 ]};
+		rval = {fon:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 144:
 	{
-		rval = {quote:vstack[ vstack.length - 3 ], text:vstack[ vstack.length - 2 ], quote2:vstack[ vstack.length - 1 ]};
+		rval = {ftrigger:vstack[ vstack.length - 1 ]};
 	}
 	break;
 	case 145:
+	{
+		rval = {quote:vstack[ vstack.length - 3 ], text:vstack[ vstack.length - 2 ], quote2:vstack[ vstack.length - 1 ]};
+	}
+	break;
+	case 146:
 	{
 		rval = {quote:vstack[ vstack.length - 3 ], text:vstack[ vstack.length - 2 ], quote2:vstack[ vstack.length - 1 ]};
 	}
