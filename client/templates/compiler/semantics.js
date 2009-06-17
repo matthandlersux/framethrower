@@ -108,36 +108,31 @@ var semantics = function(){
 	// Make Functions
 	// ====================================================
 
-	var result; //global variable
-	function makeTop(tomakeLine) {
-		result = tomakeLine;
-		return tomakeLine;
-	}
-
 	function makeLet(node) {
 		return {
 			name: node.variable.name,
 			type: node.variable.type,
-			value: makeLine(node.line)
+			value: makeLine(node.line),
+			lineNum: node.lineNum
 		};
 	}
 
 	function makeLineExpr (expr) {
 		return {
 			kind: "lineExpr",
-			expr: expr,
-			let: {}
+			expr: expr
 		};
 	}
 
 	function makeLetlistblock(node) {
-		var lets = makeListObject(node.letlist, 'letlist', 'let', getLetKeyVal);
-		var expr = node.expr;
+		var lets = makeListObject(node.fullletlistletlist, 'letlist', 'let', getLetKeyVal);
+		var output = makeLine(node.fullletlist.line);
 		
 		return {
-			kind: "lineExpr",
-			expr: expr,
-			let: lets
+			kind: "lineBlock",
+			let: lets,
+			output: output,
+			lineNum: node.lineNum
 		};
 	}
 
@@ -145,14 +140,16 @@ var semantics = function(){
 	function makeExtract (node) {
 		var wrappedActiontpl = {
 			arglist: makeAskeyval(node.askeyval),
-			fullactlist: node.fullactlist
+			fullactlist: node.fullactlist,
+			lineNum: node.lineNum
 		};
 	
 		var actiontpl = makeActiontpl(wrappedActiontpl);
 		return {
 			kind: "extract",
 			select: node.expr,
-			action: actiontpl
+			action: actiontpl,
+			lineNum: node.lineNum
 		};
 	}
 
@@ -190,7 +187,8 @@ var semantics = function(){
 				kind: "action",
 				params: paramList,
 				type: typeString,
-				actions: actions
+				actions: actions,
+				lineNum: node.lineNum
 		};
 	}
 
@@ -217,7 +215,8 @@ var semantics = function(){
 						askeyval: {
 							identifier: extractSugar.variable.identifier
 						}, 
-						fullactlist: {actlist:restOfList}
+						fullactlist: {actlist:restOfList},
+						lineNum: extractSugar.lineNum
 					}
 				};
 				outputList.push({
@@ -249,7 +248,8 @@ var semantics = function(){
 			return {
 				kind: "actionCreate",
 				type: node.type,
-				prop: proplist
+				prop: proplist,
+				lineNum: node.lineNum
 			};
 		}
 
@@ -269,7 +269,8 @@ var semantics = function(){
 				target: update.expr,
 				actionType: actionType,
 				key: update.expr2,
-				value: update.expr3
+				value: update.expr3,
+				lineNum: node.lineNum
 			};
 		}
 		
@@ -288,7 +289,9 @@ var semantics = function(){
 		}
 		var result;
 		forEach(node, function(value, nodeName) {
-			result = makeActionKind(nodeName, value, node);
+			if (nodeName !== 'lineNum') {
+				result = makeActionKind(nodeName, value, node);
+			}
 		});
 		return result;
 	}
@@ -308,7 +311,8 @@ var semantics = function(){
 	function makeIfblock (node) {
 		var wrappedTemplate = {
 			arglist: makeAskeyval(node.askeyval),
-			fullletlist: node.fullletlist
+			fullletlist: node.fullletlist,
+			lineNum: node.lineNum
 		};
 		
 		var template = makeTemplate(wrappedTemplate);
@@ -317,7 +321,8 @@ var semantics = function(){
 		if (def(node.fullletlist2)) {
 			wrappedElseblock = {
 				arglist: {},
-				fullletlist: node.fullletlist2
+				fullletlist: node.fullletlist2,
+				lineNum: node.lineNum
 			};
 			otherwise = makeTemplate(wrappedElseblock);			
 		} else if (def(node.ifblock)) {
@@ -327,7 +332,8 @@ var semantics = function(){
 				fullletlist: {
 					list: {},
 					line: makeIfblock(node.ifblock)
-				}
+				},
+				lineNum: node.lineNum
 			};
 		}
 		var otherwise = makeTemplate(wrappedElseblock);
@@ -336,15 +342,11 @@ var semantics = function(){
 			kind: "case", 
 			test: node.expr,
 			templateCode: template,
-			otherwise: otherwise
+			otherwise: otherwise,
+			lineNum: node.lineNum
 		});
 	}
 
-	function stripQuotes (string) {
-		return string.substr(1, string.length-2);
-	}
-	
-	
 	function makeJSFun(funcText) {
 		//8 characters in 'function'
 		var bracketIndex = funcText.indexOf('{');
@@ -411,7 +413,8 @@ var semantics = function(){
 	function getLetKeyVal (node) {
 		return {
 			key: node.variable.identifier,
-			val: makeLine(node.line)
+			val: makeLine(node.line),
+			lineNum: node.lineNum
 		};
 	}
 	
@@ -453,7 +456,8 @@ var semantics = function(){
 			params: paramList,
 			type: typeString,
 			let: lets,
-			output: output
+			output: output,
+			lineNum: node.lineNum
 		};
 	}
 	
@@ -461,16 +465,21 @@ var semantics = function(){
 		var action;
 		if (def(node.type)) {
 			var createAction = {
-				create:{type:node.type}
+				create:{
+					type:node.type,
+					lineNum: node.lineNum
+				},
+				lineNum: node.lineNum
 			};
-			action = makeActiontpl({arglist:{}, fullactlist:{actlist:{}, action:createAction}});
+			action = makeActiontpl({arglist:{}, fullactlist:{actlist:{}, action:createAction}, lineNum: node.lineNum});
 		} else if (def(node.fullactlist)) {
-			action = makeActiontpl({arglist:{}, fullactlist:node.fullactlist});
+			action = makeActiontpl({arglist:{}, fullactlist:node.fullactlist, lineNum: node.lineNum});
 		}
 		
 		return {
 			kind: "lineState",
-			action: action
+			action: action,
+			lineNum: node.lineNum
 		};
 	}
 	
@@ -485,54 +494,62 @@ var semantics = function(){
 			}
 			var wrappedTemplate = {
 				arglist: arglist,
-				fullletlist: node.fullletlist
+				fullletlist: node.fullletlist,
+				lineNum: node.lineNum
 			};
 						
 			var template = makeTemplate(wrappedTemplate);
 			return {
 				kind: "for-each",
 				select: node.expr,
-				templateCode: template
+				templateCode: template,
+				lineNum: node.lineNum
 			};
 		}
 
 		function makeCall (node) {
 			var wrappedTemplate = {
 				arglist: {},
-				fullletlist: node.fullletlist
+				fullletlist: node.fullletlist,
+				lineNum: node.lineNum
 			};
 			
 			var template = makeTemplate(wrappedTemplate);
 			return {
 				kind: "call",
-				templateCode: template
+				templateCode: template,
+				lineNum: node.lineNum
 			};
 		}
 
 		function makeTrigger (node) {
 			var wrappedActiontpl = {
 				arglist: makeAskeyval(node.askeyval),
-				fullactlist: node.fullactlist 
+				fullactlist: node.fullactlist,
+				lineNum: node.lineNum
 			};
 			var actiontpl = makeActiontpl(wrappedActiontpl);
 			return {
 				kind: "trigger",
 				trigger: node.expr,
-				action: actiontpl
+				action: actiontpl,
+				lineNum: node.lineNum
 			};
 		}
 
 		function makeOn (node) {
 			var wrappedActiontpl = {
 				arglist: {},
-				fullactlist: node.fullactlist
+				fullactlist: node.fullactlist,
+				lineNum: node.lineNum
 			};
 			
 			var action = makeActiontpl(wrappedActiontpl);
 			return {
 				kind: "on",
 				event: node.identifier,
-				action: action
+				action: action,
+				lineNum: node.lineNum
 			};
 		}
 
@@ -596,7 +613,8 @@ var semantics = function(){
 				nodeName: node.tagname,
 				attributes: attributeObject,
 				style: style,
-				children: xmllist
+				children: xmllist,
+				lineNum: node.lineNum
 			};
 		}
 
@@ -605,7 +623,7 @@ var semantics = function(){
 			function makeTextElement (nodeVal) {
 				return {
 					kind: "textElement",
-					nodeValue: nodeVal,
+					nodeValue: nodeVal
 				};
 			}
 
@@ -649,7 +667,9 @@ var semantics = function(){
 		}
 		var result;
 		forEach(node, function(value, nodeName) {
-			result = makeXmlKind(nodeName, value);
+			if (nodeName !== 'lineNum') {
+				result = makeXmlKind(nodeName, value);
+			}
 		});
 		return result;
 	}
@@ -678,10 +698,23 @@ var semantics = function(){
 		}
 		var result;
 		forEach(node, function(value, nodeName) {
-			result = makeLineKind(nodeName, value);
+			if (nodeName !== 'lineNum') {
+				result = makeLineKind(nodeName, value);
+			}
 		});
 		return result;	
 	}
+
+	function lineBreakCount(str){
+		/* counts \n */
+		try {
+			return((str.match(/[^\n]*\n[^\n]*/gi).length));
+		} catch(e) {
+			return 0;
+		}
+	}
+
+	var lineNum;
 
 	function handleWhiteSpace(tree) {
 		function stripSpaces(string) {
@@ -706,26 +739,32 @@ var semantics = function(){
 			}
 		}
 		
+		var startLine = lineNum;
 		forEach(tree, function(value, nodeName) {
 			function startsWith (string) {
 				return nodeName.indexOf(string) == 0;
 			}
 			
 			if (startsWith('type') || startsWith('expr') || startsWith('styletext') || startsWith('attname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes')) {
-				tree[nodeName] = stripSpaces(makeString(value, nodeName));
+				var string = makeString(value, nodeName);
+				lineNum += lineBreakCount(string);
+				tree[nodeName] = stripSpaces(string);
 			} else {
 				if(objectLike(value)) {
 					handleWhiteSpace(value);
 				} else {
+					lineNum += lineBreakCount(value);
 					tree[nodeName] = stripSpaces(value);
 				}
 			}
 		});
+		tree.lineNum = "" + startLine;
 	}
 	
 	
 	return {
 		processTree: function(tree) {
+			lineNum = 0;
 			handleWhiteSpace(tree);
 			return makeLine(tree.line);
 		}

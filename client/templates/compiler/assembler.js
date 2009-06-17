@@ -30,7 +30,7 @@ function outputJSON(object, tabs) {
 			output += "]";
 			return output;			
 		} else if (objectLike(object)) {
-			if(object.kind !== undefined && object.kind == "jsFunction") {
+			if(object.kind == "jsFunction") {
 				return object.func;
 			} else {
 				var output = "{\n";
@@ -144,6 +144,7 @@ function compileFile (filePath, rebuild) {
 			}
 		} else {
 			result = semantics.processTree(parseResult.result);
+			result.fileName = "" + file.getName();
 			serialize(result, binfile.getAbsolutePath());
 			return result;
 		}
