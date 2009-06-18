@@ -34,9 +34,9 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 	dragOperation = bindUnit (swap (reactiveIfThen dragEndInside) 2) (reactiveIfThen (mapUnit2 reactiveEqual (bindUnit Situation:container dragStartSit) dragEndSit) 1 3),
 	
 	
-	globalScale = state{s=create(Unit Number), add(s, 1), s},
-	globalTranslateX = state{x=create(Unit Number), add(x, 0), x},
-	globalTranslateY = state{y=create(Unit Number), add(y, 0), y},
+	globalScale = state {s=create(Unit Number), add(s, 1), s},
+	globalTranslateX = state {x=create(Unit Number), add(x, 0), x},
+	globalTranslateY = state {y=create(Unit Number), add(y, 0), y},
 	
 	
 	// x and y represent, in global coordinates, the center of where the situation should be drawn
@@ -63,18 +63,20 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 			</f:trigger>
 			
 			<svg:g class="gsv-situation">
-				<f:on mouseover>add(dragEndSit, focus)</f:on>
-				<f:call>dragHandler</f:call>
-				<svg:circle class="gsv-icon" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed" />
 				<svg:circle class="gsv-hit-inner" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed">
 					<f:on mouseover>add(dragEndInside, null)</f:on>
 				</svg:circle>
-				<svg:circle class="gsv-hit-border" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed">
-					<f:on mouseout>remove(dragEndInside)</f:on>
-				</svg:circle>
-				<svg:text x="{x}" y="{mapUnit2 subtract y scale}" text-anchor="middle" shape-rendering="optimizeSpeed">
-					{scale}
-				</svg:text>
+				<svg:g>
+					<f:on mouseover>add(dragEndSit, focus)</f:on>
+					<f:call>dragHandler</f:call>
+					<svg:circle class="gsv-icon" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed" />
+					<svg:circle class="gsv-hit-object" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed">
+						<f:on mouseout>remove(dragEndInside)</f:on>
+					</svg:circle>
+					<svg:text x="{x}" y="{mapUnit2 subtract y scale}" text-anchor="middle" shape-rendering="optimizeSpeed">
+						{scale}
+					</svg:text>
+				</svg:g>
 			</svg:g>
 			<f:call>drawSituationChildren x y scale children</f:call>
 		</svg:g>
@@ -130,14 +132,12 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 							<f:on globalmouseup>
 								onDrop,
 								
-								
 								remove(dragging),
 								remove(dragX),
 								remove(dragY),
 								remove(offsetX),
 								remove(offsetY),
 								remove(dragStartSit)
-								
 							</f:on>
 						</f:wrapper>
 					</f:each>

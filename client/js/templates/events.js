@@ -190,7 +190,7 @@
 		}		
 		if (e.target.localName !== "input" && e.target.localName !== "button") {
 			document.body.focus();
-			//dont(e);
+			dont(e);
 		}
 	}
 	function mouseup(e) {
