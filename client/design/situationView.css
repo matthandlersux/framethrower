@@ -1,3 +1,5 @@
+@namespace url(http://www.w3.org/2000/svg);
+
 .gsv-situation .gsv-icon {
 	pointer-events: none;
 	fill:rgba(0,0,0,0.05);
@@ -14,24 +16,27 @@
 }
 
 .gsv-situation .gsv-hit-inner {
-	pointer-events: fill;
+	pointer-events: none;
 	visibility: hidden;
 }
 .gsv-dragging .gsv-situation .gsv-hit-inner {
 	pointer-events: fill;
 }
-.gsv-situation .gsv-hit-border {
-	pointer-events: stroke;
+.gsv-situation .gsv-hit-object {
+	pointer-events: all;
 	visibility: hidden;
 }
+.gsv-dragging .gsv-situation .gsv-hit-object {
+	pointer-events: stroke;
+}
 
-.gsv-dragStart {
+.gsv-dragStart, .gsv-dragStart .gsv-situation .gsv-hit-inner, .gsv-dragStart .gsv-situation .gsv-hit-object {
 	pointer-events: none;
-	opacity: 0.5;
 }
 .gsv-offsetting {
 	opacity: 0.1;
 }
+
 
 
 
