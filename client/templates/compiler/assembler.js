@@ -137,10 +137,10 @@ function compileFile (filePath, rebuild) {
 		if( !parseResult.success ) {
 			error_cnt = parseResult.result;
 			GLOBAL_ERRORS = true;
-			print("Parse errors, File: " + file.getName());
+			print("<b>Parse errors, File: " + file.getName() + "</b><br />");
 			for( i = 0; i < error_cnt; i++ ) {
 				var lineInfo = countLines(str, error_off[i]);
-				print("    error on line", lineInfo.lines + ", column:", lineInfo.column, "expecting \"" + error_la[i].join() + "\" near:", "\n" + lineInfo.line + "\n                              ^\n");
+				print("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file.getCanonicalPath() + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.column, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + lineInfo.line + "</div><br />");
 			}
 		} else {
 			result = semantics.processTree(parseResult.result);
