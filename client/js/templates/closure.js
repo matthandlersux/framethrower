@@ -116,8 +116,9 @@ function evaluateLine(line, env) {
 	*/
 	
 	if (line.kind === "lineExpr") {
-		var newEnv = addLets(line.let, env);
-		var expr = parseExpression(line.expr, newEnv);
+		// var newEnv = addLets(line.let, env);
+		// var expr = parseExpression(line.expr, newEnv);
+		var expr = parseExpression(line.expr, env);
 		//var expr = parseExpression(parse(line.expr), newEnv);
 		return evaluate(expr);
 	} else if (line.kind === "lineTemplate") {
@@ -135,5 +136,8 @@ function evaluateLine(line, env) {
 		//return makeCC(parseType(line.type));
 	} else if (line.kind === "lineAction") {
 		return makeActionClosure(line.action, env);
+	} else if (line.kind === "lineBlock") {
+		var newEnv = addLets(line.let, env);
+		return evaluateLine(line.output, newEnv);
 	}
 }
