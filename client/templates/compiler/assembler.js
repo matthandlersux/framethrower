@@ -4,7 +4,6 @@ var GLOBAL_ERRORS = false;
 if (load !== undefined) {
 	load(["tplparser.js"]);
 	load(["semantics.js"]);
-	load(["preparse.js"]);
 }
 
 function outputJSON(object, tabs) {
@@ -109,11 +108,11 @@ function compileFolder(folderPath, rebuild) {
 
 function preParse(string) {
 	//textnodes	
-	string = preParser.parse(string);
+	// string = preParser.parse(string);
 	
-	string = string.replace(/\t/g, "    ");
-	string = string.replace(/\/\/[^\n]*\n/g, "");
-	string = string.replace(/\/\*[^\*\/]*\*\//g, "");
+	// string = string.replace(/\t/g, "    ");
+	// string = string.replace(/\/\/[^\n]*\n/g, "");
+	// string = string.replace(/\/\*[^\*\/]*\*\//g, "");
 	// string = string.replace(/(<(f[^:^\/^>]|[^f^\/^>])[^<^>^\/]*>)([^<^>]*[^<^>^ ^\r^\t^\n][^<^>]*)/g, "$1<p:textnode>$3</p:textnode>");
 	// string = string.replace(/(<\/[^<^>]+>)(([^<^>^\{^\}]|\{[^\}]*\})*([^<^>^\{^\}^ ^\r^\t^\n]|\{[^\}]*\})([^<^>^\{^\}]|\{[^\}]*\})*)/g, "$1<p:textnode>$2</p:textnode>");
 
@@ -140,7 +139,8 @@ function compileFile (filePath, rebuild) {
 			print("<b>Parse errors, File: " + file.getName() + "</b><br />");
 			for( i = 0; i < error_cnt; i++ ) {
 				var lineInfo = countLines(str, error_off[i]);
-				print("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file.getCanonicalPath() + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.column, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + lineInfo.line + "</div><br />");
+				var escapedLine= lineInfo.line.split("&").join("&amp;").split( "<").join("&lt;").split(">").join("&gt;")				
+				print("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file.getCanonicalPath() + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
 			}
 		} else {
 			result = semantics.processTree(parseResult.result);
@@ -151,9 +151,20 @@ function compileFile (filePath, rebuild) {
 	}
 }
 
+function encodeMyHtml() {
+	 encodedHtml = escape(encodeHtml.htmlToEncode.value);
+	 encodedHtml = encodedHtml.replace(/\//g,"%2F");
+	 encodedHtml = encodedHtml.replace(/\?/g,"%3F");
+	 encodedHtml = encodedHtml.replace(/=/g,"%3D");
+	 encodedHtml = encodedHtml.replace(/&/g,"%26");
+	 encodedHtml = encodedHtml.replace(/@/g,"%40");
+	 encodeHtml.htmlEncoded.value = encodedHtml;
+}
+
 
 function countLines(wholeString, position) {
 	var column;
+	var columnWithTabs;
 	var line;
 	function countHelper(string, startIndex) {
 		var index = string.indexOf('\n');
@@ -162,7 +173,9 @@ function countLines(wholeString, position) {
 		} else {
 			var rest = wholeString.substr(startIndex);
 			line = rest.substr(0, rest.indexOf("\n"));
-			column = string.length;
+			column = string.length + 1;
+			var withTabs = string.replace(/\t/g, "    ");
+			columnWithTabs = withTabs.length + 1;
 			
 			var min = column - 30;
 			var filler = "";
@@ -181,7 +194,8 @@ function countLines(wholeString, position) {
 	return {
 		lines: 1 + countHelper(wholeString.substr(0, position), 0),
 		line: line,
-		column: column
+		column: column,
+		columnWithTabs: columnWithTabs
 	};
 }
 
