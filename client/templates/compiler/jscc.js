@@ -1044,11 +1044,11 @@ function print_actions()
 					semcode += ", ";
 				}
 				if (used[symbol] === undefined) {
-					semcode += symbols[symbol].label.toLowerCase() + ":";
+					semcode += "'" + symbols[symbol].label.toLowerCase() + "':";
 					used[symbol] = 1;
 				} else {
 					used[symbol]++;
-					semcode += symbols[symbol].label.toLowerCase() + used[symbol] + ":";
+					semcode += "'" + symbols[symbol].label.toLowerCase() + used[symbol] + "':";
 				}
 				idx = rhs.length - idx;
 				semcode += "vstack[ vstack.length - " + idx + " ]";

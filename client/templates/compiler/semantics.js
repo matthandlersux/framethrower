@@ -347,7 +347,7 @@ var semantics = function(){
 		});
 	}
 
-	function makeJSFun(funcText) {
+	function makeFunction(funcText) {
 		//8 characters in 'function'
 		var bracketIndex = funcText.indexOf('{');
 		var args = funcText.substr(8, bracketIndex - 8);
@@ -490,7 +490,7 @@ var semantics = function(){
 			if (def(node.askeyval)) {
 				arglist = makeAskeyval(node.askeyval);
 			} else {
-				arglist = {};
+				arglist = {variable:{identifier:"_"}};
 			}
 			var wrappedTemplate = {
 				arglist: arglist,
@@ -661,7 +661,7 @@ var semantics = function(){
 					return makeCall(node);
 				case 'tag':
 					return makeTag(node);
-				case 'textnode':
+				case 'xmltext':
 					return makeTextNode(node);
 			}
 		}
@@ -677,8 +677,8 @@ var semantics = function(){
 	function makeLine (node) {
 		function makeLineKind (name, node) {
 			switch(name){
-				case 'jsfun':
-					return makeJSFun(node);
+				case 'function':
+					return makeFunction(node);
 				case 'template':
 					//TODO: put kind in makeTemplate
 					return {kind:'lineTemplate', template: makeTemplate(node)};
@@ -718,6 +718,7 @@ var semantics = function(){
 
 	function handleWhiteSpace(tree) {
 		function stripSpaces(string) {
+			string = string.replace(/\/\/[^\n]*\n/g, "");
 			return string.replace(/^\s+|\s+$/g,"");
 		}
 		
@@ -745,7 +746,7 @@ var semantics = function(){
 				return nodeName.indexOf(string) == 0;
 			}
 			
-			if (startsWith('type') || startsWith('expr') || startsWith('styletext') || startsWith('attname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes')) {
+			if (startsWith('type') || startsWith('expr') || startsWith('styletext') || startsWith('attname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('function') || startsWith('xmltext')) {
 				var string = makeString(value, nodeName);
 				lineNum += lineBreakCount(string);
 				tree[nodeName] = stripSpaces(string);
@@ -764,7 +765,7 @@ var semantics = function(){
 	
 	return {
 		processTree: function(tree) {
-			lineNum = 0;
+			lineNum = 1;
 			handleWhiteSpace(tree);
 			return makeLine(tree.line);
 		}
