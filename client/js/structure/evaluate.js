@@ -14,7 +14,7 @@ function evaluate2(expr) {
 	var resultType = getType(expr);
 	getRemote(expr); // just to tag the expr's .remote
 	
-	// check if we're returning a StartCap and see if it's already memoized
+	// check if we're returning a Cell and see if it's already memoized
 	var resultExprStringified;
 	if (isReactive(resultType)) {
 		resultExprStringified = stringify(expr);
@@ -60,8 +60,8 @@ function evaluate2(expr) {
 			if (typeof ret === "function") {
 				// if ret is a function, return a Fun and annotate its type and expr
 				return makeFun(resultType, ret, stringify(expr), expr.remote);
-			} else if (ret.kind === "startCap") {
-				// if ret is a startCap, memoize the result and annotate its type and expr
+			} else if (ret.kind === "cell") {
+				// if ret is a cell, memoize the result and annotate its type and expr
 				
 				// annotate
 				ret.type = resultType;
