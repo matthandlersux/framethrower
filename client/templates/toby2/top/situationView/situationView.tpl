@@ -34,9 +34,9 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 	dragOperation = bindUnit (swap (reactiveIfThen dragEndInside) 2) (reactiveIfThen (mapUnit2 reactiveEqual (bindUnit Situation:container dragStartSit) dragEndSit) 1 3),
 	
 	
-	globalScale = state {s=create(Unit Number), add(s, 1), s},
-	globalTranslateX = state {x=create(Unit Number), add(x, 0), x},
-	globalTranslateY = state {y=create(Unit Number), add(y, 0), y},
+	globalScale = state(Unit Number, 1),
+	globalTranslateX = state(Unit Number, 0),
+	globalTranslateY = state(Unit Number, 0),
 	
 	
 	// x and y represent, in global coordinates, the center of where the situation should be drawn
