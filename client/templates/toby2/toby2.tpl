@@ -22,6 +22,9 @@ template () {
 	abs = function (x) {
 		return Math.abs(x);
 	},
+	concat = function (s::String, t::String)::String {
+		return s+t;
+	},
 	
 	
 	// ==============================================================
@@ -122,7 +125,9 @@ template () {
 		add(Timeline:video timeline, test.walleVideo),
 		add(Situation:propTimeline tobytest.myTimelineSit, timeline),
 		
-		makeSituationNamedIn "blah" tobytest.realLife
+		s1 = makeSituationNamedIn "blah" tobytest.realLife,
+		s2 = makeSituationNamedIn "blah2" s1,
+		tobytest.realLife
 	},
 	
 	

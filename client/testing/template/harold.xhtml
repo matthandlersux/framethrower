@@ -8,7 +8,7 @@
     xmlns:svg="http://www.w3.org/2000/svg">
 
 <head>
-<title>UI Testing</title>
+<title>WM - Template Test (harold)</title>
 
 <link rel="stylesheet" href="../../design/style.css" type="text/css" media="screen" title="no title" charset="utf-8" />
 
@@ -20,8 +20,10 @@ var LOCAL = true;
 
 //var serverBaseUrl = "http://clever.eversplosion.com:8000/";
 //var serverBaseUrl = "http://localhost:8000/";
+var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
 
-var INCLUDES=["test.js"];
+//var INCLUDES=[ROOTDIR+"templates/bin/tobytest.js", "init.js"];
+var INCLUDES=[ROOTDIR+"templates/bin/harold.js", "init.js"];
 var ONLOAD="initialize()";
 </script>
 
@@ -31,22 +33,9 @@ var ONLOAD="initialize()";
 </head>
 
 <body>
-		<!-- <f:thunk>
-			<f:with-template url="testing/uiTest/view.xml" />
-		</f:thunk> -->
-		
-		<!-- <f:thunk>
-			<f:with-template url="xml/main/main.xml" />
-		</f:thunk> -->
-		
-		<f:on event="load">
-			<f:with-template url="xml/prepareState.xml" />
-		</f:on>
-		
-		<f:on event="load">
-			<f:with-template url="xml/prepareUIState.xml" />
-		</f:on>
-	
+
+<div id="mainscreen"></div>
+
 </body>
 
 </html>

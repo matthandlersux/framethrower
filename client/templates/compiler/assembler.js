@@ -3,10 +3,10 @@ var GLOBAL_ERRORS = false;
 //load is rhino command. When running in browser, have to load the file with <script> tag
 if (load !== undefined) {
 	load(["tplparser.js"]);
-	load(["preparse.js"]);
+	load(["semantics.js"]);
 }
 
-function JSONtoString(object, tabs) {
+function outputJSON(object, tabs) {
 	if(object !== undefined) {
 		if(arrayLike(object)) {
 			var output = "[\n";
@@ -20,7 +20,7 @@ function JSONtoString(object, tabs) {
 				for (var i=0; i<=tabs; i++) {
 					output += "\t";
 				}
-				output += JSONtoString(value, tabs+1);
+				output += outputJSON(value, tabs+1);
 			});
 			output += "\n";
 			for (var i=0; i<=tabs-1; i++) {
@@ -29,7 +29,7 @@ function JSONtoString(object, tabs) {
 			output += "]";
 			return output;			
 		} else if (objectLike(object)) {
-			if(object.kind !== undefined && object.kind == "jsFunction") {
+			if(object.kind == "jsFunction") {
 				return object.func;
 			} else {
 				var output = "{\n";
@@ -43,7 +43,7 @@ function JSONtoString(object, tabs) {
 					for (var i=0; i<=tabs; i++) {
 						output += "\t";
 					}
-					output += "'" + name + "'" + ": " + JSONtoString(value, tabs+1);
+					output += "'" + name + "'" + ": " + outputJSON(value, tabs+1);
 				});
 				output += "\n";
 				for (var i=0; i<=tabs-1; i++) {
@@ -108,44 +108,15 @@ function compileFolder(folderPath, rebuild) {
 
 function preParse(string) {
 	//textnodes	
-	string = preParser.parse(string);
+	// string = preParser.parse(string);
 	
-	string = string.replace(/\t/g, "    ");
-	string = string.replace(/\/\/[^\n]*\n/g, "");
-	string = string.replace(/\/\*[^\*\/]*\*\//g, "");
+	// string = string.replace(/\t/g, "    ");
+	// string = string.replace(/\/\/[^\n]*\n/g, "");
+	// string = string.replace(/\/\*[^\*\/]*\*\//g, "");
 	// string = string.replace(/(<(f[^:^\/^>]|[^f^\/^>])[^<^>^\/]*>)([^<^>]*[^<^>^ ^\r^\t^\n][^<^>]*)/g, "$1<p:textnode>$3</p:textnode>");
 	// string = string.replace(/(<\/[^<^>]+>)(([^<^>^\{^\}]|\{[^\}]*\})*([^<^>^\{^\}^ ^\r^\t^\n]|\{[^\}]*\})([^<^>^\{^\}]|\{[^\}]*\})*)/g, "$1<p:textnode>$2</p:textnode>");
 
 	return string;
-}
-
-//handle extractSugar
-function postParse(object) {
-	if(object !== undefined) {
-		if(arrayLike(object)) {
-			var output = [];
-			var i = 0;
-			while (i < object.length) {
-				var value = object[i];
-				if(value.action !== undefined && value.action.kind !== undefined && value.action.kind == "extractSugar") {
-					output.push(makeLineAction({}, makeExtract(value.action.select, value.action.as, postParse(object.slice(i+1)))));
-					i = object.length;
-				} else {
-					output.push(postParse(value));
-					i++
-				}
-			}
-			return output;			
-		} else if (objectLike(object)) {
-			var output = {};
-			forEach(object, function (value, name) {
-				output[name] = postParse(value);
-			});
-			return output;
-		} else {
-			return object;
-		}
-	}
 }
 
 
@@ -161,27 +132,39 @@ function compileFile (filePath, rebuild) {
 		var error_off = new Array(); 
 		var error_la = new Array(); 
 		str = preParse(str);
-		if( ( error_cnt = __parse( str, error_off, error_la ) ) > 0 ) {
+		var parseResult = fttemplate.parse( str, error_off, error_la );
+		if( !parseResult.success ) {
+			error_cnt = parseResult.result;
 			GLOBAL_ERRORS = true;
-			print("Parse errors, File: " + file.getName());
+			print("<b>Parse errors, File: " + file.getName() + "</b><br />");
 			for( i = 0; i < error_cnt; i++ ) {
 				var lineInfo = countLines(str, error_off[i]);
-				print("    error on line", lineInfo.lines + ", column:", lineInfo.column, "expecting \"" + error_la[i].join() + "\" near:", "\n" + lineInfo.line + "\n                              ^\n");
+				var escapedLine= lineInfo.line.split("&").join("&amp;").split( "<").join("&lt;").split(">").join("&gt;")				
+				print("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file.getCanonicalPath() + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
 			}
 		} else {
-			//result is a global variable that holds the result from parsing
-			var answer = result;
-			result = undefined;
-			answer = postParse(answer);
-			serialize(answer, binfile.getAbsolutePath());
-			return answer;
+			result = semantics.processTree(parseResult.result);
+			result.fileName = "" + file.getName();
+			serialize(result, binfile.getAbsolutePath());
+			return result;
 		}
 	}
+}
+
+function encodeMyHtml() {
+	 encodedHtml = escape(encodeHtml.htmlToEncode.value);
+	 encodedHtml = encodedHtml.replace(/\//g,"%2F");
+	 encodedHtml = encodedHtml.replace(/\?/g,"%3F");
+	 encodedHtml = encodedHtml.replace(/=/g,"%3D");
+	 encodedHtml = encodedHtml.replace(/&/g,"%26");
+	 encodedHtml = encodedHtml.replace(/@/g,"%40");
+	 encodeHtml.htmlEncoded.value = encodedHtml;
 }
 
 
 function countLines(wholeString, position) {
 	var column;
+	var columnWithTabs;
 	var line;
 	function countHelper(string, startIndex) {
 		var index = string.indexOf('\n');
@@ -190,7 +173,9 @@ function countLines(wholeString, position) {
 		} else {
 			var rest = wholeString.substr(startIndex);
 			line = rest.substr(0, rest.indexOf("\n"));
-			column = string.length;
+			column = string.length + 1;
+			var withTabs = string.replace(/\t/g, "    ");
+			columnWithTabs = withTabs.length + 1;
 			
 			var min = column - 30;
 			var filler = "";
@@ -209,7 +194,8 @@ function countLines(wholeString, position) {
 	return {
 		lines: 1 + countHelper(wholeString.substr(0, position), 0),
 		line: line,
-		column: column
+		column: column,
+		columnWithTabs: columnWithTabs
 	};
 }
 
@@ -226,9 +212,15 @@ if( arguments.length > 0 ) {
 		rebuild = true;
 	}
 	
+	//create bin folder if it doesn't exist
+	var binfolder = java.io.File("../bin");
+	if(!binfolder.exists()) {
+		binfolder.mkdir();
+	}
+	
 	var totalCompiledJSON = compileFolder(arguments[0], rebuild);
 	if(!GLOBAL_ERRORS) {
-		var totalCompiledString = "var mainTemplate = " + JSONtoString(totalCompiledJSON, 0) + ";";
+		var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
 
 		var fw = new java.io.FileWriter("../bin/" + arguments[0] + ".js");
 		var bw = new java.io.BufferedWriter(fw);

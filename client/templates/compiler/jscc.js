@@ -48,7 +48,8 @@ var	TOK_IGNORE				= 9;
 var TOK_PREFIX				= 10;
 
 //Miscelleanous constants
-var DEF_PROD_CODE			= "%% = %1;";
+//var DEF_PROD_CODE			= "%% = %1;";
+var DEF_PROD_CODE			= "";
 
 //Code generation/output modes
 var MODE_GEN_TEXT			= 0;
@@ -1010,6 +1011,9 @@ function print_term_actions()
 	~~~ CHANGES & NOTES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Date:		Author:			Note:
 ----------------------------------------------------------------------------- */
+
+load(["../../js/util/util.js"]);
+
 function print_actions()
 {
 	var code = new String();
@@ -1026,28 +1030,55 @@ function print_actions()
 		code += "	{\n";
 		
 		semcode = new String();
-		for( j = 0, k = 0; j < productions[i].code.length; j++, k++ )
-		{
-			strmatch = re.exec( productions[i].code.substr( j, productions[i].code.length ) );
-			if( strmatch && strmatch.index == 0 )
+		
+		if(productions[i].code.length == 0) {
+			//custom code to add objects with labels
+			semcode = "rval = {";
+			var first = true;
+			var rhs = productions[i].rhs;
+			var used = {};
+			forEach(rhs, function (symbol, idx) {
+				if(first) {
+					first = false;
+				} else {
+					semcode += ", ";
+				}
+				if (used[symbol] === undefined) {
+					semcode += "'" + symbols[symbol].label.toLowerCase() + "':";
+					used[symbol] = 1;
+				} else {
+					used[symbol]++;
+					semcode += "'" + symbols[symbol].label.toLowerCase() + used[symbol] + "':";
+				}
+				idx = rhs.length - idx;
+				semcode += "vstack[ vstack.length - " + idx + " ]";
+			});
+			semcode += "};";
+		} else {
+			for( j = 0, k = 0; j < productions[i].code.length; j++, k++ )
 			{
-				if( strmatch[0] == "%%" )
-					semcode += "rval";
+				strmatch = re.exec( productions[i].code.substr( j, productions[i].code.length ) );
+				if( strmatch && strmatch.index == 0 )
+				{
+					if( strmatch[0] == "%%" )
+						semcode += "rval";
+					else
+					{
+						idx = parseInt( strmatch[0].substr( 1, strmatch[0].length ) );
+						idx = productions[i].rhs.length - idx + 1;
+						semcode += "vstack[ vstack.length - " + idx + " ]";
+					}
+
+					j += strmatch[0].length - 1;
+					k = semcode.length;
+				}
 				else
 				{
-					idx = parseInt( strmatch[0].substr( 1, strmatch[0].length ) );
-					idx = productions[i].rhs.length - idx + 1;
-					semcode += "vstack[ vstack.length - " + idx + " ]";
+					semcode += productions[i].code.charAt( j );
 				}
-				
-				j += strmatch[0].length - 1;
-				k = semcode.length;
-			}
-			else
-			{
-				semcode += productions[i].code.charAt( j );
-			}
+			}			
 		}
+
 
 		code += "		" + semcode + "\n";
 		code += "	}\n";

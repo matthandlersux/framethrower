@@ -8,7 +8,7 @@ template () {
 	
 
 	divBy = function (d::Number, q::Number)::Number {
-		return q/d;
+		return q / d;
 	},
 	
 	mult = function (x::Number, y::Number)::Number {
@@ -41,6 +41,9 @@ template () {
 			childProp = create(ChildProp, {position:position, dragPosition:dragPosition}),
 			add(situations, tobytest.realLife, childProp)
 		</f:on>
+		<f:each crazyTest>
+			<div>hey</div>
+		</f:each>
 		<svg:svg id="svgelements">
 			<f:each situations as situation, childProp><f:each ChildProp:position childProp as position>
 				content = drawSituation situation position rootScale,

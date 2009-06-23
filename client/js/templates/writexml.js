@@ -57,6 +57,9 @@ function xmlToDOM(xml, env, context) {
 		
 		forEach(xml.attributes, function (att, attName) {
 			pushCleanup(evaluateXMLInsert(att, env, function (value) {
+				// if (attName === "class") {
+				// 	console.log("changing a class", "["+value+"]");
+				// }
 				setAttr(node, attName, value);
 			}));
 		});

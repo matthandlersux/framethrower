@@ -45,7 +45,7 @@ BLOCK
 	}
 
 JAVASCRIPT
-	function (PARAMS) {
+	function (PARAMS)::TYPE {
 		JSCODE
 	}
 

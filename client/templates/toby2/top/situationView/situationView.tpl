@@ -27,10 +27,16 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 	dragEndSit = state(Unit Situation),
 	dragEndInside = state(Unit Null),
 	
+	// dragOperation can be
+	// 1 - offset (changing a position)
+	// 2 - move/copy into
+	// 3 - make infon/pipe
+	dragOperation = bindUnit (swap (reactiveIfThen dragEndInside) 2) (reactiveIfThen (mapUnit2 reactiveEqual (bindUnit Situation:container dragStartSit) dragEndSit) 1 3),
 	
-	globalScale = state{s=create(Unit Number), add(s, 1), s},
-	globalTranslateX = state{x=create(Unit Number), add(x, 0), x},
-	globalTranslateY = state{y=create(Unit Number), add(y, 0), y},
+	
+	globalScale = state {s=create(Unit Number), add(s, 1), s},
+	globalTranslateX = state {x=create(Unit Number), add(x, 0), x},
+	globalTranslateY = state {y=create(Unit Number), add(y, 0), y},
 	
 	
 	// x and y represent, in global coordinates, the center of where the situation should be drawn
@@ -38,7 +44,13 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 	// focus is the situation to be drawn
 	drawSituation = template (x::Unit Number, y::Unit Number, scale::Unit Number, focus::Situation, dragHandler::XMLP) {
 		children = state(Map Situation ChildProp),
-		<svg:g>
+		imBeingDragged = bindUnit (reactiveEqual focus) dragStartSit,
+		imBeingDraggedClass = reactiveIfThen imBeingDragged "gsv-dragStart " "",
+		imBeingOffset = reactiveAnd (bindUnit (reactiveEqual 1) dragOperation) imBeingDragged,
+		imBeingOffsetClass = reactiveIfThen imBeingOffset "gsv-offsetting " "",
+		finalClass = mapUnit2 concat imBeingDraggedClass imBeingOffsetClass,
+		
+		<svg:g class="{finalClass}">
 			
 			// population of childProp (for now this just populates childProp with all the situation's children)
 			<f:trigger Situation:contains focus as child>
@@ -51,12 +63,20 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 			</f:trigger>
 			
 			<svg:g class="gsv-situation">
-				<f:call>dragHandler</f:call>
-				<svg:circle class="gsv-icon" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed" />
-				<svg:circle class="gsv-hit" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed" />
-				<svg:text x="{x}" y="{mapUnit2 subtract y scale}" text-anchor="middle" shape-rendering="optimizeSpeed">
-					{scale}
-				</svg:text>
+				<svg:circle class="gsv-hit-inner" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed">
+					<f:on mouseover>add(dragEndInside, null)</f:on>
+				</svg:circle>
+				<svg:g>
+					<f:on mouseover>add(dragEndSit, focus)</f:on>
+					<f:call>dragHandler</f:call>
+					<svg:circle class="gsv-icon" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed" />
+					<svg:circle class="gsv-hit-object" r="{scale}" cx="{x}" cy="{y}" shape-rendering="optimizeSpeed">
+						<f:on mouseout>remove(dragEndInside)</f:on>
+					</svg:circle>
+					<svg:text x="{x}" y="{mapUnit2 subtract y scale}" text-anchor="middle" shape-rendering="optimizeSpeed">
+						{scale}
+					</svg:text>
+				</svg:g>
 			</svg:g>
 			<f:call>drawSituationChildren x y scale children</f:call>
 		</svg:g>
@@ -88,7 +108,41 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 				add(Position:x childPosition, draggedToX),
 				add(Position:y childPosition, draggedToY)
 			},
-			dragHandler = dragdrop dragX dragY onDrop,
+			// dragHandler = dragdrop dragX dragY onDrop,
+			
+			dragHandler = <f:call>
+				dragging = state(Unit Null),
+				offsetX = state(Unit Number),
+				offsetY = state(Unit Number),
+				<f:wrapper>
+					<f:on dragstart>
+						add(dragStartSit, child),
+						add(offsetX, event.mouseX),
+						add(offsetY, event.mouseY),
+						add(dragging, null)
+					</f:on>
+					<f:each dragging as _>
+						<f:wrapper>
+							<f:each offsetX as offsetX><f:each offsetY as offsetY>
+								<f:on globalmousemove>
+									add(dragX, subtract event.mouseX offsetX),
+									add(dragY, subtract event.mouseY offsetY)
+								</f:on>
+							</f:each></f:each>
+							<f:on globalmouseup>
+								onDrop,
+								
+								remove(dragging),
+								remove(dragX),
+								remove(dragY),
+								remove(offsetX),
+								remove(offsetY),
+								remove(dragStartSit)
+							</f:on>
+						</f:wrapper>
+					</f:each>
+				</f:wrapper>
+			</f:call>,
 			
 			<f:wrapper>
 				<f:call>drawSituation childAbsX childAbsY childScale child dragHandler</f:call>
@@ -97,37 +151,15 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 		</f:each>
 	},
 	
-	<svg:svg style-width="{width}" style-height="{height}">
+	globalClass = reactiveIfThen dragStartSit "gsv-dragging" "gsv-nodrag",
+	
+	<svg:svg style-width="{width}" style-height="{height}" class="{globalClass}">
 		<svg:g transform="{mapUnit2 makeTranslate (mapUnit2 plus (mapUnit (swap divide 2) width) globalTranslateX) (mapUnit2 plus (mapUnit (swap divide 2) height) globalTranslateY)}">
 			<f:call>
 				drawSituationChildren (returnUnit 0) (returnUnit 0) (mapUnit2 multiply globalScale (mapUnit (swap divide 2) height)) children
 			</f:call>
 		</svg:g>
 		
-		<f:on mousescroll>
-			wheelDeltaToMultiplier = function (wd) {
-				if (wd > 0) return 1.2;
-				else return 1/1.2;
-			},
-			newTranslateX = function (zoomX, oldTranslateX, multiplier) {
-				return zoomX - multiplier * (zoomX - oldTranslateX);
-			},
-			newTranslateY = function (zoomY, oldTranslateY, multiplier) {
-				return zoomY - multiplier * (zoomY - oldTranslateY);
-			},
-			
-			gs = extract globalScale,
-			oldTranslateX = extract globalTranslateX,
-			oldTranslateY = extract globalTranslateY,
-			width = extract width,
-			height = extract height,
-			
-			multiplier = wheelDeltaToMultiplier event.wheelDelta,
-			add(globalScale, multiply gs multiplier),
-			zoomX = subtract event.offsetX (divide width 2),
-			zoomY = subtract event.offsetY (divide height 2),
-			add(globalTranslateX, newTranslateX zoomX oldTranslateX multiplier),
-			add(globalTranslateY, newTranslateY zoomY oldTranslateY multiplier)
-		</f:on>
+		<f:call>mouseScrollAction</f:call>
 	</svg:svg>
 }
