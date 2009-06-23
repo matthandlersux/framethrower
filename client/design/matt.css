@@ -4,9 +4,24 @@
 	padding: 0px;
 }
 
-div {
+/*div {
 	padding: 2px;
 	border: 1px solid black;
 	margin: 2px;
 	background: #aaa;
+}*/
+
+#timeLine {
+	background: #aaa;
+	position: absolute;
+	height: 180px;
+}
+
+#zoomTimeLine {
+	background: #999;
+	position: absolute;
+	width: 140px;
+	height: 140px;
+	border: 2px solid black;
+	-moz-border-radius: 5px;
 }
