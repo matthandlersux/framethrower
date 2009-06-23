@@ -10,21 +10,28 @@
 		"js/util/xml.js",
 		"js/util/conSortedSet.js",
 		
-		"js/structure/constructors.js",
+		"js/structure/constructors/constructors.js",
 		
-		"js/structure/parse.js",
+		"js/structure/constructors/parse.js",
+		"js/structure/constructors/types.js",
+		"js/structure/constructors/expr.js",
+		
+		"js/structure/constructors/literalTypes.js",
+
 		"js/structure/env.js",
-		"js/structure/types.js",
-		"js/structure/expr.js",
-		
-		"js/structure/literalTypes.js",
-		"js/structure/ord.js",
 		"js/structure/baseEnv.js",
+		
+		"js/builtin/builtin.js",
+		"js/builtin/functions/null.js",
+		"js/builtin/functions/ord.js",
+		"js/builtin/functions/utility.js",
+		"js/builtin/functions/cells.js",
+		"js/builtin/functions/serialize.js",
+		"js/builtin/exprs.js",
 
 		"js/structure/evaluate.js",
 
 		"js/reactive/hash.js",
-		"js/reactive/primfuncscells.js",
 		"js/reactive/cells.js",
 		"js/reactive/ranges.js",
 		"js/reactive/controlledCell.js",
@@ -33,9 +40,6 @@
 		
 		"js/objects/objects.js",
 		"js/objects/rootObjects.js",
-		
-		"js/structure/exprChainer.js",
-		"js/structure/exprLib.js",
 		
 		
 		"js/browser/position.js",
