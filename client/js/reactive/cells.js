@@ -5,9 +5,9 @@ function makeBaseCell (toKey) {
 	CELLCOUNT++;
 	CELLSCREATED++;
 	var cell = {kind: "startCap", remote: 2, name: localIds()};
-	var funcs = makeObjectHash();
+	var funcs = {};
 	var onRemoves = [];
-	var dependencies = makeObjectHash();
+	var dependencies = {};
 	var funcColor = 0; //counter for coloring injected functions
 	cell.isDone = false;
 
@@ -17,13 +17,13 @@ function makeBaseCell (toKey) {
 	cell.getFuncs = function(){return funcs;};
 
 	var addFirstLine = function (dot) {
-		funcs.forEach(function (func, id) {
+		forEach(funcs, function (func, id) {
 			runFunOnDot(dot, func.func, id);
 		});
 	};
 
 	var removeLastLine = function(dot) {
-		funcs.forEach(function (func, id) {
+		forEach(funcs, function (func, id) {
 			undoFunOnDot(dot, id);
 		});
 	};
@@ -74,7 +74,7 @@ function makeBaseCell (toKey) {
 		if (depender.addDependency) {
 			depender.addDependency(cell, id);
 		}
-		funcs.set(id, {func:f, depender:depender});
+		funcs[id] = {func:f, depender:depender};
 		if (f !== undefined) {
 			dots.forRange(function (dot, key) {
 				if(dot.num > 0) {
@@ -116,22 +116,22 @@ function makeBaseCell (toKey) {
 	
 	cell.addDependency = function (depCell, id) {
 		if(depCell.name !== undefined) {
-			dependencies.set(depCell.name + "," + id, true);
+			dependencies[depCell.name + "," + id] = true;
 		} else {
-			dependencies.set(depCell + "," + id, true);
+			dependencies[depCell + "," + id] = true;
 		}
 	};
 	
 	cell.removeFunc = function (id) {
-		var depender = funcs.get(id).depender;
+		var depender = funcs[id].depender;
 		if (depender.done !== undefined) {
 			depender.done(cell, id);
 		}
-		funcs.remove(id);
+		delete funcs[id];
 		dots.forRange(function (dot, key) {
 			undoFunOnDot(dot, id);
 		});
-		if (funcs.isEmpty() && !cell.persist) {
+		if (isEmpty(funcs) && !cell.persist) {
 			// console.log("removing a cell");
 			CELLCOUNT--;
 			forEach(onRemoves, function(onRemove) {
@@ -141,23 +141,23 @@ function makeBaseCell (toKey) {
 	};
 
 	function checkDone() {
-		if (dependencies.isEmpty()) {
+		if (isEmpty(dependencies)) {
 			cell.isDone = true;
-			funcs.forEach(function(func, funcId) {
+			forEach(funcs, function(func, funcId) {
 				informDepender(func.depender, cell, funcId);
 			});
 		}
 	};
 
 	cell.done = function (doneCell, id) {
-		dependencies.remove(doneCell.name + "," + id);
+		delete dependencies[doneCell.name + "," + id];
 		checkDone();
 	};
 
 	cell.setDone = function () {
 		if (!cell.isDone) {
 			cell.isDone = true;
-			funcs.forEach(function(func, funcId) {
+			forEach(funcs, function(func, funcId) {
 				informDepender(func.depender, cell, funcId);
 			});
 		}
@@ -169,7 +169,7 @@ function makeBaseCell (toKey) {
 		if (dot !== undefined && dot.num != 0) {
 			dot.num++;
 		} else {
-			dot = {val:value, num:1, lines:makeObjectHash()};
+			dot = {val:value, num:1, lines:{}};
 			dots.set(key, dot);
 			if (dots.inRange(key)) {
 				addFirstLine(dot);
@@ -198,24 +198,24 @@ function makeBaseCell (toKey) {
 		var onRemove = func(value);
 		if (onRemove !== undefined) {
 			if (onRemove.func) {
-				dots.get(toKey(value)).lines.set(id, onRemove.func);
+				dots.get(toKey(value)).lines[id] = onRemove.func;
 			} else {
 				var temp = dots.get(toKey(value));
 				if(temp == undefined) {
 					console.log("Dot num", dot.num);
 				}
-				temp.lines.set(id, onRemove);
+				temp.lines[id] = onRemove;
 			}
 		}
 	};
 	
 	var undoFunOnDot = function (dot, id) {
 		if (dot !== undefined) {
-			var removeFunc = dot.lines.get(id);
+			var removeFunc = dot.lines[id];
 			if (removeFunc) {
 				removeFunc();
 			}
-			dot.lines.remove(id);
+			delete dot.lines[id];
 		}
 	};
 	

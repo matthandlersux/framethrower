@@ -165,7 +165,7 @@ var primFuncs = function () {
 			type : "Set a -> Set a -> Set a",
 			func : function (cell1, cell2) {
 				var outputCell = makeCell();
-				var countHash = makeObjectHash();
+				var countHash = {};
 
 				var add = function (count, value) {
 					count.num++;
@@ -178,9 +178,10 @@ var primFuncs = function () {
 				};
 
 				var getOrMake = function (value) {
-					return countHash.getOrMake(value, function () {
-						return {num:0};
-					});
+					if (countHash[value] === undefined) {
+						countHash[value] = {num:0};
+					}
+					return countHash[value];
 				};
 				outputCell.leash();
 				cell1.inject(outputCell, function (value) {
@@ -669,7 +670,7 @@ var primFuncs = function () {
 				var setType = buildType(getType(cell), "Map a (Set b)", "Set a");
 				
 				var outputCell = makeCellMapInput();
-				var bHash = makeObjectHash();
+				var bHash = {};
 				
 				var bHashCell = makeCell();
 				
@@ -678,17 +679,17 @@ var primFuncs = function () {
 				
 				bHashCell.inject(
 					function() {
-						bHash.forEach(function(bCell) {
+						forEach(bHash, function(bCell) {
 							bCell.setDone();
 						});
 					},
 					function (bValue) {
 						var newCell = makeCell();
 						newCell.type = setType;
-						bHash.set(bValue, newCell);
+						bHash[bValue] = newCell;
 						var onRemove = outputCell.addLine({key:bValue, val:newCell});
 						return function () {
-							bHash.remove(bValue);
+							delete bHash[bValue];
 							onRemove();
 						};
 					}
@@ -697,7 +698,7 @@ var primFuncs = function () {
 				cell.inject(outputCell, function (keyVal) {
 					return keyVal.val.inject(bHashCell, function (innerVal) {
 						var onRemove1 = bHashCell.addLine(innerVal);
-						var onRemove2 = bHash.get(innerVal).addLine(keyVal.key);
+						var onRemove2 = bHash[innerVal].addLine(keyVal.key);
 						return function () {
 							onRemove2();
 							onRemove1();
