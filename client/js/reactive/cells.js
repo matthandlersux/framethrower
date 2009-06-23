@@ -1,3 +1,19 @@
+//Cell Common Interface (more detail inline with code)
+//Creation:
+//	makeCell()				cell for Unit and Set
+//  makeCellMapInput()		cell for Map
+//Hooking Up:
+//	cell.inject(depender, f)			depender is (cell to be informed when done OR function to be called when done).
+//	cell.injectDependency(depender)		depender is (cell to be informed when done OR function to be called when done).
+//	cell.leash()						cell won't be done until unleash is called
+// 	cell.unleash()
+//Controlling:
+//	cell.addLine()
+//	cell.removeLine()
+//	cell.setDone()
+
+
+
 var CELLCOUNT = 0;
 var CELLSCREATED = 0;
 
@@ -241,9 +257,6 @@ function makeBaseCell (toKey) {
 				dots.get(toKey(value)).lines[id] = onRemove.func;
 			} else {
 				var temp = dots.get(toKey(value));
-				if(temp == undefined) {
-					console.log("Dot num", dot.num);
-				}
 				temp.lines[id] = onRemove;
 			}
 		}
