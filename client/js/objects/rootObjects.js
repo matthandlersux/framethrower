@@ -1309,6 +1309,11 @@ var rootObjects = {};
 		140203
 	]);
 	
+	// make cuts2 from cuts:
+	forEach(rootObjects["test.walleVideo"].prop["cuts"].getState()[0], function(cut) {
+		rootObjects["test.walleVideo"].prop["cuts2"].control.add(cut);
+	});
+	
 	
 	// m("test.pane", "UI.pane.pane");
 	// rootObjects["test.pane"].prop["focus"].control.add(rootObjects["shared.realLife"]);
