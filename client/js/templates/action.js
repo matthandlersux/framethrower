@@ -235,13 +235,13 @@ function executeAction(instruction, scope) {
 			// if (done) myRemove();
 			var done = false;
 			var cell = evaluate(instruction.select);
-			var myRemove = cell.inject(function () {
+			var myRemove = cell.injectDependency(function () {
 				forEach(cell.getState(), function (element) {
 					executeAction(instruction.inner(element), makeDynamicEnv(scope.env));
 				});
 				if (myRemove) myRemove();
 				else done = true;
-			}, emptyFunction);
+			});
 			if (done) myRemove();
 		}
 	});

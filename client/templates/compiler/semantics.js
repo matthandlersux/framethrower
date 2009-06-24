@@ -462,7 +462,7 @@ var semantics = function(){
 	}
 	
 	function makeState(node) {
-		var action;
+		var fullactlist;
 		if (def(node.type)) {
 			var createAction = {
 				create:{
@@ -471,11 +471,38 @@ var semantics = function(){
 				},
 				lineNum: node.lineNum
 			};
-			action = makeActiontpl({arglist:{}, fullactlist:{actlist:{}, action:createAction}, lineNum: node.lineNum});
+			//state(TYPE, EXPR) sugar
+			if(def(node.expr)) {
+				var actlist = {
+					actlist: {
+						actline: {
+							variable: {identifier:"x"}, 
+							action: createAction
+						}
+					},
+					actline: {
+						action: {
+							update: {
+								add: {
+									expr: "x",
+									expr2: node.expr
+								}
+							}
+						}
+					}
+				};
+				var action = {
+					expr: "x"
+				};
+				fullactlist = {actlist:actlist, action:action};
+			} else {
+				fullactlist = {actlist:{}, action:createAction};
+			}
 		} else if (def(node.fullactlist)) {
-			action = makeActiontpl({arglist:{}, fullactlist:node.fullactlist, lineNum: node.lineNum});
+			fullactlist = node.fullactlist;
 		}
-		
+
+		var action = makeActiontpl({arglist:{}, fullactlist:fullactlist, lineNum: node.lineNum});
 		return {
 			kind: "lineState",
 			action: action,
