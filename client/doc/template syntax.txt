@@ -1,7 +1,7 @@
 Here is a quick, informal first draft of the template syntax.
 
-A template (.tpl file) begins with a LINE.
-
+A template (.tpl file) contains a LINE.
+A let (.let file) contains a comma separated list of LETLINES.
 
 
 TEMPLATE

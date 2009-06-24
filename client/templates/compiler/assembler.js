@@ -90,12 +90,20 @@ function compileFolder(folderPath, rebuild) {
 			} else {
 				var nameWithExt = child.getName();
 				var name = nameWithExt.substr(0, nameWithExt.length() - 4);
-				if(name == (folder.getName())) {
-					mainJSON = compileFile(folderPath + "/" + child.getName(), rebuild);
-				} else {
-					var let = compileFile(folderPath + "/" + child.getName(), rebuild);
-					if (let !== undefined) {
-						lets[name] = let;
+				var ext = nameWithExt.substr(nameWithExt.length() - 3);
+				if (ext === "tpl") {
+					if(name == (folder.getName())) {
+						mainJSON = compileFile(folderPath + "/" + child.getName(), rebuild, false);
+					} else {
+						var let = compileFile(folderPath + "/" + child.getName(), rebuild, false);
+						if (let !== undefined) {
+							lets[name] = let;
+						}
+					}
+				} else if (ext === "let") {
+					var includeLets = compileFile(folderPath + "/" + child.getName(), rebuild, true);
+					if (includeLets !== undefined) {
+						addLets(mainJSON, includeLets);
 					}
 				}
 			}
@@ -106,32 +114,19 @@ function compileFolder(folderPath, rebuild) {
 }
 
 
-function preParse(string) {
-	//textnodes	
-	// string = preParser.parse(string);
-	
-	// string = string.replace(/\t/g, "    ");
-	// string = string.replace(/\/\/[^\n]*\n/g, "");
-	// string = string.replace(/\/\*[^\*\/]*\*\//g, "");
-	// string = string.replace(/(<(f[^:^\/^>]|[^f^\/^>])[^<^>^\/]*>)([^<^>]*[^<^>^ ^\r^\t^\n][^<^>]*)/g, "$1<p:textnode>$3</p:textnode>");
-	// string = string.replace(/(<\/[^<^>]+>)(([^<^>^\{^\}]|\{[^\}]*\})*([^<^>^\{^\}^ ^\r^\t^\n]|\{[^\}]*\})([^<^>^\{^\}]|\{[^\}]*\})*)/g, "$1<p:textnode>$2</p:textnode>");
-
-	return string;
-}
-
-
-function compileFile (filePath, rebuild) {
+function compileFile (filePath, rebuild, isLetFile) {
 	var file = java.io.File("../" + filePath);
 	var binfile = java.io.File("../bin/" + filePath + ".ser");
-	
 	if (!rebuild && binfile.exists() && (binfile.lastModified() > file.lastModified())) {
 		return deserialize(binfile.getAbsolutePath());
 	} else {
 		var str = readFile(file.getAbsolutePath());
+		if (isLetFile) {
+			str = "includefile " + str;
+		}
 		var error_cnt = 0; 
 		var error_off = new Array(); 
 		var error_la = new Array(); 
-		str = preParse(str);
 		var parseResult = fttemplate.parse( str, error_off, error_la );
 		if( !parseResult.success ) {
 			error_cnt = parseResult.result;
