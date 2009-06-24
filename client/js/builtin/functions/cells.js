@@ -167,7 +167,7 @@
 				type : "Set a -> Set a -> Set a",
 				func : function (cell1, cell2) {
 					var outputCell = makeCell();
-					var countHash = makeObjectHash();
+					var countHash = {};
 
 					var add = function (count, value) {
 						count.num++;
@@ -180,9 +180,10 @@
 					};
 
 					var getOrMake = function (value) {
-						return countHash.getOrMake(value, function () {
-							return {num:0};
-						});
+						if (countHash[value] === undefined) {
+							countHash[value] = {num:0};
+						}
+						return countHash[value];
 					};
 					outputCell.leash();
 					cell1.inject(outputCell, function (value) {
