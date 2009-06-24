@@ -101,7 +101,8 @@ var classesToMake = {
 			//"frameCount": "Number",
 			"frameRate": "Number",
 			"duration": "Number",
-			"cuts": "Unit JSON"
+			"cuts": "Unit JSON",
+			"cuts2": "Set Number"
 		}
 	},
 	
