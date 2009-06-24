@@ -57,9 +57,9 @@ function xmlToDOM(xml, env, context) {
 		
 		forEach(xml.attributes, function (att, attName) {
 			pushCleanup(evaluateXMLInsert(att, env, function (value) {
-				if (attName === "class") {
-					console.log("changing a class", "["+value+"]");
-				}
+				// if (attName === "class") {
+				// 	console.log("changing a class", "["+value+"]");
+				// }
 				setAttr(node, attName, value);
 			}));
 		});
@@ -301,8 +301,6 @@ function xmlToDOM(xml, env, context) {
 			//var cell = evaluate(expr);
 			var removeTrigger = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
 
-				//console.log("doing a trigger", val, cell.isDone);
-
 				var action = evaluate(makeApply(actionClosure, val));
 				executeAction(action);
 			});
@@ -357,7 +355,7 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		//console.log("doing an insert", expr, result);
 
 		// if result is a cell, hook it into an endcap that converts it to a string
-		if (result.kind === "startCap") {
+		if (result.kind === "cell") {
 			var serialized = makeApply(serializeCell, result);
 			
 			return evaluateAndInject(serialized, emptyFunction, callback); // NOTE: might want to wrap callback so that it returns an empty function?

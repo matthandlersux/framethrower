@@ -1,34 +1,56 @@
+// This file is a total mess, redo the whole thing!
+
 /*
 
-
-So we can take an actionCode (this is just like a templateCode) and make a closure in a similar way.
-
-Such a closure is then a function which returns an Action.
-
-An Action consists of a list of Instructions and an (optional) output.
-
 ACTION
-	{kind: "action", instructions: [INSTRUCTION], output?: ACTIONREF}
+	{
+		kind: "action",
+		params: [VARTOCREATE],
+		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type Action
+		actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}] // last one is the output
+	}
+
+ACTIONUNIT
+	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: EXPR}} |
+	{kind: "actionUpdate", target: EXPR, actionType: "add" | "remove", key?: EXPR, value?: EXPR} |
+	{kind: "extract", select: AST, action: ACTION} // this action should take one (or two) parameters.
+
+
+
+makeActionClosure returns an INSTRUCTION or a FUN that eventually returns an INSTRUCTION
 
 INSTRUCTION
-	INSTRUCTIONCREATE | INSTRUCTIONUPDATE | INSTRUCTIONEXTRACT
+	{
+		kind: "instruction",
+		instructions: [INSTRUCTIONBLOCK | INSTRUCTIONCREATE | INSTRUCTIONUPDATE | INSTRUCTIONEXTRACT],
+		output?: ACTIONREF
+	}
 
 INSTRUCTIONCREATE
-	{kind: "instructionCreate", type: TYPE, prop: {PROPERTYNAME: ACTIONREF}, label: ACTIONVARTOCREATE} |
+	{kind: "instructionCreate", type: TYPE, prop: {PROPERTYNAME: ACTIONREF}, label: ACTIONVARTOCREATE}
 
 INSTRUCTIONUPDATE
 	{kind: "instructionUpdate", target: ACTIONREF, actionType: "add" | "remove", key?: ACTIONREF, value?: ACTIONREF}
 
+INSTRUCTIONBLOCK
+	{kind: "instructionBlock", instruction: INSTRUCTION, label: ACTIONVARTOCREATE}
+
 INSTRUCTIONEXTRACT
-	{kind: "instructionExtract", select: EXPR, inner: FUNCTION} // FUNCTION returns ACTION
+	{kind: "instructionExtract", select: EXPR, inner: FUNCTION} // FUNCTION returns INSTRUCTION
 
 ACTIONREF
 	{kind: "actionRef", label: ACTIONVAR, type: TYPE} |
 	{kind: "actionRef", label: STRING, left: OBJECTFUN, right: ACTIONREF} |
 	OBJECT/CELL/LITERAL
 
+PROPERTYNAME
+	string
+
+ACTIONVARTOCREATE
+	string (this string then gets bound so that when an ACTIONREF is encountered with this string, it will point here)
 
 */
+
 
 function makeActionRef(label, type) {
 	return {kind: "actionRef", label: label, type: type};
@@ -100,32 +122,39 @@ function makeActionClosure(actionCode, env) {
 				instructions.push(ret);
 			} else {
 				var evaled = evaluateLine(action, envWithParams);
-				if (evaled.kind === "action") {
-					instructions = instructions.concat(evaled.instructions);
-					result = evaled.output;
+				if (evaled.kind === "instruction") {
+					var block = {
+						kind: "instructionBlock",
+						instruction: evaled,
+						label: localIds()
+					};
+					instructions.push(block);
+					if (evaled.output) {
+						result = makeActionRef(block.label, getType(evaled.output));						
+					}
 				} else {
 					result = evaled;
 				}
 			}
-			
-			if (result !== undefined && actionLet.name) {
+			if (actionLet.name) {
+				if (result === undefined) {
+					debug.error("Trying to assign a let action, but the action has no return value", actionLet);
+				}
 				scope[actionLet.name] = result;
 			}
 			output = result;
 		});
 		
 		var ret = {
-			kind: "action",
+			kind: "instruction",
 			instructions: instructions,
 			output: output,
 			type: actionType,
 			remote: 2
 		};
-		//console.log("made an action", ret);
-		lastAction = ret;
 		return ret;
 	}, params.length);
-	
+
 	if (params.length > 0) {
 		return makeFun(type, f);
 	} else {
@@ -133,21 +162,17 @@ function makeActionClosure(actionCode, env) {
 	}
 }
 
-var lastAction;
 
-function executeAction(action, scope) {
-	if (scope === undefined) scope = {};
+
+
+function executeAction(instruction, scope) {
+	if (scope === undefined) scope = makeDynamicEnv();
 	
-	var processActionRef = function(actionRef) {
+	function processActionRef(actionRef) {
 		if (actionRef.kind === "actionRef") {
 			if (actionRef.left === undefined) {
 				//{kind: "actionRef", label: ACTIONVAR, type: TYPE}
-				var avar = scope[actionRef.label];
-				//DEBUG
-				if (avar == undefined) {
-					debug.error("Variable used in action not found in action scope, Variable Name: ", actionRef.label, actionRef);
-				}
-				return avar;
+				return scope.env(actionRef.label);
 			} else if (actionRef.left !== undefined) {
 				//{kind: "actionRef", label: STRING, left: OBJECTFUN, right: ACTIONREF}
 				var objectFun = actionRef.left;
@@ -162,8 +187,13 @@ function executeAction(action, scope) {
 	};
 	
 	
-	forEach(action.instructions, function(instruction) {
-		if (instruction.kind === "instructionCreate") {
+	forEach(instruction.instructions, function(instruction) {
+		if (instruction.kind === "instructionBlock") {
+			var res = executeAction(instruction.instruction, makeDynamicEnv(scope.env));
+			if (instruction.label !== undefined) {
+				scope.add(instruction.label, res);
+			}
+		} else if (instruction.kind === "instructionCreate") {
 			var made;
 			if (isReactive(instruction.type)) {
 				made = makeControlledCell(unparseType(instruction.type));
@@ -176,7 +206,7 @@ function executeAction(action, scope) {
 				var made = objects.make(instruction.type.value, processedProp);
 			}
 			if (instruction.label !== undefined) {
-				scope[instruction.label] = made;
+				scope.add(instruction.label, made);
 			}
 		} else if (instruction.kind === "instructionUpdate") {
 			var target = processActionRef(instruction.target);
@@ -205,18 +235,19 @@ function executeAction(action, scope) {
 			// if (done) myRemove();
 			var done = false;
 			var cell = evaluate(instruction.select);
-			var myRemove = cell.inject(function () {
+			var myRemove = cell.injectDependency(function () {
 				forEach(cell.getState(), function (element) {
-					executeAction(instruction.inner(element), shallowCopy(scope));
+					executeAction(instruction.inner(element), makeDynamicEnv(scope.env));
 				});
 				if (myRemove) myRemove();
 				else done = true;
-			}, emptyFunction);
+			});
 			if (done) myRemove();
 		}
 	});
 	
-	if (action.output) {
-		return processActionRef(action.output);
+	if (instruction.output) {
+		return processActionRef(instruction.output);
 	}
 }
+

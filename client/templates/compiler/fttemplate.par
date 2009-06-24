@@ -8,43 +8,38 @@
 	--- These are the token definitions ---
 ~/
 
-/~ Characters to be ignored... ~/
-!	'//[^\n]*\n'
-	;
-
 /~	Grammar Tokens			~/
-	'(<p:textnode>([^<^>]*)</p:textnode>)'						TEXTNODE   [* %match = %match.substr(12, %match.length - 25); *] 	
-	'(<p:function>(([^<]|<[^/])*)</p:function>)'				JSFUN	   [* %match = %match.substr(12, %match.length - 25); *] 	
-	'template([\r\n\t\ ]*)'										WTEMPLATE
-	'action([\r\n\t\ ]*)'										WACTION
-	'state([\r\n\t\ ]*)'										WSTATE
-	'create([\r\n\t\ ]*)'										WCREATE
-	'add([\r\n\t\ ]*)'											WADD
-	'extract([\r\n\t\ ]*)'										WEXTRACT
-	'remove([\r\n\t\ ]*)'										WREMOVE
-	'style([\r\n\t\ ]*)'										WSTYLE
-	'as([\r\n\t\ ]*)'											WAS
-	'if([\r\n\t\ ]*)'											WIF
-	'else([\r\n\t\ ]*)'											WELSE
-	'f:each([\r\n\t\ ]*)'										FEACH
-	'f:call([\r\n\t\ ]*)'										FCALL
-	'f:on([\r\n\t\ ]*)'											FON
-	'f:trigger([\r\n\t\ ]*)'									FTRIGGER
-	'\{([\r\n\t\ ]*)'											LBRACKET
-	'\}([\r\n\t\ ]*)'											RBRACKET
-	'\(([\r\n\t\ ]*)'											LPAREN
-	'\)([\r\n\t\ ]*)'											RPAREN
-	',([\r\n\t\ ]*)'											COMMA
-	';([\r\n\t\ ]*)'											SEMICOLON
-	':([\r\n\t\ ]*)'											COLON
-	'=([\r\n\t\ ]*)'											EQUALS
-	'</([\r\n\t\ ]*)'											LTSLASH
-	'/([\r\n\t\ ]*)'											SLASH
-	'<([\r\n\t\ ]*)'											LT
-	'>([\r\n\t\ ]*)'											GT
-	'-([\r\n\t\ ]*)'											DASH
-	'\"([\r\n\t\ ]*)'											QUOTE
-	'[A-Za-z0-9_\.\'\~\#\*\+\^\%\.\!\&\|\?\[\]]+([\r\n\t\ ]*)'	IDENTIFIER
+	'function([\r\n\t\ ]|//[^\n]*\n)*'							WFUNCTION
+	'template([\r\n\t\ ]|//[^\n]*\n)*'							WTEMPLATE
+	'action([\r\n\t\ ]|//[^\n]*\n)*'							WACTION
+	'state([\r\n\t\ ]|//[^\n]*\n)*'								WSTATE
+	'create([\r\n\t\ ]|//[^\n]*\n)*'							WCREATE
+	'add([\r\n\t\ ]|//[^\n]*\n)*'								WADD
+	'extract([\r\n\t\ ]|//[^\n]*\n)*'							WEXTRACT
+	'remove([\r\n\t\ ]|//[^\n]*\n)*'							WREMOVE
+	'style([\r\n\t\ ]|//[^\n]*\n)*'								WSTYLE
+	'as([\r\n\t\ ]|//[^\n]*\n)*'								WAS
+	'if([\r\n\t\ ]|//[^\n]*\n)*'								WIF
+	'else([\r\n\t\ ]|//[^\n]*\n)*'								WELSE
+	'f:each([\r\n\t\ ]|//[^\n]*\n)*'							FEACH
+	'f:call([\r\n\t\ ]|//[^\n]*\n)*'							FCALL
+	'f:on([\r\n\t\ ]|//[^\n]*\n)*'								FON
+	'f:trigger([\r\n\t\ ]|//[^\n]*\n)*'							FTRIGGER
+	'\{([\r\n\t\ ]|//[^\n]*\n)*'								LBRACKET
+	'\}([\r\n\t\ ]|//[^\n]*\n)*'								RBRACKET
+	'\(([\r\n\t\ ]|//[^\n]*\n)*'								LPAREN
+	'\)([\r\n\t\ ]|//[^\n]*\n)*'								RPAREN
+	',([\r\n\t\ ]|//[^\n]*\n)*'									COMMA
+	';([\r\n\t\ ]|//[^\n]*\n)*'									SEMICOLON
+	':([\r\n\t\ ]|//[^\n]*\n)*'									COLON
+	'=([\r\n\t\ ]|//[^\n]*\n)*'									EQUALS
+	'</([\r\n\t\ ]|//[^\n]*\n)*'								LTSLASH
+	'/([\r\n\t\ ]|//[^\n]*\n)*'									SLASH
+	'<([\r\n\t\ ]|//[^\n]*\n)*'									LT
+	'>([\r\n\t\ ]|//[^\n]*\n)*'									GT
+	'-([\r\n\t\ ]|//[^\n]*\n)*'									DASH
+	'\"([\r\n\t\ ]|//[^\n]*\n)*'								QUOTE
+	'[A-Za-z0-9_\.\'\~\#\*\+\^\%\.\!\&\|\?\[\]]+([\r\n\t\ ]|//[^\n]*\n)*'	IDENTIFIER
 	;
 ##
 
@@ -58,7 +53,7 @@ TOP:
 
 
 LINE:
-	JSFUN
+	FUNCTION
 	| TEMPLATE
 	| STATE
 	| LETLISTBLOCK
@@ -68,6 +63,17 @@ LINE:
 	| XML
 	;
 
+FUNCTION:
+	WFUNCTION LPAREN ARGLIST RPAREN LBRACKET FUNCTIONBODY RBRACKET
+	| WFUNCTION LPAREN ARGLIST RPAREN COLON COLON TYPE LBRACKET FUNCTIONBODY RBRACKET
+	;
+	
+FUNCTIONBODY:
+	FUNCTIONBODY NONBRACKET
+	| FUNCTIONBODY QUOTE
+	| FUNCTIONBODY LBRACKET FUNCTIONBODY RBRACKET
+	|
+	;
 
 TEMPLATE:
 	WTEMPLATE LPAREN ARGLIST RPAREN LBRACKET FULLLETLIST RBRACKET
@@ -90,7 +96,7 @@ FULLLETLIST:
 	;
 
 LETLISTBLOCK:
-	LBRACKET LETLIST LINE RBRACKET						
+	LBRACKET FULLLETLIST RBRACKET
 	;
 
 LETLIST:
@@ -103,7 +109,8 @@ LET:
 	;
 
 STATE:
-	WSTATE LPAREN TYPE RPAREN							
+	WSTATE LPAREN TYPE RPAREN
+	| WSTATE LPAREN TYPE COMMA EXPR RPAREN
 	| WSTATE LBRACKET FULLACTLIST RBRACKET				
 	;
 
@@ -141,7 +148,7 @@ ACTION:
 	CREATE
 	| UPDATE
 	| EXTRACT
-	| JSFUN
+	| FUNCTION
 	| TEMPLATE
 	| ACTIONTPL
 	| EXPR
@@ -203,7 +210,7 @@ XML:
 	| ON												
 	| CALL												
 	| TAG												
-	| TEXTNODE												
+	| XMLTEXT
 	;
 
 FOREACH:
@@ -273,6 +280,7 @@ INSERT:
 STYLELIST:
 	STYLELIST SEMICOLON STYLEASSIGN
 	| STYLEASSIGN
+	| STYLELIST SEMICOLON
 	|
 	;
 
@@ -293,28 +301,49 @@ STYLETEXT:
 	;
 
 TEXT:
-	KEYWORD
+	LBRACKET
+	| RBRACKET
+	| LT
+	| LTSLASH
+	| NONLTBRACKET
+	| TEXT TEXT
+	|
+	;
+
+XMLTEXT:
+	NONLT
+	| XMLTEXT XMLTEXT
+	;
+
+NONLT:
+	NONLTBRACKET
 	| LBRACKET
 	| RBRACKET
+	;
+	
+NONBRACKET:
+	NONLTBRACKET
+	| LT
+	| LTSLASH
+	;
+
+NONLTBRACKET:
+	KEYWORD	
 	| LPAREN
 	| RPAREN
 	| COMMA
 	| SEMICOLON
 	| COLON
 	| EQUALS
-	| LTSLASH
 	| SLASH
-	| LT
 	| GT
 	| IDENTIFIER
-	| TEXT DASH TEXT
-	| TEXT TEXT
-	|
+	| DASH
 	;
 
 KEYWORD:
-	TEXTNODE
-	| WTEMPLATE
+	WTEMPLATE
+	| WFUNCTION
 	| WACTION
 	| WSTATE
 	| WCREATE

@@ -1,12 +1,4 @@
 
-
-var nullObject = {
-	kind: "null",
-	type: parseType("Null"),
-	name: "null"
-};
-
-
 // ============================================================================
 // NOTE: the following functions are the interface through which the system interprets literals.
 // But also make sure to modify browser/desugar.xml write-select if adding new literals.
@@ -29,8 +21,6 @@ function parseLiteral(s) {
 		return true;
 	} else if (s === "false") {
 		return false;
-	} else if (s === "null") {
-		return nullObject;
 	} else {
 		return undefined;
 	}
