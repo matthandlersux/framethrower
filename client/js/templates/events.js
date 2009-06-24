@@ -299,7 +299,8 @@
 // =========================================================
 
 (function () {
-	var ui = rootObjects["ui.ui"].prop;
+	//var ui = rootObjects["ui.ui"].prop;
+	var ui = base.env("ui.ui").prop;
 	
 	function onload() {
 		document.body.focus();

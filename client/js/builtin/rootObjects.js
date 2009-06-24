@@ -1,43 +1,26 @@
-// ==================================================================
-// Root Objects
-// ==================================================================
-
-// these are predefined objects, objects that the client and server both know about
-
-var rootObjects = {};
-
 (function () {
+	var rootObjects = {};
+	
+	
 	function m(name, className, props) {
-		if (!className) className = "Object";
-		
-		if (!LOCAL && name.substr(0, 7) === "shared.") {
-			rootObjects[name] = makeRemoteObject(name, parseType(className));
-		} else {
-			if (objects.isClass(className)) {
-				rootObjects[name] = objects.make(className, props);
-			} else {
-				rootObjects[name] = makeControlledCell(className);
-			}
-			
-			rootObjects[name].name = name;
-		}
-		
+		if (props === undefined) props = {};
+		rootObjects[name] = objects.make(className, props);
 		base.add(name, rootObjects[name]);
 	}
 	
-
 	m("ui.ui", "UI.ui");
-	
-	
-	
-	
-	
+
+	m("tobytest.realLife", "Situation");
+	m("tobytest.myTimelineSit", "Situation");
+
+
+
 	m("test.walleVideo", "X.video", {"url": 'http://media.eversplosion.com/tmp/wallefinallow.mp4', "width": 720, "height": 304, "duration": 5894.139, "frameRate": 23.976024627686});
 	
 	
 	
-	m("tobytest.realLife", "Situation");
-	m("tobytest.myTimelineSit", "Situation");
+	
+	
 	
 	rootObjects["test.walleVideo"].prop["cuts"].control.add([
 		3342,
@@ -1206,5 +1189,13 @@ var rootObjects = {};
 	]);
 	
 	
+	
+	
 })();
+
+
+
+
+
+
 

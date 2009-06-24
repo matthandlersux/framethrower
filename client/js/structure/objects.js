@@ -1,360 +1,10 @@
-/*
-
-An Object looks like:
-{
-	kind: "object",
-	type: Type,
-	origType: Type,
-	prop: {propName:property}
-}
-
-*/
-
-
-var classesToMake = {
-	
-	// ====================================================
-	// New
-	// ====================================================
-	
-	"Situation": {
-		prop: {
-			"container": "Unit Situation",
-			"contains": "Set Situation",
-			"propName": "Unit String", // these prop*s will be refactored!
-			"propTime": "Unit Number",
-			"propTimeline": "Unit Timeline",
-			"pipesIn": "Set Pipe",
-			"pipesOut": "Set Pipe"
-		}
-	},
-	
-
-	"Pipe": {
-		prop: {
-			"type": "Situation",
-			"instance": "Situation",
-			"container": "Map Ord Pipe",
-			"contains": "Set Pipe",
-			"truth": "Unit Number"
-		}
-	},
-	
-	
-	"TimeSelection": {
-		prop: {
-			"start": "Unit Number",
-			"duration": "Unit Number"
-		}
-	},
-	
-	"Timeline": {
-		prop: {
-			"duration": "Number",
-			"video": "Unit X.video"
-		}
-	},
-	
-	
-	// ====================================================
-	// SV (Situation View)
-	// ====================================================
-	"Position": {
-		prop: {
-			"x": "Unit Number",
-			"y": "Unit Number"
-		}
-	},	
-
-	"ShapePosition": {
-		prop: {
-			"scale": "Unit Number",
-			"position": "Position"
-		}
-	},
-
-	"ChildProp": {
-		prop: {
-			"hidden": "Unit Null",
-			"position": "Position",
-			"scale": "Unit Number"
-		}
-	},
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	// OOOOOOOLLLLLLDDDDDD......
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	// ====================================================
-	// Core
-	// ====================================================
-	
-	"Object": {
-		prop: {
-			"upLeft": "Set Cons",
-			"upRight": "Set Cons"
-		}
-	},
-	"Cons": {
-		inherit: "Object",
-		prop: {
-			"left": "Object",
-			"right": "Object",
-			"truth": "Unit Null"
-		},
-		memoize: ["left", "right"]
-	},
-	
-	// "Core.relationType": {
-	// 	inherit: "Object",
-	// 	prop: {
-	// 		"input": "Map Number Object",
-	// 		"output": "Object"
-	// 	}
-	// },
-	
-	// ====================================================
-	// External Representations
-	// ====================================================
-	
-	"X.video": {
-		inherit: "Object",
-		prop: {
-			"url": "String",
-			"width": "Number",
-			"height": "Number",
-			//"frameCount": "Number",
-			"frameRate": "Number",
-			"duration": "Number",
-			"cuts": "Unit JSON"
-		}
-	},
-	"X.picture": {
-		inherit: "Object",
-		prop: {
-			"url": "String",
-			"width": "Number",
-			"height": "Number"
-		}
-	},
-	"X.picture.crop": {
-		inherit: "Object",
-		prop: {
-			"x": "Number",
-			"y": "Number",
-			"width": "Number",
-			"height": "Number"
-		}
-	},
-	"X.text": {
-		inherit: "Object",
-		prop: {
-			"string": "String"
-		},
-		memoize: ["string"]
-	},
-	"X.xml": {
-		inherit: "Object",
-		prop: {
-			"xml": "XML"
-		}
-	},
-	
-	"X.time.range": { // this should be renamed X.video.time.range
-		inherit: "Object",
-		prop: {
-			"start": "Number",
-			"duration": "Number"
-		}
-	},
-	
-	
-	"X.date": {
-		inherit: "Object",
-		prop: {
-			"day": "Number" // for now Jan 1, 2000 is 0
-		},
-		memoize: ["day"]
-	},
-	"X.dateRange": {
-		inherit: "Object",
-		prop: {
-			"startDay": "Number",
-			"endDay": "Number"
-		},
-		memoize: ["startDay", "endDay"]
-	},
-	
-	
-	"X.prefs": {
-		inherit: "Object",
-		prop: {
-			"typeColors": "Map Object String"
-		}
-	},
-	
-	
-	
-	// ====================================================
-	// UI
-	// ====================================================
-	
-	"UI.ui": {
-		prop: {
-			"screenWidth": "Unit Number",
-			"screenHeight": "Unit Number",
-			"mouseX": "Unit Number",
-			"mouseY": "Unit Number",
-			"mouseDown": "Unit Null"
-		}
-	},
-	
-	"UI.main": {
-		prop: {
-			"pane": "UI.pane",
-			"popup": "Map String UI.popup",
-			"dragging": "Unit UI.dragging"
-		}
-	},
-	
-	"UI.popup": {
-		prop: {
-			"display": "XML",
-			"content": "Unit JS"
-		}
-	},
-	
-	"UI.dragging": { // this will have more stuff eventually...
-		prop: {
-			"object": "Object"
-		}
-	},
-	
-	"UI.pane": {
-		prop: {
-			"width": "Unit Number",
-			"height": "Unit Number"
-		}
-	},
-	"UI.pane.set": {
-		inherit: "UI.pane",
-		prop: {
-			"panes": "Map String UI.pane",
-			"orientation": "Unit String"
-		}
-	},
-	"UI.pane.timeline": {
-		inherit: "UI.pane",
-		prop: {
-			"focus": "Object",
-			"zoomWidth": "Unit Number",
-			"previewFrame": "Unit Number",
-			"selectedTime1": "Unit Number",
-			"selectedTime2": "Unit Number",
-			"selecting": "Unit Null"
-		}
-	},
-	"UI.pane.realTimeline": {
-		inherit: "UI.pane",
-		prop: {
-			"focus": "Object",
-			"startDate": "Unit Number",
-			"endDate": "Unit Number",
-			"zoomWidth": "Unit Number",
-			"selectedTime1": "Unit Number",
-			"selectedTime2": "Unit Number",
-			"selecting": "Unit Null"
-		}
-	},
-	
-	
-	"UI.pane.pane": {
-		inherit: "UI.pane",
-		prop: {
-			"tab": "Unit String", // objectsIn, addingObj, infonsIn, about
-			"focus": "Unit Object", // this should just be Object, TODO
-			"propertiesState": "UI.propertiesState",
-			"aboutNewInfons": "Set UI.consIP",
-			"infonsInNewInfons": "Set UI.consIP",
-			"addingObject": "Unit Object",
-			"addingObjectPropertiesState": "UI.propertiesState"
-		},
-		makeNew: ["propertiesState", "addingObjectPropertiesState"]
-	},
-	
-	"UI.propertiesState": {
-		prop: {
-			"editName": "Unit Null",
-			"typeExplorer": "Unit UI.outlineNode"
-		}
-	},
-	
-	
-	
-	"UI.consIP": {
-		prop: {
-			"object": "Unit Object",
-			"left": "Unit UI.consIP",
-			"right": "Unit UI.consIP"
-		}
-	},
-	
-	
-	"UI.outlineNode": {
-		prop: {
-			"focus": "Object", // the use of Outline here should be replaced by a, when we have polymorphic classes (ie: UI.outlineNode a)
-			"children": "Map Object UI.outlineNode",
-			"expanded": "Unit Null"
-		}
-	},
-	
-	"UI.relationCreator.word": {
-		prop: {
-			"string": "Unit String",
-			"type": "Unit Object"
-		}
-	},
-	
-	"UI.relationCreator": {
-		prop: {
-			"typeExplorer": "UI.outlineNode",
-			"words": "Map String UI.relationCreator.word"
-		}
-	},
-	
-	
-	
-	"UI.prefs": {
-		prop: {
-			"typeDisplay": "Map Object String",
-			"timelineLayers": "Map String Object"
-		}
-	}
-	
-
-	
-};
 
 
 
 
 
-var objects = (function (classDefs) {
+
+var objects = (function () {
 
 	function isRemoteClass(className) {
 		return inherits(className, "Object");
@@ -519,7 +169,10 @@ var objects = (function (classDefs) {
 	// ====================================================
 	
 	var classTypes = {};
-	forEach(classDefs, function (classDef, className) {
+	var classDefs = {};
+	
+	function addClass(className, classDef) {
+		classDefs[className] = classDef;
 		// make memo table and lookup fun
 		if (classDef.memoize) {
 			memoTables[className] = {};
@@ -528,8 +181,8 @@ var objects = (function (classDefs) {
 		addCastingFuns(className);
 		addPropertyAccessorFuns(className);
 		classTypes[className] = makeTypeName(className);
-	});
-	
+	}
+		
 	// ====================================================
 	// Making objects (instances)
 	// ====================================================
@@ -633,29 +286,30 @@ var objects = (function (classDefs) {
 	
 	return {
 		make: make,
-		actOnProp: function (propName, object, action, key, value) {
-			var prop = accessProperty(object, propName);
-			var expectedType = getType(prop);
-			
-			var constructor = getTypeConstructor(expectedType);
-			if (constructor === "Map"){
-				var keyType = expectedType.left.right;
-				var valueType = expectedType.right;
-				
-				if (keyType.value) key = castObject(key, keyType.value);
-				if (valueType.value) value = castObject(value, valueType.value);
-			} else {
-				var keyType = expectedType.right;
-				if (keyType.value) key = castObject(key, keyType.value);
-			}
-			
-			prop.control[action](key, value);
-		},
-		classDefs: classDefs,
+		addClass: addClass,
+		// actOnProp: function (propName, object, action, key, value) {
+		// 	var prop = accessProperty(object, propName);
+		// 	var expectedType = getType(prop);
+		// 	
+		// 	var constructor = getTypeConstructor(expectedType);
+		// 	if (constructor === "Map"){
+		// 		var keyType = expectedType.left.right;
+		// 		var valueType = expectedType.right;
+		// 		
+		// 		if (keyType.value) key = castObject(key, keyType.value);
+		// 		if (valueType.value) value = castObject(value, valueType.value);
+		// 	} else {
+		// 		var keyType = expectedType.right;
+		// 		if (keyType.value) key = castObject(key, keyType.value);
+		// 	}
+		// 	
+		// 	prop.control[action](key, value);
+		// },
+		//classDefs: classDefs,
 		inherits: inherits,
-		cast: castObject,
+		//cast: castObject,
 		isClass: function (className) {
 			return !!classDefs[className];
 		}
 	};
-})(classesToMake);
+})();
