@@ -14,9 +14,19 @@
 }
 
 .timeline-controls {
+	position: absolute;
 }
 .timeline-controls div {
 	margin: 2px;
+}
+
+
+.timeline-loading {
+	position: absolute;
+	top:0px;
+	left:0px;
+	height:100%;
+	background-color: rgba(255,255,255,0.1);
 }
 
 
@@ -92,7 +102,7 @@
 
 
 
-.rulerContainer {
+.ruler-container {
 	position: absolute;
 	top: 0px;
 	left: 0px;

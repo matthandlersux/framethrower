@@ -14,7 +14,7 @@ function evaluate2(expr) {
 	var resultType = getType(expr);
 	getRemote(expr); // just to tag the expr's .remote
 	
-	// check if we're returning a StartCap and see if it's already memoized
+	// check if we're returning a Cell and see if it's already memoized
 	var resultExprStringified;
 	if (isReactive(resultType)) {
 		resultExprStringified = stringify(expr);
@@ -44,13 +44,24 @@ function evaluate2(expr) {
 		} else {
 			// fun wasn't a lambda, and evaluate can't return an apply, so fun must be a Fun, so we can run it
 			
+			// check if input is an actionRef and fun is an object converter or property accessor
+			if (input.kind === "actionRef" && isObjectFun(fun)) {
+				return {
+					kind: "actionRef",
+					type: resultType,
+					name: stringify(expr),
+					left: fun,
+					right: input
+				};
+			}
+			
 			var ret = fun.fun(input);
 
 			if (typeof ret === "function") {
 				// if ret is a function, return a Fun and annotate its type and expr
 				return makeFun(resultType, ret, stringify(expr), expr.remote);
-			} else if (ret.kind === "startCap") {
-				// if ret is a startCap, memoize the result and annotate its type and expr
+			} else if (ret.kind === "cell") {
+				// if ret is a cell, memoize the result and annotate its type and expr
 				
 				// annotate
 				ret.type = resultType;
@@ -101,13 +112,10 @@ function evaluateAndInject(expr, depender, func) {
 
 
 
-// profiling
 
-function getEvalCacheSizeXML() {
-	var v = values(evalCache);
-	var count = 0;
-	forEach(v, function (c) {
-		if (getType(c).right.value === "XML") count++;
-	});
-	return count;
+
+function isObjectFun(fun) {
+	// TODO: would be nicer if this didn't check based on the name
+	var name = stringify(fun);
+	return name.indexOf(" ") === -1 && (name.indexOf(":") !== -1 || name.indexOf("~") !== -1);
 }

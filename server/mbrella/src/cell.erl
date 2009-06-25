@@ -14,7 +14,7 @@
 
 %% Exports
 -export([makeCell/0, addLine/2, removeLine/2, injectDependency/2, inject/3, removeFunc/2, injectIntercept/3, addOnRemove/2, clear/1]).
--export([done/1, done/2, addDependency/2, removeDependency/2, leash/1, unleash/1]).
+-export([done/1, done/2, addDependency/2, leash/1, unleash/1]).
 -export([setKeyRange/3, getStateArray/1, getState/1]).
 
 %% gen_server exports
@@ -94,7 +94,7 @@ inject(Cell, Depender, Fun) ->
 	fun() -> removeFunc(Cell, Id) end.
 
 %%----------------------------------------------------------------------
-%% Function: injectDependency/0
+%% Function: injectDependency/2
 %% Purpose: Set up the same dependency behavior as with inject, but not tied to any injected function
 %% Args: Cell is cellPointer, Depender is cellPointer|function
 %% Returns: A function to remove this dependency
@@ -227,19 +227,6 @@ done(Cell, DoneDependency) ->
 %%----------------------------------------------------------------------
 addDependency(Cell, Dependency) ->
 	gen_server:cast(Cell#cellPointer.pid, {addDependency, Dependency}).
-
-
-%%----------------------------------------------------------------------
-%% Function: removeDependency/2
-%% Purpose: tells a cell that it no longer needs to wait for Dependency to be done
-%% Args: Cell is cellPointer, Dependency is #depender{}
-%% Returns: ok
-%%     or {error, Reason} (if the process is dead)
-%%----------------------------------------------------------------------
-removeDependency(Cell, Dependency) ->
-	gen_server:cast(Cell#cellPointer.pid, {removeDependency, Dependency, Cell}).
-
-
 
 
 %% --------------------------------------------------------------------
@@ -409,8 +396,8 @@ handle_cast({removeLine, Value}, State) ->
 handle_cast({removeFunc, Id, Cell}, State) ->
 	Func = dict:fetch(Id, ?this(funcs)),
 	case Func#func.depender of
-		OutputCell when is_record(OutputCell, cellPointer) -> removeDependency(OutputCell, #depender{cell=Cell, id=Id});
-		Intercept when is_pid(Intercept) -> intercept:removeDependency(Intercept, #depender{cell=Cell, id=Id});
+		OutputCell when is_record(OutputCell, cellPointer) -> done(OutputCell, #depender{cell=Cell, id=Id});
+		Intercept when is_pid(Intercept) -> intercept:done(Intercept, #depender{cell=Cell, id=Id});
 		%done function
 		_ -> nosideeffect
 	end,
@@ -443,14 +430,6 @@ handle_cast({inject, Depender, Fun, Cell, Id}, State) ->
 	case ?this(done) of
 		true -> informDepender(Depender, Cell, Id);
 		false -> nosideeffect
-	end,
-    {noreply, NewState};
-handle_cast({removeDependency, DependencyToRemove, Cell}, State) ->
-	NewDependencies = filterDependencies(?this(dependencies), DependencyToRemove),
-	StateWithDependencies = State#cellState{dependencies=NewDependencies},
-	NewState = case ?this(done) of
-		true -> StateWithDependencies;
-		false -> checkDone(StateWithDependencies, Cell)
 	end,
     {noreply, NewState};
 handle_cast({done, DoneDependency, Cell}, State) ->

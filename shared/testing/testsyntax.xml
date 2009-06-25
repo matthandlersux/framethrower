@@ -13,7 +13,7 @@
 			</set>
 		</messages>
 	
-		<endcap name = 'ec' expression = 'sortedFold true add 0 sc' />
+		<endcap name = 'ec' expression = 'sortedFold true plus 0 sc' />
 
 		<expectedmessages>
 			<set ecname = 'ec' >
@@ -281,7 +281,7 @@
 	<test name='foldTest1'>
 		<startcap name='sc' type='set number' />
 
-		<endcap name = 'ec' expression = 'fold add subtract 0 sc' />
+		<endcap name = 'ec' expression = 'fold plus (x -> y -> subtract y x) 0 sc' />
 
 		<messages>
 			<set scname = 'sc'>
@@ -876,7 +876,7 @@
 
 		<startcap name = 'sc' type = 'set number' />
 
-		<endcap name = 'ec' expression = 'buildMap (add 2) sc' />
+		<endcap name = 'ec' expression = 'buildMap (plus 2) sc' />
 
 		<messages>
 			<set scname = 'sc'>

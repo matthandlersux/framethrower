@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://www.worldmerge.com/2008/xsl"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:svg="http://www.w3.org/2000/svg">
+
+<head>
+<title>Base Scope</title>
+
+<script>
+var ROOTDIR = "../../";
+var DEBUG = true;
+var LOCAL = true;
+//var LOCAL = false;
+
+//var serverBaseUrl = "http://clever.eversplosion.com:8000/";
+//var serverBaseUrl = "http://localhost:8000/";
+var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
+
+var INCLUDESTRUCTUREONLY = true;
+
+var INCLUDES=[ROOTDIR+"templates/bin/toby2.js", ROOTDIR+"js/templates/preparse.js", "init.js"];
+var ONLOAD="initialize()";
+</script>
+
+<script type="text/javascript" src="../../js/external/yuiloader-min.js"></script> 
+<script src="../../js/include.js"></script>
+
+</head>
+
+<body>
+
+<div id="mainscreen"></div>
+
+</body>
+
+</html>

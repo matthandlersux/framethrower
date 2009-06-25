@@ -1,0 +1,23 @@
+Advanced queries:
+Syntax to describe queries
+Code to turn syntax into Expr
+
+Return:
+Expr can return 'wildcard' results all together in a set
+How else? Can it return a tree structure matching the query structure with wildcards filled in?
+
+Advanced query syntax:
+XPath based?
+
+Infon:
+<in, realLife, <relation, arg1, arg2, arg3>>
+	infon without context should only match infon true in some context?
+
+
+Wildcard: *
+
+Wildcard with constraints (read : as 'such that'):
+[a: <relation, *, a>] (Object with certain infon true about it)
+Keyword constraints:
+[a: descendant(a, realLife, in)] (a such that a is descendant of realLife using the in relation)
+[a: descendant(a, realLife, *)] (a such that a is descendant of realLife using any infons)

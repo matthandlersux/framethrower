@@ -1,0 +1,71 @@
+TEMPLATECODE
+	{
+		kind: "templateCode",
+		params: [VARTOCREATE],
+		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type XMLP
+		let: LETS,
+		output: LINE
+	}
+
+LETS
+	{VARTOCREATE: LINE}
+
+LINE
+	{kind: "lineExpr", expr: AST} |
+	{kind: "lineTemplate", template: TEMPLATECODE} |
+	{kind: "lineJavascript", type: TYPE, f: JAVASCRIPTFUNCTION} |
+	{kind: "lineXML", xml: XML} |
+	{kind: "lineState", action: ACTION} | // action takes no parameters
+	{kind: "lineAction", action: ACTION} |
+	{kind: "lineBlock", let: LETS, output: LINE}
+
+
+ACTION
+	{
+		kind: "action",
+		params: [VARTOCREATE],
+		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type Action
+		actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}] // last one is the output
+	}
+
+ACTIONUNIT
+	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: EXPR}} |
+	{kind: "actionUpdate", target: EXPR, actionType: "add" | "remove", key?: EXPR, value?: EXPR} |
+	{kind: "extract", select: AST, action: ACTION} // this action should take one (or two) parameters.
+
+
+
+
+XML
+	XMLNODE | 
+	CASE |
+	{kind: "for-each", select: AST, templateCode: TEMPLATECODE} | // this templateCode should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
+	{kind: "call", templateCode: TEMPLATECODE} // this templateCode should take zero parameters.
+	{kind: "on", event: EVENT, action: ACTION} // this action should take zero parameters.
+	{kind: "trigger", trigger: AST, action: ACTION} // trigger should evaluate to a reactive value, action should take one (or two) parameters
+
+CASE
+	{kind: "case", test: AST, templateCode: TEMPLATECODE, otherwise?: TEMPLATECODE}
+	// test should evaluate to a cell, if it is non-empty then templateCode is run as if it were a for-each. If it is empty, otherwise is called.
+	// templateCode should take one parameter
+	// otherwise, if it exists, should take zero parameters
+
+XMLNODE
+	{kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately
+	{kind: "textElement", nodeValue: STRING | XMLINSERT}
+
+XMLINSERT
+	{kind: "insert", expr: AST}
+
+
+
+
+where:
+JAVASCRIPTFUNCTION is a javascript function,
+TYPE is a string,
+AST is an string for an expression,
+VARTOCREATE is a STRING
+PROPERTYNAME is a STRING
+EVENT is a STRING
+STRING is a string
+

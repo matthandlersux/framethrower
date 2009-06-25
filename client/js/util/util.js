@@ -162,7 +162,7 @@ function getProp(name) {
 
 
 function curry(f, expects) {
-	if (!expects) expects = f.length;
+	if (expects === undefined) expects = f.length;
 	function accumulate(savedArgs) {
 		if (savedArgs.length === expects) {
 			return f.apply(null, savedArgs);
@@ -203,5 +203,70 @@ function capFirst(s) {
 
 
 
+function emptyFunction() {
+	
+}
+
+function shallowCopy(o) {
+	var ret = {};
+	forEach(o, function (value, key) {
+		ret[key] = value;
+	});
+	return ret;
+}
 
 
+function JSONtoString(object) {
+
+	function JSONtoString2(object, tabs) {
+		if(object !== undefined) {
+			if(arrayLike(object)) {
+				var output = "[\n";
+				var first = true;
+				forEach(object, function (value) {
+					if (!first) {
+						output += ",\n";
+					} else {
+						first = false;
+					}
+					for (var i=0; i<=tabs; i++) {
+						output += "\t";
+					}
+					output += JSONtoString2(value, tabs+1);
+				});
+				output += "\n";
+				for (var i=0; i<=tabs-1; i++) {
+					output += "\t";
+				}			
+				output += "]";
+				return output;			
+			} else if (objectLike(object)) {
+				var output = "{\n";
+				var first = true;
+				forEach(object, function (value, name) {
+					if (!first) {
+						output += ",\n";
+					} else {
+						first = false;
+					}
+					for (var i=0; i<=tabs; i++) {
+						output += "\t";
+					}
+					output += name + ": " + JSONtoString2(value, tabs+1);
+				});
+				output += "\n";
+				for (var i=0; i<=tabs-1; i++) {
+					output += "\t";
+				}			
+				output += "}";
+				return output;
+			} else if (typeOf(object) === "string"){
+				return "\"" + object.replace(/\n/g, "\\n") + "\"";
+			} else {
+				return object;
+			}
+		}
+	}
+	
+	JSONtoString2(object, 0);
+}

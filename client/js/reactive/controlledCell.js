@@ -31,13 +31,19 @@ function makeCC(type) {
 		cell = makeCell();
 		cell.control = {
 			set: function (k) {
-				typeCheck(k, type.right);
-				var state = cell.getState();
-				if (state.length === 0) {
-					cell.addLine(k);
-				} else {
-					cell.removeLine(state[0]);
-					cell.addLine(k);
+				try {
+					typeCheck(k, type.right);
+					var state = cell.getState();
+					if (state.length === 0) {
+						cell.addLine(k);
+					} else {
+						cell.removeLine(state[0]);
+						cell.addLine(k);
+					}
+					
+				} catch (e) {
+					console.log(cell);
+					throw e;
 				}
 			},
 			unset: function () {

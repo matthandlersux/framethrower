@@ -1,0 +1,398 @@
+[*
+	var fttemplate = function() {
+		var result;
+*]
+
+
+/~
+	--- These are the token definitions ---
+~/
+
+/~	Grammar Tokens			~/
+	'includefile([\r\n\t\ ]|//[^\n]*\n)*'						WINCLUDEFILE
+	'function([\r\n\t\ ]|//[^\n]*\n)*'							WFUNCTION
+	'template([\r\n\t\ ]|//[^\n]*\n)*'							WTEMPLATE
+	'action([\r\n\t\ ]|//[^\n]*\n)*'							WACTION
+	'state([\r\n\t\ ]|//[^\n]*\n)*'								WSTATE
+	'create([\r\n\t\ ]|//[^\n]*\n)*'							WCREATE
+	'add([\r\n\t\ ]|//[^\n]*\n)*'								WADD
+	'extract([\r\n\t\ ]|//[^\n]*\n)*'							WEXTRACT
+	'remove([\r\n\t\ ]|//[^\n]*\n)*'							WREMOVE
+	'style([\r\n\t\ ]|//[^\n]*\n)*'								WSTYLE
+	'as([\r\n\t\ ]|//[^\n]*\n)*'								WAS
+	'if([\r\n\t\ ]|//[^\n]*\n)*'								WIF
+	'else([\r\n\t\ ]|//[^\n]*\n)*'								WELSE
+	'f:each([\r\n\t\ ]|//[^\n]*\n)*'							FEACH
+	'f:call([\r\n\t\ ]|//[^\n]*\n)*'							FCALL
+	'f:on([\r\n\t\ ]|//[^\n]*\n)*'								FON
+	'f:trigger([\r\n\t\ ]|//[^\n]*\n)*'							FTRIGGER
+	'\{([\r\n\t\ ]|//[^\n]*\n)*'								LBRACKET
+	'\}([\r\n\t\ ]|//[^\n]*\n)*'								RBRACKET
+	'\(([\r\n\t\ ]|//[^\n]*\n)*'								LPAREN
+	'\)([\r\n\t\ ]|//[^\n]*\n)*'								RPAREN
+	',([\r\n\t\ ]|//[^\n]*\n)*'									COMMA
+	';([\r\n\t\ ]|//[^\n]*\n)*'									SEMICOLON
+	':([\r\n\t\ ]|//[^\n]*\n)*'									COLON
+	'=([\r\n\t\ ]|//[^\n]*\n)*'									EQUALS
+	'</([\r\n\t\ ]|//[^\n]*\n)*'								LTSLASH
+	'/([\r\n\t\ ]|//[^\n]*\n)*'									SLASH
+	'<([\r\n\t\ ]|//[^\n]*\n)*'									LT
+	'>([\r\n\t\ ]|//[^\n]*\n)*'									GT
+	'-([\r\n\t\ ]|//[^\n]*\n)*'									DASH
+	'\"([\r\n\t\ ]|//[^\n]*\n)*'								QUOTE
+	'[A-Za-z0-9_\.\'\~\#\*\+\^\%\.\!\&\|\?\[\]]+([\r\n\t\ ]|//[^\n]*\n)*'	IDENTIFIER
+	;
+##
+
+/~
+	--- And here's the grammar specification ---
+~/
+
+TOP:
+	LINE												[* result = {line: %1}; *]
+	| INCLUDEBLOCK										[* result = {includeblock: %1}; *]
+	;
+
+INCLUDEBLOCK:
+	WINCLUDEFILE LETLIST LET
+	| WINCLUDEFILE LETLIST
+	;
+
+
+LINE:
+	FUNCTION
+	| TEMPLATE
+	| STATE
+	| LETLISTBLOCK
+	| IFBLOCK
+	| ACTIONTPL
+	| EXPR
+	| XML
+	;
+
+FUNCTION:
+	WFUNCTION LPAREN ARGLIST RPAREN LBRACKET FUNCTIONBODY RBRACKET
+	| WFUNCTION LPAREN ARGLIST RPAREN COLON COLON TYPE LBRACKET FUNCTIONBODY RBRACKET
+	;
+	
+FUNCTIONBODY:
+	FUNCTIONBODY NONBRACKET
+	| FUNCTIONBODY QUOTE
+	| FUNCTIONBODY LBRACKET FUNCTIONBODY RBRACKET
+	|
+	;
+
+TEMPLATE:
+	WTEMPLATE LPAREN ARGLIST RPAREN LBRACKET FULLLETLIST RBRACKET
+	;
+
+ARGLIST:
+	ARGLIST COMMA VARIABLE								
+	| VARIABLE											
+	|													
+	;
+
+VARIABLE:
+	IDENTIFIER											
+	| IDENTIFIER COLON COLON TYPE						
+	;
+
+FULLLETLIST:
+	LETLIST LINE										
+	| LETLIST LINE COMMA								
+	;
+
+LETLISTBLOCK:
+	LBRACKET FULLLETLIST RBRACKET
+	;
+
+LETLIST:
+	LETLIST LET COMMA									
+	|													
+	;
+
+LET:
+	VARIABLE EQUALS LINE								
+	;
+
+STATE:
+	WSTATE LPAREN TYPE RPAREN
+	| WSTATE LPAREN TYPE COMMA EXPR RPAREN
+	| WSTATE LBRACKET FULLACTLIST RBRACKET				
+	;
+
+TYPE:
+	TYPE TYPE
+	| IDENTIFIER
+	| DASH GT
+	;
+
+IFBLOCK:
+	WIF EXPR WAS ASKEYVAL LBRACKET FULLLETLIST RBRACKET WELSE IFBLOCK
+	| WIF EXPR WAS ASKEYVAL LBRACKET FULLLETLIST RBRACKET WELSE LBRACKET FULLLETLIST RBRACKET
+	;
+
+ACTIONTPL:
+	WACTION LPAREN ARGLIST RPAREN LBRACKET FULLACTLIST RBRACKET
+	;
+
+FULLACTLIST:
+	ACTLIST ACTION
+	| ACTLIST
+	;
+
+ACTLIST:
+	ACTLIST ACTLINE COMMA
+	|
+	;
+
+ACTLINE:
+	VARIABLE EQUALS ACTION
+	| ACTION
+	;
+
+ACTION:
+	CREATE
+	| UPDATE
+	| EXTRACT
+	| FUNCTION
+	| TEMPLATE
+	| ACTIONTPL
+	| EXPR
+	| STATE
+	| LETLISTBLOCK
+	| XML
+	;
+
+CREATE:
+	WCREATE LPAREN TYPE COMMA LBRACKET PROPLIST RBRACKET RPAREN
+	| WCREATE LPAREN TYPE RPAREN
+	;
+
+PROPLIST:
+	PROPLIST COMMA PROP
+	| PROP
+	|
+	;
+
+PROP:
+	IDENTIFIER COLON EXPR
+	;
+
+
+UPDATE:
+	ADD
+	| REMOVE
+	;
+
+ADD:
+	WADD LPAREN EXPR COMMA EXPR RPAREN
+	| WADD LPAREN EXPR COMMA EXPR COMMA EXPR RPAREN
+	;
+
+REMOVE:
+	WREMOVE LPAREN EXPR COMMA EXPR RPAREN
+	| WREMOVE LPAREN EXPR RPAREN
+	;
+
+EXTRACT:
+	WEXTRACT EXPR WAS ASKEYVAL LBRACKET FULLACTLIST RBRACKET
+	| VARIABLE EQUALS WEXTRACT EXPR
+	;
+
+EXPR:
+	IDENTIFIER 
+	| STRINGESCAPEQUOTES 
+	| LPAREN EXPR RPAREN
+	| IDENTIFIER COLON COLON IDENTIFIER
+	| IDENTIFIER COLON IDENTIFIER
+	| DASH GT
+	| DASH IDENTIFIER
+	| EXPR EXPR
+	;
+
+XML:
+	FOREACH												
+	| TRIGGER											
+	| ON												
+	| CALL												
+	| TAG												
+	| XMLTEXT
+	;
+
+FOREACH:
+	LT FEACH EXPR WAS ASKEYVAL GT FULLLETLIST LTSLASH FEACH GT	
+	| LT FEACH EXPR GT FULLLETLIST LTSLASH FEACH GT				
+	;
+
+TRIGGER:
+	LT FTRIGGER EXPR WAS ASKEYVAL GT FULLACTLIST LTSLASH FTRIGGER GT	
+	| LT FTRIGGER EXPR GT FULLACTLIST LTSLASH FTRIGGER GT				
+	;
+
+ON:
+	LT FON IDENTIFIER GT FULLACTLIST LTSLASH FON GT			
+	;
+
+CALL:
+	LT FCALL GT FULLLETLIST LTSLASH FCALL GT				
+	;
+
+TAG:
+	LT TAGNAME ATTRIBUTES GT XMLLIST LTSLASH TAGNAME GT		
+	| LT TAGNAME ATTRIBUTES SLASH GT						
+	;
+
+TAGNAME:
+	IDENTIFIER
+	| IDENTIFIER COLON IDENTIFIER							
+	;
+
+
+ASKEYVAL:
+	IDENTIFIER											
+	| IDENTIFIER COMMA IDENTIFIER						
+	;
+
+XMLLIST:
+	XMLLIST XML											
+	| 													
+	;
+
+ATTRIBUTES:
+	ATTRIBUTES ATTASSIGN								
+	|													
+	;
+
+ATTASSIGN:
+	WSTYLE EQUALS QUOTE STYLELIST QUOTE					
+	| ATTNAME EQUALS ATTRIBUTE							
+	;
+
+ATTNAME:
+	IDENTIFIER
+	| KEYWORD
+	| ATTNAME DASH IDENTIFIER							
+	;
+
+ATTRIBUTE:
+	STRING												
+	| QUOTE INSERT QUOTE								
+	;
+
+INSERT:
+	LBRACKET EXPR RBRACKET								
+	;
+
+STYLELIST:
+	STYLELIST SEMICOLON STYLEASSIGN
+	| STYLEASSIGN
+	| STYLELIST SEMICOLON
+	|
+	;
+
+STYLEASSIGN:
+	ATTNAME COLON STYLETEXT
+	| ATTNAME COLON INSERT
+	;
+
+STYLETEXT:
+	KEYWORD
+	| IDENTIFIER
+	| COMMA
+	| LPAREN
+	| RPAREN
+	| EQUALS
+	| STYLETEXT DASH STYLETEXT							
+	| STYLETEXT STYLETEXT								
+	;
+
+TEXT:
+	LBRACKET
+	| RBRACKET
+	| LT
+	| LTSLASH
+	| NONLTBRACKET
+	| TEXT TEXT
+	|
+	;
+
+XMLTEXT:
+	NONLT
+	| XMLTEXT XMLTEXT
+	;
+
+NONLT:
+	NONLTBRACKET
+	| LBRACKET
+	| RBRACKET
+	;
+	
+NONBRACKET:
+	NONLTBRACKET
+	| LT
+	| LTSLASH
+	;
+
+NONLTBRACKET:
+	KEYWORD	
+	| LPAREN
+	| RPAREN
+	| COMMA
+	| SEMICOLON
+	| COLON
+	| EQUALS
+	| SLASH
+	| GT
+	| IDENTIFIER
+	| DASH
+	;
+
+KEYWORD:
+	WINCLUDEFILE
+	| WTEMPLATE
+	| WFUNCTION
+	| WACTION
+	| WSTATE
+	| WCREATE
+	| WADD
+	| WEXTRACT
+	| WREMOVE
+	| WSTYLE
+	| WAS
+	| WIF
+	| WELSE
+	| FEACH
+	| FCALL
+	| FON
+	| FTRIGGER
+	;
+
+STRINGESCAPEQUOTES:
+	QUOTE TEXT QUOTE
+	;
+
+STRING:
+	QUOTE TEXT QUOTE
+	;
+		
+	
+[*
+		return {
+			parse:function(arg1, arg2, arg3) {
+				var errcount = __parse(arg1, arg2, arg3);
+				if (errcount == 0) {
+					return {
+						success:true,
+						result:result
+					};
+				} else {
+					return {
+						success:false,
+						result:errcount
+					};
+				}
+			}
+		};
+	}();
+*]
