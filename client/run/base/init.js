@@ -182,6 +182,23 @@ function staticTypeAnalysisXML(xml, env) {
 	} else if (xml.kind === "textElement") {
 		checkInsert(xml.nodeValue);
 	} else if (xml.kind === "for-each") {
+		try {
+			var select = parseExpression(xml.select, env);
+			var selectType = getType(select);			
+		} catch (e) {
+			staticAnalysisError("f:each select type check failed.");
+		}
+		
+		var constructor = getTypeConstructor(type);
+		
+		if (constructor === "Map") {
+			
+		} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set") {
+			
+		} else {
+			staticAnalysisError("f:each select type is not a cell.");
+		}
+		
 		// TODO
 	} else if (xml.kind === "call") {
 		staticTypeAnalysis({kind: "lineTemplate", template: xml.templateCode}, env);
