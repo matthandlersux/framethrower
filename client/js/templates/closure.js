@@ -3,7 +3,7 @@
 TEMPLATECODE
 	{
 		kind: "templateCode",
-		params: [name: VARTOCREATE],
+		params: [VARTOCREATE],
 		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type XMLP
 		let: LETS,
 		output: LINE
@@ -13,11 +13,13 @@ LETS
 	{VARTOCREATE: LINE}
 
 LINE
-	{kind: "lineExpr", let: LETS, expr: AST},
-	{kind: "lineTemplate", template: TEMPLATECODE},
-	{kind: "lineJavascript", type: TYPE, f: JAVASCRIPTFUNCTION},
-	{kind: "lineXML", xml: XML}
-	// TODO actions, state
+	{kind: "lineExpr", expr: AST} |
+	{kind: "lineTemplate", template: TEMPLATECODE} |
+	{kind: "lineJavascript", type: TYPE, f: JAVASCRIPTFUNCTION} |
+	{kind: "lineXML", xml: XML} |
+	{kind: "lineState", action: ACTION} | // action takes no parameters
+	{kind: "lineAction", action: ACTION} |
+	{kind: "lineBlock", let: LETS, output: LINE}
 
 
 XML

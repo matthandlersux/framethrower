@@ -90,6 +90,7 @@ function unparseType(type) {
 }
 
 
+// returns true if the types are the same up to alpha-conversion
 function compareTypes(type1, type2) {
 	var correspond12 = {};
 	var correspond21 = {};
@@ -381,6 +382,7 @@ function getTypeOfExpr(expr) {
 				constraints.push([left.right, right.right]);
 			} else {
 				debug.error("Type mismatch, unresolveable: `"+unparseType(left)+"` and `"+unparseType(right)+"`");
+				//throw "Type mismatch, unresolveable: `"+unparseType(left)+"` and `"+unparseType(right)+"`";
 			}
 		}
 

@@ -7,19 +7,19 @@ template () {
 	divide = function (x::Number, y::Number)::Number {
 		return x / y;
 	},
-	swapDivide = function (x, y) {
+	swapDivide = function (x::Number, y::Number)::Number {
 		return y / x;
 	},
-	multiply = function (x, y) {
+	multiply = function (x::Number, y::Number)::Number {
 		return x * y;
 	},
-	min = function (x, y) {
+	min = function (x::Number, y::Number)::Number {
 		return Math.min(x, y);
 	},
-	max = function (x, y) {
+	max = function (x::Number, y::Number)::Number {
 		return Math.max(x, y);
 	},
-	abs = function (x) {
+	abs = function (x::Number)::Number {
 		return Math.abs(x);
 	},
 	concat = function (s::String, t::String)::String {
