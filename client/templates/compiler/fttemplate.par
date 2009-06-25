@@ -9,6 +9,7 @@
 ~/
 
 /~	Grammar Tokens			~/
+	'includefile([\r\n\t\ ]|//[^\n]*\n)*'						WINCLUDEFILE
 	'function([\r\n\t\ ]|//[^\n]*\n)*'							WFUNCTION
 	'template([\r\n\t\ ]|//[^\n]*\n)*'							WTEMPLATE
 	'action([\r\n\t\ ]|//[^\n]*\n)*'							WACTION
@@ -49,6 +50,12 @@
 
 TOP:
 	LINE												[* result = {line: %1}; *]
+	| INCLUDEBLOCK										[* result = {includeblock: %1}; *]
+	;
+
+INCLUDEBLOCK:
+	WINCLUDEFILE LETLIST LET
+	| WINCLUDEFILE LETLIST
 	;
 
 
@@ -342,7 +349,8 @@ NONLTBRACKET:
 	;
 
 KEYWORD:
-	WTEMPLATE
+	WINCLUDEFILE
+	| WTEMPLATE
 	| WFUNCTION
 	| WACTION
 	| WSTATE

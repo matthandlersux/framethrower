@@ -108,15 +108,6 @@ var semantics = function(){
 	// Make Functions
 	// ====================================================
 
-	function makeLet(node) {
-		return {
-			name: node.variable.name,
-			type: node.variable.type,
-			value: makeLine(node.line),
-			lineNum: node.lineNum
-		};
-	}
-
 	function makeLineExpr (expr) {
 		return {
 			kind: "lineExpr",
@@ -789,12 +780,26 @@ var semantics = function(){
 		tree.lineNum = "" + startLine;
 	}
 	
+	function makeIncludeblock (node) {
+		var lets = makeListObject(node.letlist, 'letlist', 'let', getLetKeyVal);
+		if (def(node.let)) {
+			var lastLet = getLetKeyVal(node.let);
+			lets[lastLet.key] = lastLet.val;
+		}
+		return lets;
+	}
+	
 	
 	return {
 		processTree: function(tree) {
 			lineNum = 1;
 			handleWhiteSpace(tree);
-			return makeLine(tree.line);
+			if (def(tree.line)) {
+				return makeLine(tree.line);
+			} else if (def(tree.includeblock)) {
+				var ret = makeIncludeblock(tree.includeblock);
+				return ret;
+			}
 		}
 	}
 }();

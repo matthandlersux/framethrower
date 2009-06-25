@@ -1188,6 +1188,11 @@
 		140203
 	]);
 	
+	// make cuts2 from cuts:
+	forEach(rootObjects["test.walleVideo"].prop["cuts"].getState()[0], function(cut) {
+		rootObjects["test.walleVideo"].prop["cuts2"].control.add(cut);
+	});
+	
 	
 	
 	
