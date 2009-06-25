@@ -297,7 +297,6 @@ startScript(Options) ->
 %% 
 
 bootJsonScript() ->
-	SessionId = session:new(),
 	{ok, JSONBinary} = file:read_file("lib/bootJSON"),
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
 	ClassesStruct = struct:get_value(<<"classes">>, Struct),

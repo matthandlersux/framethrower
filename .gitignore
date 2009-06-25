@@ -2,4 +2,6 @@
 server/erl_crash.dump
 *.tmproj
 *~
+server/1
+server/test.Sun_Apr__5_22_45_02_EDT_2009.ets
 client/templates/bin/*

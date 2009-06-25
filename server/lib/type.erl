@@ -134,6 +134,8 @@ getType( Expr, Env ) when is_record(Expr, exprVar) ->
 			Result -> Result
 		end
 	end;
+% getType( Expr, Env ) when is_record(Expr, cellPointer) ->
+	%
 getType( Expr, Env ) when is_record(Expr, exprCell) ->
 	Expr#exprCell.type;
 getType( Obj, Env ) when is_record(Obj, object) ->

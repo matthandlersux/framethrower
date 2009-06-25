@@ -83,7 +83,7 @@ flush(SessionPid, To) ->
 %% ====================================================================
 
 init([]) ->
-	process_flag(trap_exit, true),
+	% process_flag(trap_exit, true),
 	State = #session{},
     {ok, State, ?this(timeout)}.
 
