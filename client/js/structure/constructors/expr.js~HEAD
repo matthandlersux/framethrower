@@ -2,7 +2,7 @@
 An Expr is any one of the following:
 	* Number, String, Bool
 	* Fun
-	* Cell - see reactive/cells.js
+	* StartCap - see reactive/cells.js
 	* Object - see objects/objects.js
 	* Var
 	*	{
