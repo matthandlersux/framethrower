@@ -198,7 +198,11 @@ if( arguments.length > 0 ) {
 	}
 	
 	//create bin folder if it doesn't exist
+	var binfolder1 = java.io.File("../../generated");
 	var binfolder = java.io.File("../../generated/templates");
+	if(!binfolder1.exists()) {
+		binfolder1.mkdir();
+	}
 	if(!binfolder.exists()) {
 		binfolder.mkdir();
 	}
