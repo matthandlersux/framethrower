@@ -117,7 +117,57 @@ template () {
 	
 	init = action () {
 		nameSituation tobytest.realLife "Real Life",
-		walleStory = makeSituationNamedIn "Wall-E Story" tobytest.realLife,
+		agent = makeSituiationNamedIn "Agent" tobytest.realLife,
+		
+		//generic movie structure
+		movie = makeSituiationNamedIn "Movie" tobytest.realLife,
+		making = makeSituiationNamedIn "Movie's Making" movie,
+		presentation = makeSituiationNamedIn "Movie's Presentation" making,
+		story = makeSituiationNamedIn "Movie's Story" presentation,
+		
+		//making
+			director = makeSituiationNamedIn "Director" making,
+			actor = makeSituiationNamedIn "Actor" making,
+		
+		//presentation
+			cammove = makeSituiationNamedIn "Camera Movements" presentation,
+				zooms = makeSituationNamedIn "Zooms" cammove,
+					camera = makeSituationNamedIn "Camera" zooms,
+			
+		//story
+			character = makeSituiationNamedIn "Character" story,
+		
+		//genre items
+		lovestory = makeSituationNamedIn "Love Story" tobytest.realLife,
+		scifi = makeSituationNamedIn "Scifi" tobytest.realLife,
+		animation = makeSituationNamedIn "Animation" tobytest.realLife,
+		
+		//lovestory
+			lover = makeSituationNamedIn "Lover" lovestory,
+			loved = makeSituationNamedIn "Loved" lovestory,
+			loves = makeSituationNamedIn "Loves" lovestory,
+				inlover = makeSituationIn loves,
+				inloved = makeSituationIn loves,
+			conflict = makeSituationNamedIn "has Conflict with" lovestory,
+				fighter1 = makeSituationIn conflict,
+				fighter2 = makeSituationIn conflict,
+			
+		//scifi
+			sentient = makeSituationNamedIn "Sentient Being" scifi,
+			
+		//animation
+			animator = makeSituationNamedIn "Animation Director" animation,
+		
+		//walle things
+		walleMovie = makeSituiationNamedIn "Wall-E" tobytest.realLife,
+		walleMaking = makeSituiationNamedIn "Wall-E's Making" walleMovie,
+				wdirector = makeSituationNamedIn "Andrew Stanton" walleMaking,
+				wadirector = makeSituationNamedIn "Angus MacLane" walleMaking,
+		wallePres = makeSituiationNamedIn "Wall-E's Presentation" walleMaking,
+			wallezoom = makeSituationNamedIn "Zoom" wallePres,
+				wcamera = makeSituationIn wallezooms,
+				zoomtime = makeSituationNamedIn "4:36" wallezooms,
+		walleStory = makeSituationNamedIn "Wall-E's Story" wallePres,
 		
 		kills = makeSituationNamedIn "kills" walleStory,
 		relation = makeSituationNamedIn "relation" walleStory,
@@ -164,20 +214,47 @@ template () {
 				itimepoint2 = makeSituationNamedIn "time point" interval,
 				interior = makeSituationNamedIn "interior" interval,
 			
-		//first level pipes
+		//zeroth level pipes
+			relationToInfon = makePipe relation someInfon,
 			onScreen1ToInfon = makePipe onScreen1 someInfon,
 			onScreen2ToInfon = makePipe onScreen2 someInfon,
+			canHappenToRelation = makePipe canHappenAtTime relation,
+			canHappenTocammove = makePipe canHappenAtTime cammove,
+			cammoveTowallePres = makePipe cammove wallePres, 
+			
+			//timeline pipes
 			timelineToCanHappen = makePipe timeline canHappenAtTime,
 			timelineToWalleStory = makePipe timeline walleStory,
-			canHappenToRelation = makePipe canHappenAtTime relation,
-			relationToInfon = makePipe relation someInfon,
 			timelineToisBefore = makePipe timeline isBefore,
 			timelineTosameTimeAs = makePipe timeline sameTimeAs,
 			timelineTointerval = makePipe timeline interval,
 			
+			//connection from general movie to wall-e
+			movieTowalleMovie = makePipe movie wallemovie,
+			makingTowalleMaking = makePipe making walleMaking,
+			presTowallePres = makePipe presentation wallePres,
+			storyTowalleStory = makePipe story walleStory,
 			
-		//second level pipes
-			//connecting to/from timeline
+			//connection to/from lovestory
+			reallifeTolovesotry = makePipe tobytest.realLife lovestory,
+			lovestoryToloves = makePipe lovestory loves,
+			lovestoryToconflict = makePipe lovestory conflict,
+			lovestoryTowalleStory = makePipe lovestory walleStory, 
+			
+			//connection to/from scifi
+			reallifeToscifi = makePipe tobytest.realLife scifi,
+			scifiTowalleStory = makePipe scifi walleStory,
+			
+			//connection to/from animation
+			reallifeToanimation = makePipe tobytest.realLife animation,
+			animationTowalleMaking = makePipe animation walleMaking,
+			
+			
+		//first level pipes
+			zoomsTowallezoom = makePipeIn1 zooms wallezoom cammoveTowallePres,
+			cameraTowcamera = makePipeIn1 camera wcamera zoomsTowallezoom,
+			
+			//connection to/from timeline
 			timepointTobtimepoint1 = makePipeIn1 timelineTimepoint btimepoint1 timelineToisBefore,
 			timepointTobtimepoint2 = makePipeIn1 timelineTimepoint btimepoint2 timelineToisBefore,
 			timepointTostimepoint1 = makePipeIn1 timelineTimepoint stimepoint1 timelineTosameTimeAs,
@@ -192,12 +269,43 @@ template () {
 			evaToEvaInfon = makePipeIn1 eva evaInfon onScreen1ToInfon,
 			walleToWalleInfon = makePipeIn1 walle walleInfon onScreen2ToInfon,
 			
-			//conection to/from infon
-			canHappenTimePointToEvaInfon = makePipeIn2 timePoint timePointInfon canHappenToRelation relationToInfon,
+			//connection to/from infon
 			relatorToEvaInfon = makePipeIn1 relator evaInfon relationToInfon,
 			relateeToWalleInfon = makePipeIn1 relatee walleInfon relationToInfon,
+			
+			//connection from general movie to walle
+			directorTowdirector = makePipeIn1 director wdirector makingTowalleMaking,
+			characterTowalle = makePipeIn1 character walle storyTowalleStory,
+			characterToeva = makePipeIn1 character eva storyTowalleStory,
+			
+			
+			//connection to/from lovestory
+			loverToinlover = makePipeIn1 lover inlover lovestoryToloves,
+			lovedToinloved = makePipeIn1 loved inloved lovestoryToloves,
+			loverTofighter1 = makePipeIn1 lover fighter1 lovestoryToconflict,
+			lovedTofighter2 = makePipeIn1 loved fighter2 lovestoryToconflict,
+			
+			//connection to/from scifi
+			sentientTowalle = makePipeIn1 sentient walle scifiTowalleStory,
+			sentientToeva = makePipeIn1 sentient eva scifiTowalleStory,
+			
+			//connection to/from animation
+			animatorTowadirector = makePipeIn1 director wadirector animationTowalleMaking,
+			
+			
+			//connection from real life
+			agentTolover = makePipeIn1 agent lover reallifeTolovestory,
+			agentToloved = makePipeIn1 agent loved reallifeTolovestory,
+			agentTosentient = makePipeIn1 agent sentient reallifeToscifi,
+			agentToanimator = makePipeIn1 agent animator reallifeToanimation,
+			
+		//second level pipes
+			canHappenTimePointToEvaInfon = makePipeIn2 timePoint timePointInfon canHappenToRelation relationToInfon,
+			timepointTozoomtime = makePipeIn2 timepoint zoomtime canHappenTocammov zoomsTowallezoom,
+					
 			tobytest.realLife
 	},
+	
 	
 	
 	print = template(sit::Situation) {
