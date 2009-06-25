@@ -4,4 +4,4 @@ go to
 run:
 java -jar js.jar assembler.js DIRECTORY
 
-where DIRECTORY is the name of the directory (in client/templates/) to compile. The compiled javascript will show up as client/templates/bin/DIRECTORY.js
+where DIRECTORY is the name of the directory (in client/templates/) to compile. The compiled javascript will show up as client/generated/templates/DIRECTORY.js
