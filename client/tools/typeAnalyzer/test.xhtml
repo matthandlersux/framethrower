@@ -8,7 +8,7 @@
     xmlns:svg="http://www.w3.org/2000/svg">
 
 <head>
-<title>Base Scope</title>
+<title>Type analyzer test</title>
 
 <script>
 var ROOTDIR = "../../";
@@ -22,8 +22,14 @@ var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
 
 var INCLUDESTRUCTUREONLY = true;
 
-var INCLUDES=[ROOTDIR+"generated/templates/toby2.js", ROOTDIR+"source/js/templates/preparse.js", "init.js"];
+var INCLUDES=[ROOTDIR+"generated/templates/toby2.js", ROOTDIR+"source/js/templates/preparse.js", "typeAnalyzer.js"];
 var ONLOAD="initialize()";
+
+function initialize() {
+	preparse(mainTemplate);
+	typeAnalyze(mainTemplate);
+}
+
 </script>
 
 <script type="text/javascript" src="../../source/js/external/yuiloader-min.js"></script> 
