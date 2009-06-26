@@ -9,7 +9,7 @@ addEventExtra("event.offsetX", "Number", function (e, target, mouseCurrentPos) {
 	return mouseCurrentPos[0] - getPosition(target)[0];
 });
 addEventExtra("event.offsetY", "Number", function (e, target, mouseCurrentPos) {
-	return mouseCurrentPos[1] - getPosition(fonEl.parentNode)[1];
+	return mouseCurrentPos[1] - getPosition(target)[1];
 });
 addEventExtra("event.mouseX", "Number", function (e, target, mouseCurrentPos) {
 	return mouseCurrentPos[0];
