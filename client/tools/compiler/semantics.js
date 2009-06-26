@@ -1,4 +1,6 @@
 var semantics = function(){
+	var filename;
+
 
 	// ==================================
 	// UTIL
@@ -6,6 +8,15 @@ var semantics = function(){
 	
 	function def(obj) {
 		return obj !== undefined;
+	}
+
+	function addDebugRef(obj, debugRef) {
+		if(objectLike(obj)) {
+			forEach(obj, function(value) {
+				addDebugRef(value, debugRef);
+			});
+			obj.debugRef = debugRef;
+		}
 	}
 	
 	//this should cover all the weird constructs that need to be made into lists
@@ -108,13 +119,6 @@ var semantics = function(){
 	// Make Functions
 	// ====================================================
 
-	function makeLineExpr (expr) {
-		return {
-			kind: "lineExpr",
-			expr: expr
-		};
-	}
-
 	function makeLetlistblock(node) {
 		var lets = makeListObject(node.fullletlistletlist, 'letlist', 'let', getLetKeyVal);
 		var output = makeLine(node.fullletlist.line);
@@ -123,7 +127,7 @@ var semantics = function(){
 			kind: "lineBlock",
 			let: lets,
 			output: output,
-			lineNum: node.lineNum
+			debugRef: node.debugRef
 		};
 	}
 
@@ -132,7 +136,7 @@ var semantics = function(){
 		var wrappedActiontpl = {
 			arglist: makeAskeyval(node.askeyval),
 			fullactlist: node.fullactlist,
-			lineNum: node.lineNum
+			debugRef: node.debugRef
 		};
 	
 		var actiontpl = makeActiontpl(wrappedActiontpl);
@@ -140,7 +144,7 @@ var semantics = function(){
 			kind: "extract",
 			select: node.expr,
 			action: actiontpl,
-			lineNum: node.lineNum
+			debugRef: node.debugRef
 		};
 	}
 
@@ -179,14 +183,14 @@ var semantics = function(){
 				params: paramList,
 				type: typeString,
 				actions: actions,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 		};
 	}
 
 	function makeFullactlist(node) {
 		var actlist = makeList(node.actlist, 'actlist', 'actline');
 		if (def(node.action)) {
-			actlist.push({action: node.action});
+			actlist.push({action: node.action, debugRef: node.debugRef});
 		}
 		//look for extractSugar
 		
@@ -206,20 +210,24 @@ var semantics = function(){
 						askeyval: {
 							identifier: extractSugar.variable.identifier
 						}, 
-						fullactlist: {actlist:restOfList},
-						lineNum: extractSugar.lineNum
+						fullactlist: {actlist:restOfList}
 					}
 				};
+				addDebugRef(wrappedAction, extractSugar.debugRef);
+				
 				outputList.push({
-					action: makeAction(wrappedAction)
+					action: makeAction(wrappedAction),
+					debugRef: extractSugar.debugRef
 				});
 				return outputList;
 			} else {
-				var output = {};
+				var output = {
+					action: makeAction(actline.action),
+					debugRef: actline.debugRef
+				};
 				if (def(actline.variable)) {
 					output.name = actline.variable.identifier;
 				}
-				output.action = makeAction(actline.action);				
 				outputList.push(output);
 			}
 		}
@@ -240,7 +248,7 @@ var semantics = function(){
 				kind: "actionCreate",
 				type: node.type,
 				prop: proplist,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 		}
 
@@ -261,7 +269,7 @@ var semantics = function(){
 				actionType: actionType,
 				key: update.expr2,
 				value: update.expr3,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 		}
 		
@@ -280,7 +288,7 @@ var semantics = function(){
 		}
 		var result;
 		forEach(node, function(value, nodeName) {
-			if (nodeName !== 'lineNum') {
+			if (nodeName !== 'debugRef') {
 				result = makeActionKind(nodeName, value, node);
 			}
 		});
@@ -303,7 +311,7 @@ var semantics = function(){
 		var wrappedTemplate = {
 			arglist: makeAskeyval(node.askeyval),
 			fullletlist: node.fullletlist,
-			lineNum: node.lineNum
+			debugRef: node.debugRef
 		};
 		
 		var template = makeTemplate(wrappedTemplate);
@@ -313,7 +321,7 @@ var semantics = function(){
 			wrappedElseblock = {
 				arglist: {},
 				fullletlist: node.fullletlist2,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 			otherwise = makeTemplate(wrappedElseblock);			
 		} else if (def(node.ifblock)) {
@@ -324,18 +332,18 @@ var semantics = function(){
 					list: {},
 					line: makeIfblock(node.ifblock)
 				},
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 		}
 		var otherwise = makeTemplate(wrappedElseblock);
 	
-		return makeXMLLine({
+		return {
 			kind: "case", 
 			test: node.expr,
 			templateCode: template,
 			otherwise: otherwise,
-			lineNum: node.lineNum
-		});
+			debugRef: node.debugRef
+		};
 	}
 
 	function makeFunction(funcText) {
@@ -405,7 +413,7 @@ var semantics = function(){
 		return {
 			key: node.variable.identifier,
 			val: makeLine(node.line),
-			lineNum: node.lineNum
+			debugRef: node.debugRef
 		};
 	}
 	
@@ -448,7 +456,7 @@ var semantics = function(){
 			type: typeString,
 			let: lets,
 			output: output,
-			lineNum: node.lineNum
+			debugRef: node.debugRef
 		};
 	}
 	
@@ -457,10 +465,8 @@ var semantics = function(){
 		if (def(node.type)) {
 			var createAction = {
 				create:{
-					type:node.type,
-					lineNum: node.lineNum
-				},
-				lineNum: node.lineNum
+					type:node.type
+				}
 			};
 			//state(TYPE, EXPR) sugar
 			if(def(node.expr)) {
@@ -489,15 +495,16 @@ var semantics = function(){
 			} else {
 				fullactlist = {actlist:{}, action:createAction};
 			}
+			addDebugRef(fullactlist, node.debugRef);
 		} else if (def(node.fullactlist)) {
 			fullactlist = node.fullactlist;
 		}
 
-		var action = makeActiontpl({arglist:{}, fullactlist:fullactlist, lineNum: node.lineNum});
+		var action = makeActiontpl({arglist:{}, fullactlist:fullactlist, debugRef: node.debugRef});
 		return {
 			kind: "lineState",
 			action: action,
-			lineNum: node.lineNum
+			debugRef: node.debugRef
 		};
 	}
 	
@@ -513,7 +520,7 @@ var semantics = function(){
 			var wrappedTemplate = {
 				arglist: arglist,
 				fullletlist: node.fullletlist,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 						
 			var template = makeTemplate(wrappedTemplate);
@@ -521,7 +528,7 @@ var semantics = function(){
 				kind: "for-each",
 				select: node.expr,
 				templateCode: template,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 		}
 
@@ -529,14 +536,14 @@ var semantics = function(){
 			var wrappedTemplate = {
 				arglist: {},
 				fullletlist: node.fullletlist,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 			
 			var template = makeTemplate(wrappedTemplate);
 			return {
 				kind: "call",
 				templateCode: template,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 		}
 
@@ -544,14 +551,14 @@ var semantics = function(){
 			var wrappedActiontpl = {
 				arglist: makeAskeyval(node.askeyval),
 				fullactlist: node.fullactlist,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 			var actiontpl = makeActiontpl(wrappedActiontpl);
 			return {
 				kind: "trigger",
 				trigger: node.expr,
 				action: actiontpl,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 		}
 
@@ -559,7 +566,7 @@ var semantics = function(){
 			var wrappedActiontpl = {
 				arglist: {},
 				fullactlist: node.fullactlist,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 			
 			var action = makeActiontpl(wrappedActiontpl);
@@ -567,7 +574,7 @@ var semantics = function(){
 				kind: "on",
 				event: node.identifier,
 				action: action,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 		}
 
@@ -632,7 +639,7 @@ var semantics = function(){
 				attributes: attributeObject,
 				style: style,
 				children: xmllist,
-				lineNum: node.lineNum
+				debugRef: node.debugRef
 			};
 		}
 
@@ -685,7 +692,7 @@ var semantics = function(){
 		}
 		var result;
 		forEach(node, function(value, nodeName) {
-			if (nodeName !== 'lineNum') {
+			if (nodeName !== 'debugRef') {
 				result = makeXmlKind(nodeName, value);
 			}
 		});
@@ -693,31 +700,33 @@ var semantics = function(){
 	}
 	
 	function makeLine (node) {
-		function makeLineKind (name, node) {
+		function makeLineKind (name, node, parentNode) {
 			switch(name){
 				case 'function':
-					return makeFunction(node);
+					var lineFunc = makeFunction(node);
+					lineFunc.debugRef = parentNode.debugRef;
+					return lineFunc;
 				case 'template':
 					//TODO: put kind in makeTemplate
-					return {kind:'lineTemplate', template: makeTemplate(node)};
+					return {kind:'lineTemplate', template: makeTemplate(node), debugRef: node.debugRef};
 				case 'state':
 					return makeState(node);
 				case 'actiontpl':
-					return {kind:'lineAction', action: makeActiontpl(node)};
+					return {kind:'lineAction', action: makeActiontpl(node), debugRef: node.debugRef};
 				case 'expr':
-					return makeLineExpr(node);
+					return {kind: "lineExpr", expr: node, debugRef: parentNode.debugRef};
 				case 'letlistblock':
 					return makeLetlistblock(node);
 				case 'ifblock':
-					return makeIfblock(node);
+					return {kind: "lineExpr", expr: makeIfblock(node), debugRef: node.debugRef};
 				case 'xml':
 					return {kind:'lineXML', xml:makeXml(node)};
 			}
 		}
 		var result;
 		forEach(node, function(value, nodeName) {
-			if (nodeName !== 'lineNum') {
-				result = makeLineKind(nodeName, value);
+			if (nodeName !== 'debugRef') {
+				result = makeLineKind(nodeName, value, node);
 			}
 		});
 		return result;	
@@ -765,9 +774,7 @@ var semantics = function(){
 			}
 			
 			if (startsWith('type') || startsWith('expr') || startsWith('styletext') || startsWith('attname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('function') || startsWith('xmltext')) {
-				var string = makeString(value, nodeName);
-				lineNum += lineBreakCount(string);
-				tree[nodeName] = stripSpaces(string);
+				tree[nodeName] = stripSpaces(makeString(value, nodeName));
 			} else {
 				if(objectLike(value)) {
 					handleWhiteSpace(value);
@@ -777,7 +784,7 @@ var semantics = function(){
 				}
 			}
 		});
-		tree.lineNum = "" + startLine;
+		tree.debugRef = {lineNumber: startLine, file: filename};
 	}
 	
 	function makeIncludeblock (node) {
@@ -791,7 +798,8 @@ var semantics = function(){
 	
 	
 	return {
-		processTree: function(tree) {
+		processTree: function(tree, inFilename) {
+			filename = inFilename;
 			lineNum = 1;
 			handleWhiteSpace(tree);
 			if (def(tree.line)) {

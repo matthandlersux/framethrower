@@ -138,7 +138,7 @@ function compileFile (filePath, rebuild, isLetFile) {
 				print("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file.getCanonicalPath() + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
 			}
 		} else {
-			result = semantics.processTree(parseResult.result);
+			result = semantics.processTree(parseResult.result, "" + file.getCanonicalPath());
 			result.fileName = "" + file.getName();
 			serialize(result, binfile.getAbsolutePath());
 			return result;
