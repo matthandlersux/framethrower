@@ -32,14 +32,6 @@ function initialize() {
 	typeAnalyze(mainTemplate);
 	
 	
-	var baseWords = [];
-	forEach(base.debug(), function (expr, name) {
-		baseWords.push(name + " :: " + unparseType(getType(expr)));
-	});
-	console.log(baseWords.join("\n"));
-	
-	
-	
 }
 
 includes.htmlInclude(["core"], [ROOTDIR+"generated/templates/andrew.js", "typeAnalyzer.js"], "initialize()");

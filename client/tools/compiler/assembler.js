@@ -187,9 +187,9 @@ function countLines(wholeString, position) {
 
 //MAIN
 //COMPILE COMMAND: rhino jscc.js -o tplparser.js fttemplate.par
-//java -jar js.jar jscc.js -o tplparser.js fttemplate.par
+//java -jar ../util/js.jar jscc.js -o tplparser.js fttemplate.par
 //RUN COMMAND: rhino assembler.js <root folder>
-//java -jar js.jar -opt -1 assembler.js <root folder> rebuild
+//java -jar ../util/js.jar -opt -1 assembler.js <root folder> rebuild
 
 if( arguments.length > 0 ) { 
 	var rebuild = false;
@@ -216,7 +216,7 @@ if( arguments.length > 0 ) {
 
 		bw.write(totalCompiledString);
 		bw.close();
-		print('success');		
+		print('success');	
 	}
 } else {
 	print( 'usage: rhino assembler.js <root folder> [rebuild]' );

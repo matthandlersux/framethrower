@@ -114,9 +114,11 @@ var maxCalls = 12;
 
 var timeoutDefault = 30 * 1000; // 30 seconds
 
-if (!window.serverBaseUrl) {
-	window.serverBaseUrl = "http://clever.eversplosion.com:8000/";
-}
+try {	//try catch is a hack so this can work in rhino
+	if (!window.serverBaseUrl) {
+		window.serverBaseUrl = "http://clever.eversplosion.com:8000/";
+	}
+} catch (err) {}
 
 
 

@@ -1,52 +1,3 @@
-
-// ========================================================================
-// Keeping track of objects and their unique id's
-// ========================================================================
-
-var idGenerator = (function (prefix) {
-	var count = 0;
-	return {
-		get: function () {
-			count += 1;
-			return prefix + count;
-		}
-	};
-})("local.");
-
-var objectCache = makeOhash();
-
-
-// ========================================================================
-// Identifiables
-// ========================================================================
-
-function makeIded(type, o) {
-	if (o === undefined) {
-		o = {};
-	}
-	
-	var id = idGenerator.get();
-	
-	//objectCache.set(id, o);
-
-	o.getId = getter(id);
-	o.toJSON = getter("object:" + id);
-	o.getType = getter(type);
-	
-	o.remove = function () {
-		// remove from object cache
-		//objectCache.remove(id);
-	};
-	
-	return o;
-}
-
-Node.prototype.toJSON = function () {
-	makeIded(basic.xml, this);
-	return this.toJSON();
-};
-
-
 // ========================================================================
 // Ohash
 // ========================================================================
@@ -135,24 +86,4 @@ function makeOhash() {
 	};
 	
 	return ohash;
-}
-
-
-
-// ========================================================================
-// Stringification
-// ========================================================================
-
-// The only stringification rule is that parens "()" must be balanced
-// This makes it possible to reuse stringification functions while keeping uniqueness
-
-function stringifyObject(o) {
-	if (o.getId) {
-		return o.getId();
-	} else {
-		return o;
-	}
-}
-function makeObjectHash() {
-	return makeOhash(stringifyObject);
 }

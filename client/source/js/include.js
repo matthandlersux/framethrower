@@ -58,23 +58,28 @@ var includes = (function () {
 			"source/js/templates/events.js"
 		]
 	};
+
+	function prepareIncludes(bundles, extraFiles) {
+		function plusRootDir(a) {
+			var ret = [];
+			for (var i = 0, len = a.length; i < len; i++) {
+				ret.push(ROOTDIR + a[i]);
+			}
+			return ret;
+		}
+
+		var includes = [];
+		for (var i = 0, len = bundles.length; i < len; i++) {
+			includes = includes.concat(plusRootDir(includeBundles[bundles[i]]));
+		}
+		includes = includes.concat(extraFiles);
+		return includes;
+	}
+
 	
 	return {
 		htmlInclude: function (bundles, extraFiles, onLoadString) {
-			function plusRootDir(a) {
-				var ret = [];
-				for (var i = 0, len = a.length; i < len; i++) {
-					ret.push(ROOTDIR + a[i]);
-				}
-				return ret;
-			}
-			var includes = [];
-			
-			for (var i = 0, len = bundles.length; i < len; i++) {
-				includes = includes.concat(plusRootDir(includeBundles[bundles[i]]));
-			}
-						
-			includes = includes.concat(extraFiles);
+			var includes = prepareIncludes(bundles, extraFiles);
 			
 			YAHOO.util.Get.script(includes, { 
 				onSuccess: function () {eval(onLoadString);}
@@ -82,7 +87,10 @@ var includes = (function () {
 		},
 		
 		rhinoInclude: function (bundles, extraFiles) {
-			// TODO
+			var includes = prepareIncludes(bundles, extraFiles);
+			for (var i = 0, len = includes.length; i < len; i++) {
+				load(includes[i]);
+			};
 		}
 	};
 })();
