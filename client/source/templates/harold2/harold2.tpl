@@ -12,8 +12,11 @@ template () {
 			extract next as next {
 				add(cur, next)
 			}
+			// extract cur as cur2 {
+			// 	add(cur, inc cur2)
+			// }
 		</f:on>
 		
-		{cur}
+		{cur}, {next}
 	</div>
 }

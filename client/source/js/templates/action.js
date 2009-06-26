@@ -94,7 +94,8 @@ function makeActionClosure(actionCode, env) {
 			} else if (action.kind === "actionUpdate") {
 				instructions.push({
 					kind: "instructionUpdate",
-					target: evaluate(parseExpression(parse(action.target), envWithParams)),
+					//target: evaluate(parseExpression(parse(action.target), envWithParams)),
+					target: evaluate(parseExpression(action.target, envWithParams)),
 					actionType: action.actionType,
 					//key: action.key ? evaluate(parseExpression(parse(action.key), envWithParams)) : undefined,
 					//value: action.value ? evaluate(parseExpression(parse(action.value), envWithParams)) : undefined

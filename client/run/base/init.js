@@ -10,17 +10,15 @@ function initialize() {
 
 
 
-/*
-A static type analysis looks like:
-{
-	type: TYPE,
-	line: LINE,
-	let?: {VTC: STATICTYPEANALYSIS}
-}
-*/
+
+
+
+var currentLine = null;
+
+
 
 function staticAnalysisError(msg) {
-	debug.error(msg);
+	debug.error(msg, currentLine.debugRef);
 }
 
 
@@ -53,13 +51,79 @@ function arrayToCurriedType(a) {
 }
 
 
+function getWords(ast, lambdaVariables) {
+	if (!lambdaVariables) lambdaVariables = falseEnv;
+	if (typeOf(ast) === "string") {
+		if (lambdaVariables(ast)) {
+			return [];
+		} else {
+			return [ast];
+		}
+	} else if (ast.cons === "apply") {
+		return getWords(ast.left, lambdaVariables).concat(getWords(ast.right, lambdaVariables));			
+	} else if (ast.cons === "lambda") {
+		var newLambdaVariables = envAdd(lambdaVariables, ast.left, true);
+		return getWords(ast.right, newLambdaVariables);
+	}
+}
+
+function getTypeOfAST(ast, env) {
+
+	
+	var words = getWords(ast);
+	var wordTypes = {};
+	
+	forEach(words, function (word) {
+		try {
+			var found = env(word);
+		} catch (e) {
+			staticAnalysisError("Expression `"+unparse(ast)+"` has unknown word: `"+word+"`");
+		}
+		wordTypes[word] = unparseType(getType(found));
+	});
+	
+	try {
+		var expr = parseExpression(ast, env);
+		var type = getType(expr);			
+	} catch (e) {
+		var wordTypesError = "";
+		forEach(wordTypes, function (type, word) {
+			wordTypesError += word + " :: " + type + "\n";
+		});
+		staticAnalysisError("Type check failed on `"+unparse(ast)+"`.\n\n"+wordTypesError);
+	}
+	return type;
+}
+
+
+
+
+/*
+A static type analysis looks like:
+{
+	type: TYPE,
+	line: LINE,
+	extra: {...}
+}
+
+Note: this really only checks now.. in the future it should return something that will tell you the type of every VTC
+
+*/
+
 function staticTypeAnalysis(line, env) {
+	currentLine = line;
+	
 	function addLets(lets, env) {
 		var memo = {};
 		function newEnv(s) {
 			if (memo[s] !== undefined) {
 				return memo[s];
 			} else if (lets[s] !== undefined) {
+				// this is here to prevent infinite loop
+				if (lets[s].kind === "lineTemplate") {
+					memo[s] = makePlaceholder(lets[s].template.type);
+				}
+				
 				memo[s] = staticTypeAnalysis(lets[s], newEnv);
 				return memo[s];
 			} else {
@@ -74,12 +138,7 @@ function staticTypeAnalysis(line, env) {
 	var extra = {};
 	
 	if (line.kind === "lineExpr") {
-		try {
-			var expr = parseExpression(line.expr, env);
-			type = getType(expr);			
-		} catch (e) {
-			staticAnalysisError("Type check failed.");
-		}
+		type = getTypeOfAST(line.expr, env);
 	} else if (line.kind === "lineTemplate") {
 		type = line.template.type;
 		
@@ -98,11 +157,11 @@ function staticTypeAnalysis(line, env) {
 		});
 		extra.let = let;
 		
-		// check that output matches the output type (ie: XMLP i guess)
+		// check that output matches the output type (XMLP)
 		var outputAnalysis = staticTypeAnalysis(line.template.output, newEnv);
 		extra.output = outputAnalysis;
 		if (!compareTypes(outputAnalysis.type, typeArray[typeArray.length - 1])) {
-			staticAnalysisError("Template output is not the right type (XMLP)");
+			staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got `"+unparseType(outputAnalysis.type)+"`");
 		}
 		
 	} else if (line.kind === "lineJavascript") {
@@ -159,18 +218,18 @@ XMLINSERT
 
 */
 
+var eventExtraTypes = map(eventExtras, function (extra) {
+	return makePlaceholder(extra.type);
+});
+
 
 function staticTypeAnalysisXML(xml, env) {
+	currentLine = xml;
+	
 	function checkInsert(ins) {
 		if (typeOf(ins) === "string") return;
 		else {
-			try {
-				var expr = parseExpression(ins.expr, env);
-				var type = getType(expr);
-			} catch (e) {
-				console.log("having trouble..", xml, unparse(ins));
-				staticAnalysisError("Type check failed.");
-			}
+			getTypeOfAST(ins.expr, env);
 		}
 	}
 	if (xml.kind === "element") {
@@ -182,35 +241,44 @@ function staticTypeAnalysisXML(xml, env) {
 	} else if (xml.kind === "textElement") {
 		checkInsert(xml.nodeValue);
 	} else if (xml.kind === "for-each") {
-		try {
-			var select = parseExpression(xml.select, env);
-			var selectType = getType(select);			
-		} catch (e) {
-			staticAnalysisError("f:each select type check failed.");
-		}
+		var selectType = getTypeOfAST(xml.select, env);
 		
-		var constructor = getTypeConstructor(type);
+		var constructor = getTypeConstructor(selectType);
+		
+		// TODO might want to check that the type is really valid... but this should probably be guaranteed somewhere else
+		
+		var hackedLineTemplate = {
+			kind: "lineTemplate",
+			template: {
+				kind: "templateCode",
+				params: xml.templateCode.params,
+				let: xml.templateCode.let,
+				output: xml.templateCode.output
+			}
+		};
 		
 		if (constructor === "Map") {
+			var keyType = selectType.left.right;
+			var valueType = selectType.right;
 			
+			hackedLineTemplate.template.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("XMLP")));
 		} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set") {
+			var keyType = selectType.right;
 			
+			hackedLineTemplate.template.type = makeTypeLambda(keyType, parseType("XMLP"));
 		} else {
 			staticAnalysisError("f:each select type is not a cell.");
 		}
 		
-		// TODO
+		staticTypeAnalysis(hackedLineTemplate, env);
 	} else if (xml.kind === "call") {
 		staticTypeAnalysis({kind: "lineTemplate", template: xml.templateCode}, env);
 	} else if (xml.kind === "on") {
-		// TODO
+		getActionReturnType(xml.action, extendEnv(env, eventExtraTypes));
 	} else if (xml.kind === "trigger") {
 		// TODO
 	}
 }
-
-
-
 
 
 
@@ -228,12 +296,34 @@ function getActionReturnType(action, env) {
 	
 	forEach(action.actions, function (actionLine) {
 		var ac = actionLine.action;
+		currentLine = ac;
+		
 		var type;
 		if (ac.kind === "actionCreate") {
 			type = ac.type;
 			// TODO: check that properties are correctly there
 		} else if (ac.kind === "actionUpdate") {
-			// TODO: check that it's actually a cell I guess
+			// check that it's actually a cell, and the supplied key/value expressions are the proper type
+			var modifyingType = getTypeOfAST(ac.target, envWithParams);
+			var keyType = ac.key ? getTypeOfAST(ac.key, envWithParams) : undefined;
+			var valueType = ac.value ? getTypeOfAST(ac.value, envWithParams) : undefined;
+			
+			var constructor = getTypeConstructor(modifyingType);
+			if (constructor === "Map") {
+				if (keyType && !compareTypes(keyType, modifyingType.left.right)) {
+					staticAnalysisError("Update key has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(keyType)+"`");
+				}
+				if (valueType && !compareTypes(valueType, modifyingType.right)) {
+					staticAnalysisError("Update value has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(keyType)+"`");
+				}
+			} else if (constructor === "Unit" || constructor === "Set") {
+				if (keyType && !compareTypes(keyType, modifyingType.right)) {
+					staticAnalysisError("Update key has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(keyType)+"`");
+				}
+			} else {
+				staticAnalysisError("Update action target not a Map, Set, or Unit");
+			}
+			// TODO check that the add/remove has key/value as appropriate
 		} else {
 			type = staticTypeAnalysis(ac, envWithParams).type;
 		}

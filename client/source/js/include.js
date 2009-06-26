@@ -34,6 +34,7 @@
 		"js/builtin/exprs.js",
 		"js/builtin/classes.js",
 		"js/builtin/rootObjects.js",
+		"js/builtin/eventExtras.js",
 
 
 	

@@ -15,6 +15,7 @@ function preparse(template) {
 	} else if (kind === "actionCreate") {
 		template.type = parseType(template.type);
 	} else if (kind === "actionUpdate") {
+		template.target = parse(template.target);
 		template.key = template.key ? parse(template.key) : undefined;
 		template.value = template.value ? parse(template.value) : undefined;
 	} else if (kind === "case") {
