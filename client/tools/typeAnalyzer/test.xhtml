@@ -20,20 +20,27 @@ var LOCAL = true;
 //var serverBaseUrl = "http://localhost:8000/";
 var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
 
-var INCLUDESTRUCTUREONLY = true;
+</script>
 
-var INCLUDES=[ROOTDIR+"generated/templates/toby2.js", ROOTDIR+"source/js/templates/preparse.js", "typeAnalyzer.js"];
-var ONLOAD="initialize()";
+<script type="text/javascript" src="../../source/js/external/yuiloader-min.js"></script> 
+<script src="../../source/js/include.js"></script>
+
+<script>
 
 function initialize() {
 	preparse(mainTemplate);
 	typeAnalyze(mainTemplate);
 }
 
+includes.htmlInclude(["core"], [ROOTDIR+"generated/templates/andrew.js", "typeAnalyzer.js"], "initialize()");
 </script>
 
-<script type="text/javascript" src="../../source/js/external/yuiloader-min.js"></script> 
-<script src="../../source/js/include.js"></script>
+
+
+
+
+
+
 
 </head>
 

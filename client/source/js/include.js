@@ -1,83 +1,88 @@
-(function () {
+var includes = (function () {
+	var includeBundles = {
+		core: [
+			"source/js/external/json2.js",
+
+			"source/js/util/debug.js",
+			"source/js/util/util.js",
+			"source/js/util/conSortedSet.js",
+
+			"source/js/structure/constructors/constructors.js",
+			"source/js/structure/constructors/parse.js",
+			"source/js/structure/constructors/types.js",
+			"source/js/structure/constructors/expr.js",
+			"source/js/structure/constructors/literalTypes.js",
+
+			"source/js/structure/objects.js",
+
+			"source/js/structure/env.js",
+			"source/js/structure/baseEnv.js",
+
+			"source/js/structure/evaluate.js",
+
+			"source/js/reactive/hash.js",
+			"source/js/reactive/cells.js",
+			"source/js/reactive/ranges.js",
+			"source/js/reactive/controlledCell.js",
+
+			"source/js/builtin/builtin.js",
+			"source/js/builtin/functions/null.js",
+			"source/js/builtin/functions/ord.js",
+			"source/js/builtin/functions/utility.js",
+			"source/js/builtin/functions/cells.js",
+			"source/js/builtin/functions/serialize.js",
+			"source/js/builtin/exprs.js",
+			"source/js/builtin/classes.js",
+			"source/js/builtin/rootObjects.js",
+			"source/js/builtin/eventExtras.js",
+
+
+
+			"source/js/remote/remote.js",
+			
+			"source/js/templates/preparse.js" // might want to do this at compile time?
+		],
+		browser: [
+			"source/js/external/firebugx.js",
+			"source/js/external/XMLHttpRequest.1.0.3/XMLHttpRequest.js",
+
+			"source/js/browser/xml.js",
+			"source/js/browser/position.js",
+
+			"source/js/templates/funs.js",
+			"source/js/templates/action.js",
+			"source/js/templates/closure.js",
+			"source/js/templates/style.js",
+			"source/js/templates/writexml.js",
+
+			"source/js/templates/events.js"
+		]
+	};
 	
-	var structureIncludes = [
-		"js/external/json2.js",
-	
-		"js/util/debug.js",
-		"js/util/util.js",
-		"js/util/conSortedSet.js",
-	
-		"js/structure/constructors/constructors.js",
-		"js/structure/constructors/parse.js",
-		"js/structure/constructors/types.js",
-		"js/structure/constructors/expr.js",
-		"js/structure/constructors/literalTypes.js",
+	return {
+		htmlInclude: function (bundles, extraFiles, onLoadString) {
+			function plusRootDir(a) {
+				var ret = [];
+				for (var i = 0, len = a.length; i < len; i++) {
+					ret.push(ROOTDIR + a[i]);
+				}
+				return ret;
+			}
+			var includes = [];
+			
+			for (var i = 0, len = bundles.length; i < len; i++) {
+				includes = includes.concat(plusRootDir(includeBundles[bundles[i]]));
+			}
+						
+			includes = includes.concat(extraFiles);
+			
+			YAHOO.util.Get.script(includes, { 
+				onSuccess: function () {eval(onLoadString);}
+			});
+		},
 		
-		"js/structure/objects.js",
-
-		"js/structure/env.js",
-		"js/structure/baseEnv.js",
-
-		"js/structure/evaluate.js",
-
-		"js/reactive/hash.js",
-		"js/reactive/cells.js",
-		"js/reactive/ranges.js",
-		"js/reactive/controlledCell.js",
-	
-		"js/builtin/builtin.js",
-		"js/builtin/functions/null.js",
-		"js/builtin/functions/ord.js",
-		"js/builtin/functions/utility.js",
-		"js/builtin/functions/cells.js",
-		"js/builtin/functions/serialize.js",
-		"js/builtin/exprs.js",
-		"js/builtin/classes.js",
-		"js/builtin/rootObjects.js",
-		"js/builtin/eventExtras.js",
-
-
-	
-		"js/remote/remote.js"
-	
-		
-	];
-	
-	var browserIncludes = [
-		"js/external/firebugx.js",
-		"js/external/XMLHttpRequest.1.0.3/XMLHttpRequest.js",
-
-		"js/browser/xml.js",
-		"js/browser/position.js",
-	
-		"js/templates/preparse.js", // might want to do this at compile time?
-	
-		"js/templates/funs.js",
-		"js/templates/action.js",
-		"js/templates/closure.js",
-		"js/templates/style.js",
-		"js/templates/writexml.js",
-	
-		"js/templates/events.js"
-	];
-	
-	var includes = [];
-	
-	function plusRootDir(a) {
-		var ret = [];
-		for (var i = 0, len = a.length; i < len; i++) {
-			ret.push(ROOTDIR + "source/" + a[i]);
+		rhinoInclude: function (bundles, extraFiles) {
+			// TODO
 		}
-		return ret;
-	}
-	
-	includes = includes.concat(plusRootDir(structureIncludes));
-	if (!window.INCLUDESTRUCTUREONLY) includes = includes.concat(plusRootDir(browserIncludes));
-	includes = includes.concat(INCLUDES);
-	
-	YAHOO.util.Get.script(includes, { 
-		onSuccess: function () {eval(ONLOAD);}
-	});
-	
+	};
 })();
-
