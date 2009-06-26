@@ -8,7 +8,7 @@ divide = function (x::Number, y::Number)::Number {
 swapDivide = function (x, y) {
 	return y / x;
 },
-multiply = function (x, y) {
+multiply = function (x::a, y::a)::a {
 	return x * y;
 },
 min = function (x, y) {
