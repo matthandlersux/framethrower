@@ -318,6 +318,8 @@ function typeAnalyze(line) {
 					staticAnalysisError("Update action target not a Map, Set, or Unit");
 				}
 				// TODO check that the add/remove has key/value as appropriate
+			} else if (ac.kind === "extract") {
+				// TODO
 			} else {
 				type = staticTypeAnalysis(ac, envWithParams).type;
 			}
