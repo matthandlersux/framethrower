@@ -1,11 +1,19 @@
 function typeAnalyze(line) {
 	
 	var currentLine = null;
-
+	var GlobalError = false;
 
 
 	function staticAnalysisError(msg) {
-		debug.error(msg, currentLine.debugRef);
+		GlobalError = true;
+		var debugRef = currentLine.debugRef;
+		msg = msg.replace(/\n/g, "<br />");
+		print(
+			"<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://"
+			+ debugRef.file + "&line=" + debugRef.lineNumber + "\">error on line" + 
+			debugRef.lineNumber + "</a> <br />" + msg + "<br /><br /></div>"
+		);
+		//debug.error(msg, currentLine.debugRef);
 	}
 
 
@@ -182,6 +190,7 @@ function typeAnalyze(line) {
 		var ret = makePlaceholder(type);
 		ret.line = line;
 		ret.extra = extra;
+		ret.success = !GlobalError;
 		return ret;
 	}
 

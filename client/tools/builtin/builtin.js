@@ -3,30 +3,15 @@
 //java -jar ../util/js.jar builtin.js
 
 
-//RHINO util functions? put these somewhere else
-
-//create folders if they don't exist
-function makeFolder (folderName) {
-	var binfolder = java.io.File(folderName);
-	if(!binfolder.exists()) {
-		binfolder.mkdir();
-	}	
-}
-
-function writeStringToFile(filename, string) {
-	var fw = new java.io.FileWriter(filename);
-	var bw = new java.io.BufferedWriter(fw);
-	bw.write(string);
-	bw.close();
-}
-
-function include (bundles, extraFiles) {
-	load(ROOTDIR + "source/js/include.js");
-	includes.rhinoInclude(bundles, extraFiles);
-}
-
 //this will go at the top of each rhino tool
 ROOTDIR = "../../";
+function include (bundles, extraFiles) {
+	if (load !== undefined) {
+		load(ROOTDIR + "tools/util/java.js");
+		load(ROOTDIR + "source/js/include.js");
+		includes.rhinoInclude(bundles, extraFiles);
+	}
+}
 include(["core"], []);
 
 

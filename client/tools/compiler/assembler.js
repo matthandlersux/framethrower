@@ -216,7 +216,11 @@ if( arguments.length > 0 ) {
 
 		bw.write(totalCompiledString);
 		bw.close();
-		print('success');	
+		
+		
+		load("../typeAnalyzer/runTypeAnalyzer.js");
+		load("../../generated/templates/" + arguments[0] + ".js");
+		runTypeAnalyzer(mainTemplate);
 	}
 } else {
 	print( 'usage: rhino assembler.js <root folder> [rebuild]' );
