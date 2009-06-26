@@ -236,11 +236,14 @@ function executeAction(instruction, scope) {
 			var done = false;
 			var cell = evaluate(instruction.select);
 			var myRemove = cell.injectDependency(function () {
-				forEach(cell.getState(), function (element) {
-					executeAction(instruction.inner(element), makeDynamicEnv(scope.env));
-				});
+				if (!done) {
+					done = true;
+					forEach(cell.getState(), function (element) {
+						executeAction(instruction.inner(element), makeDynamicEnv(scope.env));
+					});					
+				}
+				
 				if (myRemove) myRemove();
-				else done = true;
 			});
 			if (done) myRemove();
 		}

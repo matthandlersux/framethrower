@@ -32,6 +32,8 @@ template () {
 	zoomLevel = state(Unit Number),
 	loadedTime = state(Unit Number),
 	
+	double = function(x) {return x*2;},
+	
 	<f:each videoWidth as videoWidth><f:each videoHeight as videoHeight><f:each videoURL as videoURL><f:each videoDuration as videoDuration><f:each videoFrameRate as videoFrameRate>
 		framesToSeconds = scale videoFrameRate 1,
 		secondsToFrames = scale 1 videoFrameRate,
@@ -53,13 +55,14 @@ template () {
 			
 			<div style-width="{videoWidth}" style-height="10" style-background="#444">
 				<f:on init>
-					add(currentTime, 0),
+					add(currentTime, 1000),
 					add(zoomLevel, 1)
 				</f:on>
 				
 				<f:on mousedown>
 					// newTime = extract spaceToTime (pixelsToUnits event.offsetX),
-					newTime = pixelsToUnits event.offsetX,
+					// newTime = pixelsToUnits event.offsetX,
+					newTime = extract (mapUnit double currentTime),
 					add(currentTime, unitsToSeconds newTime),
 					add(zoomLevel, pixelsToZoom 1 event.offsetY)
 				</f:on>
