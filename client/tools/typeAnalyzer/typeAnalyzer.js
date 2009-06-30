@@ -122,7 +122,7 @@ function typeAnalyze(line) {
 				} else if (lets[s] !== undefined) {
 					// this is here to prevent infinite loop
 					if (lets[s].kind === "lineTemplate") {
-						memo[s] = makePlaceholder(lets[s].template.type);
+						memo[s] = makePlaceholder(lets[s].type);
 					}
 
 					memo[s] = staticTypeAnalysis(lets[s], newEnv);
@@ -140,29 +140,33 @@ function typeAnalyze(line) {
 
 		if (line.kind === "lineExpr") {
 			type = getTypeOfAST(line.expr, env);
+			if (line.type !== undefined && !compareTypes(type, line.type)) {
+				var extraInfo = "\nwith `"+unparse(line.expr)+"`\n\n"+getWordsTypes(line.expr, env);
+				staticAnalysisError("Expr is not the annotated type. Annotated type is: `"+unparseType(line.type)+"` but actual type is: `"+unparseType(type)+"`" + extraInfo);
+			}
 		} else if (line.kind === "lineTemplate") {
-			type = line.template.type;
+			type = line.type;
 
 			var scope = {};
 			var typeArray = typeCurriedToArray(type);
-			forEach(line.template.params, function (param, i) {
+			forEach(line.params, function (param, i) {
 				scope[param] = makePlaceholder(typeArray[i]);
 			});
 			var envWithParams = extendEnv(env, scope);
 
-			var newEnv = addLets(line.template.let, envWithParams);
+			var newEnv = addLets(line.let, envWithParams);
 			let = {};
-			forEach(line.template.let, function (junk, name) {
+			forEach(line.let, function (junk, name) {
 				let[name] = newEnv(name);
 				//console.log("did a let", name, unparseType(getType(let[name])));
 			});
 			extra.let = let;
 
 			// check that output matches the output type (XMLP)
-			var outputAnalysis = staticTypeAnalysis(line.template.output, newEnv);
+			var outputAnalysis = staticTypeAnalysis(line.output, newEnv);
 			extra.output = outputAnalysis;
 			if (!compareTypes(outputAnalysis.type, typeArray[typeArray.length - 1])) {
-				var extraInfo = line.template.output.kind === "lineExpr" ? "\nwith `"+unparse(line.template.output.expr)+"`\n\n"+getWordsTypes(line.template.output.expr, newEnv) : "";
+				var extraInfo = line.output.kind === "lineExpr" ? "\nwith `"+unparse(line.output.expr)+"`\n\n"+getWordsTypes(line.output.expr, newEnv) : "";
 				staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got `"+unparseType(outputAnalysis.type)+"`" + extraInfo);
 			}
 
@@ -173,18 +177,9 @@ function typeAnalyze(line) {
 			// check that everything inside is good to go
 			staticTypeAnalysisXML(line.xml, env);
 		} else if (line.kind === "lineState") {
-			type = getActionReturnType(line.action, env);
+			type = getActionReturnType(line.lineAction, env);
 		} else if (line.kind === "lineAction") {
-			type = getActionReturnType(line.action, env);
-		} else if (line.kind === "lineBlock") {
-			var newEnv = addLets(line.let, env);
-			var let = {};
-			forEach(line.let, function (junk, name) {
-				let[name] = newEnv(name);
-			});
-			extra.let = extra;
-			var innerSA = staticTypeAnalysis(line.output, newEnv);
-			type = innerSA.type;
+			type = getActionReturnType(line, env);
 		}
 
 		var ret = makePlaceholder(type);
@@ -199,18 +194,15 @@ function typeAnalyze(line) {
 	/*
 
 	XML
-		XMLNODE | 
-		CASE |
-		{kind: "for-each", select: AST, templateCode: TEMPLATECODE} | // this templateCode should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
-		{kind: "call", templateCode: TEMPLATECODE} // this templateCode should take zero parameters.
-		{kind: "on", event: EVENT, action: ACTION} // this action should take zero parameters.
-		{kind: "trigger", trigger: AST, action: ACTION} // trigger should evaluate to a reactive value, action should take one (or two) parameters
-
-	CASE
-		{kind: "case", test: AST, templateCode: TEMPLATECODE, otherwise?: TEMPLATECODE}
-		// test should evaluate to a cell, if it is non-empty then templateCode is run as if it were a for-each. If it is empty, otherwise is called.
-		// templateCode should take one parameter
+		{kind: "for-each", select: AST, lineTemplate: LINETEMPLATE} | // this lineTemplate should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
+		{kind: "call", lineTemplate: LINETEMPLATE} | // this lineTemplate should take zero parameters.
+		{kind: "on", event: EVENT, lineAction: LINEACTION} | // this action should take zero parameters.
+		{kind: "trigger", trigger: AST, lineAction: LINEACTION} | // trigger should evaluate to a reactive value, action should take one (or two) parameters
+		{kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise?: LINETEMPLATE} |
+		// test should evaluate to a cell, if it is non-empty then lineTemplate is run as if it were a for-each. If it is empty, otherwise is called.
+		// lineTemplate should take one parameter
 		// otherwise, if it exists, should take zero parameters
+		XMLNODE 
 
 	XMLNODE
 		{kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately
@@ -252,32 +244,29 @@ function typeAnalyze(line) {
 
 			var hackedLineTemplate = {
 				kind: "lineTemplate",
-				template: {
-					kind: "templateCode",
-					params: xml.templateCode.params,
-					let: xml.templateCode.let,
-					output: xml.templateCode.output
-				}
+				params: xml.lineTemplate.params,
+				let: xml.lineTemplate.let,
+				output: xml.lineTemplate.output
 			};
 
 			if (constructor === "Map") {
 				var keyType = selectType.left.right;
 				var valueType = selectType.right;
 
-				hackedLineTemplate.template.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("XMLP")));
+				hackedLineTemplate.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("XMLP")));
 			} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set") {
 				var keyType = selectType.right;
 
-				hackedLineTemplate.template.type = makeTypeLambda(keyType, parseType("XMLP"));
+				hackedLineTemplate.type = makeTypeLambda(keyType, parseType("XMLP"));
 			} else {
 				staticAnalysisError("f:each select type is not a cell.");
 			}
 
 			staticTypeAnalysis(hackedLineTemplate, env);
 		} else if (xml.kind === "call") {
-			staticTypeAnalysis({kind: "lineTemplate", template: xml.templateCode}, env);
+			staticTypeAnalysis(xml.lineTemplate, env);
 		} else if (xml.kind === "on") {
-			getActionReturnType(xml.action, extendEnv(env, eventExtraTypes));
+			getActionReturnType(xml.lineAction, extendEnv(env, eventExtraTypes));
 		} else if (xml.kind === "trigger") {
 			// TODO
 		}
@@ -285,19 +274,19 @@ function typeAnalyze(line) {
 
 
 
-	function getActionReturnType(action, env) {
-		var type = action.type;
+	function getActionReturnType(lineAction, env) {
+		var type = lineAction.type;
 
 		var scope = {};
 		var typeArray = typeCurriedToArray(type);
-		forEach(action.params, function (param, i) {
+		forEach(lineAction.params, function (param, i) {
 			scope[param] = makePlaceholder(typeArray[i]);
 		});
 		var envWithParams = extendEnv(env, scope);
 
 		var returnType = parseType("Void");
 
-		forEach(action.actions, function (actionLine) {
+		forEach(lineAction.actions, function (actionLine) {
 			var ac = actionLine.action;
 			currentLine = ac;
 

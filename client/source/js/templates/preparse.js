@@ -1,16 +1,20 @@
 function preparse(template) {
+	//TODO: move this functionality into semantics.js
 	if (!template) return;
 	
 	var kind = template.kind;
-	if (kind === "templateCode") {
+	if (kind === "lineTemplate") {
 		template.type = parseType(template.type);
 	} else if (kind === "lineExpr") {
 		template.expr = parse(template.expr);
+		if(template.type !== undefined) {
+			template.type = parseType(template.type);
+		}
 	} else if (kind === "lineJavascript") {
 		template.type = parseType(template.type);
 	} else if (kind === "lineState") {
 		//template.type = parseType(template.type);
-	} else if (kind === "action") {
+	} else if (kind === "lineAction") {
 		template.type = parseType(template.type);
 	} else if (kind === "actionCreate") {
 		template.type = parseType(template.type);

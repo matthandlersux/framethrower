@@ -1,32 +1,37 @@
 /*
 
-TEMPLATECODE
-	{
-		kind: "templateCode",
-		params: [VARTOCREATE],
-		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type XMLP
-		let: LETS,
-		output: LINE
-	}
-
-LETS
-	{VARTOCREATE: LINE}
-
 LINE
-	{kind: "lineExpr", expr: AST} |
-	{kind: "lineTemplate", template: TEMPLATECODE} |
-	{kind: "lineJavascript", type: TYPE, f: JAVASCRIPTFUNCTION} |
+	{kind: "lineExpr", expr: AST, type: TYPE} |
 	{kind: "lineXML", xml: XML} |
-	{kind: "lineState", action: ACTION} | // action takes no parameters
-	{kind: "lineAction", action: ACTION} |
-	{kind: "lineBlock", let: LETS, output: LINE}
+	{kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
+	{kind: "lineState", lineAction: LINEACTION} | // action takes no parameters
+	LINETEMPLATE |
+	LINEACTION
+
+LINETEMPLATE
+	{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, output: LINE, type: TYPE}
+
+LINEACTION
+	{kind: "lineAction", params: [VARTOCREATE], [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
+
+ACTIONUNIT
+	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
+	{kind: "actionUpdate", target: AST, actionType: "add" | "remove", key?: AST, value?: AST} |
+	{kind: "extract", select: AST, lineAction: LINEACTION} // this lineAction should take one (or two) parameters.
+
+
 
 
 XML
-	XMLNODE |
-	{kind: "for-each", select: AST, templateCode: TEMPLATECODE} | // this templateCode should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
-	{kind: "call", templateCode: TEMPLATECODE} // this templateCode should take zero parameters.
-	// TODO: case, on-action
+	{kind: "for-each", select: AST, lineTemplate: LINETEMPLATE} | // this lineTemplate should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
+	{kind: "call", lineTemplate: LINETEMPLATE} | // this lineTemplate should take zero parameters.
+	{kind: "on", event: EVENT, lineAction: LINEACTION} | // this action should take zero parameters.
+	{kind: "trigger", trigger: AST, lineAction: LINEACTION} | // trigger should evaluate to a reactive value, action should take one (or two) parameters
+	{kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise?: LINETEMPLATE} |
+	// test should evaluate to a cell, if it is non-empty then lineTemplate is run as if it were a for-each. If it is empty, otherwise is called.
+	// lineTemplate should take one parameter
+	// otherwise, if it exists, should take zero parameters
+	XMLNODE 
 
 XMLNODE
 	{kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately
@@ -40,10 +45,13 @@ XMLINSERT
 
 where:
 JAVASCRIPTFUNCTION is a javascript function,
-TYPE is a type,
-AST is an AST (this is just a first-pass parsed Expr, so every leaf is a string that hasn't been bound yet),
+TYPE is a string,
+AST is an string for an expression,
 VARTOCREATE is a STRING
+PROPERTYNAME is a STRING
+EVENT is a STRING
 STRING is a string
+BOOL is a boolean
 
 
 
@@ -65,10 +73,9 @@ function makeXMLP(xml, env) {
 }
 
 
-function makeClosure(templateCode, env) {
-	var params = templateCode.params;
-	var type = templateCode.type;
-	//var type = parseType(templateCode.type);
+function makeClosure(lineTemplate, env) {
+	var params = lineTemplate.params;
+	var type = lineTemplate.type;
 	
 	var f = curry(function () {
 		var scope = {};
@@ -78,9 +85,9 @@ function makeClosure(templateCode, env) {
 		});
 		var envWithParams = extendEnv(env, scope);
 		
-		var envWithLets = addLets(templateCode.let, envWithParams);
+		var envWithLets = addLets(lineTemplate.let, envWithParams);
 		
-		return evaluateLine(templateCode.output, envWithLets);
+		return evaluateLine(lineTemplate.output, envWithLets);
 	}, params.length);
 	
 	if (params.length > 0) {
@@ -111,10 +118,12 @@ function addLets(lets, env) {
 
 function evaluateLine(line, env) {
 	/*
-	{kind: "lineExpr", let: LETS, expr: AST},
-	{kind: "lineTemplate", template: TEMPLATECODE},
-	{kind: "lineJavascript", type: TYPE, f: JAVASCRIPTFUNCTION},
-	{kind: "lineXML", xml: XML}
+		{kind: "lineExpr", expr: AST, type: TYPE} |
+		{kind: "lineXML", xml: XML} |
+		{kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
+		{kind: "lineState", lineAction: LINEACTION} | // action takes no parameters
+		{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, output: LINE, type: TYPE} |
+		{kind: "lineAction", params: [VARTOCREATE], [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
 	*/
 	
 	if (line.kind === "lineExpr") {
@@ -124,22 +133,19 @@ function evaluateLine(line, env) {
 		//var expr = parseExpression(parse(line.expr), newEnv);
 		return evaluate(expr);
 	} else if (line.kind === "lineTemplate") {
-		return makeClosure(line.template, env);
+		return makeClosure(line, env);
 	} else if (line.kind === "lineJavascript") {
 		return makeFun(line.type, curry(line.f));
 		//return makeFun(parseType(line.type), line.f);
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);
 	} else if (line.kind === "lineState") {
-		var ac = makeActionClosure(line.action, env);
+		var ac = makeActionClosure(line.lineAction, env);
 		return executeAction(ac);
 		
 		//return makeCC(line.type);
 		//return makeCC(parseType(line.type));
 	} else if (line.kind === "lineAction") {
-		return makeActionClosure(line.action, env);
-	} else if (line.kind === "lineBlock") {
-		var newEnv = addLets(line.let, env);
-		return evaluateLine(line.output, newEnv);
+		return makeActionClosure(line, env);
 	}
 }

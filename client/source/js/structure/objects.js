@@ -33,7 +33,7 @@ var objects = (function () {
 		var memoTable = memoTables[className];
 		var classDef = classDefs[className];
 		
-		var funcName = className + "::" + "lookup";
+		var funcName = className + ":" + "lookup";
 		var typeStrings = map(classDef.memoize, function (propName) {
 			return classDef.prop[propName];
 		});

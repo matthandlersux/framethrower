@@ -11,7 +11,7 @@ preparse(mainTemplate);
 // base.add("testCell", testCell);
 
 
-var compiledTemplate = makeClosure(mainTemplate.template, base.env);
+var compiledTemplate = makeClosure(mainTemplate, base.env);
 
 
 function initialize() {

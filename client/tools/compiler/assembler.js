@@ -64,7 +64,7 @@ function outputJSON(object, tabs) {
 function addLets(Json, lets) {
 	if(Json !== undefined) {
 		forEach(lets, function(line, name) {
-			Json.template.let[name] = line;
+			Json.let[name] = line;
 		});
 	}
 }
@@ -139,7 +139,6 @@ function compileFile (filePath, rebuild, isLetFile) {
 			}
 		} else {
 			result = semantics.processTree(parseResult.result, "" + file.getCanonicalPath());
-			result.fileName = "" + file.getName();
 			serialize(result, binfile.getAbsolutePath());
 			return result;
 		}

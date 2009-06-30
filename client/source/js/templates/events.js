@@ -90,7 +90,7 @@
 					}
 				};
 				
-				var action = makeActionClosure(fonEl.custom.action, env);
+				var action = makeActionClosure(fonEl.custom.lineAction, env);
 
 				//console.log("about to execute an action!", action);
 
