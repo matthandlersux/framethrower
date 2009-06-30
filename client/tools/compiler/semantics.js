@@ -119,19 +119,6 @@ var semantics = function(){
 	// Make Functions
 	// ====================================================
 
-	function makeLetlistblock(node) {
-		var lets = makeListObject(node.fullletlistletlist, 'letlist', 'let', getLetKeyVal);
-		var output = makeLine(node.fullletlist.line);
-		
-		return {
-			kind: "lineBlock",
-			let: lets,
-			output: output,
-			debugRef: node.debugRef
-		};
-	}
-
-	//TODO
 	function makeExtract (node) {
 		var wrappedActiontpl = {
 			arglist: makeAskeyval(node.askeyval),
@@ -139,16 +126,16 @@ var semantics = function(){
 			debugRef: node.debugRef
 		};
 	
-		var actiontpl = makeActiontpl(wrappedActiontpl);
+		var lineAction = makeLineAction(wrappedActiontpl);
 		return {
 			kind: "extract",
-			select: node.expr,
-			action: actiontpl,
+			select: node.expr.exprcode,
+			lineAction: lineAction,
 			debugRef: node.debugRef
 		};
 	}
 
-	function makeActiontpl(node) {
+	function makeLineAction (node) {
 		//give undefined param types a letter
 		var params = makeList(node.arglist, 'arglist', 'variable');
 		var actions = makeFullactlist(node.fullactlist);
@@ -179,7 +166,7 @@ var semantics = function(){
 		}
 
 		return {
-				kind: "action",
+				kind: "lineAction",
 				params: paramList,
 				type: typeString,
 				actions: actions,
@@ -240,7 +227,7 @@ var semantics = function(){
 			var getKeyVal = function(node) {
 				return {
 					key: node.identifier,
-					val: node.expr
+					val: node.expr.exprcode
 				};
 			};
 			var proplist = makeListObject(node.proplist, 'proplist', 'prop', getKeyVal);
@@ -263,12 +250,20 @@ var semantics = function(){
 				update = node.remove;
 			}
 
+			var key, value;
+			if(def(update.expr2)) {
+				key = update.expr2.exprcode;
+			}			
+			if(def(update.expr3)) {
+				value = update.expr3.exprcode;
+			}
+
 			return {
 				kind: "actionUpdate",
-				target: update.expr,
+				target: update.expr.exprcode,
 				actionType: actionType,
-				key: update.expr2,
-				value: update.expr3,
+				key: key,
+				value: value,
 				debugRef: node.debugRef
 			};
 		}
@@ -314,7 +309,7 @@ var semantics = function(){
 			debugRef: node.debugRef
 		};
 		
-		var template = makeTemplate(wrappedTemplate);
+		var template = makeLineTemplate(wrappedTemplate);
 
 		var wrappedElseblock;
 		if (def(node.fullletlist2)) {
@@ -323,7 +318,7 @@ var semantics = function(){
 				fullletlist: node.fullletlist2,
 				debugRef: node.debugRef
 			};
-			otherwise = makeTemplate(wrappedElseblock);			
+			otherwise = makeLineTemplate(wrappedElseblock);			
 		} else if (def(node.ifblock)) {
 			//if block else if sugar
 			wrappedElseblock = {
@@ -335,12 +330,12 @@ var semantics = function(){
 				debugRef: node.debugRef
 			};
 		}
-		var otherwise = makeTemplate(wrappedElseblock);
+		var otherwise = makeLineTemplate(wrappedElseblock);
 	
 		return {
 			kind: "case", 
-			test: node.expr,
-			templateCode: template,
+			test: node.expr.exprcode,
+			lineTemplate: template,
 			otherwise: otherwise,
 			debugRef: node.debugRef
 		};
@@ -411,14 +406,14 @@ var semantics = function(){
 
 	function getLetKeyVal (node) {
 		return {
-			key: node.variable.identifier,
+			key: node.identifier,
 			val: makeLine(node.line),
 			debugRef: node.debugRef
 		};
 	}
 	
 	
-	function makeTemplate(node) {
+	function makeLineTemplate(node) {
 		var params = makeList(node.arglist, 'arglist', 'variable');
 		
 		var lets = makeListObject(node.fullletlist.letlist, 'letlist', 'let', getLetKeyVal);
@@ -451,7 +446,7 @@ var semantics = function(){
 		}
 
 		return {
-			kind: "templateCode",
+			kind: "lineTemplate",
 			params: paramList,
 			type: typeString,
 			let: lets,
@@ -481,7 +476,7 @@ var semantics = function(){
 						action: {
 							update: {
 								add: {
-									expr: "x",
+									expr: {exprcode:"x"},
 									expr2: node.expr
 								}
 							}
@@ -489,7 +484,7 @@ var semantics = function(){
 					}
 				};
 				var action = {
-					expr: "x"
+					expr: {exprcode:"x"}
 				};
 				fullactlist = {actlist:actlist, action:action};
 			} else {
@@ -500,10 +495,10 @@ var semantics = function(){
 			fullactlist = node.fullactlist;
 		}
 
-		var action = makeActiontpl({arglist:{}, fullactlist:fullactlist, debugRef: node.debugRef});
+		var lineAction = makeLineAction({arglist:{}, fullactlist:fullactlist, debugRef: node.debugRef});
 		return {
 			kind: "lineState",
-			action: action,
+			lineAction: lineAction,
 			debugRef: node.debugRef
 		};
 	}
@@ -523,11 +518,11 @@ var semantics = function(){
 				debugRef: node.debugRef
 			};
 						
-			var template = makeTemplate(wrappedTemplate);
+			var template = makeLineTemplate(wrappedTemplate);
 			return {
 				kind: "for-each",
-				select: node.expr,
-				templateCode: template,
+				select: node.expr.exprcode,
+				lineTemplate: template,
 				debugRef: node.debugRef
 			};
 		}
@@ -539,10 +534,10 @@ var semantics = function(){
 				debugRef: node.debugRef
 			};
 			
-			var template = makeTemplate(wrappedTemplate);
+			var template = makeLineTemplate(wrappedTemplate);
 			return {
 				kind: "call",
-				templateCode: template,
+				lineTemplate: template,
 				debugRef: node.debugRef
 			};
 		}
@@ -553,11 +548,11 @@ var semantics = function(){
 				fullactlist: node.fullactlist,
 				debugRef: node.debugRef
 			};
-			var actiontpl = makeActiontpl(wrappedActiontpl);
+			var lineAction = makeLineAction(wrappedActiontpl);
 			return {
 				kind: "trigger",
-				trigger: node.expr,
-				action: actiontpl,
+				trigger: node.expr.exprcode,
+				lineAction: lineAction,
 				debugRef: node.debugRef
 			};
 		}
@@ -569,11 +564,11 @@ var semantics = function(){
 				debugRef: node.debugRef
 			};
 			
-			var action = makeActiontpl(wrappedActiontpl);
+			var lineAction = makeLineAction(wrappedActiontpl);
 			return {
 				kind: "on",
 				event: node.identifier,
-				action: action,
+				lineAction: lineAction,
 				debugRef: node.debugRef
 			};
 		}
@@ -581,7 +576,7 @@ var semantics = function(){
 		function makeInsert (node) {
 			return {
 				kind: "insert",
-				expr: node.expr
+				expr: node.expr.exprcode
 			};
 		}
 
@@ -666,7 +661,7 @@ var semantics = function(){
 				if (first.length > 0) {
 					output.push(makeTextElement(first));
 				}
-				output.push(makeTextElement(makeInsert({expr: insert})));
+				output.push(makeTextElement(makeInsert({expr: {exprcode: insert}})));
 				index = text.indexOf('{');
 			}
 			return output;
@@ -700,36 +695,37 @@ var semantics = function(){
 	}
 	
 	function makeLine (node) {
-		function makeLineKind (name, node, parentNode) {
-			switch(name){
-				case 'function':
-					var lineFunc = makeFunction(node);
-					lineFunc.debugRef = parentNode.debugRef;
-					return lineFunc;
-				case 'template':
-					//TODO: put kind in makeTemplate
-					return {kind:'lineTemplate', template: makeTemplate(node), debugRef: node.debugRef};
-				case 'state':
-					return makeState(node);
-				case 'actiontpl':
-					return {kind:'lineAction', action: makeActiontpl(node), debugRef: node.debugRef};
-				case 'expr':
-					return {kind: "lineExpr", expr: node, debugRef: parentNode.debugRef};
-				case 'letlistblock':
-					return makeLetlistblock(node);
-				case 'ifblock':
-					return {kind: "lineExpr", expr: makeIfblock(node), debugRef: node.debugRef};
-				case 'xml':
-					return {kind:'lineXML', xml:makeXml(node)};
-			}
-		}
-		var result;
-		forEach(node, function(value, nodeName) {
+		var name, value;
+		any(node, function(nodeValue, nodeName) {
 			if (nodeName !== 'debugRef') {
-				result = makeLineKind(nodeName, value, node);
+				name = nodeName;
+				value = nodeValue;
+				return true;
 			}
+			return false;
 		});
-		return result;	
+
+		switch(name){
+			case 'function':
+				var lineFunc = makeFunction(value);
+				lineFunc.debugRef = node.debugRef;
+				return lineFunc;
+			case 'template':
+				return makeLineTemplate(value);
+			case 'state':
+				return makeState(value);
+			case 'actiontpl':
+				return makeLineAction(value);
+			case 'expr':
+				return {kind: "lineExpr", expr: value.exprcode, type: value.type, debugRef: node.debugRef};
+			case 'letlistblock':
+				value.argList = [];
+				return makeLineTemplate(value);
+			case 'ifblock':
+				return {kind: "lineExpr", expr: makeIfblock(value), debugRef: value.debugRef};
+			case 'xml':
+				return {kind:'lineXML', xml:makeXml(value)};
+		}
 	}
 
 	function lineBreakCount(str){
@@ -773,7 +769,7 @@ var semantics = function(){
 				return nodeName.indexOf(string) == 0;
 			}
 			
-			if (startsWith('type') || startsWith('expr') || startsWith('styletext') || startsWith('attname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('function') || startsWith('xmltext')) {
+			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('function') || startsWith('xmltext')) {
 				tree[nodeName] = stripSpaces(makeString(value, nodeName));
 			} else {
 				if(objectLike(value)) {
@@ -803,7 +799,8 @@ var semantics = function(){
 			lineNum = 1;
 			handleWhiteSpace(tree);
 			if (def(tree.line)) {
-				return makeLine(tree.line);
+				var ret = makeLine(tree.line);
+				return ret;
 			} else if (def(tree.includeblock)) {
 				var ret = makeIncludeblock(tree.includeblock);
 				return ret;
