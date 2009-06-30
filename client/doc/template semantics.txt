@@ -1,54 +1,35 @@
-TEMPLATECODE
-	{
-		kind: "templateCode",
-		params: [VARTOCREATE],
-		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type XMLP
-		let: LETS,
-		output: LINE
-	}
-
-LETS
-	{VARTOCREATE: LINE}
-
 LINE
-	{kind: "lineExpr", expr: AST} |
-	{kind: "lineTemplate", template: TEMPLATECODE} |
-	{kind: "lineJavascript", type: TYPE, f: JAVASCRIPTFUNCTION} |
+	{kind: "lineExpr", expr: AST, type: TYPE} |
 	{kind: "lineXML", xml: XML} |
-	{kind: "lineState", action: ACTION} | // action takes no parameters
-	{kind: "lineAction", action: ACTION} |
-	{kind: "lineBlock", let: LETS, output: LINE}
+	{kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
+	{kind: "lineState", lineAction: LINEACTION} | // action takes no parameters
+	LINETEMPLATE |
+	LINEACTION
 
+LINETEMPLATE
+	{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, output: LINE, type: TYPE}
 
-ACTION
-	{
-		kind: "action",
-		params: [VARTOCREATE],
-		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type Action
-		actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}] // last one is the output
-	}
+LINEACTION
+	{kind: "lineAction", params: [VARTOCREATE], [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
 
 ACTIONUNIT
-	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: EXPR}} |
-	{kind: "actionUpdate", target: EXPR, actionType: "add" | "remove", key?: EXPR, value?: EXPR} |
-	{kind: "extract", select: AST, action: ACTION} // this action should take one (or two) parameters.
+	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
+	{kind: "actionUpdate", target: AST, actionType: "add" | "remove", key?: AST, value?: AST} |
+	{kind: "extract", select: AST, lineAction: LINEACTION} // this lineAction should take one (or two) parameters.
 
 
 
 
 XML
-	XMLNODE | 
-	CASE |
-	{kind: "for-each", select: AST, templateCode: TEMPLATECODE} | // this templateCode should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
-	{kind: "call", templateCode: TEMPLATECODE} // this templateCode should take zero parameters.
-	{kind: "on", event: EVENT, action: ACTION} // this action should take zero parameters.
-	{kind: "trigger", trigger: AST, action: ACTION} // trigger should evaluate to a reactive value, action should take one (or two) parameters
-
-CASE
-	{kind: "case", test: AST, templateCode: TEMPLATECODE, otherwise?: TEMPLATECODE}
-	// test should evaluate to a cell, if it is non-empty then templateCode is run as if it were a for-each. If it is empty, otherwise is called.
-	// templateCode should take one parameter
+	{kind: "for-each", select: AST, lineTemplate: LINETEMPLATE} | // this lineTemplate should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
+	{kind: "call", lineTemplate: LINETEMPLATE} | // this lineTemplate should take zero parameters.
+	{kind: "on", event: EVENT, lineAction: LINEACTION} | // this action should take zero parameters.
+	{kind: "trigger", trigger: AST, lineAction: LINEACTION} | // trigger should evaluate to a reactive value, action should take one (or two) parameters
+	{kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise?: LINETEMPLATE} |
+	// test should evaluate to a cell, if it is non-empty then lineTemplate is run as if it were a for-each. If it is empty, otherwise is called.
+	// lineTemplate should take one parameter
 	// otherwise, if it exists, should take zero parameters
+	XMLNODE 
 
 XMLNODE
 	{kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately
@@ -68,4 +49,4 @@ VARTOCREATE is a STRING
 PROPERTYNAME is a STRING
 EVENT is a STRING
 STRING is a string
-
+BOOL is a boolean
