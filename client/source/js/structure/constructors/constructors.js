@@ -63,7 +63,7 @@ function makeApply(left, right, type) {
 		outsideScope: Math.max(getOutsideScope(left), getOutsideScope(right))
 	};
 	if (type) app.type = type;
-	else if (app.outsideScope === 0) getType(app);
+	//else if (app.outsideScope === 0) getType(app);
 	return app;
 }
 function makeLambda(varName, expr, type) {
