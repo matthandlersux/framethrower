@@ -37,7 +37,9 @@ CASE
 	}
 
 EXPR
-	you know what an expression looks like (words with spaces, end it on comma or close-brace)
+	EXPRCODE
+	| EXPRCODE :: TYPE
+	EXPRCODE is an expression. you know what an expression looks like (words with spaces, :, ~, double colon :: not allowed)
 
 BLOCK
 	{

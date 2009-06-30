@@ -177,7 +177,7 @@ addMemoLookup(ClassDef) ->
 	case ClassDef#classToMake.memoize of
 		undefined -> ok;
 		Memoize ->
-			FuncName = ClassName ++ "::lookup",
+			FuncName = ClassName ++ ":lookup",
 			TypeStrings = lists:foldl(fun(PropName, Acc) -> 
 				{_, {_,PropType}} = lists:keysearch(PropName, 1, ClassDef#classToMake.prop),
 				Acc ++ "(" ++ PropType ++ ") -> "
