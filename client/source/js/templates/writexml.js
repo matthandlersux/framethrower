@@ -65,7 +65,7 @@ function xmlToDOM(xml, env, context) {
 				// if (attName === "class") {
 				// 	console.log("changing a class", "["+value+"]");
 				// }
-				setAttr(node, attName, value);
+				setNodeAttribute(node, attName, value);
 			}));
 		});
 		

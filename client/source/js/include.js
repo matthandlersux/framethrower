@@ -48,11 +48,11 @@ var includes = (function () {
 
 			"source/js/browser/xml.js",
 			"source/js/browser/position.js",
+			"source/js/browser/style.js",
 
 			"source/js/templates/funs.js",
 			"source/js/templates/action.js",
 			"source/js/templates/closure.js",
-			"source/js/templates/style.js",
 			"source/js/templates/writexml.js",
 
 			"source/js/templates/events.js"
