@@ -101,12 +101,9 @@ function xmlToDOM(xml, env, context) {
 		
 		// set up an endCap to listen to result and change the children of the wrapper
 		
-		var type = getType(result);
-		var constructor = getTypeConstructor(type);
-		var isNumber = (constructor === "Map" && type.left.right.value === "Number") || type.right.value === "Number";
 		function cmp(a, b) {
 			// returns -1 if a < b, 0 if a = b, 1 if a > b
-			if (isNumber) {
+			if (/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/.test(a)) {
 				return a - b;
 			} else {
 				if (a < b) return -1;
@@ -122,13 +119,9 @@ function xmlToDOM(xml, env, context) {
 		
 		var feachCleanup = result.inject(emptyFunction, function (value) {
 			
-			// if (DEBUGSPEED) {
-			// 	console.log("f:each", unparse(xml.select));
-			// }
-			
 			var newNode, keyString;
 			
-			if (constructor === "Map") {
+			if (result.isMap) {
 				//DEBUG
 				if (xml.lineTemplate.params.length !== 2) debug.error("f:each running on map, but as doesn't have key, value");
 				newNode = evaluate(makeApply(makeApply(innerTemplate, value.key), value.val));
@@ -166,13 +159,6 @@ function xmlToDOM(xml, env, context) {
 					newNode.cleanup();
 				}
 				wrapper.removeChild(newNode.node);
-				
-				if (DEBUGSPEED) {
-					if (newNode.node.localName !== "on") {
-						console.log("removing a node!", newNode.node, unparse(xml.select));
-					}
-					
-				}
 				
 				delete entries[keyString];
 			};

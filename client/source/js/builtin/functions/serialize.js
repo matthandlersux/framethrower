@@ -9,31 +9,25 @@
 			if (typeOf(cell) === "string") return cell;
 			else return lit;
 		} else {
-			var type = getType(cell);
-			if (isReactive(type)) {
-				var constructor = getTypeConstructor(type);
-
+			if (cell.kind === "cell") {
+				
 				cell.makeSorted();
 				var state = cell.getState();
-
-				if (constructor === "Unit" || constructor === "Future") {
-					var ret = "";
-					forEach(state, function (entry) {
-						ret = convertStateToString(entry);
-					});
-					return ret;
-				} else if (constructor === "Set") {
-					var ret = [];
-					forEach(state, function (entry) {
-						ret.push(convertStateToString(entry));
-					});
-					return "[" + ret.join(", ") + "]";
-				} else if (constructor === "Map") {
+				
+				if (cell.isMap) {
 					var ret = [];
 					forEach(state, function (entry) {
 						ret.push(convertStateToString(entry.key) + ": " + convertStateToString(entry.val));
 					});
 					return "{" + ret.join(", ") + "}";
+				} else if (state.length === 0) return "";
+				else if (state.length === 1) return convertStateToString(state[0]);
+				else {
+					var ret = [];
+					forEach(state, function (entry) {
+						ret.push(convertStateToString(entry));
+					});
+					return "[" + ret.join(", ") + "]";
 				}
 			} else {
 				console.log("stringifying (shouldn't need to?)", cell);
@@ -49,20 +43,17 @@
 		Maps turn into arrays of {key: --, value: --}
 	*/
 	function convertStateToJSON(cell) {
-		var type = getType(cell);
-		if (isReactive(type)) {
-			var constructor = getTypeConstructor(type);
-
+		if (cell.kind === "cell") {
 			cell.makeSorted();
 			var state = cell.getState();
 
-			if (constructor === "Unit" || constructor === "Future" || constructor === "Set") {
+			if (!cell.isMap) {
 				var ret = [];
 				forEach(state, function (entry) {
 					ret.push(convertStateToJSON(entry));
 				});
 				return ret;
-			} else if (constructor === "Map") {
+			} else {
 				var ret = [];
 				forEach(state, function (entry) {
 					ret.push({key: convertStateToJSON(entry.key), value: convertStateToJSON(entry.val)});
@@ -98,12 +89,12 @@
 					// we have a Map entry
 					var entryNums = [];
 
-					if (isReactive(getType(x.key))) {
+					if (x.key.kind === "cell") {
 						var keyRemover = listenToCell(x.key);
 						entryNums.push(childRemovers.length);
 						childRemovers.push(keyRemover);
 					}
-					if (isReactive(getType(x.val))) {
+					if (x.val.kind === "cell") {
 						var valRemover = listenToCell(x.val);
 						entryNums.push(childRemovers.length);
 						childRemovers.push(valRemover);
@@ -117,7 +108,7 @@
 					};
 				} else {
 					var entryNum;
-					if (isReactive(getType(x))) {
+					if (x.kind === "cell") {
 						entryNum = childRemovers.length;
 						childRemovers.push(listenToCell(x));
 					}

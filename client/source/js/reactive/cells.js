@@ -280,7 +280,9 @@ function makeCell() {
 		return value;
 	};
 	
-	return makeBaseCell(toKey);
+	var cell = makeBaseCell(toKey);
+	cell.isMap = false;
+	return cell;
 }
 
 function makeCellMapInput() {
@@ -288,5 +290,7 @@ function makeCellMapInput() {
 		return value.key;
 	};
 
-	return makeBaseCell(toKey);
+	var cell = makeBaseCell(toKey);
+	cell.isMap = true;
+	return cell;
 }

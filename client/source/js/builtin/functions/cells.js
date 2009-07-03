@@ -12,18 +12,11 @@
 
 		var bindUnitOrSetHelper = function (f, cell) {
 			var outputCell = makeCell();
-			
-			var typeOptimization = getType(f).right;
 
 			cell.inject(outputCell, function (val) {
 				return applyAndInject(f, val, outputCell, function (innerVal) {
 					return outputCell.addLine(innerVal);
 				});
-				// This was an optimization experiment:
-				// var applied = makeApply(f, val, typeOptimization);
-				// return evaluateAndInject(applied, outputCell, function (innerVal) {
-				// 	return outputCell.addLine(innerVal);
-				// });
 			});
 
 			return outputCell;
@@ -752,15 +745,6 @@
 						return update;
 					});
 					return outputCell;
-				}
-			},
-
-
-
-			getType: {
-				type: "a -> String",
-				func: function (x) {
-					return unparseType(getType(x));
 				}
 			}
 		};
