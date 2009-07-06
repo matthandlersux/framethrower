@@ -21,3 +21,10 @@ addEventExtra("event.wheelDelta", "Number", function (e) {
 	return e.detail ? e.detail * -1 : e.wheelDelta / 40;
 });
 
+addEventExtra("event.wheelDelta", "Number", function (e) {
+	return e.detail ? e.detail * -1 : e.wheelDelta / 40;
+});
+
+addEventExtra("event.value", "String", function (e) {
+	return e.target.value;
+});

@@ -439,10 +439,13 @@ var semantics = function(){
 			}
 			typeString += "(" + type + ")";
 		});
-		if (first) {
-			typeString += "XMLP";
+		if (!first) {
+			typeString += " ->";
+		}
+		if (def(node.fullletlist.line.expr) && def(node.fullletlist.line.expr.type)) {
+			typeString += node.fullletlist.line.expr.type;
 		} else {
-			typeString += " -> XMLP";
+			typeString += "XMLP";
 		}
 
 		return {
@@ -719,7 +722,7 @@ var semantics = function(){
 			case 'expr':
 				return {kind: "lineExpr", expr: value.exprcode, type: value.type, debugRef: node.debugRef};
 			case 'letlistblock':
-				value.argList = [];
+				value.arglist = [];
 				return makeLineTemplate(value);
 			case 'ifblock':
 				return {kind: "lineExpr", expr: makeIfblock(value), debugRef: value.debugRef};
