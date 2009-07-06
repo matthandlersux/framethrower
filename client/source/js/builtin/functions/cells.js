@@ -614,26 +614,26 @@
 					var setType = GLOBAL.typeCheck ? buildType(getType(cell), "Map a (Set b)", "Set a") : undefined;
 
 					var outputCell = makeCellMapInput();
-					var bHash = makeObjectHash();
+					var bHash = {};
 
 					var bHashCell = makeCell();
 
 					//this is to make outputCell depend on BHashCell for being 'done' 
 					bHashCell.inject(outputCell, function (bValue) {});
-
+					
 					bHashCell.inject(
 						function() {
-							bHash.forEach(function(bCell) {
+							forEach(bHash, function(bCell) {
 								bCell.setDone();
 							});
 						},
 						function (bValue) {
 							var newCell = makeCell();
 							newCell.type = setType;
-							bHash.set(bValue, newCell);
+							bHash[bValue] = newCell;
 							var onRemove = outputCell.addLine({key:bValue, val:newCell});
 							return function () {
-								bHash.remove(bValue);
+								delete bHash[bValue];
 								onRemove();
 							};
 						}
@@ -642,7 +642,7 @@
 					cell.inject(outputCell, function (keyVal) {
 						return keyVal.val.inject(bHashCell, function (innerVal) {
 							var onRemove1 = bHashCell.addLine(innerVal);
-							var onRemove2 = bHash.get(innerVal).addLine(keyVal.key);
+							var onRemove2 = bHash[innerVal].addLine(keyVal.key);
 							return function () {
 								onRemove2();
 								onRemove1();
