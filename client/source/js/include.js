@@ -1,3 +1,7 @@
+var GLOBAL = {
+	typeCheck: false
+};
+
 var includes = (function () {
 	var includeBundles = {
 		core: [

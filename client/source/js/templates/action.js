@@ -125,7 +125,8 @@ function makeActionClosure(lineAction, env) {
 					};
 					instructions.push(block);
 					if (evaled.output) {
-						result = makeActionRef(block.label, getType(evaled.output));						
+						var refType = GLOBAL.typeCheck ? getType(evaled.output) : undefined;
+						result = makeActionRef(block.label, refType);
 					}
 				} else {
 					result = evaled;

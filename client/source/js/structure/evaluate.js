@@ -11,7 +11,7 @@ function evaluate2(expr) {
 	
 	
 	
-	var resultType = getType(expr);
+	
 	getRemote(expr); // just to tag the expr's .remote
 	
 	// check if we're returning a Cell and see if it's already memoized
@@ -36,10 +36,12 @@ function evaluate2(expr) {
 		if (fun.kind === "exprLambda") {
 			// we can do a beta reduction
 			var ret = betaReplace(fun, input);
-			ret.type = resultType; // optimization
+			//ret.type = resultType; // optimization
 			return evaluate(ret);
 		} else {
 			// fun wasn't a lambda, and evaluate can't return an apply, so fun must be a Fun, so we can run it
+			
+			var resultType = GLOBAL.typeCheck ? getType(expr) : undefined;
 			
 			// check if input is an actionRef and fun is an object converter or property accessor
 			if (input.kind === "actionRef" && isObjectFun(fun)) {

@@ -111,12 +111,12 @@ function betaReplace(expr, replaceExpr) {
 		}
 	}
 	
-	var optimizeType = false;
-	if (getOutsideScope(expr) === 0 && getOutsideScope(replaceExpr) === 0) {
-		optimizeType = true;
-		var typeVarToReplace = getType(expr).left.value;
-		var typeToReplaceWith = getType(replaceExpr);		
-	}
+	// var optimizeType = false;
+	// if (getOutsideScope(expr) === 0 && getOutsideScope(replaceExpr) === 0) {
+	// 	optimizeType = true;
+	// 	var typeVarToReplace = getType(expr).left.value;
+	// 	var typeToReplaceWith = getType(replaceExpr);		
+	// }
 	
 	function helper(expr, deBruijn) {
 		if (getOutsideScope(expr) === 0) {
@@ -133,9 +133,11 @@ function betaReplace(expr, replaceExpr) {
 				return expr;
 			}
 		} else if (expr.kind === "exprLambda") {
-			return makeLambda(expr.varName, helper(expr.expr, deBruijn + 1), optimizeType && expr.type && imposeSub(expr.type, typeVarToReplace, typeToReplaceWith));
+			//return makeLambda(expr.varName, helper(expr.expr, deBruijn + 1), optimizeType && expr.type && imposeSub(expr.type, typeVarToReplace, typeToReplaceWith));
+			return makeLambda(expr.varName, helper(expr.expr, deBruijn + 1));
 		} else if (expr.kind === "exprApply") {
-			return makeApply(helper(expr.left, deBruijn), helper(expr.right, deBruijn), optimizeType && expr.type && imposeSub(expr.type, typeVarToReplace, typeToReplaceWith));
+			//return makeApply(helper(expr.left, deBruijn), helper(expr.right, deBruijn), optimizeType && expr.type && imposeSub(expr.type, typeVarToReplace, typeToReplaceWith));
+			return makeApply(helper(expr.left, deBruijn), helper(expr.right, deBruijn));
 		} else {
 			return expr;
 		}

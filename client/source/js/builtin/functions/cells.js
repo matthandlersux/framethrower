@@ -611,7 +611,7 @@
 			invert : {
 				type : "Map a (Set b) -> Map b (Set a)",
 				func : function (cell) {
-					var setType = buildType(getType(cell), "Map a (Set b)", "Set a");
+					var setType = GLOBAL.typeCheck ? buildType(getType(cell), "Map a (Set b)", "Set a") : undefined;
 
 					var outputCell = makeCellMapInput();
 					var bHash = makeObjectHash();
