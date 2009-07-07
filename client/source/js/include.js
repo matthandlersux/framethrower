@@ -1,5 +1,5 @@
 var GLOBAL = {
-	typeCheck: false
+	typeCheck: false // run-time type checking
 };
 
 var includes = (function () {
