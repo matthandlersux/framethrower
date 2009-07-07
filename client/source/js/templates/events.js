@@ -253,7 +253,7 @@
 	
 	function keydown(e) {
 		processEvent("keydown", e);
-		console.log("key down happened", e.target);
+		// console.log("key down happened", e.target);
 	}
 	function keyup(e) {
 		processEvent("keyup", e);

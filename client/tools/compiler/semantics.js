@@ -413,7 +413,7 @@ var semantics = function(){
 	}
 	
 	
-	function makeLineTemplate(node) {
+	function makeLineTemplate(node, isBlock) {
 		var params = makeList(node.arglist, 'arglist', 'variable');
 		
 		var lets = makeListObject(node.fullletlist.letlist, 'letlist', 'let', getLetKeyVal);
@@ -442,8 +442,12 @@ var semantics = function(){
 		if (!first) {
 			typeString += " ->";
 		}
-		if (def(node.fullletlist.line.expr) && def(node.fullletlist.line.expr.type)) {
-			typeString += node.fullletlist.line.expr.type;
+		if (isBlock) {
+			if (def(node.fullletlist.line.expr) && def(node.fullletlist.line.expr.type)) {
+				typeString += node.fullletlist.line.expr.type;
+			} else {
+				typeString = null;
+			}
 		} else {
 			typeString += "XMLP";
 		}
