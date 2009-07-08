@@ -21,7 +21,7 @@ forEach(base.debug(), function (expr, name) {
 	baseWords.push(name);
 	toolTips.push(name + " :: " + unparseType(getType(expr)));
 });
-var baseWordsString = baseWords.join("|");
+var baseWordsString = "\\b" + baseWords.join("\\b|\\b") + "\\b";
 var toolTipsString = "#\n" + toolTips.join("\n#\n#\n") + "\n#";
 
 
