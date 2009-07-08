@@ -22,15 +22,19 @@ template (sit::Situation) {
 		</f:call>
 		<div>
 			Pipes (as Instance):
-			<f:each Situation:pipesOut sit as pipe>
-				viewPipe pipe
-			</f:each>
+			<div style-marginLeft="20">
+				<f:each Situation:pipesOut sit as pipe>
+					viewPipe pipe
+				</f:each>
+			</div>
 		</div>
 		<div>
 			Pipes  (as Type):
-			<f:each Situation:pipesIn sit as pipe>
-				viewPipe pipe
-			</f:each>
+			<div style-marginLeft="20">
+				<f:each Situation:pipesIn sit as pipe>
+					viewPipe pipe
+				</f:each>
+			</div>
 		</div>
 	</div>
 }
