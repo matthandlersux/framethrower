@@ -68,13 +68,13 @@ template () {
 		// loadedSpace = mapUnit secondsToUnits loadedTime,
 		
 		<f:wrapper>
-			<f:call>quicktime videoWidth videoHeight videoURL currentTime loadedTime</f:call>
+			// <f:call>quicktime videoWidth videoHeight videoURL currentTime loadedTime</f:call>
 			
 			<div style-position="absolute" style-width="{videoWidth}" style-height="50" style-background="#444">
 				<f:on init>
 					add(currentTime, 1000),
 					add(zoomLevel, 1),
-					add(scrubberSegments, 0),
+					// add(scrubberSegments, 0),
 					add(scrubberSegments, 0.1),
 					add(scrubberSegments, 0.2),
 					add(scrubberSegments, 0.3),
@@ -96,9 +96,10 @@ template () {
 				<f:each scrubberSegments as segmentTime>
 					nextSegmentTime = plus 0.1 segmentTime,
 					segmentSpace = timeToSpace segmentTime,
-					nextSegmentSpace = timeToSpace nextSegmentTime,
-					segmentLength = mapUnit2 subtract nextSegmentSpace segmentSpace,
-					<div style-position="absolute" style-left="{mapUnit unitsToPixels segmentSpace}" style-width="{mapUnit unitsToPixels segmentLength}" style-background="{mapUnit unitsToGray segmentLength}" style-height="50"/>
+					// nextSegmentSpace = timeToSpace nextSegmentTime,
+					// segmentLength = mapUnit2 subtract nextSegmentSpace segmentSpace,
+					// <div style-position="absolute" style-left="{mapUnit unitsToPixels segmentSpace}" style-width="{mapUnit unitsToPixels segmentLength}" style-background="{mapUnit unitsToGray segmentLength}" style-height="50"/>
+					<div style-position="absolute" style-left="{mapUnit unitsToPixels segmentSpace}" style-width="1" style-background="#000" style-height="50"/>
 				</f:each>
 				
 				<div style-position="absolute" style-width="{mapUnit unitsToPixels loadedSpace}" style-top="40" style-height="10" style-background="#888"/>

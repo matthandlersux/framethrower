@@ -1,6 +1,8 @@
 
 preparse(mainTemplate);
 
+desugarFetch(mainTemplate);
+
 // var testCell = makeControlledCell("Set Number");
 // 
 // testCell.control.add(5);
