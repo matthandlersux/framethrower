@@ -2,10 +2,10 @@ template () {
 	
 	mainSit = state {
 		nameSituation tobytest.realLife "Real Life",
-		agent = makeSituiationNamedIn "Agent" tobytest.realLife,
+		agent = makeSituationNamedIn "Agent" tobytest.realLife,
 
 		//generic essay structure
-		essay = makeSituationNamedIn "Essay" tobytest.reallife,
+		essay = makeSituationNamedIn "Essay" tobytest.realLife,
 		ulink = makeSituationNamedIn "Unstructured Link" essay,
 		source = makeSituationNamedIn "Source" ulink,
 		target = makeSituationNamedIn "Target" ulink,
@@ -14,12 +14,12 @@ template () {
 		mressay = makeSituationNamedIn "Tedg's Moulin Rouge Essay" tobytest.realLife,
 
 		//generic movie structure
-		movie = makeSituiationNamedIn "Movie" tobytest.realLife,
-		making = makeSituiationNamedIn "Movie's Making" movie,
-		pres = makeSituiationNamedIn "Movie's Presentation" movie,
-		story = makeSituiationNamedIn "Movie's Story" movie,
-		video = makeSituiationNamedIn "Video" movie,
-		ccaptions = makeSituiationNamedIn "Closed Captions" movie,
+		movie = makeSituationNamedIn "Movie" tobytest.realLife,
+		making = makeSituationNamedIn "Movie's Making" movie,
+		pres = makeSituationNamedIn "Movie's Presentation" movie,
+		story = makeSituationNamedIn "Movie's Story" movie,
+		video = makeSituationNamedIn "Video" movie,
+		ccaptions = makeSituationNamedIn "Closed Captions" movie,
 
 		//Moulin Rouge
 		mr = makeSituationNamedIn "Moulin Rouge" tobytest.realLife, 
@@ -99,7 +99,7 @@ template () {
 			artifactToname = makePipe hasName hasArtifact,
 
 		//first level pipes
-			pointTotimepoint = makePipeIn1 timelinepoint point lineTotimeline,
+			pointTotimepoint = makePipeIn1 timelinePoint point lineTotimeline,
 			pointTotextpoint = makePipeIn1 textlinepoint point lineTotextline,
 			videoTomrvideo = makePipeIn1 mrvideo video movieTomr,
 			ccTomrcc = makePipeIn1 mrcc ccaptions movieTomr, 
@@ -117,7 +117,7 @@ template () {
 			intervalTosource = makePipeIn2 source linterval lineTotextline textlineToessay,
 
 		//injections
-			mrintomressay = inject mressay mr mrvideo, 
+			//mrintomressay = inject mressay mr mrvideo, 
 
 
 
@@ -158,7 +158,7 @@ template () {
 		</span>
 	},
 	
-	<div>
+	<div style-overflow="auto" style-width="{UI.ui:screenWidth ui.ui}" style-height="{UI.ui:screenHeight ui.ui}">
 		<f:each situations as sit>
 			viewSituation sit
 		</f:each>
