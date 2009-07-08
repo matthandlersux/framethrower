@@ -3,8 +3,6 @@ function addEventExtra(name, typeString, f) {
 	eventExtras[name] = {type: parseType(typeString), f: f};
 }
 
-
-
 addEventExtra("event.offsetX", "Number", function (e, target, mouseCurrentPos) {
 	return mouseCurrentPos[0] - getPosition(target)[0];
 });
@@ -27,4 +25,11 @@ addEventExtra("event.wheelDelta", "Number", function (e) {
 
 addEventExtra("event.value", "String", function (e) {
 	return e.target.value;
+});
+
+addEventExtra("event.keyCode", "String", function (e) {
+	if (e.which !== undefined) {
+		return e.which;
+	}
+	return e.keyCode;
 });

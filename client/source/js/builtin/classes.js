@@ -60,7 +60,9 @@ var classesToMake = {
 		prop: {
 			"content": "XMLP",
 			"x": "Number",
-			"y": "Number"			
+			"y": "Number",
+			"width": "Number",
+			"height": "Number" // this should be treated as minimum height
 		}
 	},
 	
