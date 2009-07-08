@@ -253,7 +253,6 @@
 	
 	function keydown(e) {
 		processEvent("keydown", e);
-		// console.log("key down happened", e.target);
 	}
 	function keyup(e) {
 		processEvent("keyup", e);
@@ -280,8 +279,8 @@
 	document.addEventListener("submit", submit, true);
 	
 	document.addEventListener("keydown", keydown, true);
-	document.addEventListener("keyup", keydown, true);
-	document.addEventListener("keypress", keydown, true);
+	document.addEventListener("keyup", keyup, true);
+	document.addEventListener("keypress", keypress, true);
 })();
 
 
