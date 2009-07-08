@@ -1,4 +1,4 @@
-function (cuts::JSON, multiplier::Number) {
+function (cuts::JSON, multiplier::Number)::XMLP {
 	var ret = createEl("div");
 	forEach(cuts, function (cut) {
 		var d = createEl("div");

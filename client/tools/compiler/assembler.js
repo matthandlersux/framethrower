@@ -64,7 +64,7 @@ function outputJSON(object, tabs) {
 function addLets(Json, lets) {
 	if(Json !== undefined) {
 		forEach(lets, function(line, name) {
-			Json.template.let[name] = line;
+			Json.let[name] = line;
 		});
 	}
 }
@@ -138,8 +138,7 @@ function compileFile (filePath, rebuild, isLetFile) {
 				print("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file.getCanonicalPath() + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
 			}
 		} else {
-			result = semantics.processTree(parseResult.result);
-			result.fileName = "" + file.getName();
+			result = semantics.processTree(parseResult.result, "" + file.getCanonicalPath());
 			serialize(result, binfile.getAbsolutePath());
 			return result;
 		}
@@ -187,9 +186,9 @@ function countLines(wholeString, position) {
 
 //MAIN
 //COMPILE COMMAND: rhino jscc.js -o tplparser.js fttemplate.par
-//java -jar js.jar jscc.js -o tplparser.js fttemplate.par
+//java -jar ../util/js.jar jscc.js -o tplparser.js fttemplate.par
 //RUN COMMAND: rhino assembler.js <root folder>
-//java -jar js.jar -opt -1 assembler.js <root folder> rebuild
+//java -jar ../util/js.jar -opt -1 assembler.js <root folder> rebuild
 
 if( arguments.length > 0 ) { 
 	var rebuild = false;
@@ -198,7 +197,11 @@ if( arguments.length > 0 ) {
 	}
 	
 	//create bin folder if it doesn't exist
+	var binfolder1 = java.io.File("../../generated");
 	var binfolder = java.io.File("../../generated/templates");
+	if(!binfolder1.exists()) {
+		binfolder1.mkdir();
+	}
 	if(!binfolder.exists()) {
 		binfolder.mkdir();
 	}
@@ -212,7 +215,11 @@ if( arguments.length > 0 ) {
 
 		bw.write(totalCompiledString);
 		bw.close();
-		print('success');		
+		
+		
+		load("../typeAnalyzer/runTypeAnalyzer.js");
+		load("../../generated/templates/" + arguments[0] + ".js");
+		runTypeAnalyzer(mainTemplate);
 	}
 } else {
 	print( 'usage: rhino assembler.js <root folder> [rebuild]' );

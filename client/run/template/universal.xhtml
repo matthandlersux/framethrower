@@ -8,7 +8,7 @@
     xmlns:svg="http://www.w3.org/2000/svg">
 
 <head>
-<title>WM - Template Test (toby2)</title>
+<title>WM - Template Test (universal)</title>
 
 <link rel="stylesheet" href="../../source/design/style.css" type="text/css" media="screen" title="no title" charset="utf-8" />
 
@@ -22,13 +22,18 @@ var LOCAL = true;
 //var serverBaseUrl = "http://localhost:8000/";
 var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
 
-//var INCLUDES=[ROOTDIR+"generated/templates/tobytest.js", "init.js"];
-var INCLUDES=[ROOTDIR+"generated/templates/toby2.js", "init.js"];
-var ONLOAD="initialize()";
 </script>
 
 <script type="text/javascript" src="../../source/js/external/yuiloader-min.js"></script> 
 <script src="../../source/js/include.js"></script>
+
+<script>
+var templateFile = location.hash.substr(1);
+if (!templateFile) {
+	alert("Place the name of the template after the hash (universal.xhtml#NAMEOFTEMPLATE)");
+}
+includes.htmlInclude(["core", "browser"], [ROOTDIR+"generated/templates/"+templateFile+".js", "init.js"], "initialize()");
+</script>
 
 </head>
 

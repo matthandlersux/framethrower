@@ -12,9 +12,11 @@ function makeFuture(value) {
 }
 
 function typeCheck(expr, type) {
-	var exprType = getType(expr);
-	if (!compareTypes(exprType, type)) {
-		debug.error("Expected type `"+unparseType(type)+"` but got an Expr of type `"+unparseType(exprType)+"`.");
+	if (GLOBAL.typeCheck) {
+		var exprType = getType(expr);
+		if (!compareTypes(exprType, type)) {
+			debug.error("Expected type `"+unparseType(type)+"` but got an Expr of type `"+unparseType(exprType)+"`.");
+		}		
 	}
 }
 

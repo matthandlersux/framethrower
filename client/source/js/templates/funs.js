@@ -44,3 +44,13 @@ function mapUnitJS(f, outputType, numArgs) {
 		return outputCell;
 	};
 }
+
+
+function arrayToSet (array, type) {
+	var outputCell = makeCell();
+	outputCell.type = makeTypeApply(parseType("Set"), type);
+	forEach(array, function(element) {
+		outputCell.addLine(element);
+	});
+	return outputCell;
+}

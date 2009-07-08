@@ -1,10 +1,15 @@
 /*
 
 XML
-	XMLNODE |
-	{kind: "for-each", select: AST, templateCode: TEMPLATECODE} | // this templateCode should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
-	{kind: "call", templateCode: TEMPLATECODE} // this templateCode should take zero parameters.
-	// TODO: case, on-action
+	{kind: "for-each", select: AST, lineTemplate: LINETEMPLATE} | // this lineTemplate should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
+	{kind: "call", lineTemplate: LINETEMPLATE} | // this lineTemplate should take zero parameters.
+	{kind: "on", event: EVENT, lineAction: LINEACTION} | // this action should take zero parameters.
+	{kind: "trigger", trigger: AST, lineAction: LINEACTION} | // trigger should evaluate to a reactive value, action should take one (or two) parameters
+	{kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise?: LINETEMPLATE} |
+	// test should evaluate to a cell, if it is non-empty then lineTemplate is run as if it were a for-each. If it is empty, otherwise is called.
+	// lineTemplate should take one parameter
+	// otherwise, if it exists, should take zero parameters
+	XMLNODE 
 
 XMLNODE
 	{kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately
@@ -60,7 +65,7 @@ function xmlToDOM(xml, env, context) {
 				// if (attName === "class") {
 				// 	console.log("changing a class", "["+value+"]");
 				// }
-				setAttr(node, attName, value);
+				setNodeAttribute(node, attName, value);
 			}));
 		});
 		
@@ -96,12 +101,9 @@ function xmlToDOM(xml, env, context) {
 		
 		// set up an endCap to listen to result and change the children of the wrapper
 		
-		var type = getType(result);
-		var constructor = getTypeConstructor(type);
-		var isNumber = (constructor === "Map" && type.left.right.value === "Number") || type.right.value === "Number";
 		function cmp(a, b) {
 			// returns -1 if a < b, 0 if a = b, 1 if a > b
-			if (isNumber) {
+			if (/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/.test(a)) {
 				return a - b;
 			} else {
 				if (a < b) return -1;
@@ -110,22 +112,18 @@ function xmlToDOM(xml, env, context) {
 			}
 		}
 		
-		var innerTemplate = makeClosure(xml.templateCode, env);
+		var innerTemplate = makeClosure(xml.lineTemplate, env);
 		
 		var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to the evaluated template's {node: NODE, cleanup: FUNCTION}
 		
 		
 		var feachCleanup = result.inject(emptyFunction, function (value) {
 			
-			// if (DEBUGSPEED) {
-			// 	console.log("f:each", unparse(xml.select));
-			// }
-			
 			var newNode, keyString;
 			
-			if (constructor === "Map") {
+			if (result.isMap) {
 				//DEBUG
-				if (xml.templateCode.params.length !== 2) debug.error("f:each running on map, but as doesn't have key, value");
+				if (xml.lineTemplate.params.length !== 2) debug.error("f:each running on map, but as doesn't have key, value");
 				newNode = evaluate(makeApply(makeApply(innerTemplate, value.key), value.val));
 				keyString = stringify(value.key);
 			} else {
@@ -162,13 +160,6 @@ function xmlToDOM(xml, env, context) {
 				}
 				wrapper.removeChild(newNode.node);
 				
-				if (DEBUGSPEED) {
-					if (newNode.node.localName !== "on") {
-						console.log("removing a node!", newNode.node, unparse(xml.select));
-					}
-					
-				}
-				
 				delete entries[keyString];
 			};
 		});
@@ -191,7 +182,7 @@ function xmlToDOM(xml, env, context) {
 		
 		// TODO: test this for memory leaks, I think it's good though.
 		
-		// {kind: "case", test: AST, templateCode: TEMPLATECODE, otherwise?: TEMPLATECODE | CASE}
+		// {kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise?: LINETEMPLATE | CASE}
 		
 		var select = parseExpression(xml.test, env);
 		var result = evaluate(select);
@@ -200,7 +191,7 @@ function xmlToDOM(xml, env, context) {
 		
 		// set up an endCap to listen to result and change the children of the wrapper
 		
-		var innerTemplate = makeClosure(xml.templateCode, env);
+		var innerTemplate = makeClosure(xml.lineTemplate, env);
 		var otherwiseTemplate = xml.otherwise ? makeClosure(xml.otherwise, env) : undefined;
 		
 		var childNode = null;
@@ -247,13 +238,13 @@ function xmlToDOM(xml, env, context) {
 		
 		return {node: wrapper, cleanup: cleanupCase};
 	} else if (xml.kind === "call") {
-		var xmlp = makeClosure(xml.templateCode, env);
+		var xmlp = makeClosure(xml.lineTemplate, env);
 		return xmlToDOM(xmlp.xml, xmlp.env, context);
 	} else if (xml.kind === "on") {
 		var node = createEl("f:on");
 		if (xml.event === "init") {
 			setTimeout(function () {
-				var action = makeActionClosure(xml.action, env);
+				var action = makeActionClosure(xml.lineAction, env);
 				executeAction(action);
 			}, 0);
 			return {node: node, cleanup: null};
@@ -268,7 +259,7 @@ function xmlToDOM(xml, env, context) {
 			}
 			setAttr(node, "event", eventName);
 			node.custom = {};
-			node.custom.action = xml.action;
+			node.custom.lineAction = xml.lineAction;
 			node.custom.env = env;
 			
 			if (eventGlobal) {
@@ -294,7 +285,7 @@ function xmlToDOM(xml, env, context) {
 			
 			cleanupFunc = false;
 			
-			var actionClosure = makeActionClosure(xml.action, env);
+			var actionClosure = makeActionClosure(xml.lineAction, env);
 
 			//var expr = parseExpression(parse(xml.trigger), env);
 			var expr = parseExpression(xml.trigger, env);

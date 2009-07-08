@@ -33,7 +33,7 @@ var objects = (function () {
 		var memoTable = memoTables[className];
 		var classDef = classDefs[className];
 		
-		var funcName = className + "::" + "lookup";
+		var funcName = className + ":" + "lookup";
 		var typeStrings = map(classDef.memoize, function (propName) {
 			return classDef.prop[propName];
 		});
@@ -241,7 +241,7 @@ var objects = (function () {
 						obj.prop[propName].setDone();
 					} else {
 						// check type
-						if (!compareTypes(getType(instanceValue), propType)) {
+						if (GLOBAL.typeCheck && !compareTypes(getType(instanceValue), propType)) {
 							debug.error("Property type mismatch. Expected `"+propTypeString+"` but got `"+unparseType(getType(instanceValue))+"`");
 						}
 						// TODO: I don't think the makeFuture is right here, but it's what is expected when passing around Unit JS's.
@@ -256,7 +256,7 @@ var objects = (function () {
 					instanceValue = castObject(instanceValue, propTypeString);
 					
 					// check type
-					if (!compareTypes(getType(instanceValue), propType)) {
+					if (GLOBAL.typeCheck && !compareTypes(getType(instanceValue), propType)) {
 						debug.error("Property type mismatch. Expected `"+propTypeString+"` but got `"+unparseType(getType(instanceValue))+"`");
 					}
 					

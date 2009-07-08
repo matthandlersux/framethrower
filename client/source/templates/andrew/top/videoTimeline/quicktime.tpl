@@ -1,4 +1,4 @@
-function (width::Number, height::Number, src::String, gotoTime::Unit Number, timeLoaded::Unit Number) {
+function (width::Number, height::Number, src::String, gotoTime::Unit Number, timeLoaded::Unit Number)::XMLP {
 	
 	function makeQTMovie(src, width, height, autoplay) {
 		var mov = createEl("embed");

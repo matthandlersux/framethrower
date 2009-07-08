@@ -8,9 +8,7 @@
     xmlns:svg="http://www.w3.org/2000/svg">
 
 <head>
-<title>WM - Template Test</title>
-
-<link rel="stylesheet" href="../../source/design/style.css" type="text/css" media="screen" title="no title" charset="utf-8" />
+<title>Type analyzer test</title>
 
 <script>
 var ROOTDIR = "../../";
@@ -22,13 +20,29 @@ var LOCAL = true;
 //var serverBaseUrl = "http://localhost:8000/";
 var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
 
-//var INCLUDES=[ROOTDIR+"generated/templates/tobytest.js", "init.js"];
-var INCLUDES=[ROOTDIR+"generated/templates/main.js", "init.js"];
-var ONLOAD="initialize()";
 </script>
 
 <script type="text/javascript" src="../../source/js/external/yuiloader-min.js"></script> 
 <script src="../../source/js/include.js"></script>
+
+<script>
+
+function initialize() {
+	preparse(mainTemplate);
+	typeAnalyze(mainTemplate);
+	
+	
+}
+
+includes.htmlInclude(["core"], [ROOTDIR+"generated/templates/andrew.js", "typeAnalyzer.js"], "initialize()");
+</script>
+
+
+
+
+
+
+
 
 </head>
 

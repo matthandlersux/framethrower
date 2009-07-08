@@ -2,19 +2,13 @@
 
 /*
 
-ACTION
-	{
-		kind: "action",
-		params: [VARTOCREATE],
-		type: TYPE, // this will always be a function (perhaps with 0 parameters) resulting in type Action
-		actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}] // last one is the output
-	}
+LINEACTION
+	{kind: "lineAction", params: [VARTOCREATE], actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
 
 ACTIONUNIT
-	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: EXPR}} |
-	{kind: "actionUpdate", target: EXPR, actionType: "add" | "remove", key?: EXPR, value?: EXPR} |
-	{kind: "extract", select: AST, action: ACTION} // this action should take one (or two) parameters.
-
+	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
+	{kind: "actionUpdate", target: AST, actionType: "add" | "remove", key?: AST, value?: AST} |
+	{kind: "extract", select: AST, lineAction: LINEACTION} // this lineAction should take one (or two) parameters.
 
 
 makeActionClosure returns an INSTRUCTION or a FUN that eventually returns an INSTRUCTION
@@ -56,10 +50,10 @@ function makeActionRef(label, type) {
 	return {kind: "actionRef", label: label, type: type};
 }
 
-function makeActionClosure(actionCode, env) {
-	var params = actionCode.params;
-	var type = actionCode.type;
-	//var type = parseType(actionCode.type);
+function makeActionClosure(lineAction, env) {
+	var params = lineAction.params;
+	var type = lineAction.type;
+	//var type = parseType(lineAction.type);
 	
 	var f = curry(function () {
 		var scope = {};
@@ -76,7 +70,7 @@ function makeActionClosure(actionCode, env) {
 		var instructions = [];
 		var output;
 		
-		forEach(actionCode.actions, function (actionLet) {
+		forEach(lineAction.actions, function (actionLet) {
 			var action = actionLet.action;
 			var result;
 			if (action.kind === "actionCreate") {
@@ -94,7 +88,8 @@ function makeActionClosure(actionCode, env) {
 			} else if (action.kind === "actionUpdate") {
 				instructions.push({
 					kind: "instructionUpdate",
-					target: evaluate(parseExpression(parse(action.target), envWithParams)),
+					//target: evaluate(parseExpression(parse(action.target), envWithParams)),
+					target: evaluate(parseExpression(action.target, envWithParams)),
 					actionType: action.actionType,
 					//key: action.key ? evaluate(parseExpression(parse(action.key), envWithParams)) : undefined,
 					//value: action.value ? evaluate(parseExpression(parse(action.value), envWithParams)) : undefined
@@ -102,7 +97,7 @@ function makeActionClosure(actionCode, env) {
 					value: action.value ? evaluate(parseExpression(action.value, envWithParams)) : undefined
 				});
 			} else if (action.kind === "extract") {
-				var actionClosure = makeActionClosure(action.action, envWithParams);
+				var actionClosure = makeActionClosure(action.lineAction, envWithParams);
 				var inner;
 				var isMap = !!actionClosure.type.left.left;
 				if (isMap) {
@@ -130,7 +125,8 @@ function makeActionClosure(actionCode, env) {
 					};
 					instructions.push(block);
 					if (evaled.output) {
-						result = makeActionRef(block.label, getType(evaled.output));						
+						var refType = GLOBAL.typeCheck ? getType(evaled.output) : undefined;
+						result = makeActionRef(block.label, refType);
 					}
 				} else {
 					result = evaled;
@@ -236,11 +232,14 @@ function executeAction(instruction, scope) {
 			var done = false;
 			var cell = evaluate(instruction.select);
 			var myRemove = cell.injectDependency(function () {
-				forEach(cell.getState(), function (element) {
-					executeAction(instruction.inner(element), makeDynamicEnv(scope.env));
-				});
+				if (!done) {
+					done = true;
+					forEach(cell.getState(), function (element) {
+						executeAction(instruction.inner(element), makeDynamicEnv(scope.env));
+					});					
+				}
+				
 				if (myRemove) myRemove();
-				else done = true;
 			});
 			if (done) myRemove();
 		}

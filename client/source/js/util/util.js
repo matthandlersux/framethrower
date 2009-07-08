@@ -268,5 +268,5 @@ function JSONtoString(object) {
 		}
 	}
 	
-	JSONtoString2(object, 0);
+	return JSONtoString2(object, 0);
 }

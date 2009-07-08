@@ -83,22 +83,14 @@
 			
 			forEach(fonEls, function (fonEl) {
 				var env = function (s) {
-					if (s === "event.offsetX") {
-						return mouseCurrentPos[0] - getPosition(fonEl.parentNode)[0];
-					} else if (s === "event.offsetY") {
-						return mouseCurrentPos[1] - getPosition(fonEl.parentNode)[1];
-					} else if (s === "event.mouseX") {
-						return mouseCurrentPos[0];
-					} else if (s === "event.mouseY") {
-						return mouseCurrentPos[1];
-					} else if (s === "event.wheelDelta") {
-						return e.detail ? e.detail * -1 : e.wheelDelta / 40;
+					if (eventExtras[s]) {
+						return eventExtras[s].f(e, fonEl.parentNode, mouseCurrentPos);
 					} else {
 						return fonEl.custom.env(s);
 					}
 				};
 				
-				var action = makeActionClosure(fonEl.custom.action, env);
+				var action = makeActionClosure(fonEl.custom.lineAction, env);
 
 				//console.log("about to execute an action!", action);
 
@@ -189,7 +181,7 @@
 			tmp.blur();
 		}		
 		if (e.target.localName !== "input" && e.target.localName !== "button") {
-			document.body.focus();
+			//document.body.focus();
 			dont(e);
 		}
 	}
@@ -261,7 +253,7 @@
 	
 	function keydown(e) {
 		processEvent("keydown", e);
-		console.log("key down happened", e.target);
+		// console.log("key down happened", e.target);
 	}
 	function keyup(e) {
 		processEvent("keyup", e);

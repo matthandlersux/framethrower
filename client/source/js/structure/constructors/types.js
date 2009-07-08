@@ -435,6 +435,7 @@ function getType(o) {
 				//debug.error("Expected this expression to have a type: ", o);
 				return jsonType;
 			}
+			//console.log("Getting type of expression.", stringify(o));
 			o.type = getTypeOfExpr(o);
 		}
 		return o.type;

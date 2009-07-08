@@ -41,6 +41,40 @@ var classesToMake = {
 	},
 	
 	
+	
+	
+	"VideoTimeline": {
+		prop: {
+			"scrollStart": "Unit Number",
+			"scrollDuration": "Unit Number",
+			"selectStart": "Unit Number",
+			"selectDuration": "Unit Number",
+			"previewTime": "Unit Number",
+			"collapsed": "Unit Null",
+			"scrubbing": "Unit Null",
+			"playing": "Unit Null"
+		}
+	},
+	
+	"Popup": {
+		prop: {
+			"content": "XMLP",
+			"x": "Number",
+			"y": "Number"			
+		}
+	},
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	"TimeSelection": {
 		prop: {
 			"start": "Unit Number",
