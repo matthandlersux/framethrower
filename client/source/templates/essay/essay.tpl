@@ -1,3 +1,4 @@
 template () {
-	top
+	getAllContainers = unfoldSet (compose returnUnitSet Situation:container),
+	essayView
 }

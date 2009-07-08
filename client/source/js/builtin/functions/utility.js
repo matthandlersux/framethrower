@@ -8,5 +8,5 @@ addFun("or", "Bool -> Bool -> Bool", function (x, y) {return x || y;});
 // number
 addFun("plus", "Number -> Number -> Number", function (x, y) {return x + y;});
 addFun("subtract", "Number -> Number -> Number", function (x, y) {return x - y;});
-
+addFun("multiply", "Number -> Number -> Number", function (x, y) {return x * y;});
 
