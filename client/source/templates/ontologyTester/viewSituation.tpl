@@ -1,7 +1,7 @@
 template (sit::Situation) {
 	<div style-marginBottom="10">
 		<div>
-			<b>{Situation:propName sit}</b>
+			<b><f:call>linkToSit sit</f:call></b>
 		</div>
 		<div style-marginLeft="10">
 			Parent:
@@ -21,10 +21,16 @@ template (sit::Situation) {
 			expandable header underFold
 		</f:call>
 		<div>
-			Pipes Out: TODO
+			Pipes (as Instance):
+			<f:each Situation:pipesOut sit as pipe>
+				viewPipe pipe
+			</f:each>
 		</div>
 		<div>
-			Pipes In: TODO
+			Pipes  (as Type):
+			<f:each Situation:pipesIn sit as pipe>
+				viewPipe pipe
+			</f:each>
 		</div>
 	</div>
 }
