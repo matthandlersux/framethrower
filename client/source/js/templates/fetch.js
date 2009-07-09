@@ -17,6 +17,14 @@ function desugarFetch(template, env) {
 	var kind = template.kind;
 	
 	if (kind === "lineTemplate") {
+		// go through params, hiding previous bindings:
+		params = template.params;
+		for(var i=0; i<params.length; i++) {
+			if(env(params[i]))
+				env = envAdd(env, params[i], false);
+		}
+
+		// go through lets, remembering (and destroying) any fetched lineExprs, and recursing on anything else:
 		for(v in template.let) {
 			var let = template.let[v];
 			desugarFetch(let, env);
@@ -32,6 +40,7 @@ function desugarFetch(template, env) {
 				env = envAdd(env, v, false);
 		}
 
+		// recurse on output:
 		desugarFetch(template.output,env);
 
 		// we don't want to forEach() on this, since we've already taken care of everything:
