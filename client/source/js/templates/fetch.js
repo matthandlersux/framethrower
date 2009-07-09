@@ -16,9 +16,7 @@ function desugarFetch(template, env) {
 	var kind = template.kind;
 	
 	if (kind === "lineTemplate") {
-		console.log("lineTemplate:");
 		for(v in template.let) {
-			console.log(v+"=");
 			if(desugarFetch(template.let[v], env)) {
 				// template.let[v] was a lineExpr involving a fetch.
 				// add expression containing fetch to environment:
@@ -34,13 +32,7 @@ function desugarFetch(template, env) {
 		return false;
 	} else if (kind === "lineExpr") {
 		if(hasLiteral(template.expr, env)) {
-			console.log("lineExpr:");
-			console.log(JSONtoString(template.expr));
-			
 			template.expr = substitute(template.expr, env);
-			
-			console.log("-- expandFetch -->");
-			console.log(JSONtoString(template.expr));
 			return true;
 		}
 	} else if (kind === "actionUpdate") {
@@ -56,13 +48,8 @@ function desugarFetch(template, env) {
 	} else if (kind === "when") {
 		// template.test = parse(template.test);
 	} else if (kind === "insert") {
-		if(hasLiteral(template.expr, env)) {
-			console.log("insert:");
-			console.log(JSONtoString(template.expr));
+		if(hasLiteral(template.expr, env))
 			template.expr = withoutFetch(substitute(template.expr, env));
-			console.log("-- expandFetch --> withoutFetch -->");
-			console.log(JSONtoString(template.expr))
-		}
 	}
 	
 	if (arrayLike(template) || objectLike(template)) {
