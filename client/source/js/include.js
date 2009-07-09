@@ -44,7 +44,8 @@ var includes = (function () {
 
 			"source/js/remote/remote.js",
 			
-			"source/js/templates/preparse.js" // might want to do this at compile time?
+			"source/js/templates/preparse.js", // might want to do this at compile time?
+			"source/js/templates/fetch.js"
 		],
 		browser: [
 			"source/js/external/firebugx.js",

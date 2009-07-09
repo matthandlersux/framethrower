@@ -43,9 +43,9 @@ template () {
 	
 	scrubberSegments = state(Set Number),
 	
-	currentTimeS = state(Unit Number),
+	currentTimeS = state(Unit Number, 1000),
 	currentTime = fetch currentTimeS,
-	zoomLevelS = state(Unit Number),
+	zoomLevelS = state(Unit Number, 1),
 	zoomLevel = fetch zoomLevelS,
 	loadedTimeS = state(Unit Number),
 	loadedTime = fetch loadedTimeS,
@@ -75,8 +75,6 @@ template () {
 			
 			<div style-position="absolute" style-width="{videoWidth}" style-height="50" style-background="#444">
 				<f:on init>
-					add(currentTimeS, 1000),
-					add(zoomLevelS, 1),
 					// add(scrubberSegments, 0),
 					add(scrubberSegments, 0.1),
 					add(scrubberSegments, 0.2),
@@ -90,9 +88,10 @@ template () {
 				</f:on>
 				
 				<f:on mousemove>
-					// newTime = extract spaceToTime (pixelsToUnits event.offsetX),
+					// newTime = extract mapUnit2 (a -> b -> sigmoid (secondsToUnits a) b (pixelsToUnits event.offsetX)) currentTimeS zoomLevelS,
 					newTime = pixelsToUnits event.offsetX,
 					add(currentTimeS, unitsToSeconds newTime),
+					test = extract currentTimeS,
 					add(zoomLevelS, pixelsToZoom 0.1 event.offsetY)
 				</f:on>
 
