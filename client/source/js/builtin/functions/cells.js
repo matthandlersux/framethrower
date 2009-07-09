@@ -439,6 +439,117 @@
 					return outputCell;				
 				}
 			},
+			getNext: {
+				type: "Set a -> Unit a -> Unit a",
+				func: function (setCell, elementCell) {
+					var outputCell = makeCell();
+
+					setCell.makeSorted();
+
+					var current = undefined;
+					var element = undefined;
+					
+					function update() {
+						var a = setCell.getState();
+						var index = 0;
+						var found = false;
+						if (element !== undefined) {
+							found = any(a, function (x, i) {
+								if (x === element) {
+									index = i;
+									return true;
+								} else {
+									return false;
+								}
+							});
+						}
+						var value;
+						if (found && index+1 < a.length) {
+							value = a[index+1];
+						} else {
+							value = a[index];
+						}
+						if (current !== value) {
+							if (current !== undefined) {
+								outputCell.removeLine(current);						
+							}
+							if (value !== undefined) {
+								outputCell.addLine(value);
+								current = value;
+							}
+						}
+					}
+					setCell.inject(outputCell, function (val) {
+						update();
+						return update;
+					});
+					elementCell.inject(outputCell, function (val) {
+						element = val;
+						update();
+						return function () {
+							element = undefined;
+							update();
+						}
+					});
+					return outputCell;
+				}
+			},
+			getPrev: {
+				type: "Set a -> Unit a -> Unit a",
+				func: function (setCell, elementCell) {
+					var outputCell = makeCell();
+
+					setCell.makeSorted();
+
+					var current = undefined;
+					var element = undefined;
+					
+					function update() {
+						var a = setCell.getState();
+						var index = 0;
+						var found = false;
+						if (element !== undefined) {
+							found = any(a, function (x, i) {
+								if (x === element) {
+									index = i;
+									return true;
+								} else {
+									return false;
+								}
+							});
+						}
+						var value;
+						if (found && index-1 >= 0) {
+							value = a[index-1];
+						} else {
+							value = a[index];
+						}
+						if (current !== value) {
+							if (current !== undefined) {
+								outputCell.removeLine(current);						
+							}
+							if (value !== undefined) {
+								outputCell.addLine(value);
+								current = value;
+							}
+						}
+					}
+					setCell.inject(outputCell, function (val) {
+						update();
+						return update;
+					});
+					elementCell.inject(outputCell, function (val) {
+						element = val;
+						update();
+						return function () {
+							element = undefined;
+							update();
+						}
+					});
+					return outputCell;
+				}
+			},
+			
 			getPosition: {
 				type: "a -> Set a -> Unit Number", // TODO: add to server
 				func: function (element, cell) {
