@@ -455,7 +455,7 @@
 						if (element !== undefined) {
 							index = setCell.getIndex(element);
 						}
-						if (index !== undefined && index+1 < setCell.getLength()) {
+						if (index !== undefined && index+1 < setCell.length) {
 							value = setCell.getKeyByIndex(index+1);
 						} else {
 							if (index === undefined) index = 0;

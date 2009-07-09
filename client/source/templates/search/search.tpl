@@ -60,16 +60,22 @@ template () {
 	// Search
 	// ==============================================================
 	
+	nextWord = function (word::String)::String {
+		return word + "z";
+	},
+	
 	PrefixInput = mapUnit ProcessWord RawPrefixInput,
-	PrefixMatches = flattenUnitSet (bindUnit (swap getKey InvertedPrefixes) PrefixInput)::Set String,
+	// PrefixMatches = flattenUnitSet (bindUnit (swap getKey InvertedPrefixes) PrefixInput)::Set String,
+	PrefixMatches = rangeByKey PrefixInput (mapUnit nextWord PrefixInput) Terms::Set String,
+	
 	
 	SearchInput = mapUnit ProcessWord EnteredInput,
 	SearchResults = bindUnit (swap getKey InvertedIndex) SearchInput,
 	
-	GetLengths = S -> oneTo (StringLength S) :: String -> Set Number,
-	GetPrefixes = S -> mapSet (SubString S) (GetLengths S) :: String -> Set String,
-	Prefixes = buildMap GetPrefixes Terms ::Map String (Set String),
-	InvertedPrefixes = invert Prefixes,
+	// GetLengths = S -> oneTo (StringLength S) :: String -> Set Number,
+	// GetPrefixes = S -> mapSet (SubString S) (GetLengths S) :: String -> Set String,
+	// Prefixes = buildMap GetPrefixes Terms ::Map String (Set String),
+	// InvertedPrefixes = invert Prefixes,
 	
 	
 	// ==============================================================

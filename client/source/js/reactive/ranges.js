@@ -47,6 +47,7 @@ function makeRangedSet(onAdd, onRemove) {
 	};
 	
 	sSet.updateRange = function (oldRange, newRange) {
+		console.log("Update Range", oldRange, newRange);
 		if (newRange.start > oldRange.end || newRange.end < oldRange.start) {
 			removeRange(oldRange);
 			addRange(newRange);

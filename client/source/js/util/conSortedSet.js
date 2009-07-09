@@ -115,9 +115,7 @@ function makeConSortedSet(compFunc) {
 				f(keyVal.v, keyVal.k);
 			});
 		};
-		css.getLength = function () {
-			return sorted.length;
-		};
+		css.length = sorted.length;
 		css.toArray = function () {
 			return sorted;
 		};
