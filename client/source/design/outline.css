@@ -2,7 +2,7 @@
 	width: 13px;
 	height: 13px;
 	float: left;
-	margin-top: 3px;
+	/*margin-top: 3px;*/
 }
 .outline-expanded {
 	background-image: url(images/expanded.png);
