@@ -5,22 +5,33 @@
 this function goes through the template tree (see doc/template semantics.txt)
 it keeps an environment mapping words (VTCs) to their expressions, but only if the expressions have fetch
 whenever it encounters a new expression, it checks to see if it has fetch or makes reference to a word that has fetch
-	if so, it replaces the word(s) with its expression(s) in the env, and replaces the expression in the template tree with its removeFetch'ed version
+	if so, it replaces the word(s) with its expression(s) in the env.
+if the fetched expression was part of a let, it is removed from the template, since the interpreter has no use for it.
+if the fetched expression is part of an action, it is desugared to a mapUnit, by the withoutFetch() method below.
 */
-// returns true iff template was a lineExpr involving a fetch
 function desugarFetch(template, env) {	
-	if (!template) return false;
+	if (!template) return;
 	if (!env)
 		env = envAdd(falseEnv, "fetch", "fetch");
 	
 	var kind = template.kind;
 	
 	if (kind === "lineTemplate") {
+		// go through params, hiding previous bindings:
+		params = template.params;
+		for(var i=0; i<params.length; i++) {
+			if(env(params[i]))
+				env = envAdd(env, params[i], false);
+		}
+
+		// go through lets, remembering (and destroying) any fetched lineExprs, and recursing on anything else:
 		for(v in template.let) {
-			if(desugarFetch(template.let[v], env)) {
-				// template.let[v] was a lineExpr involving a fetch.
+			var let = template.let[v];
+			desugarFetch(let, env);
+			if(let.kind === "lineExpr" && hasLiteral(let.expr, env)) {
+				// let was a lineExpr involving a fetch.
 				// add expression containing fetch to environment:
-				env = envAdd(env, v, template.let[v].expr);
+				env = envAdd(env, v, substitute(let.expr, env));
 				
 				// then get rid of the let, since it is meaningless if interpreted by anyone else:
 				delete template.let[v];
@@ -28,13 +39,14 @@ function desugarFetch(template, env) {
 			else if(env(v)) // v previously referred to a fetch, but has been reassigned
 				env = envAdd(env, v, false);
 		}
+
+		// recurse on output:
 		desugarFetch(template.output,env);
-		return false;
+
+		// we don't want to forEach() on this, since we've already taken care of everything:
+		return;
 	} else if (kind === "lineExpr") {
-		if(hasLiteral(template.expr, env)) {
-			template.expr = substitute(template.expr, env);
-			return true;
-		}
+		//template.expr = parse(template.expr)
 	} else if (kind === "actionUpdate") {
 		// template.target = parse(template.target);
 		// template.key = template.key ? parse(template.key) : undefined;
@@ -55,8 +67,6 @@ function desugarFetch(template, env) {
 	if (arrayLike(template) || objectLike(template)) {
 		forEach(template, function (x) {desugarFetch(x,env);});
 	}
-	
-	return false;
 }
 
 
