@@ -30,7 +30,7 @@ template () {
 	RawPrefixInput = state(Unit String, ""),
 	EnteredInput = state(Unit String, ""),
 	FreshInputValue = state(Unit String, ""),
-	SelectedTerm = state(Unit String, "default"),
+	SelectedTerm = state(Unit String),
 	KeyCode = state(Unit String, ""),
 	
 	// ==============================================================
@@ -138,9 +138,9 @@ template () {
 		// </div>
 		<div style="position:absolute; top: 0; left:800; width:200">
 			<div style="font-size:18; color:teal">Search</div>
-			// <f:each KeyCode as KeyCode><div>
-			// 	KeyCode: {KeyCode}
-			// </div></f:each>
+			<f:each KeyCode as KeyCode><div>
+				KeyCode: {KeyCode}
+			</div></f:each>
 			// <f:each SelectedTerm as SelectedTerm>
 			// 	<div>
 			// 		SelectedTerm: {SelectedTerm}
@@ -149,12 +149,10 @@ template () {
 			<f:each FreshInputValue as InputValue>
 				<input type="text" value="{InputValue}">
 					<f:on blur>
-						add(EnteredInput, event.value),
 						add(RawPrefixInput, "")
 					</f:on>
 					<f:on keyup>
-						add(KeyCode, event.keyCode),
-						extract boolToUnit (or (equal event.keyCode 8) (and (greaterThan event.keyCode 64) (lessThan event.keyCode 123))) as _ {
+						extract boolToUnit (or (or (equal event.keyCode 8) (equal event.keyCode 46)) (and (greaterThan event.keyCode 64) (lessThan event.keyCode 123))) as _ {
 							add(RawPrefixInput, event.value),
 							remove(SelectedTerm)
 						}
@@ -176,14 +174,20 @@ template () {
 							extract reactiveNot SelectedTerm as _{
 								add(EnteredInput, event.value)
 							},
-							remove(RawPrefixInput),
+							add(RawPrefixInput, ""),
 							remove(SelectedTerm)
 						}
 					</f:on>
 				</input>
 			</f:each>
 			<div style="position:relative; top: 0; width:155; background-color:rgb(68, 170, 255)">
-				<f:call>DrawPrefixMatches PrefixMatches</f:call>
+				<f:call>
+					if reactiveNot (bindUnit (a -> boolToUnit (equal "" a)) RawPrefixInput) as _ {
+						DrawPrefixMatches PrefixMatches
+					} else {
+						<div />
+					}
+				</f:call>
 			</div>
 			<div style="position:relative; top: 100; width:200">
 				<div style="font-size:18; color:teal">Results</div>

@@ -41,8 +41,21 @@ function makeBaseCell (toKey) {
 		return map(dots.toArray(), function (x) {return x.v.val;});
 	};
 	
+	//pull through some range related functions from rangedSet to be used by some primFuncs (TODO: refactor)
 	cell.getIndex = function (key) {
 		return dots.getIndex(key);
+	};
+	
+	cell.getFirstIndex = function () {
+		return dots.getFirstIndex();
+	}
+	
+	cell.getNearestIndexRight = function (key) {
+		return dots.getNearestIndexRight(key);
+	};
+	
+	cell.getNearestIndexLeft = function (key) {
+		return dots.getNearestIndexLeft(key);
 	};
 	
 	cell.getByIndex = function (index) {
