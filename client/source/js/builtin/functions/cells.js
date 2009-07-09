@@ -451,23 +451,15 @@
 					
 					function update() {
 						var a = setCell.getState();
-						var index = 0;
-						var found = false;
+						var index;
 						if (element !== undefined) {
-							found = any(a, function (x, i) {
-								if (x === element) {
-									index = i;
-									return true;
-								} else {
-									return false;
-								}
-							});
+							index = setCell.getIndex(element);
 						}
-						var value;
-						if (found && index+1 < a.length) {
-							value = a[index+1];
+						if (index !== undefined && index+1 < setCell.getLength()) {
+							value = setCell.getKeyByIndex(index+1);
 						} else {
-							value = a[index];
+							if (index === undefined) index = 0;
+							value = setCell.getKeyByIndex(index);
 						}
 						if (current !== value) {
 							if (current !== undefined) {
@@ -506,23 +498,15 @@
 					
 					function update() {
 						var a = setCell.getState();
-						var index = 0;
-						var found = false;
+						var index;
 						if (element !== undefined) {
-							found = any(a, function (x, i) {
-								if (x === element) {
-									index = i;
-									return true;
-								} else {
-									return false;
-								}
-							});
+							index = setCell.getIndex(element);
 						}
-						var value;
-						if (found && index-1 >= 0) {
-							value = a[index-1];
+						if (index !== undefined && index-1 >= 0) {
+							value = setCell.getKeyByIndex(index-1);
 						} else {
-							value = a[index];
+							if (index === undefined) index = 0;
+							value = setCell.getKeyByIndex(index);
 						}
 						if (current !== value) {
 							if (current !== undefined) {
@@ -549,7 +533,6 @@
 					return outputCell;
 				}
 			},
-			
 			getPosition: {
 				type: "a -> Set a -> Unit Number", // TODO: add to server
 				func: function (element, cell) {

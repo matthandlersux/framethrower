@@ -41,6 +41,21 @@ function makeBaseCell (toKey) {
 		return map(dots.toArray(), function (x) {return x.v.val;});
 	};
 	
+	cell.getIndex = function (key) {
+		return dots.getIndex(key);
+	};
+	
+	cell.getByIndex = function (index) {
+		return dots.getByIndex(index);
+	};
+	
+	cell.getKeyByIndex = function (index) {
+		return dots.getKeyByIndex(index);
+	};
+	
+	cell.getLength = function () {
+		return dots.getLength();
+	};
 	
 	//========================================
 	// Hook-up Functions

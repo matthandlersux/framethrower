@@ -16,8 +16,7 @@ function makeConSortedSet(compFunc) {
 	css.remove = function (key) {
 		hash.remove(key);
 	};
-
-	css.length = hash.length;
+	
 	css.forEach = function (f) {
 		return hash.forEach(f);
 	};
@@ -96,15 +95,28 @@ function makeConSortedSet(compFunc) {
 			}
 		};
 		css.getByIndex = function (ind) {
-			return sorted[ind].v;
+			var value = sorted[ind];
+			if (value !== undefined) {
+				return sorted[ind].v;
+			} else {
+				return undefined;
+			}			
 		};
 		css.getKeyByIndex = function (ind) {
-			return sorted[ind].k;
+			var value = sorted[ind];
+			if (value !== undefined) {
+				return sorted[ind].k;
+			} else {
+				return undefined;
+			}
 		};
 		css.forEach = function (f) {
 			return sorted.forEach(function(keyVal, pos) {
 				f(keyVal.v, keyVal.k);
 			});
+		};
+		css.getLength = function () {
+			return sorted.length;
 		};
 		css.toArray = function () {
 			return sorted;
