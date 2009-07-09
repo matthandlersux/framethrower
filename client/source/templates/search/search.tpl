@@ -29,7 +29,7 @@ template () {
 	
 	RawPrefixInput = state(Unit String, ""),
 	EnteredInput = state(Unit String, ""),
-	SelectedTerm = state(Unit Number, 0),
+	SelectedTerm = state(Unit String, "default"),
 	KeyCode = state(Unit String, ""),
 	
 	// ==============================================================
@@ -61,10 +61,6 @@ template () {
 	
 	PrefixInput = mapUnit ProcessWord RawPrefixInput,
 	PrefixMatches = flattenUnitSet (bindUnit (swap getKey InvertedPrefixes) PrefixInput)::Set String,
-	// PrefixNums = bindSetUnit oneTo (length PrefixMatches)::Set Number,
-	// PrefixOrds = mapSet numToOrd PrefixNums::Set Ord,
-	
-	PrefixMatchesList = buildMap (a -> getPosition a PrefixMatches) PrefixMatches::Map String (Unit Number),
 	
 	SearchInput = mapUnit ProcessWord EnteredInput,
 	SearchResults = bindUnit (swap getKey InvertedIndex) SearchInput,
@@ -100,20 +96,17 @@ template () {
 		</f:each>
 	},
 	
-	DrawPrefixMatches = template (AList::Map String (Unit a)) {
-		DrawPrefixMatch = template (Value::String, Index::Unit Number) {
-			if bindUnit boolToUnit (mapUnit2 equal Index SelectedTerm) as _ {
+	DrawPrefixMatches = template (Matches::Set String) {
+		<f:each Matches as Match>
+			if bindUnit boolToUnit (mapUnit (equal Match) SelectedTerm) as _ {
 				<div style="position:relative; padding-top:10; padding-left:5; background-color:teal">
-					{Value}
+					{Match}
 				</div>
 			} else {
 				<div style="position:relative; padding-top:10; padding-left:5">
-					{Value}
+					{Match}
 				</div>
 			}
-		},
-		<f:each AList as Value, Index>
-			<f:call>DrawPrefixMatch Value Index</f:call>
 		</f:each>
 	},
 
@@ -140,18 +133,13 @@ template () {
 			<div style="font-size:18; color:teal">Search</div>
 			<f:each KeyCode as KeyCode><div>
 				KeyCode: {KeyCode}
-			</div></f:each>		
-			<div>Click Down
-				<f:on click>
-					currentOrd = extract SelectedTerm,
-					add(SelectedTerm, plus 1 currentOrd)
-				</f:on>
-			</div>
+			</div></f:each>
 			<f:each SelectedTerm as SelectedTerm>
 				<div>
 					SelectedTerm: {SelectedTerm}
 				</div>
 			</f:each>
+			<input type="text" value="{SelectedTerm}"></input>
 			<input type="text">
 				<f:on blur>
 					add(EnteredInput, event.value),
@@ -160,25 +148,31 @@ template () {
 				<f:on keyup>
 					add(KeyCode, event.keyCode),
 					extract boolToUnit (equal event.keyCode 40) as _ {
-						currentOrd = extract SelectedTerm,
-						add(SelectedTerm, plus 1 currentOrd)
+						nextTerm = extract getNext PrefixMatches SelectedTerm,
+						add(SelectedTerm, nextTerm)
 					},
 					extract boolToUnit (equal event.keyCode 38) as _ {
-						currentOrd = extract SelectedTerm,
-						add(SelectedTerm, subtract currentOrd 1)
+						prevTerm = extract getPrev PrefixMatches SelectedTerm,
+						add(SelectedTerm, prevTerm)
 					},
 					extract boolToUnit (or (equal event.keyCode 8) (and (greaterThan event.keyCode 64) (lessThan event.keyCode 123))) as _ {
 						add(RawPrefixInput, event.value),
-						add(SelectedTerm, 0)
+						remove(SelectedTerm)
 					},
 					extract boolToUnit (equal event.keyCode 13) as _ {
-						add(EnteredInput, event.value),
-						add(RawPrefixInput, "")
+						extract SelectedTerm as SelectedTerm{
+							add(EnteredInput, SelectedTerm)
+						},
+						extract reactiveNot SelectedTerm as _{
+							add(EnteredInput, event.value)
+						},
+						remove(RawPrefixInput),
+						remove(SelectedTerm)
 					},
 				</f:on>
 			</input>
 			<div style="position:relative; top: 0; width:155; background-color:rgb(68, 170, 255)">
-				<f:call>DrawPrefixMatches PrefixMatchesList</f:call>
+				<f:call>DrawPrefixMatches PrefixMatches</f:call>
 			</div>
 			<div style="position:relative; top: 100; width:200">
 				<div style="font-size:18; color:teal">Results</div>
