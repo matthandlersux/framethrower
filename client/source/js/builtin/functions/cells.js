@@ -28,10 +28,11 @@
 			var end;
 
 			var updateRange = function () {
-				if (start != undefined && end != undefined) {
+				if (start !== undefined && end !== undefined) {
 					setRangeFunc(start, end);
-				} else if (start == undefined && end == undefined) {
-					outputCell.clearRange();
+				} else if (start === undefined && end === undefined) {
+					// TODO: figure out another way to do this
+					// outputCell.clearRange();
 				}
 			};
 			outputCell.leash();
@@ -283,6 +284,14 @@
 					return outputCell;
 				}
 			},
+			mapUnit2 : {
+				type : "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
+				func : function(func, cell1, cell2) {
+					return mapUnitJS(function (x, y) {
+						return evaluate(makeApply(makeApply(func, x), y));
+					})(cell1, cell2);
+				}
+			},
 
 			// ============================================================================
 			// Null Type Functions
@@ -431,117 +440,58 @@
 					return outputCell;				
 				}
 			},
-			getNext: {
+			getNext: { //Note: this is not reactive... should only be used in actions
 				type: "Set a -> Unit a -> Unit a",
 				func: function (setCell, elementCell) {
+					var element = elementCell.getState()[0];
+
 					var outputCell = makeCell();
-
 					setCell.makeSorted();
-
-					var current = undefined;
-					var element = undefined;
 					
-					function update() {
-						var a = setCell.getState();
-						var index = 0;
-						var found = false;
-						if (element !== undefined) {
-							found = any(a, function (x, i) {
-								if (x === element) {
-									index = i;
-									return true;
-								} else {
-									return false;
-								}
-							});
-						}
-						var value;
-						if (found && index+1 < a.length) {
-							value = a[index+1];
+					var index;
+					if (element !== undefined) {
+						index = setCell.getNearestIndexLeft(element);
+						if (index+1 < setCell.getLength()) {
+							value = setCell.getKeyByIndex(index+1);
 						} else {
-							value = a[index];
+							value = setCell.getKeyByIndex(index);
 						}
-						if (current !== value) {
-							if (current !== undefined) {
-								outputCell.removeLine(current);						
-							}
-							if (value !== undefined) {
-								outputCell.addLine(value);
-								current = value;
-							}
-						}
+					} else {
+						value = setCell.getKeyByIndex(setCell.getFirstIndex());
 					}
-					setCell.inject(outputCell, function (val) {
-						update();
-						return update;
-					});
-					elementCell.inject(outputCell, function (val) {
-						element = val;
-						update();
-						return function () {
-							element = undefined;
-							update();
-						}
-					});
+					if (value !== undefined) {
+						outputCell.addLine(value);
+					}
+
 					return outputCell;
 				}
 			},
-			getPrev: {
+			getPrev: { //Note: this is not reactive... should only be used in actions
 				type: "Set a -> Unit a -> Unit a",
 				func: function (setCell, elementCell) {
-					var outputCell = makeCell();
-
-					setCell.makeSorted();
-
-					var current = undefined;
-					var element = undefined;
+					var element = elementCell.getState()[0];
 					
-					function update() {
-						var a = setCell.getState();
-						var index = 0;
-						var found = false;
-						if (element !== undefined) {
-							found = any(a, function (x, i) {
-								if (x === element) {
-									index = i;
-									return true;
-								} else {
-									return false;
-								}
-							});
-						}
-						var value;
-						if (found && index-1 >= 0) {
-							value = a[index-1];
+					var outputCell = makeCell();
+					setCell.makeSorted();
+					
+					var index;
+					if (element !== undefined) {
+						index = setCell.getNearestIndexRight(element);
+						if (index-1 >= 0) {
+							value = setCell.getKeyByIndex(index-1);
 						} else {
-							value = a[index];
+							value = setCell.getKeyByIndex(index);
 						}
-						if (current !== value) {
-							if (current !== undefined) {
-								outputCell.removeLine(current);						
-							}
-							if (value !== undefined) {
-								outputCell.addLine(value);
-								current = value;
-							}
-						}
+					} else {
+						value = setCell.getKeyByIndex(setCell.getFirstIndex());
 					}
-					setCell.inject(outputCell, function (val) {
-						update();
-						return update;
-					});
-					elementCell.inject(outputCell, function (val) {
-						element = val;
-						update();
-						return function () {
-							element = undefined;
-							update();
-						}
-					});
+					if (value !== undefined) {
+						outputCell.addLine(value);
+					}
+
 					return outputCell;
 				}
 			},
-			
 			getPosition: {
 				type: "a -> Set a -> Unit Number", // TODO: add to server
 				func: function (element, cell) {
