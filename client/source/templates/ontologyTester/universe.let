@@ -1,0 +1,97 @@
+universe = state {makeSituationNamed "Universe"},
+
+
+createTimePoint = action (timeline::Situation, seconds::Number) {
+	
+},
+
+
+extraDummy = state {
+	
+	//external artifact types
+	number = makeSituationNamedIn "NUMBER" universe,
+	text = makeSituationNamedIn "TEXT" universe,
+	video = makeSituationNamedIn "VIDEO" universe,
+
+	//generic essay structure
+	essay = makeSituationNamedIn "Essay" universe,
+	makePipe essay text,
+	
+	//unstructured link
+	ulink = makeSituationNamedIn "Unstructured Link" universe,
+	source = makeSituationNamedIn "Source" ulink,
+	target = makeSituationNamedIn "Target" ulink,
+
+	//generic movie structure
+	movie = makeSituationNamedIn "Movie" universe,
+	movieVideo = makeSituationNamedIn "Video" movie,
+	makePipe movieVideo video,
+	ccaptions = makeSituationNamedIn "Closed Captions" movie,
+
+
+
+
+	//line
+	line = makeSituationNamedIn "Line" universe,
+	point = makeSituationNamedIn "Point" line,
+	linterval = makeSituationNamedIn "Interval" line,
+	hasEndpoints = makeSituationNamedIn "has Endpoints" line,
+	start = makeSituationNamedIn "Start" hasEndpoints,
+	end = makeSituationNamedIn "End" hasEndpoints,
+	between = makeSituationNamedIn "Interval Between" hasEndpoints,
+	
+	//bounded line
+	boundedLine = makeSituationNamedIn "Bounded Line" universe,
+	endPoint = makeSituationNamedIn "End Point" boundedLine,
+	boundedLineToLine = makePipe boundedLine line,
+	makePipeIn1 endPoint point boundedLineToLine,
+
+	//timeline
+	timeline = makeSituationNamedIn "Timeline" universe,
+	timelinePoint = makeSituationNamedIn "time point" timeline,
+	makePipe timelinePoint number,
+
+	//textline
+	textline = makeSituationNamedIn "Textline" universe,
+	textlinepoint = makeSituationNamedIn "text point" textline,
+
+
+
+
+		//pipes from line
+		lineTotimeline = makePipe timeline line,
+		makePipe timeline boundedLine,
+		lineTotextline = makePipe textline line,
+		lineTohasEndpoints = makePipe hasEndpoints line,
+		pointToStart = makePipeIn1 start point lineTohasEndpoints,
+		pointToEnd = makePipeIn1 end point lineTohasEndpoints,
+		intervalToBetween = makePipeIn1 between linterval lineTohasEndpoints,
+
+		//pipes from timeline
+		timelineTovideo = makePipe movieVideo timeline,
+
+		//pipes from textline
+		textlineToessay = makePipe essay textline,
+
+
+	//first level pipes
+		pointTotimepoint = makePipeIn1 timelinePoint point lineTotimeline,
+		pointTotextpoint = makePipeIn1 textlinepoint point lineTotextline,
+
+
+
+
+	//Moulin Rouge
+	mr = makeSituationNamedIn "Moulin Rouge" universe, 
+	mrvideo = makeSituationNamedIn "MR Video" mr,
+	mrcc = makeSituationNamedIn "MR Closed Captions" mr,
+	movieTomr = makePipe mr movie,
+	videoTomrvideo = makePipeIn1 mrvideo movieVideo movieTomr,
+	ccTomrcc = makePipeIn1 mrcc ccaptions movieTomr, 
+
+	//tedg's Moulin Rouge essay
+	mressay = makeSituationNamedIn "Tedg's Moulin Rouge Essay" universe,
+	
+	
+	universe
+}
