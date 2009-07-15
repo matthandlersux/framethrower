@@ -91,7 +91,6 @@ template () {
 					// newTime = extract mapUnit2 (a -> b -> sigmoid (secondsToUnits a) b (pixelsToUnits event.offsetX)) currentTimeS zoomLevelS,
 					newTime = pixelsToUnits event.offsetX,
 					add(currentTimeS, unitsToSeconds newTime),
-					test = extract currentTimeS,
 					add(zoomLevelS, pixelsToZoom 0.1 event.offsetY)
 				</f:on>
 
@@ -113,6 +112,10 @@ template () {
 				// </f:each>
 				
 				<div style-position="absolute" style-left="{unitsToPixels currentSpace}" style-width="1" style-height="50" style-background="#fff"/>
+				
+				{loadedTimeS}
+				{zoomLevelS}
+				{currentTimeS}
 			</div>
 		</f:wrapper>
 	</f:each></f:each></f:each></f:each></f:each>

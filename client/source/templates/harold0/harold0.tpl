@@ -1,10 +1,11 @@
 template() {
-	s = state(Unit Number, 10),
-	x = fetch s,
+	s = state(Unit Number, 1),
 	
 	<f:wrapper>
-		<f:call>test1 1</f:call>
-		<f:call>test2</f:call>
-		{x}
+		<f:on mousedown>
+			x = extract s,
+			add(s, plus x 1)
+		</f:on>
+		{s}
 	</f:wrapper>
 }

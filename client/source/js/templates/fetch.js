@@ -71,12 +71,19 @@ function desugarFetch(template, env) {
 	}
 
 	else if (kind === "insert") {
+		// insert can handle any type, and works the same for t or Unit t,
+		// so we don't care whether 'unfetch' is used -- we unfetch either way
 		if(hasLiteral(template.expr, env))
 			template.expr = withoutFetch(substitute(template.expr, env));
+		console.log(JSONtoString(template));
 	}
 
-	// for now, disallow fetches in f:each, f:trigger, and if
-	// TODO eventually, wrap in an extra f:each
+	// Suppose s::Unit (Unit t), and x=fetch s,
+	// then <f:each x ...> would type-check as a f:each on Unit t, but if we simply unfetch, as in 'insert' above,
+	// then it will actually be a f:each on Unit (Unit t), and unexpected things will happen.
+	// Thus, for now, disallow fetches in f:each, f:trigger, and 'if'
+	// (but allow if 'unfetch' is used, i.e. it is no longer a fetch).
+	// TODO Eventually, wrap in an extra f:each for fetches?
 	else if (kind === "for-each")
 		disallowFetch(template.select, env);
 	else if (kind === "trigger")
@@ -149,7 +156,7 @@ function collapseFetches(ast, vars, vals) {
 		return ast;
 	if(ast.cons === "apply" && ast.left === "fetch") { // collapse
 		var i = vals.indexOf(ast.right);
-		if(i!==-1) // there was already a fetch of ast.left in the expression, so no need for a new variable
+		if(i!==-1) // there was already a fetch of ast.right in the expression, so no need for a new variable
 			return vars[i];
 			
 		var v = "_fetched"+vars.length; // new variable name
