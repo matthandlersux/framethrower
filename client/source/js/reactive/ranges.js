@@ -14,7 +14,8 @@ function makeRangedSet(onAdd, onRemove) {
 			return;
 		}
 		if (range.type == 'key') {
-			forInd(sSet.getNearestIndexRight(range.start), sSet.getNearestIndexLeft(range.end), f);
+			forInd(sSet.getIndex(range.start), sSet.getIndex(range.end), f);
+			//forInd(sSet.getNearestIndexRight(range.start), sSet.getNearestIndexLeft(range.end), f);
 		} else {
 			forInd(range.start, range.end, f);
 		}
