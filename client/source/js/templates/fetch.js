@@ -75,7 +75,7 @@ function desugarFetch(template, env) {
 		// so we don't care whether 'unfetch' is used -- we unfetch either way
 		if(hasLiteral(template.expr, env))
 			template.expr = withoutFetch(substitute(template.expr, env));
-		console.log(JSONtoString(template));
+		// console.log(JSONtoString(template));
 	}
 
 	// Suppose s::Unit (Unit t), and x=fetch s,
