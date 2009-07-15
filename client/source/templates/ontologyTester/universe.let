@@ -1,12 +1,7 @@
-universe = state {makeSituationNamed "Universe"},
-
-
-createTimePoint = action (timeline::Situation, seconds::Number) {
+universe = state {
 	
-},
+	universe = makeSituationNamed "Universe",
 
-
-extraDummy = state {
 	
 	//external artifact types
 	number = makeSituationNamedIn "NUMBER" universe,
