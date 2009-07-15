@@ -9,7 +9,7 @@ whenever it encounters a new expression, it checks to see if it has fetch or mak
 if the fetched expression was part of a let, it is removed from the template, since the interpreter has no use for it.
 if the fetched expression is part of an action, it is desugared to a mapUnit, by the withoutFetch() method below.
 */
-function desugarFetch(template, env) {	
+function desugarFetch(template, env) {
 	if (!template) return;
 	if (!env)
 		env = envAdd(falseEnv, "fetch", "fetch");
@@ -17,12 +17,8 @@ function desugarFetch(template, env) {
 	var kind = template.kind;
 	
 	if (kind === "lineTemplate") {
-		// go through params, hiding previous bindings:
-		params = template.params;
-		for(var i=0; i<params.length; i++) {
-			if(env(params[i]))
-				env = envAdd(env, params[i], false);
-		}
+		// params hide previous bindings:
+		env = envMinus(env, template.params);
 
 		// go through lets, remembering (and destroying) any fetched lineExprs, and recursing on anything else:
 		for(v in template.let) {
@@ -45,28 +41,70 @@ function desugarFetch(template, env) {
 
 		// we don't want to forEach() on this, since we've already taken care of everything:
 		return;
+	} else if (kind === "lineAction") {
+		// params hide previous bindings:
+		env = envMinus(env, template.params);
+
+		// go through actions, remembering (and destroying) any fetched lineExprs, and recursing on anything else:
+		for(i in template.actions) {
+			var v = template.actions[i].name,
+				action = template.actions[i].action;
+
+			desugarFetch(action, env);
+
+			if(v && action.kind === "lineExpr" && hasLiteral(action.expr, env)) {
+				env = envAdd(env, v, substitute(action.expr, env));
+				delete template.actions[i];
+			}
+			else if(v && env(v)) // v previously referred to a fetch, but has been reassigned
+				env = envAdd(env, v, false);
+		}
+
+		// we don't want to forEach() on this, since we've already taken care of everything:
+		return;
 	} else if (kind === "lineExpr") {
 		//template.expr = parse(template.expr)
 	} else if (kind === "actionUpdate") {
 		// template.target = parse(template.target);
 		// template.key = template.key ? parse(template.key) : undefined;
 		// template.value = template.value ? parse(template.value) : undefined;
-	} else if (kind === "case") {
-		// template.test = parse(template.test);
-	} else if (kind === "for-each") {
-		// template.select= parse(template.select);
-	} else if (kind === "trigger") {
-		// template.trigger = parse(template.trigger);
-	} else if (kind === "when") {
-		// template.test = parse(template.test);
-	} else if (kind === "insert") {
+	}
+
+	else if (kind === "insert") {
 		if(hasLiteral(template.expr, env))
 			template.expr = withoutFetch(substitute(template.expr, env));
 	}
-	
+
+	// for now, disallow fetches in f:each, f:trigger, and if
+	// TODO eventually, wrap in an extra f:each
+	else if (kind === "for-each")
+		disallowFetch(template.select, env);
+	else if (kind === "trigger")
+		disallowFetch(template.trigger, env);
+	else if (kind === "case")
+		disallowFetch(template.test, env);
+
 	if (arrayLike(template) || objectLike(template)) {
 		forEach(template, function (x) {desugarFetch(x,env);});
 	}
+}
+
+/*
+* returns a version of env with everything in vars mapping to false.
+* does not modify env.
+*/
+function envMinus(env, vars) {
+	return function(s) {
+		var v = env(s);
+		if(v && vars.indexOf(v)===-1)
+			return v;
+		return false;
+	};
+}
+
+function disallowFetch(ast, env) {
+	if(hasLiteral(ast, env))
+		console.error("fetched expressions not supported in: "+ast);
 }
 
 
