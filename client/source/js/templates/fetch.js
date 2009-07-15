@@ -111,7 +111,7 @@ function envMinus(env, vars) {
 
 function disallowFetch(ast, env) {
 	if(hasLiteral(ast, env))
-		console.error("fetched expressions not supported in: "+ast);
+		console.error("fetched expressions not supported in: ", ast);
 }
 
 
