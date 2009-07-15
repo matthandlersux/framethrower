@@ -16,8 +16,7 @@ function makeConSortedSet(compFunc) {
 	css.remove = function (key) {
 		hash.remove(key);
 	};
-
-	css.length = hash.length;
+	
 	css.forEach = function (f) {
 		return hash.forEach(f);
 	};
@@ -37,7 +36,7 @@ function makeConSortedSet(compFunc) {
 	var sorted = [];
 
 	function lookup(start, end, key) {
-		if (start === end) {
+		if (start === end || start > end) {
 			return [false, start];
 		} else {
 			var halfway = start + Math.floor((end - start) / 2);
@@ -62,7 +61,7 @@ function makeConSortedSet(compFunc) {
 		
 		css.set = function(key, value) {
 			var len = sorted.length;
-			var l = lookup(0, len, key);
+			var l = lookup(0, len-1, key);
 			var found = l[0];
 			var index = l[1];
 			if (found === true) {
@@ -79,15 +78,42 @@ function makeConSortedSet(compFunc) {
 		};
 		
 		css.remove = function(key) {
-			var l = lookup(0, sorted.length, key);
+			var l = lookup(0, sorted.length-1, key);
 			if (l[0] === true) {
 				sorted.splice(l[1], 1);
 			}
 			delete hash[key];
 		};
+		
+		function getNearestIndex (key, right) {
+			var len = sorted.length;
+			var l = lookup(0, len-1, key);
+			if (l[0]) { //found
+				return l[1];
+			} else {
+				if (right) {
+					return l[1];
+				} else {
+					if (l[1]-1 < 0) {
+						return l[1];
+					} else {
+						return l[1] - 1;
+					}
+				}
+			}
+		}
+		
+		css.getNearestIndexRight = function (key) {
+			return getNearestIndex(key, true);
+		};
+		
+		css.getNearestIndexLeft = function (key) {
+			return getNearestIndex(key, false);
+		};
+		
 		css.getIndex = function (key) {
 			var len = sorted.length;
-			var l = lookup(0, len, key);
+			var l = lookup(0, len-1, key);
 			var found = l[0];
 			var index = l[1];
 			if (found) return index;
@@ -96,15 +122,29 @@ function makeConSortedSet(compFunc) {
 			}
 		};
 		css.getByIndex = function (ind) {
-			return sorted[ind].v;
+			var value = sorted[ind];
+			if (value !== undefined) {
+				return sorted[ind].v;
+			} else {
+				return undefined;
+			}			
 		};
 		css.getKeyByIndex = function (ind) {
-			return sorted[ind].k;
+			var value = sorted[ind];
+			if (value !== undefined) {
+				return sorted[ind].k;
+			} else {
+				return undefined;
+			}
 		};
 		css.forEach = function (f) {
 			return sorted.forEach(function(keyVal, pos) {
 				f(keyVal.v, keyVal.k);
 			});
+		};
+		
+		css.getLength = function () {
+			return sorted.length;
 		};
 		css.toArray = function () {
 			return sorted;

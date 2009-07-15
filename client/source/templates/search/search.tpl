@@ -29,7 +29,8 @@ template () {
 	
 	RawPrefixInput = state(Unit String, ""),
 	EnteredInput = state(Unit String, ""),
-	SelectedTerm = state(Unit String, "default"),
+	FreshInputValue = state(Unit String, ""),
+	SelectedTerm = state(Unit String),
 	KeyCode = state(Unit String, ""),
 	
 	// ==============================================================
@@ -59,16 +60,22 @@ template () {
 	// Search
 	// ==============================================================
 	
+	nextWord = function (word::String)::String {
+		return word + "z";
+	},
+	
 	PrefixInput = mapUnit ProcessWord RawPrefixInput,
-	PrefixMatches = flattenUnitSet (bindUnit (swap getKey InvertedPrefixes) PrefixInput)::Set String,
+	// PrefixMatches = flattenUnitSet (bindUnit (swap getKey InvertedPrefixes) PrefixInput)::Set String,
+	PrefixMatches = rangeByKey PrefixInput (mapUnit nextWord PrefixInput) Terms::Set String,
+	
 	
 	SearchInput = mapUnit ProcessWord EnteredInput,
 	SearchResults = bindUnit (swap getKey InvertedIndex) SearchInput,
 	
-	GetLengths = S -> oneTo (StringLength S) :: String -> Set Number,
-	GetPrefixes = S -> mapSet (SubString S) (GetLengths S) :: String -> Set String,
-	Prefixes = buildMap GetPrefixes Terms ::Map String (Set String),
-	InvertedPrefixes = invert Prefixes,
+	// GetLengths = S -> oneTo (StringLength S) :: String -> Set Number,
+	// GetPrefixes = S -> mapSet (SubString S) (GetLengths S) :: String -> Set String,
+	// Prefixes = buildMap GetPrefixes Terms ::Map String (Set String),
+	// InvertedPrefixes = invert Prefixes,
 	
 	
 	// ==============================================================
@@ -134,52 +141,60 @@ template () {
 			<f:each KeyCode as KeyCode><div>
 				KeyCode: {KeyCode}
 			</div></f:each>
-			<f:each SelectedTerm as SelectedTerm>
-				<div>
-					SelectedTerm: {SelectedTerm}
-				</div>
+			// <f:each SelectedTerm as SelectedTerm>
+			// 	<div>
+			// 		SelectedTerm: {SelectedTerm}
+			// 	</div>
+			// </f:each>
+			<f:each FreshInputValue as InputValue>
+				<input type="text" value="{InputValue}">
+					<f:on blur>
+						add(RawPrefixInput, "")
+					</f:on>
+					<f:on keyup>
+						extract boolToUnit (or (or (equal event.keyCode 8) (equal event.keyCode 46)) (and (greaterThan event.keyCode 64) (lessThan event.keyCode 123))) as _ {
+							add(RawPrefixInput, event.value),
+							remove(SelectedTerm)
+						}
+					</f:on>
+					<f:on keydown>
+						extract boolToUnit (equal event.keyCode 40) as _ {
+							nextTerm = extract getNext PrefixMatches SelectedTerm,
+							add(SelectedTerm, nextTerm)
+						},
+						extract boolToUnit (equal event.keyCode 38) as _ {
+							prevTerm = extract getPrev PrefixMatches SelectedTerm,
+							add(SelectedTerm, prevTerm)
+						},
+						extract boolToUnit (equal event.keyCode 13) as _ {
+							extract SelectedTerm as SelectedTerm{
+								add(EnteredInput, SelectedTerm),
+								add(FreshInputValue, SelectedTerm)
+							},
+							extract reactiveNot SelectedTerm as _{
+								add(EnteredInput, event.value)
+							},
+							add(RawPrefixInput, ""),
+							remove(SelectedTerm)
+						}
+					</f:on>
+				</input>
 			</f:each>
-			<input type="text" value="{SelectedTerm}"></input>
-			<input type="text">
-				<f:on blur>
-					add(EnteredInput, event.value),
-					add(RawPrefixInput, "")
-				</f:on>
-				<f:on keyup>
-					add(KeyCode, event.keyCode),
-					extract boolToUnit (equal event.keyCode 40) as _ {
-						nextTerm = extract getNext PrefixMatches SelectedTerm,
-						add(SelectedTerm, nextTerm)
-					},
-					extract boolToUnit (equal event.keyCode 38) as _ {
-						prevTerm = extract getPrev PrefixMatches SelectedTerm,
-						add(SelectedTerm, prevTerm)
-					},
-					extract boolToUnit (or (equal event.keyCode 8) (and (greaterThan event.keyCode 64) (lessThan event.keyCode 123))) as _ {
-						add(RawPrefixInput, event.value),
-						remove(SelectedTerm)
-					},
-					extract boolToUnit (equal event.keyCode 13) as _ {
-						extract SelectedTerm as SelectedTerm{
-							add(EnteredInput, SelectedTerm)
-						},
-						extract reactiveNot SelectedTerm as _{
-							add(EnteredInput, event.value)
-						},
-						remove(RawPrefixInput),
-						remove(SelectedTerm)
-					},
-				</f:on>
-			</input>
 			<div style="position:relative; top: 0; width:155; background-color:rgb(68, 170, 255)">
-				<f:call>DrawPrefixMatches PrefixMatches</f:call>
+				<f:call>
+					if reactiveNot (bindUnit (a -> boolToUnit (equal "" a)) RawPrefixInput) as _ {
+						DrawPrefixMatches PrefixMatches
+					} else {
+						<div />
+					}
+				</f:call>
 			</div>
 			<div style="position:relative; top: 100; width:200">
 				<div style="font-size:18; color:teal">Results</div>
 				<f:each SearchResults as SearchResults>
 					<f:call>DrawSet SearchResults</f:call>
 				</f:each>
-			</div>		
+			</div>	
 		</div>
 	</div>
 }
