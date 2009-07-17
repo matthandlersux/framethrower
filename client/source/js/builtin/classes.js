@@ -34,7 +34,8 @@ var classesToMake = {
 		prop: {
 			"type": "Situation",
 			"instance": "Situation",
-			"container": "Map Ord Pipe",
+			//"container": "Map Ord Pipe",
+			"container": "Unit (List Pipe)",
 			"contains": "Set Pipe",
 			"truth": "Unit Number"
 		}

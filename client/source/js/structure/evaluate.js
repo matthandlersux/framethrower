@@ -45,6 +45,7 @@ function evaluate2(expr) {
 			
 			// check if input is an actionRef and fun is an object converter or property accessor
 			if (input.kind === "actionRef" && isObjectFun(fun)) {
+			//if (input.kind === "actionRef") {
 				return {
 					kind: "actionRef",
 					type: resultType,
@@ -116,5 +117,7 @@ function evaluateAndInject(expr, depender, func) {
 function isObjectFun(fun) {
 	// TODO: would be nicer if this didn't check based on the name
 	var name = stringify(fun);
+	// TODO: this is definitely not the correct solution at this point.. rethink what an actionRef is supposed to be
+	if (name === "fst" || name === "snd") return true;
 	return name.indexOf(" ") === -1 && (name.indexOf(":") !== -1 || name.indexOf("~") !== -1);
 }

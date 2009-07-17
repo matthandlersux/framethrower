@@ -32,6 +32,7 @@ var includes = (function () {
 			"source/js/builtin/builtin.js",
 			"source/js/builtin/functions/null.js",
 			"source/js/builtin/functions/ord.js",
+			"source/js/builtin/functions/tuple.js",
 			"source/js/builtin/functions/list.js",
 			"source/js/builtin/functions/utility.js",
 			"source/js/builtin/functions/cells.js",
