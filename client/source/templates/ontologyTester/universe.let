@@ -114,7 +114,7 @@ universe = state {
 	
 	
 	mrClonePair = createClone mr mressay nil,
-	//mrVideoClonePair = createClone mrvideo (fst mrClonePair) (snd mrClonePair),
+	mrVideoClonePair = createClone mrvideo (fst mrClonePair) (snd mrClonePair),
 	
 	
 	
