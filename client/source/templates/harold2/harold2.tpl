@@ -112,10 +112,6 @@ template () {
 				// </f:each>
 				
 				<div style-position="absolute" style-left="{unitsToPixels currentSpace}" style-width="1" style-height="50" style-background="#fff"/>
-				
-				{loadedTimeS}
-				{zoomLevelS}
-				{currentTimeS}
 			</div>
 		</f:wrapper>
 	</f:each></f:each></f:each></f:each></f:each>
