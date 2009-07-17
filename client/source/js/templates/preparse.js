@@ -25,10 +25,13 @@ function preparse(template) {
 		template.type = parseType(template.type);
 	} else if (kind === "actionCreate") {
 		template.type = parseType(template.type);
+		template.prop = map(template.prop, parse);
 	} else if (kind === "actionUpdate") {
 		template.target = parse(template.target);
 		template.key = template.key ? parse(template.key) : undefined;
 		template.value = template.value ? parse(template.value) : undefined;
+	} else if (kind === "extract") {
+		template.select = parse(template.select);
 	} else if (kind === "case") {
 		template.test = parse(template.test);
 	} else if (kind === "for-each") {

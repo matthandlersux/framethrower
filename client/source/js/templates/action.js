@@ -78,8 +78,8 @@ function makeActionClosure(lineAction, env) {
 					kind: "instructionCreate",
 					//type: parseType(action.type),
 					type: action.type,
-					prop: map(action.prop, function (expr) {
-						return evaluate(parseExpression(parse(expr), envWithParams));
+					prop: map(action.prop, function (ast) {
+						return evaluate(parseExpression(ast, envWithParams));
 					}),
 					label: localIds()
 				};
@@ -111,7 +111,7 @@ function makeActionClosure(lineAction, env) {
 				}
 				var ret = ({
 					kind: "instructionExtract",
-					select: parseExpression(parse(action.select), envWithParams),
+					select: parseExpression(action.select, envWithParams),
 					inner: inner
 				});
 				instructions.push(ret);
