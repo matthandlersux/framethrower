@@ -34,7 +34,8 @@ var classesToMake = {
 		prop: {
 			"type": "Situation",
 			"instance": "Situation",
-			"container": "Map Ord Pipe",
+			//"container": "Map Ord Pipe",
+			"container": "Unit (List Pipe)",
 			"contains": "Set Pipe",
 			"truth": "Unit Number"
 		}
@@ -60,7 +61,9 @@ var classesToMake = {
 		prop: {
 			"content": "XMLP",
 			"x": "Number",
-			"y": "Number"			
+			"y": "Number",
+			"width": "Number",
+			"height": "Number" // this should be treated as minimum height
 		}
 	},
 	

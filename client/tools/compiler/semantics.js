@@ -583,7 +583,8 @@ var semantics = function(){
 		function makeInsert (node) {
 			return {
 				kind: "insert",
-				expr: node.expr.exprcode
+				expr: node.expr.exprcode,
+				debugRef: node.debugRef
 			};
 		}
 
@@ -646,11 +647,13 @@ var semantics = function(){
 		}
 
 
-		function makeTextNode (text) {
+		function makeTextNode (node) {
+			var text = node.xmltext;
 			function makeTextElement (nodeVal) {
 				return {
 					kind: "textElement",
-					nodeValue: nodeVal
+					nodeValue: nodeVal,
+					debugRef: node.debugRef
 				};
 			}
 
@@ -668,7 +671,7 @@ var semantics = function(){
 				if (first.length > 0) {
 					output.push(makeTextElement(first));
 				}
-				output.push(makeTextElement(makeInsert({expr: {exprcode: insert}})));
+				output.push(makeTextElement(makeInsert({expr: {exprcode: insert}, debugRef: node.debugRef})));
 				index = text.indexOf('{');
 			}
 			return output;
@@ -676,7 +679,7 @@ var semantics = function(){
 
 
 
-		function makeXmlKind (name, node) {
+		function makeXmlKind (name, node, parentNode) {
 			switch(name){
 				case 'foreach':
 					return makeForeach(node);
@@ -689,13 +692,13 @@ var semantics = function(){
 				case 'tag':
 					return makeTag(node);
 				case 'xmltext':
-					return makeTextNode(node);
+					return makeTextNode(parentNode);
 			}
 		}
 		var result;
 		forEach(node, function(value, nodeName) {
 			if (nodeName !== 'debugRef') {
-				result = makeXmlKind(nodeName, value);
+				result = makeXmlKind(nodeName, value, node);
 			}
 		});
 		return result;
@@ -729,7 +732,7 @@ var semantics = function(){
 				value.arglist = [];
 				return makeLineTemplate(value);
 			case 'ifblock':
-				return {kind: "lineExpr", expr: makeIfblock(value), debugRef: value.debugRef};
+				return {kind: "lineXML", xml:makeIfblock(value), debugRef: value.debugRef};
 			case 'xml':
 				return {kind:'lineXML', xml:makeXml(value)};
 		}
@@ -777,7 +780,9 @@ var semantics = function(){
 			}
 			
 			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('function') || startsWith('xmltext')) {
-				tree[nodeName] = stripSpaces(makeString(value, nodeName));
+				var string = makeString(value, nodeName);
+				lineNum += lineBreakCount(string);
+				tree[nodeName] = stripSpaces(string);
 			} else {
 				if(objectLike(value)) {
 					handleWhiteSpace(value);

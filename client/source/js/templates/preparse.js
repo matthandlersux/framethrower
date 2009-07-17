@@ -25,17 +25,20 @@ function preparse(template) {
 		template.type = parseType(template.type);
 	} else if (kind === "actionCreate") {
 		template.type = parseType(template.type);
+		template.prop = map(template.prop, parse);
 	} else if (kind === "actionUpdate") {
 		template.target = parse(template.target);
 		template.key = template.key ? parse(template.key) : undefined;
 		template.value = template.value ? parse(template.value) : undefined;
+	} else if (kind === "extract") {
+		template.select = parse(template.select);
 	} else if (kind === "case") {
 		template.test = parse(template.test);
 	} else if (kind === "for-each") {
 		template.select= parse(template.select);
 	} else if (kind === "trigger") {
 		template.trigger = parse(template.trigger);
-	} else if (kind === "when") {
+	} else if (kind === "when") { // TODO does when actually exist?
 		template.test = parse(template.test);
 	} else if (kind === "insert") {
 		template.expr = parse(template.expr);
@@ -44,37 +47,4 @@ function preparse(template) {
 	if (arrayLike(template) || objectLike(template)) {
 		forEach(template, preparse);
 	}
-}
-
-
-
-
-/*
-this function takes an AST (ie: as returned by parse()) and returns an AST
-	where all instances of fetch have been removed and various mapUnit's have been added.
-examples:
-	fetch x => x			[ or maybe this should be: mU1 (x0 -> x0) x ]
-	plus (fetch x) 6 => mU1 (x0 -> plus x0 6) x
-	plus (fetch x) (fetch y) => mU2 (x0 -> x1 -> plus x0 x1) x y
-	plus (fetch x) (fetch x) => mU1 (x0 -> plus x0 x0) x
-	plus (plus (fetch x) 6) 8 => mU1 (x0 -> plus (plus x0 6) 8) x
-
-Notice that if expr has type a, then the removeFetch version of expr will have type Unit (Unit (... (Unit a))) where the number of Unit's is equal to the number of nested fetch's.
-But in practice, I don't expect to ever see more than one layer of fetch's
-*/
-function removeFetch(ast) {
-	
-}
-
-
-/*
-this function goes through the template tree (see doc/template semantics.txt)
-it keeps an environment mapping words (VTCs) to their expressions, but only if the expressions have fetch
-whenever it encounters a new expression, it checks to see if it has fetch or makes reference to a word that has fetch
-	if so, it replaces the word(s) with its expression(s) in the env, and replaces the expression in the template tree with its removeFetch'ed version
-*/
-function desugarFetch(template, env) {
-	if (!env) env = falseEnv; // or maybe, to be clever, the starting environment should just be the word "fetch" mapped to "fetch"
-
-	
 }

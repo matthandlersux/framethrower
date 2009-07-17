@@ -32,6 +32,8 @@ var includes = (function () {
 			"source/js/builtin/builtin.js",
 			"source/js/builtin/functions/null.js",
 			"source/js/builtin/functions/ord.js",
+			"source/js/builtin/functions/tuple.js",
+			"source/js/builtin/functions/list.js",
 			"source/js/builtin/functions/utility.js",
 			"source/js/builtin/functions/cells.js",
 			"source/js/builtin/functions/serialize.js",
@@ -44,7 +46,8 @@ var includes = (function () {
 
 			"source/js/remote/remote.js",
 			
-			"source/js/templates/preparse.js" // might want to do this at compile time?
+			"source/js/templates/preparse.js", // might want to do this at compile time?
+			"source/js/templates/fetch.js"
 		],
 		browser: [
 			"source/js/external/firebugx.js",

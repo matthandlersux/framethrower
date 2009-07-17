@@ -31,5 +31,8 @@ function setNodeAttribute(node, attName, attValue) {
 	if (attName === "contentEditable" && attValue === "true") {
 		node.contentEditable = true;
 	}
+	if (attName === "value") {
+		node.value = attValue;
+	}
 }
 

@@ -1,10 +1,19 @@
 template () {
+	// ==============================================================
+	// Util Functions
+	// ==============================================================	
 	
+	StringLength = function(s::String)::Number {
+		return s.length
+	},
+	
+	SubString = function(s::String, l::Number)::String {
+		return s.substr(0, l);
+	},
 	
 	// ==============================================================
 	// Population Init
 	// ==============================================================
-	
 	
 	Docs = state {
 		Docs = create(Set String),
@@ -13,6 +22,20 @@ template () {
 		add(Docs, "Michael Corleone: My father is no different than any powerful man, any man with power, like a President or senator. Kay Adams: Do you know how naive you sound, Michael? Presidents and senators don't have men killed. Michael Corleone: Oh. Who's being naive, Kay? 'The Godfather'"),
 		Docs
 	},
+
+	// ==============================================================
+	// UI State
+	// ==============================================================
+	
+	RawPrefixInput = state(Unit String, ""),
+	EnteredInput = state(Unit String, ""),
+	FreshInputValue = state(Unit String, ""),
+	SelectedTerm = state(Unit String),
+	KeyCode = state(Unit String, ""),
+	
+	// ==============================================================
+	// Build Indices
+	// ==============================================================
 	
 	ParseWords = function (s::String)::Set String {
 		var input = s.replace(/[^A-Z^a-z^ ]*/g, "");
@@ -32,6 +55,33 @@ template () {
 	
 	Terms = keys InvertedIndex,
 	
+	
+	// ==============================================================
+	// Search
+	// ==============================================================
+	
+	nextWord = function (word::String)::String {
+		return word + "z";
+	},
+	
+	PrefixInput = mapUnit ProcessWord RawPrefixInput,
+	// PrefixMatches = flattenUnitSet (bindUnit (swap getKey InvertedPrefixes) PrefixInput)::Set String,
+	PrefixMatches = rangeByKey PrefixInput (mapUnit nextWord PrefixInput) Terms::Set String,
+	
+	
+	SearchInput = mapUnit ProcessWord EnteredInput,
+	SearchResults = bindUnit (swap getKey InvertedIndex) SearchInput,
+	
+	// GetLengths = S -> oneTo (StringLength S) :: String -> Set Number,
+	// GetPrefixes = S -> mapSet (SubString S) (GetLengths S) :: String -> Set String,
+	// Prefixes = buildMap GetPrefixes Terms ::Map String (Set String),
+	// InvertedPrefixes = invert Prefixes,
+	
+	
+	// ==============================================================
+	// Draw functions
+	// ==============================================================
+
 	DrawIndex = template (Index::Map String (Set String)) {
 		<f:each Index as Key, Value>
 			<div style="position:relative; left:5">
@@ -51,37 +101,23 @@ template () {
 				{Value}
 			</div>
 		</f:each>
-	},	
-	
-	RawSearchInput = state(Unit String, ""),
-	SearchInput = mapUnit ProcessWord RawSearchInput,
-	
-	PrefixMatches = bindUnit (swap getKey InvertedPrefixes) SearchInput,
-	
-	StringLength = function(s::String)::Number {
-		return s.length
 	},
 	
-	SubString = function(s::String, l::Number)::String {
-		return s.substr(0, l);
+	DrawPrefixMatches = template (Matches::Set String) {
+		<f:each Matches as Match>
+			if bindUnit boolToUnit (mapUnit (equal Match) SelectedTerm) as _ {
+				<div style="position:relative; padding-top:10; padding-left:5; background-color:teal">
+					{Match}
+				</div>
+			} else {
+				<div style="position:relative; padding-top:10; padding-left:5">
+					{Match}
+				</div>
+			}
+		</f:each>
 	},
-	
-	TestString = "TestString",
-	
-	Prefixes = {
-		Lengths = oneTo (StringLength TestString),
-		mapSet (SubString TestString) Lengths,
-	},
-	
-	GetLengths = S -> oneTo (StringLength S) :: String -> Set Number,
-	GetPrefixes = S -> mapSet (SubString S) (GetLengths S) :: String -> Set String,
-	Prefixes = buildMap GetPrefixes Terms ::Map String (Set String),
-	InvertedPrefixes = invert Prefixes,
-	
-	
-	// ==============================================================
-	// Draw it
-	// ==============================================================
+
+
 	
 	<div style="position:absolute" style-height="400px">
 		<div style="position:absolute; top: 0; left:0; width:600">
@@ -102,16 +138,63 @@ template () {
 		// </div>
 		<div style="position:absolute; top: 0; left:800; width:200">
 			<div style="font-size:18; color:teal">Search</div>
-			<input type="text">
-				<f:on keydown>
-					add(RawSearchInput, event.value)
-				</f:on>
-			</input>
+			<f:each KeyCode as KeyCode><div>
+				KeyCode: {KeyCode}
+			</div></f:each>
+			// <f:each SelectedTerm as SelectedTerm>
+			// 	<div>
+			// 		SelectedTerm: {SelectedTerm}
+			// 	</div>
+			// </f:each>
+			<f:each FreshInputValue as InputValue>
+				<input type="text" value="{InputValue}">
+					<f:on blur>
+						add(RawPrefixInput, "")
+					</f:on>
+					<f:on keyup>
+						extract boolToUnit (or (or (equal event.keyCode 8) (equal event.keyCode 46)) (and (greaterThan event.keyCode 64) (lessThan event.keyCode 123))) as _ {
+							add(RawPrefixInput, event.value),
+							remove(SelectedTerm)
+						}
+					</f:on>
+					<f:on keydown>
+						extract boolToUnit (equal event.keyCode 40) as _ {
+							nextTerm = extract getNext PrefixMatches SelectedTerm,
+							add(SelectedTerm, nextTerm)
+						},
+						extract boolToUnit (equal event.keyCode 38) as _ {
+							prevTerm = extract getPrev PrefixMatches SelectedTerm,
+							add(SelectedTerm, prevTerm)
+						},
+						extract boolToUnit (equal event.keyCode 13) as _ {
+							extract SelectedTerm as SelectedTerm{
+								add(EnteredInput, SelectedTerm),
+								add(FreshInputValue, SelectedTerm)
+							},
+							extract reactiveNot SelectedTerm as _{
+								add(EnteredInput, event.value)
+							},
+							add(RawPrefixInput, ""),
+							remove(SelectedTerm)
+						}
+					</f:on>
+				</input>
+			</f:each>
 			<div style="position:relative; top: 0; width:155; background-color:rgb(68, 170, 255)">
-				<f:each PrefixMatches as PrefixMatches>
-					<f:call>DrawSet PrefixMatches</f:call>
+				<f:call>
+					if reactiveNot (bindUnit (a -> boolToUnit (equal "" a)) RawPrefixInput) as _ {
+						DrawPrefixMatches PrefixMatches
+					} else {
+						<div />
+					}
+				</f:call>
+			</div>
+			<div style="position:relative; top: 100; width:200">
+				<div style="font-size:18; color:teal">Results</div>
+				<f:each SearchResults as SearchResults>
+					<f:call>DrawSet SearchResults</f:call>
 				</f:each>
-			</div>			
+			</div>	
 		</div>
 	</div>
 }

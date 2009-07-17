@@ -98,6 +98,7 @@ Proof:
 	addFun("ordSmaller", "Ord -> Ord", ordSmaller);
 	addFun("ordBetween", "Ord -> Ord -> Ord", ordBetween);
 	addFun("numToOrd", "Number -> Ord", numToOrd);
-	addFun("ordOrigin", "Ord", ordOrigin);
+	//addFun("ordOrigin", "Ord", ordOrigin);
+	base.add("ordOrigin", ordOrigin);
 	
 })();

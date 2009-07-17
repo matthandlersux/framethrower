@@ -28,10 +28,11 @@
 			var end;
 
 			var updateRange = function () {
-				if (start != undefined && end != undefined) {
+				if (start !== undefined && end !== undefined) {
 					setRangeFunc(start, end);
-				} else if (start == undefined && end == undefined) {
-					outputCell.clearRange();
+				} else if (start === undefined && end === undefined) {
+					// TODO: figure out another way to do this
+					// outputCell.clearRange();
 				}
 			};
 			outputCell.leash();
@@ -437,6 +438,58 @@
 						};
 					});
 					return outputCell;				
+				}
+			},
+			getNext: { //Note: this is not reactive... should only be used in actions
+				type: "Set a -> Unit a -> Unit a",
+				func: function (setCell, elementCell) {
+					var element = elementCell.getState()[0];
+
+					var outputCell = makeCell();
+					setCell.makeSorted();
+					
+					var index;
+					if (element !== undefined) {
+						index = setCell.getNearestIndexLeft(element);
+						if (index+1 < setCell.getLength()) {
+							value = setCell.getKeyByIndex(index+1);
+						} else {
+							value = setCell.getKeyByIndex(index);
+						}
+					} else {
+						value = setCell.getKeyByIndex(setCell.getFirstIndex());
+					}
+					if (value !== undefined) {
+						outputCell.addLine(value);
+					}
+
+					return outputCell;
+				}
+			},
+			getPrev: { //Note: this is not reactive... should only be used in actions
+				type: "Set a -> Unit a -> Unit a",
+				func: function (setCell, elementCell) {
+					var element = elementCell.getState()[0];
+					
+					var outputCell = makeCell();
+					setCell.makeSorted();
+					
+					var index;
+					if (element !== undefined) {
+						index = setCell.getNearestIndexRight(element);
+						if (index-1 >= 0) {
+							value = setCell.getKeyByIndex(index-1);
+						} else {
+							value = setCell.getKeyByIndex(index);
+						}
+					} else {
+						value = setCell.getKeyByIndex(setCell.getFirstIndex());
+					}
+					if (value !== undefined) {
+						outputCell.addLine(value);
+					}
+
+					return outputCell;
 				}
 			},
 			getPosition: {

@@ -43,17 +43,6 @@ function evaluate2(expr) {
 			
 			var resultType = GLOBAL.typeCheck ? getType(expr) : undefined;
 			
-			// check if input is an actionRef and fun is an object converter or property accessor
-			if (input.kind === "actionRef" && isObjectFun(fun)) {
-				return {
-					kind: "actionRef",
-					type: resultType,
-					name: stringify(expr),
-					left: fun,
-					right: input
-				};
-			}
-			
 			var ret = fun.fun(input);
 
 			if (typeof ret === "function") {
@@ -108,13 +97,3 @@ function evaluateAndInject(expr, depender, func) {
 	return e.inject(depender, func);
 }
 
-
-
-
-
-
-function isObjectFun(fun) {
-	// TODO: would be nicer if this didn't check based on the name
-	var name = stringify(fun);
-	return name.indexOf(" ") === -1 && (name.indexOf(":") !== -1 || name.indexOf("~") !== -1);
-}

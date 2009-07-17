@@ -6,4 +6,4 @@ var nullObject = {
 	outsideScope: 0
 };
 
-addFun("null", "Null", nullObject);
+base.add("null", nullObject);
