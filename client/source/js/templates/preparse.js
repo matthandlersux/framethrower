@@ -38,8 +38,6 @@ function preparse(template) {
 		template.select= parse(template.select);
 	} else if (kind === "trigger") {
 		template.trigger = parse(template.trigger);
-	} else if (kind === "when") { // TODO does when actually exist?
-		template.test = parse(template.test);
 	} else if (kind === "insert") {
 		template.expr = parse(template.expr);
 	}
