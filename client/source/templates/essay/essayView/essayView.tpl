@@ -11,13 +11,13 @@ template () {
 	videoTimelineExpandedHeight = 180,
 	videoTimelineCollapsedHeight = 16,
 	
-	// videoTimelinesTotalHeight = {
-	// 	numExpandedU = length (filter (compose reactiveNot VideoTimeline:collapsed) videoTimelines),
-	// 	numCollapsedU = length (filter VideoTimeline:collapsed videoTimelines),
-	// 	numExpanded = fetch numExpandedU,
-	// 	numCollapsed = fetch numCollapsedU,
-	// 	plus (multiply numExpanded videoTimelineExpandedHeight) (multiply numCollapsed videoTimelineCollapsedHeight)
-	// },
+	videoTimelinesTotalHeight = {
+		numExpandedU = length (filter (compose reactiveNot VideoTimeline:collapsed) videoTimelines),
+		numCollapsedU = length (filter VideoTimeline:collapsed videoTimelines),
+		numExpanded = fetch numExpandedU,
+		numCollapsed = fetch numCollapsedU,
+		plus (multiply numExpanded videoTimelineExpandedHeight) (multiply numCollapsed videoTimelineCollapsedHeight)
+	},
 
 	
 	<div>

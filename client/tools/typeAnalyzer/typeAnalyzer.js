@@ -145,29 +145,31 @@ function typeAnalyze(line) {
 				staticAnalysisError("Expr is not the annotated type. Annotated type is: `"+unparseType(line.type)+"` but actual type is: `"+unparseType(type)+"`" + extraInfo);
 			}
 		} else if (line.kind === "lineTemplate") {
-			type = line.type;
+			if (line.type !== undefined) {
+				type = line.type;
 
-			var scope = {};
-			var typeArray = typeCurriedToArray(type);
-			forEach(line.params, function (param, i) {
-				scope[param] = makePlaceholder(typeArray[i]);
-			});
-			var envWithParams = extendEnv(env, scope);
+				var scope = {};
+				var typeArray = typeCurriedToArray(type);
+				forEach(line.params, function (param, i) {
+					scope[param] = makePlaceholder(typeArray[i]);
+				});
+				var envWithParams = extendEnv(env, scope);
 
-			var newEnv = addLets(line.let, envWithParams);
-			let = {};
-			forEach(line.let, function (junk, name) {
-				let[name] = newEnv(name);
-				//console.log("did a let", name, unparseType(getType(let[name])));
-			});
-			extra.let = let;
+				var newEnv = addLets(line.let, envWithParams);
+				let = {};
+				forEach(line.let, function (junk, name) {
+					let[name] = newEnv(name);
+					//console.log("did a let", name, unparseType(getType(let[name])));
+				});
+				extra.let = let;
 
-			// check that output matches the output type (XMLP)
-			var outputAnalysis = staticTypeAnalysis(line.output, newEnv);
-			extra.output = outputAnalysis;
-			if (!compareTypes(outputAnalysis.type, typeArray[typeArray.length - 1])) {
-				var extraInfo = line.output.kind === "lineExpr" ? "\nwith `"+unparse(line.output.expr)+"`\n\n"+getWordsTypes(line.output.expr, newEnv) : "";
-				staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got `"+unparseType(outputAnalysis.type)+"`" + extraInfo);
+				// check that output matches the output type (XMLP)
+				var outputAnalysis = staticTypeAnalysis(line.output, newEnv);
+				extra.output = outputAnalysis;
+				if (!compareTypes(outputAnalysis.type, typeArray[typeArray.length - 1])) {
+					var extraInfo = line.output.kind === "lineExpr" ? "\nwith `"+unparse(line.output.expr)+"`\n\n"+getWordsTypes(line.output.expr, newEnv) : "";
+					staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got `"+unparseType(outputAnalysis.type)+"`" + extraInfo);
+				}
 			}
 
 		} else if (line.kind === "lineJavascript") {

@@ -452,14 +452,19 @@ var semantics = function(){
 			typeString += "XMLP";
 		}
 
-		return {
+		var ret = {
 			kind: "lineTemplate",
 			params: paramList,
-			type: typeString,
 			let: lets,
 			output: output,
 			debugRef: node.debugRef
 		};
+
+		if (typeString !== undefined) {
+			ret.type = typeString;
+		}
+
+		return ret;
 	}
 	
 	function makeState(node) {
