@@ -29,10 +29,14 @@ function desugarFetch(template, env) {
 		}
 
 		desugarFetch(template.output,env);
+		// TODO what if output is fetched? e.g. if this lineTemplate is in an f:call?
+		// let parent worry about it.
 
 		// we don't want to forEach() on this, since we've already taken care of everything:
 		return;
-	} else if (kind === "lineAction") {
+	}
+	
+	else if (kind === "lineAction") {
 		env = envMinus(env, template.params);
 
 		// go through actions, recursing on each, remembering (and destroying) any fetched lineExprs,
@@ -51,9 +55,10 @@ function desugarFetch(template, env) {
 				env = envAdd(env, v, false);
 		}
 
-		// we don't want to forEach() on this, since we've already taken care of everything:
 		return;
-	} else if (kind === "lineExpr") {
+	}
+	
+	else if (kind === "lineExpr") {
 		// make any fetches explicit and then desugar unfetches:
 		template.expr = desugarUnfetch( substitute(template.expr, env) );
 	}
@@ -63,7 +68,8 @@ function desugarFetch(template, env) {
 			template.prop[i] = desugarUnfetch( substitute(template.prop[i], env) );
 			disallowFetch(template.prop[i], template);
 		}
-	} else if (kind === "actionUpdate") {
+	}
+	else if (kind === "actionUpdate") {
 		template.target = desugarUnfetch( substitute(template.target, env) );
 		disallowFetch(template.target, template);
 		if(template.key) {
@@ -75,17 +81,20 @@ function desugarFetch(template, env) {
 			disallowFetch(template.value, template);
 		}
 	}
-	
 	else if (kind === "extract") {
 		template.select = desugarUnfetch( substitute(template.select, env) );
 		disallowFetch(template.select, template);
-	} else if (kind === "case") {
+	}
+	
+	else if (kind === "case") {
 		template.test = desugarUnfetch( substitute(template.test, env) );
 		disallowFetch(template.test, template);
-	} else if (kind === "for-each") {
+	}
+	else if (kind === "for-each") {
 		template.select = desugarUnfetch( substitute(template.select, env) );
 		disallowFetch(template.select, template);
-	} else if (kind === "trigger") {
+	}
+	else if (kind === "trigger") {
 		template.trigger = desugarUnfetch( substitute(template.trigger, env) );
 		disallowFetch(template.trigger, template);
 	}
@@ -118,7 +127,7 @@ function envMinus(env, vars) {
 
 function disallowFetch(ast, template) {
 	if(hasVariable(ast, fetchEnv))
-		console.error("fetched expression", JSONtoString(ast), "not supported in template", JSONtoString(template));
+		console.error("the fetched expression ("+unparse(ast)+") is not supported in the context: "+JSONtoString(template));
 }
 
 /*
@@ -134,7 +143,7 @@ function unfetch(ast) {
 	ast = makeAppliesAST(ast, vals);
 	
 	if(vars.length===0)
-		console.warn("unfetch applied to fetch-less ast:", JSONtoString(ast));
+		console.warn("unfetch applied to fetch-less expression ("+unparse(ast)+")");
 
 	return ast;
 }
