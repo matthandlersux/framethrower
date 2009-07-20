@@ -649,6 +649,7 @@ var semantics = function(){
 
 		function makeTextNode (node) {
 			var text = node.xmltext;
+			
 			function makeTextElement (nodeVal) {
 				return {
 					kind: "textElement",
@@ -673,6 +674,9 @@ var semantics = function(){
 				}
 				output.push(makeTextElement(makeInsert({expr: {exprcode: insert}, debugRef: node.debugRef})));
 				index = text.indexOf('{');
+			}
+			if (text.length > 0) {
+				output.push(makeTextElement(text));
 			}
 			return output;
 		}

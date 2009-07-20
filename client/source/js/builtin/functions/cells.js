@@ -492,43 +492,101 @@
 					return outputCell;
 				}
 			},
-			getPosition: {
-				type: "a -> Set a -> Unit Number", // TODO: add to server
-				func: function (element, cell) {
+			
+			getByPosition: {
+				type: "Number -> Set a -> Unit a",
+				func: function (index, cell) {
 					var outputCell = makeCell();
-
 					cell.makeSorted();
-
-					var current = null;
+					var current;
+					var active = false;
 					function update() {
-						var a = cell.getState();
-						var found = false;
-						forEach(a, function (x, i) {
-							if (x === element) {
-								found = true;
-								if (current !== i) {
-									if (current !== null) {
-										outputCell.removeLine(current);						
-									}
-									outputCell.addLine(i);
-									current = i;								
+						if (active) {
+							var a = cell.getKeyByIndex(index);
+							if (current !== a) {
+								if (current !== undefined) {
+									outputCell.removeLine(current);						
 								}
-							}
-						});
-						if (!found) {
-							if (current !== null) {
-								outputCell.removeLine(current);
-								current = null;
+								outputCell.addLine(a);
+								current = a;
 							}
 						}
 					}
 					cell.inject(outputCell, function (val) {
-						update();
+						update(); 
 						return update;
+					});
+					cell.injectDependency(function () {
+						active = true;
+						update();
 					});
 					return outputCell;
 				}
 			},
+			
+			getPosition: {
+				type: "a -> Set a -> Unit Number", // TODO: add to server
+				func: function (element, cell) {
+					var outputCell = makeCell();
+					cell.makeSorted();
+					var current;
+					var active = false;
+					
+					function update() {
+						if(active) {
+							var a = cell.getIndex(element);
+							if (current !== a) {
+								if (current !== undefined) {
+									outputCell.removeLine(current);						
+								}
+								outputCell.addLine(a);
+								current = a;
+							}
+						}
+					}
+					cell.inject(outputCell, function (val) {
+						update(); 
+						return update;
+					});
+					cell.injectDependency(function () {
+						active = true;
+						update();
+					});
+					return outputCell;
+				}
+			},
+
+			getFirstIndex: {
+				type: "Set a -> Unit Number",
+				func: function (cell) {
+					var outputCell = makeCell();
+					cell.makeSorted();
+					var current;
+					var active = false;
+					function update() {
+						if(active) {
+							var a = cell.getFirstIndex();
+							if (current !== a) {
+								if (current !== undefined) {
+									outputCell.removeLine(current);						
+								}
+								outputCell.addLine(a);
+								current = a;
+							}
+						}
+					}
+					cell.inject(outputCell, function (val) {
+						update(); 
+						return update;
+					});
+					cell.injectDependency(function () {
+						active = true;
+						update();
+					});
+					return outputCell;
+				}
+			},
+
 			gate: {
 				type: "Unit b -> a -> Unit a",
 				func: function (gatekeeper, passer) {
