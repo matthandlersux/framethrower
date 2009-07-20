@@ -40,8 +40,7 @@ function desugarFetch(template, env) {
 	else if (kind === "lineAction") {
 		env = envMinus(env, template.params);
 
-		// go through actions, recursing on each, remembering (and destroying) any fetched lineExprs,
-		// and desugaring any fetched actions as extracts:
+		// go through actions, recursing on each, remembering (and destroying) any fetched lineExprs:
 		for(i in template.actions) {
 			var v = template.actions[i].name,
 				action = template.actions[i].action;
