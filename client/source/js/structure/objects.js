@@ -1,9 +1,4 @@
 
-
-
-
-
-
 var objects = (function () {
 
 	function isRemoteClass(className) {
@@ -287,27 +282,7 @@ var objects = (function () {
 	return {
 		make: make,
 		addClass: addClass,
-		// actOnProp: function (propName, object, action, key, value) {
-		// 	var prop = accessProperty(object, propName);
-		// 	var expectedType = getType(prop);
-		// 	
-		// 	var constructor = getTypeConstructor(expectedType);
-		// 	if (constructor === "Map"){
-		// 		var keyType = expectedType.left.right;
-		// 		var valueType = expectedType.right;
-		// 		
-		// 		if (keyType.value) key = castObject(key, keyType.value);
-		// 		if (valueType.value) value = castObject(value, valueType.value);
-		// 	} else {
-		// 		var keyType = expectedType.right;
-		// 		if (keyType.value) key = castObject(key, keyType.value);
-		// 	}
-		// 	
-		// 	prop.control[action](key, value);
-		// },
-		//classDefs: classDefs,
 		inherits: inherits,
-		//cast: castObject,
 		isClass: function (className) {
 			return !!classDefs[className];
 		}
