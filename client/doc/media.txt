@@ -5,7 +5,7 @@ Media Queries:
 	
 		http://media.eversplosion.com/media.php?id=__MovieName__&type=__MovieType -> URLOfMovie
 		
-			MovieName :: String (ex: "devise-walle.mp4" refers to "tmp/devise-walle.mp4" on the server) (eventually this will be changed to a MovieId referencing the database and pointing to S3 store)
+			MovieName :: String (ex: "devise-walle" refers to "tmp/devise-walle.mp4" on the server) (eventually this will be changed to a MovieId referencing the database and pointing to S3 store)
 			MovieType :: "scrubber" | "video"
 		
 			extra parameters:

@@ -95,7 +95,8 @@ universe = state {
 	createTimePoint = action (timeline::Situation, pipeFromTimeline::List Pipe, seconds::Number) {
 		tpPair = createClone timelinePoint timeline pipeFromTimeline,
 		tp = fst tpPair,
-		add(Situation:propTime tp, seconds)
+		add(Situation:propTime tp, seconds),
+		tp
 	},
 
 
@@ -103,11 +104,21 @@ universe = state {
 
 	//Moulin Rouge
 	mr = makeSituationNamedIn "Moulin Rouge" universe, 
-	mrvideo = makeSituationNamedIn "MR Video" mr,
+	
+	mrvideo = action () {
+		mrvideo = makeSituationNamedIn "MR Video" mr,
+		extVideo = create(ExtVideo, {id: "moulinrouge", aspectRatio: 1.333, duration: 5033}),
+		add(Situation:propVideo mrvideo, extVideo),
+		mrvideo
+	},
+
 	mrcc = makeSituationNamedIn "MR Closed Captions" mr,
 	movieTomr = makePipe mr movie,
 	videoTomrvideo = makePipeIn1 mrvideo movieVideo movieTomr,
 	ccTomrcc = makePipeIn1 mrcc ccaptions movieTomr, 
+	
+	
+	
 
 	//tedg's Moulin Rouge essay
 	mressay = makeSituationNamedIn "Tedg's Moulin Rouge Essay" universe,
@@ -115,8 +126,9 @@ universe = state {
 	
 	mrClonePair = createClone mr mressay nil,
 	mrVideoClonePair = createClone mrvideo (fst mrClonePair) (snd mrClonePair),
+	mrEssayTimeline = fst mrVideoClonePair,
 	
-	
+	createTimePoint mrEssayTimeline (snd mrVideoClonePair) 306,
 	
 	
 	

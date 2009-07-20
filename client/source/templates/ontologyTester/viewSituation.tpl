@@ -3,6 +3,11 @@ template (sit::Situation) {
 		<div>
 			<b><f:call>linkToSit sit</f:call></b>
 		</div>
+		<div>
+			<f:each Situation:propTime sit as propTime>
+				<div>time: {propTime}</div>
+			</f:each>
+		</div>
 		<div style-marginLeft="10">
 			Parent:
 			<f:each Situation:container sit as container>
