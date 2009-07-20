@@ -661,9 +661,6 @@ var semantics = function(){
 			//deal with inserts in textNodes
 			var index = text.indexOf('{');
 			var output = [];
-			if (index == -1) {
-				output.push(makeTextElement(text));
-			}
 			while(index !== -1) {
 				var rindex = text.indexOf('}');
 				var first = text.substr(0, index);
