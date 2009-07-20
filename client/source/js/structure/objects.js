@@ -141,12 +141,7 @@ var objects = (function () {
 				var propType = parseType(propTypeString);
 				var funcName = className + ":" + propName;
 				
-				var type;
-				if (isReactive(propType)) {
-					type = className + " -> " + "("+propTypeString+")";
-				} else {
-					type = className + " -> " + "Future " + "("+propTypeString+")";
-				}
+				var type = className + " -> " + "("+propTypeString+")";
 				
 				function func(object) {
 					return accessProperty(object, propName);
@@ -229,25 +224,12 @@ var objects = (function () {
 			forEach(def.prop, function (propTypeString, propName) {
 				var propType = parseType(propTypeString); // TODO: memoize this?
 				var instanceValue = props[propName];
-				if (isReactive(propType)) {
-					if (instanceValue === undefined) {
-						// fill in with an empty controlled cell
-						obj.prop[propName] = makeCC(propType);
-						obj.prop[propName].setDone();
-					} else {
-						// check type
-						if (GLOBAL.typeCheck && !compareTypes(getType(instanceValue), propType)) {
-							debug.error("Property type mismatch. Expected `"+propTypeString+"` but got `"+unparseType(getType(instanceValue))+"`");
-						}
-						// TODO: I don't think the makeFuture is right here, but it's what is expected when passing around Unit JS's.
-						//obj.prop[propName] = makeFuture(instanceValue);
-						obj.prop[propName] = instanceValue;
-					}
+				
+				if (isReactive(propType) && instanceValue === undefined) {
+					// fill in with an empty controlled cell
+					obj.prop[propName] = makeCC(propType);
+					obj.prop[propName].setDone();
 				} else {
-					if (instanceValue === undefined) {
-						debug.error("Error making object of type `"+className+"`. Property `"+propName+"` needs to be defined.");
-					}
-					
 					instanceValue = castObject(instanceValue, propTypeString);
 					
 					// check type
@@ -255,8 +237,9 @@ var objects = (function () {
 						debug.error("Property type mismatch. Expected `"+propTypeString+"` but got `"+unparseType(getType(instanceValue))+"`");
 					}
 					
-					obj.prop[propName] = makeFuture(instanceValue);
+					obj.prop[propName] = instanceValue;
 				}
+				
 			});
 			
 			as[ancestor] = obj;
