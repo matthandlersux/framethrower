@@ -28,9 +28,10 @@ function desugarFetch(template, env) {
 				env = envAdd(env, v, false);
 		}
 
-		desugarFetch(template.output,env);
-		// TODO what if output is fetched? e.g. if this lineTemplate is in an f:call?
-		// let parent worry about it.
+		desugarFetch(template.output, env);
+		
+		if(template.output.kind==="lineExpr") // no fetched exprs allowed in template outputs
+			disallowFetch(template.output.expr, template.output);
 
 		// we don't want to forEach() on this, since we've already taken care of everything:
 		return;
@@ -48,7 +49,10 @@ function desugarFetch(template, env) {
 			desugarFetch(action, env);
 
 			if(action.kind === "lineExpr" && hasVariable(action.expr, fetchEnv)) {
-				if(v) env = envAdd(env, v, action.expr);
+				if(v)
+					env = envAdd(env, v, action.expr);
+				else
+					console.warn("removing pointless fetched line: "+JSONtoString(template.actions[i]));
 				delete template.actions[i];
 			}
 			else if(v && env(v))
@@ -155,7 +159,11 @@ function desugarUnfetch(ast) {
 	if(ast.cons==="apply" && ast.left==="unfetch")
 		return unfetch(ast.right);
 	
-	return ast;
+	var l = desugarUnfetch(ast.left),
+		r = desugarUnfetch(ast.right);
+	if(l===ast.left && r===ast.right) // nothing changed
+		return ast;
+	return {cons: ast.cons, left: l, right: r};
 }
 
 /*

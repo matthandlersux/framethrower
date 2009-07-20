@@ -27,6 +27,7 @@ template() {
 				{e}
 			</div>
 		</f:each>
+		<f:call>test1 (unfetch a)</f:call>
 		{s}
 	</f:wrapper>
 }
