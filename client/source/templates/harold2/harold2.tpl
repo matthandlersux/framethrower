@@ -89,6 +89,8 @@ template () {
 				
 				<f:on mousemove>
 					// newTime = extract mapUnit2 (a -> b -> sigmoid (secondsToUnits a) b (pixelsToUnits event.offsetX)) currentTimeS zoomLevelS,
+					// newTime = extract unfetch (spaceToTime (pixelsToUnits event.offsetX)),
+					// add(currentTimeS, unitsToSeconds (spaceToTime (pixelsToUnits event.offsetX))),
 					newTime = pixelsToUnits event.offsetX,
 					add(currentTimeS, unitsToSeconds newTime),
 					add(zoomLevelS, pixelsToZoom 0.1 event.offsetY)
