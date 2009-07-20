@@ -35,21 +35,20 @@ function makeConSortedSet(compFunc) {
 	var sorted = [];
 
 	function lookup(start, end, key) {
-		if (start > end) {
-			return [false, start];
-		} else if (start === end) {
-			if (compFunc(sorted[start].k, key) === 0) return [true, start];
-			else return [false, start];
-		} else {
-			var halfway = start + Math.floor((end - start) / 2);
-			var cmp = compFunc(sorted[halfway].k, key);
-			if (cmp === 0) {
-				return [true, halfway];
-			} else if (cmp < 0) {
-				return lookup(halfway + 1, end, key);
+		var halfway = start + Math.floor((end - start) / 2);
+		var cmp = compFunc(sorted[halfway].k, key);
+		if (cmp === 0) {
+			return [true, halfway];
+		} else { 
+			if (cmp < 0) {
+				start = halfway + 1;
 			} else {
-				return lookup(start, halfway, key);
+				end = halfway;
 			}
+			if (start === end || start > end) {
+				return [false, start];
+			}
+			return lookup(start, end, key);
 		}
 	}
 
@@ -63,9 +62,13 @@ function makeConSortedSet(compFunc) {
 		
 		css.set = function(key, value) {
 			var len = sorted.length;
-			var l = lookup(0, len-1, key);
-			var found = l[0];
-			var index = l[1];
+			var found = false;
+			var index;
+			if (len > 0) {
+				var l = lookup(0, len-1, key);
+				found = l[0];
+				index = l[1];
+			}
 			if (found === true) {
 				sorted[index].v = value;
 			} else {
@@ -80,10 +83,7 @@ function makeConSortedSet(compFunc) {
 		};
 		
 		css.remove = function(key) {
-			console.log("Remove", key);
 			var l = lookup(0, sorted.length-1, key);
-			console.log("l", l);
-			console.log("sorted", sorted);
 			if (l[0] === true) {
 				sorted.splice(l[1], 1);
 			}
