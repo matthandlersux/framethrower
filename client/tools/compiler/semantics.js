@@ -446,7 +446,7 @@ var semantics = function(){
 			if (def(node.fullletlist.line.expr) && def(node.fullletlist.line.expr.type)) {
 				typeString += node.fullletlist.line.expr.type;
 			} else {
-				typeString = null;
+				typeString = undefined;
 			}
 		} else {
 			typeString += "XMLP";
