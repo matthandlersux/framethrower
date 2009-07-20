@@ -731,7 +731,7 @@ var semantics = function(){
 				return {kind: "lineExpr", expr: value.exprcode, type: value.type, debugRef: node.debugRef};
 			case 'letlistblock':
 				value.arglist = [];
-				return makeLineTemplate(value);
+				return makeLineTemplate(value, true);
 			case 'ifblock':
 				return {kind: "lineXML", xml:makeIfblock(value), debugRef: value.debugRef};
 			case 'xml':
