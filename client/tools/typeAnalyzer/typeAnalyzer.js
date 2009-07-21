@@ -256,7 +256,7 @@ function typeAnalyze(line) {
 				var valueType = selectType.right;
 
 				hackedLineTemplate.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("XMLP")));
-			} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set") {
+			} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set" || constructor === "List") {
 				var keyType = selectType.right;
 
 				hackedLineTemplate.type = makeTypeLambda(keyType, parseType("XMLP"));

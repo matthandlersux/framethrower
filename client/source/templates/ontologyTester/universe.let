@@ -23,8 +23,7 @@ universe = state {
 
 	//generic movie structure
 	movie = makeSituationNamedIn "Movie" universe,
-	movieVideo = makeSituationNamedIn "Video" movie,
-	makePipe movieVideo video,
+	makePipe movie video,
 	ccaptions = makeSituationNamedIn "Closed Captions" movie,
 
 
@@ -66,20 +65,48 @@ universe = state {
 	pointToEnd = makePipeIn1 end point lineTohasEndpoints,
 	intervalToBetween = makePipeIn1 between linterval lineTohasEndpoints,
 
-	//pipes from timeline
-	timelineTovideo = makePipe movieVideo timeline,
-
-	//pipes from textline
-	textlineToessay = makePipe essay textline,
-
-
 	//first level pipes
 	pointTotimepoint = makePipeIn1 timelinePoint point lineTotimeline,
 	pointTotextpoint = makePipeIn1 textlinepoint point lineTotextline,
 
 
+	//pipes from timeline
+	timelineToMovie = makePipe movie timeline,
+
+	//pipes from textline
+	textlineToessay = makePipe essay textline,
 
 
+
+
+
+
+
+
+
+
+
+
+	//Moulin Rouge
+	mr = action () {
+		mr = makeSituationNamedIn "Moulin Rouge" universe,
+		extVideo = create(ExtVideo, {id: "moulinrouge", aspectRatio: 1.333, duration: 5033}),
+		add(Situation:propVideo mr, extVideo),
+		mr
+	},
+
+	movieTomr = makePipe mr movie,
+	
+	
+	
+
+	//tedg's Moulin Rouge essay
+	//mressay = makeSituationNamedIn "Tedg's Moulin Rouge Essay" universe,
+	putSituationIn universe mressay,
+	
+	
+	
+	
 	createClone = action (objectToClone::Situation, cloneIntoSituation::Situation, pipe::List Pipe) {
 		clone = makeSituation,
 		putSituationIn cloneIntoSituation clone,
@@ -98,43 +125,40 @@ universe = state {
 		add(Situation:propTime tp, seconds),
 		tp
 	},
-
-
-
-
-	//Moulin Rouge
-	mr = makeSituationNamedIn "Moulin Rouge" universe, 
 	
-	mrvideo = action () {
-		mrvideo = makeSituationNamedIn "MR Video" mr,
-		extVideo = create(ExtVideo, {id: "moulinrouge", aspectRatio: 1.333, duration: 5033}),
-		add(Situation:propVideo mrvideo, extVideo),
-		mrvideo
+	
+	makeInfon3 = action (relation::Situation, sit::Situation, p1::Situation, p2::Situation, p3::Situation, arg1::Situation, arg2::Situation, arg3::Situation) {
+		pipe = makePipe sit relation,
+		makePipeIn1 arg1 p1 pipe,
+		makePipeIn1 arg2 p2 pipe,
+		makePipeIn1 arg3 p3 pipe
 	},
-
-	mrcc = makeSituationNamedIn "MR Closed Captions" mr,
-	movieTomr = makePipe mr movie,
-	videoTomrvideo = makePipeIn1 mrvideo movieVideo movieTomr,
-	ccTomrcc = makePipeIn1 mrcc ccaptions movieTomr, 
+	
+	createInterval = action (line::Situation, pipeFromLine::List Pipe, startPoint::Situation, endPoint::Situation) {
+		intPair = createClone linterval line pipeFromLine,
+		int = fst intPair,
+		makeInfon3 hasEndpoints line start end between startPoint endPoint int
+	},
 	
 	
 	
-
-	//tedg's Moulin Rouge essay
-	mressay = makeSituationNamedIn "Tedg's Moulin Rouge Essay" universe,
 	
 	
 	mrClonePair = createClone mr mressay nil,
-	mrVideoClonePair = createClone mrvideo (fst mrClonePair) (snd mrClonePair),
-	mrEssayTimeline = fst mrVideoClonePair,
+	mrEssayTimeline = fst mrClonePair,
 	
-	createTimePoint mrEssayTimeline (snd mrVideoClonePair) 306,
+	pipeMrEssayTimelineToTimeline = (cons timelineToMovie (cons movieTomr (snd mrClonePair))),
 	
-	
-	
+	tp1 = createTimePoint mrEssayTimeline pipeMrEssayTimelineToTimeline 306,
+	tp2 = createTimePoint mrEssayTimeline pipeMrEssayTimelineToTimeline 5000,
+	createInterval mrEssayTimeline (cons lineTotimeline pipeMrEssayTimelineToTimeline) tp1 tp2,
 	
 	
 	
 	
 	universe
+},
+
+mressay = state {
+	makeSituationNamed "Tedg's Moulin Rouge Essay"
 }
