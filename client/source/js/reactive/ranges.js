@@ -1,5 +1,6 @@
-function makeRangedSet(onAdd, onRemove) {
-	var sSet = makeConSortedSetStringify();
+function makeRangedView(onAdd, onRemove, sSet) {
+	var rView = {};
+	
 	var range;
 	
 	var forInd = function (startInd, endInd, f) {
@@ -32,7 +33,7 @@ function makeRangedSet(onAdd, onRemove) {
 		});
 	};
 
-	sSet.getFirstIndex = function () {
+	rView.getFirstIndex = function () {
 		if (range.type == 'key') {
 			return sSet.getNearestIndexRight(range.start);
 		} else {
@@ -40,11 +41,11 @@ function makeRangedSet(onAdd, onRemove) {
 		}
 	};
 	
-	sSet.forRange = function (f) {
+	rView.forRange = function (f) {
 		forCustomRange(range, f);
 	};
 	
-	sSet.inRange = function (key) {
+	rView.inRange = function (key) {
 		if (range == undefined) return true;
 		var curInd = sSet.getIndex(key);
 		if (range.type = 'key') {
@@ -54,7 +55,7 @@ function makeRangedSet(onAdd, onRemove) {
 		}
 	};
 	
-	sSet.updateRange = function (oldRange, newRange) {
+	rView.updateRange = function (oldRange, newRange) {
 		if (newRange.start > oldRange.end || newRange.end < oldRange.start) {
 			removeRange(oldRange);
 			addRange(newRange);
@@ -72,43 +73,47 @@ function makeRangedSet(onAdd, onRemove) {
 		}
 	};
 	
-	sSet.clearRange = function () {
+	rView.clearRange = function () {
 		var oldRange;
-		if (range.type == 'pos') {
-		 	oldRange = range;
+		if (range !== undefined) {
+			if (range.type == 'pos') {
+			 	oldRange = range;
+			} else {
+				oldRange = {start:sSet.getNearestIndexRight(range.start), end:sSet.getNearestIndexLeft(range.end), type:'pos'};
+			}
 		} else {
-			oldRange = {start:sSet.getNearestIndexRight(range.start), end:sSet.getNearestIndexLeft(range.end), type:'pos'};
+			oldRange = {start:0, end:-1, type:'pos'};
 		}
-		var newRange = {start:0, end:sSet.getLength()-1, type:'pos'};
+		var newRange = {start:0, end:-1, type:'pos'};
 
-		sSet.updateRange(oldRange, newRange);
+		rView.updateRange(oldRange, newRange);
 		
-		range = undefined;
+		range = newRange;
 	};
 	
-	sSet.setPosRange = function (start, end) {
+	rView.setPosRange = function (start, end) {
 		var oldRange;
 		if (range) {
 			oldRange = range;
 		} else {
-			oldRange = {start:0, end:sSet.getLength(), type:'pos'};
+			oldRange = {start:0, end:-1, type:'pos'};
 		}
 		range = {start:start, end:end, type:'pos'};
 		
-		sSet.updateRange(oldRange, range);
+		rView.updateRange(oldRange, range);
 	};
 	
-	sSet.setKeyRange = function (start, end) {
+	rView.setKeyRange = function (start, end) {
 		var oldRange;
 		if (range) {
 			oldRange = {start:sSet.getNearestIndexRight(range.start), end:sSet.getNearestIndexLeft(range.end), type:'pos'};
 		} else {
-			oldRange = {start:0, end:sSet.getLength()-1, type:'pos'};
+			oldRange = {start:0, end:-1, type:'pos'};
 		}
 		range = {start:start, end:end, type:'key'};
 		newRange = {start:sSet.getNearestIndexRight(start), end:sSet.getNearestIndexLeft(end), type:'pos'};
-		sSet.updateRange(oldRange, newRange);
+		rView.updateRange(oldRange, newRange);
 	};
 	
-	return sSet;
+	return rView;
 }

@@ -34,23 +34,37 @@ function makeConSortedSet(compFunc) {
 
 	var sorted = [];
 
-	function lookup(start, end, key) {
-		var halfway = start + Math.floor((end - start) / 2);
-		var cmp = compFunc(sorted[halfway].k, key);
-		if (cmp === 0) {
-			return [true, halfway];
-		} else { 
-			if (cmp < 0) {
-				start = halfway + 1;
-			} else {
-				end = halfway;
+	function lookup (start, end, key) {
+		function helper (start, end, key) {
+			var halfway = start + Math.floor((end - start) / 2);
+			var cmp = compFunc(sorted[halfway].k, key);
+			if (cmp === 0) {
+				return [true, halfway];
+			} else { 
+				if (cmp < 0) {
+					start = halfway + 1;
+				} else {
+					end = halfway;
+				}
+				if (start === end) {
+					if (compFunc(sorted[start].k, key) === 0) {
+						return [true, start];
+					} else {
+						return [false, start];
+					}
+				}
+				return helper(start, end, key);
 			}
-			if (start === end || start > end) {
-				return [false, start];
-			}
-			return lookup(start, end, key);
+		}
+		if (sorted.length === 0) {
+			return [false, 0];
+		} else if (start > end) {
+			return [false, start];
+		} else {
+			return helper(start, end, key);
 		}
 	}
+
 
 	css.makeSorted = function() {
 		css.forEach(function (val, key) {
@@ -129,7 +143,7 @@ function makeConSortedSet(compFunc) {
 		css.getByIndex = function (ind) {
 			var value = sorted[ind];
 			if (value !== undefined) {
-				return sorted[ind].v;
+				return value.v;
 			} else {
 				return undefined;
 			}			

@@ -21,7 +21,7 @@ function makeBaseCell (toKey) {
 	CELLCOUNT++;
 	CELLSCREATED++;
 	var cell = {kind: "cell", remote: 2, name: localIds()};
-	var dots = makeRangedSet(addFirstLine, removeLastLine);
+	var dots = makeConSortedSetStringify();
 	var funcs = {};
 	
 	//dependencies are stored as a hash from (string,number) to true
@@ -42,13 +42,13 @@ function makeBaseCell (toKey) {
 	};
 	
 	//pull through some range related functions from rangedSet to be used by some primFuncs (TODO: refactor)
+	cell.makeSorted = function () {
+		dots.makeSorted();
+	};
+
 	cell.getIndex = function (key) {
 		return dots.getIndex(key);
 	};
-	
-	cell.getFirstIndex = function () {
-		return dots.getFirstIndex();
-	}
 	
 	cell.getNearestIndexRight = function (key) {
 		return dots.getNearestIndexRight(key);
@@ -79,19 +79,32 @@ function makeBaseCell (toKey) {
 	//  Purpose: Injects a function to be run on all dots in the cell, and a depender to inform when the cell is done
 	//  			If the depender is a cell, this also injects on onRemove into depender to inform this cell when depender dies
 	//  Args: Depender is cell | function (use an empty function if there is no dependency behavior))
-	//  Returns: A function to remove this injected function
+	//		  f is the function being injected
+	//		  initializeRange is an optional function to be run on the rangedView after it is created (to set the range)
+	//  Returns: An object {rView: rangedView, unInject: function to remove this injected function}
 	// ----------------------------------------------------------------------	
 	//if cell is of type Unit a or Set a, f is a function that takes one argument key::a
 	//if cell is of type Map a b, f is a function that takes one javascript object: {key::a, val::b}
 	//f(k) or f({key=k,val=v}) returns a callback function that will be called when k is removed from the Unit/Set/Map
-	cell.inject = function (depender, f) {
+	cell.inject = function (depender, f, initializeRange) {
 		var id = funcColor++;
 		if (depender.addDependency) {
 			depender.addDependency(cell, id);
 		}
-		funcs[id] = {func:f, depender:depender};
+		var addFirstLine = function (dot) {
+			runFunOnDot(dot, f, id);
+		};
+		var removeLastLine = function (dot) {
+			undoFunOnDot(dot, id);
+		};
+		
+		var rView = makeRangedView(addFirstLine, removeLastLine, dots);
+		if (initializeRange !== undefined) {
+			initializeRange(rView);
+		}
+		funcs[id] = {func:f, depender:depender, rView:rView};
 		if (f !== undefined) {
-			dots.forRange(function (dot, key) {
+			rView.forRange(function (dot, key) {
 				if(dot.num > 0) {
 					runFunOnDot(dot, f, id);
 				}
@@ -100,15 +113,15 @@ function makeBaseCell (toKey) {
 		informDepender(depender, cell, id);
 
 		//return callback to remove the injected function
-		var onRemove = function () {
+		var unInject = function () {
 			var depender = funcs[id].depender;
 			if (depender.done !== undefined) {
 				depender.done(cell, id);
 			}
-			delete funcs[id];
-			dots.forRange(function (dot, key) {
+			funcs[id].rView.forRange(function (dot, key) {
 				undoFunOnDot(dot, id);
 			});
+			delete funcs[id];
 			if (isEmpty(funcs) && !cell.persist) {
 				// console.log("removing a cell");
 				CELLCOUNT--;
@@ -117,14 +130,17 @@ function makeBaseCell (toKey) {
 				});
 			}
 		};
-		return onRemove;
+		return {
+			unInject:unInject,
+			rView:rView
+		};
 	};
 
 	// ----------------------------------------------------------------------
 	//  Function: injectDependency
 	//  Purpose: Set up the same dependency behavior as with inject, but not tied to any injected function
 	//  Args: Depender is cell | function
-	//  Returns: A function to remove this dependency
+	//  Returns: An object {rView: rangedView, unInject: function to remove this dependency}
 	// ----------------------------------------------------------------------
 	cell.injectDependency = function (depender) {
 		return cell.inject(depender, function(){});
@@ -163,9 +179,11 @@ function makeBaseCell (toKey) {
 		} else {
 			dot = {val:value, num:1, lines:{}};
 			dots.set(key, dot);
-			if (dots.inRange(key)) {
-				addFirstLine(dot);
-			}
+			forEach(funcs, function (func, id) {
+				if (func.rView.inRange(key)) {
+					runFunOnDot(dot, func.func, id);
+				}
+			});
 		}
 		return function () {
 			cell.removeLine(key);
@@ -180,9 +198,11 @@ function makeBaseCell (toKey) {
 			dot.num--;
 			if(dot.num == 0) {
 				dots.remove(key);
-				if (dots.inRange(key)) {
-					removeLastLine(dot);
-				}
+				forEach(funcs, function (func, id) {
+					if (func.rView.inRange(key)) {
+						undoFunOnDot(dot, id);
+					}
+				});
 			}
 		}
 	};
@@ -218,46 +238,10 @@ function makeBaseCell (toKey) {
 		}
 	};
 	
-	//========================================
-	// Range Functions
-	//========================================
-
-	//make cell only run injected functions on elements whose index is between start and end
-	cell.setPosRange = function (start, end) {
-		dots.setPosRange(start, end);
-	};
-	
-	//make cell only run injected functions on elements whose key is between start and end
-	cell.setKeyRange = function (start, end) {
-		dots.setKeyRange(start, end);
-	};
-
-	//removes range so cell will run injected functions on all elements
-	cell.clearRange = function () {
-		dots.clearRange();
-	};
-	
-	//make this cell sort its elements (works on strings and numbers)
-	cell.makeSorted = function () {
-		dots.makeSorted();
-	};	
-	
 	//==================================
 	// Internal Functions
 	//==================================
 
-	function addFirstLine (dot) {
-		forEach(funcs, function (func, id) {
-			runFunOnDot(dot, func.func, id);
-		});
-	};
-
-	function removeLastLine (dot) {
-		forEach(funcs, function (func, id) {
-			undoFunOnDot(dot, id);
-		});
-	};
-	
 	function informDepender(depender, cell, funcId) {
 		if (depender.done) {
 			depender.done(cell, funcId);

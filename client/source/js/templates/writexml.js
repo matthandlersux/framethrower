@@ -128,7 +128,7 @@ function xmlToDOM(xml, env, context) {
 			var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to the evaluated template's {node: NODE, cleanup: FUNCTION}
 
 
-			var feachCleanup = result.inject(emptyFunction, function (value) {
+			var feachInjectedFunc = result.inject(emptyFunction, function (value) {
 
 				var newNode, keyString;
 
@@ -184,7 +184,7 @@ function xmlToDOM(xml, env, context) {
 				// 	if (entry.cleanup) entry.cleanup();
 				// });
 
-				feachCleanup();
+				feachInjectedFunc.unInject();
 			}
 
 			return {node: wrapper, cleanup: cleanupAllEntries};
@@ -234,7 +234,7 @@ function xmlToDOM(xml, env, context) {
 		}
 		
 		var occupied = false;
-		var cleanupInjection = result.inject(emptyFunction, function (value) {
+		var injectedFunc = result.inject(emptyFunction, function (value) {
 			occupied = true;
 			printOccupied(value);
 			return function () {
@@ -243,7 +243,7 @@ function xmlToDOM(xml, env, context) {
 		});
 		
 		function cleanupCase() {
-			cleanupInjection();
+			injectedFunc.unInject();
 			clearIt();
 		}
 		
@@ -305,13 +305,13 @@ function xmlToDOM(xml, env, context) {
 			//var expr = parseExpression(parse(xml.trigger), env);
 			var expr = parseExpression(xml.trigger, env);
 			//var cell = evaluate(expr);
-			var removeTrigger = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
+			var injectedFunc = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
 
 				var action = evaluate(makeApply(actionClosure, val));
 				executeAction(action);
 			});
 			cleanupFunc = function () {
-				removeTrigger();
+				injectedFunc.unInject();
 			};
 		}, 0);
 		
@@ -363,8 +363,8 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		// if result is a cell, hook it into an endcap that converts it to a string
 		if (result.kind === "cell") {
 			var serialized = makeApply(serializeCell, result);
-			
-			return evaluateAndInject(serialized, emptyFunction, callback); // NOTE: might want to wrap callback so that it returns an empty function?
+			var injectedFunc = evaluateAndInject(serialized, emptyFunction, callback); // NOTE: might want to wrap callback so that it returns an empty function?
+			return injectedFunc.unInject;
 		} else {
 			callback(result);
 			return null;

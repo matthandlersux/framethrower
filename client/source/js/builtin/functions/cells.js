@@ -14,50 +14,60 @@
 			var outputCell = makeCell();
 
 			cell.inject(outputCell, function (val) {
-				return applyAndInject(f, val, outputCell, function (innerVal) {
+				var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
 					return outputCell.addLine(innerVal);
 				});
+				return injectedFunc.unInject;
 			});
 
 			return outputCell;
 		};
 
-		var rangeHelper = function (outputCell, setRangeFunc, startCell, endCell, cell) {
-			outputCell.makeSorted();
+		function rangeHelper (outputCell, setRangeFunc, startCell, endCell, cell) {
+			cell.makeSorted();
 			var start;
 			var end;
+			outputCell.leash();
 
-			var updateRange = function () {
+			var rView;
+			var updateRange = function (rView) {
 				if (start !== undefined && end !== undefined) {
-					setRangeFunc(start, end);
+					rView[setRangeFunc](start, end);
 				} else if (start === undefined && end === undefined) {
 					// TODO: figure out another way to do this
 					// outputCell.clearRange();
 				}
 			};
-			outputCell.leash();
+			
 			startCell.inject(outputCell, function(val) {
 				start = val;
-				updateRange();
+				updateRange(rView);
 				return function () {
 					start = undefined;
-					updateRange();
+					updateRange(rView);
 				};
 			});
 			endCell.inject(outputCell, function(val) {
 				end = val;
-				updateRange();
+				updateRange(rView);
 				return function () {
 					end = undefined;
-					updateRange();
+					updateRange(rView);
 				};
 			});
-			cell.inject(outputCell, function (val) {
+
+			var initializeRange = function (rView) {
+				rView.clearRange();
+			};
+
+			var injectedFunc = cell.inject(outputCell, function (val) {
 				return outputCell.addLine(val);
-			});
+			}, initializeRange);
+			rView = injectedFunc.rView;
+			
 			outputCell.unleash();
 			return outputCell;
-		};
+		}
 
 		return {
 			// ============================================================================
@@ -125,9 +135,10 @@
 					var outputCell = makeCellMapInput();
 
 					cell.inject(outputCell, function (keyVal) {
-						return applyAndInject(applyFunc(f, keyVal.key), keyVal.val, outputCell, function (innerKeyVal) {
+						var injectedFunc = applyAndInject(applyFunc(f, keyVal.key), keyVal.val, outputCell, function (innerKeyVal) {
 							return outputCell.addLine(innerKeyVal);
 						});
+						return injectedFunc.unInject;
 					});
 
 					return outputCell;
@@ -139,9 +150,10 @@
 					var outputCell = makeCell();
 
 					cell.inject(outputCell, function (val) {
-						return applyAndInject(f, val, outputCell, function (innerVal) {
+						var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
 							outputCell.addLine(innerVal);
 						});
+						return injectedFunc.unInject;
 					});
 					return outputCell;
 				}
@@ -440,59 +452,6 @@
 					return outputCell;				
 				}
 			},
-			getNext: { //Note: this is not reactive... should only be used in actions
-				type: "Set a -> Unit a -> Unit a",
-				func: function (setCell, elementCell) {
-					var element = elementCell.getState()[0];
-
-					var outputCell = makeCell();
-					setCell.makeSorted();
-					
-					var index;
-					if (element !== undefined) {
-						index = setCell.getNearestIndexLeft(element);
-						if (index+1 < setCell.getLength()) {
-							value = setCell.getKeyByIndex(index+1);
-						} else {
-							value = setCell.getKeyByIndex(index);
-						}
-					} else {
-						value = setCell.getKeyByIndex(setCell.getFirstIndex());
-					}
-					if (value !== undefined) {
-						outputCell.addLine(value);
-					}
-
-					return outputCell;
-				}
-			},
-			getPrev: { //Note: this is not reactive... should only be used in actions
-				type: "Set a -> Unit a -> Unit a",
-				func: function (setCell, elementCell) {
-					var element = elementCell.getState()[0];
-					
-					var outputCell = makeCell();
-					setCell.makeSorted();
-					
-					var index;
-					if (element !== undefined) {
-						index = setCell.getNearestIndexRight(element);
-						if (index-1 >= 0) {
-							value = setCell.getKeyByIndex(index-1);
-						} else {
-							value = setCell.getKeyByIndex(index);
-						}
-					} else {
-						value = setCell.getKeyByIndex(setCell.getFirstIndex());
-					}
-					if (value !== undefined) {
-						outputCell.addLine(value);
-					}
-
-					return outputCell;
-				}
-			},
-			
 			getByPosition: {
 				type: "Number -> Set a -> Unit a",
 				func: function (index, cell) {
@@ -507,7 +466,9 @@
 								if (current !== undefined) {
 									outputCell.removeLine(current);						
 								}
-								outputCell.addLine(a);
+								if (a !== undefined) {
+									outputCell.addLine(a);
+								}
 								current = a;
 							}
 						}
@@ -523,7 +484,6 @@
 					return outputCell;
 				}
 			},
-			
 			getPosition: {
 				type: "a -> Set a -> Unit Number", // TODO: add to server
 				func: function (element, cell) {
@@ -539,38 +499,9 @@
 								if (current !== undefined) {
 									outputCell.removeLine(current);						
 								}
-								outputCell.addLine(a);
-								current = a;
-							}
-						}
-					}
-					cell.inject(outputCell, function (val) {
-						update(); 
-						return update;
-					});
-					cell.injectDependency(function () {
-						active = true;
-						update();
-					});
-					return outputCell;
-				}
-			},
-
-			getFirstIndex: {
-				type: "Set a -> Unit Number",
-				func: function (cell) {
-					var outputCell = makeCell();
-					cell.makeSorted();
-					var current;
-					var active = false;
-					function update() {
-						if(active) {
-							var a = cell.getFirstIndex();
-							if (current !== a) {
-								if (current !== undefined) {
-									outputCell.removeLine(current);						
+								if (a !== undefined) {
+									outputCell.addLine(a);
 								}
-								outputCell.addLine(a);
 								current = a;
 							}
 						}
@@ -586,7 +517,6 @@
 					return outputCell;
 				}
 			},
-
 			gate: {
 				type: "Unit b -> a -> Unit a",
 				func: function (gatekeeper, passer) {
@@ -627,7 +557,7 @@
 			// 		outputCell.addLine(false);
 			// 
 			// 		cell.inject(outputCell, function (val) {
-			// 			return applyAndInject(f, val, outputCell, function (innerVal) {
+			// 			var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
 			// 				if (innerVal) {
 			// 					if (count == 0) {
 			// 						outputCell.removeLine(false);
@@ -643,6 +573,7 @@
 			// 					};
 			// 				}
 			// 			});
+			//			return injectedFunc.unInject;
 			// 		});
 			// 		
 			// 		return outputCell;
@@ -679,9 +610,10 @@
 					outputCell.addLine(init);
 					//TODO: make this inject more like the erlang version
 					outputCell.inject(function(){}, function (val) {
-						return applyAndInject(f, val, outputCell, function (innerVal) {
+						var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
 							return outputCell.addLine(innerVal);
 						});
+						return injectedFunc.unInject;
 					});
 
 					return outputCell;
@@ -695,9 +627,10 @@
 					outputCell.addLine({key:init, val:0});
 					//TODO: make this inject more like the erlang version
 					outputCell.inject(function(){}, function (keyVal) {
-						return applyAndInject(f, keyVal.key, outputCell, function (val) {
+						var injectedFunc = applyAndInject(f, keyVal.key, outputCell, function (val) {
 							return outputCell.addLine({key:val, val:keyVal.val+1});
 						});
+						return injectedFunc.unInject;
 					});
 
 					return outputCell;
@@ -751,7 +684,7 @@
 					);
 
 					cell.inject(outputCell, function (keyVal) {
-						return keyVal.val.inject(bHashCell, function (innerVal) {
+						var injectedFunc = keyVal.val.inject(bHashCell, function (innerVal) {
 							var onRemove1 = bHashCell.addLine(innerVal);
 							var onRemove2 = bHash[innerVal].addLine(keyVal.key);
 							return function () {
@@ -759,6 +692,7 @@
 								onRemove1();
 							};
 						});
+						return injectedFunc.unInject;
 					});
 
 					return outputCell;
@@ -810,28 +744,28 @@
 				type : "Unit a -> Unit a -> Set a -> Set a",
 				func : function (startCell, endCell, cell) {
 					var outputCell = makeCell();
-					return rangeHelper(outputCell, outputCell.setKeyRange, startCell, endCell, cell);
+					return rangeHelper(outputCell, 'setKeyRange', startCell, endCell, cell);
 				}
 			},
 			rangeByPos : {
 				type : "Unit Number -> Unit Number -> Set a -> Set a",
 				func : function (startCell, endCell, cell) {
 					var outputCell = makeCell();
-					return rangeHelper(outputCell, outputCell.setPosRange, startCell, endCell, cell);
+					return rangeHelper(outputCell, 'setPosRange', startCell, endCell, cell);
 				}
 			},
 			rangeMapByKey : {
 				type : "Unit Number -> Unit Number -> Map a b -> Map a b",
 				func : function (startCell, endCell, cell) {
 					var outputCell = makeCellAssocInput();
-					return rangeHelper(outputCell, outputCell.setKeyRange, startCell, endCell, cell);
+					return rangeHelper(outputCell, 'setKeyRange', startCell, endCell, cell);
 				}
 			},
 			rangeMapByPos : {
 				type : "Unit Number -> Unit Number -> Map a b -> Map a b",
 				func : function (startCell, endCell, cell) {
 					var outputCell = makeCellAssocInput();
-					return rangeHelper(outputCell, outputCell.setPosRange, startCell, endCell, cell);
+					return rangeHelper(outputCell, 'setPosRange', startCell, endCell, cell);
 				}
 			},
 			takeLast : {

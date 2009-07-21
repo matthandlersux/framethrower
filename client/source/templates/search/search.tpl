@@ -117,19 +117,23 @@ template () {
 	
 	DrawPrefixMatches = template (Matches::Set String) {
 		<f:each Matches as Match>
-			
-			MyUnitBool = (mapUnit2 equal (getPosition Match Matches) SelectedIndex)::Unit Bool,
-		
-			if bindUnit boolToUnit MyUnitBool as _ {
-				<div style="position:relative; padding-top:10; padding-left:5; background-color:teal">
-					{Match}
-				</div>
-			} else {
-				<div style="position:relative; padding-top:10; padding-left:5">
-					{Match}
-				</div>
-			}
+			<div>
+				{Match}
+			</div>
 		</f:each>
+		// <f:each Matches as Match>
+		// 	MyUnitBool = (mapUnit2 equal (getPosition Match Matches) SelectedIndex)::Unit Bool,
+		// 
+		// 	if bindUnit boolToUnit MyUnitBool as _ {
+		// 		<div style="position:relative; padding-top:10; padding-left:5; background-color:teal">
+		// 			{Match}
+		// 		</div>
+		// 	} else {
+		// 		<div style="position:relative; padding-top:10; padding-left:5">
+		// 			{Match}
+		// 		</div>
+		// 	}
+		// </f:each>
 	},
 
 
@@ -177,8 +181,7 @@ template () {
 							add(SelectedIndex, plus currentIndex 1)
 						},
 						extract reactiveNot SelectedIndex as _ {
-							firstIndex = extract getFirstIndex PrefixMatches,
-							add(SelectedIndex, firstIndex)
+							add(SelectedIndex, 0)
 						}
 					},
 					extract boolToUnit (equal event.keyCode 38) as _ {

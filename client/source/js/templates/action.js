@@ -98,17 +98,15 @@ function executeAction(instruction) {
 			} else {
 				var done = false;
 				var cell = select;
-				var myRemove = cell.injectDependency(function () {
+				var injectedFunc = cell.injectDependency(function () {
 					if (!done) {
 						done = true;
 						forEach(cell.getState(), function (element) {
 							executeAction(inner(element));
 						});
 					}
-
-					if (myRemove) myRemove();
 				});
-				if (done) myRemove();
+				injectedFunc.unInject();
 			}
 			
 		} else {
