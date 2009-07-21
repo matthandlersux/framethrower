@@ -122,15 +122,16 @@ template () {
 		// 	</div>
 		// </f:each>
 		<f:each Matches as Match>
-			MyUnitBool = (mapUnit2 equal (getPosition Match Matches) SelectedIndex)::Unit Bool,
+			MyPosition = getPosition Match Matches,
+			MyUnitBool = (mapUnit2 equal (MyPosition) SelectedIndex)::Unit Bool,
 		
 			if bindUnit boolToUnit MyUnitBool as _ {
 				<div style="position:relative; padding-top:10; padding-left:5; background-color:teal">
-					{Match}
+					{Match}, Position: {MyPosition}
 				</div>
 			} else {
 				<div style="position:relative; padding-top:10; padding-left:5">
-					{Match}
+					{Match}, Position: {MyPosition}
 				</div>
 			}
 		</f:each>
@@ -160,11 +161,11 @@ template () {
 			<f:each KeyCode as KeyCode><div>
 				KeyCode: {KeyCode}
 			</div></f:each>
-			// <f:each SelectedIndex as SelectedIndex>
-			// 	<div>
-			// 		SelectedIndex: {SelectedIndex}
-			// 	</div>
-			// </f:each>
+			<f:each SelectedIndex as SelectedIndex>
+				<div>
+					SelectedIndex: {SelectedIndex}
+				</div>
+			</f:each>
 			<input type="text" value="{FreshInputValue}">
 				<f:on blur>
 					add(RawPrefixInput, "")

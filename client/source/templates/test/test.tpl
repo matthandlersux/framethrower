@@ -36,9 +36,33 @@ template () {
 		</div>
 		
 		<div>
-			Click here
+			Click here 20
 			<f:on click>
 				add(mySet2, 20)
+			</f:on>
+		</div>
+		<div>
+			Click here 9
+			<f:on click>
+				add(mySet2, 9)
+			</f:on>
+		</div>
+		<div>
+			Click here 7
+			<f:on click>
+				add(mySet2, 7)
+			</f:on>
+		</div>
+		<div>
+			Click here 15
+			<f:on click>
+				add(mySet2, 15)
+			</f:on>
+		</div>
+		<div>
+			Click here 1
+			<f:on click>
+				add(mySet2, 1)
 			</f:on>
 		</div>
 	</div>
