@@ -24,5 +24,22 @@ template () {
 		Should be 0: {getPosition 5 mySet2}<br />
 		Should be 1: {getPosition 10 mySet2}<br />
 		Should be 2: {getPosition 15 mySet2}<br />
+		
+		<br /><br /><br /><br /><br /><br />
+		
+		<div>
+			<f:each mySet2 as entry>
+				<div>
+					Member: {entry}, Position: {getPosition entry mySet2}
+				</div>
+			</f:each>
+		</div>
+		
+		<div>
+			Click here
+			<f:on click>
+				add(mySet2, 20)
+			</f:on>
+		</div>
 	</div>
 }
