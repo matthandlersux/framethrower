@@ -42,7 +42,7 @@ function makeConSortedSet(compFunc) {
 				return [true, halfway];
 			} else { 
 				if (cmp < 0) {
-					start = halfway + 1;
+					start = halfway+1;
 				} else {
 					end = halfway;
 				}
@@ -52,6 +52,8 @@ function makeConSortedSet(compFunc) {
 					} else {
 						return [false, start];
 					}
+				} else if (start > end) {
+					return [false, end];
 				}
 				return helper(start, end, key);
 			}
