@@ -9,39 +9,39 @@
 ~/
 
 /~	Grammar Tokens			~/
-	'includefile([\r\n\t\ ]|//[^\n]*\n)*'						WINCLUDEFILE
-	'function([\r\n\t\ ]|//[^\n]*\n)*'							WFUNCTION
-	'template([\r\n\t\ ]|//[^\n]*\n)*'							WTEMPLATE
-	'action([\r\n\t\ ]|//[^\n]*\n)*'							WACTION
-	'state([\r\n\t\ ]|//[^\n]*\n)*'								WSTATE
-	'create([\r\n\t\ ]|//[^\n]*\n)*'							WCREATE
-	'add([\r\n\t\ ]|//[^\n]*\n)*'								WADD
-	'extract([\r\n\t\ ]|//[^\n]*\n)*'							WEXTRACT
-	'remove([\r\n\t\ ]|//[^\n]*\n)*'							WREMOVE
-	'style([\r\n\t\ ]|//[^\n]*\n)*'								WSTYLE
-	'as([\r\n\t\ ]|//[^\n]*\n)*'								WAS
-	'if([\r\n\t\ ]|//[^\n]*\n)*'								WIF
-	'else([\r\n\t\ ]|//[^\n]*\n)*'								WELSE
-	'f:each([\r\n\t\ ]|//[^\n]*\n)*'							FEACH
-	'f:call([\r\n\t\ ]|//[^\n]*\n)*'							FCALL
-	'f:on([\r\n\t\ ]|//[^\n]*\n)*'								FON
-	'f:trigger([\r\n\t\ ]|//[^\n]*\n)*'							FTRIGGER
-	'\{([\r\n\t\ ]|//[^\n]*\n)*'								LBRACKET
-	'\}([\r\n\t\ ]|//[^\n]*\n)*'								RBRACKET
-	'\(([\r\n\t\ ]|//[^\n]*\n)*'								LPAREN
-	'\)([\r\n\t\ ]|//[^\n]*\n)*'								RPAREN
-	',([\r\n\t\ ]|//[^\n]*\n)*'									COMMA
-	';([\r\n\t\ ]|//[^\n]*\n)*'									SEMICOLON
-	'::([\r\n\t\ ]|//[^\n]*\n)*'								DOUBLECOLON
-	':([\r\n\t\ ]|//[^\n]*\n)*'									COLON
-	'=([\r\n\t\ ]|//[^\n]*\n)*'									EQUALS
-	'</([\r\n\t\ ]|//[^\n]*\n)*'								LTSLASH
-	'/([\r\n\t\ ]|//[^\n]*\n)*'									SLASH
-	'<([\r\n\t\ ]|//[^\n]*\n)*'									LT
-	'>([\r\n\t\ ]|//[^\n]*\n)*'									GT
-	'-([\r\n\t\ ]|//[^\n]*\n)*'									DASH
-	'\"([\r\n\t\ ]|//[^\n]*\n)*'								QUOTE
-	'([A-Za-z0-9_\.\'\~\#\*\+\^\%\.\!\&\|\@\?\[\]]|\\\")+([\r\n\t\ ]|//[^\n]*\n)*'	IDENTIFIER
+	'([\r\n\t\ ]|//[^\n]*\n)*includefile([\r\n\t\ ]|//[^\n]*\n)*'	WINCLUDEFILE
+	'([\r\n\t\ ]|//[^\n]*\n)*function([\r\n\t\ ]|//[^\n]*\n)*'		WFUNCTION
+	'([\r\n\t\ ]|//[^\n]*\n)*template([\r\n\t\ ]|//[^\n]*\n)*'		WTEMPLATE
+	'([\r\n\t\ ]|//[^\n]*\n)*action([\r\n\t\ ]|//[^\n]*\n)*'		WACTION
+	'([\r\n\t\ ]|//[^\n]*\n)*state([\r\n\t\ ]|//[^\n]*\n)*'			WSTATE
+	'([\r\n\t\ ]|//[^\n]*\n)*create([\r\n\t\ ]|//[^\n]*\n)*'		WCREATE
+	'([\r\n\t\ ]|//[^\n]*\n)*add([\r\n\t\ ]|//[^\n]*\n)*'			WADD
+	'([\r\n\t\ ]|//[^\n]*\n)*extract([\r\n\t\ ]|//[^\n]*\n)*'		WEXTRACT
+	'([\r\n\t\ ]|//[^\n]*\n)*remove([\r\n\t\ ]|//[^\n]*\n)*'		WREMOVE
+	'([\r\n\t\ ]|//[^\n]*\n)*style([\r\n\t\ ]|//[^\n]*\n)*'			WSTYLE
+	'([\r\n\t\ ]|//[^\n]*\n)*as([\r\n\t\ ]|//[^\n]*\n)*'			WAS
+	'([\r\n\t\ ]|//[^\n]*\n)*if([\r\n\t\ ]|//[^\n]*\n)*'			WIF
+	'([\r\n\t\ ]|//[^\n]*\n)*else([\r\n\t\ ]|//[^\n]*\n)*'			WELSE
+	'([\r\n\t\ ]|//[^\n]*\n)*f:each([\r\n\t\ ]|//[^\n]*\n)*'		FEACH
+	'([\r\n\t\ ]|//[^\n]*\n)*f:call([\r\n\t\ ]|//[^\n]*\n)*'		FCALL
+	'([\r\n\t\ ]|//[^\n]*\n)*f:on([\r\n\t\ ]|//[^\n]*\n)*'			FON
+	'([\r\n\t\ ]|//[^\n]*\n)*f:trigger([\r\n\t\ ]|//[^\n]*\n)*'		FTRIGGER
+	'([\r\n\t\ ]|//[^\n]*\n)*\{([\r\n\t\ ]|//[^\n]*\n)*'			LBRACKET
+	'([\r\n\t\ ]|//[^\n]*\n)*\}([\r\n\t\ ]|//[^\n]*\n)*'			RBRACKET
+	'([\r\n\t\ ]|//[^\n]*\n)*\(([\r\n\t\ ]|//[^\n]*\n)*'			LPAREN
+	'([\r\n\t\ ]|//[^\n]*\n)*\)([\r\n\t\ ]|//[^\n]*\n)*'			RPAREN
+	'([\r\n\t\ ]|//[^\n]*\n)*,([\r\n\t\ ]|//[^\n]*\n)*'				COMMA
+	'([\r\n\t\ ]|//[^\n]*\n)*;([\r\n\t\ ]|//[^\n]*\n)*'				SEMICOLON
+	'([\r\n\t\ ]|//[^\n]*\n)*::([\r\n\t\ ]|//[^\n]*\n)*'			DOUBLECOLON
+	'([\r\n\t\ ]|//[^\n]*\n)*:([\r\n\t\ ]|//[^\n]*\n)*'				COLON
+	'([\r\n\t\ ]|//[^\n]*\n)*=([\r\n\t\ ]|//[^\n]*\n)*'				EQUALS
+	'([\r\n\t\ ]|//[^\n]*\n)*</([\r\n\t\ ]|//[^\n]*\n)*'			LTSLASH
+	'([\r\n\t\ ]|//[^\n]*\n)*/([\r\n\t\ ]|//[^\n]*\n)*'				SLASH
+	'([\r\n\t\ ]|//[^\n]*\n)*<([\r\n\t\ ]|//[^\n]*\n)*'				LT
+	'([\r\n\t\ ]|//[^\n]*\n)*>([\r\n\t\ ]|//[^\n]*\n)*'				GT
+	'([\r\n\t\ ]|//[^\n]*\n)*-([\r\n\t\ ]|//[^\n]*\n)*'				DASH
+	'([\r\n\t\ ]|//[^\n]*\n)*\"([\r\n\t\ ]|//[^\n]*\n)*'			QUOTE
+	'([\r\n\t\ ]|//[^\n]*\n)*([A-Za-z0-9_\.\'\~\#\*\+\^\%\.\!\&\|\@\?\[\]]|\\\")+([\r\n\t\ ]|//[^\n]*\n)*'	IDENTIFIER
 	;
 ##
 
