@@ -24,8 +24,8 @@ var classesToMake = {
 			"propName": "Unit String", // these prop*s will be refactored!
 			"propTime": "Unit Number",
 			"propVideo": "Unit ExtVideo",
-			"pipesIn": "Set Pipe",
-			"pipesOut": "Set Pipe"
+			"asType": "Set Pipe",
+			"asInstance": "Set Pipe"
 		}
 	},
 	
@@ -55,6 +55,7 @@ var classesToMake = {
 	
 	"VideoTimeline": {
 		prop: {
+			"movie": "Situation",
 			"scrollStart": "Unit Number",
 			"scrollDuration": "Unit Number",
 			"selectStart": "Unit Number",
