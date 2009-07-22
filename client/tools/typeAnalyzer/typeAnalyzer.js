@@ -319,7 +319,32 @@ function typeAnalyze(line) {
 				}
 				// TODO check that the add/remove has key/value as appropriate
 			} else if (ac.kind === "extract") {
-				// TODO
+				
+				var selectType = getTypeOfAST(ac.select, envWithParams);
+				
+				var constructor = getTypeConstructor(selectType);
+				
+				var hackedAction = {
+					kind: "lineAction",
+					params: ac.lineAction.params,
+					actions: ac.lineAction.actions
+				};
+				
+				if (constructor === "Map") {
+					var keyType = selectType.left.right;
+					var valueType = selectType.right;
+				
+					hackedAction.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("XMLP")));
+				} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set" || constructor === "List") {
+					var keyType = selectType.right;
+				
+					hackedAction.type = makeTypeLambda(keyType, parseType("XMLP"));
+				} else {
+					staticAnalysisError("Extract select type is not a cell.");
+				}
+				
+				getActionReturnType(hackedAction, envWithParams);
+				
 			} else {
 				type = staticTypeAnalysis(ac, envWithParams).type;
 			}
