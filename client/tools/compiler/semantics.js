@@ -764,9 +764,16 @@ var semantics = function(){
 		function makeString (tree, name) {
 			if(tree === undefined) return undefined;
 			if (name == 'stringescapequotes') {
-				return (makeString(tree)).replace(/\"/g, "\\\"");
+				var string = makeString(tree);
+				string = string.replace(/\\/g, "\\\\");
+				string = string.replace(/\"/g, "\\\"");
+				string = string.replace(/\n/g, "\\n");
+				return string;
 			} else if (name == 'string') {
-				return (makeString(tree)).replace(/\"/g, "");
+				var string = makeString(tree);
+				string = string.replace(/\"/g, "");
+				string = string.replace(/\n/g, "\\n");
+				return string;
 			} else {
 				if(!arrayLike(tree) && !objectLike(tree)) {
 					return tree;
