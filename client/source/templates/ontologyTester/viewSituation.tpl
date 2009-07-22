@@ -28,7 +28,7 @@ template (sit::Situation) {
 		<div>
 			Pipes (as Instance):
 			<div style-marginLeft="20">
-				<f:each Situation:pipesOut sit as pipe>
+				<f:each Situation:asInstance sit as pipe>
 					viewPipe pipe
 				</f:each>
 			</div>
@@ -36,7 +36,7 @@ template (sit::Situation) {
 		<div>
 			Pipes  (as Type):
 			<div style-marginLeft="20">
-				<f:each Situation:pipesIn sit as pipe>
+				<f:each Situation:asType sit as pipe>
 					viewPipe pipe
 				</f:each>
 			</div>

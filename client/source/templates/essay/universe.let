@@ -24,12 +24,16 @@ movie = state {
 
 
 
-mressay = state {makeSituationNamedIn "Tedg's Moulin Rouge Essay" universe},
+mressay = state {
+	mressay = makeSituationNamedIn "Tedg's Moulin Rouge Essay" universe,
+	makePipe mressay essay,
+	mressay
+},
 
 
 
 
-init = action () {
+universeInit = action () {
 	
 
 
