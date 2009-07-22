@@ -33,7 +33,7 @@ mressay = state {
 
 
 
-init = action () {
+universeInit = action () {
 	
 
 
