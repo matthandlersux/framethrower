@@ -18,7 +18,12 @@ template () {
 		mySet2
 	},
 	
+	essay = "hi
+	there",
+	
+	
 	<div>
+		Essay: {essay}<br />
 		Should be 0: {getPosition sit1 mySet}<br />
 		Should be 1: {getPosition sit2 mySet}<br />
 		Should be 0: {getPosition 5 mySet2}<br />
