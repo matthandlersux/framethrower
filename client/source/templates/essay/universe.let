@@ -104,7 +104,7 @@ universeInit = action () {
 	//Moulin Rouge
 	mr = action () {
 		mr = makeSituationNamedIn "Moulin Rouge" universe,
-		extVideo = create(ExtVideo, {id: "moulinrouge", aspectRatio: 1.333, duration: 5033}),
+		extVideo = create(ExtVideo, {id: "moulinrouge", aspectRatio: 1.333, duration: 7668}),
 		add(Situation:propVideo mr, extVideo),
 		mr
 	},
