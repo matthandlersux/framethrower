@@ -296,14 +296,6 @@
 					return outputCell;
 				}
 			},
-			mapUnit2 : {
-				type : "(a -> b -> c) -> Unit a -> Unit b -> Unit c",
-				func : function(func, cell1, cell2) {
-					return mapUnitJS(function (x, y) {
-						return evaluate(makeApply(makeApply(func, x), y));
-					})(cell1, cell2);
-				}
-			},
 
 			// ============================================================================
 			// Null Type Functions

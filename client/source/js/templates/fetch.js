@@ -39,10 +39,12 @@ function desugarFetch(template, env) {
 		
 		// if output is fetched, wrap it in an f:each:
 		if(output.kind==="lineExpr" && hasVariable(output.expr, fetchEnv)) {
+			// generate an error if this template doesn't seem to output XML,
+			// since in that case wrapping the output in a f:each will probably fail:
 			var type = template.type;
 			if(type) { // figure out output type (by 'applying' template.type to template.params):
 				for(var i in template.params) {
-					if(type.kind!=="typeLambda") {
+					if(type.kind!=="typeLambda") { // type doesn't have enough lambdas for params...
 						console.error("template has bad type:");
 						console.error(JSONtoString(template));
 					}
@@ -188,9 +190,9 @@ function desugarFetchXML(xml, env) {
 */
 function envMinus(env, vars) {
 	return function(s) {
-		var v = env(s);
-		if(v && vars.indexOf(s)===-1)
-			return v;
+		var val = env(s);
+		if(val && vars.indexOf(s)===-1)
+			return val;
 		return false;
 	};
 }
