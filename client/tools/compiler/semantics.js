@@ -446,20 +446,25 @@ var semantics = function(){
 			if (def(node.fullletlist.line.expr) && def(node.fullletlist.line.expr.type)) {
 				typeString += node.fullletlist.line.expr.type;
 			} else {
-				typeString = null;
+				typeString = undefined;
 			}
 		} else {
 			typeString += "XMLP";
 		}
 
-		return {
+		var ret = {
 			kind: "lineTemplate",
 			params: paramList,
-			type: typeString,
 			let: lets,
 			output: output,
 			debugRef: node.debugRef
 		};
+
+		if (typeString !== undefined) {
+			ret.type = typeString;
+		}
+
+		return ret;
 	}
 	
 	function makeState(node) {
@@ -731,7 +736,7 @@ var semantics = function(){
 				return {kind: "lineExpr", expr: value.exprcode, type: value.type, debugRef: node.debugRef};
 			case 'letlistblock':
 				value.arglist = [];
-				return makeLineTemplate(value);
+				return makeLineTemplate(value, true);
 			case 'ifblock':
 				return {kind: "lineXML", xml:makeIfblock(value), debugRef: value.debugRef};
 			case 'xml':
@@ -759,9 +764,16 @@ var semantics = function(){
 		function makeString (tree, name) {
 			if(tree === undefined) return undefined;
 			if (name == 'stringescapequotes') {
-				return (makeString(tree)).replace(/\"/g, "\\\"");
+				var string = makeString(tree);
+				string = string.replace(/\\/g, "\\\\");
+				string = string.replace(/\"/g, "\\\"");
+				string = string.replace(/\n/g, "\\n");
+				return string;
 			} else if (name == 'string') {
-				return (makeString(tree)).replace(/\"/g, "");
+				var string = makeString(tree);
+				string = string.replace(/\"/g, "");
+				string = string.replace(/\n/g, "\\n");
+				return string;
 			} else {
 				if(!arrayLike(tree) && !objectLike(tree)) {
 					return tree;

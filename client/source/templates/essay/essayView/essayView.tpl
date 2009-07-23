@@ -1,34 +1,62 @@
-template () {
-	//videoTimelines = state(Set VideoTimeline),
-	videoTimelines = state {
-		vts = create(Set VideoTimeline),
-		vt = create(VideoTimeline),
-		add(vts, vt),
-		vts
-	},
-	popup = state(Unit Popup),
+template (essay::Situation) {
 	
+	// utility
+	getAllContainers = unfoldSet (compose returnUnitSet Situation:container),
+	getAllInherits = unfoldSet (compose (mapSet Pipe:type) Situation:asInstance),
+	
+	
+	// constants
 	videoTimelineExpandedHeight = 180,
 	videoTimelineCollapsedHeight = 16,
 	
-	// videoTimelinesTotalHeight = {
-	// 	numExpandedU = length (filter (compose reactiveNot VideoTimeline:collapsed) videoTimelines),
-	// 	numCollapsedU = length (filter VideoTimeline:collapsed videoTimelines),
-	// 	numExpanded = fetch numExpandedU,
-	// 	numCollapsed = fetch numCollapsedU,
-	// 	plus (multiply numExpanded videoTimelineExpandedHeight) (multiply numCollapsed videoTimelineCollapsedHeight)
-	// },
+	
+	// state
+	videoTimelines = state(Set VideoTimeline),
+	popup = state(Unit Popup),
+	
+	
+	// things to extract from the essay
+	videosFromEssay = filter (x -> isNotEmpty (filter (reactiveEqual movie) (getAllInherits x))) (Situation:contains essay),
+	
 
 	
-	<div>
-		<div>
-			<f:call>drawEssay</f:call>
-		</div>
-		<f:each videoTimelines as videoTimeline>
-			<f:call>drawVideoTimeline videoTimeline</f:call>
-		</f:each>
-		<f:each popup as popup>
-			<f:call>drawPopup popup</f:call>
-		</f:each>
-	</div>
+	
+	<f:wrapper>
+		<f:on init>
+			universeInit,
+			extract videosFromEssay as movie {
+				vt = create(VideoTimeline, {movie: movie}),
+				add(videoTimelines, vt)
+			}
+		</f:on>
+		
+		<f:call>
+			screenWidth = fetch (UI.ui:screenWidth ui.ui),
+			screenHeight = fetch (UI.ui:screenHeight ui.ui),
+			
+			numExpanded = fetch (length (filter (compose reactiveNot VideoTimeline:collapsed) videoTimelines)),
+			numCollapsed = fetch (length (filter VideoTimeline:collapsed videoTimelines)),
+			videoTimelinesTotalHeight = plus (multiply numExpanded videoTimelineExpandedHeight) (multiply numCollapsed videoTimelineCollapsedHeight),
+			essayHeight = subtract screenHeight videoTimelinesTotalHeight,
+			
+			<div style-position="absolute" style-width="{screenWidth}" style-height="{screenHeight}">
+				<div style-position="absolute" style-width="{screenWidth}" style-height="{essayHeight}" style-left="0" style-top="0">
+					<f:call>drawEssay</f:call>
+				</div>
+		
+				<div style-position="absolute" style-width="{screenWidth}" style-height="{videoTimelinesTotalHeight}" style-left="0" style-top="{essayHeight}">
+					<f:each videoTimelines as videoTimeline>
+						<div style-width="{screenWidth}" style-height="{videoTimelineExpandedHeight}">
+							<f:call>drawVideoTimeline videoTimeline</f:call>
+						</div>
+					</f:each>
+				</div>
+				
+				<f:each popup as popup>
+					<f:call>drawPopup popup</f:call>
+				</f:each>
+			</div>
+		</f:call>
+
+	</f:wrapper>
 }

@@ -1,4 +1,4 @@
-template(x) {
+template(b) {
 	// do lambdas remember their environment? (no)
 	x = 1,
 	y = _ -> x,
@@ -23,6 +23,8 @@ template(x) {
 			<div>
 				{x}
 				{a}
+				{b}
+				{y 0} // this outputs 2... why not 3?
 			</div>
 		</f:each>
 	

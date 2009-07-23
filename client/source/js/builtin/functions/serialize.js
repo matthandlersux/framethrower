@@ -83,7 +83,7 @@
 
 			var childRemovers = [];
 
-			var removeFunc = c.inject(depender, function (x) {
+			var injectedFunc = c.inject(depender, function (x) {
 				callback();
 				if (x && x.key !== undefined && x.val !== undefined) {
 					// we have a Map entry
@@ -121,6 +121,7 @@
 					};
 				}
 			});
+			var removeFunc = injectedFunc.unInject;
 			return function () {
 				forEach(childRemovers, function (childRemover) {
 					if (childRemover) childRemover();

@@ -39,8 +39,18 @@
 		};
 	}
 	
+	function append(list1, list2) {
+		return {
+			kind: "list",
+			type: list1.type,
+			remote: 2,
+			asArray: list1.asArray.concat(list2.asArray)
+		};
+	}
+	
 	base.add("nil", nil);
 	addFun("cons", "a -> List a -> List a", cons);
 	addFun("head", "List a -> a", head);
 	addFun("tail", "List a -> List a", tail);
+	addFun("append", "List a -> List a -> List a", append);
 })();

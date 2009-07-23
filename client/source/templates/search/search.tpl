@@ -1,3 +1,4 @@
+//hello
 template () {
 	// ==============================================================
 	// Util Functions
@@ -115,17 +116,22 @@ template () {
 	},
 	
 	DrawPrefixMatches = template (Matches::Set String) {
+		// <f:each Matches as Match>
+		// 	<div>
+		// 		{Match}
+		// 	</div>
+		// </f:each>
 		<f:each Matches as Match>
-			
-			MyUnitBool = (mapUnit2 equal (getPosition Match Matches) SelectedIndex)::Unit Bool,
+			MyPosition = getPosition Match Matches,
+			MyUnitBool = (mapUnit2 equal (MyPosition) SelectedIndex)::Unit Bool,
 		
 			if bindUnit boolToUnit MyUnitBool as _ {
 				<div style="position:relative; padding-top:10; padding-left:5; background-color:teal">
-					{Match}
+					{Match}, Position: {MyPosition}
 				</div>
 			} else {
 				<div style="position:relative; padding-top:10; padding-left:5">
-					{Match}
+					{Match}, Position: {MyPosition}
 				</div>
 			}
 		</f:each>
@@ -155,51 +161,48 @@ template () {
 			<f:each KeyCode as KeyCode><div>
 				KeyCode: {KeyCode}
 			</div></f:each>
-			// <f:each SelectedIndex as SelectedIndex>
-			// 	<div>
-			// 		SelectedIndex: {SelectedIndex}
-			// 	</div>
-			// </f:each>
-			<f:each FreshInputValue as InputValue>
-				<input type="text" value="{InputValue}">
-					<f:on blur>
-						add(RawPrefixInput, "")
-					</f:on>
-					<f:on keyup>
-						extract boolToUnit (or (or (equal event.keyCode 8) (equal event.keyCode 46)) (and (greaterThan event.keyCode 64) (lessThan event.keyCode 123))) as _ {
-							add(RawPrefixInput, event.value),
-							remove(SelectedIndex)
-						}
-					</f:on>
-					<f:on keydown>
-						extract boolToUnit (equal event.keyCode 40) as _ {
-							extract SelectedIndex as currentIndex {
-								add(SelectedIndex, plus currentIndex 1)
-							},
-							extract reactiveNot SelectedIndex as _ {
-								firstIndex = extract getFirstIndex PrefixMatches,
-								add(SelectedIndex, firstIndex)
-							}
-						},
-						extract boolToUnit (equal event.keyCode 38) as _ {
-							prevTerm = extract SelectedIndex,
-							add(SelectedIndex, subtract prevTerm 1)
-						},
-						extract boolToUnit (equal event.keyCode 13) as _ {
-							extract SelectedIndex as SelectedIndex{
-								SelectedTerm = extract getByPosition SelectedIndex PrefixMatches,
-								add(EnteredInput, SelectedTerm),
-								add(FreshInputValue, SelectedTerm)
-							},
-							extract reactiveNot SelectedIndex as _{
-								add(EnteredInput, event.value)
-							},
-							add(RawPrefixInput, ""),
-							remove(SelectedIndex)
-						}
-					</f:on>
-				</input>
+			<f:each SelectedIndex as SelectedIndex>
+				<div>
+					SelectedIndex: {SelectedIndex}
+				</div>
 			</f:each>
+			<input type="text" value="{FreshInputValue}">
+				<f:on blur>
+					add(RawPrefixInput, "")
+				</f:on>
+				<f:on keyup>
+					extract boolToUnit (or (or (equal event.keyCode 8) (equal event.keyCode 46)) (and (greaterThan event.keyCode 64) (lessThan event.keyCode 123))) as _ {
+						add(RawPrefixInput, event.value),
+						remove(SelectedIndex)
+					}
+				</f:on>
+				<f:on keydown>
+					extract boolToUnit (equal event.keyCode 40) as _ {
+						extract SelectedIndex as currentIndex {
+							add(SelectedIndex, plus currentIndex 1)
+						},
+						extract reactiveNot SelectedIndex as _ {
+							add(SelectedIndex, 0)
+						}
+					},
+					extract boolToUnit (equal event.keyCode 38) as _ {
+						prevTerm = extract SelectedIndex,
+						add(SelectedIndex, subtract prevTerm 1)
+					},
+					extract boolToUnit (equal event.keyCode 13) as _ {
+						extract SelectedIndex as SelectedIndex{
+							SelectedTerm = extract getByPosition SelectedIndex PrefixMatches,
+							add(EnteredInput, SelectedTerm),
+							add(FreshInputValue, SelectedTerm)
+						},
+						extract reactiveNot SelectedIndex as _{
+							add(EnteredInput, event.value)
+						},
+						add(RawPrefixInput, ""),
+						remove(SelectedIndex)
+					}
+				</f:on>
+			</input>
 			<div style="position:relative; top: 0; width:155; background-color:rgb(68, 170, 255); z-index:2">
 				<f:call>
 					if reactiveNot (bindUnit (a -> boolToUnit (equal "" a)) RawPrefixInput) as _ {

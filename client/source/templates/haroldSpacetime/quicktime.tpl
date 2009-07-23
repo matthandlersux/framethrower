@@ -35,13 +35,15 @@ function (width::Number, height::Number, src::String, gotoTime::Unit Number, tim
 	
 	var cleanupFuncs = new Array();
 	
-	cleanupFuncs.push(evaluateAndInject(gotoTime, emptyFunction, function (time) {
+	var injectedFunc = evaluateAndInject(gotoTime, emptyFunction, function (time) {
 		try {
 			mov.SetTime(time * mov.GetTimeScale());
 		} catch (e) {
 			
 		}
-	}));
+	});
+	
+	cleanupFuncs.push(injectedFunc.unInject);
 	
 	mov.addEventListener("qt_progress", function () {
 		timeLoaded.control.add(mov.GetMaxTimeLoaded() / mov.GetTimeScale());

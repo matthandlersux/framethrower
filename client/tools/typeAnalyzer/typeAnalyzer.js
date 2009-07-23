@@ -145,29 +145,31 @@ function typeAnalyze(line) {
 				staticAnalysisError("Expr is not the annotated type. Annotated type is: `"+unparseType(line.type)+"` but actual type is: `"+unparseType(type)+"`" + extraInfo);
 			}
 		} else if (line.kind === "lineTemplate") {
-			type = line.type;
+			if (line.type !== undefined) {
+				type = line.type;
 
-			var scope = {};
-			var typeArray = typeCurriedToArray(type);
-			forEach(line.params, function (param, i) {
-				scope[param] = makePlaceholder(typeArray[i]);
-			});
-			var envWithParams = extendEnv(env, scope);
+				var scope = {};
+				var typeArray = typeCurriedToArray(type);
+				forEach(line.params, function (param, i) {
+					scope[param] = makePlaceholder(typeArray[i]);
+				});
+				var envWithParams = extendEnv(env, scope);
 
-			var newEnv = addLets(line.let, envWithParams);
-			let = {};
-			forEach(line.let, function (junk, name) {
-				let[name] = newEnv(name);
-				//console.log("did a let", name, unparseType(getType(let[name])));
-			});
-			extra.let = let;
+				var newEnv = addLets(line.let, envWithParams);
+				let = {};
+				forEach(line.let, function (junk, name) {
+					let[name] = newEnv(name);
+					//console.log("did a let", name, unparseType(getType(let[name])));
+				});
+				extra.let = let;
 
-			// check that output matches the output type (XMLP)
-			var outputAnalysis = staticTypeAnalysis(line.output, newEnv);
-			extra.output = outputAnalysis;
-			if (!compareTypes(outputAnalysis.type, typeArray[typeArray.length - 1])) {
-				var extraInfo = line.output.kind === "lineExpr" ? "\nwith `"+unparse(line.output.expr)+"`\n\n"+getWordsTypes(line.output.expr, newEnv) : "";
-				staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got `"+unparseType(outputAnalysis.type)+"`" + extraInfo);
+				// check that output matches the output type (XMLP)
+				var outputAnalysis = staticTypeAnalysis(line.output, newEnv);
+				extra.output = outputAnalysis;
+				if (!compareTypes(outputAnalysis.type, typeArray[typeArray.length - 1])) {
+					var extraInfo = line.output.kind === "lineExpr" ? "\nwith `"+unparse(line.output.expr)+"`\n\n"+getWordsTypes(line.output.expr, newEnv) : "";
+					staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got `"+unparseType(outputAnalysis.type)+"`" + extraInfo);
+				}
 			}
 
 		} else if (line.kind === "lineJavascript") {
@@ -254,7 +256,7 @@ function typeAnalyze(line) {
 				var valueType = selectType.right;
 
 				hackedLineTemplate.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("XMLP")));
-			} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set") {
+			} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set" || constructor === "List") {
 				var keyType = selectType.right;
 
 				hackedLineTemplate.type = makeTypeLambda(keyType, parseType("XMLP"));
@@ -317,7 +319,32 @@ function typeAnalyze(line) {
 				}
 				// TODO check that the add/remove has key/value as appropriate
 			} else if (ac.kind === "extract") {
-				// TODO
+				
+				var selectType = getTypeOfAST(ac.select, envWithParams);
+				
+				var constructor = getTypeConstructor(selectType);
+				
+				var hackedAction = {
+					kind: "lineAction",
+					params: ac.lineAction.params,
+					actions: ac.lineAction.actions
+				};
+				
+				if (constructor === "Map") {
+					var keyType = selectType.left.right;
+					var valueType = selectType.right;
+				
+					hackedAction.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("XMLP")));
+				} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set" || constructor === "List") {
+					var keyType = selectType.right;
+				
+					hackedAction.type = makeTypeLambda(keyType, parseType("XMLP"));
+				} else {
+					staticAnalysisError("Extract select type is not a cell.");
+				}
+				
+				getActionReturnType(hackedAction, envWithParams);
+				
 			} else {
 				type = staticTypeAnalysis(ac, envWithParams).type;
 			}

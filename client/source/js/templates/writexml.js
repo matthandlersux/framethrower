@@ -99,84 +99,99 @@ function xmlToDOM(xml, env, context) {
 		
 		var wrapper = createWrapper();
 		
-		// set up an endCap to listen to result and change the children of the wrapper
-		
-		function cmp(a, b) {
-			// returns -1 if a < b, 0 if a = b, 1 if a > b
-			if (/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/.test(a)) {
-				return a - b;
-			} else {
-				if (a < b) return -1;
-				else if (a > b) return 1;
-				else return 0;
-			}
-		}
-		
 		var innerTemplate = makeClosure(xml.lineTemplate, env);
 		
-		var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to the evaluated template's {node: NODE, cleanup: FUNCTION}
-		
-		
-		var feachCleanup = result.inject(emptyFunction, function (value) {
-			
-			var newNode, keyString;
-			
-			if (result.isMap) {
-				//DEBUG
-				if (xml.lineTemplate.params.length !== 2) debug.error("f:each running on map, but as doesn't have key, value");
-				newNode = evaluate(makeApply(makeApply(innerTemplate, value.key), value.val));
-				keyString = stringify(value.key);
-			} else {
-				newNode = evaluate(makeApply(innerTemplate, value));
-				keyString = stringify(value);
-			}
-			
-			newNode = xmlToDOM(newNode.xml, newNode.env, context);
-
-			
-			// find where to put the new node
-			// NOTE: this is linear time but could be log time with clever algorithm
-			var place = null; // this will be the key which comes immediately after the new node
-			forEach(entries, function (entry, entryKey) {
-				if (cmp(keyString, entryKey) < 0 && (place === null || cmp(entryKey, place) < 0)) {
-					place = entryKey;
-				}
-			});
-			
-			if (place === null) {
-				// tack it on at the end
+		if (result.kind === "list") {
+			forEach(result.asArray, function (value) {
+				var newNode = evaluate(makeApply(innerTemplate, value));
+				newNode = xmlToDOM(newNode.xml, newNode.env, context);
 				wrapper.appendChild(newNode.node);
-			} else {
-				// put it before the one that comes immediately afterwards
-				wrapper.insertBefore(newNode.node, entries[place].node);
-			}
-			
-			entries[keyString] = newNode;
-			
-			return function () {
-				
-				if (newNode.cleanup) {
-					newNode.cleanup();
+				pushCleanup(newNode.cleanup);
+			});
+			node = wrapper;
+		} else {
+			// set up an endCap to listen to result and change the children of the wrapper
+
+			function cmp(a, b) {
+				// returns -1 if a < b, 0 if a = b, 1 if a > b
+				if (/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/.test(a)) {
+					return a - b;
+				} else {
+					if (a < b) return -1;
+					else if (a > b) return 1;
+					else return 0;
 				}
-				wrapper.removeChild(newNode.node);
-				
-				delete entries[keyString];
-			};
-		});
-		
-		function cleanupAllEntries() {
-			//console.log("cleaning up an entire f:each", entries);
-			
-			// I don't need the below because when feachCleanup is called, all entries are removed, one-by-one, automatically (by cell logic)
-			// forEach(entries, function (entry, entryKey) {
-			// 	console.log("cleaning up an entry", entry, entryKey);
-			// 	if (entry.cleanup) entry.cleanup();
-			// });
-			
-			feachCleanup();
+			}
+
+
+
+			var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to the evaluated template's {node: NODE, cleanup: FUNCTION}
+
+
+			var feachInjectedFunc = result.inject(emptyFunction, function (value) {
+
+				var newNode, keyString;
+
+				if (result.isMap) {
+					//DEBUG
+					if (xml.lineTemplate.params.length !== 2) debug.error("f:each running on map, but as doesn't have key, value");
+					newNode = evaluate(makeApply(makeApply(innerTemplate, value.key), value.val));
+					keyString = stringify(value.key);
+				} else {
+					newNode = evaluate(makeApply(innerTemplate, value));
+					keyString = stringify(value);
+				}
+
+				newNode = xmlToDOM(newNode.xml, newNode.env, context);
+
+
+				// find where to put the new node
+				// NOTE: this is linear time but could be log time with clever algorithm
+				var place = null; // this will be the key which comes immediately after the new node
+				forEach(entries, function (entry, entryKey) {
+					if (cmp(keyString, entryKey) < 0 && (place === null || cmp(entryKey, place) < 0)) {
+						place = entryKey;
+					}
+				});
+
+				if (place === null) {
+					// tack it on at the end
+					wrapper.appendChild(newNode.node);
+				} else {
+					// put it before the one that comes immediately afterwards
+					wrapper.insertBefore(newNode.node, entries[place].node);
+				}
+
+				entries[keyString] = newNode;
+
+				return function () {
+
+					if (newNode.cleanup) {
+						newNode.cleanup();
+					}
+					wrapper.removeChild(newNode.node);
+
+					delete entries[keyString];
+				};
+			});
+
+			function cleanupAllEntries() {
+				//console.log("cleaning up an entire f:each", entries);
+
+				// I don't need the below because when feachCleanup is called, all entries are removed, one-by-one, automatically (by cell logic)
+				// forEach(entries, function (entry, entryKey) {
+				// 	console.log("cleaning up an entry", entry, entryKey);
+				// 	if (entry.cleanup) entry.cleanup();
+				// });
+
+				feachInjectedFunc.unInject();
+			}
+
+			return {node: wrapper, cleanup: cleanupAllEntries};
 		}
 		
-		return {node: wrapper, cleanup: cleanupAllEntries};
+		
+
 	} else if (xml.kind === "case") {
 		// TODO: right now, case only works if the predicate is of type Unit a. Figure out what we want it to do for other types...
 		
@@ -219,7 +234,7 @@ function xmlToDOM(xml, env, context) {
 		}
 		
 		var occupied = false;
-		var cleanupInjection = result.inject(emptyFunction, function (value) {
+		var injectedFunc = result.inject(emptyFunction, function (value) {
 			occupied = true;
 			printOccupied(value);
 			return function () {
@@ -228,7 +243,7 @@ function xmlToDOM(xml, env, context) {
 		});
 		
 		function cleanupCase() {
-			cleanupInjection();
+			injectedFunc.unInject();
 			clearIt();
 		}
 		
@@ -290,13 +305,13 @@ function xmlToDOM(xml, env, context) {
 			//var expr = parseExpression(parse(xml.trigger), env);
 			var expr = parseExpression(xml.trigger, env);
 			//var cell = evaluate(expr);
-			var removeTrigger = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
+			var injectedFunc = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
 
 				var action = evaluate(makeApply(actionClosure, val));
 				executeAction(action);
 			});
 			cleanupFunc = function () {
-				removeTrigger();
+				injectedFunc.unInject();
 			};
 		}, 0);
 		
@@ -348,8 +363,8 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 		// if result is a cell, hook it into an endcap that converts it to a string
 		if (result.kind === "cell") {
 			var serialized = makeApply(serializeCell, result);
-			
-			return evaluateAndInject(serialized, emptyFunction, callback); // NOTE: might want to wrap callback so that it returns an empty function?
+			var injectedFunc = evaluateAndInject(serialized, emptyFunction, callback); // NOTE: might want to wrap callback so that it returns an empty function?
+			return injectedFunc.unInject;
 		} else {
 			callback(result);
 			return null;

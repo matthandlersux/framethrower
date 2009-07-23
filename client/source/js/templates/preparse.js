@@ -13,7 +13,9 @@ function preparse(template) {
 	
 	var kind = template.kind;
 	if (kind === "lineTemplate") {
-		template.type = parseType(template.type);
+		if(template.type !== undefined) {
+			template.type = parseType(template.type);
+		}
 	} else if (kind === "lineExpr") {
 		template.expr = parse(template.expr);
 		if(template.type !== undefined) {
