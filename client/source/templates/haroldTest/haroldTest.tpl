@@ -15,6 +15,8 @@ template() {
 				<div>{x} {y}</div>
 			</f:each>
 		</f:each>
+		<f:call>test1 a</f:call>
+		<f:call>test1 (plus 1 a)</f:call>
 		{s}
 		{t}
 		{u}
