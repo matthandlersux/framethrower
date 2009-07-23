@@ -11,7 +11,7 @@ function parseLiteral(s) {
 		// using http://www.regular-expressions.info/floatingpoint.html
 		// might want to find the regular expression that javascript uses...
 		return +s;
-	} else if (/^".*"$/.test(s)) {
+	} else if (/^"[^]*"$/.test(s)) {
 		// matches a string
 		var sub = s.substring(1, s.length - 1);
 		return sub.replace(/\\(["\\])/g, "$1");
