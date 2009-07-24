@@ -39,6 +39,23 @@ function desugarFetch(template, env) {
 		
 		// if output is fetched, wrap it in an f:each:
 		if(output.kind==="lineExpr" && hasVariable(output.expr, fetchEnv)) {
+			// generate an error if this template doesn't seem to output XML,
+			// since in that case wrapping the output in a f:each will probably fail:
+			var type = template.type;
+			if(type) { // figure out output type (by 'applying' template.type to template.params):
+				for(var i in template.params) {
+					if(type.kind!=="typeLambda") { // type doesn't have enough lambdas for params...
+						console.error("template has bad type:");
+						console.error(JSONtoString(template));
+					}
+					type = type.right;
+				}
+			}
+			if(!type || !compareTypes(type, parseType("XMLP"))) {
+				console.error("fetched output not supported in non-XML template:");
+				console.error(JSONtoString(template));
+			}
+			
 			var feach = makeFeach(output, "_fetchLineExpr", unfetch(output.expr));
 			output.expr = "_fetchLineExpr";
 			template.output = {kind:"lineXML", xml:feach};
@@ -134,6 +151,9 @@ function desugarFetch(template, env) {
 		// so we don't care whether 'unfetch' is used -- we unfetch either way:
 		while(hasVariable(template.expr, fetchEnv))
 			template.expr = unfetch(template.expr);
+		
+		// console.debug("desugared insert to:");
+		// console.debug(JSONtoString(template));
 	}
 
 	if (arrayLike(template) || objectLike(template)) {
@@ -170,9 +190,9 @@ function desugarFetchXML(xml, env) {
 */
 function envMinus(env, vars) {
 	return function(s) {
-		var v = env(s);
-		if(v && vars.indexOf(v)===-1)
-			return v;
+		var val = env(s);
+		if(val && vars.indexOf(s)===-1)
+			return val;
 		return false;
 	};
 }
