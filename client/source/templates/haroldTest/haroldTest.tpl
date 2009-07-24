@@ -6,6 +6,10 @@ template() {
 	c = fetch b,
 	u = unfetch (plus a c),
 	
+	viewBox = function(start, duration) {
+		return start+" 0 "+duration+" 1";
+	},
+	
 	<f:wrapper>
 		<div style-background="#888">
 			<f:on mousedown>
@@ -27,5 +31,9 @@ template() {
 				add(s,1)
 			</f:on>
 		</div>
+		<svg:svg width="{100}" height="50px" viewBox="{viewBox 600 600}" preserveAspectRatio="none">
+			<svg:line x1="700" y1="0" x2="700" y1="1" stroke="black"/>
+			<svg:line x1="600" y1="0" x2="1200" y1="1" stroke-width="0.1" stroke="black"/>
+		</svg:svg>
 	</f:wrapper>
 }
