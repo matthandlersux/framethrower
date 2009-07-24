@@ -5,6 +5,14 @@ template (essay::Situation) {
 	getAllInherits = unfoldSet (compose (mapSet Pipe:type) Situation:asInstance),
 	filterByType = type -> filter (x -> isNotEmpty (filter (reactiveEqual type) (getAllInherits x))),
 	
+	listLast = xs -> head xs, // TODO fix this
+	getLastParentPipe = pipe -> mapUnit listLast (Pipe:container pipe),
+	
+	getInfonsAboutRole = subject -> role -> bindUnitSet getLastParentPipe (filter (pipe -> reactiveEqual role (Pipe:type pipe)) (Situation:asInstance subject)),
+	
+	getInfonRole = role -> infon -> mapSet Pipe:instance (filter (pipe -> reactiveEqual role (Pipe:type pipe)) (Pipe:contains infon)),
+	
+	
 	
 	// constants
 	videoTimelineExpandedHeight = 180,

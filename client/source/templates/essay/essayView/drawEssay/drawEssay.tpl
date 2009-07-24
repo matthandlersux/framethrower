@@ -8,16 +8,28 @@ template () {
 	
 	
 	
-	
+	essayText = fetch (Situation:propText essay),
 	
 	textpoints = filterByType textlinePoint (Situation:contains essay),
 	textintervals = filterByType lineInterval (Situation:contains essay),
 	
-	listLast = xs -> head xs, // TODO fix this
-	getLastParentPipe = pipe -> mapUnit listLast (Pipe:container pipe),
 	
-	getInfonsAboutRole = subject -> role -> bindUnitSet getLastParentPipe (filter (pipe -> reactiveEqual role (Pipe:type pipe)) (Situation:asInstance subject)),
 	
+	textpointInfonPairs = mapSet (textpoint -> makeTuple2 (Situation:propTime textpoint) (getInfonsAboutRole textpoint ulinkSource)) textpoints :: Set (Tuple2 (Unit Number) (Set Pipe)),
+	
+	pointsAndLinks = bindSet (pair -> mapUnitSet (mapUnit2 makeTuple2 (fst pair)) (snd pair)) textpointInfonPairs :: Set (Tuple2 Number Pipe),
+	
+	//(mapSet Situation:propTime textpoints)
+	
+	//getInfonsAboutRole tp ulinkSource
+	
+	
+	
+	
+	
+	
+	
+
 	
 	writeString = template (s::String) {
 		<f:wrapper>{s}</f:wrapper>
@@ -26,39 +38,66 @@ template () {
 	
 	
 	
-	//markup = {
-		f = function (writeString::String->XMLP, writeNewLine::XMLP, s::String)::List XMLP {
-			var ret = [];
-			
-			function out() {
-				ret.push(evaluate(makeApplyWith.apply(null, arguments)));
-			}
-			
-			out(writeString, s);
-			out(writeString, " 8888899");
+	//f = function (writeString::String->XMLP, writeNewLine::XMLP, s::String, pointsAndLinks::Set (Tuple2 Number Pipe))::List XMLP {
+	f = function (writeString::String->XMLP, writeNewLine::XMLP, s::String, pointsAndLinks::JSON)::List XMLP {
+		var ret = [];
 		
-			return arrayToList(ret);
-		},
-		markup = f writeString writeNewLine,
-	//},
+		function out() {
+			ret.push(evaluate(makeApplyWith.apply(null, arguments)));
+		}
+		
+		function findAll(needle, haystack) {
+			var ret = [];
+			var i = 0; var len = haystack.length;
+			while (i < len) {
+				i = haystack.indexOf(needle, i);
+				if (i === -1) break;
+				ret.push(i);
+				i++;
+			}
+			return ret;
+		}
+		
+		var newLines = findAll(hackNewLine, s);
+		
+		
+		//console.log(pointsAndLinks);
+		
+		
+		
+		var index = 0;
+		forEach(newLines, function (i) {
+			out(writeString, s.substring(index, i));
+			out(writeNewLine);
+			index = i;
+		});
+		out(writeString, s.substring(index));
+		
+	
+		return arrayToList(ret);
+	},
+	markup = f writeString writeNewLine essayText (fetch (jsonify pointsAndLinks)),
+	
 	writeList = template (xs::List XMLP) {
 		<f:each xs as x>
 			<f:call>x</f:call>
 		</f:each>
 	},
 	<div>
-		{Situation:propText essay}
 		<div>
-			blah
-			<f:call>writeList (markup "bewrwerewr")</f:call>
+			<f:call>writeList markup</f:call>
 		</div>
 		<ol>
 			<f:each textpoints as tp>
 				<li>
-				textpoint: {Situation:propTime tp}, {length (getInfonsAboutRole tp ulinkSource)}
-				
+					textpoint: {Situation:propTime tp}, {length (getInfonsAboutRole tp ulinkSource)}
+					<f:each getInfonsAboutRole tp ulinkSource as infon>
+						target = fetch (takeOne (getInfonRole ulinkTarget infon)),
+						<b>{Situation:propName target}</b>
+					</f:each>
 				</li>
 			</f:each>
 		</ol>
+		<div>{length pointsAndLinks}</div>
 	</div>
 }
