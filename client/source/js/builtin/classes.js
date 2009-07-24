@@ -24,6 +24,7 @@ var classesToMake = {
 			"propName": "Unit String", // these prop*s will be refactored!
 			"propTime": "Unit Number",
 			"propVideo": "Unit ExtVideo",
+			"propText": "Unit String",
 			"asType": "Set Pipe",
 			"asInstance": "Set Pipe"
 		}
