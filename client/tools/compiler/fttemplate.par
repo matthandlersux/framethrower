@@ -35,13 +35,13 @@
 	'([\r\n\t\ ])*::([\r\n\t\ ])*'			DOUBLECOLON
 	'([\r\n\t\ ])*:([\r\n\t\ ])*'				COLON
 	'([\r\n\t\ ])*=([\r\n\t\ ])*'				EQUALS
-	'([\r\n\t\ ])*</([\r\n\t\ ])*'			LTSLASH
+	'([\r\n\t\ ])*\<\/([\r\n\t\ ])*'			LTSLASH
 	'([\r\n\t\ ])*/([\r\n\t\ ])*'				SLASH
 	'([\r\n\t\ ])*<([\r\n\t\ ])*'				LT
 	'([\r\n\t\ ])*>([\r\n\t\ ])*'				GT
 	'([\r\n\t\ ])*-([\r\n\t\ ])*'				DASH
 	'([\r\n\t\ ])*\"([\r\n\t\ ])*'			QUOTE
-	'([\r\n\t\ ])*([A-Za-z0-9_\.\'\~\#\*\+\^\%\.\!\&\|\@\?\[\]]|\\.)+([\r\n\t\ ])*'	IDENTIFIER
+	'([\r\n\t\ ])*([^\{^\}^\(^\)^\,^\;^\:^\=^\<^\>^\/^\-^\"^\ ^\n^\t^\r]|\\.|\^)+([\r\n\t\ ])*'	IDENTIFIER
 	;
 ##
 
@@ -141,6 +141,7 @@ ACTIONTPL:
 FULLACTLIST:
 	ACTLIST ACTION
 	| ACTLIST
+	|
 	;
 
 ACTLIST:
