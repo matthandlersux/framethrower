@@ -61,21 +61,24 @@ template (videoTimeline::VideoTimeline) {
 			add(zoomDurationS, product videoDuration 0.1),
 		</f:on>
 
-		<f:wrapper> // wrapper for entire scrubber, in which scrolling anywhere zooms
+		<f:wrapper> // wrapper for entire scrubber, for scrolling and mouseout
 			<f:on mousescroll> // zoom in or out on zoomed scrubber
 				//can't make duration too small:
 				minDurationDelta = difference minZoomDuration zoomDuration,
 				//can't go past left end (t=0):
 				maxDurationDelta0 = zoomStart,
 				//can't go past right end (t=videoDuration):
-				maxDurationDelta1 = difference videoDuration (plus zoomStart zoomDuration),
+				maxDurationDelta1 = difference videoDuration (sum zoomStart zoomDuration),
 				// only half of delta goes in each direction, so we can have as much as twice the smallest one:
 				maxDurationDelta = product 2 (min maxDurationDelta0 maxDurationDelta1),
 				// use scrollWidthToDuration as a reasonable factor on wheelDelta:
 				durationDelta = clamp minDurationDelta maxDurationDelta (scrollWidthToDuration event.wheelDelta),
 			
 				add(zoomStartS, difference zoomStart (quotient durationDelta 2)),
-				add(zoomDurationS, plus zoomDuration durationDelta)
+				add(zoomDurationS, sum zoomDuration durationDelta)
+			</f:on>
+			<f:on mouseout> // 'pop' back to selected position
+				add(previewTimeS, selectStart)
 			</f:on>
 		
 			// the zoomed in part of the scrubber:
@@ -120,7 +123,7 @@ template (videoTimeline::VideoTimeline) {
 						style-borderLeft="1px solid #444"/>
 				</f:each>
 				<div style-position="absolute" style-left="{timeToZoomPixels selectStart}"
-					style-width="{durationToZoomWidth selectDuration}" style-height="{zoomHeight}"
+					style-width="{max 1 (durationToZoomWidth selectDuration)}" style-height="{zoomHeight}"
 					style-background="rgba(192,192,255,0.5)"/>
 				<div style-position="absolute" style-left="{timeToZoomPixels previewTime}"
 					style-height="{zoomHeight}"
