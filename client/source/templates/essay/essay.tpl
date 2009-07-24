@@ -1,4 +1,3 @@
 template () {
-	
-	essayView mressay
+	essayView mrEssay
 }
