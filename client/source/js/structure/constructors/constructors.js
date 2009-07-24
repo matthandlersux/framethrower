@@ -94,7 +94,7 @@ function getOutsideScope(expr) {
 
 
 
-
+// TODO: stringify should stringify lists properly
 function stringify(expr) {
 	if (expr.name) {
 		return expr.name;

@@ -63,6 +63,10 @@ addExpr("swap", "(a -> b -> c) -> b -> a -> c", "f -> x -> y -> f y x");
 			type: "(a -> Future b) -> Unit a -> Unit b",
 			expr: "f -> bindUnit (compose returnFutureUnit f)"
 		},
+		mapUnitSet: {
+			type: "(Unit a -> Unit b) -> Set a -> Set b",
+			expr: "f -> bindUnitSet (x -> f (returnUnit x))"
+		},
 
 
 		// ========================================================================

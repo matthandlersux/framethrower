@@ -48,11 +48,31 @@ function mapUnitJS(f, outputType, numArgs) {
 }
 
 
-function arrayToSet (array, type) {
+function arrayToSet(array, type) {
 	var outputCell = makeCell();
 	outputCell.type = makeTypeApply(parseType("Set"), type);
 	forEach(array, function(element) {
 		outputCell.addLine(element);
 	});
 	return outputCell;
+}
+
+
+function arrayToList(array, type) {
+	return {
+		kind: "list",
+		type: makeTypeApply(parseType("List"), type),
+		remote: 2,
+		asArray: array
+	};
+}
+
+function makeApplyWith() {
+	var ret = arguments[0];
+	forEach(arguments, function (arg, i) {
+		if (i > 0) {
+			ret = makeApply(ret, arg);
+		}
+	});
+	return ret;
 }

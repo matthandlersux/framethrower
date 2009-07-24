@@ -3,6 +3,15 @@ template (essay::Situation) {
 	// utility
 	getAllContainers = unfoldSet (compose returnUnitSet Situation:container),
 	getAllInherits = unfoldSet (compose (mapSet Pipe:type) Situation:asInstance),
+	filterByType = type -> filter (x -> isNotEmpty (filter (reactiveEqual type) (getAllInherits x))),
+	
+	listLast = xs -> head xs, // TODO fix this
+	getLastParentPipe = pipe -> mapUnit listLast (Pipe:container pipe),
+	
+	getInfonsAboutRole = subject -> role -> bindUnitSet getLastParentPipe (filter (pipe -> reactiveEqual role (Pipe:type pipe)) (Situation:asInstance subject)),
+	
+	getInfonRole = role -> infon -> mapSet Pipe:instance (filter (pipe -> reactiveEqual role (Pipe:type pipe)) (Pipe:contains infon)),
+	
 	
 	
 	// constants
@@ -16,7 +25,7 @@ template (essay::Situation) {
 	
 	
 	// things to extract from the essay
-	videosFromEssay = filter (x -> isNotEmpty (filter (reactiveEqual movie) (getAllInherits x))) (Situation:contains essay),
+	videosFromEssay = filterByType movie (Situation:contains essay),
 	
 
 	
@@ -41,7 +50,7 @@ template (essay::Situation) {
 			essayHeight = subtract screenHeight videoTimelinesTotalHeight,
 			
 			<div style-position="absolute" style-width="{screenWidth}" style-height="{screenHeight}">
-				<div style-position="absolute" style-width="{screenWidth}" style-height="{essayHeight}" style-left="0" style-top="0">
+				<div style-position="absolute" style-width="{screenWidth}" style-height="{essayHeight}" style-left="0" style-top="0" style-overflow="auto">
 					<f:call>drawEssay</f:call>
 				</div>
 		

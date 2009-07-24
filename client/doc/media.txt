@@ -15,9 +15,9 @@ Media Queries:
 			
 	Usage for grabbing screenshots/screencrops/thumbnails:
 	
-		http://media.eversplosion.com/crop.php?id=__MovieName__&time=__Time__ -> Jpeg
+		http://media.eversplosion.com/crop.php?file=__MovieName__&time=__Time__ -> Jpeg
 		
-			MovieName :: String (ex: "devise-walle.mp4" refers to "tmp/devise-walle.mp4" on the server) (eventually this will be changed to a MovieId referencing the database and pointing to S3 store)
+			MovieName :: String (ex: "devise-walle" refers to "tmp/devise-walle.mp4" on the server) (eventually this will be changed to a MovieId referencing the database and pointing to S3 store)
 			Time :: Number (ex: 100 refers to 100th second of specified video)
 			
 			extra parameters:

@@ -60,6 +60,10 @@
 				});
 				return ret;
 			}
+		} else if (cell.kind === "tuple2") {
+			return {kind: "tuple2", asArray: map(cell.asArray, convertStateToJSON)};
+		} else if (cell.kind === "list") {
+			// TODO
 		} else {
 			return cell;
 		}

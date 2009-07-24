@@ -124,9 +124,10 @@ function compileFile (filePath, rebuild, isLetFile) {
 		if (isLetFile) {
 			str = "includefile " + str;
 		}
+		str = removeComments(str);
 		var error_cnt = 0; 
 		var error_off = new Array(); 
-		var error_la = new Array(); 
+		var error_la = new Array();
 		var parseResult = fttemplate.parse( str, error_off, error_la );
 		if( !parseResult.success ) {
 			error_cnt = parseResult.result;
@@ -146,7 +147,76 @@ function compileFile (filePath, rebuild, isLetFile) {
 }
 
 
-function countLines(wholeString, position) {
+function removeComments (str) {
+	var literalStrings;
+	
+function replaceLiteralStrings(s) {
+    var i, c, t, lines, escaped, quoteChar, inQuote, inComment, literal;
+    literalStrings = new Array();
+    t = "";
+    j = 0;
+    inQuote = false;
+	inComment = false;
+    while (j <= s.length) {
+        c = s.charAt(j);
+
+        // If not already in a string, look for the start of one.
+        if (!inQuote && !inComment) {
+            if (c == '/' && s.charAt(j + 1) == '/') {
+                inComment = true;
+				t += c;
+            } else if (c == '"' || c == "'") {
+                inQuote = true;
+                escaped = false;
+                quoteChar = c;
+                literal = c;
+            }
+            else
+            t += c;
+        }
+
+        // Already in a string, look for end and copy characters.
+        else if (inQuote) {
+			if (c == quoteChar && !escaped) {
+				inQuote = false;
+				literal += quoteChar;
+				t += "__" + literalStrings.length + "__";
+				literalStrings[literalStrings.length] = literal;
+			} else if (c == "\\" && !escaped) {
+				escaped = true;
+			} else {
+		      escaped = false;
+			}
+		    literal += c;
+		} else if (inComment) {
+			if (c == '\n') {
+				inComment = false;
+			}
+			t += c;
+		}
+		j++;
+	}
+	return t;
+}
+	
+	
+	function restoreLiteralStrings(s) {
+
+	  var i;
+
+	  for (i = 0; i < literalStrings.length; i++)
+	    s = s.replace(new RegExp("__" + i + "__"), literalStrings[i]);
+
+	  return s;
+	}
+	
+	str = replaceLiteralStrings(str);
+	str = str.replace(/([^\x2f^\n]*)\x2f\x2f[^\n]*\n/g, "$1\n");
+	str = restoreLiteralStrings(str);
+	return str;
+}
+
+function countLines (wholeString, position) {
 	var column;
 	var columnWithTabs;
 	var line;
