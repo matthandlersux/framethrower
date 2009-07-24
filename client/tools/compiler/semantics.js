@@ -23,7 +23,7 @@ var semantics = function(){
 	//TODO: make all these constructs uniform in the parser
 	function makeList(node, listName, nextName, onEachFunc) {
 		//this handles nodes that are already lists, such as with extractSugar
-		if (arrayLike(node)) {
+		if (node !== undefined && arrayLike(node)) {
 			if (def(onEachFunc)) {
 				var output = [];
 				forEach(node, function(elem) {
@@ -35,7 +35,7 @@ var semantics = function(){
 			}
 		} else {
 			function helper(node) {
-				if(node == undefined || node == {}) return [];
+				if(node === undefined || node === {}) return [];
 				if(def(node[nextName]) && node[nextName] !== {}) {
 					var ret = helper(node[listName]);
 					if(def(onEachFunc)) {

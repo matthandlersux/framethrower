@@ -150,51 +150,54 @@ function compileFile (filePath, rebuild, isLetFile) {
 function removeComments (str) {
 	var literalStrings;
 	
-	function replaceLiteralStrings(s) {
+function replaceLiteralStrings(s) {
+    var i, c, t, lines, escaped, quoteChar, inQuote, inComment, literal;
+    literalStrings = new Array();
+    t = "";
+    j = 0;
+    inQuote = false;
+	inComment = false;
+    while (j <= s.length) {
+        c = s.charAt(j);
 
-		var i, c, t, lines, escaped, quoteChar, inQuote, literal;
+        // If not already in a string, look for the start of one.
+        if (!inQuote && !inComment) {
+            if (c == '/' && s.charAt(j + 1) == '/') {
+                inComment = true;
+				t += c;
+            } else if (c == '"' || c == "'") {
+                inQuote = true;
+                escaped = false;
+                quoteChar = c;
+                literal = c;
+            }
+            else
+            t += c;
+        }
 
-		literalStrings = new Array();
-		t = "";
-
-		j = 0;
-		inQuote = false;
-		while (j <= s.length) {
-		  c = s.charAt(j);
-
-		  // If not already in a string, look for the start of one.
-
-		  if (!inQuote) {
-		    if (c == '"' || c == "'") {
-		      inQuote = true;
+        // Already in a string, look for end and copy characters.
+        else if (inQuote) {
+			if (c == quoteChar && !escaped) {
+				inQuote = false;
+				literal += quoteChar;
+				t += "__" + literalStrings.length + "__";
+				literalStrings[literalStrings.length] = literal;
+			} else if (c == "\\" && !escaped) {
+				escaped = true;
+			} else {
 		      escaped = false;
-		      quoteChar = c;
-		      literal = c;
-		    }
-		   else
-		     t += c;
-		  }
-
-		  // Already in a string, look for end and copy characters.
-
-		  else {
-		    if (c == quoteChar && !escaped) {
-		      inQuote = false;
-		      literal += quoteChar;
-		      t += "__" + literalStrings.length + "__";
-		      literalStrings[literalStrings.length] = literal;
-		    }
-		    else if (c == "\\" && !escaped)
-		      escaped = true;
-		    else
-		      escaped = false;
+			}
 		    literal += c;
-		  }
-		  j++;
+		} else if (inComment) {
+			if (c == '\n') {
+				inComment = false;
+			}
+			t += c;
 		}
-
-	  return t;
+		j++;
 	}
+	return t;
+}
 	
 	
 	function restoreLiteralStrings(s) {
@@ -208,7 +211,7 @@ function removeComments (str) {
 	}
 	
 	str = replaceLiteralStrings(str);
-	str = str.replace(/([^\x2f]*)\x2f\x2f.*\n/g, "$1\n");
+	str = str.replace(/([^\x2f^\n]*)\x2f\x2f[^\n]*\n/g, "$1\n");
 	str = restoreLiteralStrings(str);
 	return str;
 }
