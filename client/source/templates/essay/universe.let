@@ -104,9 +104,10 @@ createTimePoint = action (timeline::Situation, pipeFromTimeline::List Pipe, seco
 },
 createTextPoint = action (textline::Situation, pipeFromTextline::List Pipe, char::Number) {
 	tpPair = createClone textlinePoint textline pipeFromTextline,
-	tp = fst tpPair,
-	add(Situation:propTime tp, char),
-	tp
+	// tp = fst tpPair,
+	// add(Situation:propTime tp, char),
+	// tp
+	textline
 },
 
 createInterval = action (line::Situation, pipeFromLine::List Pipe, startPoint::Situation, endPoint::Situation) {
@@ -139,8 +140,8 @@ movieTomr = state {makePipe mr movie},
 // ========================================================================================================
 
 mrEssay = state {makeSituationNamedIn "Tedg's Moulin Rouge Essay" universe},
-textlineToMrEssay = makePipe mrEssay essay,
-pipeTextlineToMrEssay = cons textlineToMrEssay nil,
+essayToMrEssay = state {makePipe mrEssay essay},
+pipeTextlineToMrEssay = cons textlineToEssay (cons essayToMrEssay nil),
 
 mrClonePair = state {createClone mr mrEssay nil},
 mrEssayTimeline = fst mrClonePair,
