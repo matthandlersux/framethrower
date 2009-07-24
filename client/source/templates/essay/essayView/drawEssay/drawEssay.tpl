@@ -35,15 +35,21 @@ template () {
 		<f:wrapper>{s}</f:wrapper>
 	},
 	writeNewLine = <br />,
+	writePointLink = template (infon::Pipe) {
+		<img width="13" height="13" src="http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4">
+		
+		</img>
+	},
 	
 	
 	
-	f = function (writeString::String->XMLP, writeNewLine::XMLP, s::String, pointsAndLinks::JSON)::List XMLP {
+	f = function (writeString::String->XMLP, writeNewLine::XMLP, writePointLink::Pipe->XMLP, s::String, pointsAndLinks::JSON)::List XMLP {
 		var ret = [];
 		
 		function out() {
-			ret.push(evaluate(makeApplyWith.apply(null, arguments)));
+			return evaluate(makeApplyWith.apply(null, arguments));
 		}
+		
 		
 		function findAll(needle, haystack) {
 			var ret = [];
@@ -59,23 +65,38 @@ template () {
 		
 		var newLines = findAll(hackNewLine, s);
 		
+		var inserts = [];
 		
-		//console.log(pointsAndLinks);
+		forEach(newLines, function (i) {
+			inserts.push({
+				index: i,
+				out: out(writeNewLine)
+			});
+		});
 		
+		forEach(pointsAndLinks, function (pointAndLink) {
+			inserts.push({
+				index: pointAndLink.asArray[0],
+				out: out(writePointLink, pointAndLink.asArray[1])
+			});
+		});
 		
+		inserts.sort(function (a, b) {
+			return a.index - b.index;
+		});
 		
 		var index = 0;
-		forEach(newLines, function (i) {
-			out(writeString, s.substring(index, i));
-			out(writeNewLine);
-			index = i;
+		forEach(inserts, function (insert) {
+			ret.push(out(writeString, s.substring(index, insert.index)));
+			ret.push(insert.out);
+			index = insert.index;
 		});
-		out(writeString, s.substring(index));
+		ret.push(out(writeString, s.substring(index)));
 		
 	
 		return arrayToList(ret);
 	},
-	markup = f writeString writeNewLine essayText (fetch (jsonify pointsAndLinks)),
+	markup = f writeString writeNewLine writePointLink essayText (fetch (jsonify pointsAndLinks)),
 	
 	writeList = template (xs::List XMLP) {
 		<f:each xs as x>
