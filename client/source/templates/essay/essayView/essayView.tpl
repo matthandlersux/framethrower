@@ -24,6 +24,7 @@ template (essay::Situation) {
 	<f:wrapper>
 		<f:on init>
 			universeInit,
+			initEssay,
 			extract videosFromEssay as movie {
 				vt = create(VideoTimeline, {movie: movie}),
 				add(videoTimelines, vt)

@@ -746,9 +746,10 @@ var semantics = function(){
 
 	function lineBreakCount(str){
 		/* counts \n */
-		try {
-			return((str.match(/[^\n]*\n[^\n]*/gi).length));
-		} catch(e) {
+		var match = str.match(/\n/gi);
+		if (match !== null) {
+			return match.length;
+		} else {
 			return 0;
 		}
 	}
@@ -765,12 +766,15 @@ var semantics = function(){
 			if(tree === undefined) return undefined;
 			if (name == 'stringescapequotes') {
 				var string = makeString(tree);
-				string = string.replace(/\\/g, "\\\\");
+				lineNum += lineBreakCount(string);
+				//string = string.replace(/\\/g, "\\\\");
+				string = string.replace(/\\\"/g, "\\\\\"");
 				string = string.replace(/\"/g, "\\\"");
-				string = string.replace(/\n/g, "\\n");
+				// string = string.replace(/\n/g, "\\n");
 				return string;
 			} else if (name == 'string') {
 				var string = makeString(tree);
+				lineNum += lineBreakCount(string);
 				string = string.replace(/\"/g, "");
 				string = string.replace(/\n/g, "\\n");
 				return string;
@@ -785,6 +789,7 @@ var semantics = function(){
 				return output;
 			}
 		}
+
 		
 		var startLine = lineNum;
 		forEach(tree, function(value, nodeName) {

@@ -5,12 +5,57 @@ extNumber = state {makeSituationNamedIn "NUMBER" universe},
 extText = state {makeSituationNamedIn "TEXT" universe},
 extVideo = state {makeSituationNamedIn "VIDEO" universe},
 
+//unstructured link
+ulink = state {makeSituationNamedIn "Unstructured Link" universe},
+ulinkSource = state {makeSituationNamedIn "Source" ulink},
+ulinkTarget = state {makeSituationNamedIn "Target" ulink},
+
+
+// ========================================================================================================
+// lines (timelines, textlines, etc)
+// ========================================================================================================
+
+//line
+line = state {makeSituationNamedIn "Line" universe},
+linePoint = state {makeSituationNamedIn "Point" line},
+lineInterval = state {makeSituationNamedIn "Interval" line},
+lineHasEndpoints = state {makeSituationNamedIn "has Endpoints" line},
+lineHasEndpointsStart = state {makeSituationNamedIn "Start" lineHasEndpoints},
+lineHasEndpointsEnd = state {makeSituationNamedIn "End" lineHasEndpoints},
+lineHasEndpointsBetween = state {makeSituationNamedIn "Interval Between" lineHasEndpoints},
+
+//timeline
+timeline = state {makeSituationNamedIn "Timeline" universe},
+lineToTimeline = state {makePipe timeline line},
+timelinePoint = state {
+	timelinePoint = makeSituationNamedIn "time point" timeline,
+	makePipe timelinePoint extNumber,
+	makePipeIn1 timelinePoint linePoint lineToTimeline,
+	timelinePoint
+},
+
+//textline
+textline = state {makeSituationNamedIn "Textline" universe},
+lineToTextline = state {makePipe textline line},
+textlinePoint = state {
+	textlinePoint = makeSituationNamedIn "text point" textline,
+	makePipe textlinePoint extNumber,
+	makePipeIn1 textlinePoint linePoint lineToTextline,
+	textlinePoint
+},
+
+
+// ========================================================================================================
+// generic structures (movies, essays, etc)
+// ========================================================================================================
+
 //generic essay structure
 essay = state {
 	essay = makeSituationNamedIn "Essay" universe,
 	makePipe essay extText,
 	essay
 },
+textlineToEssay = state {makePipe essay textline},
 
 //generic movie structure
 movie = state {
@@ -19,151 +64,112 @@ movie = state {
 	ccaptions = makeSituationNamedIn "Closed Captions" movie,
 	movie
 },
+timelineToMovie = state {makePipe movie timeline},
 
 
+// ========================================================================================================
+// creation actions
+// ========================================================================================================
 
-
-
-mressay = state {
-	mressay = makeSituationNamedIn "Tedg's Moulin Rouge Essay" universe,
-	makePipe mressay essay,
-	mressay
+makeInfon2 = action (relation::Situation, p1::Situation, p2::Situation, sit::Situation, arg1::Situation, arg2::Situation) {
+	pipe = makePipe sit relation,
+	makePipeIn1 arg1 p1 pipe,
+	makePipeIn1 arg2 p2 pipe
 },
+
+makeInfon3 = action (relation::Situation, p1::Situation, p2::Situation, p3::Situation, sit::Situation, arg1::Situation, arg2::Situation, arg3::Situation) {
+	pipe = makePipe sit relation,
+	makePipeIn1 arg1 p1 pipe,
+	makePipeIn1 arg2 p2 pipe,
+	makePipeIn1 arg3 p3 pipe
+},
+
+createClone = action (objectToClone::Situation, cloneIntoSituation::Situation, pipe::List Pipe) {
+	clone = makeSituation,
+	putSituationIn cloneIntoSituation clone,
+	extract Situation:propName objectToClone as name {
+		nameSituation clone name
+	},
+	clonePipe = makePipe clone objectToClone,
+	putPipeIn clonePipe pipe,
+	makeTuple2 clone (cons clonePipe nil)
+},
+
+
+createTimePoint = action (timeline::Situation, pipeFromTimeline::List Pipe, seconds::Number) {
+	tpPair = createClone timelinePoint timeline pipeFromTimeline,
+	tp = fst tpPair,
+	add(Situation:propTime tp, seconds),
+	tp
+},
+createTextPoint = action (textline::Situation, pipeFromTextline::List Pipe, char::Number) {
+	tpPair = createClone textlinePoint textline pipeFromTextline,
+	// tp = fst tpPair,
+	// add(Situation:propTime tp, char),
+	// tp
+	textline
+},
+
+createInterval = action (line::Situation, pipeFromLine::List Pipe, startPoint::Situation, endPoint::Situation) {
+	intPair = createClone lineInterval line pipeFromLine,
+	int = fst intPair,
+	makeInfon3 lineHasEndpoints lineHasEndpointsStart lineHasEndpointsEnd lineHasEndpointsBetween line startPoint endPoint int,
+	int
+},
+
+
+
+
+
+
+// ========================================================================================================
+// Moulin Rouge movie
+// ========================================================================================================
+
+mr = state {
+	mr = makeSituationNamedIn "Moulin Rouge" universe,
+	extVideo = create(ExtVideo, {id: "mr", aspectRatio: 2.222, duration: 7668}),
+	add(Situation:propVideo mr, extVideo),
+	mr
+},
+movieTomr = state {makePipe mr movie},
+
+
+// ========================================================================================================
+// Moulin Rouge essay
+// ========================================================================================================
+
+mrEssay = state {makeSituationNamedIn "Tedg's Moulin Rouge Essay" universe},
+essayToMrEssay = state {makePipe mrEssay essay},
+pipeTextlineToMrEssay = cons textlineToEssay (cons essayToMrEssay nil),
+
+mrClonePair = state {createClone mr mrEssay nil},
+mrEssayTimeline = fst mrClonePair,
+
+pipeTimelineToMrEssayTimeline = (cons timelineToMovie (cons movieTomr (snd mrClonePair))),
 
 
 
 
 universeInit = action () {
 	
+	// //bounded line
+	// boundedLine = makeSituationNamedIn "Bounded Line" universe,
+	// endPoint = makeSituationNamedIn "End Point" boundedLine,
+	// boundedLineToLine = makePipe boundedLine line,
+	// makePipeIn1 endPoint linePoint boundedLineToLine,
 
-
+	//makePipe timeline boundedLine,
+	
+	lineTohasEndpoints = makePipe lineHasEndpoints line,
+	pointToStart = makePipeIn1 lineHasEndpointsStart linePoint lineTohasEndpoints,
+	pointToEnd = makePipeIn1 lineHasEndpointsEnd linePoint lineTohasEndpoints,
+	intervalToBetween = makePipeIn1 lineHasEndpointsBetween lineInterval lineTohasEndpoints,
 
 	
-	//unstructured link
-	ulink = makeSituationNamedIn "Unstructured Link" universe,
-	source = makeSituationNamedIn "Source" ulink,
-	target = makeSituationNamedIn "Target" ulink,
-
-
-
-
-
-
-	//line
-	line = makeSituationNamedIn "Line" universe,
-	linePoint = makeSituationNamedIn "Point" line,
-	lineInterval = makeSituationNamedIn "Interval" line,
-	hasEndpoints = makeSituationNamedIn "has Endpoints" line,
-	start = makeSituationNamedIn "Start" hasEndpoints,
-	end = makeSituationNamedIn "End" hasEndpoints,
-	between = makeSituationNamedIn "Interval Between" hasEndpoints,
-	
-	//bounded line
-	boundedLine = makeSituationNamedIn "Bounded Line" universe,
-	endPoint = makeSituationNamedIn "End Point" boundedLine,
-	boundedLineToLine = makePipe boundedLine line,
-	makePipeIn1 endPoint linePoint boundedLineToLine,
-
-	//timeline
-	timeline = makeSituationNamedIn "Timeline" universe,
-	timelinePoint = makeSituationNamedIn "time point" timeline,
-	makePipe timelinePoint extNumber,
-
-	//textline
-	textline = makeSituationNamedIn "Textline" universe,
-	textlinepoint = makeSituationNamedIn "text point" textline,
-
-
-
-
-	//pipes from line
-	lineTotimeline = makePipe timeline line,
-	makePipe timeline boundedLine,
-	lineTotextline = makePipe textline line,
-	lineTohasEndpoints = makePipe hasEndpoints line,
-	pointToStart = makePipeIn1 start linePoint lineTohasEndpoints,
-	pointToEnd = makePipeIn1 end linePoint lineTohasEndpoints,
-	intervalToBetween = makePipeIn1 between lineInterval lineTohasEndpoints,
-
-	//first level pipes
-	pointTotimepoint = makePipeIn1 timelinePoint linePoint lineTotimeline,
-	pointTotextpoint = makePipeIn1 textlinepoint linePoint lineTotextline,
-
-
-	//pipes from timeline
-	timelineToMovie = makePipe movie timeline,
-
-	//pipes from textline
-	textlineToessay = makePipe essay textline,
-
-
-
-
-
-
-	//Moulin Rouge
-	mr = action () {
-		mr = makeSituationNamedIn "Moulin Rouge" universe,
-		extVideo = create(ExtVideo, {id: "moulinrouge", aspectRatio: 1.333, duration: 7668}),
-		add(Situation:propVideo mr, extVideo),
-		mr
-	},
-
-	movieTomr = makePipe mr movie,
-	
-	
-	
-
-	//tedg's Moulin Rouge essay
-	
-	
-	
-	
-	createClone = action (objectToClone::Situation, cloneIntoSituation::Situation, pipe::List Pipe) {
-		clone = makeSituation,
-		putSituationIn cloneIntoSituation clone,
-		extract Situation:propName objectToClone as name {
-			nameSituation clone name
-		},
-		clonePipe = makePipe clone objectToClone,
-		putPipeIn clonePipe pipe,
-		makeTuple2 clone (cons clonePipe nil)
-	},
-	
-	
-	createTimePoint = action (timeline::Situation, pipeFromTimeline::List Pipe, seconds::Number) {
-		tpPair = createClone timelinePoint timeline pipeFromTimeline,
-		tp = fst tpPair,
-		add(Situation:propTime tp, seconds),
-		tp
-	},
-	
-	
-	makeInfon3 = action (relation::Situation, sit::Situation, p1::Situation, p2::Situation, p3::Situation, arg1::Situation, arg2::Situation, arg3::Situation) {
-		pipe = makePipe sit relation,
-		makePipeIn1 arg1 p1 pipe,
-		makePipeIn1 arg2 p2 pipe,
-		makePipeIn1 arg3 p3 pipe
-	},
-	
-	createInterval = action (line::Situation, pipeFromLine::List Pipe, startPoint::Situation, endPoint::Situation) {
-		intPair = createClone lineInterval line pipeFromLine,
-		int = fst intPair,
-		makeInfon3 hasEndpoints line start end between startPoint endPoint int
-	},
-	
-	
-	
-	
-	
-	mrClonePair = createClone mr mressay nil,
-	mrEssayTimeline = fst mrClonePair,
-	
-	pipeMrEssayTimelineToTimeline = (cons timelineToMovie (cons movieTomr (snd mrClonePair))),
-	
-	tp1 = createTimePoint mrEssayTimeline pipeMrEssayTimelineToTimeline 306,
-	tp2 = createTimePoint mrEssayTimeline pipeMrEssayTimelineToTimeline 5000,
-	createInterval mrEssayTimeline (cons lineTotimeline pipeMrEssayTimelineToTimeline) tp1 tp2
+	tp1 = createTimePoint mrEssayTimeline pipeTimelineToMrEssayTimeline 306,
+	tp2 = createTimePoint mrEssayTimeline pipeTimelineToMrEssayTimeline 5000,
+	createInterval mrEssayTimeline (cons lineToTimeline pipeTimelineToMrEssayTimeline) tp1 tp2
 	
 	
 }

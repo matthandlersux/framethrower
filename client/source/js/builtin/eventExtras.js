@@ -27,7 +27,7 @@ addEventExtra("event.value", "String", function (e) {
 	return e.target.value;
 });
 
-addEventExtra("event.keyCode", "String", function (e) {
+addEventExtra("event.keyCode", "Number", function (e) {
 	if (e.which !== undefined) {
 		return e.which;
 	}

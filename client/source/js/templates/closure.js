@@ -132,6 +132,7 @@ function evaluateLine(line, env) {
 		var expr = parseExpression(line.expr, env);
 		//var expr = parseExpression(parse(line.expr), newEnv);
 		return evaluate(expr);
+		//return expr;
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line, env);
 	} else if (line.kind === "lineJavascript") {
