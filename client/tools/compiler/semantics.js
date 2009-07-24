@@ -767,9 +767,10 @@ var semantics = function(){
 			if (name == 'stringescapequotes') {
 				var string = makeString(tree);
 				lineNum += lineBreakCount(string);
-				string = string.replace(/\\/g, "\\\\");
+				//string = string.replace(/\\/g, "\\\\");
+				string = string.replace(/\\\"/g, "\\\\\"");
 				string = string.replace(/\"/g, "\\\"");
-				string = string.replace(/\n/g, "\\n");
+				// string = string.replace(/\n/g, "\\n");
 				return string;
 			} else if (name == 'string') {
 				var string = makeString(tree);
