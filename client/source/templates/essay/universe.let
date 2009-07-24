@@ -127,7 +127,7 @@ createInterval = action (line::Situation, pipeFromLine::List Pipe, startPoint::S
 
 mr = state {
 	mr = makeSituationNamedIn "Moulin Rouge" universe,
-	extVideo = create(ExtVideo, {id: "moulinrouge", aspectRatio: 1.333, duration: 7668}),
+	extVideo = create(ExtVideo, {id: "moulinrouge", aspectRatio: 2.222, duration: 7668}),
 	add(Situation:propVideo mr, extVideo),
 	mr
 },
@@ -151,8 +151,6 @@ pipeTimelineToMrEssayTimeline = (cons timelineToMovie (cons movieTomr (snd mrClo
 
 
 universeInit = action () {
-
-
 	
 	// //bounded line
 	// boundedLine = makeSituationNamedIn "Bounded Line" universe,

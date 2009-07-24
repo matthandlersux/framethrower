@@ -1,0 +1,21 @@
+sum = plus,
+difference = subtract,
+product = function(x::Number, y::Number)::Number { return x*y; },
+quotient = function(x::Number, y::Number)::Number { return x/y; },
+reciprocal = function(x::Number)::Number { return 1/x; },
+ceil = function(x::Number)::Number { return Math.ceil(x); },
+max = function(x::Number, y::Number)::Number { return Math.max(x,y); },
+min = function(x::Number, y::Number)::Number { return Math.min(x,y); },
+clamp = a -> b -> x -> max a (min b x),
+// convert i from [0,m] to [0,n]
+scale = function(m::Number, n::Number, i::Number)::Number {
+	return i*n/m;
+},
+
+getMediaURL = function(id::String, type::String)::String {
+	return "http:/"+"/media.eversplosion.com/media.php?id="+id+"&type="+type;
+},
+
+getLocalMediaURL = function(id::String, type::String)::String {
+	return "file:/"+"/"+"/Users/harold/Public/MOULIN_ROUGE/"+id+"-"+type;
+},
