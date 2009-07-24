@@ -60,116 +60,121 @@ template (videoTimeline::VideoTimeline) {
 			add(zoomStartS, product videoDuration 0.05),
 			add(zoomDurationS, product videoDuration 0.1),
 		</f:on>
+
+		<f:wrapper> // wrapper for entire scrubber, in which scrolling anywhere zooms
+			<f:on mousescroll> // zoom in or out on zoomed scrubber
+				//can't make duration too small:
+				minDurationDelta = difference minZoomDuration zoomDuration,
+				//can't go past left end (t=0):
+				maxDurationDelta0 = zoomStart,
+				//can't go past right end (t=videoDuration):
+				maxDurationDelta1 = difference videoDuration (plus zoomStart zoomDuration),
+				// only half of delta goes in each direction, so we can have as much as twice the smallest one:
+				maxDurationDelta = product 2 (min maxDurationDelta0 maxDurationDelta1),
+				// use scrollWidthToDuration as a reasonable factor on wheelDelta:
+				durationDelta = clamp minDurationDelta maxDurationDelta (scrollWidthToDuration event.wheelDelta),
+			
+				add(zoomStartS, difference zoomStart (quotient durationDelta 2)),
+				add(zoomDurationS, plus zoomDuration durationDelta)
+			</f:on>
 		
-		<f:on mousescroll> // zoom in or out on zoomed scrubber
-			//can't make duration too small:
-			minDurationDelta = difference minZoomDuration zoomDuration,
-			//can't go past left end (t=0):
-			maxDurationDelta0 = zoomStart,
-			//can't go past right end (t=videoDuration):
-			maxDurationDelta1 = difference videoDuration (plus zoomStart zoomDuration),
-			// only half of delta goes in each direction, so we can have as much as twice the smallest one:
-			maxDurationDelta = product 2 (min maxDurationDelta0 maxDurationDelta1),
-			// use scrollWidthToDuration as a reasonable factor on wheelDelta:
-			durationDelta = clamp minDurationDelta maxDurationDelta (scrollWidthToDuration event.wheelDelta),
-			
-			add(zoomStartS, difference zoomStart (quotient durationDelta 2)),
-			add(zoomDurationS, plus zoomDuration durationDelta)
-		</f:on>
-		
-		<div style-position="absolute"
-			style-width="{scrubberWidth}" style-height="{zoomHeight}"
-			style-background="#AAA">
-			<f:on mousedown> // begin selecting
-				add(selectStartS, zoomPixelsToTime event.offsetX),
-				add(selectDurationS, 0),
-				add(selectingS,null)
-			</f:on>
-			<f:on globalmouseup> // abandon selecting
-				remove(selectingS)
-			</f:on>
-			<f:on mouseup> // finish selecting
-				extract selectingS as _ {					
-					remove(selectingS),
-					newTime = zoomPixelsToTime event.offsetX,
-					newStart = min newTime selectStart,
-					newEnd = max newTime selectStart,
-					newDuration = difference newEnd newStart,
-					add(selectStartS, newStart),
-					add(selectDurationS, newDuration)
-				}
-			</f:on>
-			<f:on mousemove> // update preview time, and update selection if selecting
-				newTime = zoomPixelsToTime event.offsetX,
-				add(previewTimeS, newTime),
-				
-				extract selectingS as _ {
-					newStart = min newTime selectStart,
-					newEnd = max newTime selectStart,
-					newDuration = difference newEnd newStart,
-					add(selectStartS, newStart),
-					add(selectDurationS, newDuration)
-				}
-			</f:on>
-			
-			<f:each scrubberTicks as tickTime>
-				<div style-position="absolute" style-left="{timeToZoomPixels (product videoDuration tickTime)}"
-					style-height="{zoomHeight}"
-					style-borderLeft="1px solid #444"/>
-			</f:each>
-			<div style-position="absolute" style-left="{timeToZoomPixels selectStart}"
-				style-width="{durationToZoomWidth selectDuration}" style-height="{zoomHeight}"
-				style-background="rgba(192,192,255,0.5)"/>
-			<div style-position="absolute" style-left="{timeToZoomPixels previewTime}"
-				style-height="{zoomHeight}"
-				style-borderLeft="1px solid #FFF"/>
-		</div>
-	
-		<div style-position="absolute" style-top="{zoomHeight}"
-			style-width="{scrubberWidth}" style-height="{scrollHeight}"
-			style-background="#AAF">
-			<f:on mousedown> // begin scrolling
-				add(scrollingS, null)
-			</f:on>
-			<f:on globalmouseup> // abandon scrolling
-				remove(scrollingS)
-			</f:on>
-			<f:on mouseup> // finish scrolling
-				extract scrollingS as _ {					
-					remove(scrollingS),
-					newTime = scrollPixelsToTime event.offsetX,
-					newStart = difference newTime (quotient zoomDuration 2),
-					maxStart = difference videoDuration zoomDuration,
-					add(zoomStartS, clamp 0 maxStart newStart)
-				}
-			</f:on>
-			<f:on mousemove> // update preview time, and update zoom if scrolling
-				newTime = scrollPixelsToTime event.offsetX,
-				add(previewTimeS, newTime),
-				
-				extract scrollingS as _ {
-					newStart = difference newTime (quotient zoomDuration 2),
-					maxStart = difference videoDuration zoomDuration,
-					add(zoomStartS, clamp 0 maxStart newStart)
-				}
-			</f:on>
-			
+			// the zoomed in part of the scrubber:
 			<div style-position="absolute"
-				style-width="{durationToScrollWidth loadedTime}" style-height="{scrollHeight}"
-				style-background="#88F"/>
-			<f:each scrubberTicks as tickTime>
-				<div style-position="absolute" style-left="{timeToScrollPixels (product videoDuration tickTime)}"
+				style-width="{scrubberWidth}" style-height="{zoomHeight}"
+				style-background="#AAA">
+				<f:on mousedown> // begin selecting
+					add(selectStartS, zoomPixelsToTime event.offsetX),
+					add(selectDurationS, 0),
+					add(selectingS,null)
+				</f:on>
+				<f:on globalmouseup> // abandon selecting
+					remove(selectingS)
+				</f:on>
+				<f:on mouseup> // finish selecting
+					extract selectingS as _ {					
+						remove(selectingS),
+						newTime = zoomPixelsToTime event.offsetX,
+						newStart = min newTime selectStart,
+						newEnd = max newTime selectStart,
+						newDuration = difference newEnd newStart,
+						add(selectStartS, newStart),
+						add(selectDurationS, newDuration)
+					}
+				</f:on>
+				<f:on mousemove> // update preview time, and update selection if selecting
+					newTime = zoomPixelsToTime event.offsetX,
+					add(previewTimeS, newTime),
+				
+					extract selectingS as _ {
+						newStart = min newTime selectStart,
+						newEnd = max newTime selectStart,
+						newDuration = difference newEnd newStart,
+						add(selectStartS, newStart),
+						add(selectDurationS, newDuration)
+					}
+				</f:on>
+			
+				<f:each scrubberTicks as tickTime>
+					<div style-position="absolute" style-left="{timeToZoomPixels (product videoDuration tickTime)}"
+						style-height="{zoomHeight}"
+						style-borderLeft="1px solid #444"/>
+				</f:each>
+				<div style-position="absolute" style-left="{timeToZoomPixels selectStart}"
+					style-width="{durationToZoomWidth selectDuration}" style-height="{zoomHeight}"
+					style-background="rgba(192,192,255,0.5)"/>
+				<div style-position="absolute" style-left="{timeToZoomPixels previewTime}"
+					style-height="{zoomHeight}"
+					style-borderLeft="1px solid #FFF"/>
+			</div>
+	
+			// the scroll bar part of the scrubber:
+			<div style-position="absolute" style-top="{zoomHeight}"
+				style-width="{scrubberWidth}" style-height="{scrollHeight}"
+				style-background="#AAF">
+				<f:on mousedown> // begin scrolling
+					add(scrollingS, null)
+				</f:on>
+				<f:on globalmouseup> // abandon scrolling
+					remove(scrollingS)
+				</f:on>
+				<f:on mouseup> // finish scrolling
+					extract scrollingS as _ {					
+						remove(scrollingS),
+						newTime = scrollPixelsToTime event.offsetX,
+						newStart = difference newTime (quotient zoomDuration 2),
+						maxStart = difference videoDuration zoomDuration,
+						add(zoomStartS, clamp 0 maxStart newStart)
+					}
+				</f:on>
+				<f:on mousemove> // update preview time, and update zoom if scrolling
+					newTime = scrollPixelsToTime event.offsetX,
+					add(previewTimeS, newTime),
+				
+					extract scrollingS as _ {
+						newStart = difference newTime (quotient zoomDuration 2),
+						maxStart = difference videoDuration zoomDuration,
+						add(zoomStartS, clamp 0 maxStart newStart)
+					}
+				</f:on>
+			
+				<div style-position="absolute"
+					style-width="{durationToScrollWidth loadedTime}" style-height="{scrollHeight}"
+					style-background="#88F"/>
+				<f:each scrubberTicks as tickTime>
+					<div style-position="absolute" style-left="{timeToScrollPixels (product videoDuration tickTime)}"
+						style-height="{scrollHeight}"
+						style-borderLeft="1px solid #444"/>
+				</f:each>
+				<div style-position="absolute" style-left="{timeToScrollPixels zoomStart}"
+					style-width="{durationToScrollWidth zoomDuration}" style-height="{difference scrollHeight 2}"
+					style-border="1px solid" style-background="rgba(192,192,192,0.8)"/>
+				<div style-position="absolute" style-left="{timeToScrollPixels previewTime}"
 					style-height="{scrollHeight}"
-					style-borderLeft="1px solid #444"/>
-			</f:each>
-			<div style-position="absolute" style-left="{timeToScrollPixels zoomStart}"
-				style-width="{durationToScrollWidth zoomDuration}" style-height="{difference scrollHeight 2}"
-				style-border="1px solid" style-background="rgba(192,192,192,0.8)"/>
-			<div style-position="absolute" style-left="{timeToScrollPixels previewTime}"
-				style-height="{scrollHeight}"
-				style-borderLeft="1px solid #FFF"/>
-		</div>
+					style-borderLeft="1px solid #FFF"/>
+			</div>
+		</f:wrapper>
 		
+		// the preview video:
 		<div style-position="absolute" style-left="{scrubberWidth}">
 			<f:call>quicktime videoWidth videoHeight videoURL previewTimeS loadedTimeS</f:call>
 		</div>
