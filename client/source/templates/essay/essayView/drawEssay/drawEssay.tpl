@@ -38,7 +38,6 @@ template () {
 	
 	
 	
-	//f = function (writeString::String->XMLP, writeNewLine::XMLP, s::String, pointsAndLinks::Set (Tuple2 Number Pipe))::List XMLP {
 	f = function (writeString::String->XMLP, writeNewLine::XMLP, s::String, pointsAndLinks::JSON)::List XMLP {
 		var ret = [];
 		
@@ -83,7 +82,7 @@ template () {
 			<f:call>x</f:call>
 		</f:each>
 	},
-	<div>
+	<div class="essayLarge">
 		<div>
 			<f:call>writeList markup</f:call>
 		</div>
