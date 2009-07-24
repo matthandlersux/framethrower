@@ -104,10 +104,9 @@ createTimePoint = action (timeline::Situation, pipeFromTimeline::List Pipe, seco
 },
 createTextPoint = action (textline::Situation, pipeFromTextline::List Pipe, char::Number) {
 	tpPair = createClone textlinePoint textline pipeFromTextline,
-	// tp = fst tpPair,
-	// add(Situation:propTime tp, char),
-	// tp
-	textline
+	tp = fst tpPair,
+	add(Situation:propTime tp, char),
+	tp
 },
 
 createInterval = action (line::Situation, pipeFromLine::List Pipe, startPoint::Situation, endPoint::Situation) {
