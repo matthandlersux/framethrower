@@ -11,10 +11,10 @@ template() {
 	},
 	
 	<f:wrapper>
+		<f:on mousedown>
+			add(s, plus a (subtract (fetch u) c))
+		</f:on>
 		<div style-background="#888">
-			<f:on mousedown>
-				add(s, plus a (subtract (fetch u) c))
-			</f:on>
 			<f:each b as x>
 				<f:each u as y>
 					<div>{x} {y}</div>
@@ -26,14 +26,16 @@ template() {
 			{t}
 			{u}
 		</div>
-		<div style-width="10" style-height="10" style-background="#000">
-			<f:on globalmousedown>
-				add(s,1)
-			</f:on>
-		</div>
-		<svg:svg width="{100}" height="50px" viewBox="{viewBox 600 600}" preserveAspectRatio="none">
-			<svg:line x1="700" y1="0" x2="700" y1="1" stroke="black"/>
-			<svg:line x1="600" y1="0" x2="1200" y1="1" stroke-width="0.1" stroke="black"/>
+		<svg:svg width="100px" height="50px">
+			<svg:defs>
+				<svg:line id="line" x1="0" x2="0" y1="0" y2="1" stroke="black" stroke-width="{s}"/>
+			</svg:defs>
+			<svg:rect x="0" y="0" width="100%" height="100%" fill="blue"/>
+			<svg:g transform="scale(0.05,50) translate(-900,0) ">
+				<svg:rect x="900" y="0" width="1000" height="1" fill="black" opacity="0.5"/>
+				<svg:use x="900" xlink:href="#line"/>
+				<svg:use x="1000" y="0.1" xlink:href="#line"/>
+			</svg:g>
 		</svg:svg>
 	</f:wrapper>
 }
