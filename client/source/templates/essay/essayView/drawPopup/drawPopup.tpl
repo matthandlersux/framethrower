@@ -12,13 +12,13 @@ template (popup::Popup) {
 	
 	<div>
 		<div style-position="absolute" style-backgroundColor="#fff" style-width="{width}" style-height="{height}" style-left="{x}" style-top="{y}">
-			// <f:call>
-			// 	if reactiveEqual direction 0 as _ {
-			// 		<div>horizontal</div>
-			// 	} else {
-			// 		<div>vertical</div>
-			// 	}
-			// </f:call>
+			<f:call>
+				if reactiveEqual direction 0 as _ {
+					<div>horizontal</div>
+				} else {
+					<div>vertical</div>
+				}
+			</f:call>
 			<f:call>content</f:call> {direction}
 		</div>
 	</div>

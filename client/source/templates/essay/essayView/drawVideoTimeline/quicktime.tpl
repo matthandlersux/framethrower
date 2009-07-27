@@ -35,9 +35,11 @@ function (width::Number, height::Number, src::String, gotoTime::Unit Number, tim
 	
 	var cleanupFuncs = new Array();
 	
+	var timeScale;
 	var injectedFunc = evaluateAndInject(gotoTime, emptyFunction, function (time) {
 		try {
-			mov.SetTime(time * mov.GetTimeScale());
+			if (timeScale===undefined) timeScale = mov.GetTimeScale();
+			mov.SetTime(time * timeScale);
 		} catch (e) {
 			
 		}
