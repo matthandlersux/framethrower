@@ -30,7 +30,7 @@
 					return "[" + ret.join(", ") + "]";
 				}
 			} else {
-				console.log("stringifying (shouldn't need to?)", cell);
+				//console.log("stringifying (shouldn't need to?)", cell);
 				return stringify(cell);
 			}
 		}

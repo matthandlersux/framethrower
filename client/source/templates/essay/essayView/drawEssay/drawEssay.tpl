@@ -65,6 +65,9 @@ template () {
 	
 	f = function (writeString::String->XMLP, writeNewLine::XMLP, writePointLink::Pipe->XMLP, writeThumbnails::List Pipe->XMLP, s::String, pointsAndLinks::JSON)::List XMLP {
 		
+		// hack to get it to not take so damn long to start up
+		if (pointsAndLinks.length < 33) return arrayToList([]);
+		
 		//console.log("javascript writer being called", pointsAndLinks);
 		
 		var ret = [];

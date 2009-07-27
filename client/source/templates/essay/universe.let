@@ -164,12 +164,8 @@ universeInit = action () {
 	pointToStart = makePipeIn1 lineHasEndpointsStart linePoint lineTohasEndpoints,
 	pointToEnd = makePipeIn1 lineHasEndpointsEnd linePoint lineTohasEndpoints,
 	intervalToBetween = makePipeIn1 lineHasEndpointsBetween lineInterval lineTohasEndpoints,
-
 	
-	tp1 = createTimePoint mrEssayTimeline pipeTimelineToMrEssayTimeline 306,
-	tp2 = createTimePoint mrEssayTimeline pipeTimelineToMrEssayTimeline 5000,
-	createInterval mrEssayTimeline (cons lineToTimeline pipeTimelineToMrEssayTimeline) tp1 tp2
-	
+	4 // this shouldn't be necessary.. bug with compiler?
 	
 }
 
