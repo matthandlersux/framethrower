@@ -21,7 +21,15 @@ template (essay::Situation) {
 	
 	// state
 	videoTimelines = state(Set VideoTimeline),
-	popup = state(Unit Popup),
+	//popup = state(Unit Popup),
+	testPopup = <div>Test</div>,
+	popup = state {
+		popup = create(Unit Popup),
+		instance = create(Popup, {content: testPopup, x: 100, y: 100, direction: 0, width: 400, height: 100}),
+		add(popup, instance),
+		popup
+	},
+	
 	
 	hoveredInfon = state(Unit Pipe),
 	hoveredInfonEvents = template (infon::Pipe) {

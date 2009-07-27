@@ -124,7 +124,7 @@ var objects = (function () {
 		// This function assumes that all properties have different names, going up the inheritance hierarchy.
 		var ret;
 		forEach(object.as, function (incarnation) {
-			if (incarnation.prop[propName]) {
+			if (incarnation.prop[propName] !== undefined) {
 				ret = incarnation.prop[propName];
 			}
 		});

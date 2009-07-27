@@ -73,6 +73,7 @@ var classesToMake = {
 			"content": "XMLP",
 			"x": "Number",
 			"y": "Number",
+			"direction": "Number", // 0 = horizontal, 1 = vertical
 			"width": "Number",
 			"height": "Number" // this should be treated as minimum height
 		}
