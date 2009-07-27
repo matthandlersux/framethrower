@@ -79,8 +79,8 @@ template (videoTimeline::VideoTimeline) {
 			<svg:defs>
 				<svg:line id="zoomLine" y1="0" y2="1" stroke-width="{reciprocal zoomScale}"/>
 				<svg:line id="scrollLine" y1="0" y2="1" stroke-width="{reciprocal scrollScale}"/>
-				<svg:rect id="zoomPoint" y="0.3" width="{quotient 10 zoomScale}" height="0.4" rx="{quotient 3 zoomScale}" ry="0.12"/>//stroke-width="0.04"/>
-				<svg:rect id="scrollPoint" y="0.3" width="{quotient 5 scrollScale}" height="0.4" rx="{quotient 1.5 scrollScale}" ry="0.12"/>//stroke-width="0.04"/>
+				<svg:rect id="zoomPoint" y="0.2" width="{quotient 10 zoomScale}" height="0.6" rx="{quotient 3 zoomScale}" ry="0.18"/>//stroke-width="0.04"/>
+				<svg:rect id="scrollPoint" y="0.2" width="{quotient 5 scrollScale}" height="0.6" rx="{quotient 1.5 scrollScale}" ry="0.18"/>//stroke-width="0.04"/>
 			</svg:defs>
 			
 			<f:on mousescroll> // zoom in or out on zoomed scrubber
@@ -156,12 +156,23 @@ template (videoTimeline::VideoTimeline) {
 						</f:wrapper>
 					</f:each>
 					
-					// <f:each timeintervals as timeinterval>
-					// 	intervalInfon = fetch (takeOne (getInfonsAboutRole timeinterval lineHasEndpointsBetween)),
-					// 	intervalStart = fetch (takeOne (getInfonRole lineHasEndpointsStart intervalInfon)),
-					// 	intervalEnd = fetch (takeOne (getInfonRole lineHasEndpointsEnd intervalInfon)),
-					// 	<div>{fetch (Situation:propTime intervalStart)} - {fetch (Situation:propTime intervalEnd)} - {getLinksFromTime timeinterval}</div>
-					// </f:each>
+					<f:each timeintervals as timeinterval>
+						intervalInfon = fetch (takeOne (getInfonsAboutRole timeinterval lineHasEndpointsBetween)),
+						intervalStart = fetch (takeOne (getInfonRole lineHasEndpointsStart intervalInfon)),
+						intervalEnd = fetch (takeOne (getInfonRole lineHasEndpointsEnd intervalInfon)),
+						// TODO deal with multiple infons per interval
+						infon = fetch (takeOne (getLinksFromTime timeinterval)),
+						start = fetch (Situation:propTime intervalStart),
+						duration = difference (fetch (Situation:propTime intervalEnd)) start,
+						<f:wrapper>
+							<svg:rect x="{start}" y="0.4" width="{duration}" height="0.2" fill="white" opacity="0.5" rx="{product 0.3 duration}" ry="0.06">
+								<f:call>hoveredInfonEvents infon</f:call>
+							</svg:use>
+							<f:each reactiveEqual (fetch hoveredInfon) infon as _>
+								<svg:rect pointer-events="none" x="{start}" y="0.4" width="{duration}" height="0.2" fill="orange" rx="{product 0.3 duration}" ry="0.06"/>
+							</f:each>
+						</f:wrapper>
+					</f:each>
 
 					<svg:rect pointer-events="none" x="{selectStart}" y="0" width="{selectDuration}" height="1" fill="#CCF" opacity="0.5"/>
 					<svg:use pointer-events="none" xlink:href="#zoomLine" x="{selectStart}" stroke="#CCF"/>
@@ -212,6 +223,22 @@ template (videoTimeline::VideoTimeline) {
 							<svg:use xlink:href="#scrollPoint" x="{Situation:propTime timepoint}" fill="white" opacity="0.5"/>
 							<f:each reactiveEqual (fetch hoveredInfon) infon as _>
 								<svg:use xlink:href="#scrollPoint" x="{Situation:propTime timepoint}" fill="orange"/>
+							</f:each>
+						</f:wrapper>
+					</f:each>
+					
+					<f:each timeintervals as timeinterval>
+						intervalInfon = fetch (takeOne (getInfonsAboutRole timeinterval lineHasEndpointsBetween)),
+						intervalStart = fetch (takeOne (getInfonRole lineHasEndpointsStart intervalInfon)),
+						intervalEnd = fetch (takeOne (getInfonRole lineHasEndpointsEnd intervalInfon)),
+						// TODO deal with multiple infons per interval
+						infon = fetch (takeOne (getLinksFromTime timeinterval)),
+						start = fetch (Situation:propTime intervalStart),
+						duration = difference (fetch (Situation:propTime intervalEnd)) start,
+						<f:wrapper>
+							<svg:rect x="{start}" y="0.4" width="{duration}" height="0.2" fill="white" opacity="0.5" rx="{product 0.3 duration}" ry="0.06"/>
+							<f:each reactiveEqual (fetch hoveredInfon) infon as _>
+								<svg:rect pointer-events="none" x="{start}" y="0.4" width="{duration}" height="0.2" fill="orange" rx="{product 0.3 duration}" ry="0.06"/>
 							</f:each>
 						</f:wrapper>
 					</f:each>
