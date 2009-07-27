@@ -20,6 +20,9 @@ function setNodeStyle(node, styleName, styleValue) {
 	if (styleNamesThatTakePx[styleName]) {
 		styleValue = Math.round(styleValue) + "px";
 	}
+	if (styleName === "float") {
+		styleName = "cssFloat"; // will need to be "styleFloat" for IE
+	}
 	
 	node.style[styleName] = styleValue;
 }

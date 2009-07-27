@@ -34,16 +34,39 @@ template () {
 	writeString = template (s::String) {
 		<f:wrapper>{s}</f:wrapper>
 	},
-	writeNewLine = <br />,
+	writeNewLine = <br style-clear="both" />,
 	writePointLink = template (infon::Pipe) {
-		<img width="13" height="13" src="http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4">
+		target = fetch (takeOne (getInfonRole ulinkTarget infon)),
+		time = fetch (Situation:propTime target),
+		<span>
+			<img width="13" height="13" src="http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4">
 		
-		</img>
+			</img>
+			({time})
+		</span>
+	},
+	writeThumbnails = template (infons::List Pipe) {
+		<div style-float="right" style-margin-right="-350">
+			<f:each infons as infon>
+				timeObject = fetch (takeOne (getInfonRole ulinkTarget infon)),
+				video = fetch (takeOne (bindUnitSet Situation:propVideo (bindSetUnit getAllInherits (Situation:container timeObject)))),
+				time = fetch (Situation:propTime timeObject),
+				getThumbnailURL = function (id::String, time::Number) {
+					return "http:/"+"/media.eversplosion.com/crop.php?file="+id+"-scrub&time="+time;
+				},
+				<div>
+					//{time} - {ExtVideo:id video}
+					<img src="{getThumbnailURL (ExtVideo:id video) time}" style-padding="5" style-border="1px solid #ccc" style-margin="5" />
+				</div>
+			</f:each>
+		</div>
 	},
 	
 	
-	
-	f = function (writeString::String->XMLP, writeNewLine::XMLP, writePointLink::Pipe->XMLP, s::String, pointsAndLinks::JSON)::List XMLP {
+	f = function (writeString::String->XMLP, writeNewLine::XMLP, writePointLink::Pipe->XMLP, writeThumbnails::List Pipe->XMLP, s::String, pointsAndLinks::JSON)::List XMLP {
+		
+		//console.log("javascript writer being called", pointsAndLinks);
+		
 		var ret = [];
 		
 		function out() {
@@ -70,20 +93,45 @@ template () {
 		forEach(newLines, function (i) {
 			inserts.push({
 				index: i,
-				out: out(writeNewLine)
+				out: out(writeNewLine),
+				type: "newLine"
 			});
 		});
 		
 		forEach(pointsAndLinks, function (pointAndLink) {
 			inserts.push({
 				index: pointAndLink.asArray[0],
-				out: out(writePointLink, pointAndLink.asArray[1])
+				out: out(writePointLink, pointAndLink.asArray[1]),
+				type: "link",
+				link: pointAndLink.asArray[1]
 			});
 		});
 		
 		inserts.sort(function (a, b) {
 			return a.index - b.index;
 		});
+		
+		// put in thumbnail bars
+		for (var i = 0; i < inserts.length; i++) {
+			if (inserts[i].type === "newLine") {
+				var links = [];
+				for (var j = i+1; j < inserts.length; j++) {
+					if (inserts[j].type === "newLine") break;
+					else if (inserts[j].type === "link") {
+						links.push(inserts[j].link);
+					}
+				}
+				if (links.length > 0) {
+					inserts.splice(i+1, 0, {
+						index: inserts[i].index,
+						out: out(writeThumbnails, arrayToList(links)),
+						type: "thumbnails"
+					});
+				}
+				//console.log("did a newline", links);
+			}
+		}
+		
 		
 		var index = 0;
 		forEach(inserts, function (insert) {
@@ -96,14 +144,14 @@ template () {
 	
 		return arrayToList(ret);
 	},
-	markup = f writeString writeNewLine writePointLink essayText (fetch (jsonify pointsAndLinks)),
+	markup = f writeString writeNewLine writePointLink writeThumbnails essayText (fetch (jsonify pointsAndLinks)),
 	
 	writeList = template (xs::List XMLP) {
 		<f:each xs as x>
 			<f:call>x</f:call>
 		</f:each>
 	},
-	<div class="essayLarge">
+	<div class="essayLarge" style-margin-right="350">
 		<div>
 			<f:call>writeList markup</f:call>
 		</div>
