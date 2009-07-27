@@ -11,9 +11,10 @@ template (videoTimeline::VideoTimeline) {
 	// UI parameters:
 	screenWidth = fetch (UI.ui:screenWidth ui.ui),
 	scrubberWidth = difference screenWidth videoWidth,
+	scrubberHeight = videoHeight,
 	scrollFraction = 0.1,
-	scrollHeight = product videoHeight scrollFraction,
-	zoomHeight = difference videoHeight scrollHeight,
+	scrollHeight = product scrubberHeight scrollFraction,
+	zoomHeight = difference scrubberHeight scrollHeight,
 	minZoomDuration = 60,
 	
 
@@ -45,6 +46,10 @@ template (videoTimeline::VideoTimeline) {
 	timeToZoomPixels = t -> durationToZoomWidth (difference t zoomStart),
 	zoomPixelsToTime = x -> sum (zoomWidthToDuration x) zoomStart,
 	
+	// SVG transform stuff:
+	scrollScale = quotient scrubberWidth videoDuration,
+	zoomScale = quotient scrubberWidth zoomDuration,
+	
 	<f:wrapper>
 		<f:on init>
 			add(scrubberTicks, 0.1),
@@ -61,7 +66,13 @@ template (videoTimeline::VideoTimeline) {
 			add(zoomDurationS, product videoDuration 0.1),
 		</f:on>
 
-		<f:wrapper> // wrapper for entire scrubber, for scrolling and mouseout
+		// wrapper for entire scrubber, for scrolling and mouseout:
+		<svg:svg style-position="absolute" style-width="{scrubberWidth}" style-height="{scrubberHeight}">
+			<svg:defs>
+				<svg:line id="zoomLine" y1="0" y2="1" stroke-width="{reciprocal zoomScale}"/>
+				<svg:line id="scrollLine" y1="0" y2="1" stroke-width="{reciprocal scrollScale}"/>
+			</svg:defs>
+			
 			<f:on mousescroll> // zoom in or out on zoomed scrubber
 				//can't make duration too small:
 				minDurationDelta = difference minZoomDuration zoomDuration,
@@ -82,9 +93,7 @@ template (videoTimeline::VideoTimeline) {
 			</f:on>
 		
 			// the zoomed in part of the scrubber:
-			<div style-position="absolute"
-				style-width="{scrubberWidth}" style-height="{zoomHeight}"
-				style-background="#AAA">
+			<f:wrapper>
 				<f:on mousedown> // begin selecting
 					add(selectStartS, zoomPixelsToTime event.offsetX),
 					add(selectDurationS, 0),
@@ -116,24 +125,20 @@ template (videoTimeline::VideoTimeline) {
 						add(selectDurationS, newDuration)
 					}
 				</f:on>
-			
-				<f:each scrubberTicks as tickTime>
-					<div style-position="absolute" style-left="{timeToZoomPixels (product videoDuration tickTime)}"
-						style-height="{zoomHeight}"
-						style-borderLeft="1px solid #444"/>
-				</f:each>
-				<div style-position="absolute" style-left="{timeToZoomPixels selectStart}"
-					style-width="{max 1 (durationToZoomWidth selectDuration)}" style-height="{zoomHeight}"
-					style-background="rgba(192,192,255,0.5)"/>
-				<div style-position="absolute" style-left="{timeToZoomPixels previewTime}"
-					style-height="{zoomHeight}"
-					style-borderLeft="1px solid #FFF"/>
-			</div>
+
+				<svg:rect x="0" y="0" width="100%" height="{zoomHeight}" fill="#AAA"/> // background
+				<svg:g transform="{concat (svgScale zoomScale zoomHeight) (svgTranslate (negation zoomStart) 0)}">
+					<f:each scrubberTicks as tickTime>
+						x = product videoDuration tickTime,
+						<svg:use xlink:href="#zoomLine" x="{x}" stroke="#444"/>
+					</f:each>
+					<svg:rect x="{selectStart}" y="0" width="{max 1 selectDuration}" height="1" fill="#CCF" opacity="0.5"/>
+					<svg:use xlink:href="#zoomLine" x="{previewTime}" stroke="#FFF"/>
+				</svg:g>
+			</f:wrapper>
 	
 			// the scrollbar part of the scrubber:
-			<div style-position="absolute" style-top="{zoomHeight}"
-				style-width="{scrubberWidth}" style-height="{scrollHeight}"
-				style-background="#AAF">
+			<f:wrapper>
 				<f:on mousedown> // begin scrolling
 					add(scrollingS, null)
 				</f:on>
@@ -160,22 +165,18 @@ template (videoTimeline::VideoTimeline) {
 					}
 				</f:on>
 			
-				<div style-position="absolute"
-					style-width="{durationToScrollWidth loadedTime}" style-height="{scrollHeight}"
-					style-background="#88F"/>
-				<f:each scrubberTicks as tickTime>
-					<div style-position="absolute" style-left="{timeToScrollPixels (product videoDuration tickTime)}"
-						style-height="{scrollHeight}"
-						style-borderLeft="1px solid #444"/>
-				</f:each>
-				<div style-position="absolute" style-left="{timeToScrollPixels zoomStart}"
-					style-width="{durationToScrollWidth zoomDuration}" style-height="{difference scrollHeight 2}"
-					style-border="1px solid" style-background="rgba(192,192,192,0.8)"/>
-				<div style-position="absolute" style-left="{timeToScrollPixels previewTime}"
-					style-height="{scrollHeight}"
-					style-borderLeft="1px solid #FFF"/>
-			</div>
-		</f:wrapper>
+				<svg:rect x="0" y="{zoomHeight}" width="100%" height="{scrollHeight}" fill="#AAF"/> // background
+				<svg:g transform="{concat (svgTranslate 0 zoomHeight) (svgScale scrollScale scrollHeight)}">
+					<svg:rect x="0" y="0" width="{loadedTime}" height="1" fill="#88F"/>
+					<f:each scrubberTicks as tickTime>
+						x = product videoDuration tickTime,
+						<svg:use xlink:href="#scrollLine" x="{x}" stroke="#444"/>
+					</f:each>
+					<svg:rect x="{zoomStart}" y="0" width="{zoomDuration}" height="1px" fill="#CCC" fill-opacity="0.8"/>
+					<svg:use xlink:href="#scrollLine" x="{previewTime}" stroke="#FFF"/>
+				</svg:g>
+			</f:wrapper>
+		</svg:svg>
 		
 		// the preview video:
 		<div style-position="absolute" style-left="{scrubberWidth}">
