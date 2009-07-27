@@ -22,7 +22,18 @@ template (essay::Situation) {
 	// state
 	videoTimelines = state(Set VideoTimeline),
 	popup = state(Unit Popup),
+	
 	hoveredInfon = state(Unit Pipe),
+	hoveredInfonEvents = template (infon::Pipe) {
+		<f:wrapper>
+			<f:on mouseover>
+				add(hoveredInfon, infon)
+			</f:on>
+			<f:on mouseout>
+				remove(hoveredInfon)
+			</f:on>
+		</f:wrapper>
+	},
 	
 	
 	// things to extract from the essay

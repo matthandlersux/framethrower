@@ -19,24 +19,9 @@ template () {
 	
 	pointsAndLinks = bindSet (pair -> mapUnitSet (mapUnit2 makeTuple2 (fst pair)) (snd pair)) textpointInfonPairs :: Set (Tuple2 Number Pipe),
 	
-	//(mapSet Situation:propTime textpoints)
-	
-	//getInfonsAboutRole tp ulinkSource
 	
 	
-	
-	
-	
-	hoverInfon = template (infon::Pipe) {
-		<f:wrapper>
-			<f:on mouseover>
-				add(hoveredInfon, infon)
-			</f:on>
-			<f:on mouseout>
-				remove(hoveredInfon)
-			</f:on>
-		</f:wrapper>
-	},
+
 	
 
 	
@@ -49,7 +34,7 @@ template () {
 		time = fetch (Situation:propTime target),
 		<span>
 			<img width="13" height="13" src="http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4">
-				<f:call>hoverInfon infon</f:call>
+				<f:call>hoveredInfonEvents infon</f:call>
 			</img>
 			({time})
 		</span>
@@ -59,15 +44,20 @@ template () {
 			<f:each infons as infon>
 				timeObject = fetch (takeOne (getInfonRole ulinkTarget infon)),
 				video = fetch (takeOne (bindUnitSet Situation:propVideo (bindSetUnit getAllInherits (Situation:container timeObject)))),
-				time = fetch (Situation:propTime timeObject),
+				time = Situation:propTime timeObject,
+				intervalInfon = getInfonsAboutRole timeObject lineHasEndpointsBetween,
+				intervalStart = bindUnit Situation:propTime (takeOne (bindSet (getInfonRole lineHasEndpointsStart) intervalInfon)),
+				
+				myReactiveOr = x -> y -> flattenUnit (reactiveIfThen x x y),
+				
 				getThumbnailURL = function (id::String, time::Number) {
 					return "http:/"+"/media.eversplosion.com/crop.php?file="+id+"-scrub&time="+time;
 				},
 				class = reactiveIfThen (bindUnit (reactiveEqual infon) hoveredInfon) "#fc0" "transparent",
 				<div>
 					//{time} - {ExtVideo:id video}
-					<img src="{getThumbnailURL (ExtVideo:id video) time}" style-padding="5" style-border="1px solid #ccc" style-margin="5" style-backgroundColor="{class}">
-						<f:call>hoverInfon infon</f:call>
+					<img src="{getThumbnailURL (ExtVideo:id video) (fetch (myReactiveOr time intervalStart))}" style-padding="5" style-border="1px solid #ccc" style-margin="5" style-backgroundColor="{class}">
+						<f:call>hoveredInfonEvents infon</f:call>
 					</img>
 				</div>
 			</f:each>
