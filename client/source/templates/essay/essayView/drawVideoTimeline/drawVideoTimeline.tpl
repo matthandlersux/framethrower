@@ -16,7 +16,6 @@ template (videoTimeline::VideoTimeline) {
 	scrollHeight = product scrubberHeight scrollFraction,
 	zoomHeight = difference scrubberHeight scrollHeight,
 	minZoomDuration = 60,
-	
 
 	// UI state:
 	scrubberTicks = state(Set Number),
@@ -50,6 +49,15 @@ template (videoTimeline::VideoTimeline) {
 	scrollScale = quotient scrubberWidth videoDuration,
 	zoomScale = quotient scrubberWidth zoomDuration,
 	
+	// ontology stuff:
+	timepoints = filterByType timelinePoint (Situation:contains movie) :: Set Situation,
+	timeintervals = filterByType lineInterval (Situation:contains movie) :: Set Situation,
+	getLinksFromTime = time -> getInfonsAboutRole time ulinkTarget :: Situation -> Set Pipe,
+	
+	// harold, dunno if you'll need something like these? It builds a set of tuples out of points and the things they link to.
+	timepointInfonPairs = mapSet (timepoint -> makeTuple2 (Situation:propTime timepoint) (getLinksFromTime timepoint)) timepoints :: Set (Tuple2 (Unit Number) (Set Pipe)),
+	pointsAndLinks = bindSet (pair -> mapUnitSet (mapUnit2 makeTuple2 (fst pair)) (snd pair)) timepointInfonPairs :: Set (Tuple2 Number Pipe),
+	
 	<f:wrapper>
 		<f:on init>
 			add(scrubberTicks, 0.1),
@@ -71,6 +79,8 @@ template (videoTimeline::VideoTimeline) {
 			<svg:defs>
 				<svg:line id="zoomLine" y1="0" y2="1" stroke-width="{reciprocal zoomScale}"/>
 				<svg:line id="scrollLine" y1="0" y2="1" stroke-width="{reciprocal scrollScale}"/>
+				<svg:rect id="zoomPoint" y="0.3" width="{quotient 10 zoomScale}" height="0.4" stroke-width="0.04" rx="{quotient 3 zoomScale}" ry="0.12"/>
+				<svg:rect id="scrollPoint" y="0.3" width="{quotient 5 scrollScale}" height="0.4" stroke-width="0.04" rx="{quotient 1.5 scrollScale}" ry="0.12"/>
 			</svg:defs>
 			
 			<f:on mousescroll> // zoom in or out on zoomed scrubber
@@ -132,7 +142,27 @@ template (videoTimeline::VideoTimeline) {
 						x = product videoDuration tickTime,
 						<svg:use xlink:href="#zoomLine" x="{x}" stroke="#444"/>
 					</f:each>
-					<svg:rect x="{selectStart}" y="0" width="{max 1 selectDuration}" height="1" fill="#CCF" opacity="0.5"/>
+					
+					<f:each timepoints as timepoint>
+						// TODO deal with multiple infons per timepoint
+						infon = fetch (takeOne (getLinksFromTime timepoint)),
+						
+						<svg:use xlink:href="#zoomPoint" x="{Situation:propTime timepoint}" fill="orange" fill-opacity="0.5" stroke="orange">
+							<f:call>hoveredInfonEvents infon</f:call>
+						</svg:use>
+						// <div>{fetch (Situation:propTime timepoint)} - {getLinksFromTime timepoint}</div>
+					</f:each>
+					
+					// <f:each timeintervals as timeinterval>
+					// 	intervalInfon = fetch (takeOne (getInfonsAboutRole timeinterval lineHasEndpointsBetween)),
+					// 	intervalStart = fetch (takeOne (getInfonRole lineHasEndpointsStart intervalInfon)),
+					// 	intervalEnd = fetch (takeOne (getInfonRole lineHasEndpointsEnd intervalInfon)),
+					// 	<div>{fetch (Situation:propTime intervalStart)} - {fetch (Situation:propTime intervalEnd)} - {getLinksFromTime timeinterval}</div>
+					// </f:each>
+
+					<svg:rect x="{selectStart}" y="0" width="{selectDuration}" height="1" fill="#CCF" opacity="0.5"/>
+					<svg:use xlink:href="#zoomLine" x="{selectStart}" stroke="#CCF"/>
+
 					<svg:use xlink:href="#zoomLine" x="{previewTime}" stroke="#FFF"/>
 				</svg:g>
 			</f:wrapper>
@@ -172,6 +202,12 @@ template (videoTimeline::VideoTimeline) {
 						x = product videoDuration tickTime,
 						<svg:use xlink:href="#scrollLine" x="{x}" stroke="#444"/>
 					</f:each>
+					
+					<f:each timepoints as timepoint>
+						<svg:use xlink:href="#scrollPoint" x="{Situation:propTime timepoint}" fill="orange" fill-opacity="0.5" stroke="orange"/>
+						// <div>{fetch (Situation:propTime timepoint)} - {getLinksFromTime timepoint}</div>
+					</f:each>
+					
 					<svg:rect x="{zoomStart}" y="0" width="{zoomDuration}" height="1px" fill="#CCC" fill-opacity="0.8"/>
 					<svg:use xlink:href="#scrollLine" x="{previewTime}" stroke="#FFF"/>
 				</svg:g>
