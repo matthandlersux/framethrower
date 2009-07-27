@@ -25,9 +25,9 @@ template (videoTimeline::VideoTimeline) {
 	loadedTime = fetch loadedTimeS,
 	previewTimeS = VideoTimeline:previewTime videoTimeline,
 	previewTime = fetch previewTimeS,
-	zoomStartS = VideoTimeline:scrollStart videoTimeline,
+	zoomStartS = VideoTimeline:zoomStart videoTimeline,
 	zoomStart = fetch zoomStartS,
-	zoomDurationS = VideoTimeline:scrollDuration videoTimeline,
+	zoomDurationS = VideoTimeline:zoomDuration videoTimeline,
 	zoomDuration = fetch zoomDurationS,
 	selectStartS = VideoTimeline:selectStart videoTimeline,
 	selectStart = fetch selectStartS,
@@ -130,7 +130,7 @@ template (videoTimeline::VideoTimeline) {
 					style-borderLeft="1px solid #FFF"/>
 			</div>
 	
-			// the scroll bar part of the scrubber:
+			// the scrollbar part of the scrubber:
 			<div style-position="absolute" style-top="{zoomHeight}"
 				style-width="{scrubberWidth}" style-height="{scrollHeight}"
 				style-background="#AAF">
@@ -141,7 +141,7 @@ template (videoTimeline::VideoTimeline) {
 					remove(scrollingS)
 				</f:on>
 				<f:on mouseup> // finish scrolling
-					extract scrollingS as _ {					
+					extract scrollingS as _ {
 						remove(scrollingS),
 						newTime = scrollPixelsToTime event.offsetX,
 						newStart = difference newTime (quotient zoomDuration 2),

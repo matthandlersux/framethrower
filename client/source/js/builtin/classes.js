@@ -57,8 +57,8 @@ var classesToMake = {
 	"VideoTimeline": {
 		prop: {
 			"movie": "Situation",
-			"scrollStart": "Unit Number",
-			"scrollDuration": "Unit Number",
+			"zoomStart": "Unit Number",
+			"zoomDuration": "Unit Number",
 			"selectStart": "Unit Number",
 			"selectDuration": "Unit Number",
 			"previewTime": "Unit Number",

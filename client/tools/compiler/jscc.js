@@ -844,9 +844,12 @@ function print_dfa_table( dfa_states )
 					
 					if( grp_start == k - 1 )
 						code += "info.src.charCodeAt( pos ) == " + grp_start;
-					else					
+					else if (k === MAX_CHAR) {
+						code += "info.src.charCodeAt( pos ) >= " + grp_start;
+					} else {
 						code += "( info.src.charCodeAt( pos ) >= " + grp_start +
 									" && info.src.charCodeAt( pos ) <= " + (k-1) + " )";
+					}
 					grp_start = -1;
 					k--;
 				}
