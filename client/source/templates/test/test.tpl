@@ -1,4 +1,4 @@
 template () {
-	blah = 5::String->Number,
-	<div>Hi</div>
+	blah = 5,
+	<html:div xlink:href="http://www.google.com">Hi</div>
 }
