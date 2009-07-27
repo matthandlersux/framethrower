@@ -79,8 +79,8 @@ template (videoTimeline::VideoTimeline) {
 			<svg:defs>
 				<svg:line id="zoomLine" y1="0" y2="1" stroke-width="{reciprocal zoomScale}"/>
 				<svg:line id="scrollLine" y1="0" y2="1" stroke-width="{reciprocal scrollScale}"/>
-				<svg:rect id="zoomPoint" y="0.3" width="{quotient 10 zoomScale}" height="0.4" stroke-width="0.04" rx="{quotient 3 zoomScale}" ry="0.12"/>
-				<svg:rect id="scrollPoint" y="0.3" width="{quotient 5 scrollScale}" height="0.4" stroke-width="0.04" rx="{quotient 1.5 scrollScale}" ry="0.12"/>
+				<svg:rect id="zoomPoint" y="0.3" width="{quotient 10 zoomScale}" height="0.4" rx="{quotient 3 zoomScale}" ry="0.12"/>//stroke-width="0.04"/>
+				<svg:rect id="scrollPoint" y="0.3" width="{quotient 5 scrollScale}" height="0.4" rx="{quotient 1.5 scrollScale}" ry="0.12"/>//stroke-width="0.04"/>
 			</svg:defs>
 			
 			<f:on mousescroll> // zoom in or out on zoomed scrubber
@@ -146,11 +146,14 @@ template (videoTimeline::VideoTimeline) {
 					<f:each timepoints as timepoint>
 						// TODO deal with multiple infons per timepoint
 						infon = fetch (takeOne (getLinksFromTime timepoint)),
-						
-						<svg:use xlink:href="#zoomPoint" x="{Situation:propTime timepoint}" fill="orange" fill-opacity="0.5" stroke="orange">
-							<f:call>hoveredInfonEvents infon</f:call>
-						</svg:use>
-						// <div>{fetch (Situation:propTime timepoint)} - {getLinksFromTime timepoint}</div>
+						<f:wrapper>
+							<svg:use xlink:href="#zoomPoint" x="{Situation:propTime timepoint}" fill="white" opacity="0.5">
+								<f:call>hoveredInfonEvents infon</f:call>
+							</svg:use>
+							<f:each reactiveEqual (fetch hoveredInfon) infon as _>
+								<svg:use pointer-events="none" xlink:href="#zoomPoint" x="{Situation:propTime timepoint}" fill="orange"/>
+							</f:each>
+						</f:wrapper>
 					</f:each>
 					
 					// <f:each timeintervals as timeinterval>
@@ -160,10 +163,10 @@ template (videoTimeline::VideoTimeline) {
 					// 	<div>{fetch (Situation:propTime intervalStart)} - {fetch (Situation:propTime intervalEnd)} - {getLinksFromTime timeinterval}</div>
 					// </f:each>
 
-					<svg:rect x="{selectStart}" y="0" width="{selectDuration}" height="1" fill="#CCF" opacity="0.5"/>
-					<svg:use xlink:href="#zoomLine" x="{selectStart}" stroke="#CCF"/>
-
-					<svg:use xlink:href="#zoomLine" x="{previewTime}" stroke="#FFF"/>
+					<svg:rect pointer-events="none" x="{selectStart}" y="0" width="{selectDuration}" height="1" fill="#CCF" opacity="0.5"/>
+					<svg:use pointer-events="none" xlink:href="#zoomLine" x="{selectStart}" stroke="#CCF"/>
+					
+					<svg:use pointer-events="none" xlink:href="#zoomLine" x="{previewTime}" stroke="#FFF"/>
 				</svg:g>
 			</f:wrapper>
 	
@@ -204,11 +207,16 @@ template (videoTimeline::VideoTimeline) {
 					</f:each>
 					
 					<f:each timepoints as timepoint>
-						<svg:use xlink:href="#scrollPoint" x="{Situation:propTime timepoint}" fill="orange" fill-opacity="0.5" stroke="orange"/>
-						// <div>{fetch (Situation:propTime timepoint)} - {getLinksFromTime timepoint}</div>
+						infon = fetch (takeOne (getLinksFromTime timepoint)),
+						<f:wrapper>
+							<svg:use xlink:href="#scrollPoint" x="{Situation:propTime timepoint}" fill="white" opacity="0.5"/>
+							<f:each reactiveEqual (fetch hoveredInfon) infon as _>
+								<svg:use xlink:href="#scrollPoint" x="{Situation:propTime timepoint}" fill="orange"/>
+							</f:each>
+						</f:wrapper>
 					</f:each>
 					
-					<svg:rect x="{zoomStart}" y="0" width="{zoomDuration}" height="1px" fill="#CCC" fill-opacity="0.8"/>
+					<svg:rect x="{zoomStart}" y="0" width="{zoomDuration}" height="1px" fill="#CCC" opacity="0.8"/>
 					<svg:use xlink:href="#scrollLine" x="{previewTime}" stroke="#FFF"/>
 				</svg:g>
 			</f:wrapper>
