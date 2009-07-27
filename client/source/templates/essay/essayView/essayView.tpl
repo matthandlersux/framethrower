@@ -22,6 +22,7 @@ template (essay::Situation) {
 	// state
 	videoTimelines = state(Set VideoTimeline),
 	popup = state(Unit Popup),
+	hoveredInfon = state(Unit Pipe),
 	
 	
 	// things to extract from the essay
@@ -57,34 +58,34 @@ template (essay::Situation) {
 				<div style-position="absolute" style-width="{screenWidth}" style-height="{videoTimelinesTotalHeight}" style-left="0" style-top="{essayHeight}">
 					<f:each videoTimelines as videoTimeline>
 						<div style-width="{screenWidth}" style-height="{videoTimelineExpandedHeight}">
-							// <f:call>drawVideoTimeline videoTimeline</f:call>
-							<f:call>
-								movie = VideoTimeline:movie videoTimeline,
-								timepoints = filterByType timelinePoint (Situation:contains movie) :: Set Situation,
-								timeintervals = filterByType lineInterval (Situation:contains movie) :: Set Situation,
-								getLinksFromTime = time -> getInfonsAboutRole time ulinkTarget :: Situation -> Set Pipe,
-								
-								// harold, dunno if you'll need something like these? It builds a set of tuples out of points and the things they link to.
-								timepointInfonPairs = mapSet (timepoint -> makeTuple2 (Situation:propTime timepoint) (getLinksFromTime timepoint)) timepoints :: Set (Tuple2 (Unit Number) (Set Pipe)),
-								pointsAndLinks = bindSet (pair -> mapUnitSet (mapUnit2 makeTuple2 (fst pair)) (snd pair)) timepointInfonPairs :: Set (Tuple2 Number Pipe),
-								
-								
-								<div style-width="{screenWidth}" style-height="{videoTimelineExpandedHeight}" style-overflow="auto">
-									<div>TimePoints:
-										<f:each timepoints as timepoint>
-											<div>{fetch (Situation:propTime timepoint)} - {getLinksFromTime timepoint}</div>
-										</f:each>
-									</div>
-									<div>Time Intervals:
-										<f:each timeintervals as timeinterval>
-											intervalInfon = fetch (takeOne (getInfonsAboutRole timeinterval lineHasEndpointsBetween)),
-											intervalStart = fetch (takeOne (getInfonRole lineHasEndpointsStart intervalInfon)),
-											intervalEnd = fetch (takeOne (getInfonRole lineHasEndpointsEnd intervalInfon)),
-											<div>{fetch (Situation:propTime intervalStart)} - {fetch (Situation:propTime intervalEnd)} - {getLinksFromTime timeinterval}</div>
-										</f:each>
-									</div>
-								</div>
-							</f:call>
+							<f:call>drawVideoTimeline videoTimeline</f:call>
+							// <f:call>
+							// 	movie = VideoTimeline:movie videoTimeline,
+							// 	timepoints = filterByType timelinePoint (Situation:contains movie) :: Set Situation,
+							// 	timeintervals = filterByType lineInterval (Situation:contains movie) :: Set Situation,
+							// 	getLinksFromTime = time -> getInfonsAboutRole time ulinkTarget :: Situation -> Set Pipe,
+							// 	
+							// 	// harold, dunno if you'll need something like these? It builds a set of tuples out of points and the things they link to.
+							// 	timepointInfonPairs = mapSet (timepoint -> makeTuple2 (Situation:propTime timepoint) (getLinksFromTime timepoint)) timepoints :: Set (Tuple2 (Unit Number) (Set Pipe)),
+							// 	pointsAndLinks = bindSet (pair -> mapUnitSet (mapUnit2 makeTuple2 (fst pair)) (snd pair)) timepointInfonPairs :: Set (Tuple2 Number Pipe),
+							// 	
+							// 	
+							// 	<div style-width="{screenWidth}" style-height="{videoTimelineExpandedHeight}" style-overflow="auto">
+							// 		<div>TimePoints:
+							// 			<f:each timepoints as timepoint>
+							// 				<div>{fetch (Situation:propTime timepoint)} - {getLinksFromTime timepoint}</div>
+							// 			</f:each>
+							// 		</div>
+							// 		<div>Time Intervals:
+							// 			<f:each timeintervals as timeinterval>
+							// 				intervalInfon = fetch (takeOne (getInfonsAboutRole timeinterval lineHasEndpointsBetween)),
+							// 				intervalStart = fetch (takeOne (getInfonRole lineHasEndpointsStart intervalInfon)),
+							// 				intervalEnd = fetch (takeOne (getInfonRole lineHasEndpointsEnd intervalInfon)),
+							// 				<div>{fetch (Situation:propTime intervalStart)} - {fetch (Situation:propTime intervalEnd)} - {getLinksFromTime timeinterval}</div>
+							// 			</f:each>
+							// 		</div>
+							// 	</div>
+							// </f:call>
 						</div>
 					</f:each>
 				</div>

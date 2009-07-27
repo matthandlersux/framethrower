@@ -27,7 +27,16 @@ template () {
 	
 	
 	
-	
+	hoverInfon = template (infon::Pipe) {
+		<f:wrapper>
+			<f:on mouseover>
+				add(hoveredInfon, infon)
+			</f:on>
+			<f:on mouseout>
+				remove(hoveredInfon)
+			</f:on>
+		</f:wrapper>
+	},
 	
 
 	
@@ -40,7 +49,7 @@ template () {
 		time = fetch (Situation:propTime target),
 		<span>
 			<img width="13" height="13" src="http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4">
-		
+				<f:call>hoverInfon infon</f:call>
 			</img>
 			({time})
 		</span>
@@ -54,9 +63,12 @@ template () {
 				getThumbnailURL = function (id::String, time::Number) {
 					return "http:/"+"/media.eversplosion.com/crop.php?file="+id+"-scrub&time="+time;
 				},
+				class = reactiveIfThen (bindUnit (reactiveEqual infon) hoveredInfon) "#fc0" "transparent",
 				<div>
 					//{time} - {ExtVideo:id video}
-					<img src="{getThumbnailURL (ExtVideo:id video) time}" style-padding="5" style-border="1px solid #ccc" style-margin="5" />
+					<img src="{getThumbnailURL (ExtVideo:id video) time}" style-padding="5" style-border="1px solid #ccc" style-margin="5" style-backgroundColor="{class}">
+						<f:call>hoverInfon infon</f:call>
+					</img>
 				</div>
 			</f:each>
 		</div>
