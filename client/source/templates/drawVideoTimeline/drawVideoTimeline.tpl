@@ -3,7 +3,7 @@ template () {
 	// video parameters:
 	videoHeight = 180,
 	videoWidth = product videoHeight 2.222,
-	videoDuration = 7668,
+	// videoDuration = 7668,
 	videoURL = getMediaURL "mr" "scrub.mp4",
 	
 	// arbitrary UI constants:
@@ -14,6 +14,7 @@ template () {
 	// UI parameters:
 	screenWidth = fetch (UI.ui:screenWidth ui.ui),
 	scrubberWidth = difference screenWidth videoWidth,
+	videoDuration = scrubberWidth,
 	scrubberHeight = videoHeight,
 	scrollHeight = 16,
 	zoomHeight = difference scrubberHeight scrollHeight,
@@ -36,19 +37,23 @@ template () {
 	selectDuration = fetch selectDurationS,
 	
 	// conversion between seconds and pixels along the scroll bar:
-	durationToScrollWidth = scale videoDuration scrubberWidth,
-	scrollWidthToDuration = scale scrubberWidth videoDuration,
-	timeToScrollPixels = durationToScrollWidth,
-	scrollPixelsToTime = scrollWidthToDuration,
+	// durationToScrollWidth = scale videoDuration scrubberWidth,
+	// scrollWidthToDuration = scale scrubberWidth videoDuration,
+	// timeToScrollPixels = durationToScrollWidth,
+	// scrollPixelsToTime = scrollWidthToDuration,
+	scrollPixelsToTime = x -> x,
 	// conversion between seconds and pixels in the zoomed scrubber:
-	durationToZoomWidth = scale zoomDuration scrubberWidth,
-	zoomWidthToDuration = scale scrubberWidth zoomDuration,
-	timeToZoomPixels = t -> durationToZoomWidth (difference t zoomStart),
-	zoomPixelsToTime = x -> sum (zoomWidthToDuration x) zoomStart,
+	// durationToZoomWidth = scale zoomDuration scrubberWidth,
+	// zoomWidthToDuration = scale scrubberWidth zoomDuration,
+	// timeToZoomPixels = t -> durationToZoomWidth (difference t zoomStart),
+	// zoomPixelsToTime = x -> sum (zoomWidthToDuration x) zoomStart,
+	zoomPixelsToTime = x -> x,
 	
 	// SVG transform stuff:
-	scrollScale = quotient scrubberWidth videoDuration,
-	zoomScale = quotient scrubberWidth zoomDuration,
+	// scrollScale = quotient scrubberWidth videoDuration,
+	// zoomScale = quotient scrubberWidth zoomDuration,
+	zoomScale = 1,
+	scrollScale = 1,
 	
 	// ontology stuff:
 	// timepoints = filterByType timelinePoint (Situation:contains movie) :: Set Situation,
@@ -120,10 +125,10 @@ template () {
 		// wrapper for entire scrubber:
 		<svg:svg style-position="absolute" style-width="{scrubberWidth}" style-height="{scrubberHeight}" color-rendering="optimizeSpeed" shape-rendering="optimizeSpeed" text-rendering="optimizeSpeed" image-rendering="optimizeSpeed">
 			<svg:defs>
-				<svg:line id="zoomLine" y1="0" y2="1" stroke-width="{reciprocal zoomScale}"/>
-				<svg:line id="scrollLine" y1="0" y2="1" stroke-width="{reciprocal scrollScale}"/>
-				<svg:rect id="zoomPoint" y="0.2" width="{quotient 10 zoomScale}" height="0.6" rx="{quotient 3 zoomScale}" ry="0.18"/>//stroke-width="0.04"/>
-				<svg:rect id="scrollPoint" y="0.2" width="{quotient 5 scrollScale}" height="0.6" rx="{quotient 1.5 scrollScale}" ry="0.18"/>//stroke-width="0.04"/>
+				<svg:line id="zoomLine" y1="0" y2="{zoomHeight}" stroke-width="{reciprocal zoomScale}"/>
+				<svg:line id="scrollLine" y1="{zoomHeight}" y2="{scrollHeight}" stroke-width="{reciprocal scrollScale}"/>
+				// <svg:rect id="zoomPoint" y="0.2" width="{quotient 10 zoomScale}" height="0.6" rx="{quotient 3 zoomScale}" ry="0.18"/>//stroke-width="0.04"/>
+				// <svg:rect id="scrollPoint" y="0.2" width="{quotient 5 scrollScale}" height="0.6" rx="{quotient 1.5 scrollScale}" ry="0.18"/>//stroke-width="0.04"/>
 			</svg:defs>
 		
 			// the zoomed in part of the scrubber:
@@ -158,18 +163,18 @@ template () {
 					// want cursor to remain in same place:
 					cursorFraction = quotient (difference previewTime zoomStart) zoomDuration,
 					newStart = difference previewTime (product cursorFraction newDuration),
-
+			
 					add(zoomStartS, clamp 0 (difference videoDuration newDuration) newStart),
 					add(zoomDurationS, newDuration),
 					// force cursor to mouse position, in case we had to clamp?
 					// add(previewTimeS, zoomPixelsToTime event.offsetX)
 				</f:on>
-
+			
 				<svg:rect x="0" y="0" width="100%" height="{zoomHeight}" fill="#CCC"/> // background
-				<svg:g transform="{concat (svgScale zoomScale zoomHeight) (svgTranslate (negation zoomStart) 0)}">
+				<svg:g> //transform="{concat (svgScale zoomScale zoomHeight) (svgTranslate (negation zoomStart) 0)}">
 					// <f:call>drawState</f:call>
-
-					<svg:rect pointer-events="none" x="{selectStart}" y="0" width="{selectDuration}" height="1" fill="#CCF" opacity="0.5"/>
+			
+					<svg:rect pointer-events="none" x="{selectStart}" y="0" width="{selectDuration}" height="{zoomHeight}" fill="#CCF" opacity="0.5"/>
 					<svg:use pointer-events="none" xlink:href="#zoomLine" x="{selectStart}" stroke="#CCF"/>
 					
 					<svg:use pointer-events="none" xlink:href="#zoomLine" x="{previewTime}" stroke="#FFF"/>
@@ -212,8 +217,8 @@ template () {
 				</f:on>
 			
 				<svg:rect x="0" y="{zoomHeight}" width="100%" height="{scrollHeight}" fill="#AAF"/> // background
-				<svg:g transform="{concat (svgTranslate 0 zoomHeight) (svgScale scrollScale scrollHeight)}">
-					<svg:rect x="{zoomStart}" y="0" width="{zoomDuration}" height="1px" fill="#AAA"/>
+				<svg:g> //transform="{concat (svgTranslate 0 zoomHeight) (svgScale scrollScale scrollHeight)}">
+					<svg:rect x="{zoomStart}" y="{zoomHeight}" width="{zoomDuration}" height="{scrollHeight}" fill="#AAA"/>
 
 					// <f:call>drawState</f:call>					
 				</svg:g>
