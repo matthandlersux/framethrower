@@ -138,17 +138,6 @@ template (videoTimeline::VideoTimeline) {
 				<f:on globalmouseup> // abandon selecting
 					remove(selectingS)
 				</f:on>
-				<f:on mouseup> // finish selecting
-					extract selectingS as _ {					
-						remove(selectingS),
-						newTime = zoomPixelsToTime event.offsetX,
-						newStart = min newTime selectStart,
-						newEnd = max newTime selectStart,
-						newDuration = difference newEnd newStart,
-						add(selectStartS, newStart),
-						add(selectDurationS, newDuration)
-					}
-				</f:on>
 				<f:on mousemove> // update preview time, and update selection if selecting
 					newTime = zoomPixelsToTime event.offsetX,
 					add(previewTimeS, newTime),
