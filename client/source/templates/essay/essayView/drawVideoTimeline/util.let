@@ -3,12 +3,21 @@ difference = subtract,
 clamp = a -> b -> x -> max a (min b x),
 negation = x -> difference 0 x,
 
-product = function(x::Number, y::Number)::Number { return x*y; },
-quotient = function(x::Number, y::Number)::Number { return x/y; },
 reciprocal = function(x::Number)::Number { return 1/x; },
 ceil = function(x::Number)::Number { return Math.ceil(x); },
+
+product = function(x::Number, y::Number)::Number { return x*y; },
+quotient = function(x::Number, y::Number)::Number { return x/y; },
+pow = function(x::Number, y::Number)::Number { return Math.pow(x,y); },
 max = function(x::Number, y::Number)::Number { return Math.max(x,y); },
 min = function(x::Number, y::Number)::Number { return Math.min(x,y); },
+
+sign = function(x::Number)::Number {
+	if(x>0) return 1;
+	if(x==0) return 0;
+	return -1;
+},
+
 // convert i from [0,m] to [0,n]
 scale = function(m::Number, n::Number, i::Number)::Number {
 	return i*n/m;
