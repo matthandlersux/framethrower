@@ -11,6 +11,7 @@ template (videoTimeline::VideoTimeline) {
 	// arbitrary UI constants:
 	minZoomDuration = 60,
 	initialDurationFraction = 0.1,
+	scrollwheelFactor = 0.8,
 	
 	// UI parameters:
 	screenWidth = fetch (UI.ui:screenWidth ui.ui),
@@ -118,7 +119,7 @@ template (videoTimeline::VideoTimeline) {
 			add(zoomDurationS, product videoDuration initialDurationFraction)
 		</f:on>
 
-		// wrapper for entire scrubber, for scrolling and mouseout:
+		// wrapper for entire scrubber:
 		<svg:svg style-position="absolute" style-width="{scrubberWidth}" style-height="{scrubberHeight}">
 			<svg:defs>
 				<svg:line id="zoomLine" y1="0" y2="1" stroke-width="{reciprocal zoomScale}"/>
@@ -126,32 +127,13 @@ template (videoTimeline::VideoTimeline) {
 				<svg:rect id="zoomPoint" y="0.2" width="{quotient 10 zoomScale}" height="0.6" rx="{quotient 3 zoomScale}" ry="0.18"/>//stroke-width="0.04"/>
 				<svg:rect id="scrollPoint" y="0.2" width="{quotient 5 scrollScale}" height="0.6" rx="{quotient 1.5 scrollScale}" ry="0.18"/>//stroke-width="0.04"/>
 			</svg:defs>
-			
-			<f:on mousescroll> // zoom in or out on zoomed scrubber
-				//can't make duration too small:
-				minDurationDelta = difference minZoomDuration zoomDuration,
-				//can't go past left end (t=0):
-				maxDurationDelta0 = zoomStart,
-				//can't go past right end (t=videoDuration):
-				maxDurationDelta1 = difference videoDuration (sum zoomStart zoomDuration),
-				// only half of delta goes in each direction, so we can have as much as twice the smallest one:
-				maxDurationDelta = product 2 (min maxDurationDelta0 maxDurationDelta1),
-				// use scrollWidthToDuration as a reasonable factor on wheelDelta:
-				durationDelta = clamp minDurationDelta maxDurationDelta (scrollWidthToDuration event.wheelDelta),
-			
-				add(zoomStartS, difference zoomStart (quotient durationDelta 2)),
-				add(zoomDurationS, sum zoomDuration durationDelta)
-			</f:on>
-			<f:on mouseout> // 'pop' back to selected position
-				add(previewTimeS, selectStart)
-			</f:on>
 		
 			// the zoomed in part of the scrubber:
 			<f:wrapper>
 				<f:on mousedown> // begin selecting
 					add(selectStartS, zoomPixelsToTime event.offsetX),
 					add(selectDurationS, 0),
-					add(selectingS,null)
+					add(selectingS, null)
 				</f:on>
 				<f:on globalmouseup> // abandon selecting
 					remove(selectingS)
@@ -178,6 +160,22 @@ template (videoTimeline::VideoTimeline) {
 						add(selectStartS, newStart),
 						add(selectDurationS, newDuration)
 					}
+				</f:on>
+				<f:on mouseout> // 'pop' back to selected position
+					add(previewTimeS, selectStart)
+				</f:on>
+				
+				<f:on mousescroll> // zoom in or out on zoomed scrubber
+					durationFactor = pow scrollwheelFactor (sign event.wheelDelta),
+					newDuration = clamp minZoomDuration videoDuration (product zoomDuration durationFactor),
+					// want cursor to remain in same place:
+					cursorFraction = quotient (difference previewTime zoomStart) zoomDuration,
+					newStart = difference previewTime (product cursorFraction newDuration),
+
+					add(zoomStartS, clamp 0 (difference videoDuration newDuration) newStart),
+					add(zoomDurationS, newDuration),
+					// force cursor to mouse position, in case we had to clamp?
+					// add(previewTimeS, zoomPixelsToTime event.offsetX)
 				</f:on>
 
 				<svg:rect x="0" y="0" width="100%" height="{zoomHeight}" fill="#CCC"/> // background
@@ -215,6 +213,17 @@ template (videoTimeline::VideoTimeline) {
 						maxStart = difference videoDuration zoomDuration,
 						add(zoomStartS, clamp 0 maxStart newStart)
 					}
+				</f:on>
+				
+				<f:on mousescroll> // zoom in or out on zoomed scrubber
+					durationFactor = pow scrollwheelFactor (sign event.wheelDelta),
+					newDuration = clamp minZoomDuration videoDuration (product zoomDuration durationFactor),
+					// zoom around center of scrollbar:
+					durationDelta = difference newDuration zoomDuration,
+					newStart = difference zoomStart (quotient durationDelta 2),
+
+					add(zoomStartS, clamp 0 (difference videoDuration newDuration) newStart),
+					add(zoomDurationS, newDuration)
 				</f:on>
 			
 				<svg:rect x="0" y="{zoomHeight}" width="100%" height="{scrollHeight}" fill="#AAF"/> // background
