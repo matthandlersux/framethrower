@@ -21,14 +21,21 @@ template (essay::Situation) {
 	
 	// state
 	videoTimelines = state(Set VideoTimeline),
-	//popup = state(Unit Popup),
-	testPopup = <div>Test</div>,
-	popup = state {
-		popup = create(Unit Popup),
-		instance = create(Popup, {content: testPopup, x: 100, y: 100, direction: 0, width: 400, height: 100}),
-		add(popup, instance),
-		popup
-	},
+	popup = state(Unit Popup),
+	// testPopup = <div>
+	// 	<f:call>
+	// 		extVideo = state {
+	// 			create(ExtVideo, {id: "mr", aspectRatio: 2.222, duration: 7668})
+	// 		},
+	// 		drawVideoPlayer extVideo 2000 10 400
+	// 	</f:call>
+	// </div>,
+	// popup = state {
+	// 	popup = create(Unit Popup),
+	// 	instance = create(Popup, {content: testPopup, x: 100, y: 100, direction: 1, width: 400, height: 300}),
+	// 	add(popup, instance),
+	// 	popup
+	// },
 	
 	
 	hoveredInfon = state(Unit Pipe),
@@ -39,6 +46,9 @@ template (essay::Situation) {
 			</f:on>
 			<f:on mouseout>
 				remove(hoveredInfon)
+			</f:on>
+			<f:on click>
+				popupInfon infon event.mouseX event.mouseY 0
 			</f:on>
 		</f:wrapper>
 	},
@@ -82,9 +92,14 @@ template (essay::Situation) {
 					</f:each>
 				</div>
 				
-				<f:each popup as popup>
-					<f:call>drawPopup popup</f:call>
+				<f:each popup as pop>
+					<f:call>drawPopup pop</f:call>
 				</f:each>
+				
+				// <f:on click>
+				// 	instance = create(Popup, {content: testPopup, x: event.mouseX, y: event.mouseY, direction: 1, width: 400, height: 300}),
+				// 	add(popup, instance)
+				// </f:on>
 			</div>
 		</f:call>
 
