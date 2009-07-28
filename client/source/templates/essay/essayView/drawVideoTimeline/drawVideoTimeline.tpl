@@ -22,7 +22,7 @@ template (videoTimeline::VideoTimeline) {
 
 	// UI state:
 	scrubberTicks = state(Set Number),
-	scrollingS = state(Unit Null),
+	scrollingS = state(Unit Number),
 	selectingS = state(Unit Null),
 	loadedTimeS = state(Unit Number),
 	loadedTime = fetch loadedTimeS,
@@ -192,26 +192,24 @@ template (videoTimeline::VideoTimeline) {
 			// the scrollbar part of the scrubber:
 			<f:wrapper>
 				<f:on mousedown> // begin scrolling
-					add(scrollingS, null)
+					newTime = scrollPixelsToTime event.offsetX,
+					scrollOffset = difference newTime zoomStart,
+					// if click is outside of the scroller, then center it at click:
+					extract boolToUnit (or (lessThan scrollOffset 0) (greaterThan scrollOffset zoomDuration)) as _ {
+						newStart = difference newTime (quotient zoomDuration 2),
+						add(zoomStartS, clamp 0 (difference videoDuration zoomDuration) newStart)
+						// don't need to update scrollOffset, since it is reactive
+					},
+					add(scrollingS, scrollOffset)
 				</f:on>
 				<f:on globalmouseup> // abandon scrolling
 					remove(scrollingS)
 				</f:on>
-				<f:on mouseup> // finish scrolling
-					extract scrollingS as _ {
-						remove(scrollingS),
+				<f:on mousemove> // update zoom if scrolling.
+					extract scrollingS as scrollOffset {
 						newTime = scrollPixelsToTime event.offsetX,
-						newStart = difference newTime (quotient zoomDuration 2),
-						maxStart = difference videoDuration zoomDuration,
-						add(zoomStartS, clamp 0 maxStart newStart)
-					}
-				</f:on>
-				<f:on mousemove> // update zoom if scrolling. TODO consolidate with mouseup code?
-					extract scrollingS as _ {
-						newTime = scrollPixelsToTime event.offsetX,
-						newStart = difference newTime (quotient zoomDuration 2),
-						maxStart = difference videoDuration zoomDuration,
-						add(zoomStartS, clamp 0 maxStart newStart)
+						newStart = difference newTime scrollOffset,
+						add(zoomStartS, clamp 0 (difference videoDuration zoomDuration) newStart)
 					}
 				</f:on>
 				
