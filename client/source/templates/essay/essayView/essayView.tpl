@@ -85,11 +85,11 @@ template (essay::Situation) {
 				</div>
 		
 				<div style-position="absolute" style-width="{screenWidth}" style-height="{videoTimelinesTotalHeight}" style-left="0" style-top="{essayHeight}">
-					// <f:each videoTimelines as videoTimeline>
-					// 	<div style-width="{screenWidth}" style-height="{videoTimelineExpandedHeight}">
-					// 		<f:call>drawVideoTimeline videoTimeline</f:call>
-					// 	</div>
-					// </f:each>
+					<f:each videoTimelines as videoTimeline>
+						<div style-width="{screenWidth}" style-height="{videoTimelineExpandedHeight}">
+							<f:call>drawVideoTimeline videoTimeline</f:call>
+						</div>
+					</f:each>
 				</div>
 				
 				<f:each popup as pop>

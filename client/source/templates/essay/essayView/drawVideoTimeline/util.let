@@ -30,7 +30,8 @@ svgTranslate = function(dx::Number, dy::Number) { return "translate("+dx+" "+dy+
 svgScale = function(kx::Number, ky::Number) { return "scale("+kx+" "+ky+") "; },
 
 getMediaURL = function(id::String, type::String)::String {
-	return "http:/"+"/media.eversplosion.com/media.php?id="+id+"&type="+type;
+	return "http:/"+"/media.eversplosion.com/tmp/"+id+"-"+type;
+	// return "http:/"+"/media.eversplosion.com/media.php?id="+id+"&type="+type;
 },
 
 getLocalMediaURL = function(id::String, type::String)::String {
