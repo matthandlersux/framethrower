@@ -12,6 +12,8 @@ template (videoTimeline::VideoTimeline) {
 	minZoomDuration = 60,
 	initialDurationFraction = 0.1,
 	scrollwheelFactor = 0.666,
+	smallTime = 60,
+	bigTime = 600,
 	
 	// UI parameters:
 	screenWidth = fetch (UI.ui:screenWidth ui.ui),
@@ -19,9 +21,18 @@ template (videoTimeline::VideoTimeline) {
 	scrubberHeight = videoHeight,
 	scrollHeight = videoTimelineCollapsedHeight,
 	zoomHeight = difference scrubberHeight scrollHeight,
+	
+	makeRuler = function(t::Number, dt::Number)::List Number {
+		console.debug("makeRuler()");
+		var ticks = [];
+		for(var s=0; s<t+dt; s+=dt)
+			ticks.push(s);
+		return arrayToList(ticks);
+	},
 
 	// UI state:
-	scrubberTicks = state(Set Number),
+	bigTicks = makeRuler videoDuration bigTime,
+	smallTicks = makeRuler videoDuration smallTime,
 	scrollingS = state(Unit Number),
 	selectingS = state(Unit Number),
 	loadedTimeS = state(Unit Number),
@@ -81,19 +92,23 @@ template (videoTimeline::VideoTimeline) {
 				<svg:line id="{lineID}" y2="1" stroke-width="{widthToDuration 1}"/>
 				<svg:rect id="{pointID}" y="0.3" width="{widthToDuration 5}" height="0.4" rx="{widthToDuration 1.5}" ry="0.18"/>
 			</svg:defs>
+
+			<f:each bigTicks as tickTime>
+				<svg:use xlink:href="{line}" x="{tickTime}" stroke="#444" opacity="0.5"/>
+			</f:each>
 			
 			<svg:rect width="{loadedTime}" height="1" fill="#888" opacity="0.5"/>
-			<f:each scrubberTicks as tickTime>
-				<svg:use xlink:href="{line}" x="{product videoDuration tickTime}" stroke="#444"/>
-			</f:each>
 	
 			<f:each timepoints as timepoint>
 				// TODO deal with multiple infons per timepoint
 				infon = fetch (takeOne (getLinksFromTime timepoint)),
 				<f:wrapper>
-					<svg:use xlink:href="{point}" x="{Situation:propTime timepoint}" fill="white" opacity="0.5">
+					// 'use' with an event handler bombs in safari...
+					// <svg:use xlink:href="{point}" x="{Situation:propTime timepoint}" fill="white" opacity="0.5">
+					<svg:rect y="0.3" width="{widthToDuration 5}" height="0.4" rx="{widthToDuration 1.5}" ry="0.18" x="{Situation:propTime timepoint}" fill="white" opacity="0.5">
 						<f:each boolToUnit hover as _><f:call>hoveredInfonEvents infon 1</f:call></f:each>
-					</svg:use>
+					// </svg:use>
+					</svg:rect>
 					<f:each reactiveEqual (fetch hoveredInfon) infon as _>
 						<svg:use pointer-events="none" xlink:href="{point}" x="{Situation:propTime timepoint}" fill="orange"/>
 					</f:each>
@@ -122,16 +137,6 @@ template (videoTimeline::VideoTimeline) {
 	
 	<f:wrapper>
 		<f:on init>
-			add(scrubberTicks, 0.1),
-			add(scrubberTicks, 0.2),
-			add(scrubberTicks, 0.3),
-			add(scrubberTicks, 0.4),
-			add(scrubberTicks, 0.5),
-			add(scrubberTicks, 0.6),
-			add(scrubberTicks, 0.7),
-			add(scrubberTicks, 0.8),
-			add(scrubberTicks, 0.9),
-			
 			add(zoomStartS, 0),
 			add(zoomDurationS, product videoDuration initialDurationFraction)
 		</f:on>
@@ -181,6 +186,12 @@ template (videoTimeline::VideoTimeline) {
 
 				<svg:rect width="100%" height="{zoomHeight}" fill="#CCC"/> // background
 				<svg:g transform="{concat (svgScale zoomScale zoomHeight) (svgTranslate (negation zoomStart) 0)}">
+					<f:each boolToUnit (lessThan zoomDuration bigTime) as _>
+						<f:each smallTicks as tickTime>
+							<svg:use xlink:href="#zoomLine" x="{tickTime}" stroke="#444" opacity="0.2"/>
+						</f:each>
+					</f:each>
+				
 					<f:call>drawState "zoom" true (unfetch scrubberWidth) (unfetch zoomHeight) zoomStartS zoomDurationS</f:call>
 
 					<svg:use pointer-events="none" xlink:href="#zoomLine" x="{selectStart}" stroke="#CCF"/>

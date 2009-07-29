@@ -23,6 +23,11 @@ scale = function(m::Number, n::Number, i::Number)::Number {
 	return i*n/m;
 },
 
+// round x to nearest multiple of n
+toNearest = function(n::Number, x::Number)::Number {
+	Math.round(x/n)*n;
+},
+
 concat = function(s::String, t::String) { return s+t; },
 
 // trailing spaces for easy concatenation:
