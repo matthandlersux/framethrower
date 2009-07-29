@@ -45,12 +45,19 @@ template (pop::Popup) {
 			// }
 			// 
 			var left;
+			var top = "auto", bottom="auto";
+			if (y > screenHeight / 2) {
+				bottom = Math.min(screenHeight, screenHeight - y - triangleSize);
+			} else {
+				top = Math.max(0, y - triangleSize);
+			}
 			if (screenWidth < x + triangleSize + width) {
 				left = x - width - triangleSize - padding;
 			} else {
 				left = x + triangleSize + padding;
 			}
-			return evaluate(makeApplyWith(printHorizontal, left, y));
+			return evaluate(makeApplyWith(printVertical, left, top, bottom));
+			//return evaluate(makeApplyWith(printHorizontal, left, y));
 		} else {
 			var left = Math.max(0+padding, Math.min(screenWidth - width - padding, x - width/2));
 			var top = "auto", bottom="auto";

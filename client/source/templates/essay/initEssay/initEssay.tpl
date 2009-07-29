@@ -34,7 +34,7 @@ setEssayText "This is written as a first post to FilmsFolding. A goal of that pr
 
 * There is an emerging type of engagement that we can have with a film, beyond watching, and perhaps writing about it. This engagement might be in a new zone  between that which engages with the film on its own terms (usually called \"watching\") and engaging on our terms (often called \"commentary\" or \"criticism\").
 
-• New tools might be created that enable this way of relating to films. These really would have to be new tools, based on \"disruptive,\" technologies; what we currently have and what is expected to emerge will not do, so we will have to invent them ourselves.
+* New tools might be created that enable this way of relating to films. These really would have to be new tools, based on \"disruptive,\" technologies; what we currently have and what is expected to emerge will not do, so we will have to invent them ourselves.
 
 * Films have already been growing into this space, many of them exhibiting added structure that engages the viewer in a layer above the story. I've called the collection of techniques that do this \"folding.\" These are self-aware devices that add new layers to the narrative dynamics. An intelligent way to think about how we would build tools to grow this emerging \"engagement space\" is to understand the already existing, natural tendency in movies, and then build on it.
 
@@ -186,7 +186,7 @@ The basic idea is that the audience plays an active role in the story, as \"gods
 v0 = makeVideoPoint 15,
 v1 = makeTextPoint 6642,
 makeLink v1 v0,
-v2 = makeVideoPoint 7152,
+v2 = makeVideoPoint 7182,
 v3 = makeTextPoint 7048,
 makeLink v3 v2,
 v4 = makeVideoPoint 660,

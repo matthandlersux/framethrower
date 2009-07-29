@@ -157,20 +157,6 @@ template () {
 		</f:each>
 	},
 	<div class="essayLarge" style-margin-right="350">
-		<div>
-			<f:call>writeList markup</f:call>
-		</div>
-		<ol>
-			<f:each textpoints as tp>
-				<li>
-					textpoint: {Situation:propTime tp}, {length (getInfonsAboutRole tp ulinkSource)}
-					<f:each getInfonsAboutRole tp ulinkSource as infon>
-						target = fetch (takeOne (getInfonRole ulinkTarget infon)),
-						<b>{Situation:propName target}</b>
-					</f:each>
-				</li>
-			</f:each>
-		</ol>
-		<div>{length pointsAndLinks}</div>
+		<f:call>writeList markup</f:call>
 	</div>
 }
