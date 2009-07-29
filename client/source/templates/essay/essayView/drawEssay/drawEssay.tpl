@@ -30,7 +30,9 @@ template () {
 	},
 	writeNewLine = <br style-clear="both" />,
 	writePointLink = template (infon::Pipe) {
-		<span style-display="inline-block" style-width="13" style-height="13" style-backgroundImage="url(http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4)">
+		class = reactiveIfThen (bindUnit (reactiveEqual infon) hoveredInfon) "essayLinkHover" "essayLink",
+		
+		<span style-display="inline-block" style-width="13" style-height="13" class="{class}">
 			//<img width="13" height="13" src="http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4">
 			
 				<f:call>hoveredInfonEvents infon 0</f:call>
