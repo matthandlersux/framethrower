@@ -41,7 +41,9 @@ function mapUnitJS(f, outputType, numArgs) {
 			});
 		});
 		
-		update(); // for mapUnit0
+		if (numArgs === 0) {
+			update(); // for mapUnit0
+		}
 		
 		return outputCell;
 	};
