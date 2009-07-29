@@ -180,7 +180,7 @@
 			currentFocus=false;
 			tmp.blur();
 		}		
-		if (e.target.localName !== "input" && e.target.localName !== "button") {
+		if (e.target.localName !== "input" && e.target.localName !== "button" && e.target.localName !== "embed") {
 			//document.body.focus();
 			dont(e);
 		}

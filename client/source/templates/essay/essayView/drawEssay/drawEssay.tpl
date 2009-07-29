@@ -30,10 +30,11 @@ template () {
 	},
 	writeNewLine = <br style-clear="both" />,
 	writePointLink = template (infon::Pipe) {
-		<span>
-			<img width="13" height="13" src="http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4">
+		<span style-display="inline-block" style-width="13" style-height="13" style-backgroundImage="url(http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4)">
+			//<img width="13" height="13" src="http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4">
+			
 				<f:call>hoveredInfonEvents infon 0</f:call>
-			</img>
+			//</img>
 		</span>
 	},
 	writeThumbnails = template (infons::List Pipe) {
@@ -47,16 +48,19 @@ template () {
 				
 				myReactiveOr = x -> y -> flattenUnit (reactiveIfThen x x y),
 				
-				getThumbnailURL = function (id::String, time::Number) {
-					return "http:/"+"/media.eversplosion.com/crop.php?file="+id+"-scrub&time="+time;
+				imageWidth = 150,
+				imageHeight = quotient 150 (ExtVideo:aspectRatio video),
+				
+				getThumbnailURL = function (id::String, time::Number, width::Number, height::Number) {
+					return "url(http:/"+"/media.eversplosion.com/crop.php?file="+id+"-scrub&time="+time+"&width="+width+"&height="+height+")";
 				},
 				class = reactiveIfThen (bindUnit (reactiveEqual infon) hoveredInfon) "#fc0" "transparent",
-				//<div>
-					//{time} - {ExtVideo:id video}
-					<img width="150" style-float="left" src="{getThumbnailURL (ExtVideo:id video) (fetch (myReactiveOr time intervalStart))}" style-padding="5" style-border="1px solid #ccc" style-margin="5" style-backgroundColor="{class}">
-						<f:call>hoveredInfonEvents infon 0</f:call>
-					</img>
-				//</div>
+				
+				<div style-float="left" style-padding="5" style-border="1px solid #ccc" style-margin="5" style-backgroundColor="{class}">
+					<div style-width="150" style-height="{imageHeight}" style-backgroundImage="{getThumbnailURL (ExtVideo:id video) (fetch (myReactiveOr time intervalStart)) imageWidth imageHeight}" />
+					<f:call>hoveredInfonEvents infon 0</f:call>
+				</div>
+				
 			</f:each>
 			<br style-clear="both" />
 		</div>
