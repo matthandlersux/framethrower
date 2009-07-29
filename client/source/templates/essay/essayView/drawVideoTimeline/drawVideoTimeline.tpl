@@ -10,7 +10,7 @@ template (videoTimeline::VideoTimeline) {
 	
 	// arbitrary UI constants:
 	minZoomDuration = 60,
-	initialDurationFraction = 0.1,
+	initialDurationFraction = 0.15,
 	scrollwheelFactor = 0.666,
 	smallTime = 60,
 	bigTime = 600,
@@ -25,7 +25,7 @@ template (videoTimeline::VideoTimeline) {
 	makeRuler = function(t::Number, dt::Number)::List Number {
 		console.debug("makeRuler()");
 		var ticks = [];
-		for(var s=0; s<t+dt; s+=dt)
+		for(var s=dt; s<t; s+=dt)
 			ticks.push(s);
 		return arrayToList(ticks);
 	},
@@ -185,6 +185,11 @@ template (videoTimeline::VideoTimeline) {
 				</f:on>
 
 				<svg:rect width="100%" height="{zoomHeight}" fill="#CCC"/> // background
+				<f:each bigTicks as tickTime>
+					<svg:text x="{timeToZoomPixels tickTime}" y="{difference zoomHeight 5}" font-size="10" fill="black" opacity="0.8">
+						{quotient tickTime 60}m
+					</svg:text>
+				</f:each>
 				<svg:g transform="{concat (svgScale zoomScale zoomHeight) (svgTranslate (negation zoomStart) 0)}">
 					<f:each boolToUnit (lessThan zoomDuration bigTime) as _>
 						<f:each smallTicks as tickTime>
