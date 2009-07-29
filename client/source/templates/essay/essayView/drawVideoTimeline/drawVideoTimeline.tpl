@@ -143,7 +143,8 @@ template (videoTimeline::VideoTimeline) {
 		</f:on>
 
 		// wrapper for entire scrubber:
-		<svg:svg style-position="absolute" style-width="{scrubberWidth}" style-height="{scrubberHeight}" color-rendering="optimizeSpeed" shape-rendering="optimizeSpeed" text-rendering="optimizeSpeed" image-rendering="optimizeSpeed">
+		<div style-position="absolute" style-width="{scrubberWidth}" style-height="{scrubberHeight}">
+		<svg:svg width="{scrubberWidth}" height="{scrubberHeight}" color-rendering="optimizeSpeed" shape-rendering="optimizeSpeed" text-rendering="optimizeSpeed" image-rendering="optimizeSpeed">
 		
 			// the zoomed in part of the scrubber:
 			<f:wrapper>
@@ -251,6 +252,7 @@ template (videoTimeline::VideoTimeline) {
 				</svg:g>
 			</f:wrapper>
 		</svg:svg>
+		</div>
 		
 		// the preview video:
 		<div style-position="absolute" style-left="{scrubberWidth}">
