@@ -110,7 +110,8 @@ template (videoTimeline::VideoTimeline) {
 					// </svg:use>
 					</svg:rect>
 					<f:each reactiveEqual (fetch hoveredInfon) infon as _>
-						<svg:use pointer-events="none" xlink:href="{point}" x="{Situation:propTime timepoint}" fill="orange"/>
+						// <svg:use pointer-events="none" xlink:href="{point}" x="{Situation:propTime timepoint}" fill="orange"/>
+						<svg:rect pointer-events="none" y="0.3" width="{widthToDuration 5}" height="0.4" rx="{widthToDuration 1.5}" ry="0.18" x="{Situation:propTime timepoint}" fill="orange" opacity="0.8"/>
 					</f:each>
 				</f:wrapper>
 			</f:each>
@@ -124,11 +125,11 @@ template (videoTimeline::VideoTimeline) {
 				start = fetch (Situation:propTime intervalStart),
 				duration = difference (fetch (Situation:propTime intervalEnd)) start,
 				<f:wrapper>
-					<svg:rect x="{start}" y="0.4" width="{duration}" height="0.2" fill="white" opacity="0.5" rx="{product 0.3 duration}" ry="0.06">
+					<svg:rect x="{start}" y="0.45" width="{duration}" height="0.1" fill="white" opacity="0.5" rx="{product 0.3 duration}" ry="0.06">
 						<f:each boolToUnit hover as _><f:call>hoveredInfonEvents infon 1</f:call></f:each>
 					</svg:rect>
 					<f:each reactiveEqual (fetch hoveredInfon) infon as _>
-						<svg:rect pointer-events="none" x="{start}" y="0.4" width="{duration}" height="0.2" fill="orange" rx="{product 0.3 duration}" ry="0.06"/>
+						<svg:rect pointer-events="none" x="{start}" y="0.45" width="{duration}" height="0.1" fill="orange" rx="{product 0.3 duration}" ry="0.06" opacity="0.8"/>
 					</f:each>
 				</f:wrapper>
 			</f:each>
