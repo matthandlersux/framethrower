@@ -241,11 +241,12 @@ template (videoTimeline::VideoTimeline) {
 					add(zoomDurationS, newDuration)
 				</f:on>
 			
-				<svg:rect y="{zoomHeight}" width="100%" height="{scrollHeight}" fill="#AAF"/> // background
-				<svg:g transform="{concat (svgTranslate 0 zoomHeight) (svgScale scrollScale scrollHeight)}">
-					<svg:rect x="{zoomStart}" width="{zoomDuration}" height="1" fill="#AAA"/>
-					
-					<f:call>drawState "scroll" false (unfetch scrubberWidth) (unfetch scrollHeight) (returnUnit 0) (unfetch videoDuration)</f:call>
+				<svg:g transform="{svgTranslate 0 zoomHeight}">
+					<svg:rect width="100%" height="{scrollHeight}" fill="#AAF"/> // background
+					<svg:rect x="{timeToScrollPixels zoomStart}" width="{durationToScrollWidth zoomDuration}" height="{scrollHeight}" fill="#AAA" stroke-width="1" stroke="blue"/>
+					<svg:g transform="{svgScale scrollScale scrollHeight}">
+						<f:call>drawState "scroll" false (unfetch scrubberWidth) (unfetch scrollHeight) (returnUnit 0) (unfetch videoDuration)</f:call>
+					</svg:g>
 				</svg:g>
 			</f:wrapper>
 		</svg:svg>
