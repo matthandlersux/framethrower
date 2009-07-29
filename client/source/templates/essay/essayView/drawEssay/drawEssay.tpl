@@ -32,7 +32,7 @@ template () {
 	writePointLink = template (infon::Pipe) {
 		<span>
 			<img width="13" height="13" src="http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4">
-				<f:call>hoveredInfonEvents infon</f:call>
+				<f:call>hoveredInfonEvents infon 0</f:call>
 			</img>
 		</span>
 	},
@@ -54,7 +54,7 @@ template () {
 				//<div>
 					//{time} - {ExtVideo:id video}
 					<img width="150" style-float="left" src="{getThumbnailURL (ExtVideo:id video) (fetch (myReactiveOr time intervalStart))}" style-padding="5" style-border="1px solid #ccc" style-margin="5" style-backgroundColor="{class}">
-						<f:call>hoveredInfonEvents infon</f:call>
+						<f:call>hoveredInfonEvents infon 0</f:call>
 					</img>
 				//</div>
 			</f:each>

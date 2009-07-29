@@ -39,7 +39,7 @@ template (essay::Situation) {
 	
 	
 	hoveredInfon = state(Unit Pipe),
-	hoveredInfonEvents = template (infon::Pipe) {
+	hoveredInfonEvents = template (infon::Pipe, direction::Number) {
 		<f:wrapper>
 			<f:on mouseover>
 				add(hoveredInfon, infon)
@@ -48,7 +48,7 @@ template (essay::Situation) {
 				remove(hoveredInfon)
 			</f:on>
 			<f:on click>
-				popupInfon infon event.mouseX event.mouseY 0
+				popupInfon infon event.mouseX event.mouseY direction
 			</f:on>
 		</f:wrapper>
 	},
