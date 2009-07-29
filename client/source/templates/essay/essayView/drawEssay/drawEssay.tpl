@@ -30,17 +30,14 @@ template () {
 	},
 	writeNewLine = <br style-clear="both" />,
 	writePointLink = template (infon::Pipe) {
-		target = fetch (takeOne (getInfonRole ulinkTarget infon)),
-		time = fetch (Situation:propTime target),
 		<span>
 			<img width="13" height="13" src="http://media.eversplosion.com/gradient.php?height=13&color1=f0d&color2=0a34b4">
 				<f:call>hoveredInfonEvents infon</f:call>
 			</img>
-			({time})
 		</span>
 	},
 	writeThumbnails = template (infons::List Pipe) {
-		<div style-float="right" style-margin-right="-350">
+		<div style-float="right" style-margin-right="-370" style-width="350">
 			<f:each infons as infon>
 				timeObject = fetch (takeOne (getInfonRole ulinkTarget infon)),
 				video = fetch (takeOne (bindUnitSet Situation:propVideo (bindSetUnit getAllInherits (Situation:container timeObject)))),
@@ -54,13 +51,14 @@ template () {
 					return "http:/"+"/media.eversplosion.com/crop.php?file="+id+"-scrub&time="+time;
 				},
 				class = reactiveIfThen (bindUnit (reactiveEqual infon) hoveredInfon) "#fc0" "transparent",
-				<div>
+				//<div>
 					//{time} - {ExtVideo:id video}
-					<img src="{getThumbnailURL (ExtVideo:id video) (fetch (myReactiveOr time intervalStart))}" style-padding="5" style-border="1px solid #ccc" style-margin="5" style-backgroundColor="{class}">
+					<img width="150" style-float="left" src="{getThumbnailURL (ExtVideo:id video) (fetch (myReactiveOr time intervalStart))}" style-padding="5" style-border="1px solid #ccc" style-margin="5" style-backgroundColor="{class}">
 						<f:call>hoveredInfonEvents infon</f:call>
 					</img>
-				</div>
+				//</div>
 			</f:each>
+			<br style-clear="both" />
 		</div>
 	},
 	
@@ -156,7 +154,7 @@ template () {
 			<f:call>x</f:call>
 		</f:each>
 	},
-	<div class="essayLarge" style-margin-right="350">
+	<div class="essayLarge" style-margin-right="360">
 		<f:call>writeList markup</f:call>
 	</div>
 }
