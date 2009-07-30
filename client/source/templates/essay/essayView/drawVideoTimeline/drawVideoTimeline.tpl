@@ -6,7 +6,7 @@ template (videoTimeline::VideoTimeline) {
 	videoHeight = videoTimelineExpandedHeight,
 	videoWidth = product videoHeight (ExtVideo:aspectRatio extVideo),
 	videoDuration = ExtVideo:duration extVideo,
-	videoURL = getMediaURL (ExtVideo:id extVideo) "scrub.mp4",
+	videoURL = getLocalMediaURL (ExtVideo:id extVideo) "scrub.mp4",
 	
 	// arbitrary UI constants:
 	minZoomDuration = 60,
@@ -88,11 +88,6 @@ template (videoTimeline::VideoTimeline) {
 		timeToPixels = t -> durationToWidth (difference t offset),
 
 		<f:wrapper>
-			<svg:defs>
-				<svg:line id="{lineID}" y2="1" stroke-width="{widthToDuration 1}"/>
-				<svg:rect id="{pointID}" y="0.3" width="{widthToDuration 5}" height="0.4" rx="{widthToDuration 1.5}" ry="0.18"/>
-			</svg:defs>
-
 			<f:each bigTicks as tickTime>
 				<svg:use xlink:href="{line}" x="{tickTime}" stroke="#444" opacity="0.5"/>
 			</f:each>
@@ -145,6 +140,10 @@ template (videoTimeline::VideoTimeline) {
 		// wrapper for entire scrubber:
 		<div style-position="absolute" style-width="{scrubberWidth}" style-height="{scrubberHeight}">
 		<svg:svg width="{scrubberWidth}" height="{scrubberHeight}" color-rendering="optimizeSpeed" shape-rendering="optimizeSpeed" text-rendering="optimizeSpeed" image-rendering="optimizeSpeed">
+			<svg:defs>
+				<svg:line id="zoomLine" y2="1" stroke-width="{zoomWidthToDuration 1}"/>
+				<svg:line id="scrollLine" y2="1" stroke-width="{scrollWidthToDuration 1}"/>
+			</svg:defs>
 		
 			// the zoomed in part of the scrubber:
 			<f:wrapper>
