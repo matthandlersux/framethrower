@@ -6,7 +6,7 @@ template (videoTimeline::VideoTimeline) {
 	videoHeight = videoTimelineExpandedHeight,
 	videoWidth = product videoHeight (ExtVideo:aspectRatio extVideo),
 	videoDuration = ExtVideo:duration extVideo,
-	videoURL = getLocalMediaURL (ExtVideo:id extVideo) "scrub.mp4",
+	videoURL = getMediaURL (ExtVideo:id extVideo) "scrub.mp4",
 	
 	// arbitrary UI constants:
 	minZoomDuration = 60,
