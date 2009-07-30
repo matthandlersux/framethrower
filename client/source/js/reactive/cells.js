@@ -114,22 +114,29 @@ function makeBaseCell (toKey) {
 
 		//return callback to remove the injected function
 		var unInject = function () {
-			var depender = funcs[id].depender;
-			if (depender.done !== undefined) {
-				depender.done(cell, id);
-			}
-			funcs[id].rView.forRange(function (dot, key) {
-				undoFunOnDot(dot, id);
-			});
-			delete funcs[id];
-			if (isEmpty(funcs) && !cell.persist) {
-				// console.log("removing a cell");
-				CELLCOUNT--;
-				forEach(onRemoves, function(onRemove) {
-					onRemove();
+			if (funcs[id] !== undefined) {
+				var depender = funcs[id].depender;
+				if (depender.done !== undefined) {
+					depender.done(cell, id);
+				}
+				funcs[id].rView.forRange(function (dot, key) {
+					undoFunOnDot(dot, id);
 				});
+				delete funcs[id];
+				if (isEmpty(funcs) && !cell.persist) {
+					// console.log("removing a cell");
+					CELLCOUNT--;
+					forEach(onRemoves, function(onRemove) {
+						onRemove();
+					});
+				}
 			}
 		};
+		
+		if (depender.addOnRemove !== undefined) {
+			depender.addOnRemove(unInject);
+		}
+		
 		return {
 			unInject:unInject,
 			rView:rView
