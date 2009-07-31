@@ -23,16 +23,16 @@ template (videoTimeline::VideoTimeline) {
 	scrollHeight = videoTimelineCollapsedHeight,
 	zoomHeight = difference scrubberHeight scrollHeight,
 	
-	makeRuler = function(t::Number, dt::Number)::List Number {
+	makeRuler = function(t::Number, dt::Number)::Set Number {
 		var ticks = [];
 		for(var s=dt; s<t; s+=dt)
 			ticks.push(s);
-		return arrayToList(ticks);
+		return arrayToSet(ticks);
 	},
 
 	// UI state:
 	bigTicks = makeRuler videoDuration bigTime,
-	smallTicks = makeRuler smallDuration smallTime,
+	smallTicks = makeRuler videoDuration smallTime,
 	scrollingS = state(Unit Number),
 	selectingS = state(Unit Number),
 	loadedTimeS = state(Unit Number),
@@ -193,12 +193,13 @@ template (videoTimeline::VideoTimeline) {
 				</f:each>
 				<svg:g transform="{concat (svgScale zoomScale zoomHeight) (svgTranslate (negation zoomStart) 0)}">
 					<f:each boolToUnit (lessThan zoomDuration smallDuration) as _>
-						// <f:each rangeByKey zoomStartS (mapUnit2 plus zoomStartS zoomDurationS) smallTicks as tickTime>
-						<svg:g transform="{svgTranslate (toMultiple floor smallTime zoomStart) 0}">
+						<f:each rangeByKey zoomStartS (mapUnit2 sum zoomStartS zoomDurationS) smallTicks as tickTime>
+						// <svg:g transform="{svgTranslate (toMultiple floor smallTime zoomStart) 0}">
 							<f:each smallTicks as tickTime>
 								<svg:use xlink:href="#zoomLine" x="{tickTime}" stroke="#444" opacity="0.2"/>
 							</f:each>
-						</svg:g>
+						</f:each>
+						// </svg:g>
 					</f:each>
 				
 					<f:call>drawState "zoom" true (unfetch scrubberWidth) (unfetch zoomHeight) zoomStartS zoomDurationS</f:call>
