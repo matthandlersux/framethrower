@@ -63,8 +63,6 @@ XML
 		<f:each EXPR as VARTOCREATE>LETLINES</f:each>
 		<f:each EXPR as VARTOCREATE, VARTOCREATE>LETLINES</f:each> // for key, value when iterating through Map's
 		<f:on EVENT>ACTSTMTS</f:on>
-		<f:trigger EXPR as VARTOCREATE>ACTSTMTS</f:trigger>
-		<f:trigger EXPR as VARTOCREATE, VARTOCREATE>ACTSTMTS</f:trigger> // for key, value when responding to Map changes
 	
 	there is syntactic sugar for having multiple XML elements top-level. If XML is on its own (ie: not part of a LETLINE), then after the XML ends, there can be more text that gets interpreted as XML. The XML thus ends only when there is the ending. This ending can be </f:call>, </f:each>, or } depending on context. Note that each should only end it if it is at the top-level in terms of XML nesting. Also, the } should only end it if it is unbalanced (ie: no preceding { which would imply a {EXPR}).
 	
@@ -94,7 +92,7 @@ ACTSTMTS
 	comma separated list of ACTSTMTs
 
 ACTSTMT
-	ACTION | VARTOCREATE = ACTION | VARTOCREATE = extract EXPR |
+	VARTOCREATE = LINE | ACTION | VARTOCREATE <- ACTION | VARTOCREATE <- extract EXPR |
 	extract EXPR as VARTOCREATE {
 		ACTSTMTS
 	}

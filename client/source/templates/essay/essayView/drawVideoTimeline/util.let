@@ -1,10 +1,7 @@
-sum = plus,
-difference = subtract,
-clamp = a -> b -> x -> max a (min b x),
-negation = x -> difference 0 x,
-
 reciprocal = function(x::Number)::Number { return 1/x; },
 ceil = function(x::Number)::Number { return Math.ceil(x); },
+floor = function(x::Number)::Number { return Math.floor(x); },
+round = function(x::Number)::Number { return Math.round(x); },
 
 product = function(x::Number, y::Number)::Number { return x*y; },
 quotient = function(x::Number, y::Number)::Number { return x/y; },
@@ -18,14 +15,9 @@ sign = function(x::Number)::Number {
 	return -1;
 },
 
-// convert i from [0,m] to [0,n]
+// convert i from [0,m] to [0,n]:
 scale = function(m::Number, n::Number, i::Number)::Number {
 	return i*n/m;
-},
-
-// round x to nearest multiple of n
-toNearest = function(n::Number, x::Number)::Number {
-	Math.round(x/n)*n;
 },
 
 concat = function(s::String, t::String) { return s+t; },
@@ -42,3 +34,13 @@ getMediaURL = function(id::String, type::String)::String {
 getLocalMediaURL = function(id::String, type::String)::String {
 	return "file:/"+"/"+"/Users/harold/Public/MOULIN_ROUGE/"+id+"-"+type;
 },
+
+sum = plus,
+difference = subtract,
+negation = x -> difference 0 x,
+
+// clamp x in [a,b]:
+clamp = a -> b -> x -> max a (min b x),
+
+// f(x/n)*n:
+toMultiple = f -> n -> x -> product (f (quotient x n)) n,
