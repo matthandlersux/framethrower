@@ -195,9 +195,10 @@ template (videoTimeline::VideoTimeline) {
 					<f:each boolToUnit (lessThan zoomDuration smallDuration) as _>
 						<f:each rangeByKey zoomStartS (mapUnit2 sum zoomStartS zoomDurationS) smallTicks as tickTime>
 						// <svg:g transform="{svgTranslate (toMultiple floor smallTime zoomStart) 0}">
-							<f:each smallTicks as tickTime>
-								<svg:use xlink:href="#zoomLine" x="{tickTime}" stroke="#444" opacity="0.2"/>
-							</f:each>
+							<svg:use xlink:href="#zoomLine" x="{tickTime}" stroke="#444" opacity="0.2"/>
+							// <f:each smallTicks as tickTime>
+							// 	<svg:use xlink:href="#zoomLine" x="{tickTime}" stroke="#444" opacity="0.2"/>
+							// </f:each>
 						</f:each>
 						// </svg:g>
 					</f:each>
