@@ -26,6 +26,198 @@ var DEBUGSPEED = false;
 
 
 
+// 
+// 
+// /*
+// This takes a parent DOM Node, some xml (in js form), and an environment and appends a Node the parent Node
+// It returns:
+// 	{node: NODE, cleanup: FUNCTION}
+// By calling this function, endCaps may be created which will update the node reactively.
+// When cleanup() is called, these endCaps are removed.
+// cleanup may be returned as null, in which case there's nothing to clean up.
+// */
+// function insertXML(parentNode, followingSibling, xml, env) {
+// 	function createSpacer() {
+// 		return createEl("f:spacer");
+// 	}
+// 	
+// 	function place(node) {
+// 		if (followingSibling) {
+// 			parentNode.insertBefore(node, followingSibling);
+// 		} else {
+// 			parentNode.appendChild(node);
+// 		}
+// 	}
+// 	
+// 	if (xml.node) {
+// 		place(xml.node);
+// 		return xml.cleanup;
+// 	}
+// 	
+// 	var cleanupFunctions = [];
+// 	function pushCleanup(f) {
+// 		if (f) cleanupFunctions.push(f);
+// 	}
+// 	function cleanupReturn() {
+// 		if (cleanupFunctions.length > 0) {
+// 			return function () {
+// 				forEach(cleanupFunctions, function (cleanupFunction) {
+// 					cleanupFunction();
+// 				});
+// 			} else {
+// 				return null;
+// 			}
+// 		}
+// 	}
+// 	
+// 	if (xml.kind === "element") {
+// 		if (xml.nodeName === "f:wrapper") {
+// 			forEach(xml.children, function (child) {
+// 				var insertion = insertXML(parentNode, followingSibling, child, env);
+// 				pushCleanup(insertion.cleanup);
+// 			});
+// 			return cleanupReturn();
+// 		} else {
+// 			var node = createEl(xml.nodeName);
+// 			
+// 			forEach(xml.attributes, function (att, attName) {
+// 				pushCleanup(evaluateXMLInsert(att, env, function (value) {
+// 					setNodeAttribute(node, attName, value);
+// 				}));
+// 			});
+// 			
+// 			forEach(xml.style, function (att, attName) {
+// 				pushCleanup(evaluateXMLInsert(att, env, function (value) {
+// 					setNodeStyle(node, attName, value);
+// 				}));
+// 			});
+// 			
+// 			forEach(xml.children, function (child) {
+// 				var insertion = insertXML(node, undefined, child, env);
+// 				pushCleanup(insertion.cleanup);
+// 			});
+// 			
+// 			place(node);
+// 			return cleanup: cleanupReturn();
+// 		}
+// 	} else if (xml.kind === "textElement") {
+// 		node = createTextNode();
+// 		
+// 		pushCleanup(evaluateXMLInsert(xml.nodeValue, env, function (value) {
+// 			node.nodeValue = value;
+// 		}));
+// 		
+// 		place(node);
+// 		return cleanupReturn();
+// 	} else if (xml.kind === "for-each") {
+// 		
+// 		var select = parseExpression(xml.select, env);
+// 		var result = evaluate(select);
+// 		
+// 		var spacer = createSpacer();
+// 		var spacer2 = createSpacer();
+// 		place(spacer);
+// 		
+// 		var innerTemplate = makeClosure(xml.lineTemplate, env);
+// 		
+// 		if (result.kind === "list") {
+// 			forEach(result.asArray, function (value) {
+// 				var newXMLP = evaluate(makeApply(innerTemplate, value));
+// 				pushCleanup(insertXML(parentNode, spacer, newXMLP.xml, newXMLP.env));
+// 				return cleanupReturn();
+// 			});
+// 		} else {
+// 			// set up an endCap to listen to result and place appropriately
+// 
+// 			function cmp(a, b) {
+// 				// returns -1 if a < b, 0 if a = b, 1 if a > b
+// 				if (/^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$/.test(a)) {
+// 					return a - b;
+// 				} else {
+// 					if (a < b) return -1;
+// 					else if (a > b) return 1;
+// 					else return 0;
+// 				}
+// 			}
+// 			
+// 			
+// 			
+// 			
+// 			
+// 			
+// 			var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to the evaluated template's {node: NODE, cleanup: FUNCTION}
+// 
+// 
+// 			var feachInjectedFunc = result.inject(emptyFunction, function (value) {
+// 
+// 				var newNode, keyString;
+// 
+// 				if (result.isMap) {
+// 					//DEBUG
+// 					if (xml.lineTemplate.params.length !== 2) debug.error("f:each running on map, but as doesn't have key, value");
+// 					newNode = evaluate(makeApply(makeApply(innerTemplate, value.key), value.val));
+// 					keyString = stringify(value.key);
+// 				} else {
+// 					newNode = evaluate(makeApply(innerTemplate, value));
+// 					keyString = stringify(value);
+// 				}
+// 
+// 				newNode = xmlToDOM(newNode.xml, newNode.env, context);
+// 
+// 
+// 				// find where to put the new node
+// 				// NOTE: this is linear time but could be log time with clever algorithm
+// 				var place = null; // this will be the key which comes immediately after the new node
+// 				forEach(entries, function (entry, entryKey) {
+// 					if (cmp(keyString, entryKey) < 0 && (place === null || cmp(entryKey, place) < 0)) {
+// 						place = entryKey;
+// 					}
+// 				});
+// 
+// 				if (place === null) {
+// 					// tack it on at the end
+// 					wrapper.appendChild(newNode.node);
+// 				} else {
+// 					// put it before the one that comes immediately afterwards
+// 					wrapper.insertBefore(newNode.node, entries[place].node);
+// 				}
+// 
+// 				entries[keyString] = newNode;
+// 
+// 				return function () {
+// 
+// 					if (newNode.cleanup) {
+// 						newNode.cleanup();
+// 					}
+// 					wrapper.removeChild(newNode.node);
+// 
+// 					delete entries[keyString];
+// 				};
+// 			});
+// 
+// 			function cleanupAllEntries() {
+// 				//console.log("cleaning up an entire f:each", entries);
+// 
+// 				// I don't need the below because when feachCleanup is called, all entries are removed, one-by-one, automatically (by cell logic)
+// 				// forEach(entries, function (entry, entryKey) {
+// 				// 	console.log("cleaning up an entry", entry, entryKey);
+// 				// 	if (entry.cleanup) entry.cleanup();
+// 				// });
+// 
+// 				feachInjectedFunc.unInject();
+// 			}
+// 
+// 			return {node: wrapper, cleanup: cleanupAllEntries};
+// 		}
+// 		
+// 	}
+// }
+// 
+
+
+
+
+
 /*
 This takes some xml (in js form) and an environment and creates a DOM Node, returning
 	{node: NODE, cleanup: FUNCTION}
@@ -62,9 +254,6 @@ function xmlToDOM(xml, env, context) {
 		
 		forEach(xml.attributes, function (att, attName) {
 			pushCleanup(evaluateXMLInsert(att, env, function (value) {
-				// if (attName === "class") {
-				// 	console.log("changing a class", "["+value+"]");
-				// }
 				setNodeAttribute(node, attName, value);
 			}));
 		});
@@ -272,19 +461,27 @@ function xmlToDOM(xml, env, context) {
 				eventName = xml.event;
 				eventGlobal = false;
 			}
-			setAttr(node, "event", eventName);
-			node.custom = {};
-			node.custom.lineAction = xml.lineAction;
-			node.custom.env = env;
+
 			
 			if (eventGlobal) {
-				document.body.appendChild(node);
+				if (!globalEventHandlers[eventName]) {
+					globalEventHandlers[eventName] = {};
+				}
+				var identifier = localIds();
+				globalEventHandlers[eventName][identifier] = {
+					lineAction: xml.lineAction,
+					env: env
+				};
 				function cleanupGlobal() {
-					node.custom = null;
-					document.body.removeChild(node);
+					delete globalEventHandlers[eventName][identifier];
 				}
 				return {node: createWrapper(), cleanup: cleanupGlobal};
 			} else {
+				setAttr(node, "event", eventName);
+				node.custom = {};
+				node.custom.lineAction = xml.lineAction;
+				node.custom.env = env;
+				
 				function cleanupOn() {
 					node.custom = null; // for garbage collection in stupid browsers
 				}

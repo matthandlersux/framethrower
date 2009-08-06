@@ -1,3 +1,6 @@
+var globalEventHandlers = {};
+
+
 (function () {
 	
 	function isDOMAncestor(child, grandparent) {
@@ -36,6 +39,29 @@
 	// =========================================================
 	
 	function processEvent(eventName, e, eventParams) {
+		// TODO: clean up this function!
+		
+		if (globalEventHandlers[eventName]) {
+			var did = false;
+			forEach(globalEventHandlers[eventName], function (handler) {
+				did = true;
+				var env = function (s) {
+					if (eventExtras[s]) {
+						return eventExtras[s].f(e, null, mouseCurrentPos);
+					} else {
+						return handler.env(s);
+					}
+				};
+				
+				var action = makeActionClosure(handler.lineAction, env);
+
+				//console.log("about to execute an action!", action);
+
+				executeAction(action);
+			});
+			if (did) return;
+		}
+		
 		var target = e.target;
 		
 		if (!target) return;
