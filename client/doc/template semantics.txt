@@ -2,7 +2,7 @@ LINE
 	{kind: "lineExpr", expr: AST, ?type: TYPE} |
 	{kind: "lineXML", xml: XML} |
 	{kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
-	{kind: "lineState", lineAction: LINEACTION} | // action takes no parameters
+	{kind: "lineState", action: LINETEMPLATE} | // action takes no parameters
 	LINETEMPLATE |
 	LINEACTION
 
@@ -10,12 +10,12 @@ LINETEMPLATE
 	{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, output: LINE, type: TYPE}
 
 LINEACTION
-	{kind: "lineAction", params: [VARTOCREATE], actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
+	{kind: "lineAction", actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
 
 ACTIONUNIT
 	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
 	{kind: "actionUpdate", target: AST, actionType: "add" | "remove", key?: AST, value?: AST} |
-	{kind: "extract", select: AST, lineAction: LINEACTION} // this lineAction should take one (or two) parameters.
+	{kind: "extract", select: AST, action: LINETEMPLATE} // this action should take one (or two) parameters.
 
 
 
@@ -23,8 +23,7 @@ ACTIONUNIT
 XML
 	{kind: "for-each", select: AST, lineTemplate: LINETEMPLATE} | // this lineTemplate should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
 	{kind: "call", lineTemplate: LINETEMPLATE} | // this lineTemplate should take zero parameters.
-	{kind: "on", event: EVENT, lineAction: LINEACTION} | // this action should take zero parameters.
-	{kind: "trigger", trigger: AST, lineAction: LINEACTION} | // trigger should evaluate to a reactive value, action should take one (or two) parameters
+	{kind: "on", event: EVENT, action: LINETEMPLATE} | // this action should take zero parameters.
 	{kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise?: LINETEMPLATE} |
 	// test should evaluate to a cell, if it is non-empty then lineTemplate is run as if it were a for-each. If it is empty, otherwise is called.
 	// lineTemplate should take one parameter

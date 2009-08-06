@@ -30,6 +30,12 @@
 			outputCell.leash();
 
 			var rView;
+
+			var injectedFunc = cell.inject(outputCell, function (val) {
+				return outputCell.addLine(val);
+			}, initializeRange);
+			rView = injectedFunc.rView;
+
 			var updateRange = function (rView) {
 				if (start !== undefined && end !== undefined) {
 					rView[setRangeFunc](start, end);
@@ -59,11 +65,6 @@
 			var initializeRange = function (rView) {
 				rView.clearRange();
 			};
-
-			var injectedFunc = cell.inject(outputCell, function (val) {
-				return outputCell.addLine(val);
-			}, initializeRange);
-			rView = injectedFunc.rView;
 			
 			outputCell.unleash();
 			return outputCell;

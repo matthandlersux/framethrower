@@ -613,7 +613,7 @@ var semantics = function(){
 						} else if (def(node.insert)) {
 							attribute = makeInsert(node.insert);
 						}
-						style[toCamelCase(node.attname)] = attribute;
+						style[toCamelCase(node.styleattname)] = attribute;
 					});
 				} else if (def(node.attname) && def(node.attribute)) {
 					var name = node.attname;
@@ -797,7 +797,7 @@ var semantics = function(){
 				return nodeName.indexOf(string) == 0;
 			}
 			
-			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('function') || startsWith('xmltext')) {
+			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('styleattname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('function') || startsWith('xmltext')) {
 				var string = makeString(value, nodeName);
 				lineNum += lineBreakCount(string);
 				tree[nodeName] = stripSpaces(string);

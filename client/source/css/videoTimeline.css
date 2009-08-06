@@ -1,0 +1,57 @@
+.zoomTimeline .timelineBackground {
+	fill: #CCC;
+}
+
+.scrollTimeline .timelineBackground {
+	fill: #AAF;
+}
+
+.loadedDuration {
+	fill: #888;
+	opacity: 0.5;
+}
+
+.smallTick {
+	stroke: #444;
+	opacity: 0.2;
+}
+
+.bigTick {
+	stroke: #444;
+	opacity: 0.5;
+}
+
+.tickLabel {
+	font-size: 8pt;
+	fill: black;
+	opacity: 0.8;
+}
+
+.timepoint, .timeinterval {
+	fill: white;
+	opacity: 0.5;
+}
+
+.hoveredTimepoint, .hoveredTimeinterval {
+	fill: orange;
+	opacity: 0.8;
+}
+
+.selectStart {
+	stroke: #CCF;
+}
+
+.selectDuration {
+	fill: #CCF;
+	opacity: 0.5;
+}
+
+.previewTime {
+	stroke: white;
+}
+
+.zoomDuration {
+	fill: #AAA;
+	stroke-width: 1;
+	stroke: blue;
+}
