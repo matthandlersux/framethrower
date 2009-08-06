@@ -225,7 +225,7 @@ By calling this function, endCaps may be created which will update the node reac
 When cleanup() is called, these endCaps are removed.
 cleanup may be returned as null, in which case there's nothing to clean up.
 */ 
-function xmlToDOM(xml, env, context) {
+function xmlToDOM(xml, env, context, lastElement) {
 	
 	// I've added this convenience, XMLP can have as its xml property a {node: --, cleanup: --} in which case it is already DOM.
 	// I use this for javascript creating quicktime embeds.
@@ -248,7 +248,13 @@ function xmlToDOM(xml, env, context) {
 	var node;
 	
 	if (xml.kind === "element") {
-		node = (xml.nodeName === "f:wrapper") ? createWrapper() : createEl(xml.nodeName);
+		var newLastElement = lastElement;
+		if (xml.nodeName === "f:wrapper") {
+			node = createWrapper();
+		} else {
+			node = createEl(xml.nodeName);
+			newLastElement = node;
+		}
 		
 		var newContext = (xml.nodeName.substring(0,4) === "svg:") ? "svg" : context;
 		
@@ -265,7 +271,7 @@ function xmlToDOM(xml, env, context) {
 		});
 		
 		forEach(xml.children, function (child) {
-			var childNodeCleanup = xmlToDOM(child, env, newContext);
+			var childNodeCleanup = xmlToDOM(child, env, newContext, newLastElement);
 			try {
 				node.appendChild(childNodeCleanup.node);
 			} catch (e) {
@@ -293,7 +299,7 @@ function xmlToDOM(xml, env, context) {
 		if (result.kind === "list") {
 			forEach(result.asArray, function (value) {
 				var newNode = evaluate(makeApply(innerTemplate, value));
-				newNode = xmlToDOM(newNode.xml, newNode.env, context);
+				newNode = xmlToDOM(newNode.xml, newNode.env, context, lastElement);
 				wrapper.appendChild(newNode.node);
 				pushCleanup(newNode.cleanup);
 			});
@@ -331,7 +337,7 @@ function xmlToDOM(xml, env, context) {
 					keyString = stringify(value);
 				}
 
-				newNode = xmlToDOM(newNode.xml, newNode.env, context);
+				newNode = xmlToDOM(newNode.xml, newNode.env, context, lastElement);
 
 
 				// find where to put the new node
@@ -411,13 +417,13 @@ function xmlToDOM(xml, env, context) {
 		function printOccupied(value) {
 			clearIt();
 			var tmp = evaluate(makeApply(innerTemplate, value));
-			childNode = xmlToDOM(tmp.xml, tmp.env, context);
+			childNode = xmlToDOM(tmp.xml, tmp.env, context, lastElement);
 			wrapper.appendChild(childNode.node);
 		}
 		function printOtherwise() {
 			clearIt();
 			if (otherwiseTemplate) {
-				childNode = xmlToDOM(otherwiseTemplate.xml, otherwiseTemplate.env, context);
+				childNode = xmlToDOM(otherwiseTemplate.xml, otherwiseTemplate.env, context, lastElement);
 				wrapper.appendChild(childNode.node);
 			}
 		}
@@ -443,7 +449,7 @@ function xmlToDOM(xml, env, context) {
 		return {node: wrapper, cleanup: cleanupCase};
 	} else if (xml.kind === "call") {
 		var xmlp = makeClosure(xml.lineTemplate, env);
-		return xmlToDOM(xmlp.xml, xmlp.env, context);
+		return xmlToDOM(xmlp.xml, xmlp.env, context, lastElement);
 	} else if (xml.kind === "on") {
 		var node = createEl("f:on");
 		if (xml.event === "init") {
@@ -477,15 +483,33 @@ function xmlToDOM(xml, env, context) {
 				}
 				return {node: createWrapper(), cleanup: cleanupGlobal};
 			} else {
-				setAttr(node, "event", eventName);
-				node.custom = {};
-				node.custom.lineAction = xml.lineAction;
-				node.custom.env = env;
+				var fonNode = createEl("f:on");
+				setAttr(fonNode, "event", eventName);
+				fonNode.custom = {};
+				fonNode.custom.lineAction = xml.lineAction;
+				fonNode.custom.env = env;
 				
-				function cleanupOn() {
-					node.custom = null; // for garbage collection in stupid browsers
+				if (!lastElement) {
+					console.log("Trying to attach a f:on to nothing");
+				} else {
+					lastElement.appendChild(fonNode);
 				}
-				return {node: node, cleanup: cleanupOn};				
+				function cleanupOn() {
+					lastElement.removeChild(fonNode);
+					fonNode.custom = null;
+				}
+				return {node: createWrapper(), cleanup: cleanupOn};
+				
+				
+				// setAttr(node, "event", eventName);
+				// node.custom = {};
+				// node.custom.lineAction = xml.lineAction;
+				// node.custom.env = env;
+				// 
+				// function cleanupOn() {
+				// 	node.custom = null; // for garbage collection in stupid browsers
+				// }
+				// return {node: node, cleanup: cleanupOn};				
 			}
 		}
 	} else if (xml.kind === "trigger") {

@@ -92,7 +92,8 @@ var globalEventHandlers = {};
 		
 		
 		// note the hackery here
-		var xpathExp = "ancestor-or-self::*[" + addWrappers("f:on/@event='" + eventName + "'", "or") + "][1]";
+		//var xpathExp = "ancestor-or-self::*[" + addWrappers("f:on/@event='" + eventName + "'", "or") + "][1]";
+		var xpathExp = "ancestor-or-self::*[f:on/@event='"+eventName+"'][1]";
 		
 		var fon = xpath(xpathExp, target);
 		
@@ -105,7 +106,8 @@ var globalEventHandlers = {};
 				}
 			}
 			
-			var fonEls = xpath(addWrappers("f:on[@event='" + eventName + "']", "|"), fon[0]);
+			//var fonEls = xpath(addWrappers("f:on[@event='" + eventName + "']", "|"), fon[0]);
+			var fonEls = xpath("f:on[@event='" + eventName + "']", fon[0]);
 			
 			forEach(fonEls, function (fonEl) {
 				var env = function (s) {
