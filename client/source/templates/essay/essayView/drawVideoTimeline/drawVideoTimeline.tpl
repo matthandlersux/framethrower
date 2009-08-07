@@ -89,7 +89,6 @@ template (videoTimeline::VideoTimeline) {
 						<f:call>hoveredInfonEvents infon 1</f:call>
 					</svg:rect>
 					<f:each reactiveEqual (fetch hoveredInfon) infon as _>
-						// <svg:use pointer-events="none" xlink:href="{point}" x="{Situation:propTime timepoint}" fill="orange"/>
 						<svg:rect class="hoveredTimepoint" pointer-events="none" x="{Situation:propTime timepoint}" width="{widthToDuration 5}" y="0.3" height="0.4" rx="{widthToDuration 1.5}" ry="0.18"/>
 					</f:each>
 				</f:wrapper>
@@ -184,6 +183,7 @@ template (videoTimeline::VideoTimeline) {
 						</f:each>
 					</f:each>
 				
+					// passing fetched things to templates is ineffecient, so we unfetch:
 					<f:call>drawState "#zoomLine" (unfetch zoomWidthToDuration)</f:call>
 
 					<svg:use class="selectStart" pointer-events="none" xlink:href="#zoomLine" x="{selectStart}"/>
