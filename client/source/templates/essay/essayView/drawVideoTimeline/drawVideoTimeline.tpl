@@ -69,20 +69,13 @@ template (videoTimeline::VideoTimeline) {
 	getLinksFromTime = time -> getInfonsAboutRole time ulinkTarget :: Situation -> Set Pipe,
 	
 	// the drawing code common to both the zoom part of the scrubber and the scroll part of the scrubber:
-	drawState = template(line::String, hover::Bool, widthS::Unit Number, heightS::Unit Number, offsetS::Unit Number, durationS::Unit Number) {
-		hoverCursor = tertiary hover "pointer" "inherit",
-		width = fetch widthS,
-		height = fetch heightS,
-		offset = fetch offsetS,
-		duration = fetch durationS,
-		widthToDuration = scale width duration,
-		durationToWidth = scale duration width,
-		pixelsToTime = x -> sum (widthToDuration x) offset,
-		timeToPixels = t -> durationToWidth (difference t offset),
+	// note that passing a fetched widthToDuration directly would wrap entire template in <f:each>.
+	drawState = template(lineID::String, widthToDurationS::Unit (Number->Number)) {
+		widthToDuration = fetch widthToDurationS,
 
 		<f:wrapper>
 			<f:each bigTicks as tickTime>
-				<svg:use class="bigTick" xlink:href="{line}" x="{tickTime}"/>
+				<svg:use class="bigTick" xlink:href="{lineID}" x="{tickTime}"/>
 			</f:each>
 			
 			<svg:rect class="loadedDuration" width="{loadedDuration}" height="1"/>
@@ -91,11 +84,9 @@ template (videoTimeline::VideoTimeline) {
 				// TODO deal with multiple infons per timepoint
 				infon = fetch (takeOne (getLinksFromTime timepoint)),
 				<f:wrapper>
-					// 'use' with an event handler bombs in safari...
-					// <svg:use xlink:href="{point}" x="{Situation:propTime timepoint}" fill="white" opacity="0.5">
-					<svg:rect class="timepoint" x="{Situation:propTime timepoint}" width="{widthToDuration 5}" y="0.3" height="0.4" rx="{widthToDuration 1.5}" ry="0.18" cursor="{hoverCursor}">
-						<f:each boolToUnit hover as _><f:call>hoveredInfonEvents infon 1</f:call></f:each>
-					// </svg:use>
+					// note that <use> with an event handler bombs in safari...
+					<svg:rect class="timepoint" x="{Situation:propTime timepoint}" width="{widthToDuration 5}" y="0.3" height="0.4" rx="{widthToDuration 1.5}" ry="0.18">
+						<f:call>hoveredInfonEvents infon 1</f:call>
 					</svg:rect>
 					<f:each reactiveEqual (fetch hoveredInfon) infon as _>
 						// <svg:use pointer-events="none" xlink:href="{point}" x="{Situation:propTime timepoint}" fill="orange"/>
@@ -114,7 +105,7 @@ template (videoTimeline::VideoTimeline) {
 				duration = difference (fetch (Situation:propTime intervalEnd)) start,
 				<f:wrapper>
 					<svg:rect class="timeinterval" x="{start}" width="{duration}" y="0.45" height="0.1" rx="{product 0.3 duration}" ry="0.06">
-						<f:each boolToUnit hover as _><f:call>hoveredInfonEvents infon 1</f:call></f:each>
+						<f:call>hoveredInfonEvents infon 1</f:call>
 					</svg:rect>
 					<f:each reactiveEqual (fetch hoveredInfon) infon as _>
 						<svg:rect class="hoveredTimeinterval" pointer-events="none" x="{start}" width="{duration}" y="0.45" height="0.1" rx="{product 0.3 duration}" ry="0.06"/>
@@ -193,7 +184,7 @@ template (videoTimeline::VideoTimeline) {
 						</f:each>
 					</f:each>
 				
-					<f:call>drawState "#zoomLine" true (unfetch scrubberWidth) (unfetch zoomHeight) zoomStartS zoomDurationS</f:call>
+					<f:call>drawState "#zoomLine" (unfetch zoomWidthToDuration)</f:call>
 
 					<svg:use class="selectStart" pointer-events="none" xlink:href="#zoomLine" x="{selectStart}"/>
 					<svg:rect class="selectDuration" pointer-events="none" x="{selectStart}" width="{selectDuration}" height="1"/>
@@ -242,9 +233,10 @@ template (videoTimeline::VideoTimeline) {
 			
 				<svg:g transform="{svgTranslate 0 zoomHeight}">
 					<svg:rect class="timelineBackground" width="100%" height="{scrollHeight}"/> // background
-					<svg:rect class="zoomDuration" x="{timeToScrollPixels zoomStart}" width="{durationToScrollWidth zoomDuration}" height="{scrollHeight}" cursor="move"/>
-					<svg:g transform="{svgScale scrollScale scrollHeight}">
-						<f:call>drawState "#scrollLine" false (unfetch scrubberWidth) (unfetch scrollHeight) (returnUnit 0) (unfetch videoDuration)</f:call>
+					<svg:rect class="zoomDuration" x="{timeToScrollPixels zoomStart}" width="{durationToScrollWidth zoomDuration}" height="{scrollHeight}"/>
+					// don't allow any pointer events through to the state:
+					<svg:g pointer-events="none" transform="{svgScale scrollScale scrollHeight}">
+						<f:call>drawState "#scrollLine" (unfetch scrollWidthToDuration)</f:call>
 					</svg:g>
 				</svg:g>
 			</svg:g>
