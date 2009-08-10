@@ -73,22 +73,22 @@ var globalEventHandlers = {};
 		// 	console.log("multiple targets", test);
 		// }
 		
-		function addWrappers(xp, or) {
-			function repeat(s, n) {
-				var ret = "";
-				for (var i = 0; i < n; i++) {
-					ret += s;
-				}
-				return ret;
-			}
-			var ret = xp;
-			for (var i = 0; i < 10; i++) {
-				
-				ret += " "+or+" " + repeat("f:wrapper/", i)+xp + " "+or+" " + repeat("svg:g[not(@*)]/", i)+xp;
-			}
-			return ret;
-			//return xp + " "+or+" f:wrapper/"+xp + " "+or+" svg:g/"+xp + " "+or+" f:wrapper/f:wrapper/"+xp + " "+or+" svg:g/svg:g/"+xp;
-		}
+		// function addWrappers(xp, or) {
+		// 	function repeat(s, n) {
+		// 		var ret = "";
+		// 		for (var i = 0; i < n; i++) {
+		// 			ret += s;
+		// 		}
+		// 		return ret;
+		// 	}
+		// 	var ret = xp;
+		// 	for (var i = 0; i < 10; i++) {
+		// 		
+		// 		ret += " "+or+" " + repeat("f:wrapper/", i)+xp + " "+or+" " + repeat("svg:g[not(@*)]/", i)+xp;
+		// 	}
+		// 	return ret;
+		// 	//return xp + " "+or+" f:wrapper/"+xp + " "+or+" svg:g/"+xp + " "+or+" f:wrapper/f:wrapper/"+xp + " "+or+" svg:g/svg:g/"+xp;
+		// }
 		
 		
 		// note the hackery here
