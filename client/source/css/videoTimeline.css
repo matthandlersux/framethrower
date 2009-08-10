@@ -30,6 +30,7 @@
 .timepoint, .timeinterval {
 	fill: white;
 	opacity: 0.5;
+	cursor: pointer;
 }
 
 .hoveredTimepoint, .hoveredTimeinterval {
@@ -54,4 +55,5 @@
 	fill: #AAA;
 	stroke-width: 1;
 	stroke: blue;
+	cursor: move;
 }
