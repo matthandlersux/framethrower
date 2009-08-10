@@ -39,25 +39,34 @@ var globalEventHandlers = {};
 	// =========================================================
 	
 	function processEvent(eventName, e, eventParams) {
-		// TODO: clean up this function!
+		
+		function trigger(lineAction, actionEnv, extra) {
+			var env = function (s) {
+				if (eventExtras[s]) {
+					//return eventExtras[s].f(e, null, mouseCurrentPos);
+					return eventExtras[s].f(extra);
+				} else {
+					return actionEnv(s);
+				}
+			};
+			
+			var action = makeActionClosure(lineAction, env);
+
+			//console.log("about to execute an action!", action);
+
+			executeAction(action);
+		}
+		
+		
 		
 		if (globalEventHandlers[eventName]) {
 			var did = false;
 			forEach(globalEventHandlers[eventName], function (handler) {
 				did = true;
-				var env = function (s) {
-					if (eventExtras[s]) {
-						return eventExtras[s].f(e, null, mouseCurrentPos);
-					} else {
-						return handler.env(s);
-					}
-				};
-				
-				var action = makeActionClosure(handler.lineAction, env);
-
-				//console.log("about to execute an action!", action);
-
-				executeAction(action);
+				trigger(handler.lineAction, handler.env, {
+					e: e,
+					mouseCurrentPos: mouseCurrentPos
+				});
 			});
 			if (did) return;
 		}
@@ -66,33 +75,6 @@ var globalEventHandlers = {};
 		
 		if (!target) return;
 		
-		// var fon = xpath("(ancestor-or-self::*/f:on[@event='" + eventName + "'])[last()]", target);
-		// 
-		// var test = xpath("(ancestor-or-self::*/f:on[@event='" + eventName + "'])", target);
-		// if (test.length > 1) {
-		// 	console.log("multiple targets", test);
-		// }
-		
-		// function addWrappers(xp, or) {
-		// 	function repeat(s, n) {
-		// 		var ret = "";
-		// 		for (var i = 0; i < n; i++) {
-		// 			ret += s;
-		// 		}
-		// 		return ret;
-		// 	}
-		// 	var ret = xp;
-		// 	for (var i = 0; i < 10; i++) {
-		// 		
-		// 		ret += " "+or+" " + repeat("f:wrapper/", i)+xp + " "+or+" " + repeat("svg:g[not(@*)]/", i)+xp;
-		// 	}
-		// 	return ret;
-		// 	//return xp + " "+or+" f:wrapper/"+xp + " "+or+" svg:g/"+xp + " "+or+" f:wrapper/f:wrapper/"+xp + " "+or+" svg:g/svg:g/"+xp;
-		// }
-		
-		
-		// note the hackery here
-		//var xpathExp = "ancestor-or-self::*[" + addWrappers("f:on/@event='" + eventName + "'", "or") + "][1]";
 		var xpathExp = "ancestor-or-self::*[f:on/@event='"+eventName+"'][1]";
 		
 		var fon = xpath(xpathExp, target);
@@ -106,69 +88,15 @@ var globalEventHandlers = {};
 				}
 			}
 			
-			//var fonEls = xpath(addWrappers("f:on[@event='" + eventName + "']", "|"), fon[0]);
 			var fonEls = xpath("f:on[@event='" + eventName + "']", fon[0]);
 			
 			forEach(fonEls, function (fonEl) {
-				var env = function (s) {
-					if (eventExtras[s]) {
-						return eventExtras[s].f(e, fonEl.parentNode, mouseCurrentPos);
-					} else {
-						return fonEl.custom.env(s);
-					}
-				};
-				
-				var action = makeActionClosure(fonEl.custom.lineAction, env);
-
-				//console.log("about to execute an action!", action);
-
-				executeAction(action);
-				
+				trigger(fonEl.custom.lineAction, fonEl.custom.env, {
+					e: e,
+					target: fonEl.parentNode,
+					mouseCurrentPos: mouseCurrentPos
+				});
 			});
-			
-
-			
-			
-			// var browserParams = xpath("f:with-param-browser", fonEl);
-			// var form;
-			// forEach(browserParams, function (browserParam) {
-			// 	var name = getAttr(browserParam, "name");
-			// 	if (getAttr(browserParam, "form")) {
-			// 		if (!form) {
-			// 			form = xpath("ancestor-or-self::html:form[1]", fonEl);
-			// 			if (form.length === 0) {
-			// 				debug.error("f:on has a f:with-param-browser needing a form, but there's no form", fonEl);
-			// 			}
-			// 			form = form[0];
-			// 		}
-			// 		
-			// 		var el = form.elements[getAttr(browserParam, "form")];
-			// 		te.params[name] = "" + el.value;
-			// 	} else if (getAttr(browserParam, "prop")) {
-			// 		var prop = getAttr(browserParam, "prop");
-			// 		if (prop === "mouseX") {
-			// 			te.params[name] = mouseCurrentPos[0];
-			// 		} else if (prop === "mouseY") {
-			// 			te.params[name] = mouseCurrentPos[1];
-			// 		} else if (prop === "relMouseX") {
-			// 			//te.params[name] = mouseCurrentPos[0] - window.getComputedStyle(fon, null).getPropertyValue("left");
-			// 			//console.log(getPosition(fonEl.parentNode));
-			// 			te.params[name] = mouseCurrentPos[0] - getPosition(fonEl.parentNode)[0];
-			// 		} else if (prop === "relMouseY") {
-			// 			te.params[name] = mouseCurrentPos[1] - window.getComputedStyle(fon, null).getPropertyValue("top");
-			// 		} else if (prop === "elemX") {
-			// 			te.params[name] = getPosition(target)[0];
-			// 		} else if (prop === "elemY") {
-			// 			te.params[name] = getPosition(target)[1];
-			// 		} else if (prop === "elemWidth") {
-			// 			te.params[name] = target.offsetWidth;
-			// 		} else if (prop === "elemHeight") {
-			// 			te.params[name] = target.offsetHeight;
-			// 		}
-			// 		// TODO: add more here...
-			// 	}
-			// });
-			
 
 		}
 	}

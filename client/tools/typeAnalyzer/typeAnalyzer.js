@@ -62,19 +62,6 @@ function typeAnalyze(line) {
 		}
 	}
 
-	function getTypeOfAST(ast, env) {
-		wordsTypes = getWordsTypes(ast, env);
-
-		try {
-			var expr = parseExpression(ast, env);
-			var type = getType(expr);			
-		} catch (e) {
-
-			staticAnalysisError("Type check failed on `"+unparse(ast)+"`.\n\n"+wordsTypes);
-		}
-		return type;
-	}
-	
 	function getWordsTypes(ast, env) {
 		var words = getWords(ast);
 		var wordTypes = {};
@@ -96,7 +83,19 @@ function typeAnalyze(line) {
 		return wordTypesError;
 	}
 
+	
+	function getTypeOfAST(ast, env) {
+		wordsTypes = getWordsTypes(ast, env);
 
+		try {
+			var expr = parseExpression(ast, env);
+			var type = getType(expr);			
+		} catch (e) {
+
+			staticAnalysisError("Type check failed on `"+unparse(ast)+"`.\n\n"+wordsTypes);
+		}
+		return type;
+	}
 
 
 	/*
@@ -107,7 +106,7 @@ function typeAnalyze(line) {
 		extra: {...}
 	}
 
-	Note: this really only checks now.. in the future it should return something that will tell you the type of every VTC
+	Note: this really only checks that there are no type errors.. in the future it should return something that will tell you the type of every VTC
 
 	*/
 
