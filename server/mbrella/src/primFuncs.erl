@@ -26,15 +26,23 @@ fold(Cell, Function, FunctionInverse, InitialValue) ->
 	cell:unleash(OutputCell).
 
 isEmpty(CellPointer) ->
-	OutputCell = cell:makeLeashedCell(),
+	OutputCell = cell:makeLeashedCell(unit),
 	cell:addElement(OutputCell, null),
 	cell:injectIntercept(OutputCell, {switch})
 	cell:injectOutput(CellPointer, OutputCell).
 	
 reactiveAnd(CellPointer1, CellPointer2) ->
-	OutputCell = cell:makeLeashedCell(),
-	InterceptState = {undefined, undefined, undefined},
+	OutputCell = cell:makeLeashedCell(unit),
+	InterceptState = {undefined, undefined},
 	cell:injectIntercept(OutputCell, {reactiveAnd, InterceptState, [CellPointer1, CellPointer2]}),
+	cell:injectOutput(CellPointer1, OutputCell),
+	cell:injectOutput(CellPointer2, OutputCell),
+	cell:unleash(OutputCell).
+	
+reactiveOr(CellPointer1, CellPointer2) ->
+	OutputCell = cell:makeLeashedCell(unit),
+	% cell:injectIntercept(OutputCell, {reactiveOr, undefined, []}),
+	cell:injectIntercept(OutputCell, {stripName, undefined, []}),
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
 	cell:unleash(OutputCell).
