@@ -33,6 +33,13 @@ injectOutput(State, OutputFunction, OutputTo) ->
 	connectOutput(State, OutputFunction, OutputTo).
 
 %% 
+%% injectIntercept :: #cellState -> #interceptObject -> #cellState
+%% 
+
+injectIntercept(State, {_FunctionName, _InterceptState, _Args} = InterceptPointer) ->
+	replace(State, intercept, InterceptPointer).
+	
+%% 
 %% addElement :: #cellState -> #element -> {ok, #cellState} | {first, #cellState}
 %% 
 
@@ -93,3 +100,9 @@ elementsAdd(map, Element, Elements) ->
 %% Utilities
 %% ====================================================
 
+state(State, Field) ->
+	State#cellState.Field.
+	
+replace(State, Field, NewField) ->
+	%erlang may not allow this
+	State#cellState{Field = NewField}.
