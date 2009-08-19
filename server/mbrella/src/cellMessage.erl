@@ -18,7 +18,7 @@
 %% External API
 %% ====================================================
 
-from({_AddRemove, CellPointer, _Message}) ->
+fromName({_AddRemove, CellPointer, _Message}) ->
 	cellPointer:name(CellPointer).
 
 %% ====================================================
