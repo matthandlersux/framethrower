@@ -73,11 +73,27 @@ unleash(CellPointer) ->
 	gen_server:cast(cellPid(CellPointer), unleash).
 
 %% 
-%% inject output function, function color -> {mod, function, args} = outputfunction
+%% inject output function 
 %% 
 
-injectOutput(CellPointer, OutputFunction, OutputTo) ->
-	gen_server:cast(cellPid(CellPointer), {injectOutput, OutputFunction, OutputTo}).
+injectOutput(CellPointer, OutputToCellPointer) ->
+	injectOutput(CellPointer, OutputToCellPointer, send).
+	
+injectOutput(CellPointer, OutputToCellPointer, OutputFunction) ->
+	gen_server:cast(
+		cellPointer:pid(CellPointer), 
+		{injectOutput, OutputToCellPointer, OutputFunction }
+	).
+
+%% 
+%% inject intercept function
+%% 
+
+injectIntercept(CellPointer, InterceptPointer) ->
+	gen_server:cast(
+		cellPointer:pid(CellPointer),
+		{injectIntercept, InterceptPointer}
+	).
 
 %% ====================================================
 %% Internal API
@@ -104,11 +120,15 @@ handle_call(Msg, From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
-% interceptFunctions :: List Args -> State -> List Message -> {ok, NewState, List Elements}
+handle_cast({injectIntercept, InterceptPointer}, State) ->
+	{noreply, cellState:injectIntercept(State, InterceptPointer)};
 handle_cast({sendElements, From, Pid, Elements}, State) ->
 	%newElements should only be ones that actually get added, not ones that add weight
 	{NewState, NewElements} = cellState:interceptElements(State, From, Elements),
 	%incase running outputs changes the output's state
+	
+	%%%%% need to chunk the elements if we have a huge list
+	
 	NewState1 = runOutputs(State, NewElements),
 	{noreply, NewState};
 handle_cast({injectOutput, OutputFunction, OutputTo}, State) ->
