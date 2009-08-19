@@ -18,12 +18,32 @@
 %% External API
 %% ====================================================
 
+callIntercept(Name, [], undefined, Messages) ->
+	callIntercept(Name, Messages);
+callIntercept(Name, Args, undefined, Messages) ->
+	callIntercept(Name, Args, Messages);
 callIntercept(Name, Args, State, Messages) ->
 	case erlang:apply(intercepts, Name, [ Args | State, Messages]) of
 		{NewState, Elements} when is_list(Elements) -> 
 			{NewState, Elements};
 		{NewState, Elements} when is_tuple(Elements) ->
 			{NewState, [Elements]}
+	end.
+	
+callIntercept(Name, Args, Messages) ->
+	case erlang:apply(intercepts, Name, [Args | Messages]) of
+		Elements when is_list(Elements) ->
+			{undefined, Elements};
+		Elements when is_tuple(Elements) ->
+			{undefined, [Elements]}
+	end.
+
+callIntercept(Name, Messages) ->
+	case erlang:apply(intercepts, Name, [Messages]) of
+		Elements when is_list(Elements) ->
+			{undefined, Elements};
+		Elements when is_tuple(Elements) ->
+			{undefined, [Elements]}
 	end.
 
 %% ====================================================
@@ -61,6 +81,13 @@ reactiveAnd( CellPointer1, CellPointer2, {Cell1Val, Cell2Val}, Message ) ->
 				true -> { {Cell1Val, Cell2NewVal}, {remove, null} }
 			end
 	end.
+	
+%% 
+%% stripName :: KeyedMessage -> UnkeyedMessage
+%% 
+
+stripName( Message ) ->
+	cellMessage:toElement(Message).
 
 %% ====================================================
 %% Utilities
