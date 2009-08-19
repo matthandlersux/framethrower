@@ -25,18 +25,18 @@ fold(Cell, Function, FunctionInverse, InitialValue) ->
 	cell:inject(Cell, OutputCell, send),
 	cell:unleash(OutputCell).
 
-isEmpty(Cell) ->
+isEmpty(CellPointer) ->
 	OutputCell = cell:makeLeashedCell(),
 	cell:addElement(OutputCell, null),
 	cell:injectIntercept(OutputCell, {switch})
-	cell:inject(Cell, OutputCell, send).
+	cell:injectOutput(CellPointer, OutputCell).
 	
-reactiveAnd(Cell1, Cell2) ->
+reactiveAnd(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeLeashedCell(),
-	InterceptKeys = cell:makeInterceptKeys(Cell1, Cell2),
-	InterceptState = {undefined, undefined, undefined}
-	%need to designate that Cell1 -> reactiveAnd's Cell1 always
-	cell:createIntercept(OutputCell, InterceptKeys, funs:pointer(intercepts, reactiveAnd, [state, key]), State),
+	InterceptState = {undefined, undefined, undefined},
+	cell:injectIntercept(OutputCell, {reactiveAnd, InterceptState, [CellPointer1, CellPointer2]}),
+	cell:injectOutput(CellPointer1, OutputCell),
+	cell:injectOutput(CellPointer2, OutputCell),
 	cell:unleash(OutputCell).
 
 %% ====================================================
