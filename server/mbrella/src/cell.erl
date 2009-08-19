@@ -48,7 +48,18 @@ makeLinkedCellLeashed() ->
 	{ok, Pid} = gen_server:start(?MODULE, [leashed], []),
 	Name = env:nameAndStoreCell(Pid),
 	#cellPointer{name = Name, pid = Pid}.
-	
+
+%% 
+%% add/remove Elements
+%% 
+
+%% 
+%% sendElements :: CellPointer -> CellName -> Elements -> ok
+%% Elements :: List Tuple ("add" | "remove") Elements
+
+sendElements(CellPointer, From, Elements) ->
+	gen_server:cast(cellPid(CellPointer), {sendElements, From, self(), Elements}).
+
 %% 
 %% primfunc api
 %% 
@@ -93,9 +104,18 @@ handle_call(Msg, From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
+% interceptFunctions :: List Args -> State -> List Message -> {ok, NewState, List Elements}
+handle_cast({sendElements, From, Pid, Elements}, State) ->
+	%newElements should only be ones that actually get added, not ones that add weight
+	{NewState, NewElements} = cellState:interceptElements(State, From, Elements),
+	%incase running outputs changes the output's state
+	NewState1 = runOutputs(State, NewElements),
+	{noreply, NewState};
 handle_cast({injectOutput, OutputFunction, OutputTo}, State) ->
 	link(cellPid(OutputTo)),
-	{noreply, cellState:injectOutput(State, OutputFunction, OutputTo)};
+	NewState = cellState:injectOutput(State, OutputFunction, OutputTo),
+	outputAllElements(State, OutputFunction, OutputTo),
+	{noreply, NewState};
 handle_cast(leash, State) ->
     {noreply, State#cellState{leash = true}};
 handle_cast(unleash, State) ->
