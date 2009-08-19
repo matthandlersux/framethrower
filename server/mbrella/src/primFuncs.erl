@@ -434,7 +434,8 @@ fold(Cell, Function, FunctionInverse, InitialValue) ->
 	OutputCell = cell:makeLeashedCell(unit),
 	cell:addElement(OutputCell, InitialValue),
 	cell:injectIntercept(OutputCell, {interceptFold, InitialValue, [Function, FunctionInverse]}),
-	cell:inject(Cell, OutputCell, send).
+	cell:inject(Cell, OutputCell, send),
+	cell:unleash(OutputCell).
 	
 % -get message [{add, value1},{add, value2},{add, value3}] or [{add,value1}] or [{remove, value3}]
 % -check if have intercept
