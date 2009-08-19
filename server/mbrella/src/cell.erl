@@ -99,6 +99,15 @@ injectIntercept(CellPointer, InterceptPointer) ->
 %% Internal API
 %% ====================================================
 
+runOutputs(State, NewElements) ->
+	Outputs = cellState:getOutputs(State),
+	%for each output, send elements to output function, get back {newoutputstate, elementstosend}
+	% update output state, convert elementstosend to messages, send messages to sendto list
+	% return cell state.
+	.
+	
+outputAllElements(State, OutputFunction, OutputTo) ->
+	Elements = cellState:getElements(State).
 
 %% ====================================================
 %% gen_server callbacks

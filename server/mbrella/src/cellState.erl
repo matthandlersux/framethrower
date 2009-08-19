@@ -72,6 +72,10 @@ interceptElements(CellState, FromName, Elements) ->
 	{ok, NewIntercept, Elements1} = runInterceptOnElements(),
 	doElements()
 	
+getElements(State) ->
+	%unpack elements so that they are {add, Element} without the weighting
+	.
+	
 %% ====================================================
 %% Internal API
 %% ====================================================
