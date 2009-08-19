@@ -20,6 +20,9 @@
 
 fromName({_AddRemove, CellPointer, _Message}) ->
 	cellPointer:name(CellPointer).
+	
+toElement({Modifier, _CellPointer, Message}) ->
+	{Modifier, Message}.
 
 %% ====================================================
 %% Internal API
