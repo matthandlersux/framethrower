@@ -123,7 +123,8 @@ handle_call(Msg, From, State) ->
 handle_cast({injectIntercept, InterceptPointer}, State) ->
 	{noreply, cellState:injectIntercept(State, InterceptPointer)};
 handle_cast({sendElements, From, Pid, Elements}, State) ->
-	%newElements should only be ones that actually get added, not ones that add weight
+	% newElements should only be ones that actually get added, not ones that add weight
+	% if intercept is undefined, just strip the name from the messages
 	{NewState, NewElements} = cellState:interceptElements(State, From, Elements),
 	%incase running outputs changes the output's state
 	
