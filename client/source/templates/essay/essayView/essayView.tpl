@@ -42,10 +42,10 @@ template (essay::Situation) {
 	hoveredInfonEvents = template (infon::Pipe, direction::Number) {
 		<f:wrapper>
 			<f:on mouseover>
-				add(hoveredInfon, infon)
+				set hoveredInfon infon
 			</f:on>
 			<f:on mouseout>
-				remove(hoveredInfon)
+				unset hoveredInfon
 			</f:on>
 			<f:on click>
 				popupInfon infon event.mouseX event.mouseY direction
@@ -65,8 +65,8 @@ template (essay::Situation) {
 			universeInit,
 			initEssay,
 			extract videosFromEssay as movie {
-				vt = create(VideoTimeline, {movie: movie}),
-				add(videoTimelines, vt)
+				vt <- create(VideoTimeline, {movie: movie}),
+				insert videoTimelines vt
 			}
 		</f:on>
 		

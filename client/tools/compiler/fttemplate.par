@@ -10,36 +10,34 @@
 
 /~	Grammar Tokens			~/
 	'([\r\n\t\ ])*includefile([\r\n\t\ ])*'	WINCLUDEFILE
-	'([\r\n\t\ ])*function([\r\n\t\ ])*'		WFUNCTION
-	'([\r\n\t\ ])*template([\r\n\t\ ])*'		WTEMPLATE
+	'([\r\n\t\ ])*function([\r\n\t\ ])*'	WFUNCTION
+	'([\r\n\t\ ])*template([\r\n\t\ ])*'	WTEMPLATE
 	'([\r\n\t\ ])*action([\r\n\t\ ])*'		WACTION
-	'([\r\n\t\ ])*state([\r\n\t\ ])*'			WSTATE
+	'([\r\n\t\ ])*state([\r\n\t\ ])*'		WSTATE
 	'([\r\n\t\ ])*create([\r\n\t\ ])*'		WCREATE
-	'([\r\n\t\ ])*add([\r\n\t\ ])*'			WADD
 	'([\r\n\t\ ])*extract([\r\n\t\ ])*'		WEXTRACT
-	'([\r\n\t\ ])*remove([\r\n\t\ ])*'		WREMOVE
-	'([\r\n\t\ ])*style([\r\n\t\ ])*'			WSTYLE
+	'([\r\n\t\ ])*style([\r\n\t\ ])*'		WSTYLE
 	'([\r\n\t\ ])*as([\r\n\t\ ])*'			WAS
 	'([\r\n\t\ ])*if([\r\n\t\ ])*'			WIF
-	'([\r\n\t\ ])*else([\r\n\t\ ])*'			WELSE
+	'([\r\n\t\ ])*else([\r\n\t\ ])*'		WELSE
 	'([\r\n\t\ ])*f:each([\r\n\t\ ])*'		FEACH
 	'([\r\n\t\ ])*f:call([\r\n\t\ ])*'		FCALL
-	'([\r\n\t\ ])*f:on([\r\n\t\ ])*'			FON
-	'([\r\n\t\ ])*f:trigger([\r\n\t\ ])*'		FTRIGGER
+	'([\r\n\t\ ])*f:on([\r\n\t\ ])*'		FON
 	'([\r\n\t\ ])*\{([\r\n\t\ ])*'			LBRACKET
 	'([\r\n\t\ ])*\}([\r\n\t\ ])*'			RBRACKET
 	'([\r\n\t\ ])*\(([\r\n\t\ ])*'			LPAREN
 	'([\r\n\t\ ])*\)([\r\n\t\ ])*'			RPAREN
-	'([\r\n\t\ ])*,([\r\n\t\ ])*'				COMMA
-	'([\r\n\t\ ])*;([\r\n\t\ ])*'				SEMICOLON
+	'([\r\n\t\ ])*,([\r\n\t\ ])*'			COMMA
+	'([\r\n\t\ ])*;([\r\n\t\ ])*'			SEMICOLON
 	'([\r\n\t\ ])*::([\r\n\t\ ])*'			DOUBLECOLON
-	'([\r\n\t\ ])*:([\r\n\t\ ])*'				COLON
-	'([\r\n\t\ ])*=([\r\n\t\ ])*'				EQUALS
-	'([\r\n\t\ ])*\<\/([\r\n\t\ ])*'			LTSLASH
-	'([\r\n\t\ ])*/([\r\n\t\ ])*'				SLASH
-	'([\r\n\t\ ])*<([\r\n\t\ ])*'				LT
-	'([\r\n\t\ ])*>([\r\n\t\ ])*'				GT
-	'([\r\n\t\ ])*-([\r\n\t\ ])*'				DASH
+	'([\r\n\t\ ])*:([\r\n\t\ ])*'			COLON
+	'([\r\n\t\ ])*=([\r\n\t\ ])*'			EQUALS
+	'([\r\n\t\ ])*\<\/([\r\n\t\ ])*'		LTSLASH
+	'([\r\n\t\ ])*/([\r\n\t\ ])*'			SLASH
+	'([\r\n\t\ ])*<([\r\n\t\ ])*'			LT
+	'([\r\n\t\ ])*<-([\r\n\t\ ])*'			LTDASH
+	'([\r\n\t\ ])*>([\r\n\t\ ])*'			GT
+	'([\r\n\t\ ])*-([\r\n\t\ ])*'			DASH
 	'([\r\n\t\ ])*\"([\r\n\t\ ])*'			QUOTE
 	'([\r\n\t\ ])*([^-^\{^\}^\(^\)^\,^\;^\:^\=^\<^\/^\"^\ ^\n^\t^\r^\>]|\\.|\^)+([\r\n\t\ ])*'	IDENTIFIER
 	;
@@ -85,6 +83,7 @@ FUNCTIONBODY:
 
 TEMPLATE:
 	WTEMPLATE LPAREN ARGLIST RPAREN LBRACKET FULLLETLIST RBRACKET
+	| WTEMPLATE LPAREN ARGLIST RPAREN DOUBLECOLON TYPE LBRACKET FULLLETLIST RBRACKET
 	;
 
 ARGLIST:
@@ -136,6 +135,7 @@ IFBLOCK:
 
 ACTIONTPL:
 	WACTION LPAREN ARGLIST RPAREN LBRACKET FULLACTLIST RBRACKET
+	| WACTION LPAREN ARGLIST RPAREN DOUBLECOLON TYPE LBRACKET FULLACTLIST RBRACKET
 	;
 
 FULLACTLIST:
@@ -150,13 +150,13 @@ ACTLIST:
 	;
 
 ACTLINE:
-	VARIABLE EQUALS ACTION
+	IDENTIFIER EQUALS ACTION
+	| IDENTIFIER LTDASH ACTION
 	| ACTION
 	;
 
 ACTION:
 	CREATE
-	| UPDATE
 	| EXTRACT
 	| FUNCTION
 	| TEMPLATE
@@ -183,24 +183,9 @@ PROP:
 	;
 
 
-UPDATE:
-	ADD
-	| REMOVE
-	;
-
-ADD:
-	WADD LPAREN EXPR COMMA EXPR RPAREN
-	| WADD LPAREN EXPR COMMA EXPR COMMA EXPR RPAREN
-	;
-
-REMOVE:
-	WREMOVE LPAREN EXPR COMMA EXPR RPAREN
-	| WREMOVE LPAREN EXPR RPAREN
-	;
-
 EXTRACT:
 	WEXTRACT EXPR WAS ASKEYVAL LBRACKET FULLACTLIST RBRACKET
-	| VARIABLE EQUALS WEXTRACT EXPR
+	| IDENTIFIER LTDASH WEXTRACT EXPR
 	;
 
 EXPR:
@@ -219,8 +204,7 @@ EXPRCODE:
 	;
 
 XML:
-	FOREACH												
-	| TRIGGER											
+	FOREACH
 	| ON												
 	| CALL												
 	| TAG												
@@ -230,11 +214,6 @@ XML:
 FOREACH:
 	LT FEACH EXPR WAS ASKEYVAL GT FULLLETLIST LTSLASH FEACH GT	
 	| LT FEACH EXPR GT FULLLETLIST LTSLASH FEACH GT				
-	;
-
-TRIGGER:
-	LT FTRIGGER EXPR WAS ASKEYVAL GT FULLACTLIST LTSLASH FTRIGGER GT	
-	| LT FTRIGGER EXPR GT FULLACTLIST LTSLASH FTRIGGER GT				
 	;
 
 ON:
@@ -369,9 +348,7 @@ KEYWORD:
 	| WACTION
 	| WSTATE
 	| WCREATE
-	| WADD
 	| WEXTRACT
-	| WREMOVE
 	| WSTYLE
 	| WAS
 	| WIF
@@ -379,7 +356,6 @@ KEYWORD:
 	| FEACH
 	| FCALL
 	| FON
-	| FTRIGGER
 	;
 
 STRINGESCAPEQUOTES:

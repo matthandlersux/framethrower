@@ -1,4 +1,6 @@
 
+
+
 /************ 'fetch' keyword **********/
 
 var fetchEnv = envAdd(falseEnv, "fetch", "fetch");
@@ -7,17 +9,30 @@ function desugarFetch(template, env) {
 	if (!template) return;
 	if (!env) env = fetchEnv;
 	
+	// {kind: "lineExpr", expr: AST, ?type: TYPE} |
+	// {kind: "lineXML", xml: XML} |
+	// {kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
+	// {kind: "lineState", action: LINETEMPLATE} | // action takes no parameters |
+	// {kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, output: LINE, type: TYPE} |
+	// {kind: "lineAction", actions: [{name?: VARTOCREATE, action: LINE}], type: TYPE}
+	
 	var kind = template.kind;
 	
-	if (kind === "lineExpr") {
+	if (kind === "lineExpr")
 		// make any fetches explicit and then desugar unfetches:
 		template.expr = desugarUnfetch( substitute(template.expr, env) );
-	}
+	
+	else if(kind === "lineXML")
+		template.xml = desugarFetchXML(template.xml, env);
+
+	else if(kind === "lineState")
+		desugarFetch(template.action, env);
 	
 	else if (kind === "lineTemplate") {
 		// params hide previous bindings:
 		env = envMinus(env, template.params);
 
+		// TODO use mutual recursion, not sequential assignment!
 		// go through lets, recursing on each, and remembering (and destroying) any fetched lineExprs:
 		for(var v in template.let) {
 			var let = template.let[v];
@@ -36,170 +51,135 @@ function desugarFetch(template, env) {
 		// recurse on output:
 		var output = template.output;
 		desugarFetch(output, env);
-		
-		// if output is fetched, wrap it in an f:each:
+
 		if(output.kind==="lineExpr" && hasVariable(output.expr, fetchEnv)) {
-			// generate an error if this template doesn't seem to output XML,
-			// since in that case wrapping the output in a f:each will probably fail:
-			var type = template.type;
-			if(type) { // figure out output type (by 'applying' template.type to template.params):
-				for(var i in template.params) {
-					if(type.kind!=="typeLambda") { // type doesn't have enough lambdas for params...
-						console.error("template has bad type:");
-						console.error(JSONtoString(template));
-					}
-					type = type.right;
-				}
-			}
-			if(!type || !compareTypes(type, parseType("XMLP"))) {
-				console.error("fetched output not supported in non-XML template:");
-				console.error(JSONtoString(template));
-			}
+			console.warn("wrapping entire tmeplate output in <f:each> (may be inefficient; consider using 'unfetch')", output);
 			
-			var feach = makeFeach(output, "_fetchLineExpr", unfetch(output.expr));
-			output.expr = "_fetchLineExpr";
-			template.output = {kind:"lineXML", xml:feach};
-
-			// console.debug("lineTemplate.output desugared to:");
-			// console.debug(JSONtoString(template.output));
-
-			desugarFetch(template.output, env); // recurse in case more fetches remain
+			var varName = "_fetchLineExpr",
+				val = output.expr,
+			 	feach = makeFeach({kind: "lineExpr", expr: varName}, varName, unfetch(val));
+			output = {kind: "lineXML", xml: feach};
+			
+			desugarFetch(output, env); // recurse in case fetches remain
+			
+			template.output = output;
 		}
-
-		// we don't want to forEach() on this, since we've already taken care of everything:
-		return;
 	}
 	
 	else if (kind === "lineAction") {
-		env = envMinus(env, template.params);
-
-		// go through actions, recursing on each, remembering (and destroying) any fetched lineExprs,
-		// and wrapping fetched actions in extracts:
+		// {kind: "lineExpr", expr: AST, ?type: TYPE} |
+		// {kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
+		// {kind: "extract", select: AST, action: LINETEMPLATE} // this action should take one (or two) parameters.
+		
+		// go through actions, recursing on each, and wrapping fetched actions in extracts:
 		for(var i=0; i<template.actions.length; i++) {
 			var v = template.actions[i].name,
-				action = template.actions[i].action;
-
-			desugarFetch(action, env);
-
-			if(action.kind === "lineExpr" && hasVariable(action.expr, fetchEnv)) {
-				if(v)
-					env = envAdd(env, v, action.expr);
-				else
-					console.warn("removing pointless fetched line: "+JSONtoString(template.actions[i]));
-				template.actions.splice(i,1); // remove element i
-				i--;
-				continue;
-			}
-			
-			if(v && env(v))
-				env = envAdd(env, v, false);
-
-			var vars = [],
+				action = template.actions[i].action,
+				vars = [],
 				vals = [];
+				
+			desugarFetch(action, env);
 			
-			if (action.kind === "actionCreate") {
+			if(action.kind === "lineExpr")
+				action.expr = processFetch(action.expr, env, "_fetchLineExpr", vars, vals);
+			else if (action.kind === "actionCreate") {
 				for(var j in action.prop)
 					action.prop[j] = processFetch(action.prop[j], env, "_fetchCreateProp"+j, vars, vals);
 			}
-			else if (action.kind === "actionUpdate") {
-				action.target = processFetch(action.target, env, "_fetchUpdateTarget", vars, vals);
-				if(action.key)
-					action.key = processFetch(action.key, env, "_fetchCreateKey", vars, vals);
-				if(action.value)
-					action.value = processFetch(action.value, env, "_fetchCreateValue", vars, vals);
-			}
-			else if (action.kind === "extract")
+			else if (action.kind === "extract") {
+				desugarFetch(action.action, env);
 				action.select = processFetch(action.select, env, "_fetchExtractSelect", vars, vals);
+			}
+
+			if(v && env(v)) // new binding overrides a fetched binding
+				env = envAdd(env, v, false);
 			
 			if(vars.length===0) // nothing was fetched, continue as usual
 				continue;
 
 			// wrap this and later actions in extracts:
-			var lineAction = {kind:"lineAction", params:[], actions:template.actions.slice(i)};
+			var lineAction = {kind: "lineAction", actions: template.actions.slice(i), type: template.type};
 			for(var j=0; j<vars.length; j++) {
-				lineAction.params = [vars[j]];
-				lineAction.type = parseType("a -> Action");
-				var extract = {kind:"extract", select:unfetch(vals[j]), lineAction:lineAction};
-				lineAction = {kind:"lineAction", params:[], actions:[{action:extract}]};
+				var extract = makeExtract(lineAction, vars[j], vals[j]);
+				lineAction = {kind: "lineAction", actions: [{action: extract}], type: template.type};
 			}
-
-			// console.debug("lineAction.action desugared to:");
-			// console.debug(JSONtoString(lineAction.actions[0]));
 			
 			desugarFetch(lineAction, env); // recurse to process later actions, and in case more fetches remain
 
 			// replace this and later actions with the extract:
 			template.actions = template.actions.slice(0,i);
 			template.actions[i] = lineAction.actions[0];
-			return;
 		}
-
-		return;
-	}
-	
-	else if(kind === "lineXML") {
-		template.xml = desugarFetchXML(template.xml, env);
-	}
-	else if(kind === "element") {
-		for(var i in template.children)
-			template.children[i] = desugarFetchXML(template.children[i], env);
-	}
-	
-	else if (kind === "insert") {
-		template.expr = desugarUnfetch( substitute(template.expr, env) );
-		// insert can handle any type, and works the same for t or Unit t,
-		// so we don't care whether 'unfetch' is used -- we unfetch either way:
-		while(hasVariable(template.expr, fetchEnv))
-			template.expr = unfetch(template.expr);
-		
-		// console.debug("desugared insert to:");
-		// console.debug(JSONtoString(template));
-	}
-
-	if (arrayLike(template) || objectLike(template)) {
-		forEach(template, function (x) {desugarFetch(x,env);});
 	}
 }
 
 function desugarFetchXML(xml, env) {
+	// XML
+	// 	{kind: "for-each", select: AST, lineTemplate: LINETEMPLATE} | // this lineTemplate should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
+	// 	{kind: "call", lineTemplate: LINETEMPLATE} | // this lineTemplate should take zero parameters.
+	// 	{kind: "on", event: EVENT, action: LINETEMPLATE} | // this action should take zero parameters.
+	// 	{kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise?: LINETEMPLATE} |
+	// 	// test should evaluate to a cell, if it is non-empty then lineTemplate is run as if it were a for-each. If it is empty, otherwise is called.
+	// 	// lineTemplate should take one parameter
+	// 	// otherwise, if it exists, should take zero parameters
+	// 	XMLNODE 
+	// 
+	// XMLNODE
+	// 	{kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately
+	// 	{kind: "textElement", nodeValue: STRING | XMLINSERT}
+	// 
+	// XMLINSERT
+	// 	{kind: "insert", expr: AST}
+	
 	var kind = xml.kind,
 		vars = [],
 		vals = [];
-	if (kind === "case")
-		xml.test = processFetch(xml.test, env, "_fetchCaseTest", vars, vals);
-	else if (kind === "for-each")
+		
+	if (kind === "for-each") {
+		desugarFetch(xml.lineTemplate, env);
 		xml.select = processFetch(xml.select, env, "_fetchForEachSelect", vars, vals);
-	else if (kind === "trigger")
-		xml.trigger = processFetch(xml.trigger, env, "_fetchTriggerTrigger", vars, vals);
+	}
 	
-	if(vars.length===0)
-		return xml;
+	else if (kind === "call")
+		desugarFetch(xml.lineTemplate, env);
+		
+	else if (kind === "on")
+		desugarFetch(xml.action, env);
+		
+	else if (kind === "case") {
+		desugarFetch(xml.lineTemplate, env);
+		desugarFetch(xml.otherwise, env);
+		xml.test = processFetch(xml.test, env, "_fetchCaseTest", vars, vals);
+	}
+	
+	else if(kind === "element") {
+		for(var i in xml.children)
+			xml.children[i] = desugarFetchXML(xml.children[i], env);
+		function desugarInsert1(x) {desugarInsert(x, env);}
+		forEach(xml.attributes, desugarInsert1);
+		forEach(xml.style, desugarInsert1);
+	}
 
-	var feach = makeFeach({kind:"lineXML", xml:xml}, vars[0], unfetch(vals[0]));
+	else if(kind === "textElement")
+		desugarInsert(xml.nodeValue, env);
 	
-	// console.debug("xml desugared to:");
-	// console.debug(JSONtoString(feach));
-	// (note feach will be recursed on by forEach() at end of desugarFetch(lineXML,env),
-	// in case there are remaining fetches)
-	return feach;
+	if(vars.length>0) {
+		xml = makeFeach({kind:"lineXML", xml:xml}, vars[0], vals[0]);
+		desugarFetchXML(xml, env); // recurse in case more fetches remain
+	}
+	
+	return xml;
 }
 
-/*
-* returns a version of env with everything in vars mapping to false.
-* does not modify env.
-*/
-function envMinus(env, vars) {
-	return function(s) {
-		var val = env(s);
-		if(val && vars.indexOf(s)===-1)
-			return val;
-		return false;
-	};
-}
-
-function disallowFetch(ast, template) {
-	if(hasVariable(ast, fetchEnv))
-		console.error("the fetched expression ("+unparse(ast)+") is not supported in the context: "+JSONtoString(template));
+function desugarInsert(insert, env) {
+	if(typeOf(insert) === "string") return;
+	if(insert.kind !== "insert") console.error("desugarInsert() passed non-insert", insert);
+		
+	insert.expr = desugarUnfetch( substitute(insert.expr, env) );
+	// insert can handle any type, and works the same for t or Unit t,
+	// so we don't care whether 'unfetch' is used -- we unfetch either way:
+	while(hasVariable(insert.expr, fetchEnv))
+		insert.expr = unfetch(insert.expr);
 }
 
 /*
@@ -214,8 +194,8 @@ function processFetch(ast, env, varName, vars, vals) {
 		var i=vals.indexOf(ast);
 		if(i!==-1) // already have a var for ast
 			return vars[i];
-		vars.push(varName);
-		vals.push(ast);
+		vars.push( varName );
+		vals.push( unfetch(ast) );
 		return varName;
 	}
 	return ast;
@@ -338,7 +318,32 @@ function makeAppliesAST(ast, vals) {
 	return ast;
 }
 
-function makeFeach(template, varName, value) {
-	return {kind:"for-each", select:value,
-		lineTemplate:{kind:"lineTemplate", params:[varName], let:{}, output:template}};
+
+
+
+/********** other utils ***********/
+
+/*
+* returns a version of env with everything in vars mapping to false.
+* does not modify env.
+*/
+function envMinus(env, vars) {
+	return function(s) {
+		var val = env(s);
+		if(val && vars.indexOf(s)===-1)
+			return val;
+		return false;
+	};
+}
+
+function makeFeach(output, varName, value) {
+	var lineTemplate = {kind: "lineTemplate",
+		params: [varName], let: {}, output: output}; // TODO compute type?
+	return {kind: "for-each", select: value, lineTemplate: lineTemplate};
+}
+
+function makeExtract(output, varName, value) {
+	var lineTemplate = {kind: "lineTemplate",
+		params: [varName], let: {}, output: output, type: makeTypeLambda(makeFreshTypeVar(),output.type)};
+	return {kind: "extract", select: value, action: lineTemplate};
 }

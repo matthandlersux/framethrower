@@ -30,6 +30,8 @@ var includes = (function () {
 			"source/js/reactive/controlledCell.js",
 
 			"source/js/builtin/builtin.js",
+			"source/js/builtin/functions/syntax.js",
+			"source/js/builtin/functions/actions.js",
 			"source/js/builtin/functions/null.js",
 			"source/js/builtin/functions/ord.js",
 			"source/js/builtin/functions/tuple.js",

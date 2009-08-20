@@ -30,14 +30,14 @@ function evaluate2(expr) {
 	
 	
 	if (expr.kind === "exprApply") {
-		var fun = evaluate(expr.left);
-		var input = evaluate(expr.right);
+		var fun = evaluate2(expr.left);
+		var input = evaluate2(expr.right);
 		
 		if (fun.kind === "exprLambda") {
 			// we can do a beta reduction
 			var ret = betaReplace(fun, input);
 			//ret.type = resultType; // optimization
-			return evaluate(ret);
+			return evaluate2(ret);
 		} else {
 			// fun wasn't a lambda, and evaluate can't return an apply, so fun must be a Fun, so we can run it
 			
@@ -70,8 +70,16 @@ function evaluate2(expr) {
 }
 
 
-var evaluate = evaluate2; // this total misdirection is because the new firebug doesn't like to run a function called "evaluate" in the console (!!!)
+//var evaluate = evaluate2; // this total misdirection is because the new firebug doesn't like to run a function called "evaluate" in the console (!!!)
 
+
+function evaluate(expr) {
+	var ret = evaluate2(expr);
+	// if (ret.kind === "cell") {
+	// 	console.warn("Uh oh evaluate called and resulted in a cell, potential memory leak", expr, ret);
+	// }
+	return ret;
+}
 
 
 
@@ -93,7 +101,7 @@ function memoizeCell(exprString, cell) {
 
 
 function evaluateAndInject(expr, depender, func) {
-	var e = evaluate(expr);
+	var e = evaluate2(expr);
 	return e.inject(depender, func);
 }
 

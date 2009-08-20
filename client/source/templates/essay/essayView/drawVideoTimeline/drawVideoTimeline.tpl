@@ -116,8 +116,8 @@ template (videoTimeline::VideoTimeline) {
 	
 	<f:wrapper>
 		<f:on init>
-			add(zoomStartS, 0),
-			add(zoomDurationS, product videoDuration initialDurationFraction)
+			set zoomStartS 0,
+			set zoomDurationS (product videoDuration initialDurationFraction)
 		</f:on>
 
 		// wrapper for entire scrubber:
@@ -132,29 +132,29 @@ template (videoTimeline::VideoTimeline) {
 			<svg:g class="zoomTimeline">
 				<f:on mousedown> // begin selecting
 					clickTime = zoomPixelsToTime event.offsetX,
-					add(selectStartS, clickTime),
-					add(selectDurationS, 0),
-					add(selectingS, clickTime)
+					set selectStartS clickTime,
+					set selectDurationS 0,
+					set selectingS clickTime
 				</f:on>
 				<f:each selectingS as _>
 					<f:on globalmouseup> // abandon selecting
-						remove(selectingS)
+						unset selectingS
 					</f:on>
 				</f:each>
 				<f:on mousemove> // update preview time, and update selection if selecting
 					newTime = zoomPixelsToTime event.offsetX,
-					add(previewTimeS, newTime),
+					set previewTimeS newTime,
 				
 					extract selectingS as clickTime {
 						newStart = min newTime clickTime,
 						newEnd = max newTime clickTime,
 						newDuration = difference newEnd newStart,
-						add(selectStartS, newStart),
-						add(selectDurationS, newDuration)
+						set selectStartS newStart,
+						set selectDurationS newDuration
 					}
 				</f:on>
 				<f:on mouseout> // 'pop' back to selected position
-					add(previewTimeS, selectStart)
+					set previewTimeS selectStart
 				</f:on>
 				
 				<f:on mousescroll> // zoom in or out on zoomed scrubber
@@ -164,8 +164,8 @@ template (videoTimeline::VideoTimeline) {
 					cursorFraction = quotient (difference previewTime zoomStart) zoomDuration,
 					newStart = difference previewTime (product cursorFraction newDuration),
 
-					add(zoomStartS, clamp 0 (difference videoDuration newDuration) newStart),
-					add(zoomDurationS, newDuration),
+					set zoomStartS (clamp 0 (difference videoDuration newDuration) newStart),
+					set zoomDurationS newDuration,
 					// force cursor to mouse position, in case we had to clamp?
 					// add(previewTimeS, zoomPixelsToTime event.offsetX)
 				</f:on>
@@ -201,21 +201,21 @@ template (videoTimeline::VideoTimeline) {
 					// if click is outside of the scroller, then center it at click:
 					extract boolToUnit (or (lessThan scrollOffset 0) (greaterThan scrollOffset zoomDuration)) as _ {
 						newStart = difference newTime (quotient zoomDuration 2),
-						add(zoomStartS, clamp 0 (difference videoDuration zoomDuration) newStart)
+						set zoomStartS (clamp 0 (difference videoDuration zoomDuration) newStart)
 						// don't need to update scrollOffset, since it is reactive
 					},
-					add(scrollingS, scrollOffset)
+					set scrollingS scrollOffset
 				</f:on>
 				
 				<f:each scrollingS as scrollOffset>
 					<f:wrapper>
 						<f:on globalmouseup> // abandon scrolling
-							remove(scrollingS)
+							unset scrollingS
 						</f:on>
 						<f:on globalmousemove> // update zoom if scrolling.
 								newTime = scrollPixelsToTime event.offsetX,
 								newStart = difference newTime scrollOffset,
-								add(zoomStartS, clamp 0 (difference videoDuration zoomDuration) newStart)
+								set zoomStartS (clamp 0 (difference videoDuration zoomDuration) newStart)
 						</f:on>
 					</f:wrapper>
 				</f:each>
@@ -227,8 +227,8 @@ template (videoTimeline::VideoTimeline) {
 					durationDelta = difference newDuration zoomDuration,
 					newStart = difference zoomStart (quotient durationDelta 2),
 
-					add(zoomStartS, clamp 0 (difference videoDuration newDuration) newStart),
-					add(zoomDurationS, newDuration)
+					set zoomStartS (clamp 0 (difference videoDuration newDuration) newStart),
+					set zoomDurationS newDuration
 				</f:on>
 			
 				<svg:g transform="{svgTranslate 0 zoomHeight}">

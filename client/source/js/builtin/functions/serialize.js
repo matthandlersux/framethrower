@@ -81,7 +81,7 @@
 			// TODO: not sure how depender works...
 
 			// returns a function to stop listening to the cell
-			c = evaluate(c);
+			//c = evaluate(c);
 
 			setTimeout(session.flush,0);
 

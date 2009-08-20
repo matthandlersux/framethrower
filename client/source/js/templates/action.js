@@ -1,42 +1,25 @@
 /*
 
 LINEACTION
-	{kind: "lineAction", params: [VARTOCREATE], actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
+	{kind: "lineAction", actions: [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
 
 ACTIONUNIT
 	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
 	{kind: "actionUpdate", target: AST, actionType: "add" | "remove", key?: AST, value?: AST} |
-	{kind: "extract", select: AST, lineAction: LINEACTION} // this lineAction should take one (or two) parameters.
+	{kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
 
 */
 
 function makeActionClosure(lineAction, env) {
-	var params = lineAction.params;
-	var type = lineAction.type;
+	// var type = lineAction.type; TODO use this type?
 	
-	var f = curry(function () {
-		var scope = {};
-		var args = arguments;
-		forEach(params, function (param, i) {
-			scope[param] = args[i];
-		});
-		var envWithParams = extendEnv(env, scope);
-		
-		var ret = {
-			kind: "instruction",
-			instructions: lineAction.actions,
-			env: envWithParams,
-			type: actionType,
-			remote: 2
-		};
-		return ret;
-	}, params.length);
-
-	if (params.length > 0) {
-		return makeFun(type, f);
-	} else {
-		return f;
-	}
+	return {
+		kind: "instruction",
+		instructions: lineAction.actions,
+		env: env,
+		type: actionType,
+		remote: 2
+	};
 }
 
 
@@ -47,7 +30,7 @@ function executeAction(instruction) {
 	var output;
 	
 	function evalExpr(expr) {
-		return evaluate(parseExpression(expr, env));
+		return evaluate2(parseExpression(expr, env));
 	}
 	
 	forEach(instruction.instructions, function (actionLet) {
@@ -61,39 +44,28 @@ function executeAction(instruction) {
 			} else {
 				output = objects.make(action.type.value, map(action.prop, evalExpr));
 			}
-		} else if (action.kind === "actionUpdate") {
-			// we're dealing with: {kind: "actionUpdate", target: AST, actionType: "add" | "remove", key?: AST, value?: AST}
-			
-			var target = evalExpr(action.target);
-			var key = action.key ? evalExpr(action.key) : undefined;
-			var value = action.value ? evalExpr(action.value) : undefined;
-			
-			if (target.control === undefined) {
-				debug.error("Trying to do action update on non-controlled cell", target);
-			} else {
-				target.control[action.actionType](key, value);
-			}
 		} else if (action.kind === "extract") {
-			// we're dealing with: {kind: "extract", select: AST, lineAction: LINEACTION} // this lineAction should take one (or two) parameters.
+			// we're dealing with: {kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
 			
-			var actionClosure = makeActionClosure(action.lineAction, env);
+			var closure = makeClosure(action.action, env);
 			var inner;
-			var isMap = !!actionClosure.type.left.left;
+			var isMap = !!closure.type.left.left;
 			if (isMap) {
 				inner = function (o) {
-					return evaluate(makeApply(makeApply(actionClosure, o.key), o.val));
+					return evaluate(makeApply(makeApply(closure, o.key), o.val));
 				};
 			} else {
 				inner = function (key) {
-					return evaluate(makeApply(actionClosure, key));
+					return evaluate(makeApply(closure, key));
 				};
 			}
 			
 			var select = evalExpr(action.select);
 			
+			// note that output will be the result of the last action:
 			if (select.kind === "list") {
 				forEach(select.asArray, function (element) {
-					executeAction(inner(element));
+					output = executeAction(inner(element));
 				});
 			} else {
 				var done = false;
@@ -102,23 +74,25 @@ function executeAction(instruction) {
 					if (!done) {
 						done = true;
 						forEach(cell.getState(), function (element) {
-							executeAction(inner(element));
+							output = executeAction(inner(element));
 						});
 					}
 				});
 				injectedFunc.unInject();
 			}
-			
+		} else if(action.kind==="actionJavascript") {
+			// we're dealing with: {kind: "actionJavascript", f: function}
+			output = action.f();
 		} else {
 			// we're dealing with a LINE
 			
-			var evaled = evaluateLine(action, env);
+			//var evaled = evaluateLine(action, env);
+			var evaled = evaluate(evaluateLine(action, env));
 			if (evaled.kind === "instruction") {
 				// the LINE evaluated to an Action
 				output = executeAction(evaled);
-			} else {
-				output = evaled;
-			}
+			} else
+				debug.error("non-action expression in an action", action);
 		}
 		
 		if (actionLet.name) {

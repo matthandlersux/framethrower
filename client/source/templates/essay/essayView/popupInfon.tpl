@@ -43,6 +43,6 @@ action (infon::Pipe, x::Number, y::Number, direction::Number) {
 			</div>
 		</f:call>
 	</div>,
-	pop = create(Popup, {content: content, x: x, y: y, direction: direction, width: 400, height: 300}),
-	add(popup, pop)
+	pop <- create(Popup, {content: content, x: x, y: y, direction: direction, width: 400, height: 300}),
+	set popup pop
 }

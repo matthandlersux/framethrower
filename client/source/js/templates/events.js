@@ -63,10 +63,19 @@ var globalEventHandlers = {};
 			var did = false;
 			forEach(globalEventHandlers[eventName], function (handler) {
 				did = true;
-				trigger(handler.lineAction, handler.env, {
-					e: e,
-					mouseCurrentPos: mouseCurrentPos
-				});
+				var env = function (s) {
+					if (eventExtras[s]) {
+						return eventExtras[s].f(e, null, mouseCurrentPos);
+					} else {
+						return handler.env(s);
+					}
+				};
+				
+				var action = makeClosure(handler.action, env);
+
+				//console.log("about to execute an action!", action);
+
+				executeAction(action);
 			});
 			if (did) return;
 		}
@@ -91,11 +100,20 @@ var globalEventHandlers = {};
 			var fonEls = xpath("f:on[@event='" + eventName + "']", fon[0]);
 			
 			forEach(fonEls, function (fonEl) {
-				trigger(fonEl.custom.lineAction, fonEl.custom.env, {
-					e: e,
-					target: fonEl.parentNode,
-					mouseCurrentPos: mouseCurrentPos
-				});
+				var env = function (s) {
+					if (eventExtras[s]) {
+						return eventExtras[s].f(e, fonEl.parentNode, mouseCurrentPos);
+					} else {
+						return fonEl.custom.env(s);
+					}
+				};
+				
+				var action = makeClosure(fonEl.custom.action, env);
+
+				//console.log("about to execute an action!", action);
+
+				executeAction(action);
+				
 			});
 
 		}
