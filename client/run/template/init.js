@@ -1,4 +1,3 @@
-
 preparse(mainTemplate);
 
 desugarFetch(mainTemplate);
@@ -12,6 +11,6 @@ function initialize() {
 	var node = xmlToDOM(compiledTemplate.xml, compiledTemplate.env);
 	
 	document.body.appendChild(node.node);
+
+	document.body.focus();
 }
-
-

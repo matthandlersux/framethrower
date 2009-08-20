@@ -20,6 +20,7 @@ var globalEventHandlers = {};
 			})) return child2;
 			child2 = child2.parentNode;
 		}
+		return undefined;
 	}
 	
 	// =========================================================
@@ -244,14 +245,9 @@ var globalEventHandlers = {};
 // Global UI Cells
 // =========================================================
 
-(function () {
+var initializeGlobalUICells = function () {
 	//var ui = rootObjects["ui.ui"].prop;
 	var ui = base.env("ui.ui").prop;
-	
-	function onload() {
-		document.body.focus();
-		resizeScreen();
-	}
 	
 	function resizeScreen(e) {
 		//console.log("detected screen resize");
@@ -274,12 +270,13 @@ var globalEventHandlers = {};
 	}
 	
 	window.addEventListener("resize", resizeScreen, true);
-	document.addEventListener("load", onload, true);
 	
 	document.addEventListener("mousemove", mousemove, true);
 	document.addEventListener("mousedown", mousedown, true);
 	document.addEventListener("mouseup", mouseup, true);
-})();
+	
+	resizeScreen();
+};
 
 
 

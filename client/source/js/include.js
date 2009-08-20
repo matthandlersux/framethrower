@@ -47,7 +47,7 @@ var includes = (function () {
 
 
 			"source/js/remote/remote.js",
-			
+
 			"source/js/templates/preparse.js", // might want to do this at compile time?
 			"source/js/templates/fetch.js"
 		],
@@ -67,7 +67,7 @@ var includes = (function () {
 			"source/js/templates/events.js"
 		]
 	};
-
+	
 	function prepareIncludes(bundles, extraFiles) {
 		function plusRootDir(a) {
 			var ret = [];
@@ -100,6 +100,10 @@ var includes = (function () {
 			for (var i = 0, len = includes.length; i < len; i++) {
 				load(includes[i]);
 			};
+		},
+		getFileList: function (bundles, extraFiles) {
+			var includes = prepareIncludes(bundles, extraFiles);
+			return includes;
 		}
 	};
 })();
