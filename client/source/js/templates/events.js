@@ -50,7 +50,7 @@ var globalEventHandlers = {};
 				}
 			};
 			
-			var action = makeActionClosure(lineAction, env);
+			var action = makeClosure(lineAction, env);
 
 			//console.log("about to execute an action!", action);
 
@@ -63,19 +63,10 @@ var globalEventHandlers = {};
 			var did = false;
 			forEach(globalEventHandlers[eventName], function (handler) {
 				did = true;
-				var env = function (s) {
-					if (eventExtras[s]) {
-						return eventExtras[s].f(e, null, mouseCurrentPos);
-					} else {
-						return handler.env(s);
-					}
-				};
-				
-				var action = makeClosure(handler.action, env);
-
-				//console.log("about to execute an action!", action);
-
-				executeAction(action);
+				trigger(handler.action, handler.env, {
+					e: e,
+					mouseCurrentPos: mouseCurrentPos
+				});
 			});
 			if (did) return;
 		}
@@ -100,22 +91,12 @@ var globalEventHandlers = {};
 			var fonEls = xpath("f:on[@event='" + eventName + "']", fon[0]);
 			
 			forEach(fonEls, function (fonEl) {
-				var env = function (s) {
-					if (eventExtras[s]) {
-						return eventExtras[s].f(e, fonEl.parentNode, mouseCurrentPos);
-					} else {
-						return fonEl.custom.env(s);
-					}
-				};
-				
-				var action = makeClosure(fonEl.custom.action, env);
-
-				//console.log("about to execute an action!", action);
-
-				executeAction(action);
-				
+				trigger(fonEl.custom.action, fonEl.custom.env, {
+					e: e,
+					target: fonEl.parentNode,
+					mouseCurrentPos: mouseCurrentPos
+				});
 			});
-
 		}
 	}
 	
