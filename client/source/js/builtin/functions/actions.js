@@ -1,6 +1,6 @@
 
 function makeActionJavascript(f) {
-	var action = {kind: "actionJavascript", f: f},
+	var action = {kind: "actionJavascript", f: f}, // will be interpreted by executeAction()
 		lineAction = {actions: [{action: action}]};
 	
 	return makeActionClosure(lineAction, emptyEnv);
@@ -31,9 +31,9 @@ addFun("insert", "Set a -> a -> Action Void", function(s, x) {
 addFun("remove", "Set a -> a -> Action Void", function(s, x) {
 	return makeActionJavascript( function() { updateCC("remove", s, x); } );
 });
-addFun("map", "Map a b -> a -> b -> Action Void", function(m, k, v) {
+addFun("bind", "Map a b -> a -> b -> Action Void", function(m, k, v) {
 	return makeActionJavascript( function() { updateCC("add", m, k, v); } );
 });
-addFun("unmap", "Map a b -> a -> Action Void", function(m, k) {
+addFun("unbind", "Map a b -> a -> Action Void", function(m, k) {
 	return makeActionJavascript( function() { updateCC("remove", m, k); } );
 });
