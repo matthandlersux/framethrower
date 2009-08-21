@@ -13,7 +13,7 @@ makeSituationNamed = action (name::String) {
 	return sit
 },
 putSituationIn = action (parent::Situation, child::Situation) {
-	insert (Situation:contains parent) child,
+	add (Situation:contains parent) child,
 	set (Situation:container child) parent
 },
 makeSituationNamedIn = action (name::String, parent::Situation) {
@@ -25,8 +25,8 @@ makeSituationNamedIn = action (name::String, parent::Situation) {
 makePipe = action (instance::Situation, type::Situation) {
 	pipe <- create(Pipe, {instance:instance, type:type}),
 	set (Pipe:truth pipe) 1,
-	insert (Situation:asInstance instance) pipe,
-	insert (Situation:asType type) pipe,
+	add (Situation:asInstance instance) pipe,
+	add (Situation:asType type) pipe,
 	return pipe
 },
 
@@ -38,7 +38,7 @@ makePipe = action (instance::Situation, type::Situation) {
 putPipeIn = action (pipe::Pipe, container::List Pipe) {
 	set (Pipe:container pipe) container,
 	extract container as pipeSegment {
-		insert (Pipe:contains pipeSegment) pipe
+		add (Pipe:contains pipeSegment) pipe
 	}
 },
 
