@@ -25,15 +25,15 @@ addFun("set", "Unit a -> a -> Action Void", function(u, x) {
 addFun("unset", "Unit a -> Action Void", function(u) {
 	return makeActionJavascript( function() { updateCC("remove", u); } );
 });
-addFun("insert", "Set a -> a -> Action Void", function(s, x) {
+addFun("add", "Set a -> a -> Action Void", function(s, x) {
 	return makeActionJavascript( function() { updateCC("add", s, x); } );
 });
 addFun("remove", "Set a -> a -> Action Void", function(s, x) {
 	return makeActionJavascript( function() { updateCC("remove", s, x); } );
 });
-addFun("bind", "Map a b -> a -> b -> Action Void", function(m, k, v) {
+addFun("addEntry", "Map a b -> a -> b -> Action Void", function(m, k, v) {
 	return makeActionJavascript( function() { updateCC("add", m, k, v); } );
 });
-addFun("unbind", "Map a b -> a -> Action Void", function(m, k) {
+addFun("removeEntry", "Map a b -> a -> Action Void", function(m, k) {
 	return makeActionJavascript( function() { updateCC("remove", m, k); } );
 });

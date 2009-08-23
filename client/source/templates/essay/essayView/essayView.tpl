@@ -66,7 +66,7 @@ template (essay::Situation) {
 			initEssay,
 			extract videosFromEssay as movie {
 				vt <- create(VideoTimeline, {movie: movie}),
-				insert videoTimelines vt
+				add videoTimelines vt
 			}
 		</f:on>
 		

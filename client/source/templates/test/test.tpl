@@ -7,14 +7,14 @@ template () {
 		make = create(Set Number),
 		s <- make,
 		b = plus a c,
-		insert s b,
+		add s b,
 		remove s x,
 		return s
 	},
 	copySet = action(s::Set Number)::Set Number {
 		t <- create(Set Number),
 		extract s as x {
-			insert t x
+			add t x
 		},
 		return t
 	},
@@ -30,14 +30,14 @@ template () {
 			s <- getSet 4,
 			// x <- extract s,
 			extract s as x {
-				insert u x
+				add u x
 			}
 		</f:on>
 		<f:on mousedown>
 			s <- copySet u,
 			extract s as x {
 				y = plus a x,
-				insert u y
+				add u y
 			}
 		</f:on>
 		
