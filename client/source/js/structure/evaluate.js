@@ -12,24 +12,28 @@ function evaluate2(expr) {
 	
 	
 	
-	getRemote(expr); // just to tag the expr's .remote
-	
-	// check if we're returning a Cell and see if it's already memoized
-	var resultExprStringified = stringify(expr);
-	var cached = evalCache[resultExprStringified];
-	if (cached) {
-		return cached;
-	}
-	
-	if (getRemote(expr) === 1) {
-		//var ret = queryExpr(expr);
-		var ret = session.query(expr);
-		memoizeCell(resultExprStringified, ret);
-		return ret;
-	}
+
 	
 	
 	if (expr.kind === "exprApply") {
+		
+		getRemote(expr); // just to tag the expr's .remote
+
+		// check if we're returning a Cell and see if it's already memoized
+		var resultExprStringified = stringify(expr);
+		var cached = evalCache[resultExprStringified];
+		if (cached) {
+			return cached;
+		}
+
+		if (getRemote(expr) === 1) {
+			//var ret = queryExpr(expr);
+			var ret = session.query(expr);
+			memoizeCell(resultExprStringified, ret);
+			return ret;
+		}
+		
+		
 		var fun = evaluate2(expr.left);
 		var input = evaluate2(expr.right);
 		

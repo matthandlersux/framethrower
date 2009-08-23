@@ -53,18 +53,27 @@ function makeVar(deBruijn) {
 		outsideScope: deBruijn
 	};
 }
-function makeApply(left, right, type) {
-	// type is an optional optimization
-	var app = {
+// function makeApply(left, right, type) {
+// 	// type is an optional optimization
+// 	var app = {
+// 		kind: "exprApply",
+// 		left: left,
+// 		right: right,
+// 		name: "(" + stringify(left) + " " + stringify(right) + ")",
+// 		outsideScope: Math.max(getOutsideScope(left), getOutsideScope(right))
+// 	};
+// 	if (type) app.type = type;
+// 	//else if (app.outsideScope === 0) getType(app);
+// 	return app;
+// }
+function makeApply(left, right) {
+	return {
 		kind: "exprApply",
 		left: left,
 		right: right,
-		name: "(" + stringify(left) + " " + stringify(right) + ")",
+		//name: "(" + stringify(left) + " " + stringify(right) + ")",
 		outsideScope: Math.max(getOutsideScope(left), getOutsideScope(right))
 	};
-	if (type) app.type = type;
-	//else if (app.outsideScope === 0) getType(app);
-	return app;
 }
 function makeLambda(varName, expr, type) {
 	// type is an optional optimization
@@ -98,9 +107,9 @@ function getOutsideScope(expr) {
 function stringify(expr) {
 	if (expr.name) {
 		return expr.name;
-	// } else if (expr.kind === "exprApply") {
-	// 	expr.name = "(" + stringify(expr.left) + " " + stringify(expr.right) + ")";
-	// 	return expr.name;
+	} else if (expr.kind === "exprApply") {
+		expr.name = "(" + stringify(expr.left) + " " + stringify(expr.right) + ")";
+	 	return expr.name;
 	// } else if (expr.kind === "exprLambda") {
 	// 	expr.name = "(\\ " + stringify(expr.expr) + ")";
 	// 	return expr.name;
