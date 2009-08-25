@@ -3,14 +3,6 @@ function makeControlledCell(typeString) {
 	return makeCC(type);
 }
 
-function makeFuture(value) {
-	var type = getType(value);
-	var cell = makeCC(makeTypeApply(makeTypeName("Future"), type));
-	cell.control.add(value);
-	cell.setDone();
-	return cell;
-}
-
 function typeCheck(expr, type) {
 	if (GLOBAL.typeCheck) {
 		var exprType = getType(expr);
@@ -59,17 +51,6 @@ function makeCC(type) {
 		};
 		cell.control.add = cell.control.set;
 		cell.control.remove = cell.control.unset;
-	} else if (constructor === "Future") {
-		cell = makeCell();
-		cell.control = {
-			add: function (k) {
-				typeCheck(k, type.right);
-				cell.addLine(k);
-				cell.control.add = function () {
-					debug.error("Future already set.");
-				};
-			}
-		};		
 	} else if (constructor === "Set") {
 		cell = makeCell();
 		cell.control = {
