@@ -22,7 +22,7 @@ var semantics = function(){
 	//this should cover all the weird constructs that need to be made into lists
 	//TODO: make all these constructs uniform in the parser
 	function makeList(node, listName, nextName, onEachFunc) {
-		//this handles nodes that are already lists, such as with extractSugar
+		//this handles nodes that are already lists
 		if (node !== undefined && arrayLike(node)) {
 			if (def(onEachFunc)) {
 				var output = [];
@@ -146,60 +146,28 @@ var semantics = function(){
 			if (def(listElement.equals)) {
 				if (actionFound) {
 					var subActionTemplate = {actiontpl: {fullactlist: {actlist: allActList.slice(i)}, debugRef:listElement.debugRef}};
-					var lineAction = {action: subActionTemplate, debugRef:listElement.debugRef};
+					var lineAction = {
+						action: makeLine(subActionTemplate),
+						debugRef: listElement.debugRef
+					};
 					actlist.push(lineAction);
 					break;
 				}
 				lets.push({identifier:listElement.identifier, line:listElement.action, debugRef:listElement.debugRef});
 			} else {
-				actlist.push(listElement);
+				var output = {
+					action: makeLine(listElement.action),
+					debugRef: listElement.debugRef
+				};
+				if (def(listElement.identifier)) {
+					output.name = listElement.identifier;
+				}
+				actlist.push(output);				
+				
 				actionFound = true;
 			}
 		}
-		
-		
-		//look for extractSugar
-		
-		var outputList = [];
-		for(var i=0; i< actlist.length; i++) {
-			var actline = actlist[i];
-			
-			//find extractSugar
-			if(def(actline.action.extract) && def(actline.action.extract.identifier)) {
-				var extractSugar = actline.action.extract;
-				
-				var restOfList = actlist.slice(i+1);
-				
-				var wrappedAction = {
-					extract: {
-						expr: extractSugar.expr,
-						askeyval: {
-							identifier: extractSugar.identifier
-						}, 
-						fullactlist: {actlist:restOfList}
-					}
-				};
-				addDebugRef(wrappedAction, extractSugar.debugRef);
-				
-				outputList.push({
-					action: makeLine(wrappedAction),
-					debugRef: extractSugar.debugRef
-				});
-				return outputList;
-			} else {
-				var output = {
-					action: makeLine(actline.action),
-					debugRef: actline.debugRef
-				};
-				if (def(actline.identifier)) {
-					output.name = actline.identifier;
-				}
-				outputList.push(output);
-			}
-		}
-		
-		actionsAndLets = {lets: lets, actions: outputList};
-		
+
 		var lastActionType = node.type;
 		if (!def(lastActionType)) {
 			lastActionType = "Action a0";
@@ -207,19 +175,18 @@ var semantics = function(){
 			lastActionType = "Action (" + lastActionType + ")";
 		}
 		
-		var actionLine = {lineAction: {kind: "lineAction", actions: actionsAndLets.actions, type:lastActionType}};
+		var actionLine = {lineAction: {kind: "lineAction", actions: actlist, type:lastActionType}};
 		
 		var wrappedTemplate = {
 			arglist: node.arglist,
 			fullletlist: {
-				letlist: actionsAndLets.lets,
+				letlist: lets,
 				line: actionLine
 			},
 			debugRef: node.debugRef
 		};
 
 		return makeLineTemplate(wrappedTemplate);
-
 	}
 
 	function makeAskeyval (node) {
@@ -791,5 +758,5 @@ var semantics = function(){
 				return ret;
 			}
 		}
-	}
+	};
 }();
