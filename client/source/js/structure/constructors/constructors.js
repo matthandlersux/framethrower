@@ -81,7 +81,7 @@ function makeLambda(varName, expr, type) {
 		kind: "exprLambda",
 		varName: varName,
 		expr: expr,
-		name: "(\\ " + stringify(expr) + ")",
+		//name: "(\\ " + stringify(expr) + ")",
 		outsideScope: Math.max(0, getOutsideScope(expr) - 1)
 	};
 	if (type) lam.type = type;
@@ -110,9 +110,9 @@ function stringify(expr) {
 	} else if (expr.kind === "exprApply") {
 		expr.name = "(" + stringify(expr.left) + " " + stringify(expr.right) + ")";
 	 	return expr.name;
-	// } else if (expr.kind === "exprLambda") {
-	// 	expr.name = "(\\ " + stringify(expr.expr) + ")";
-	// 	return expr.name;
+	} else if (expr.kind === "exprLambda") {
+		expr.name = "(\\ " + stringify(expr.expr) + ")";
+		return expr.name;
 	// } else if (expr.kind === "exprVar") {
 	// 	expr.name = "/" + expr.deBruijn;
 	// 	return expr.name;
