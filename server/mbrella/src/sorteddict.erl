@@ -31,7 +31,7 @@
 -export([store/3,append/3,append_list/3]).
 -export([update_val/3,update/3,update/4,update_counter/3]).
 -export([fold/3,map/2,filter/2,merge/3]).
--export([foldRange/5, foldPosRange/5, getPrevKey/2, getNextKey/2]).
+-export([mapRange/4, mapPosRange/4, foldRange/5, foldPosRange/5, getPrevKey/2, getNextKey/2, getIndex/2, getByIndex/2, getNearestIndexRight/2, getNearestIndexLeft/2]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
@@ -75,7 +75,15 @@ foldRange(F, Acc, {_,A,Xk,Xv,B}, L, R) ->
     foldRange(F, F(Xk, Xv, foldRange(F, Acc, A, L, R)), B, L, R).
 
 
-fprHelper(_, {Acc, undefined}, empty, _, _) -> {Acc, 1};
+mapRange(_, empty, L, R) -> empty;
+mapRange(F, {C,A,Xk,Xv,B}, L, R) when (Xk < L) ->
+	{C,A,Xk,Xv,mapRange(F, B, L, R)};
+mapRange(F, {C,A,Xk,Xv,B}, L, R) when (Xk > R) ->
+	{C,mapRange(F, A, L, R),Xk,Xv,B};
+mapRange(F, {C,A,Xk,Xv,B}, L, R) ->
+	{C,mapRange(F, A, L, R),Xk, F(Xk, Xv), mapRange(F, B, L, R)}.
+
+fprHelper(_, {Acc, undefined}, empty, _, _) -> {Acc, 0};
 fprHelper(_, {Acc, Num}, empty, _, _) -> {Acc, Num + 1};
 fprHelper(F, {Acc, Num}, {_,A,Xk,Xv,B}, L, R) ->
 	{NewAcc, NewNum} = fprHelper(F, {Acc, Num}, A, L, R),
@@ -86,6 +94,29 @@ fprHelper(F, {Acc, Num}, {_,A,Xk,Xv,B}, L, R) ->
 	end.
 	
 foldPosRange(F, Acc, Data, L, R) -> fprHelper(F, {Acc, undefined}, Data, L, R).
+
+
+
+mprHelper(_, undefined, empty, _, _) -> {empty, 0};
+mprHelper(_, Num, empty, _, _) -> {empty, Num + 1};
+mprHelper(F, Num, {C,A,Xk,Xv,B}, L, R) ->
+	{NewA, NewNum} = mprHelper(F, Num, A, L, R),
+	if
+		NewNum > R -> {NewA, NewNum};
+		NewNum < L -> 
+			{NewB, NewerNum} = mprHelper(F, NewNum, B, L, R),
+			{{C, NewA, Xk, Xv, NewB}, NewerNum};
+		true -> 
+			{NewB, NewerNum} = mprHelper(F, NewNum, B, L, R),
+			{{C, NewA, Xk, F(Xk, Xv), NewB}, NewerNum}
+	end.
+	
+mapPosRange(F, Data, L, R) -> {Ans, _} = mprHelper(F, undefined, Data, L, R), Ans.
+
+
+
+
+
 
 minKey({_,empty,K,_,_}) -> K;
 minKey({_,Left,_,_,_}) -> minKey(Left).
@@ -113,6 +144,59 @@ getPrevKey(K, {_,_,K1,_,Right}) when K > K1 ->
 		Answer -> Answer
 	end.
 	
+%% getIndex(Key, Dict) -> {ok,Value} | error.
+%% TODO: could be handled more efficiently if we stored index information in the data structure
+getIndex(_, empty) -> {error, 0};
+getIndex(K, {_,Left,K1,_,_}) when K < K1 ->
+    getIndex(K, Left);
+getIndex(K, {_,Left,K1,_,Right}) when K > K1 ->
+	case getIndex(K, Right) of
+		{Status, Num} -> {Status, sorteddict:size(Left) + 1 + Num}
+	end;
+getIndex(_, {_,Left,_,Val,_}) -> {ok, sorteddict:size(Left)}.
+
+
+
+getNearestIndex(Key, Nearest, Dict) ->
+	case getIndex(Key, Dict) of
+		{ok, Num} -> Num;
+		{error, Num} ->
+			case Nearest of
+				right -> Num;
+				left ->
+					if Num-1 < 0 ->
+						Num;
+					true ->
+						Num-1
+					end
+			end
+	end.
+
+
+getNearestIndexRight(Key, Dict) ->
+	getNearestIndex(Key, right, Dict).
+
+getNearestIndexLeft(Key, Dict) ->
+	getNearestIndex(Key, left, Dict).
+
+
+getByIndex(Index, Dict) -> 
+	case getByIndex1(Index, 0, Dict) of
+		{ok, Val} -> {ok, Val};
+		_ -> error
+	end.
+
+getByIndex1(_, Offset, empty) -> Offset;
+getByIndex1(Index, Index, {_,empty,Val,_,_}) -> {ok, Val};
+getByIndex1(Index, Index, {_,A,_,_,_}) -> getByIndex1(Index, Index, A);
+getByIndex1(Index, Offset, {_,A,Xk,_,B}) ->
+	case getByIndex1(Index, Offset, A) of
+		{ok, Val} -> {ok, Val};
+		Index -> {ok, Xk};
+		NewOffset -> getByIndex1(Index, NewOffset+1, B)
+	end.
+
+
 
 %% ====================================================================
 %% Original Functions

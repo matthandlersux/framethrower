@@ -178,7 +178,7 @@ boolToUnit(Val) ->
 	OutputCell.
 
 %% 
-%% add:: Number -> Number -> Number
+%% plus:: Number -> Number -> Number
 %% 
 
 plus(Val1, Val2) ->
@@ -315,6 +315,52 @@ reactiveOr(Cell1, Cell2) ->
 	cell:unleash(OutputCell),
 	OutputCell.
 
+
+%% 
+%% defaultValue:: a -> Unit a -> Unit a
+%% 
+
+defaultValue(DefaultValue, Cell) ->
+	OutputCell = cell:makeCell(),
+	cell:addLine(OutputCell, DefaultValue),
+	Intercept = cell:injectIntercept(OutputCell, fun(Message, State) ->
+		Current = State,
+		case Message of
+			{add, Val} ->
+				cell:removeLine(OutputCell, Current),
+				cell:addLine(OutputCell, Val),
+				Val;
+			remove ->
+				cell:removeLine(OutputCell, Current),
+				cell:addLine(OutputCell, DefaultValue),
+				DefaultValue
+		end
+	end, DefaultValue),
+	cell:inject(Cell, Intercept, fun(Val) ->
+		intercept:sendIntercept(Intercept, {add, Val}),
+		fun() -> intercept:sendIntercept(Intercept, remove) end
+	end),
+	OutputCell.
+
+
+%% 
+%% reactiveIfThen:: Unit a -> b -> b -> Unit b
+%% 
+
+reactiveIfThen(Predicate, Consequent, Alternative) ->
+	OutputCell = cell:makeCell(),
+	cell:addLine(OutputCell, Alternative),
+	cell:inject(Predicate, OutputCell, fun(Val) ->
+		cell:removeLine(OutputCell, Alternative),
+		cell:addLine(OutputCell, Consequent),
+		fun() -> 
+			cell:removeLine(OutputCell, Consequent),
+			cell:addLine(OutputCell, Alternative)
+		end
+	end),
+	OutputCell.
+
+
 %% 
 %% isEmpty:: Set a -> Unit Null
 %% 
@@ -343,6 +389,70 @@ isEmpty(Cell) ->
 		fun() -> intercept:sendIntercept(Intercept, minus) end
 	end),
 	OutputCell.
+
+
+
+%% 
+%% getPosition:: a -> Set a -> Unit Number
+%% 
+
+getPosition(Element, Cell) ->
+	%%TODO: optimize like on client so it only updates when input is 'done'
+	OutputCell = cell:makeCell(),
+	Intercept = cell:injectIntercept(OutputCell, fun(update, Current) ->
+		Index = case cell:getIndex(Cell, Element) of
+			error -> undefined;
+			{ok, Value} -> Value
+		end,
+		case {Current, Index} of
+			{Index, _} -> nosideeffect;
+			{_, undefined} -> 
+				cell:removeLine(OutputCell, Current);
+			{undefined, _} ->
+				cell:addLine(OutputCell, Index);
+			{_, _} -> 
+				cell:removeLine(OutputCell, Current),
+				cell:addLine(OutputCell, Index)
+		end,
+		Index
+	end, undefined),
+	cell:inject(Cell, Intercept, fun(Val) ->
+		intercept:sendIntercept(Intercept, update),
+		fun() -> intercept:sendIntercept(Intercept, update) end
+	end),
+	OutputCell.
+
+
+%% 
+%% getByPosition:: Number -> Set a -> Unit a
+%% 
+
+getByPosition(Index, Cell) ->
+	%%TODO: optimize like on client so it only updates when input is 'done'
+	OutputCell = cell:makeCell(),
+	Intercept = cell:injectIntercept(OutputCell, fun(update, Current) ->
+		Element = case cell:getByIndex(Cell, Index) of
+			error -> undefined;
+			{ok, Value} -> Value
+		end,
+		case {Current, Element} of
+			{Element, _} -> nosideeffect;
+			{_, undefined} -> 
+				cell:removeLine(OutputCell, Current);
+			{undefined, _} ->
+				cell:addLine(OutputCell, Element);
+			{_, _} -> 
+				cell:removeLine(OutputCell, Current),
+				cell:addLine(OutputCell, Element)
+		end,
+		Element
+	end, undefined),
+	cell:inject(Cell, Intercept, fun(Val) ->
+		intercept:sendIntercept(Intercept, update),
+		fun() -> intercept:sendIntercept(Intercept, update) end
+	end),
+	OutputCell.
+
 
 %% 
 %% gate:: Unit b -> a -> Unit a
@@ -524,11 +634,12 @@ keys(Cell) ->
 
 %% 
 %% rangeByKey:: Unit a -> Unit a -> Set a -> Set a
+%% rangeByPos:: Unit Number -> Unit Number -> Set a -> Set a
 %% 
 
-rangeByKey(StartCell, EndCell, Cell) ->
+rangeBy(StartCell, EndCell, Cell, KeyOrPos) ->
 	OutputCell = cell:makeCell(),
-	rangeHelper(OutputCell, fun(Min, Max) -> cell:setKeyRange(OutputCell, Min, Max) end, StartCell, EndCell, Cell).
+	rangeHelper(OutputCell, fun(Min, Max) -> cell:setRange(OutputCell, Min, Max, KeyOrPos) end, StartCell, EndCell, Cell).
 
 %% 
 %% takeLast:: Set a -> Unit a
@@ -659,9 +770,9 @@ primitives() ->
 	%% Number utility functions
 	%% ============================================================================
 		#exprFun{
-			name = "add",
+			name = "plus",
 			type = "Number -> Number -> Number",
-			function = fun add/2
+			function = fun plus/2
 		},
 		#exprFun{
 			name = "subtract",
@@ -705,9 +816,29 @@ primitives() ->
 			function = fun reactiveOr/2
 		},
 		#exprFun{
+			name = "defaultValue",
+			type = "a -> Unit a -> Unit a",
+			function = fun defaultValue/2
+		},
+		#exprFun{
+			name = "reactiveIfThen",
+			type = "Unit a -> b -> b -> Unit b",
+			function = fun reactiveIfThen/3
+		},
+		#exprFun{
 			name = "isEmpty",
 			type = "Set a -> Unit Null",
 			function = fun isEmpty/1
+		},
+		#exprFun{
+			name = "getPosition",
+			type = "a -> Set a -> Unit Number",
+			function = fun getPosition/2
+		},
+		#exprFun{
+			name = "getByPosition",
+			type = "Number -> Set a -> Unit a",
+			function = fun getByPosition/2
 		},
 		#exprFun{
 			name = "gate",
@@ -763,8 +894,13 @@ primitives() ->
 		#exprFun{
 			name = "rangeByKey",
 			type = "Unit a -> Unit a -> Set a -> Set a",
-			function = fun rangeByKey/3
+			function = fun (C1, C2, S1) -> rangeBy(C1, C2, S1, key) end
 		},
+		#exprFun{
+			name = "rangeByPos",
+			type = "Unit Number -> Unit Number -> Set a -> Set a",
+			function = fun (C1, C2, S1) -> rangeBy(C1, C2, S1, pos) end
+		},		
 		#exprFun{
 			name = "takeLast",
 			type = "Set a -> Unit a",
@@ -852,6 +988,7 @@ rangeHelper(OutputCell, SetRangeFunc, StartCell, EndCell, Cell) ->
 
 
 for(Max, Max, F) -> [F(Max)];
+for(GT, Max, F) when GT > Max -> [];
 for(I, Max, F) -> [F(I)|for(I+1, Max, F)].
 
 
