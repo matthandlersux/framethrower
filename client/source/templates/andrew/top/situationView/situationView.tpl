@@ -88,7 +88,7 @@ template (width::Unit Number, height::Unit Number, children::Map Situation Child
 		relToAbsY = relY -> mapUnit2 plus y (mapUnit2 multiply scale relY),
 		
 		<f:each children as child, childProp>
-			childPosition = returnFutureUnit (ChildProp:position childProp),
+			childPosition = ChildProp:position childProp,
 			childX = bindUnit Position:x childPosition,
 			childY = bindUnit Position:y childPosition,
 			

@@ -237,7 +237,7 @@ function typeAnalyze(line) {
 			    var valueType = selectType.right;
 
 			    hackedLineTemplate.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("Action a0")));
-			} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set" || constructor === "List") {
+			} else if (constructor === "Unit" || constructor === "Set" || constructor === "List") {
 			    var keyType = selectType.right;
 
 			    hackedLineTemplate.type = makeTypeLambda(keyType, parseType("Action a0"));
@@ -348,7 +348,7 @@ function typeAnalyze(line) {
 				var valueType = selectType.right;
 
 				hackedLineTemplate.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("XMLP")));
-			} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set" || constructor === "List") {
+			} else if (constructor === "Unit" || constructor === "Set" || constructor === "List") {
 				var keyType = selectType.right;
 
 				hackedLineTemplate.type = makeTypeLambda(keyType, parseType("XMLP"));

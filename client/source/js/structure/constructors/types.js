@@ -160,7 +160,7 @@ function getTypeConstructor(type) {
 
 function isReactive(type) {
 	var constructor = getTypeConstructor(type);
-	return constructor === "Set" || constructor === "Future" || constructor === "Map" || constructor === "Unit";
+	return constructor === "Set" || constructor === "Map" || constructor === "Unit";
 }
 
 

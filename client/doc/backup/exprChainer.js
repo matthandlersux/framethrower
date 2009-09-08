@@ -22,7 +22,6 @@ var exprChainer = (function () {
 
 	var constructorOrd = {
 		"": 0,
-		"Future": 1,
 		"Unit": 2,
 		"Set": 3
 	};
@@ -36,31 +35,23 @@ var exprChainer = (function () {
 		return makeApply(makeApply(compose, f), g);
 	}
 
-	var returnFuture = parseExpr("returnFuture");
 	var returnUnit = parseExpr("returnUnit");
 	var returnSet = parseExpr("compose returnUnitSet returnUnit");
-	var returnFutureUnit = parseExpr("returnFutureUnit");
-	var returnFutureSet = parseExpr("compose returnUnitSet returnFutureUnit");
 	var returnUnitSet = parseExpr("returnUnitSet");
 
 	var convertStartConstructor = [
-		[null, returnFuture, returnUnit, returnSet],
-		[null, null, returnFutureUnit, returnFutureSet],
-		[null, null, null, returnUnitSet]
+		[null, returnUnit, returnSet],
+		[null, null, returnUnitSet]
 	];
 
 
-	var bindFuture = parseExpr("bindFuture");
 	var bindUnit = parseExpr("bindUnit");
 	var bindSet = parseExpr("bindSet");
 	var bindUnitSet = parseExpr("f -> bindSet (compose f returnUnit)");
-	var bindFutureUnit = parseExpr("f -> bindUnit (compose f returnFuture)");
-	var bindFutureSet = parseExpr("f -> bindSet (compose f returnFuture)");
 
 	var convertFunConstructor = [
-		[null, bindFuture, bindUnit, bindSet],
-		[null, null, bindFutureUnit, bindFutureSet],
-		[null, null, null, bindUnitSet]
+		[null, bindUnit, bindSet],
+		[null, null, bindUnitSet]
 	];
 
 

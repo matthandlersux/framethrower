@@ -83,15 +83,6 @@
 					return outputCell;
 				}
 			},
-			returnFuture : { // TODO: test this, merge code with returnUnit
-				type : "a -> Future a",
-				func : function (val) {
-					var outputCell = makeCell();
-					outputCell.addLine(val);
-					outputCell.setDone();
-					return outputCell;
-				}
-			},
 		 	returnUnitSet : {
 				type : "Unit a -> Set a",
 				func : function (cell) {
@@ -108,16 +99,6 @@
 					var outputCell = makeCellMapInput();
 					cell.inject(outputCell, function (val) {
 						return outputCell.addLine({key:key, val:val});
-					});
-					return outputCell;
-				}
-			},
-			returnFutureUnit : {
-				type : "Future a -> Unit a",
-				func : function (cell) {
-					var outputCell = makeCell();
-					cell.inject(outputCell, function(val) {
-						outputCell.addLine(val);
 					});
 					return outputCell;
 				}
@@ -142,20 +123,6 @@
 						return injectedFunc.unInject;
 					});
 
-					return outputCell;
-				}
-			},
-			bindFuture : {
-				type : "(a -> Future b) -> Future a -> Future b",
-				func : function (f, cell) {
-					var outputCell = makeCell();
-
-					cell.inject(outputCell, function (val) {
-						var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
-							outputCell.addLine(innerVal);
-						});
-						return injectedFunc.unInject;
-					});
 					return outputCell;
 				}
 			},

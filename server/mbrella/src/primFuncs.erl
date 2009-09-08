@@ -14,15 +14,6 @@ returnUnit(Val) ->
 	cell:done(OutputCell),
 	OutputCell.
 
-%% 
-%% returnFuture:: a -> Future a
-%% 
-
-returnFuture(Val) ->
-	OutputCell = cell:makeCell(),
-	cell:addLine(OutputCell, Val),
-	cell:done(OutputCell),
-	OutputCell.
 
 %% 
 %% returnUnitSet:: Unit a -> Set a
@@ -43,17 +34,6 @@ returnUnitMap(Key, Cell) ->
 	OutputCell = cell:makeCell(),
 	cell:inject(Cell, OutputCell, fun(Val) ->
 		cell:addLine(OutputCell, {pair, Key, Val})
-	end),
-	OutputCell.
-
-%% 
-%% returnFutureUnit:: Future a -> Unit a
-%% 
-
-returnFutureUnit(Cell) ->
-	OutputCell = cell:makeCell(),
-	cell:inject(Cell, OutputCell, fun(Val) ->
-		cell:addLine(OutputCell, Val)
 	end),
 	OutputCell.
 
@@ -445,18 +425,6 @@ buildMap(Fun, Cell) ->
 	OutputCell.
 
 %% 
-%% flattenSet:: Set (Set a) -> Set a
-%% 
-
-flattenSet(Cell) ->
-	OutputCell = cell:makeCell(),
-	cell:inject(Cell, OutputCell, fun(InnerCell) ->
-		cell:inject(InnerCell, OutputCell, fun(Val) ->
-			cell:addLine(OutputCell, Val) end)
-	end),
-	OutputCell.
-
-%% 
 %% invert:: Map a (Set b) -> Map b (Set a)
 %% 
 
@@ -617,11 +585,6 @@ primitives() ->
 			function = fun returnUnit/1
 		},
 		#exprFun{
-			name = "returnFuture",
-			type = "a -> Future a",
-			function = fun returnFuture/1
-		},	
-		#exprFun{
 			name = "returnUnitSet",
 			type = "Unit a -> Set a",
 			function = fun returnUnitSet/1
@@ -630,11 +593,6 @@ primitives() ->
 			name = "returnUnitMap",
 			type = "a -> Unit b -> Map a b",
 			function = fun returnUnitMap/2
-		},
-		#exprFun{
-			name = "returnFutureUnit",
-			type = "Future a -> Unit a",
-			function = fun returnFutureUnit/1
 		},
 		#exprFun{
 			name = "bindUnit",
@@ -778,12 +736,6 @@ primitives() ->
 			name = "buildMap",
 			type = "(a -> b) -> Set a -> Map a b",
 			function = fun buildMap/2
-		},
-	%%REMOVE THIS LATER... JUST FOR TESTING
-		#exprFun{
-			name = "flattenSet",
-			type = "Set (Set a) -> Set a",
-			function = fun flattenSet/1
 		},
 		#exprFun{
 			name = "invert",
