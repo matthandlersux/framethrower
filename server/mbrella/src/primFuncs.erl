@@ -21,14 +21,14 @@
 fold(Cell, Function, FunctionInverse, InitialValue) ->
 	OutputCell = cell:makeLeashedCell(unit),
 	cell:addElement(OutputCell, InitialValue),
-	cell:injectIntercept(OutputCell, {interceptFold, InitialValue, [Function, FunctionInverse]}),
+	cell:injectIntercept(OutputCell, {fold, InitialValue, [Function, FunctionInverse]}),
 	cell:inject(Cell, OutputCell, send),
 	cell:unleash(OutputCell).
 
 isEmpty(CellPointer) ->
 	OutputCell = cell:makeLeashedCell(unit),
 	cell:addElement(OutputCell, null),
-	cell:injectIntercept(OutputCell, {switch})
+	cell:injectIntercept(OutputCell, {switch, undefined, []})
 	cell:injectOutput(CellPointer, OutputCell).
 	
 reactiveAnd(CellPointer1, CellPointer2) ->
@@ -40,12 +40,31 @@ reactiveAnd(CellPointer1, CellPointer2) ->
 	cell:unleash(OutputCell).
 	
 reactiveOr(CellPointer1, CellPointer2) ->
-	OutputCell = cell:makeLeashedCell(unit),
+	OutputCell = cell:makeLeashedCell(set),
+	% weighting of set handles the add null add null remove null -> true functionality
 	% cell:injectIntercept(OutputCell, {reactiveOr, undefined, []}),
-	cell:injectIntercept(OutputCell, {stripName, undefined, []}),
+	% cell:injectIntercept(OutputCell, {stripName, undefined, []}),
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
 	cell:unleash(OutputCell).
+	
+takeOne(CellPointer) ->
+	OutputCell = cell:makeCell(unit),
+	.
+	
+invert(CellPointer) ->
+	OutputCell = cell:makeLeashedCell(map),
+	cell:injectIntercept(OutputCell, {invert, intercepts:invertBaseState(), [OutputCell, CellPointer]}),
+	cell:injectOutput(CellPointer, OutputCell, {sideEffectInject, undefined, [OutputCell]}),
+	cell:unleash(OutputCell).
+	
+setDifference(CellPointer1, CellPointer2) ->
+	OutputCell = cell:makeLeashedCell(set),
+	cell:injectIntercept(OutputCell, {setDifference, intercepts:setDifferenceState(), [CellPointer1, CellPointer2]}),
+	cell:injectOutput(CellPointer1, OutputCell),
+	cell:injectOutput(CellPointer2, OutputCell),
+	cell:unleash(OutputCell).
+	
 
 %% ====================================================
 %% Internal API

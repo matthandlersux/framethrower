@@ -57,6 +57,8 @@ makeLinkedCellLeashed() ->
 %% sendElements :: CellPointer -> CellName -> Elements -> ok
 %% Elements :: List Tuple ("add" | "remove") Elements
 
+sendElements(CellPointer, From, Elements) when is_tuple(From) ->
+	gen_server:cast(cellPointer:pid(CellPointer), {sendElements, From, Elements});
 sendElements(CellPointer, From, Elements) ->
 	gen_server:cast(cellPid(CellPointer), {sendElements, From, self(), Elements}).
 
@@ -77,13 +79,28 @@ unleash(CellPointer) ->
 %% 
 
 injectOutput(CellPointer, OutputToCellPointer) ->
-	injectOutput(CellPointer, OutputToCellPointer, send).
+	injectOutput(CellPointer, OutputToCellPointer, {send, undefined, []}).
 	
 injectOutput(CellPointer, OutputToCellPointer, OutputFunction) ->
 	gen_server:cast(
 		cellPointer:pid(CellPointer), 
 		{injectOutput, OutputToCellPointer, OutputFunction }
 	).
+	
+%% 
+%% uninjectOutput needs to pass all elements as {remove, Element} to all its outputs, process, and then
+%%  most likely send all those removes down to the cell it was connected to
+%% 
+
+uninjectOutput(CellPointer, OutputToCellPointer) ->
+	uninjectOutput(CellPointer, OutputToCellPointer, {send, undefined, []}).
+	
+uninjectOutput(CellPointer, OutputToCellPointer, OutputFunction) ->
+	gen_server:cast(
+		cellPointer:pid(CellPointer),
+		{uninjectOutput, OutputToCellPointer, OutputFunction }
+	).
+
 
 %% 
 %% inject intercept function

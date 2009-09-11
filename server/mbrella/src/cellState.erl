@@ -80,6 +80,8 @@ getElements(State) ->
 %% Internal API
 %% ====================================================
 
+
+%% ###### {remove, Element} messages need to always come first
 elementsAdd(unit, Element, Elements) ->
 	case rangedict:find(Element, Elements) of
 		{ok, FoundElement} ->
