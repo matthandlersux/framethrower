@@ -196,8 +196,8 @@ castPropsUpIfNeeded(Props, ObjClass, Classes) ->
 			true ->
 				reactive;
 			false ->
-				case dict:fetch(PropName, Props) of
-					ObjectPointer when is_record(ObjectPointer, objectPointer) ->
+				case dict:find(PropName, Props) of
+					{ok, ObjectPointer} when is_record(ObjectPointer, objectPointer) ->
 						InstanceValue = env:lookup(ObjectPointer#objectPointer.name),
 						InstanceType = type:get(InstanceValue),
 						case type:compareTypes(InstanceType, PropType) of
@@ -213,7 +213,8 @@ castPropsUpIfNeeded(Props, ObjClass, Classes) ->
 									false -> ?trace("Property Type Mismatch")
 								end
 						end;
-					Prop -> Prop
+					{ok, Prop} -> Prop;
+					Error -> ?trace("Property not initialized")
 				end
 		end
 	end, ObjClass#class.prop),
@@ -224,7 +225,7 @@ castPropsUpIfNeeded(Props, ObjClass, Classes) ->
 			dict:merge(fun(_,V1,_)->V1 end, InheritedProps, NewObjProps)
 	end.
 
-makeFutureProps(Props, ObjClass, Classes) ->
+makeProps(Props, ObjClass, Classes) ->
 	NewObjProps = dict:map(
 		fun (PropName, PropType) ->
 			case type:isReactive(PropType) of
@@ -235,21 +236,13 @@ makeFutureProps(Props, ObjClass, Classes) ->
 					cell:done(PropCell),
 					PropCell;
 				false ->
-					PropValue = dict:fetch(PropName, Props),
-					% TypeString = type:unparse(type:get(Value)),
-					% FutureType = type:parse("Future " ++ TypeString),
-					% Cell = (makeCell())#exprCell{type=FutureType},
-					% update(Cell),
-					Cell = cell:makeCell(),
-					cell:addLine(Cell, PropValue),
-					cell:done(Cell),
-					Cell
+					dict:fetch(PropName, Props)
 			end
 		end, ObjClass#class.prop),
 	case ObjClass#class.inherit of
 		undefined -> NewObjProps;
 		_ -> 
-			InheritedProps = makeFutureProps(Props, ObjClass#class.inherit, Classes),
+			InheritedProps = makeProps(Props, ObjClass#class.inherit, Classes),
 			dict:merge(fun(_,V1,_)->V1 end, InheritedProps, NewObjProps)
 	end.
 
@@ -328,7 +321,7 @@ handle_call({create, ClassName, PropDict, InName}, From, State) ->
 		undefined ->
 			Type = #type{type=typeName, value=list_to_atom(ClassName)},
 			O = #object{type = Type},
-			NewProps = makeFutureProps(Props, C, Classes),
+			NewProps = makeProps(Props, C, Classes),
 			OWithProps = O#object{prop = NewProps},
 			
 			%add this obj to env
@@ -448,10 +441,7 @@ handle_cast({addProp, Name, PropName, TypeString}, State) ->
 	NewProps = dict:store(PropName, Type, Class#class.prop),
 	NewClasses = dict:store(Name, Class#class{prop = NewProps}, Classes),
 	GetFuncName = Name ++ ":" ++ PropName,
-	FuncType = case type:isReactive(Type) of
-		true -> Name ++ " -> (" ++ TypeString ++ ")";
-		false -> Name ++ " -> Future (" ++ TypeString ++ ")"
-	end,
+	FuncType = Name ++ " -> (" ++ TypeString ++ ")",
 	GetFunc = fun(ObjOrPointer) ->
 		Obj = checkPointer(ObjOrPointer),
 		dict:fetch(PropName, Obj#object.prop)
