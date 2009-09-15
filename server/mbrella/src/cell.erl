@@ -15,7 +15,7 @@
 %% Exports
 -export([makeCell/0, addLine/2, removeLine/2, injectDependency/2, inject/3, removeFunc/2, injectIntercept/3, addOnRemove/2, clear/1]).
 -export([done/1, done/2, addDependency/2, leash/1, unleash/1]).
--export([setKeyRange/3, getStateArray/1, getState/1]).
+-export([setRange/4, getIndex/2, getByIndex/2, getStateArray/1, getState/1]).
 
 %% gen_server exports
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -170,14 +170,29 @@ unleash(Cell) ->
 	done(Cell, leash).
 
 %%----------------------------------------------------------------------
-%% Function: setKeyRange/3
+%% Function: setRange/4
 %% Purpose: tell the cell only to process dots between Start and End
-%% Args: Cell is cellPointer, Start and End are elem
+%% Args: Cell is cellPointer, Start and End are elem, KeyOrPos is atom (key or pos)
 %% Returns: ok
 %%     or {error, Reason} (if the process is dead)
 %%----------------------------------------------------------------------
-setKeyRange(Cell, Start, End) ->
-	gen_server:cast(Cell#cellPointer.pid, {setKeyRange, Start, End}).
+setRange(Cell, Start, End, KeyOrPos) ->
+	gen_server:cast(Cell#cellPointer.pid, {setRange, Start, End, KeyOrPos}).
+
+
+%%----------------------------------------------------------------------
+%% Function: getIndex/2
+%% Purpose: get the index of Element treating Cell as a sorted list
+%% Args: Cell is cellPointer, Element is elem
+%% Returns: Number
+%%     or {error, Reason} (if the process is dead)
+%%----------------------------------------------------------------------
+getIndex(Cell, Element) ->
+	gen_server:call(Cell#cellPointer.pid, {getIndex, Element}).
+
+getByIndex(Cell, Index) ->
+	gen_server:call(Cell#cellPointer.pid, {getByIndex, Index}).
+
 
 
 %%----------------------------------------------------------------------
@@ -361,7 +376,11 @@ handle_call(getStateArray, _, State) ->
 	end, [], SortedDict),
 	{reply, ResultArray, State};
 handle_call(getState, _, State) ->
-	{reply, State, State}.
+	{reply, State, State};
+handle_call({getIndex, Element}, _, State) ->	
+	{reply, rangedict:getIndex(Element, ?this(dots)), State};
+handle_call({getByIndex, Index}, _, State) ->
+	{reply, rangedict:getByIndex(Index, ?this(dots)), State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -372,11 +391,19 @@ handle_call(getState, _, State) ->
 %% --------------------------------------------------------------------
 handle_cast({addLine, Value, CellName}, State) ->
 	Key = toKey(Value),
-	Dot = case rangedict:find(Key, ?this(dots)) of
-		{ok, OldDot} -> OldDot#dot{num = OldDot#dot.num+1};
-		error -> addFirstLine(#dot{num=1, value=Value, lines=dict:new()}, ?this(funcs))
+	NewDots = case rangedict:find(Key, ?this(dots)) of
+		{ok, OldDot} -> 
+			Dot = OldDot#dot{num = OldDot#dot.num+1},
+			rangedict:store(Key, Dot, ?this(dots));
+		error -> 
+			Dot = #dot{num=1, value=Value, lines=dict:new()},
+			NewerDots = rangedict:store(Key, Dot, ?this(dots)),
+			NewerDot = case rangedict:inRange(Key, NewerDots) of
+				true -> addFirstLine(Dot, ?this(funcs));
+				false -> Dot
+			end,
+			rangedict:store(Key, NewerDot, NewerDots)
 	end,
-	NewDots = rangedict:store(Key, Dot, ?this(dots)),
 	NewState = State#cellState{dots=NewDots},
     {noreply, NewState};
 handle_cast({removeLine, Value}, State) ->
@@ -384,7 +411,10 @@ handle_cast({removeLine, Value}, State) ->
 		{ok, Dot} -> 
 			if 
 				Dot#dot.num =< 1 ->
-					removeLastLine(Dot, ?this(funcs)),
+					case rangedict:inRange(Value, ?this(dots)) of
+						true -> removeLastLine(Dot, ?this(funcs));
+						false -> nosideeffect
+					end,
 					rangedict:erase(Value, ?this(dots));
 				true -> 
 					rangedict:store(Value, Dot#dot{num=Dot#dot.num-1}, ?this(dots))
@@ -402,7 +432,7 @@ handle_cast({removeFunc, Id, Cell}, State) ->
 		_ -> nosideeffect
 	end,
 	NewFuncs = dict:erase(Id, ?this(funcs)),
-	NewDots = rangedict:map(fun(Key, Dot) -> undoFunOnDot(Dot, Id) end, ?this(dots)),
+	NewDots = rangedict:mapRange(fun(Key, Dot) -> undoFunOnDot(Dot, Id) end, ?this(dots)),
 	NewState = State#cellState{funcs=NewFuncs, dots=NewDots},
 	case dict:size(NewFuncs) of
 		0 ->
@@ -424,7 +454,7 @@ handle_cast({inject, Depender, Fun, Cell, Id}, State) ->
 	NewFuncs = dict:store(Id, #func{function=Fun, depender=Depender}, ?this(funcs)),
 	NewDots = case Fun of
 		undefined -> ?this(dots);
-		_ -> rangedict:map(fun(Key, Dot) -> runFunOnDot(Dot, Fun, Id) end, ?this(dots))
+		_ -> rangedict:mapRange(fun(Key, Dot) -> runFunOnDot(Dot, Fun, Id) end, ?this(dots))
 	end,
 	NewState = State#cellState{funcs=NewFuncs, dots=NewDots},
 	case ?this(done) of
@@ -443,14 +473,19 @@ handle_cast({done, Cell}, State) ->
 	end, ?this(funcs)),
 	NewState = State#cellState{done=true},
     {noreply, NewState};
-handle_cast({setKeyRange, Start, End}, State) ->
+handle_cast({setRange, Start, End, KeyOrPos}, State) ->
 	AddFirstLine = fun(Val) ->
 		addFirstLine(Val, ?this(funcs))
 	end,
 	RemoveLastLine = fun(Val) ->
 		removeLastLine(Val, ?this(funcs))
 	end,
-	NewDots = rangedict:setKeyRange({Start, End}, AddFirstLine, RemoveLastLine, ?this(dots)),
+	NewDots = case KeyOrPos of
+		key ->
+			rangedict:setKeyRange({Start, End}, AddFirstLine, RemoveLastLine, ?this(dots));
+		pos ->
+			rangedict:setPosRange({Start, End}, AddFirstLine, RemoveLastLine, ?this(dots))
+	end,
     {noreply, State#cellState{dots=NewDots}}.
 
 

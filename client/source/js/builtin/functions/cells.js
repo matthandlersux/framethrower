@@ -361,7 +361,6 @@
 			defaultValue: {
 				type: "a -> Unit a -> Unit a",
 				func: function (defaultValue, cell) {
-					// TODO: add this server-side
 					var outputCell = makeCell();
 					var current = defaultValue;
 					outputCell.addLine(defaultValue);

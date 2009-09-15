@@ -51,7 +51,7 @@ function makeRangedView(onAdd, onRemove, sSet) {
 		if (range.type === 'key') {
 			return (curInd >= sSet.getIndex(range.start) && curInd <= sSet.getIndex(range.end));
 		} else {
-			return (curInd >= range.start && curInd <= range.end);
+			return (curInd >= sSet.getNearestIndexRight(range.start) && curInd <= sSet.getNearestIndexLeft(range.end));
 		}
 	};
 	
