@@ -1,0 +1,5 @@
+testObject = state {
+	theObject <- create(TestClass, {}),
+	set (TestClass:num theObject) 5,
+	return theObject
+}

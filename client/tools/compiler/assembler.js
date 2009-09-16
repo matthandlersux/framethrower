@@ -61,12 +61,10 @@ function outputJSON(object, tabs) {
 }
 
 
-function addLets(Json, lets) {
-	if(Json !== undefined) {
-		forEach(lets, function(line, name) {
-			Json.let[name] = line;
-		});
-	}
+function mergeIntoObject(sink, source) {
+	forEach(source, function(line, name) {
+		sink[name] = line;
+	});
 }
 
 
@@ -103,13 +101,14 @@ function compileFolder(folderPath, rebuild) {
 				} else if (ext === "let") {
 					var includeLets = compileFile(folderPath + "/" + child.getName(), rebuild, true);
 					if (includeLets !== undefined) {
-						addLets(mainJSON, includeLets);
+						mergeIntoObject(lets, includeLets);
 					}
 				}
 			}
 		});
 	}
-	addLets(mainJSON, lets);
+	if (mainJSON.let === undefined) mainJSON.let = {};
+	mergeIntoObject(mainJSON.let, lets);
 	return mainJSON;
 }
 
