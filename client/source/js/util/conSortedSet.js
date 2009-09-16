@@ -187,6 +187,14 @@ function makeConSortedSetStringify() {
 	return makeConSortedSet(function (a, b) {
 		var sa, sb;
 		if (typeOf(a) === "number") {
+			if (isNaN(a)) {
+				if (isNaN(b)) {
+					return 0;
+				}
+				return 1;
+			} else if (isNaN(b)) {
+				return -1;
+			}
 			sa = a;
 			sb = b;
 		} else {
