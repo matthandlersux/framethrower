@@ -53,7 +53,10 @@ function (width::Number, height::Number, src::String, gotoTime::Unit Number, tim
 	cleanupFuncs.push(injectedFunc.unInject);
 	
 	mov.addEventListener("qt_progress", function () {
-		timeLoaded.control.add(mov.GetMaxTimeLoaded() / getTimeScale());
+		var ts = getTimeScale();
+		if (ts) {
+			timeLoaded.control.add(mov.GetMaxTimeLoaded() / ts);			
+		}
 	}, true);
 	
 	
