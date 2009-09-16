@@ -69,7 +69,7 @@ template (videoTimeline::VideoTimeline) {
 	getLinksFromTime = time -> getInfonsAboutRole time ulinkTarget :: Situation -> Set Pipe,
 	
 	// the drawing code common to both the zoom part of the scrubber and the scroll part of the scrubber:
-	// note that passing a fetched widthToDuration directly would wrap entire template in <f:each>.
+	// note that passing fetched parameters directly wraps the entire drawState template in <f:each>.
 	drawState = template(width, height, duration) {
 		kt = scale duration width,
 		// timeToPixels = t -> durationToWidth (difference t start),
