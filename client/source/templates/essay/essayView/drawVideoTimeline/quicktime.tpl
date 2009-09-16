@@ -38,8 +38,15 @@ function (width::Number, height::Number, src::String, gotoTime::Unit Number, tim
 	// this just caches mov.GetTimeScale()
 	var timeScale;
 	function getTimeScale() {
-		if (timeScale === undefined) timescale = mov.GetTimeScale();
-		return timeScale;
+		// if (timeScale === undefined) {
+		// 	try {
+		// 		timescale = mov.GetTimeScale();
+		// 	} catch (e) {
+		// 		
+		// 	}
+		// }
+		// return timeScale;
+		return mov.GetTimeScale();
 	}
 	
 	var injectedFunc = evaluateAndInject(gotoTime, emptyFunction, function (time) {
