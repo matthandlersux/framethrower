@@ -35,11 +35,16 @@ function (width::Number, height::Number, src::String, gotoTime::Unit Number, tim
 	
 	var cleanupFuncs = new Array();
 	
+	// this just caches mov.GetTimeScale()
 	var timeScale;
+	function getTimeScale() {
+		if (timeScale === undefined) timescale = mov.GetTimeScale();
+		return timeScale;
+	}
+	
 	var injectedFunc = evaluateAndInject(gotoTime, emptyFunction, function (time) {
 		try {
-			if (timeScale===undefined) timeScale = mov.GetTimeScale();
-			mov.SetTime(time * timeScale);
+			mov.SetTime(time * getTimeScale());
 		} catch (e) {
 			
 		}
@@ -48,7 +53,7 @@ function (width::Number, height::Number, src::String, gotoTime::Unit Number, tim
 	cleanupFuncs.push(injectedFunc.unInject);
 	
 	mov.addEventListener("qt_progress", function () {
-		timeLoaded.control.add(mov.GetMaxTimeLoaded() / mov.GetTimeScale());
+		timeLoaded.control.add(mov.GetMaxTimeLoaded() / getTimeScale());
 	}, true);
 	
 	

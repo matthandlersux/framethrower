@@ -171,11 +171,11 @@ template (videoTimeline::VideoTimeline) {
 				</f:on>
 
 				<svg:rect class="timelineBackground" width="100%" height="{zoomHeight}"/> // background
-				<f:each bigTicks as tickTime>
-					<svg:text class="tickLabel" x="{timeToZoomPixels tickTime}" y="{difference zoomHeight 5}">
-						{quotient tickTime 60}m
-					</svg:text>
-				</f:each>
+				// <f:each bigTicks as tickTime>
+				// 	<svg:text class="tickLabel" x="{timeToZoomPixels tickTime}" y="{difference zoomHeight 5}">
+				// 		{quotient tickTime 60}:00
+				// 	</svg:text>
+				// </f:each>
 				<svg:g transform="{concat (svgScale zoomScale zoomHeight) (svgTranslate (negation zoomStart) 0)}">
 					<f:each boolToUnit (lessThan zoomDuration smallDuration) as _>
 						<f:each rangeByKey zoomStartS (mapUnit2 sum zoomStartS zoomDurationS) smallTicks as tickTime>
