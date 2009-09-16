@@ -30,6 +30,7 @@ function setNodeStyle(node, styleName, styleValue) {
 
 
 function setNodeAttribute(node, attName, attValue) {
+	if (attValue === "") return;
 	setAttr(node, attName, attValue);
 	if (attName === "contentEditable" && attValue === "true") {
 		node.contentEditable = true;

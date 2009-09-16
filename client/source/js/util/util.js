@@ -215,7 +215,7 @@ function shallowCopy(o) {
 	return ret;
 }
 
-
+//JSON with formatting. see JSON.stringify for a more robust stringification of JSON
 function JSONtoString(object) {
 
 	function JSONtoString2(object, tabs) {

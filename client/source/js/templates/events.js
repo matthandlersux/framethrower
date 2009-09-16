@@ -56,6 +56,8 @@ var globalEventHandlers = {};
 			//console.log("about to execute an action!", action);
 
 			executeAction(action);
+			
+			if (eventName==="mousedown") dont(e); // we're doing a drag-and-drop so prevent text highlighting
 		}
 		
 		
@@ -135,11 +137,11 @@ var globalEventHandlers = {};
 			var tmp = currentFocus;
 			currentFocus=false;
 			tmp.blur();
-		}		
-		if (e.target.localName !== "input" && e.target.localName !== "button" && e.target.localName !== "embed") {
-			//document.body.focus();
-			dont(e);
 		}
+		// if (e.target.localName !== "input" && e.target.localName !== "button" && e.target.localName !== "embed") {
+		// 	//document.body.focus();
+		// 	dont(e);
+		// }
 	}
 	function mouseup(e) {
 		processEvent("mouseup", e);

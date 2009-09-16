@@ -143,7 +143,7 @@ function evaluate2(expr) {
 		
 		//getRemote(expr); // just to tag the expr's .remote
 
-		// check if we're returning a Cell and see if it's already memoized
+		// check if it's already memoized
 		var resultExprStringified = stringify(expr);
 		var cached = evalCache[resultExprStringified];
 		if (cached) {
