@@ -32,6 +32,9 @@ function unparseLiteral(expr) {
 	if (t === "string") {
 		return '"' + expr.replace(/(["\\])/g, "\\$1") + '"';
 	} else if (t === "number") {
+		if (isNaN(expr)) {
+			return "NaN";
+		}
 		return expr; // this is an optimization hack that takes advantage of javascript's automatic toString when necessary functionality
 	} else if (t === "boolean") {
 		return expr.toString();
