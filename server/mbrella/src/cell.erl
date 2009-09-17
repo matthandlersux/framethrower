@@ -117,11 +117,18 @@ injectIntercept(CellPointer, InterceptPointer) ->
 %% ====================================================
 
 runOutputs(State, NewElements) ->
-	Outputs = cellState:getOutputs(State),
+	ListOfOutputs = cellState:getOutputs(State),
+	From = cellState:cellPointer(State),
 	%for each output, send elements to output function, get back {newoutputstate, elementstosend}
 	% update output state, convert elementstosend to messages, send messages to sendto list
 	% return cell state.
-	.
+	Processor = 	fun(Output, ListOfNewStates) ->
+						{NewOutputState, ElementsToSend} = outputs:callOutput(Output, NewElements),
+						outputs:sendTo(Output, From, ElementsToSend),
+						[NewOutputState|ListOfNewStates]
+					end,
+	ListOfNewStates = lists:foldl(Processor, [], ListOfOutputs),
+	cellState:updateOutputStates(ListOfNewStates, State).
 	
 outputAllElements(State, OutputFunction, OutputTo) ->
 	Elements = cellState:getElements(State).
@@ -132,15 +139,16 @@ outputAllElements(State, OutputFunction, OutputTo) ->
 
 init() ->
 	process_flag(trap_exit, true),
-    {ok, #cellState{
-		
-	}}.
-	
-init([leashed]) ->
+    {ok, cellState:new()}.
+
+%% 
+%% 
+%% Flags :: List a, a :: leashed | 
+%% 
+
+init(Flags) ->
 	process_flag(trap_exit, true),
-    {ok, #cellState{
-		leashed = true
-	}}.
+    {ok, cellState:new(Flags)}.
 
 handle_call(Msg, From, State) ->
     Reply = ok,
