@@ -31,6 +31,17 @@ callOutput(Name, Args, State, Elements) ->
 		{NewState, Elements} when is_tuple(Elements) ->
 			{NewState, [Elements]}
 	end.
+
+%% 
+%% sendTo :: Output -> Cellpointer -> List Elements -> void
+%% 
+
+sendTo(Output, From, Elements) ->
+	CellPointers = sendTos(Output),
+	Send = 	fun(CellPointer) ->
+				cell:sendElements(CellPointer, From, Elements)
+			end,
+	lists:foreach(Send, Cellpointers).
 %% ====================================================
 %% Internal API
 %% ====================================================
