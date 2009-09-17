@@ -76,6 +76,9 @@ template (videoTimeline::VideoTimeline) {
 		ky = product height,
 
 		<f:wrapper>
+			<script type="text/javascript">
+				console.log(123)
+			</script>
 			<f:each bigTicks as tickTime>
 				x = kt tickTime,
 				<svg:line class="bigTick" x1="{x}" x2="{x}" y2="{ky 1}"/>
@@ -125,17 +128,12 @@ template (videoTimeline::VideoTimeline) {
 		</f:on>
 
 		// wrapper for entire scrubber:
-		<div style-position="absolute" style-width="{scrubberWidth}" style-height="{scrubberHeight}">
-		<svg:svg width="{scrubberWidth}" height="{scrubberHeight}" color-rendering="optimizeSpeed" shape-rendering="optimizeSpeed" text-rendering="optimizeSpeed" image-rendering="optimizeSpeed">
-			<svg:defs>
-				<svg:line id="zoomLine" y2="{zoomHeight}" stroke-width="1"/>
-				<svg:line id="scrollLine" y2="{scrollHeight}" stroke-width="1"/>
-			</svg:defs>
-		
+		<div style-position="absolute" style-width="{scrubberWidth}" style-height="{scrubberHeight}" style-overflow="hidden">
+		<svg:svg style-position="absolute" style-left="{negation (durationToZoomWidth zoomStart)}" width="{durationToZoomWidth videoDuration}" height="{zoomHeight}" color-rendering="optimizeSpeed" shape-rendering="optimizeSpeed" text-rendering="optimizeSpeed" image-rendering="optimizeSpeed">
 			// the zoomed in part of the scrubber:
 			<svg:g class="zoomTimeline">
 				<f:on mousedown> // begin selecting
-					clickTime = zoomPixelsToTime event.offsetX,
+					clickTime = zoomPixelsToTime event.mouseX,
 					set selectStartS clickTime,
 					set selectDurationS 0,
 					set selectingS clickTime
@@ -146,7 +144,7 @@ template (videoTimeline::VideoTimeline) {
 					</f:on>
 				</f:each>
 				<f:on mousemove> // update preview time, and update selection if selecting
-					newTime = zoomPixelsToTime event.offsetX,
+					newTime = zoomPixelsToTime event.mouseX,
 					set previewTimeS newTime,
 				
 					extract selectingS as clickTime {
@@ -167,40 +165,43 @@ template (videoTimeline::VideoTimeline) {
 					// want cursor to remain in same place:
 					cursorFraction = quotient (difference previewTime zoomStart) zoomDuration,
 					newStart = difference previewTime (product cursorFraction newDuration),
-
+				
 					set zoomStartS (clamp 0 (difference videoDuration newDuration) newStart),
 					set zoomDurationS newDuration,
 					// force cursor to mouse position, in case we had to clamp?
-					// add(previewTimeS, zoomPixelsToTime event.offsetX)
+					// add(previewTimeS, zoomPixelsToTime event.mouseX)
 				</f:on>
 
 				<svg:rect class="timelineBackground" width="100%" height="{zoomHeight}"/> // background
-				<f:each bigTicks as tickTime>
-					<svg:text class="tickLabel" x="{timeToZoomPixels tickTime}" y="{difference zoomHeight 5}">
-						{quotient tickTime 60}m
-					</svg:text>
-				</f:each>
-				<svg:g transform="{svgTranslate (negation (durationToZoomWidth zoomStart)) 0}">
+				<svg:g> //transform="{svgTranslate (negation (durationToZoomWidth zoomStart)) 0}">
+					<f:each bigTicks as tickTime>
+						<svg:text class="tickLabel" x="{durationToZoomWidth tickTime}" y="{difference zoomHeight 5}">
+							{quotient tickTime 60}m
+						</svg:text>
+					</f:each>
 					<f:each boolToUnit (lessThan zoomDuration smallDuration) as _>
 						<f:each rangeByKey zoomStartS (mapUnit2 sum zoomStartS zoomDurationS) smallTicks as tickTime>
-							<svg:use class="smallTick" xlink:href="#zoomLine" x="{durationToZoomWidth tickTime}"/>
+					     x = durationToZoomWidth tickTime,
+							<svg:line class="smallTick" x1="{x}" x2="{x}" y1="0" y2="{zoomHeight}"/>
 						</f:each>
 					</f:each>
 				
 					// passing fetched things to templates is ineffecient, so we unfetch:
 					<f:call>drawState scrubberWidth zoomHeight zoomDuration</f:call>
 
-					<svg:use class="selectStart" pointer-events="none" xlink:href="#zoomLine" x="{durationToZoomWidth selectStart}"/>
+					<svg:line class="selectStart" pointer-events="none" x1="{durationToZoomWidth selectStart}" x2="{durationToZoomWidth selectStart}" y1="0" y2="{zoomHeight}"/>
 					<svg:rect class="selectDuration" pointer-events="none" x="{durationToZoomWidth selectStart}" width="{durationToZoomWidth selectDuration}" height="{zoomHeight}"/>
 
-					<svg:use class="previewTime" pointer-events="none" xlink:href="#zoomLine" x="{durationToZoomWidth previewTime}"/>
+					<svg:line class="previewTime" pointer-events="none" x1="{durationToZoomWidth previewTime}" x2="{durationToZoomWidth previewTime}" y1="0" y2="{zoomHeight}"/>
 				</svg:g>
 			</svg:g>
+		</svg:svg>
 	
+		<svg:svg style-position="absolute" style-top="{zoomHeight}" width="{scrubberWidth}" height="{scrollHeight}" color-rendering="optimizeSpeed" shape-rendering="optimizeSpeed" text-rendering="optimizeSpeed" image-rendering="optimizeSpeed">
 			// the scrollbar part of the scrubber:
 			<svg:g class="scrollTimeline">
 				<f:on mousedown> // begin scrolling
-					newTime = scrollPixelsToTime event.offsetX,
+					newTime = scrollPixelsToTime event.mouseX,
 					scrollOffset = difference newTime zoomStart,
 					// if click is outside of the scroller, then center it at click:
 					extract boolToUnit (or (lessThan scrollOffset 0) (greaterThan scrollOffset zoomDuration)) as _ {
@@ -217,7 +218,7 @@ template (videoTimeline::VideoTimeline) {
 							unset scrollingS
 						</f:on>
 						<f:on globalmousemove> // update zoom if scrolling.
-								newTime = scrollPixelsToTime event.offsetX,
+								newTime = scrollPixelsToTime event.mouseX,
 								newStart = difference newTime scrollOffset,
 								set zoomStartS (clamp 0 (difference videoDuration zoomDuration) newStart)
 						</f:on>
@@ -235,7 +236,7 @@ template (videoTimeline::VideoTimeline) {
 					set zoomDurationS newDuration
 				</f:on>
 			
-				<svg:g transform="{svgTranslate 0 zoomHeight}">
+				<svg:g> // transform="{svgTranslate 0 zoomHeight}">
 					<svg:rect class="timelineBackground" width="100%" height="{scrollHeight}"/> // background
 					<svg:rect class="zoomDuration" x="{timeToScrollPixels zoomStart}" width="{durationToScrollWidth zoomDuration}" height="{scrollHeight}"/>
 					// don't allow any pointer events through to the state:
