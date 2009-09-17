@@ -17,7 +17,7 @@ function setNodeStyle(node, styleName, styleValue) {
 	// TODO this will need some additional code for convenience/browser bullshit (px, etc)
 	// https://developer.mozilla.org/en/DOM/CSS
 	
-	if (styleNamesThatTakePx[styleName] && styleValue !== "auto") {
+	if (styleNamesThatTakePx[styleName] && styleValue !== "auto" && (typeof styleValue !== "string" || styleValue.charAt(styleValue.length-1)!=="%")) {
 		styleValue = Math.round(styleValue) + "px";
 	}
 	if (styleName === "float") {

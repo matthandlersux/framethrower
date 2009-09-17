@@ -69,6 +69,14 @@ function arrayToList(array, type) {
 	};
 }
 
+function makeTuple2(x, y) {
+	return {
+		kind: "tuple2",
+		remote: 2,
+		asArray: [x, y]
+	};
+}
+
 function makeApplyWith() {
 	var ret = arguments[0];
 	forEach(arguments, function (arg, i) {

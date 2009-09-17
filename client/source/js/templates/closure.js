@@ -138,7 +138,8 @@ function evaluateLine(line, env) {
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line, env);
 	} else if (line.kind === "lineJavascript") {
-		return makeFun(line.type, curry(line.f));
+		if (line.f.length === 0) return line.f();
+		else return makeFun(line.type, curry(line.f));
 		//return makeFun(parseType(line.type), line.f);
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);
