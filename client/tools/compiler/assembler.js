@@ -1,6 +1,6 @@
 var GLOBAL_ERRORS = false;
 
-//load is rhino command. When running in browser, have to load the file with <script> tag
+//load is rhino command. When running in browser, have to load the file with script tag
 if (load !== undefined) {
 	load(["tplparser.js"]);
 	load(["semantics.js"]);
@@ -137,6 +137,7 @@ function compileFile (filePath, rebuild, isLetFile) {
 				var escapedLine= lineInfo.line.split("&").join("&amp;").split( "<").join("&lt;").split(">").join("&gt;")				
 				print("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file.getCanonicalPath() + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
 			}
+			throw("Parse Error");
 		} else {
 			result = semantics.processTree(parseResult.result, "" + file.getCanonicalPath());
 			serialize(result, binfile.getAbsolutePath());
@@ -222,7 +223,7 @@ function countLines (wholeString, position) {
 	function countHelper(string, startIndex) {
 		var index = string.indexOf('\n');
 		if (index !== -1) {
-			return 1 + countHelper(string.substr(index+1), startIndex + index + 1)
+			return 1 + countHelper(string.substr(index+1), startIndex + index + 1);
 		} else {
 			var rest = wholeString.substr(startIndex);
 			line = rest.substr(0, rest.indexOf("\n"));

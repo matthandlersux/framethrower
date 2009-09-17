@@ -243,28 +243,33 @@ var semantics = function(){
 	function makeFunction(funcText) {
 		//8 characters in 'function'
 		var bracketIndex = funcText.indexOf('{');
-		var args = funcText.substr(8, bracketIndex - 8);
+		var lParenIndex = funcText.indexOf('(');
+		var args = funcText.substr(lParenIndex, bracketIndex - lParenIndex);
 		var JS = funcText.substr(bracketIndex);
-		var parenIndex = args.indexOf(")");
-		var outputType = args.substr(parenIndex+3);
+		var rParenIndex = args.indexOf(")");
+		var outputType = args.substr(rParenIndex+3);
 		if (outputType.length == 0) {
 			outputType = undefined;
 		}
-		args = args.substr(0, parenIndex);
+		args = args.substr(0, rParenIndex);
 
 		//remove parens
 		args = args.replace(/[\(\)]/g, "");
+		
 		args = args.split(",");
+		
 		var argList = [];
 		forEach(args, function(arg) {
-			var newArg = {};
-			argList.push(newArg);
-			var parts = arg.split("::");
-			if(def(parts[0])) {
-				newArg.name = parts[0];
-			}
-			if(def(parts[1])) {
-				newArg.type = parts[1];
+			if (arg.length > 0) {
+				var newArg = {};
+				argList.push(newArg);
+				var parts = arg.split("::");
+				if(def(parts[0])) {
+					newArg.name = parts[0];
+				}
+				if(def(parts[1])) {
+					newArg.type = parts[1];
+				}
 			}
 		});
 
@@ -275,23 +280,22 @@ var semantics = function(){
 		forEach(argList, function(arg) {
 			if(!first) {
 				funcString += ", ";
-				typeString += " -> ";
 			} else {
 				first = false;
 			}
 			funcString += arg.name;
 			if (def(arg.type)) {
-				typeString += "(" + arg.type + ")";
+				typeString += "(" + arg.type + ") -> ";
 			} else {
-				typeString += "t" + typeCounter;
+				typeString += "t" + typeCounter + " -> ";
 				typeCounter++;
 			}
 		});
 		funcString += ") " + JS + "";
 		if (def(outputType)) {
-			typeString += " -> " + "(" + outputType + ")";
+			typeString += "(" + outputType + ")";
 		} else {
-			typeString += " -> " + "t" + typeCounter;
+			typeString += "t" + typeCounter;
 		}
 		return {
 			kind: "lineJavascript",
