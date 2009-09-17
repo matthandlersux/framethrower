@@ -353,7 +353,7 @@ function typeAnalyze(line) {
 
 				hackedLineTemplate.type = makeTypeLambda(keyType, parseType("XMLP"));
 			} else {
-				staticAnalysisError("f:each select type is not a cell.");
+				staticAnalysisError("f:each select type is not a cell. But is instead of type `"+unparseType(selectType)+"`");
 			}
 
 			staticTypeAnalysis(hackedLineTemplate, env);
