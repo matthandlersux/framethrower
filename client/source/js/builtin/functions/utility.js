@@ -12,4 +12,8 @@ addFun("or", "Bool -> Bool -> Bool", function (x, y) {return x || y;});
 addFun("plus", "Number -> Number -> Number", function (x, y) {return x + y;});
 addFun("subtract", "Number -> Number -> Number", function (x, y) {return x - y;});
 addFun("multiply", "Number -> Number -> Number", function (x, y) {return x * y;});
-
+addFun("sign", "Number -> Number", function (x) {
+	if (x === 0) return 0;
+	else if (x > 0) return 1;
+	else return -1;
+});

@@ -63,17 +63,73 @@ template () {
 			chapters.push(chapter);
 		});
 		
-		console.log(arrayToList(chapters));
-		
 		return arrayToList(chapters);
 	},
 	
+	getFrame = function (time::Number)::String {
+		return "url(http:/"+"/media.eversplosion.com/mrtesting/frame.php?time="+time+")";
+	},
+	
+	zoomFactorS = state(Unit Number, 1),
+	zoomFactor = fetch zoomFactorS,
+	
+	zoomIn = action () {
+		set zoomFactorS (plus zoomFactor 0.1)
+	},
+	zoomOut = action () {
+		set zoomFactorS (subtract zoomFactor 0.1)
+	},
+	
+	scrollAmountS = state(Unit Number, 0),
+	scrollAmount = fetch scrollAmountS,
+	
 	<div>
-		blah
-		<f:each chapters as chapter>
-			<div>
-				{fst chapter}, {snd chapter}
+		<div style-width="1000" style-height="200" style-overflow="hidden" style-position="absolute" style-border="1px solid #000">
+			<f:call>
+				dragStart = state(Unit Number),
+				scrollAmountStart = state(Unit Number),
+				<f:wrapper>
+					<f:on mousedown>
+						set dragStart event.mouseX,
+						set scrollAmountStart scrollAmount
+					</f:on>
+					<f:each dragStart as from>
+						start = fetch scrollAmountStart,
+						<f:wrapper>
+							<f:on globalmouseup>
+								unset dragStart
+							</f:on>
+							<f:on globalmousemove>
+								set scrollAmountS (plus (subtract event.mouseX from) start)
+							</f:on>
+						</f:wrapper>
+					</f:each>
+					<f:on mousescroll>
+						set zoomFactorS (plus zoomFactor (multiply 0.1 (sign event.wheelDelta)))
+					</f:on>
+					
+				</f:wrapper>
+			</f:call>
+			<div style-position="absolute" style-left="{scrollAmount}">
+				<f:each chapters as chapter>
+					<div style-left="{multiply (fst chapter) zoomFactor}" style-width="{multiply (subtract (snd chapter) (fst chapter)) zoomFactor}" style-position="absolute" style-height="100">
+						<div style-padding="4" style-border-right="1px solid #ccc">
+							<div style-height="100" style-background-image="{getFrame (fst chapter)}" style-background-repeat="no-repeat" style-background-position="center center" />
+						</div>
+						//{fst chapter}, {snd chapter}
+					</div>
+				</f:each>
 			</div>
-		</f:each>
+		</div>
+		<div style-position="absolute" style-top="300">
+			<div>
+				<f:on click>zoomIn</f:on>
+				In
+			</div>
+			<div>
+				<f:on click>zoomOut</f:on>
+				Out
+			</div>
+		</div>
 	</div>
 }
