@@ -870,10 +870,13 @@ template () {
 		set zoomFactorS (subtract zoomFactor 0.1)
 	},
 	
-
+	
+	
+	previewTimeS = state(Unit Number),
+	
 	
 	<div>
-		<div style-width="{timelineWidth}" style-height="200" style-left="0" style-top="0" style-overflow="hidden" style-position="absolute" style-border="1px solid #000">
+		<div style-width="{timelineWidth}" style-height="200" style-left="0" style-top="144" style-overflow="hidden" style-position="absolute" style-background-color="#444">
 			<f:call>
 				dragStart = state(Unit Number),
 				scrollAmountStart = state(Unit Number),
@@ -898,9 +901,13 @@ template () {
 						setZoomFactor (modifyZoom zoomFactor event.wheelDelta) event.mouseX
 					</f:on>
 					
+					
 				</f:wrapper>
 			</f:call>
 			<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0">
+				<f:on mousemove>
+					set previewTimeS (divide (plus event.mouseX scrollAmount) zoomFactor)
+				</f:on>
 				<f:each chapters as chapter>
 					<div style-left="{multiply (fst chapter) zoomFactor}" style-width="{multiply (subtract (snd chapter) (fst chapter)) zoomFactor}" style-position="absolute" style-height="200" style-overflow="hidden">
 						<div style-padding="4" style-border-right="1px solid #ccc">
@@ -926,5 +933,16 @@ template () {
 		// 	<div>scrollAmount: {scrollAmount}</div>
 		// 	<div>zoomFactor: {zoomFactor}</div>
 		// </div>
+		
+		<div style-position="absolute" style-top="0" style-right="0" style-width="320" style-height="144">
+				<f:call>
+					videoURL = function ()::String {
+						return "http:/"+"/media.eversplosion.com/tmp/mr-scrub.mp4";
+					},
+					
+					loadedDurationS = state(Unit Number),
+					quicktime 320 144 videoURL previewTimeS loadedDurationS
+				</f:call>
+		</div>
 	</div>
 }
