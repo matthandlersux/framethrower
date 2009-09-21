@@ -32,21 +32,26 @@ function desugarFetch(template, env) {
 		// params hide previous bindings:
 		env = envMinus(env, template.params);
 
-		// TODO use mutual recursion, not sequential assignment!
-		// go through lets, recursing on each, and remembering (and destroying) any fetched lineExprs:
-		for(var v in template.let) {
-			var let = template.let[v];
+		// remove all lets from env (i.e. initially none are considered fetched):
+		env = envMinus(env, keys(template.let));
+		
+		// repeatedly go through lets, adding fetched ones to env and removing them from lets, until stable:
+		var stable;
+		do {
+			stable = true; // assume nothing is going to happen
+			for(var v in template.let) {
+				var let = template.let[v];
 			
-			desugarFetch(let, env); // recurse, which makes fetches explicit if let is a lineExpr
+				desugarFetch(let, env); // recurse, which makes fetches explicit if let is a lineExpr
 			
-			if(let.kind === "lineExpr" && hasVariable(let.expr, fetchEnv)) { // has a 'fetch'
-					// store the value and get rid of the let, since it is meaningless to anyone else:
-					env = envAdd(env, v, let.expr);
-					delete template.let[v];
+				if(let.kind === "lineExpr" && hasVariable(let.expr, fetchEnv)) { // has a 'fetch'
+						// store the value and get rid of the let, since it is meaningless to anyone else:
+						env = envAdd(env, v, let.expr);
+						delete template.let[v];
+						stable = false; // things are still happening
+				}
 			}
-			else if(env(v)) // v previously referred to a fetch, but has been reassigned
-				env = envAdd(env, v, false);
-		}
+		} while(!stasis);
 		
 		// recurse on output:
 		var output = template.output;
