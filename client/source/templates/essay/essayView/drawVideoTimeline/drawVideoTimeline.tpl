@@ -76,9 +76,6 @@ template (videoTimeline::VideoTimeline) {
 		ky = product height,
 
 		<f:wrapper>
-			<script type="text/javascript">
-				console.log(123)
-			</script>
 			<f:each bigTicks as tickTime>
 				x = kt tickTime,
 				<svg:line class="bigTick" x1="{x}" x2="{x}" y2="{ky 1}"/>
