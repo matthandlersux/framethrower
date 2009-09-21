@@ -51,7 +51,7 @@ function desugarFetch(template, env) {
 						stable = false; // things are still happening
 				}
 			}
-		} while(!stasis);
+		} while(!stable);
 		
 		// recurse on output:
 		var output = template.output;
