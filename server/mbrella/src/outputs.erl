@@ -1,6 +1,6 @@
 -module (outputs.erl).
 -compile(export_all).
-
+-export ([callOutput/4, sendTo/3]).
 -include().
 
 -ifdef( debug ).
@@ -13,6 +13,15 @@
 %% TYPES
 %% ====================================================
 
+% Output :: Tuple3 SendTo OutputFunction OutputState
+% Outputs :: List Output
+%
+% SendTo :: List CellPointer
+% OutputFunction :: Tuple Atom (List Arguments)
+% OutputState :: a
+% Arguments :: b
+
+% example: Outputs: [ { [CellPointer1, Cellpointer2], {takeOne, []}, {add, Element} }, {...} ]
 
 %% ====================================================
 %% External API
@@ -42,6 +51,7 @@ sendTo(Output, From, Elements) ->
 				cell:sendElements(CellPointer, From, Elements)
 			end,
 	lists:foreach(Send, Cellpointers).
+	
 %% ====================================================
 %% Internal API
 %% ====================================================
