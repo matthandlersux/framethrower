@@ -13,42 +13,50 @@
 %% TYPES
 %% ====================================================
 
+% Intercept :: Tuple InterceptFunction InterceptState
+% Intercepts :: List Intercept
+%
+% InterceptFunction :: Tuple Atom (List Argument)
+% InterceptState :: a
+% Argument :: b
 
 %% ====================================================
 %% External API
 %% ====================================================
 
-callIntercept(Name, [], undefined, Messages) ->
-	callIntercept(Name, Messages);
-callIntercept(Name, Args, undefined, Messages) ->
-	callIntercept(Name, Args, Messages);
+%% 
+%% callIntercept :: String -> List a -> b -> List Message -> Tuple b (List Element)
+%% 
+
+callIntercept(_, _, _, []) -> {undefined, []};
 callIntercept(Name, Args, State, Messages) ->
-	case erlang:apply(intercepts, Name, lists:merge(Args, [State, Messages]) of
-		{NewState, Elements} when is_list(Elements) -> 
+	Process = fun(Message, {OldState, OldElements}) ->
+		{NewState, Elements} = processMessage(Name, Args, OldState, Message),
+		{NewState, Elements ++ OldElements}
+	end,
+	lists:foldl(Process, {State, []}, Messages).
+
+callIntercept(Name, Messages) ->
+	callIntercept(Name, [], [], Messages).
+	
+callIntercept(Name, Args, Messages) ->
+	callIntercept(Name, Args, [], Messages).
+%% ====================================================
+%% Internal API
+%% ====================================================
+
+processMessage(Name, Args, State, Message) ->
+	case erlang:apply(intercepts, Name, Args ++ State ++ Message) of
+		{NewState, Elements} when is_list(Elements) ->
 			{NewState, Elements};
 		{NewState, Elements} when is_tuple(Elements) ->
 			{NewState, [Elements]}
 	end.
-	
-callIntercept(Name, Args, Messages) ->
-	case erlang:apply(intercepts, Name, lists:merge(Args, [Messages]) of
-		Elements when is_list(Elements) ->
-			{undefined, Elements};
-		Elements when is_tuple(Elements) ->
-			{undefined, [Elements]}
-	end.
-
-callIntercept(Name, Messages) ->
-	case erlang:apply(intercepts, Name, [Messages]) of
-		Elements when is_list(Elements) ->
-			{undefined, Elements};
-		Elements when is_tuple(Elements) ->
-			{undefined, [Elements]}
-	end.
 
 %% ====================================================
-%% Internal API
+%% Intercept Functions
 %% ====================================================
+
 
 %	-the intercepts job is to take keyed/unkeyed input messages, do something to them, and return an 
 %	updated state and the elements that result
