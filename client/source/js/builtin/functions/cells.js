@@ -226,6 +226,31 @@
 					return outputCell;
 				}
 			},
+			unitDone: {
+				type: "Unit Null -> Unit Null",
+				func: function (cell) {
+					var currentValue = false;
+					var outputValue = false;
+					var outputCell = makeCell();
+					cell.inject(outputCell, function (val) {
+						currentValue = true;
+						return function () {
+							currentValue = false;
+						};
+					});
+					cell.injectDependency(function () {
+						if (outputValue !== currentValue) {
+							outputValue = currentValue;
+							if (outputValue) {
+								outputCell.addLine(nullObject);
+							} else {
+								outputCell.removeLine(nullObject);
+							}
+						}
+					});
+					return outputCell;
+				}
+			},
 
 			// ============================================================================
 			// Other functions?

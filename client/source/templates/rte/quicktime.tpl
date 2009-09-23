@@ -59,12 +59,12 @@ function (width::Number, height::Number, src::String, gotoTime::Unit Number, tim
 	
 	cleanupFuncs.push(injectedFunc.unInject);
 	
-	mov.addEventListener("qt_progress", function () {
-		var ts = getTimeScale();
-		if (ts) {
-			timeLoaded.control.add(mov.GetMaxTimeLoaded() / ts);			
-		}
-	}, true);
+	// mov.addEventListener("qt_progress", function () {
+	// 	var ts = getTimeScale();
+	// 	if (ts) {
+	// 		timeLoaded.control.add(mov.GetMaxTimeLoaded() / ts);			
+	// 	}
+	// }, true);
 	
 	
 	function cleanup() {

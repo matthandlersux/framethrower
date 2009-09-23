@@ -830,7 +830,7 @@ template () {
 	
 	
 	modifyZoom = function (oldZoom::Number, delta::Number)::Number {
-		var factor = 1.2;
+		var factor = 1.25;
 		if (delta > 0) {
 			return oldZoom * factor;
 		} else {
@@ -875,8 +875,24 @@ template () {
 	previewTimeS = state(Unit Number),
 	
 	
+	
+	isDisplayed = function (scrollAmount::Number, zoomFactor::Number, timelineWidth::Number, start::Number, duration::Number)::Bool {
+		var pixelStart = start*zoomFactor;
+		var pixelEnd = (start+duration)*zoomFactor;
+		return (pixelStart >= scrollAmount && pixelStart <= scrollAmount+timelineWidth) || (pixelEnd >= scrollAmount && pixelEnd <= scrollAmount+timelineWidth);
+	},
+	checkDisplayed = start -> duration -> unitDone (bindUnit boolToUnit (unfetch (isDisplayed scrollAmount zoomFactor timelineWidth start duration))),
+	
+	
+	
+	makePercent = function (fraction::Number)::String {
+		return (100*fraction)+"%";
+	},
+	
+	
+	
 	<div>
-		<div style-width="{timelineWidth}" style-height="200" style-left="0" style-top="144" style-overflow="hidden" style-position="absolute" style-background-color="#444">
+		<div style-width="{timelineWidth}" style-height="200" style-left="0" style-top="144" style-overflow="hidden" style-position="absolute" style-background-color="#eee">
 			<f:call>
 				dragStart = state(Unit Number),
 				scrollAmountStart = state(Unit Number),
@@ -904,45 +920,61 @@ template () {
 					
 				</f:wrapper>
 			</f:call>
-			<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0">
+			<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}">
 				<f:on mousemove>
 					set previewTimeS (divide (plus event.mouseX scrollAmount) zoomFactor)
 				</f:on>
 				<f:each chapters as chapter>
-					<div style-left="{multiply (fst chapter) zoomFactor}" style-width="{multiply (subtract (snd chapter) (fst chapter)) zoomFactor}" style-position="absolute" style-height="200" style-overflow="hidden">
-						<div style-padding="4" style-border-right="1px solid #ccc">
-							<div style-height="100" style-background-color="#ccc" style-background-image="{getFrame (fst chapter)}" style-background-repeat="no-repeat" style-background-position="center center" />
+					start = fst chapter,
+					end = snd chapter,
+					//<f:each checkDisplayed start (subtract end start) as _>
+						//<div style-left="{multiply start zoomFactor}" style-width="{multiply (subtract end start) zoomFactor}" style-position="absolute" style-height="200" style-overflow="hidden">
+						<div style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide (subtract end start) movieDuration)}" style-position="absolute" style-height="200" style-overflow="hidden">
+							<div style-padding="4" style-border-right="1px solid #ccc">
+								<div style-height="100" style-background-color="#ccc" style-background-image="{getFrame start}" style-background-repeat="no-repeat" style-background-position="center center" />
+							</div>
+							// <div style-position="absolute" style-left="4" style-top="110">
+							// 	{formatTime (fst chapter)}
+							// </div>
+							//{fst chapter}, {snd chapter}
+							// <f:each checkDisplayed start (subtract end start) as _>
+							// 	<span>blah</span>
+							// </f:each>
 						</div>
-						// <div style-position="absolute" style-left="4" style-top="110">
-						// 	{formatTime (fst chapter)}
-						// </div>
-						//{fst chapter}, {snd chapter}
-					</div>
+					//</f:each>
 				</f:each>
 			</div>
 		</div>
-		// <div style-position="absolute" style-top="300">
-		// 	<div>
-		// 		<f:on click>zoomIn</f:on>
-		// 		In
-		// 	</div>
-		// 	<div>
-		// 		<f:on click>zoomOut</f:on>
-		// 		Out
-		// 	</div>
-		// 	<div>scrollAmount: {scrollAmount}</div>
-		// 	<div>zoomFactor: {zoomFactor}</div>
-		// </div>
-		
-		<div style-position="absolute" style-top="0" style-right="0" style-width="320" style-height="144">
-				<f:call>
-					videoURL = function ()::String {
-						return "http:/"+"/media.eversplosion.com/tmp/mr-scrub.mp4";
-					},
-					
-					loadedDurationS = state(Unit Number),
-					quicktime 320 144 videoURL previewTimeS loadedDurationS
-				</f:call>
+		<div style-position="absolute" style-top="300">
+			// <div>
+			// 	<f:on click>zoomIn</f:on>
+			// 	In
+			// </div>
+			// <div>
+			// 	<f:on click>zoomOut</f:on>
+			// 	Out
+			// </div>
+			// <div>scrollAmount: {scrollAmount}</div>
+			// <div>zoomFactor: {zoomFactor}</div>
+			// <f:each checkDisplayed 0 300 as _>
+			// 	// console = function ()::Number {
+			// 	// 	console.log("console called");
+			// 	// 	return 3;
+			// 	// },
+			// 	<span>displayed</span>
+			// </f:each>
+			//{checkDisplayed 0 300}
 		</div>
+		
+		// <div style-position="absolute" style-top="0" style-right="0" style-width="320" style-height="144">
+		// 		<f:call>
+		// 			videoURL = function ()::String {
+		// 				return "http:/"+"/media.eversplosion.com/tmp/mr-scrub.mp4";
+		// 			},
+		// 			
+		// 			loadedDurationS = state(Unit Number),
+		// 			quicktime 320 144 videoURL previewTimeS loadedDurationS
+		// 		</f:call>
+		// </div>
 	</div>
 }
