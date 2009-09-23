@@ -67,7 +67,7 @@ template () {
 	},
 
 // ** wind-up clock **
-	clockDelta = 0.1,
+	clockDelta = 0.03,
 	clockLife = 1,
 	clockUntilS = state(Unit Number, 0),
 	clockUntil = fetch clockUntilS,
@@ -128,7 +128,7 @@ template () {
 	pixelsToFraction = scale videoWidth 1,
 	fractionToPixels = scale 1 videoWidth,
 	
-	motionLife = quotient clockLife 2,
+	motionLife = 0.1,
 	// time at which user is 'idle':
 	idleClockTime = plus motionClockTime motionLife,
 	// focusTime = binterpolate idleClockTime clockUntil (fetch motionFocusTimeS) (fetch targetTimeS) clockTime,
