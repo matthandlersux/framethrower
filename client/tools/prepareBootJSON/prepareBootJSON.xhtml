@@ -8,7 +8,7 @@
     xmlns:svg="http://www.w3.org/2000/svg">
 
 <head>
-<title>BuiltIn Tester</title>
+<title>prepareBootJSON Tester</title>
 
 <script>
 var ROOTDIR = "../../";
@@ -27,13 +27,13 @@ var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
 
 <script>
 
-includes.htmlInclude(["core"], ["builtin.js"]);
+var templateFile = location.hash.substr(1);
+if (!templateFile) {
+	alert("Place the name of the template after the hash (universal.xhtml#NAMEOFTEMPLATE)");
+}
+includes.htmlInclude(["core", "browser"], [ROOTDIR+"generated/templates/"+templateFile+".js", "prepareBootJSON.js"], "generateFiles();");
+
 </script>
-
-
-
-
-
 
 
 

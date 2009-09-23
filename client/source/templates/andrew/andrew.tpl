@@ -1,8 +1,9 @@
 template () {
 	
-	// theNum = TestClass:num testObject,
+	theNum = TestClass:num anotherObject,
+	theNum2 = TestClass:num testObject,
 	
 	<div>
-		Hello, theNum: {x}
+		Hello, theNum: {theNum} theNum2: {theNum2}
 	</div>
 }

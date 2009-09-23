@@ -110,6 +110,7 @@ function typeAnalyze(line) {
 
 	*/
 
+
 	function staticTypeAnalysis(line, env) {
 		currentLine = line;
 
@@ -123,7 +124,6 @@ function typeAnalyze(line) {
 					if (lets[s].kind === "lineTemplate") {
 						memo[s] = makePlaceholder(lets[s].type);
 					}
-
 					memo[s] = staticTypeAnalysis(lets[s], newEnv);
 					return memo[s];
 				} else {
@@ -146,22 +146,30 @@ function typeAnalyze(line) {
 		} else if (line.kind === "lineTemplate") {
 			if (line.type !== undefined) {
 				type = line.type;
-
 				var scope = {};
 				var typeArray = typeCurriedToArray(type);
 				forEach(line.params, function (param, i) {
 					scope[param] = makePlaceholder(typeArray[i]);
 				});
+				
 				var envWithParams = extendEnv(env, scope);
-
+				
+				if (line.sharedLet !== undefined) {
+					forEach(line.sharedLet, function(sharedLet, name) {
+						line.let[name] = sharedLet;
+					});
+				}
+				
 				var newEnv = addLets(line.let, envWithParams);
+				
 				let = {};
 				forEach(line.let, function (junk, name) {
 					let[name] = newEnv(name);
 					//console.log("did a let", name, unparseType(getType(let[name])));
 				});
+				
 				extra.let = let;
-
+				
 				// check that output matches the output type
 				var outputAnalysis = staticTypeAnalysis(line.output, newEnv);
 				extra.output = outputAnalysis;

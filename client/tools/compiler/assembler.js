@@ -77,6 +77,7 @@ function compileFolder(folderPath, rebuild) {
 	
 	var children = folder.listFiles();
 	var lets = {};
+	var sharedLets = {};
 	var mainJSON;
 	if (children !== null) { 
 		forEach(children, function(child) {
@@ -103,12 +104,20 @@ function compileFolder(folderPath, rebuild) {
 					if (includeLets !== undefined) {
 						mergeIntoObject(lets, includeLets);
 					}
+				} else if (ext === "shr") {
+					var includeLets = compileFile(folderPath + "/" + child.getName(), rebuild, true);
+					if (includeLets !== undefined) {
+						mergeIntoObject(sharedLets, includeLets);
+					}
 				}
+				
 			}
 		});
 	}
 	if (mainJSON.let === undefined) mainJSON.let = {};
 	mergeIntoObject(mainJSON.let, lets);
+	if (mainJSON.sharedLet === undefined) mainJSON.sharedLet = {};
+	mergeIntoObject(mainJSON.sharedLet, sharedLets);
 	return mainJSON;
 }
 
