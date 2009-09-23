@@ -26,6 +26,10 @@ tertiary = function(a::Bool, x, y) {
 	return a ? x : y;
 },
 
+makePercent = function (fraction::Number)::String {
+	return (100*fraction)+"%";
+},
+
 // trailing spaces for easy concatenation:
 svgTranslate = function(dx::Number, dy::Number) { return "translate("+dx+" "+dy+") "; },
 svgScale = function(kx::Number, ky::Number) { return "scale("+kx+" "+ky+") "; },
