@@ -60,13 +60,16 @@ makeLinkedCellLeashed() ->
 %% 
 
 %% 
-%% sendElements :: CellPointer -> CellName -> Elements -> ok
+%% sendElements :: CellPointer -> CellPointer -> Elements -> ok
 %% Elements :: List Tuple ("add" | "remove") Elements
 
-sendElements(CellPointer, From, Elements) when is_tuple(From) ->
-	gen_server:cast(cellPointer:pid(CellPointer), {sendElements, From, Elements});
 sendElements(CellPointer, From, Elements) ->
-	gen_server:cast(cellPid(CellPointer), {sendElements, From, self(), Elements}).
+	gen_server:cast(cellPointer:pid(CellPointer), {sendElements, From, Elements});
+% sendElements(CellPointer, From, Elements) ->
+% 	gen_server:cast(cellPid(CellPointer), {sendElements, From, self(), Elements}).
+	
+sendMessages(CellPointer, Messages) ->
+	gen_server:cast(cellPointer:pid(CellPointer), {sendMessages, Messages}).
 
 %% 
 %% primfunc api
