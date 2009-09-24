@@ -164,29 +164,36 @@ init(Flags) ->
 	process_flag(trap_exit, true),
     {ok, cellState:new(Flags)}.
 
+
+
 handle_call(Msg, From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
+
+
 handle_cast({injectIntercept, InterceptPointer}, State) ->
 	{noreply, cellState:injectIntercept(State, InterceptPointer)};
-handle_cast({sendElements, From, Pid, Elements}, State) ->
-	% newElements should only be ones that actually get added, not ones that add weight
-	% if intercept is undefined, just strip the name from the messages
-	{NewState, NewElements} = cellState:interceptElements(State, From, Elements),
-	%incase running outputs changes the output's state
 	
-	%%%%% need to chunk the elements if we have a huge list
+handle_cast({sendElements, From, Elements}, State) ->
+	Intercept = cellState:getIntercept(State),
+	{NewState, NewElements} = intercepts:call(Intercept, From, Elements),
+	State1 = cellState:updateIntercept(NewState),
 	
-	NewState1 = runOutputs(State, NewElements),
+	FinalElements = cellState:updateElements(NewElements),
+	
+	NewState1 = runOutputs(State, FinalElements),
 	{noreply, NewState};
+	
 handle_cast({injectOutput, OutputFunction, OutputTo}, State) ->
 	link(cellPid(OutputTo)),
-	NewState = cellState:injectOutput(State, OutputFunction, OutputTo),
-	outputAllElements(State, OutputFunction, OutputTo),
-	{noreply, NewState};
+	NewState1 = cellState:injectOutput(State, OutputFunction, OutputTo),
+	NewState2 = outputAllElements(NewState1, OutputFunction, OutputTo),
+	{noreply, NewState2};
+	
 handle_cast(leash, State) ->
     {noreply, State#cellState{leash = true}};
+
 handle_cast(unleash, State) ->
 	{noreply, State#cellState{leash = false}}.
 
