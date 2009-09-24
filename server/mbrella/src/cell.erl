@@ -14,7 +14,13 @@
 -define(this(Field), State#cellState.Field).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
-
+-export ([
+	makeCell/0, makeLinkedCell/0, makeCellLeashed/0, makeLinkedCellLeashed/0,
+	sendElements/3,
+	leash/1, unleash/1,
+	injectOutput/2, injectOutput/3, uninjectOutput/2, uninjectOutput/3,
+	injectIntercept/2
+	]).
 %% ====================================================
 %% TYPES
 %% ====================================================
