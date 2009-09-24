@@ -134,13 +134,18 @@ runOutputs(State, NewElements) ->
 	Processor = 	fun(Output, ListOfNewStates) ->
 						{NewOutputState, ElementsToSend} = outputs:callOutput(Output, NewElements),
 						outputs:sendTo(Output, From, ElementsToSend),
-						[NewOutputState|ListOfNewStates]
+						[NewOutputState] ++ ListOfNewStates
 					end,
-	ListOfNewStates = lists:foldl(Processor, [], ListOfOutputs),
+	%using foldr removes the need to lists:reverse at the end
+	ListOfNewStates = lists:foldr(Processor, [], ListOfOutputs),
 	cellState:updateOutputStates(ListOfNewStates, State).
 	
 outputAllElements(State, OutputFunction, OutputTo) ->
-	Elements = cellState:getElements(State).
+	Elements = cellState:getElements(State),
+	ThisCell = cellState:getCellPointer(State),
+	{NewState, NewElements} = outputs:callOutput(OutputFunction, Elements),
+	cell:sendElements(OutputTo, ThisCell, NewElements),
+	NewState.
 
 %% ====================================================
 %% gen_server callbacks
