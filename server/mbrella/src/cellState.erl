@@ -15,6 +15,11 @@
 
 % all functions in the api should return at least #cellState, possibly a message too
 
+% options = [{output_before_done, true}, ...],
+% intercept = {invert, [CellPointer1, CellPointer2], {last_message, X}},
+% elements = ___,
+% outputs = [{[Cellpointer1, ...], {takeOne, [Arg1, Arg2]}, {one_taken, X}}, ...]
+
 %% ====================================================
 %% TYPES
 %% ====================================================
@@ -76,6 +81,9 @@ getElements(State) ->
 	%unpack elements so that they are {add, Element} without the weighting
 	.
 	
+getOutputs(State) ->
+	%return list of outputs like [{}]
+	.
 %% ====================================================
 %% Internal API
 %% ====================================================
