@@ -18,21 +18,24 @@
 %% External API
 %% ====================================================
 
-fold(Cell, Function, FunctionInverse, InitialValue) ->
-	OutputCell = cell:makeLeashedCell(unit),
-	cell:addElement(OutputCell, InitialValue),
-	cell:injectIntercept(OutputCell, {fold, InitialValue, [Function, FunctionInverse]}),
-	cell:inject(Cell, OutputCell, send),
-	cell:unleash(OutputCell).
+% fold(Cell, Function, FunctionInverse, InitialValue) ->
+% 	OutputCell = cell:makeLeashedCell(unit),
+% 	cell:addElement(OutputCell, InitialValue),
+% 	cell:injectIntercept(OutputCell, {fold, InitialValue, [Function, FunctionInverse]}),
+% 	cell:injectOutput(Cell, OutputCell, send),
+% 	cell:unleash(OutputCell).
 
 isEmpty(CellPointer) ->
 	OutputCell = cell:makeLeashedCell(unit),
+	cell:addInformant(OutputCell, CellPointer),
 	cell:addElement(OutputCell, null),
 	cell:injectIntercept(OutputCell, {switch, undefined, []})
 	cell:injectOutput(CellPointer, OutputCell).
 	
 reactiveAnd(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeLeashedCell(unit),
+	cell:addInformant(OutputCell, CellPointer1),
+	cell:addInformant(OutputCell, CellPointer2),
 	InterceptState = {undefined, undefined},
 	cell:injectIntercept(OutputCell, {reactiveAnd, InterceptState, [CellPointer1, CellPointer2]}),
 	cell:injectOutput(CellPointer1, OutputCell),
@@ -41,6 +44,8 @@ reactiveAnd(CellPointer1, CellPointer2) ->
 	
 reactiveOr(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeLeashedCell(set),
+	cell:addInformant(OutputCell, CellPointer1),
+	cell:addInformant(OutputCell, CellPointer2),
 	% weighting of set handles the add null add null remove null -> true functionality
 	% cell:injectIntercept(OutputCell, {reactiveOr, undefined, []}),
 	% cell:injectIntercept(OutputCell, {stripName, undefined, []}),
@@ -48,18 +53,21 @@ reactiveOr(CellPointer1, CellPointer2) ->
 	cell:injectOutput(CellPointer2, OutputCell),
 	cell:unleash(OutputCell).
 	
-takeOne(CellPointer) ->
-	OutputCell = cell:makeCell(unit),
-	.
+% takeOne(CellPointer) ->
+% 	OutputCell = cell:makeCell(unit),
+% 	.
 	
 invert(CellPointer) ->
 	OutputCell = cell:makeLeashedCell(map),
+	cell:addInformant(OutputCell, CellPointer),
 	cell:injectIntercept(OutputCell, {invert, intercepts:invertBaseState(), [OutputCell, CellPointer]}),
 	cell:injectOutput(CellPointer, OutputCell, {sideEffectInject, undefined, [OutputCell]}),
 	cell:unleash(OutputCell).
 	
 setDifference(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeLeashedCell(set),
+	cell:addInformant(OutputCell, CellPointer1),
+	cell:addInformant(OutputCell, CellPointer2),
 	cell:injectIntercept(OutputCell, {setDifference, intercepts:setDifferenceState(), [CellPointer1, CellPointer2]}),
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
@@ -93,15 +101,6 @@ setDifference(CellPointer1, CellPointer2) ->
 %
 %	-cell just has to pass the stuff along, but it takes the returned new elements and runs them through
 %	the output functions, and replaces the state
-
-interceptFold(_, _, _, []) ->
-	[];
-interceptFold(Function, FunctionInverse, InitialValue, [H|T]) ->
-	[interceptFold(Function, FunctionInverse, InitialValue, H)]
-interceptFold(Function, _, InitialValue, {add, Value}) ->
-	;
-interceptFold(_, FunctionInverse, InitialValue, {remove, Value}) ->
-	.
 	
 %% ====================================================
 %% Utilities
