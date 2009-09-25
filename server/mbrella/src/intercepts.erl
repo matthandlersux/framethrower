@@ -40,7 +40,7 @@ callIntercept(Name, Args, State, From, Elements) ->
 		{NewState, Elements} = processMessage(Name, Args, OldState, From, Element),
 		{NewState, Elements ++ OldElements}
 	end,
-	lists:foldl(Process, {State, []}, Elements).
+	lists:foldr(Process, {State, []}, Elements).
 
 callIntercept(Name, From, Elements) ->
 	callIntercept(Name, [], [], From, Elements).
