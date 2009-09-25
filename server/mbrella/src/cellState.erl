@@ -68,6 +68,23 @@ updateOutputStates(OutputStates, State) ->
 getFlag(State, Flag) ->
 	.
 
+%% 
+%% updateStash :: CellState -> List Element -> List Element
+%%		takes stash, merges with new elements, returns all elements (called when done)
+%% 
+
+updateStash(State, Elements) ->
+	.
+	
+%% 
+%% mergeStash :: CellState -> List Element -> CellState
+%% 		stores elements that have been processed by the intercept but aren't ready to move because the 
+%%		cell is waiting to be done
+%% 
+
+mergeStash(State, Elements) ->
+	.
+
 %% ====================================================
 %% Internal API
 %% ====================================================
