@@ -125,12 +125,16 @@ injectIntercept(CellPointer, InterceptPointer) ->
 %% Internal API
 %% ====================================================
 
+%% 
+%% runOutputs :: CellState -> List Elements -> CellState
+%%		runOutputs takes the cellState and Elements to be sent
+%%		it runs the elements through each output, then sends the results to the sendto's of that output
+%%		it then updates the states of all the outputs, and returns a new cellstate
+%% 
+
 runOutputs(State, NewElements) ->
 	ListOfOutputs = cellState:getOutputs(State),
 	From = cellState:cellPointer(State),
-	%for each output, send elements to output function, get back {newoutputstate, elementstosend}
-	% update output state, convert elementstosend to messages, send messages to sendto list
-	% return cell state.
 	Processor = 	fun(Output, ListOfNewStates) ->
 						{NewOutputState, ElementsToSend} = outputs:callOutput(Output, NewElements),
 						outputs:sendTo(Output, From, ElementsToSend),
