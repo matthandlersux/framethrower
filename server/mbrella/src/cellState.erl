@@ -13,12 +13,13 @@
 %% notes
 %% ====================================================
 
-% all functions in the api should return at least #cellState, possibly a message too
-
 % options = [{output_before_done, true}, ...],
 % intercept = {invert, [CellPointer1, CellPointer2], {last_message, X}},
 % elements = ___,
-% outputs = [{[Cellpointer1, ...], {takeOne, [Arg1, Arg2]}, {one_taken, X}}, ...]
+% stash = ___,
+% outputs = [{[CellPointer1, ...], {takeOne, [Arg1, Arg2]}, {one_taken, X}}, ...]
+% flags = [{name, true|false}, ...]
+% informants = [CellPointer1, CellPointer2, ...]
 
 %% ====================================================
 %% TYPES
@@ -28,6 +29,9 @@
 %% ====================================================
 %% External API
 %% ====================================================
+
+new() ->
+	.
 
 %% 
 %% injectOutput :: #cellState -> #outputFunction -> #cellPointer -> #cellState
@@ -44,38 +48,8 @@ injectOutput(State, OutputFunction, OutputTo) ->
 injectIntercept(State, {_FunctionName, _InterceptState, _Args} = InterceptPointer) ->
 	replace(State, intercept, InterceptPointer).
 	
-%% 
-%% addElement :: #cellState -> #element -> {ok, #cellState} | {first, #cellState}
-%% 
 
-addElement(State, Element) -> 
-	Elements = state(State, elements),
-	CellType = state(State, cellType),
-	case elementsAdd(CellType, Element, Elements) of
-		{ok, Elements1} -> {ok, replace(State, elements, Elements1)};
-		{first, Elements1} -> {first, replace(State, elements, Elements1)}
-	end.
 
-%% 
-%% removeElement :: #cellState -> #element -> {ok, #cellState} | {last, #cellState}
-%% 
-	
-removeElement() -> 
-	Elements = state(State, elements),
-	case elementsRemove(Element, Elements) of
-		{ok, Elements1} -> {ok, replace(State, elements, Elements1)};
-		{last, Elements1} -> {last, replace(State, elements, Elements1)}
-	end.
-	
-%% 
-%% interceptElements :: #cellState -> CellName -> Elements -> {NewState, NewElements}
-%% 
-% interceptFunctions :: List Args -> State -> List Message -> {ok, NewState, List Elements}
-
-interceptElements(CellState, FromName, Elements) ->
-	Intercept = state(State, intercept),
-	{ok, NewIntercept, Elements1} = runInterceptOnElements(),
-	doElements()
 	
 getElements(State) ->
 	%unpack elements so that they are {add, Element} without the weighting
@@ -84,30 +58,22 @@ getElements(State) ->
 getOutputs(State) ->
 	%return list of outputs like [{}]
 	.
+	
+cellPointer(State) ->
+	.
+	
+updateOutputStates(OutputStates, State) ->
+	.
+	
+getFlag(State, Flag) ->
+	.
+
 %% ====================================================
 %% Internal API
 %% ====================================================
 
 
-%% ###### {remove, Element} messages need to always come first
-elementsAdd(unit, Element, Elements) ->
-	case rangedict:find(Element, Elements) of
-		{ok, FoundElement} ->
-			rangedict:addWeight(Element, Elements);
-		error -> rangedict:add(Element, Elements)
-	end;
-elementsAdd(set, Element, Elements) ->
-	case rangedict:find(Element, Elements) of
-		{ok, FoundElement} ->
-			rangedict:addWeight(Element, Elements);
-		error -> rangedict:add(Element, Elements)
-	end;
-elementsAdd(map, Element, Elements) ->
-	case rangedict:find(Element, Elements) of
-		{ok, FoundElement} ->
-			rangedict:addWeight(Element, Elements);
-		error -> rangedict:add(Element, Elements)
-	end.
+
 
 	
 %% ====================================================
