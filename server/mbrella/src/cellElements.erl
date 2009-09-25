@@ -10,6 +10,13 @@
 -endif.
 
 %% ====================================================
+%% notes
+%% ====================================================
+
+%the elements shouldn't think about add/remove, it should just keep an integer weighting
+%for all elements
+
+%% ====================================================
 %% TYPES
 %% ====================================================
 
@@ -26,6 +33,22 @@ new(set) ->
 new(map) ->
 	{map, rangedict:new()}.
 	
+create(Modifier, Value) ->
+	{Modifier, Value}.
+	
+createAdd(Value) ->
+	{add, Value}.
+	
+createRemove(Value) ->
+	{remove, Value}.
+	
+modifier({Modifier, _}) ->
+	Modifier.
+	
+value({_, Value}) ->
+	Value.
+	
+
 %% 
 %% send :: List Elements -> ElementState -> Tuple NewElementState ReturnedElements
 %% 
