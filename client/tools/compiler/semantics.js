@@ -101,27 +101,23 @@ var semantics = function(){
 		return hyphenatedString.replace(/\-./g, cnvrt);
 	}
 
-	function printObj(obj) {
-		function helper(obj) {
-			var output = "";
-			if(objectLike(obj)) {
-				output += "{";
-				forEach(obj, function(value, name) {
-					output += name + ":";
-					output += helper(value) + ",";
-				});
-				output += "}";
-			} else {
-				output += obj;
-			}
-			return output;
-		}
-		print(helper(obj));
-	}
-
-	if (def(load)) {
-		load(["../../source/js/util/util.js"]);
-	}
+	// function printObj(obj) {
+	// 	function helper(obj) {
+	// 		var output = "";
+	// 		if(objectLike(obj)) {
+	// 			output += "{";
+	// 			forEach(obj, function(value, name) {
+	// 				output += name + ":";
+	// 				output += helper(value) + ",";
+	// 			});
+	// 			output += "}";
+	// 		} else {
+	// 			output += obj;
+	// 		}
+	// 		return output;
+	// 	}
+	// 	print(helper(obj));
+	// }
 
 
 	// ====================================================

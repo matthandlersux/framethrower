@@ -1,9 +1,22 @@
 var GLOBAL_ERRORS = false;
 
 //load is rhino command. When running in browser, have to load the file with script tag
-if (load !== undefined) {
+try {
 	load(["tplparser.js"]);
 	load(["semantics.js"]);
+	load(["../../source/js/util/util.js"]);
+} catch (e) {}
+
+
+function loadTextNow(url) {
+	try {
+		var req = new XMLHttpRequest();
+		req.open("GET", url, false);
+		req.send(null);
+	} catch (e) {
+		console.log("loadXMLNow failed: " + url);
+	}
+	return req.responseText;
 }
 
 function outputJSON(object, tabs) {
@@ -112,6 +125,13 @@ function compileFolder(folderPath, rebuild) {
 	return mainJSON;
 }
 
+function log () {
+	try {
+		console.log.apply(undefined, arguments);
+	} catch (e) {
+		print.apply(undefined, arguments);
+	}
+}
 
 function compileFile (filePath, rebuild, isLetFile) {
 	var file = java.io.File("../../source/templates/" + filePath);
@@ -119,7 +139,14 @@ function compileFile (filePath, rebuild, isLetFile) {
 	if (!rebuild && binfile.exists() && (binfile.lastModified() > file.lastModified())) {
 		return deserialize(binfile.getAbsolutePath());
 	} else {
-		var str = readFile(file.getAbsolutePath());
+		var str;
+		try {
+			str = readFile(file.getAbsolutePath());
+		} catch (e) {
+			str = loadTextNow("../../source/templates/" + filePath);
+			console.log("Str: " + str);
+		}
+		
 		if (isLetFile) {
 			str = "includefile " + str;
 		}
@@ -131,16 +158,18 @@ function compileFile (filePath, rebuild, isLetFile) {
 		if( !parseResult.success ) {
 			error_cnt = parseResult.result;
 			GLOBAL_ERRORS = true;
-			print("<b>Parse errors, File: " + file.getName() + "</b><br />");
+			log("<b>Parse errors, File: " + file.getName() + "</b><br />");
 			for( i = 0; i < error_cnt; i++ ) {
 				var lineInfo = countLines(str, error_off[i]);
 				var escapedLine= lineInfo.line.split("&").join("&amp;").split( "<").join("&lt;").split(">").join("&gt;")				
-				print("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file.getCanonicalPath() + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
+				log("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file.getCanonicalPath() + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
 			}
 			throw("Parse Error");
 		} else {
 			result = semantics.processTree(parseResult.result, "" + file.getCanonicalPath());
-			serialize(result, binfile.getAbsolutePath());
+			try {
+				serialize(result, binfile.getAbsolutePath());
+			} catch (e) {}
 			return result;
 		}
 	}
@@ -202,12 +231,13 @@ function replaceLiteralStrings(s) {
 	
 	function restoreLiteralStrings(s) {
 
-	  var i;
+		var i;
 
-	  for (i = 0; i < literalStrings.length; i++)
-	    s = s.replace(new RegExp("__" + i + "__"), literalStrings[i]);
+		for (i = 0; i < literalStrings.length; i++) {
+			s = s.replace(new RegExp("__" + i + "__"), literalStrings[i]);
+		}
 
-	  return s;
+		return s;
 	}
 	
 	str = replaceLiteralStrings(str);
@@ -260,37 +290,39 @@ function countLines (wholeString, position) {
 //RUN COMMAND: rhino assembler.js <root folder>
 //java -jar ../util/js.jar -opt -1 assembler.js <root folder> rebuild
 
-if( arguments.length > 0 ) { 
-	var rebuild = false;
-	if (arguments[1] == "rebuild") {
-		rebuild = true;
-	}
+try{
+	if( arguments.length > 0 ) { 
+		var rebuild = false;
+		if (arguments[1] == "rebuild") {
+			rebuild = true;
+		}
 	
-	//create bin folder if it doesn't exist
-	var binfolder1 = java.io.File("../../generated");
-	var binfolder = java.io.File("../../generated/templates");
-	if(!binfolder1.exists()) {
-		binfolder1.mkdir();
-	}
-	if(!binfolder.exists()) {
-		binfolder.mkdir();
-	}
+		//create bin folder if it doesn't exist
+		var binfolder1 = java.io.File("../../generated");
+		var binfolder = java.io.File("../../generated/templates");
+		if(!binfolder1.exists()) {
+			binfolder1.mkdir();
+		}
+		if(!binfolder.exists()) {
+			binfolder.mkdir();
+		}
 	
-	var totalCompiledJSON = compileFolder(arguments[0], rebuild);
-	if(!GLOBAL_ERRORS) {
-		var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
+		var totalCompiledJSON = compileFolder(arguments[0], rebuild);
+		if(!GLOBAL_ERRORS) {
+			var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
 
-		var fw = new java.io.FileWriter("../../generated/templates/" + arguments[0] + ".js");
-		var bw = new java.io.BufferedWriter(fw);
+			var fw = new java.io.FileWriter("../../generated/templates/" + arguments[0] + ".js");
+			var bw = new java.io.BufferedWriter(fw);
 
-		bw.write(totalCompiledString);
-		bw.close();
+			bw.write(totalCompiledString);
+			bw.close();
 		
 		
-		load("../typeAnalyzer/runTypeAnalyzer.js");
-		load("../../generated/templates/" + arguments[0] + ".js");
-		runTypeAnalyzer(mainTemplate);
+			load("../typeAnalyzer/runTypeAnalyzer.js");
+			load("../../generated/templates/" + arguments[0] + ".js");
+			runTypeAnalyzer(mainTemplate);
+		}
+	} else {
+		log( 'usage: rhino assembler.js <root folder> [rebuild]' );
 	}
-} else {
-	print( 'usage: rhino assembler.js <root folder> [rebuild]' );
-}
+} catch (e) {}
