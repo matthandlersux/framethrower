@@ -83,14 +83,14 @@ reactiveAnd( CellPointer1, CellPointer2, {Cell1Val, Cell2Val}, From, Element ) -
 	CellName2 = cellPointer:name(CellPointer2),
 	case cellPointer:name(From) of
 		CellName1 -> 
-			Cell1NewVal = cellElement:modifier(Element),
+			Cell1NewVal = cellElements:modifier(Element),
 			if 
 				Cell2Val =:= undefined -> { {Cell1NewVal, Cell2Val}, [] };
 				Cell1NewVal =:= add andalso Cell2Val =:= add -> { {Cell1NewVal, Cell2Val}, {add, null} };
 				true -> { {Cell1NewVal, Cell2Val}, {remove, null} }
 			end;
 		CellName2 ->
-			Cell2NewVal = cellElement:modifier(Element),
+			Cell2NewVal = cellElements:modifier(Element),
 			if 
 				Cell1Val =:= undefined -> { {Cell1Val, Cell2NewVal}, [] };
 				Cell1Val =:= add andalso Cell2NewVal =:= add -> { {Cell1Val, Cell2NewVal}, {add, null} };
@@ -112,14 +112,14 @@ invert( SelfPointer, CellPointerParent, State, From, Element ) ->
 		CellPointerInformant ->
 			case invertStateGetValue(CellPointerInformant) of
 				{ok, Value} ->
-					ElementValue = cellElement:setValue(Element),
+					ElementValue = cellElements:setValue(Element),
 					case invertStateGetCellpointer(ElementValue) of
 						{ok, CellPointer} ->
 							%send Value to cellpointer using the modifier from message
 							cell:sendElements(
 								CellPointer,
 								SelfPointer, 
-								cellElement:set(cellElement:modifier(Element), Value),
+								cellElements:set(cellElements:modifier(Element), Value),
 							{State, [must_return_elements_for_weighting]});
 						error ->
 							%create cell associated with cellMessage:setValue(Message)
@@ -137,7 +137,7 @@ invert( SelfPointer, CellPointerParent, State, From, Element ) ->
 %% 
 
 invertStateProcess(State, Element) ->
-	case cellElement:modifier(Element) of
+	case cellElements:modifier(Element) of
 		add ->
 			CellPointerSetOfAs = cell:makeCell(set),
 			invertStateStoreKeydInput(
@@ -161,17 +161,17 @@ invertStateGetCellpointer(_) -> todo.
 
 
 setDifference(CellPointer1, CellPointer2, State, From, Element) ->
-	Value = cellElement:value(Element),
+	Value = cellElements:value(Element),
 	case cellPointer:name(From) of
 		cellPointer:name(CellPointer1) ->
-			case cellElement:modifier(Element) of
+			case cellElements:modifier(Element) of
 				add ->
 					setDifferenceStateAdd(State, Value);
 				remove ->
 					setDifferenceStateSubtract(State, Value)
 			end;
 		cellPointer:name(CellPointer2) ->
-			case cellElement:modifier(Element) of
+			case cellElements:modifier(Element) of
 				add ->
 					setDifferenceStateSubtract(State, Value);
 				remove ->
@@ -191,7 +191,7 @@ setDifferenceStateAdd(SetDifferenceState, Value) ->
 		Result when 
 		Result =:= {ok, 0};
 		Result =:= error ->
-			{dict:store(Value, 1, SetDifferenceState), cellElement:modifyAdd(Value)};
+			{dict:store(Value, 1, SetDifferenceState), cellElements:createAdd(Value)};
 		{ok, Weight} ->
 			{dict:store(Value, Weight+1, SetDifferenceState), []}
 	end.
@@ -203,7 +203,7 @@ setDifferenceStateSubtract(SetDifferenceState, Value) ->
 		Result =:= error ->
 			{dict:store(Value, -1, SetDifferenceState), []};
 		{ok, Weight} ->
-			{dict:store(Value, Weight-1, SetDifferenceState), cellElement:modifyRemove(Value)}
+			{dict:store(Value, Weight-1, SetDifferenceState), cellElements:createRemove(Value)}
 	end.
 
 %% ====================================================
