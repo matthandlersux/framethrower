@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://www.worldmerge.com/2008/xsl"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:svg="http://www.w3.org/2000/svg">
+
+<head>
+<title>Compiler Tester</title>
+
+<script>
+var ROOTDIR = "../../";
+var DEBUG = true;
+var LOCAL = true;
+//var LOCAL = false;
+
+//var serverBaseUrl = "http://clever.eversplosion.com:8000/";
+//var serverBaseUrl = "http://localhost:8000/";
+var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
+
+</script>
+
+<script type="text/javascript" src="../../source/js/external/yuiloader-min.js"></script> 
+<script src="../../source/js/include.js"></script>
+
+<script>
+
+function initialize() {
+	var templateFile = location.hash.substr(1);
+	if (!templateFile) {
+		alert("Place the name of the template after the hash (universal.xhtml#NAMEOFTEMPLATE)");
+	} else {
+		var totalCompiledJSON = compileFile(templateFile + "/" + templateFile + ".tpl", false);
+		if(!GLOBAL_ERRORS) {
+			console.log("No Global Errors!");
+			var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
+			console.log(totalCompiledString);
+			// var fw = new java.io.FileWriter("../../generated/templates/" + arguments[0] + ".js");
+			// var bw = new java.io.BufferedWriter(fw);
+			// 
+			// bw.write(totalCompiledString);
+			// bw.close();
+			// 		
+			// 		
+			// load("../typeAnalyzer/runTypeAnalyzer.js");
+			// load("../../generated/templates/" + arguments[0] + ".js");
+			// runTypeAnalyzer(mainTemplate);
+		}
+	}	
+	console.log("Here we are");
+}
+
+includes.htmlInclude(["core"], ["assembler.js", "tplparser.js", "semantics.js"], "initialize()");
+
+</script>
+
+
+
+
+
+
+
+
+</head>
+
+<body>
+
+<div id="mainscreen"></div>
+
+</body>
+
+</html>
