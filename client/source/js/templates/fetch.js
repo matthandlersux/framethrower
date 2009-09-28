@@ -32,10 +32,11 @@ function desugarFetch(template, env) {
 		// params hide previous bindings:
 		env = envMinus(env, template.params);
 
-		// remove all lets from env (i.e. initially none are considered fetched):
+		// lets hide previous bindings:
 		env = envMinus(env, keys(template.let));
 		
 		// repeatedly go through lets, adding fetched ones to env and removing them from lets, until stable:
+		// (since lets may refer to each other in unordered, weird ways)
 		var stable;
 		do {
 			stable = true; // assume nothing is going to happen
@@ -48,7 +49,7 @@ function desugarFetch(template, env) {
 						// store the value and get rid of the let, since it is meaningless to anyone else:
 						env = envAdd(env, v, let.expr);
 						delete template.let[v];
-						stable = false; // things are still happening
+						stable = false; // things are happening
 				}
 			}
 		} while(!stable);
@@ -58,7 +59,9 @@ function desugarFetch(template, env) {
 		desugarFetch(output, env);
 
 		if(output.kind==="lineExpr" && hasVariable(output.expr, fetchEnv)) {
-			console.warn("wrapping entire tmeplate output in <f:each> (may be inefficient; consider using 'unfetch')", output);
+			console.warn("wrapping entire template output in <f:each> (may be inefficient; consider using 'unfetch'):\r",
+				unparse(output.expr)+"\r",
+				output.debugRef.file, output.debugRef.lineNumber);
 			
 			var varName = "_fetchLineExpr",
 				val = output.expr,

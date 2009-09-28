@@ -29,15 +29,17 @@
 }
 
 .timepoint {
-	cursor: pointer;
 	stroke: white;
 	opacity: 0.5;
 	stroke-width: 5;
 	stroke-linecap: round;
+	cursor: pointer;
 }
-.timepoint:hover {
+.hoveredTimepoint {
 	stroke: orange;
 	opacity: 0.8;
+	stroke-width: 5;
+	stroke-linecap: round;
 }
 
 .timeinterval {
@@ -45,7 +47,7 @@
 	opacity: 0.5;
 	cursor: pointer;
 }
-.timeinterval:hover {
+.hoveredTimeinterval {
 	fill: orange;
 	opacity: 0.8;
 }
