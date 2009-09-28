@@ -171,7 +171,7 @@ var semantics = function(){
 			lastActionType = "Action (" + lastActionType + ")";
 		}
 		
-		var actionLine = {lineAction: {kind: "lineAction", actions: actlist, type:lastActionType}};
+		var actionLine = {lineAction: {kind: "lineAction", actions: actlist}, type: lastActionType};
 		
 		var wrappedTemplate = {
 			arglist: node.arglist,
@@ -229,7 +229,7 @@ var semantics = function(){
 	
 		return {
 			kind: "case", 
-			test: node.expr.exprcode,
+			test: parse(node.expr.exprcode),
 			lineTemplate: template,
 			otherwise: otherwise,
 			debugRef: node.debugRef
@@ -294,7 +294,7 @@ var semantics = function(){
 		}
 		return {
 			kind: kind,
-			type: typeString,
+			type: parseType(typeString),
 			f: {
 				kind: "jsFunction",
 				func: funcString
@@ -313,10 +313,9 @@ var semantics = function(){
 	
 	function makeLineTemplate(node, isBlock) {
 		var params = makeList(node.arglist, 'arglist', 'variable');
-		
 		var lets = makeListObject(node.fullletlist.letlist, 'letlist', 'let', getLetKeyVal);
-		var output = makeLine(node.fullletlist.line);
 		
+		var output = node.fullletlist.line;
 		//give undefined param types a letter
 		var counter = 0;
 		var paramList = [];
@@ -358,12 +357,12 @@ var semantics = function(){
 			kind: "lineTemplate",
 			params: paramList,
 			let: lets,
-			output: output,
+			output: makeLine(output),
 			debugRef: node.debugRef
 		};
 
 		if (typeString !== undefined) {
-			ret.type = typeString;
+			ret.type = parseType(typeString);
 		}
 
 		return ret;
@@ -397,16 +396,17 @@ var semantics = function(){
 				var action = {
 					expr: {exprcode:"return x"}
 				};
-				fullactlist = {actlist:actlist, action:action};
+				fullactlist = {actlist:actlist, action:action, type: node.type};
 			} else {
-				fullactlist = {actlist:{}, action:createAction};
+				fullactlist = {actlist:{}, action:createAction, type: node.type};
 			}
 			addDebugRef(fullactlist, node.debugRef);
 		} else if (def(node.fullactlist)) {
 			fullactlist = node.fullactlist;
+			fullactlist.type = "a0";
 		}
 
-		var lineTemplate = makeActionTemplate({arglist:{}, fullactlist:fullactlist, debugRef: node.debugRef});
+		var lineTemplate = makeActionTemplate({arglist:{}, fullactlist:fullactlist, debugRef: node.debugRef, type:fullactlist.type});
 		return {
 			kind: "lineState",
 			action: lineTemplate,
@@ -432,7 +432,7 @@ var semantics = function(){
 			var template = makeLineTemplate(wrappedTemplate);
 			return {
 				kind: "for-each",
-				select: node.expr.exprcode,
+				select: parse(node.expr.exprcode),
 				lineTemplate: template,
 				debugRef: node.debugRef
 			};
@@ -472,7 +472,7 @@ var semantics = function(){
 		function makeInsert (node) {
 			return {
 				kind: "insert",
-				expr: node.expr.exprcode,
+				expr: parse(node.expr.exprcode),
 				debugRef: node.debugRef
 			};
 		}
@@ -614,7 +614,7 @@ var semantics = function(){
 			var proplist = makeListObject(node.proplist, 'proplist', 'prop', getKeyVal);
 			return {
 				kind: "actionCreate",
-				type: node.type,
+				type: parseType(node.type),
 				prop: proplist,
 				debugRef: node.debugRef
 			};
@@ -630,12 +630,11 @@ var semantics = function(){
 			var lineTemplate = makeActionTemplate(wrappedActiontpl);
 			return {
 				kind: "extract",
-				select: node.expr.exprcode,
+				select: parse(node.expr.exprcode),
 				action: lineTemplate,
 				debugRef: node.debugRef
 			};
 		}
-
 		switch (name) {
 			case 'function':
 				var lineFunc = makeFunction("lineJavascript", value);
@@ -654,6 +653,10 @@ var semantics = function(){
 			case 'lineAction':
 				return value;
 			case 'expr':
+				value.exprcode = parse(value.exprcode);
+				if(value.type !== undefined) {
+					value.type = parseType(value.type);
+				}
 				return {kind: "lineExpr", expr: value.exprcode, type: value.type, debugRef: node.debugRef};
 			case 'letlistblock':
 				value.arglist = [];
@@ -692,10 +695,10 @@ var semantics = function(){
 			if (name == 'stringescapequotes') {
 				var string = makeString(tree);
 				lineNum += lineBreakCount(string);
-				//string = string.replace(/\\/g, "\\\\");
-				string = string.replace(/\\\"/g, "\\\\\"");
-				string = string.replace(/\"/g, "\\\"");
-				// string = string.replace(/\n/g, "\\n");
+				////string = string.replace(/\\/g, "\\\\");
+				//string = string.replace(/\\\"/g, "\\\\\"");
+				//string = string.replace(/\"/g, "\\\"");
+				//// string = string.replace(/\n/g, "\\n");
 				return string;
 			} else if (name == 'string') {
 				var string = makeString(tree);

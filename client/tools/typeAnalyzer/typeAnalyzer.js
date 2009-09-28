@@ -169,7 +169,7 @@ function typeAnalyze(line) {
 				// TODO: take out the second condition from this when type annotations are worked out with Andrew -Toby
 				if (!compareTypes(outputAnalysis.type, typeArray[typeArray.length - 1]) && unparseType(typeArray[typeArray.length - 1]) !== "Action a0") {
 					var extraInfo = line.output.kind === "lineExpr" ? "\nwith `"+unparse(line.output.expr)+"`\n\n"+getWordsTypes(line.output.expr, newEnv) : "";
-					staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got `"+unparseType(outputAnalysis.type)+"`" + extraInfo);
+					staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got 1 `"+unparseType(outputAnalysis.type)+"`" + extraInfo);
 				}
 				
 				typeArray[typeArray.length - 1] = outputAnalysis.type;
@@ -203,14 +203,14 @@ function typeAnalyze(line) {
 			var constructor = getTypeConstructor(modifyingType);
 			if (constructor === "Map") {
 			    if (keyType && !compareTypes(keyType, modifyingType.left.right)) {
-			        staticAnalysisError("Update key, `"+unparse(line.key)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(keyType)+"`" + "\n\n"+getWordsTypes(line.key, env));
+			        staticAnalysisError("Update key, `"+unparse(line.key)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got2 `"+unparseType(keyType)+"`" + "\n\n"+getWordsTypes(line.key, env));
 			    }
 			    if (valueType && !compareTypes(valueType, modifyingType.right)) {
-			        staticAnalysisError("Update value, `"+unparse(line.value)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(valueType)+"`" + "\n\n"+getWordsTypes(line.value, env));
+			        staticAnalysisError("Update value, `"+unparse(line.value)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got3 `"+unparseType(valueType)+"`" + "\n\n"+getWordsTypes(line.value, env));
 			    }
 			} else if (constructor === "Unit" || constructor === "Set") {
 			    if (keyType && !compareTypes(keyType, modifyingType.right)) {
-			        staticAnalysisError("Update key, `"+unparse(line.key)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(keyType)+"`" + "\n\n"+getWordsTypes(line.key, env));
+			        staticAnalysisError("Update key, `"+unparse(line.key)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got4 `"+unparseType(keyType)+"`" + "\n\n"+getWordsTypes(line.key, env));
 			    }
 			} else {
 			    staticAnalysisError("Update action target not a Map, Set, or Unit but instead `"+unparseType(modifyingType)+"`");

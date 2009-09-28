@@ -15,9 +15,8 @@ function include (bundles, extraFiles) {
 include(["core"], [ROOTDIR + "tools/typeAnalyzer/typeAnalyzer.js"]);
 
 var runTypeAnalyzer = function (mainTemplate) {
-	preparse(mainTemplate);
 	var result = typeAnalyze(mainTemplate);
 	if (result.success) {
-		print('success');
+		console.log('success');
 	}
 }

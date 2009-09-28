@@ -1,13 +1,16 @@
 var GLOBAL_ERRORS = false;
 
 //load is rhino command. When running in browser, have to load the file with script tag
-try {
-	load(["tplparser.js"]);
-	load(["semantics.js"]);
-	load(["../../source/js/util/util.js"]);
-} catch (e) {}
-
-
+ROOTDIR = "../../";
+function include (bundles, extraFiles) {
+	try {
+		load(ROOTDIR + "tools/util/java.js");
+		load(ROOTDIR + "source/js/include.js");
+		includes.rhinoInclude(bundles, extraFiles);
+	} catch (e) {}
+}
+include(["core"], ["tplparser.js", "semantics.js"]);
+	
 function loadTextNow(url) {
 	try {
 		var req = new XMLHttpRequest();
@@ -66,7 +69,10 @@ function outputJSON(object, tabs) {
 				return output;
 			}
 		} else if (typeOf(object) === "string"){
-			return "\"" + object.replace(/\n/g, "\\n") + "\"";
+			object = object.replace(/\\/g, "\\\\");
+			object = object.replace(/\n/g, "\\n");
+			object = object.replace(/\"/g, "\\\"");
+			return "\"" + object + "\"";
 		} else {
 			return object;
 		}
@@ -306,21 +312,19 @@ try{
 		if(!binfolder.exists()) {
 			binfolder.mkdir();
 		}
-	
 		var totalCompiledJSON = compileFolder(arguments[0], rebuild);
 		if(!GLOBAL_ERRORS) {
+			desugarFetch(totalCompiledJSON);
 			var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
-
 			var fw = new java.io.FileWriter("../../generated/templates/" + arguments[0] + ".js");
 			var bw = new java.io.BufferedWriter(fw);
 
 			bw.write(totalCompiledString);
 			bw.close();
 		
-		
 			load("../typeAnalyzer/runTypeAnalyzer.js");
 			load("../../generated/templates/" + arguments[0] + ".js");
-			runTypeAnalyzer(mainTemplate);
+			runTypeAnalyzer(totalCompiledJSON);
 		}
 	} else {
 		log( 'usage: rhino assembler.js <root folder> [rebuild]' );

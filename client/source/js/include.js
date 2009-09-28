@@ -2,6 +2,8 @@ var GLOBAL = {
 	typeCheck: false // run-time type checking
 };
 
+var console;
+
 var includes = (function () {
 	var includeBundles = {
 		core: [
@@ -95,6 +97,17 @@ var includes = (function () {
 		},
 		
 		rhinoInclude: function (bundles, extraFiles) {
+			if (!console) {
+				console = {};
+				console.warn = function() {
+					print("WARNING:");
+					print.apply(null, arguments);
+				};
+				console.err = console.warn;
+				console.log = function() {
+					print.apply(null, arguments);
+				};
+			}
 			var includes = prepareIncludes(bundles, extraFiles);
 			for (var i = 0, len = includes.length; i < len; i++) {
 				load(includes[i]);

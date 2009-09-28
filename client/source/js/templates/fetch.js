@@ -1,6 +1,4 @@
 
-
-
 /************ 'fetch' keyword **********/
 
 var fetchEnv = envAdd(falseEnv, "fetch", "fetch");
@@ -20,8 +18,7 @@ function desugarFetch(template, env) {
 	
 	if (kind === "lineExpr")
 		// make any fetches explicit and then desugar unfetches:
-		template.expr = desugarUnfetch( substitute(template.expr, env) );
-	
+		template.expr = desugarUnfetch( substitute(template.expr, env) );	
 	else if(kind === "lineXML")
 		template.xml = desugarFetchXML(template.xml, env);
 
@@ -57,10 +54,9 @@ function desugarFetch(template, env) {
 		// recurse on output:
 		var output = template.output;
 		desugarFetch(output, env);
-
 		if(output.kind==="lineExpr" && hasVariable(output.expr, fetchEnv)) {
-			console.warn("wrapping entire template output in <f:each> (may be inefficient; consider using 'unfetch'):\r",
-				unparse(output.expr)+"\r",
+			console.warn("wrapping entire template output in <f:each> (may be inefficient; consider using 'unfetch'):\n",
+				unparse(output.expr)+"\n",
 				output.debugRef.file, output.debugRef.lineNumber);
 			
 			var varName = "_fetchLineExpr",
