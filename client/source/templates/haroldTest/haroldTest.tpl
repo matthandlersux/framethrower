@@ -2,10 +2,8 @@ template() {
 	test = template(x::Number)::Number {
 		plus 100 x
 	},
-	debug = function(s::String)::Action Void {
-		return makeActionJavascript(function() {
-			console.debug(s);
-		});
+	debug = jsaction(s::String)::Void {
+		console.debug(s);
 	},
 	w = z,
 	z = plus 1 x,

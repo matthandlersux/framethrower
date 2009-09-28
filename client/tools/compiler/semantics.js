@@ -236,11 +236,13 @@ var semantics = function(){
 		};
 	}
 
-	function makeFunction(funcText) {
+	function makeFunction(funcText, jsTransformer, outputTypeTransformer) {
 		var bracketIndex = funcText.indexOf('{');
 		var lParenIndex = funcText.indexOf('(');
 		var args = funcText.substr(lParenIndex, bracketIndex - lParenIndex);
 		var JS = funcText.substr(bracketIndex);
+		if(jsTransformer)
+			JS = jsTransformer(JS);
 		var rParenIndex = args.indexOf(")");
 		var outputType = args.substr(rParenIndex+3);
 		if (outputType.length == 0) {
@@ -288,6 +290,8 @@ var semantics = function(){
 		});
 		funcString += ") " + JS + "";
 		if (def(outputType)) {
+			if(outputTypeTransformer)
+				outputType = outputTypeTransformer(outputType);
 			typeString += "(" + outputType + ")";
 		} else {
 			typeString += "t" + typeCounter;
@@ -641,7 +645,10 @@ var semantics = function(){
 				lineFunc.debugRef = node.debugRef;
 				return lineFunc;
 			case 'jsaction':
-				var lineFunc = makeFunction(value);
+				var lineFunc = makeFunction(value,
+					function(JS) { return "{ return makeActionJavascript(function() "+JS+"); }"; },
+					function(outputType) { return "Action ("+outputType+")"; }
+				);
 				lineFunc.debugRef = node.debugRef;
 				return lineFunc;
 			case 'template':
