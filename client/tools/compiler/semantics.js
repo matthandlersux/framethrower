@@ -236,7 +236,7 @@ var semantics = function(){
 		};
 	}
 
-	function makeFunction(kind, funcText) {
+	function makeFunction(funcText) {
 		var bracketIndex = funcText.indexOf('{');
 		var lParenIndex = funcText.indexOf('(');
 		var args = funcText.substr(lParenIndex, bracketIndex - lParenIndex);
@@ -293,7 +293,7 @@ var semantics = function(){
 			typeString += "t" + typeCounter;
 		}
 		return {
-			kind: kind,
+			kind: "lineJavascript",
 			type: parseType(typeString),
 			f: {
 				kind: "jsFunction",
@@ -637,11 +637,11 @@ var semantics = function(){
 		}
 		switch (name) {
 			case 'function':
-				var lineFunc = makeFunction("lineJavascript", value);
+				var lineFunc = makeFunction(value);
 				lineFunc.debugRef = node.debugRef;
 				return lineFunc;
 			case 'jsaction':
-				var lineFunc = makeFunction("actionJavascript", value);
+				var lineFunc = makeFunction(value);
 				lineFunc.debugRef = node.debugRef;
 				return lineFunc;
 			case 'template':
