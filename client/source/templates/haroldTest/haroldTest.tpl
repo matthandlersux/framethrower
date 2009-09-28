@@ -2,10 +2,20 @@ template() {
 	test = template(x::Number)::Number {
 		plus 100 x
 	},
+	debug = jsaction(s::String)::Void {
+		console.debug(s);
+		return;
+	},
 	w = z,
 	z = plus 1 x,
 	x = fetch y,
 	y = state(Unit Number, 10),
 	y = state(Unit Number, 100),
-	test1 (test w)
+	
+	<div>
+		<f:on mouseup>
+			debug "hey!"
+		</f:on>
+		<f:call>test1 (test w)</f:call>
+	</div>
 }

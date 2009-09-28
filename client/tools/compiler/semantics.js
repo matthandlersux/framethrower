@@ -101,27 +101,23 @@ var semantics = function(){
 		return hyphenatedString.replace(/\-./g, cnvrt);
 	}
 
-	function printObj(obj) {
-		function helper(obj) {
-			var output = "";
-			if(objectLike(obj)) {
-				output += "{";
-				forEach(obj, function(value, name) {
-					output += name + ":";
-					output += helper(value) + ",";
-				});
-				output += "}";
-			} else {
-				output += obj;
-			}
-			return output;
-		}
-		print(helper(obj));
-	}
-
-	if (def(load)) {
-		load(["../../source/js/util/util.js"]);
-	}
+	// function printObj(obj) {
+	// 	function helper(obj) {
+	// 		var output = "";
+	// 		if(objectLike(obj)) {
+	// 			output += "{";
+	// 			forEach(obj, function(value, name) {
+	// 				output += name + ":";
+	// 				output += helper(value) + ",";
+	// 			});
+	// 			output += "}";
+	// 		} else {
+	// 			output += obj;
+	// 		}
+	// 		return output;
+	// 	}
+	// 	print(helper(obj));
+	// }
 
 
 	// ====================================================
@@ -240,8 +236,7 @@ var semantics = function(){
 		};
 	}
 
-	function makeFunction(funcText) {
-		//8 characters in 'function'
+	function makeFunction(kind, funcText) {
 		var bracketIndex = funcText.indexOf('{');
 		var lParenIndex = funcText.indexOf('(');
 		var args = funcText.substr(lParenIndex, bracketIndex - lParenIndex);
@@ -298,7 +293,7 @@ var semantics = function(){
 			typeString += "t" + typeCounter;
 		}
 		return {
-			kind: "lineJavascript",
+			kind: kind,
 			type: typeString,
 			f: {
 				kind: "jsFunction",
@@ -643,7 +638,11 @@ var semantics = function(){
 
 		switch (name) {
 			case 'function':
-				var lineFunc = makeFunction(value);
+				var lineFunc = makeFunction("lineJavascript", value);
+				lineFunc.debugRef = node.debugRef;
+				return lineFunc;
+			case 'jsaction':
+				var lineFunc = makeFunction("actionJavascript", value);
 				lineFunc.debugRef = node.debugRef;
 				return lineFunc;
 			case 'template':
@@ -723,7 +722,7 @@ var semantics = function(){
 				return nodeName.indexOf(string) == 0;
 			}
 			
-			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('styleattname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('function') || startsWith('xmltext')) {
+			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('styleattname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('function') || startsWith('jsaction') || startsWith('xmltext')) {
 				var string = makeString(value, nodeName);
 				lineNum += lineBreakCount(string);
 				tree[nodeName] = stripSpaces(string);

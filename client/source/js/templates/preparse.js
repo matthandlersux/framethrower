@@ -21,7 +21,7 @@ function preparse(template) {
 		if(template.type !== undefined) {
 			template.type = parseType(template.type);
 		}
-	} else if (kind === "lineJavascript") {
+	} else if (kind === "lineJavascript" || kind === "actionJavascript") {
 		template.type = parseType(template.type);
 	} else if (kind === "lineAction") {
 		template.type = parseType(template.type);

@@ -94,7 +94,7 @@ template (videoTimeline::VideoTimeline) {
 						<f:call>hoveredInfonEvents infon 1</f:call>
 					</svg:line>
 					<f:each reactiveEqual (fetch hoveredInfon) infon as _>
-						<svg:line class="hoveredTimepoint" pointer-events="none" x1="{x}" x2="{x}" y1="30%" y2="70%" />
+						<svg:line class="hoveredTimepoint" pointer-events="none" x1="{x}" x2="{x}" y1="30%" y2="70%"/>
 					</f:each>
 				</f:wrapper>
 			</f:each>
