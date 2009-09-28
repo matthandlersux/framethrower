@@ -1,8 +1,2 @@
-all: mbrella
-
-mbrella: lib
+all: 
 	(cd src;$(MAKE))
-	
-lib:
-	(cd ../lib;$(MAKE))
-	

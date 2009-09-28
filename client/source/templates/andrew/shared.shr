@@ -1,15 +1,8 @@
-Num = returnUnit 22,
-
-testObject = state {
-	theObject <- create(TestClass, {}),
-	set (TestClass:num theObject) 3,
-	return theObject
+setNum3 = action (testObject::testClass) {
+	set (TestClass:num testObject) 3
 },
 
-anotherObject = state {
-	theObject <- create(TestClass, {}),
-	extract Num as n {
-		set (TestClass:num theObject) n
-	},
-	return theObject
+setNum5 = action (testObject::testClass) {
+	set (TestClass:num testObject) 5
 }
+

@@ -11,7 +11,7 @@
 -define(d(Msg, Var), io:format("Error in ~s (~p):~n~s ~p~n~n", [?MODULE, self(), Msg, Var])).
 % syntactic sugar babbbyyy
 -define (ob(Field), mblib:getVal(Ob, Field)).
--define (this(Field), State#?MODULE.Field).
+% -define (this(Field), State#?MODULE.Field).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 %-define (TABFILE, "data/serialize.ets").
@@ -21,11 +21,10 @@
 %% --------------------------------------------------------------------
 
 -include ("../include/scaffold.hrl").
--include ("../../lib/ast.hrl").
 
 %% --------------------------------------------------------------------
 %% External exports
--export([start/1]).
+-export([start/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -47,11 +46,28 @@ start_link() ->
 		Else -> Else
 	end.
 
-serializeEnv() ->
-	gen_server:cast(?MODULE, {serializeEnv, undefined}).
+aFunc() ->
+	?trace("This is just so so so good").
 
-unserialize() ->
-	gen_server:call(?MODULE, {unserialize, undefined}).
+
+testJSON() ->
+	{ok, JSONBinary} = file:read_file("../lib/bootJSON"),
+	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
+	SharedLetStruct = struct:get_value(<<"sharedLet">>, Struct),
+	{struct, Lets} = SharedLetStruct,
+	lists:map(fun(Let) ->
+		{LetName, LetStruct} = Let,
+		Reply = gen_server:cast(?MODULE, {addLet, LetName, LetStruct}),
+		?trace(Reply)
+	end, Lets),
+	ok.
+
+
+addActionsFromJSON(ActionsJSON) ->
+	gen_server:cast(?MODULE, {addActionJSON, ActionsJSON}).
+
+performAction(ActionName, Params) ->
+	gen_server:call(?MODULE, {performAction, ActionName, Params}).
 
 stop() ->
 	gen_server:call(?MODULE, stop).
@@ -85,8 +101,6 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({unserialize, FileName}, _, State) ->
-    {reply, ok, NewState};
 handle_call(stop, _, State) ->
 	{stop, normal, stopped, State}.
 
@@ -97,17 +111,10 @@ handle_call(stop, _, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_cast({serializeEnv, FileName}, State) ->
-	FileToUse = case FileName of
-		undefined -> ?this(file);
-		_ -> FileName
-	end,
-	ETS = ets:new(serializeTable, []),
-	serializeNow(ETS),
-	ets:insert(ETS, {prepareState, ?this(prepareState)}),
-	ets:insert(ETS, {variables, ?this(variables)}),
-	ets:tab2file(ETS, FileToUse),
-	ets:delete(ETS),
+handle_cast({addLet, LetName, LetStruct}, State) ->
+	NewState = dict:store(LetName, LetStruct, State),
+    {noreply, NewState};
+handle_cast({serializeEnv, _}, State) ->
     {noreply, State};
 handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
@@ -142,3 +149,22 @@ code_change(OldVsn, State, Extra) ->
 %% --------------------------------------------------------------------
 %%% Internal functions
 %% --------------------------------------------------------------------
+
+%%For Now we'll have all the functions for processing template JSON here. Will want to reorganize this into another file probably
+
+evaluateLine() -> ok.
+
+executeAction() -> ok.
+
+makeActionClosure() -> ok.
+
+makeClosure() -> ok.
+
+% Should have this somewhere
+% parseExpression() -> ok.
+
+addLets() -> ok.
+
+addFun() -> ok.
+
+makeActionErlang() -> ok.
