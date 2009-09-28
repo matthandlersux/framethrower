@@ -55,9 +55,9 @@ function desugarFetch(template, env) {
 		var output = template.output;
 		desugarFetch(output, env);
 		if(output.kind==="lineExpr" && hasVariable(output.expr, fetchEnv)) {
-			console.warn("wrapping entire template output in <f:each> (may be inefficient; consider using 'unfetch'):\n",
-				unparse(output.expr)+"\n",
-				output.debugRef.file, output.debugRef.lineNumber);
+			// console.warn("wrapping entire template output in <f:each> (may be inefficient; consider using 'unfetch'):\n",
+			// 	unparse(output.expr)+"\n",
+			// 	output.debugRef.file, output.debugRef.lineNumber);
 			
 			var varName = "_fetchLineExpr",
 				val = output.expr,
