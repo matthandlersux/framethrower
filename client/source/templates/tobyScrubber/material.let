@@ -41,6 +41,12 @@ chapterTimestamps = function ()::List Number {
 	return arrayToList(timestamps);
 },
 
+
+
+
+
+
+
 cutTimestamps = function ()::List Number {
 	var timestamps = [
 		0,
