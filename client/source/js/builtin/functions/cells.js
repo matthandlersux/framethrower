@@ -251,6 +251,43 @@
 					return outputCell;
 				}
 			},
+			lowPassFilter: {
+				type: "Unit a -> Unit a",
+				func: function (cell) {
+					var currentValue;
+					var outputCell = makeCell();
+					cell.inject(outputCell, function (val) {
+						if (currentValue !== val) {
+							if (currentValue !== undefined) {
+								outputCell.removeLine(currentValue);								
+							}
+							currentValue = val;
+							outputCell.addLine(currentValue);
+						}
+						return function () {
+							
+						};
+					});
+					return outputCell;
+				}
+			},
+			countChanges: { // for debugging
+				type: "Unit a -> Unit Number",
+				func: function (cell) {
+					var currentValue = 0;
+					var outputCell = makeCell();
+					outputCell.addLine(currentValue);
+					cell.inject(outputCell, function (val) {
+						outputCell.removeLine(currentValue);
+						currentValue += 1;
+						outputCell.addLine(currentValue);
+						return function () {
+							
+						};
+					});
+					return outputCell;
+				}
+			},
 
 			// ============================================================================
 			// Other functions?
