@@ -10,6 +10,14 @@
 -endif.
 
 %% ====================================================
+%% NOTES
+%% ====================================================
+
+%any function that makes use of elements that are cellpointers needs to lookup the pid of the cell
+%or send a message with a "i think you are this guy" message, or needs some quick pingback to make sure
+%that the cell exists still and is the cell that it thinks it is
+
+%% ====================================================
 %% TYPES
 %% ====================================================
 
