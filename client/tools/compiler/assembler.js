@@ -1,13 +1,16 @@
 var GLOBAL_ERRORS = false;
 
 //load is rhino command. When running in browser, have to load the file with script tag
-try {
-	load(["tplparser.js"]);
-	load(["semantics.js"]);
-	load(["../../source/js/util/util.js"]);
-} catch (e) {}
-
-
+ROOTDIR = "../../";
+function include (bundles, extraFiles) {
+	try {
+		load(ROOTDIR + "tools/util/java.js");
+		load(ROOTDIR + "source/js/include.js");
+		includes.rhinoInclude(bundles, extraFiles);
+	} catch (e) {}
+}
+include(["core"], ["tplparser.js", "semantics.js", "../typeAnalyzer/typeAnalyzer.js"]);
+	
 function loadTextNow(url) {
 	try {
 		var req = new XMLHttpRequest();
@@ -66,7 +69,10 @@ function outputJSON(object, tabs) {
 				return output;
 			}
 		} else if (typeOf(object) === "string"){
-			return "\"" + object.replace(/\n/g, "\\n") + "\"";
+			object = object.replace(/\\/g, "\\\\");
+			object = object.replace(/\n/g, "\\n");
+			object = object.replace(/\"/g, "\\\"");
+			return "\"" + object + "\"";
 		} else {
 			return object;
 		}
@@ -176,11 +182,8 @@ function compileFile (filePath, rebuild, isLetFile) {
 }
 
 
-function removeComments (str) {
-	var literalStrings;
-	
-function replaceLiteralStrings(s) {
-    var i, c, t, lines, escaped, quoteChar, inQuote, inComment, literal;
+function removeComments (s) {
+    var c, t, escaped, quoteChar, inQuote, inComment;
     literalStrings = new Array();
     t = "";
     j = 0;
@@ -193,12 +196,11 @@ function replaceLiteralStrings(s) {
         if (!inQuote && !inComment) {
             if (c == '/' && s.charAt(j + 1) == '/') {
                 inComment = true;
-				t += c;
             } else if (c == '"' || c == "'") {
                 inQuote = true;
                 escaped = false;
                 quoteChar = c;
-                literal = c;
+				t += c;
             }
             else
             t += c;
@@ -208,42 +210,21 @@ function replaceLiteralStrings(s) {
         else if (inQuote) {
 			if (c == quoteChar && !escaped) {
 				inQuote = false;
-				literal += quoteChar;
-				t += "__" + literalStrings.length + "__";
-				literalStrings[literalStrings.length] = literal;
 			} else if (c == "\\" && !escaped) {
 				escaped = true;
 			} else {
 		      escaped = false;
 			}
-		    literal += c;
+			t += c;
 		} else if (inComment) {
 			if (c == '\n') {
 				inComment = false;
+				t += c;
 			}
-			t += c;
 		}
 		j++;
 	}
 	return t;
-}
-	
-	
-	function restoreLiteralStrings(s) {
-
-		var i;
-
-		for (i = 0; i < literalStrings.length; i++) {
-			s = s.replace(new RegExp("__" + i + "__"), literalStrings[i]);
-		}
-
-		return s;
-	}
-	
-	str = replaceLiteralStrings(str);
-	str = str.replace(/([^\x2f^\n]*)\x2f\x2f[^\n]*\n/g, "$1\n");
-	str = restoreLiteralStrings(str);
-	return str;
 }
 
 function countLines (wholeString, position) {
@@ -306,21 +287,19 @@ try{
 		if(!binfolder.exists()) {
 			binfolder.mkdir();
 		}
-	
 		var totalCompiledJSON = compileFolder(arguments[0], rebuild);
 		if(!GLOBAL_ERRORS) {
+			desugarFetch(totalCompiledJSON);
 			var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
-
 			var fw = new java.io.FileWriter("../../generated/templates/" + arguments[0] + ".js");
 			var bw = new java.io.BufferedWriter(fw);
 
 			bw.write(totalCompiledString);
 			bw.close();
-		
-		
-			load("../typeAnalyzer/runTypeAnalyzer.js");
-			load("../../generated/templates/" + arguments[0] + ".js");
-			runTypeAnalyzer(mainTemplate);
+			var result = typeAnalyze(totalCompiledJSON);
+			if (result.success) {
+				console.log('success');
+			}
 		}
 	} else {
 		log( 'usage: rhino assembler.js <root folder> [rebuild]' );

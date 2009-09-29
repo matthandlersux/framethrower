@@ -13,7 +13,7 @@ function parse(s) {
 		parse( "predicate -> bindSet (compose returnUnitSet (passthru predicate))" )
 	*/
 	
-	var tokens = s.split(/(\s+|\(|\)|->|")/); // extracts tokens: whitespace, "(", ")", "->", quotes ("), and words (anything in between those symbols)
+	var tokens = s.split(/(\s+|\(|\)|->|"|\[|\]|\,)/); // extracts tokens: whitespace, "(", ")", "->", quotes ("), "[", "]", ",", and words (anything in between those symbols)
 	
 	function pullQuotedStrings(tokens) {
 		var ret = [];
@@ -49,78 +49,78 @@ function parse(s) {
 		return ret;
 	}
 	tokens = pullQuotedStrings(tokens);
+
+	// get rid of whitespace:
+	tokens = filter(tokens, function(s) {return !(/^\s*$/.test(s));});
 	
-	// turn nested parens into nested lists of tokens: "->" and words
-	function nestParens(tokens) {
-		var ret = [];
-		var stack = [ret];
-		forEach(tokens, function (token) {
-			if (/^\s*$/.test(token)) {
-				// ignore whitespace token
-			} else if (token === "(") {
-				var newCons = [];
-				stack[0].push(newCons);
-				stack.unshift(newCons);
-			} else if (token === ")") {
-				stack.shift();
-				if (stack.length === 0) {
-					throw "Parse Error: Unbalanced parens. Too many )";
-				}
-			} else {
-				stack[0].push(token);
+	/* parses tokens until a ")", "]", or "," token, if any.
+	 * leftAST is the current accumulation of applies.
+	 * returns the parsed expression, and removes all used tokens from tokens.
+	 */
+	function parseOne(tokens, leftAST) {
+		var ast;
+
+		if(tokens.length===0) throw "Parse error: empty expression";
+
+		// no valid expression begins with these tokens:
+		if(tokens[0] === "->" || tokens[0] === ',' || tokens[0] === ']' || tokens[0] === ')')
+			throw "Parse error: expression beginning with "+tokens[0];
+
+		if(tokens[0] === "(") { // a grouping, potentially a tuple
+			tokens.shift();
+
+			var tuple = [parseOne(tokens)];
+			while(tokens[0] === ',') { // accumulate tuple elements
+				tokens.shift();
+				tuple.push( parseOne(tokens) );
 			}
-		});
-		if (stack.length > 1) {
-			throw "Parse Error: Unbalanced parens. Too many (";
+
+			if(tokens[0] !== ")") throw "Parse error: missing )";
+			tokens.shift();
+
+			ast = makeTupleAST(tuple); // simply returns the first ast for a 1-tuple
 		}
-		return ret;
-	}
-	tokens = nestParens(tokens);
-	
-	// find "->" tokens and replace with lambda AST's
-	function parseLambdas(tokens) {
-		if (typeOf(tokens) === "string") {
-			return tokens;
-		} else {
-			var index = tokens.indexOf("->");
-			if (index === -1) {
-				return map(tokens, parseLambdas);
-			} else {
-				return {
-					cons: "lambda",
-					left: map(tokens.slice(0, index), parseLambdas),
-					right: parseLambdas(tokens.slice(index+1))
-				};
+
+		else if(tokens[0] === "[") { // a list
+			tokens.shift();
+
+			var list = [parseOne(tokens)];
+			while(tokens[0] === ',') { // accumulate list elements
+				tokens.shift();
+				list.push( parseOne(tokens) );
 			}
+
+			if(tokens[0] !== "]") throw "Parse error: missing ]";
+			tokens.shift();
+
+			ast = makeListAST(list);
 		}
-	}
-	tokens = parseLambdas(tokens);
-	
-	// parse all lists of words as apply AST's
-	function parseApplys(tokens) {
-		if (typeOf(tokens) === "string") {
-			return tokens;
-		} else if (tokens.cons === "lambda") {
-			return {
-				cons: "lambda",
-				left: parseApplys(tokens.left),
-				right: parseApplys(tokens.right)
-			};
-		} else {
-			if (tokens.length === 1) {
-				return parseApplys(tokens[0]);
-			} else {
-				return {
-					cons: "apply",
-					left: parseApplys(tokens.slice(0, tokens.length - 1)),
-					right: parseApplys(tokens[tokens.length - 1])
-				};
-			}
+
+		else // a literal
+			ast = tokens.shift();
+
+
+		if(leftAST) // apply accumulated expressions to new one
+			ast = {cons: 'apply', left: leftAST, right:ast};
+
+		// end of sub-expression?
+		if(tokens.length === 0 || tokens[0] === ',' || tokens[0] === ']' || tokens[0] === ')')
+			return ast;
+
+		if(tokens[0] === "->") { // recurse on lambdas
+			tokens.shift();
+			return {cons: 'lambda', left: ast, right: parseOne(tokens)};
 		}
+
+		// otherwise, just one expression following another, i.e. an apply,
+		// so pass along left part of apply:
+		return parseOne(tokens, ast);
 	}
-	tokens = parseApplys(tokens);
+	var ast = parseOne(tokens);
 	
-	return tokens;
+	if(tokens.length > 0) throw "Parse error: trailing tokens: "+tokens;
+	
+	return ast;
 }
 
 
@@ -140,4 +140,3 @@ function unparse(ast, parens) {
 		return ret;
 	}
 }
-

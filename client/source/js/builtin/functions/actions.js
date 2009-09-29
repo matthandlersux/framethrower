@@ -1,4 +1,5 @@
 
+// used by builtin actions below, and also by desugar of jsaction() syntax:
 function makeActionJavascript(f) {
 	var action = {kind: "actionJavascript", f: f}, // will be interpreted by executeAction()
 		lineAction = {actions: [{action: action}]};

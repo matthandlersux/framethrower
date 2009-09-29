@@ -16,7 +16,6 @@ LINEACTION
 
 ACTIONUNIT
 	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
-	{kind: "actionUpdate", target: AST, actionType: "add" | "remove", key?: AST, value?: AST} |
 	{kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
 
 
@@ -122,7 +121,6 @@ function evaluateLine(line, env) {
 		{kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
 		{kind: "lineState", action: LINETEMPLATE} | // action takes no parameters |
 		{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
-		{kind: "actionUpdate", target: AST, actionType: "add" | "remove", key?: AST, value?: AST} |
 		{kind: "extract", select: AST, action: LINETEMPLATE} // this action should take one (or two) parameters. |
 		{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, output: LINE, type: TYPE} |
 		{kind: "lineAction", [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
@@ -137,7 +135,7 @@ function evaluateLine(line, env) {
 		return expr;
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line, env);
-	} else if (line.kind === "lineJavascript" || line.kind === "actionJavascript") {
+	} else if (line.kind === "lineJavascript") {
 		if (line.f.length === 0) return line.f();
 		else return makeFun(line.type, curry(line.f));
 		//return makeFun(parseType(line.type), line.f);
@@ -151,7 +149,7 @@ function evaluateLine(line, env) {
 		//return makeCC(parseType(line.type));
 	} else if (line.kind === "lineAction") {
 		return makeActionClosure(line, env);
-	} else if(line.kind === "actionCreate" || line.kind === "actionUpdate") {
+	} else if(line.kind === "actionCreate") {
 		// TODO actions in a let are possible in actions, but not in templates? may as well be in both.
 		// desugar as a one-action lineAction:
 		var lineAction = {actions: [{action: line}]};

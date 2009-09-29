@@ -8,7 +8,7 @@ function typeAnalyze(line) {
 		GlobalError = true;
 		var debugRef = currentLine.debugRef;
 		msg = msg.replace(/\n/g, "<br />");
-		print(
+		console.log(
 			"<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://"
 			+ debugRef.file + "&line=" + debugRef.lineNumber + "\">error on line" + 
 			debugRef.lineNumber + "</a> <br />" + msg + "<br /><br /></div>"
@@ -169,7 +169,7 @@ function typeAnalyze(line) {
 				// TODO: take out the second condition from this when type annotations are worked out with Andrew -Toby
 				if (!compareTypes(outputAnalysis.type, typeArray[typeArray.length - 1]) && unparseType(typeArray[typeArray.length - 1]) !== "Action a0") {
 					var extraInfo = line.output.kind === "lineExpr" ? "\nwith `"+unparse(line.output.expr)+"`\n\n"+getWordsTypes(line.output.expr, newEnv) : "";
-					staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got `"+unparseType(outputAnalysis.type)+"`" + extraInfo);
+					staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got 1 `"+unparseType(outputAnalysis.type)+"`" + extraInfo);
 				}
 				
 				typeArray[typeArray.length - 1] = outputAnalysis.type;
@@ -194,31 +194,6 @@ function typeAnalyze(line) {
 			// TODO
 			
 			type = makeTypeApply(parseType("Action"), line.type);
-		} else if (line.kind === "actionUpdate") {
-			// check that it's actually a cell, and the supplied key/value expressions are the proper type
-			var modifyingType = getTypeOfAST(line.target, env);
-			var keyType = line.key ? getTypeOfAST(line.key, env) : undefined;
-			var valueType = line.value ? getTypeOfAST(line.value, env) : undefined;
-
-			var constructor = getTypeConstructor(modifyingType);
-			if (constructor === "Map") {
-			    if (keyType && !compareTypes(keyType, modifyingType.left.right)) {
-			        staticAnalysisError("Update key, `"+unparse(line.key)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(keyType)+"`" + "\n\n"+getWordsTypes(line.key, env));
-			    }
-			    if (valueType && !compareTypes(valueType, modifyingType.right)) {
-			        staticAnalysisError("Update value, `"+unparse(line.value)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(valueType)+"`" + "\n\n"+getWordsTypes(line.value, env));
-			    }
-			} else if (constructor === "Unit" || constructor === "Set") {
-			    if (keyType && !compareTypes(keyType, modifyingType.right)) {
-			        staticAnalysisError("Update key, `"+unparse(line.key)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(keyType)+"`" + "\n\n"+getWordsTypes(line.key, env));
-			    }
-			} else {
-			    staticAnalysisError("Update action target not a Map, Set, or Unit but instead `"+unparseType(modifyingType)+"`");
-			}
-			// TODO check that the add/remove has key/value as appropriate
-			
-			
-			type = parseType("Action Void");
 		} else if (line.kind === "extract") {
 			// TODO
 			
