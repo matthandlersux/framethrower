@@ -1,7 +1,9 @@
 
 /************ 'fetch' keyword **********/
 
+// the minimal collection of fetched expressions:
 var fetchEnv = envAdd(falseEnv, "fetch", "fetch");
+
 
 function desugarFetch(template, env) {
 	if (!template) return;
@@ -18,7 +20,8 @@ function desugarFetch(template, env) {
 	
 	if (kind === "lineExpr")
 		// make any fetches explicit and then desugar unfetches:
-		template.expr = desugarUnfetch( substitute(template.expr, env) );	
+		template.expr = desugarUnfetch( substitute(template.expr, env) );
+			
 	else if(kind === "lineXML")
 		template.xml = desugarFetchXML(template.xml, env);
 
@@ -55,8 +58,8 @@ function desugarFetch(template, env) {
 		var output = template.output;
 		desugarFetch(output, env);
 		if(output.kind==="lineExpr" && hasVariable(output.expr, fetchEnv)) {
-			// console.warn("wrapping entire template output in <f:each> (may be inefficient; consider using 'unfetch'):\n",
-			// 	unparse(output.expr)+"\n",
+			// console.warn("wrapping entire template output in &lt;f:each&gt; (may be inefficient; consider using 'unfetch'):<br/>",
+			// 	unparse(output.expr)+"<br/>",
 			// 	output.debugRef.file, output.debugRef.lineNumber);
 			
 			var varName = "_fetchLineExpr",
@@ -64,7 +67,7 @@ function desugarFetch(template, env) {
 			 	feach = makeFeach({kind: "lineExpr", expr: varName}, varName, unfetch(val));
 			output = {kind: "lineXML", xml: feach};
 			
-			desugarFetch(output, env); // recurse in case fetches remain
+			desugarFetch(output, env); // recurse in case nested fetches remain
 			
 			template.output = output;
 		}
@@ -101,14 +104,14 @@ function desugarFetch(template, env) {
 			if(vars.length===0) // nothing was fetched, continue as usual
 				continue;
 
-			// wrap this and later actions in extracts:
+			// otherwise, wrap this and all following actions in extracts:
 			var lineAction = {kind: "lineAction", actions: template.actions.slice(i), type: template.type};
 			for(var j=0; j<vars.length; j++) {
 				var extract = makeExtract(lineAction, vars[j], vals[j]);
 				lineAction = {kind: "lineAction", actions: [{action: extract}], type: template.type};
 			}
 			
-			desugarFetch(lineAction, env); // recurse to process later actions, and in case more fetches remain
+			desugarFetch(lineAction, env); // recurse to process later actions, and in case nested fetches remain
 
 			// replace this and later actions with the extract:
 			template.actions = template.actions.slice(0,i);
@@ -116,6 +119,7 @@ function desugarFetch(template, env) {
 		}
 	}
 }
+
 
 function desugarFetchXML(xml, env) {
 	// XML
@@ -134,6 +138,9 @@ function desugarFetchXML(xml, env) {
 	// 
 	// XMLINSERT
 	// 	{kind: "insert", expr: AST}
+
+	// put any fetched expressions in vars and vals,
+	// and then wrap in an f:each:
 	
 	var kind = xml.kind,
 		vars = [],
@@ -166,7 +173,10 @@ function desugarFetchXML(xml, env) {
 
 	else if(kind === "textElement")
 		desugarInsert(xml.nodeValue, env);
-	
+
+	// note that all xml kinds above actually have at most one fetched expression,
+	// i.e. processFetch is called at most once per kind,
+	// so we only worry about vars[0]/vals[0], and create at most one f:each:
 	if(vars.length>0) {
 		xml = makeFeach({kind:"lineXML", xml:xml}, vars[0], vals[0]);
 		desugarFetchXML(xml, env); // recurse in case more fetches remain
@@ -175,16 +185,18 @@ function desugarFetchXML(xml, env) {
 	return xml;
 }
 
+
 function desugarInsert(insert, env) {
 	if(typeOf(insert) === "string") return;
-	if(insert.kind !== "insert") console.error("desugarInsert() passed non-insert", insert);
+	if(insert.kind !== "insert") throw "desugarInsert() passed non-insert: "+JSONtoString(insert);
 		
 	insert.expr = desugarUnfetch( substitute(insert.expr, env) );
 	// insert can handle any type, and works the same for t or Unit t,
-	// so we don't care whether 'unfetch' is used -- we unfetch either way:
+	// so even if 'unfetch' wasn't given explicitly, we unfetch until no fetches remain:
 	while(hasVariable(insert.expr, fetchEnv))
 		insert.expr = unfetch(insert.expr);
 }
+
 
 /*
 * let ast=desugarUnfetch(substitute(ast, env)).
@@ -206,7 +218,7 @@ function processFetch(ast, env, varName, vars, vals) {
 }
 
 /*
-* returns a monadic version of ast, with all first-level occurrences of 'fetch' removed.
+* returns a reactive version of ast, with all first-level occurrences of 'fetch' removed.
 * does not modify ast.
 */
 function unfetch(ast) {

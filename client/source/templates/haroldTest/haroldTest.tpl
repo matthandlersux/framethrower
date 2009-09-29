@@ -14,13 +14,14 @@ template() {
 	toTuple = list -> (head list, head (tail list)),
 	toList = tuple -> [fst tuple, snd tuple],
 	list = toList (swap (toTuple [1,2,3,4,5])),
+	five = unfetch 5,
 	
 	<div>
 		<f:on mouseup>
 			debug "hey!"
 		</f:on>
 		
-		<div>{head list}</div>
+		<div>{head list} {five}</div>
 		
 		<f:call>test1 (test w)</f:call>
 	</div>
