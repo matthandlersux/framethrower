@@ -88,7 +88,7 @@ unleash(CellPointer) ->
 %% 
 
 injectOutput(CellPointer, OutputToCellPointer) ->
-	injectOutput(CellPointer, OutputToCellPointer, {send, undefined, []}).
+	injectOutput(CellPointer, OutputToCellPointer, outputs:standard()).
 	
 injectOutput(CellPointer, OutputToCellPointer, OutputFunction) ->
 	gen_server:cast(
