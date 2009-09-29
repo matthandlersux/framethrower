@@ -73,7 +73,19 @@ function parseType(s) {
 			return makeTypeLambda(helper(ast.left), helper(ast.right));
 		}
 	}
-	return helper(parse(s));
+	
+	function makeTupleType(elements) {
+		if(elements.length>1)
+			return makeAppliesAST("Tuple"+elements.length, elements);
+		else
+			return elements[0];
+	}
+	function makeListType(elements) {
+		if(elements.length!==1) throw "Type parse error: list type not of form [a]";
+		return {cons: 'apply', left: "List", right: elements[0]};
+	}
+	
+	return helper(parseAndDesugar(makeTupleType, makeListType, s));
 }
 
 function unparseType(type) {
@@ -178,9 +190,8 @@ var basicTypes = {
 //var unitJS = parseType("Unit JS");
 
 var jsonType = makeTypeName("JSON");
-var instructionType = makeTypeName("Instruction");
+// var instructionType = makeTypeName("Instruction");
 var actionType = makeTypeName("Action");
-
 
 
 

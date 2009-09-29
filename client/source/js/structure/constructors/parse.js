@@ -1,4 +1,8 @@
 function parse(s) {
+	return parseAndDesugar(makeTupleAST, makeListAST, s);
+}
+
+function parseAndDesugar(makeTuple, makeList, s) {
 	/*
 	Takes in a string and returns an AST.
 	An AST is either an object {cons: "apply" || "lambda", left: AST, right: AST} or a String
@@ -78,7 +82,7 @@ function parse(s) {
 			if(tokens[0] !== ")") throw "Parse error: missing )";
 			tokens.shift();
 
-			ast = makeTupleAST(tuple); // simply returns the first ast for a 1-tuple
+			ast = makeTuple(tuple); // simply returns the first ast for a 1-tuple
 		}
 
 		else if(tokens[0] === "[") { // a list
@@ -93,7 +97,7 @@ function parse(s) {
 			if(tokens[0] !== "]") throw "Parse error: missing ]";
 			tokens.shift();
 
-			ast = makeListAST(list);
+			ast = makeList(list);
 		}
 
 		else // a literal
