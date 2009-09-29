@@ -194,31 +194,6 @@ function typeAnalyze(line) {
 			// TODO
 			
 			type = makeTypeApply(parseType("Action"), line.type);
-		} else if (line.kind === "actionUpdate") {
-			// check that it's actually a cell, and the supplied key/value expressions are the proper type
-			var modifyingType = getTypeOfAST(line.target, env);
-			var keyType = line.key ? getTypeOfAST(line.key, env) : undefined;
-			var valueType = line.value ? getTypeOfAST(line.value, env) : undefined;
-
-			var constructor = getTypeConstructor(modifyingType);
-			if (constructor === "Map") {
-			    if (keyType && !compareTypes(keyType, modifyingType.left.right)) {
-			        staticAnalysisError("Update key, `"+unparse(line.key)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got2 `"+unparseType(keyType)+"`" + "\n\n"+getWordsTypes(line.key, env));
-			    }
-			    if (valueType && !compareTypes(valueType, modifyingType.right)) {
-			        staticAnalysisError("Update value, `"+unparse(line.value)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got3 `"+unparseType(valueType)+"`" + "\n\n"+getWordsTypes(line.value, env));
-			    }
-			} else if (constructor === "Unit" || constructor === "Set") {
-			    if (keyType && !compareTypes(keyType, modifyingType.right)) {
-			        staticAnalysisError("Update key, `"+unparse(line.key)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got4 `"+unparseType(keyType)+"`" + "\n\n"+getWordsTypes(line.key, env));
-			    }
-			} else {
-			    staticAnalysisError("Update action target not a Map, Set, or Unit but instead `"+unparseType(modifyingType)+"`");
-			}
-			// TODO check that the add/remove has key/value as appropriate
-			
-			
-			type = parseType("Action Void");
 		} else if (line.kind === "extract") {
 			// TODO
 			

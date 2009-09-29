@@ -4,7 +4,7 @@ LINE
 	{kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
 	{kind: "lineState", action: LINETEMPLATE} | // action takes no parameters |
 	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
-	{kind: "actionJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
+	{kind: "actionJavascript", f: JAVASCRIPTFUNCTION} |
 	{kind: "extract", select: AST, action: LINETEMPLATE} // this action should take one (or two) parameters. |
 	LINETEMPLATE |
 	LINEACTION

@@ -5,7 +5,6 @@ LINEACTION
 
 ACTIONUNIT
 	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
-	{kind: "actionUpdate", target: AST, actionType: "add" | "remove", key?: AST, value?: AST} |
 	{kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
 
 */
