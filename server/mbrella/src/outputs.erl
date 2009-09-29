@@ -58,7 +58,14 @@ sendTo(Output, From, Elements) ->
 	Send = 	fun(CellPointer) ->
 				cell:sendElements(CellPointer, From, Elements)
 			end,
-	lists:foreach(Send, Cellpointers).
+	lists:foreach(Send, CellPointers).
+	
+%% 
+%% standard :: Output
+%%   this is the standard output function, it has no functional part, it sends elements straight through
+%% 
+
+standard() -> {send, undefined, []}.
 	
 %% ====================================================
 %% Internal API
