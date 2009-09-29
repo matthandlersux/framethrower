@@ -134,9 +134,10 @@ injectIntercept(CellPointer, InterceptPointer) ->
 
 runOutputs(State, NewElements) ->
 	ListOfOutputs = cellState:getOutputs(State),
+	AllElements = cellState:getElements(State),
 	From = cellState:cellPointer(State),
 	Processor = 	fun(Output, ListOfNewStates) ->
-						{NewOutputState, ElementsToSend} = outputs:callOutput(Output, NewElements),
+						{NewOutputState, ElementsToSend} = outputs:call(Output, AllElements, NewElements),
 						outputs:sendTo(Output, From, ElementsToSend),
 						[NewOutputState] ++ ListOfNewStates
 					end,
