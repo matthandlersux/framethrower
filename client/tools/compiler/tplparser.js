@@ -2254,22 +2254,22 @@ switch( act )
 	break;
 	case 18:
 	{
-		rval = {'functionbody':vstack[ vstack.length - 2 ], 'nonbracket':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 19:
 	{
-		rval = {'functionbody':vstack[ vstack.length - 2 ], 'quote':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 20:
 	{
-		rval = {'functionbody':vstack[ vstack.length - 4 ], 'lbracket':vstack[ vstack.length - 3 ], 'functionbody2':vstack[ vstack.length - 2 ], 'rbracket':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 4 ] + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 21:
 	{
-		rval = {};
+		rval = "";; 
 	}
 	break;
 	case 22:
@@ -2789,32 +2789,32 @@ switch( act )
 	break;
 	case 125:
 	{
-		rval = {'lbracket':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 126:
 	{
-		rval = {'rbracket':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 127:
 	{
-		rval = {'lt':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 128:
 	{
-		rval = {'ltslash':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 129:
 	{
-		rval = {'nonltbracket':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 130:
 	{
-		rval = {'text':vstack[ vstack.length - 2 ], 'text2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 131:
@@ -2824,182 +2824,182 @@ switch( act )
 	break;
 	case 132:
 	{
-		rval = {'nonlt':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 133:
 	{
-		rval = {'xmltext':vstack[ vstack.length - 2 ], 'xmltext2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 134:
 	{
-		rval = {'nonltbracket':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 135:
 	{
-		rval = {'lbracket':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 136:
 	{
-		rval = {'rbracket':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 137:
 	{
-		rval = {'nonltbracket':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 138:
 	{
-		rval = {'lt':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 139:
 	{
-		rval = {'ltslash':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 140:
 	{
-		rval = {'keyword':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 141:
 	{
-		rval = {'lparen':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 142:
 	{
-		rval = {'rparen':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 143:
 	{
-		rval = {'comma':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 144:
 	{
-		rval = {'semicolon':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 145:
 	{
-		rval = {'colon':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 146:
 	{
-		rval = {'equals':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 147:
 	{
-		rval = {'slash':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 148:
 	{
-		rval = {'gt':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 149:
 	{
-		rval = {'identifier':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 150:
 	{
-		rval = {'dash':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 151:
 	{
-		rval = {'wincludefile':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 152:
 	{
-		rval = {'wtemplate':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 153:
 	{
-		rval = {'wfunction':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 154:
 	{
-		rval = {'wjsaction':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 155:
 	{
-		rval = {'waction':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 156:
 	{
-		rval = {'wstate':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 157:
 	{
-		rval = {'wcreate':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 158:
 	{
-		rval = {'wextract':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 159:
 	{
-		rval = {'wstyle':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 160:
 	{
-		rval = {'was':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 161:
 	{
-		rval = {'wif':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 162:
 	{
-		rval = {'welse':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 163:
 	{
-		rval = {'feach':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 164:
 	{
-		rval = {'fcall':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 165:
 	{
-		rval = {'fon':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 166:
 	{
-		rval = {'quote':vstack[ vstack.length - 3 ], 'text':vstack[ vstack.length - 2 ], 'quote2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 167:
 	{
-		rval = {'quote':vstack[ vstack.length - 3 ], 'text':vstack[ vstack.length - 2 ], 'quote2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 }

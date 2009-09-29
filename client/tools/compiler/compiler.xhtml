@@ -34,7 +34,7 @@ function initialize() {
 	} else {
 		var totalCompiledJSON = compileFile(templateFile + "/" + templateFile + ".tpl", false);
 		if(!GLOBAL_ERRORS) {
-			console.log("No Global Errors!");
+			desugarFetch(totalCompiledJSON);
 			var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
 			console.log(totalCompiledString);
 			// var fw = new java.io.FileWriter("../../generated/templates/" + arguments[0] + ".js");
@@ -43,16 +43,16 @@ function initialize() {
 			// bw.write(totalCompiledString);
 			// bw.close();
 			// 		
-			// 		
-			// load("../typeAnalyzer/runTypeAnalyzer.js");
-			// load("../../generated/templates/" + arguments[0] + ".js");
-			// runTypeAnalyzer(mainTemplate);
+			var result = typeAnalyze(totalCompiledJSON);
+			if (result.success) {
+				console.log('success');
+			}
 		}
 	}	
-	console.log("Here we are");
+	console.log("Done Compiling");
 }
 
-includes.htmlInclude(["core"], ["assembler.js", "tplparser.js", "semantics.js"], "initialize()");
+includes.htmlInclude(["core"], ["assembler.js", "tplparser.js", "semantics.js", "../typeAnalyzer/typeAnalyzer.js"], "initialize()");
 
 </script>
 

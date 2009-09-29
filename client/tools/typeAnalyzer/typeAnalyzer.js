@@ -8,7 +8,7 @@ function typeAnalyze(line) {
 		GlobalError = true;
 		var debugRef = currentLine.debugRef;
 		msg = msg.replace(/\n/g, "<br />");
-		print(
+		console.log(
 			"<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://"
 			+ debugRef.file + "&line=" + debugRef.lineNumber + "\">error on line" + 
 			debugRef.lineNumber + "</a> <br />" + msg + "<br /><br /></div>"
