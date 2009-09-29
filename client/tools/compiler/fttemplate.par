@@ -26,6 +26,8 @@
 	'([\r\n\t\ ])*f:on([\r\n\t\ ])*'		FON
 	'([\r\n\t\ ])*\{([\r\n\t\ ])*'			LBRACKET
 	'([\r\n\t\ ])*\}([\r\n\t\ ])*'			RBRACKET
+	'([\r\n\t\ ])*\[([\r\n\t\ ])*'			LSQUARE
+	'([\r\n\t\ ])*\]([\r\n\t\ ])*'			RSQUARE
 	'([\r\n\t\ ])*\(([\r\n\t\ ])*'			LPAREN
 	'([\r\n\t\ ])*\)([\r\n\t\ ])*'			RPAREN
 	'([\r\n\t\ ])*,([\r\n\t\ ])*'			COMMA
@@ -40,7 +42,7 @@
 	'([\r\n\t\ ])*>([\r\n\t\ ])*'			GT
 	'([\r\n\t\ ])*-([\r\n\t\ ])*'			DASH
 	'([\r\n\t\ ])*\"([\r\n\t\ ])*'			QUOTE
-	'([\r\n\t\ ])*([^-^\{^\}^\(^\)^\,^\;^\:^\=^\<^\/^\"^\ ^\n^\t^\r^\>]|\\.|\^)+([\r\n\t\ ])*'	IDENTIFIER
+	'([\r\n\t\ ])*([^-^\{^\}^\(^\)^\,^\;^\:^\=^\<^\/^\"^\ ^\n^\t^\r^\>^\[^\]]|\\.|\^)+([\r\n\t\ ])*'	IDENTIFIER
 	;
 ##
 
@@ -203,11 +205,17 @@ EXPR:
 EXPRCODE:
 	IDENTIFIER 
 	| STRINGESCAPEQUOTES 
-	| LPAREN EXPRCODE RPAREN
+	| LPAREN INNERCODE RPAREN
+	| LSQUARE INNERCODE RSQUARE
 	| IDENTIFIER COLON IDENTIFIER
 	| DASH GT
 	| DASH IDENTIFIER
 	| EXPRCODE EXPRCODE
+	;
+	
+INNERCODE:
+	EXPRCODE
+	| INNERCODE COMMA INNERCODE
 	;
 
 XML:
