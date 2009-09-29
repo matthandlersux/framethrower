@@ -35,19 +35,30 @@
 %% External API
 %% ====================================================
 
+call(Output, Elements, ElementsToAdd) ->
+	Name = getName(Output),
+	Args = getArgs(Output),
+	State = getState(Output),
+	callOutput(Name, Args, State, Elements, ElementsToAdd).
+
 %% 
-%% callOutput :: FunctionName -> Arguments -> OutputState -> Elements -> Tuple OutputState Elements
+%% callOutput :: FunctionName -> Arguments -> OutputState -> ElementState -> Elements -> Tuple OutputState Elements
 %%		used by a cell when adding a new outputFunction or receiving a new element
 %%		returns the new state of that outputFunction and the elements to be sent
 %% 
 	
-callOutput(Name, Args, State, Elements) ->
-	case erlang:apply(outputs, Name, lists:merge( Args, [State, Elements] )) of
-		{NewState, Elements} when is_list(Elements) -> 
-			{NewState, Elements};
-		{NewState, Elements} when is_tuple(Elements) ->
-			{NewState, [Elements]}
-	end.
+callOutput(Name, Args, State, ElementsState, Elements) ->
+	Process = fun(Element, {OldState, OldElements}) ->
+		{NewState, Elements} = processElement(Name, Args, OldState, ElementsState, Element),
+		{NewState, Elements ++ OldElements}
+	end,
+	lists:foldr(Process, {State, []}, Elements).
+
+callOutput(Name, ElementsState, Elements) ->
+	callOutput(Name, [], [], ElementsState, Elements).
+	
+callOutput(Name, Args, ElementsState, Elements) ->
+	callOutput(Name, Args, [], ElementsState, Elements).
 
 %% 
 %% sendTo :: Output -> Cellpointer -> List Elements -> void
