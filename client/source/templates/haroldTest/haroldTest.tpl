@@ -15,6 +15,7 @@ template() {
 		<f:on mouseup>
 			debug "hey!"
 		</f:on>
+		
 		<f:call>test1 (test w)</f:call>
 	</div>
 }
