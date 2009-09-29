@@ -185,25 +185,22 @@ handle_cast({sendElements, From, Elements}, State) ->
 	{NewState, NewElements} = intercepts:call(Intercept, From, Elements),
 	State1 = cellState:updateIntercept(NewState),
 	
+	%check if done
+	
 	if
 		cellState:getFlag(State, waitForDone) =:= true andalso cellState:isDone(State) =:= true ->
 			FinalElementsMerged = cellState:mergeStash(State, NewElements),
-			FinalElements = cellState:updateElements(FinalElementsMerged),
+			FinalElements = cellState:updateElements(State, FinalElementsMerged),
 			NewState = runOutputs(State, FinalElementsMerged),
 			{noreply, NewState};
 		cellState:getFlag(State, waitForDone) =:= true andalso cellState:isDone(State) =:= false ->
 			NewState = cellState:updateStash(State, FinalElements),
 			{noreply, NewState};
 		true -> 
-			FinalElements = cellState:updateElements(NewElements),
+			FinalElements = cellState:updateElements(State, NewElements),
 			NewState = runOutputs(State, FinalElements),
 			{noreply, NewState}
-	end,
-	
-	FinalElements = cellState:updateElements(NewElements),
-	
-	NewState = runOutputs(State, FinalElements),
-	{noreply, NewState};
+	end;
 	
 handle_cast({injectOutput, OutputFunction, OutputTo}, State) ->
 	link(cellPid(OutputTo)),
