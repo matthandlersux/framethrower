@@ -346,6 +346,8 @@ NONLTBRACKET:
 	KEYWORD			[* %% = %s; *]
 	| LPAREN		[* %% = %s; *]
 	| RPAREN		[* %% = %s; *]
+	| LSQUARE		[* %% = %s; *]
+	| RSQUARE		[* %% = %s; *]	
 	| COMMA			[* %% = %s; *]
 	| SEMICOLON		[* %% = %s; *]
 	| COLON			[* %% = %s; *]

@@ -200,6 +200,7 @@ function removeComments (s) {
                 inQuote = true;
                 escaped = false;
                 quoteChar = c;
+				t += c;
             }
             else
             t += c;
@@ -214,6 +215,7 @@ function removeComments (s) {
 			} else {
 		      escaped = false;
 			}
+			t += c;
 		} else if (inComment) {
 			if (c == '\n') {
 				inComment = false;
