@@ -320,7 +320,10 @@ function xmlToDOM(xml, env, context, lastElement) {
 
 
 			var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to the evaluated template's {node: NODE, cleanup: FUNCTION}
-
+			
+			if (!result.inject) {
+				console.error("Runtime error with f:each", result);
+			}
 
 			var feachInjectedFunc = result.inject(emptyFunction, function (value) {
 
