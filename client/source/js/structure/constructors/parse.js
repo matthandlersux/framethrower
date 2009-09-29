@@ -53,6 +53,69 @@ function parse(s) {
 	// get rid of whitespace:
 	tokens = filter(tokens, function(s) {return !(/^\s*$/.test(s));});
 	
+	/* parses tokens until a ")", "]", or "," token, if any.
+	 * leftAST is the current accumulation of applies.
+	 * returns the parsed expression, and removes all used tokens from tokens.
+	 */
+	function parseOne(tokens, leftAST) {
+		var ast;
+
+		if(tokens.length===0) throw "Parse error: empty expression";
+
+		// no valid expression begins with these tokens:
+		if(tokens[0] === "->" || tokens[0] === ',' || tokens[0] === ']' || tokens[0] === ')')
+			throw "Parse error: expression beginning with "+tokens[0];
+
+		if(tokens[0] === "(") { // a grouping, potentially a tuple
+			tokens.shift();
+
+			var tuple = [parseOne(tokens)];
+			while(tokens[0] === ',') { // accumulate tuple elements
+				tokens.shift();
+				tuple.push( parseOne(tokens) );
+			}
+
+			if(tokens[0] !== ")") throw "Parse error: missing )";
+			tokens.shift();
+
+			ast = makeTupleAST(tuple); // simply returns the first ast for a 1-tuple
+		}
+
+		else if(tokens[0] === "[") { // a list
+			tokens.shift();
+
+			var list = [parseOne(tokens)];
+			while(tokens[0] === ',') { // accumulate list elements
+				tokens.shift();
+				list.push( parseOne(tokens) );
+			}
+
+			if(tokens[0] !== "]") throw "Parse error: missing ]";
+			tokens.shift();
+
+			ast = makeListAST(list);
+		}
+
+		else // a literal
+			ast = tokens.shift();
+
+
+		if(leftAST) // apply accumulated expressions to new one
+			ast = {cons: 'apply', left: leftAST, right:ast};
+
+		// end of sub-expression?
+		if(tokens.length === 0 || tokens[0] === ',' || tokens[0] === ']' || tokens[0] === ')')
+			return ast;
+
+		if(tokens[0] === "->") { // recurse on lambdas
+			tokens.shift();
+			return {cons: 'lambda', left: ast, right: parseOne(tokens)};
+		}
+
+		// otherwise, just one expression following another, i.e. an apply,
+		// so pass along left part of apply:
+		return parseOne(tokens, ast);
+	}
 	var ast = parseOne(tokens);
 	
 	if(tokens.length > 0) throw "Parse error: trailing tokens: "+tokens;
@@ -60,68 +123,6 @@ function parse(s) {
 	return ast;
 }
 
-/* parses one expression from tokens, a list of non-whitespace tokens.
- * the parsed AST is returned, and the used tokens are removed.
- */
-function parseOne(tokens, applies) {
-	if(!applies)
-		applies = [];
-		
-	var ast = undefined;
-	
-	if(tokens.length===0) throw "Parse error: empty expression";
-
-	// no valid expression begins with these tokens:
-	if(tokens[0] === "->" || tokens[0] === ',' || tokens[0] === ']' || tokens[0] === ')')
-		throw "Parse error: expression beginning with "+tokens[0];
-
-	if(tokens[0] === "(") {
-		tokens.shift();
-
-		var tuple = [parseOne(tokens)];
-		while(tokens[0] === ',') { // accumulate tuple elements
-			tokens.shift();
-			tuple.push( parseOne(tokens) );
-		}
-
-		if(tokens[0] !== ")") throw "Parse error: missing )";
-		tokens.shift();
-		
-		ast = makeTupleAST(tuple);
-	}
-	
-	else if(tokens[0] === "[") {
-		tokens.shift();
-
-		var list = [parseOne(tokens)];
-		while(tokens[0] === ',') { // accumulate list elements
-			tokens.shift();
-			list.push( parseOne(tokens) );
-		}
-
-		if(tokens[0] !== "]") throw "Parse error: missing ]";
-		tokens.shift();
-
-		ast = makeListAST(list);
-	}
-	
-	else // not a special token, just a literal, i.e. an ast leaf
-		ast = tokens.shift();
-
-	applies.push(ast);
-
-	// end of expression?
-	if(tokens.length === 0 || tokens[0] === ',' || tokens[0] === ']' || tokens[0] === ')')
-		return makeAppliesAST(applies.shift(), applies);
-		
-	if(tokens[0] === "->") { // recurse on lambdas
-		tokens.shift();
-		return {cons: 'lambda', left: makeAppliesAST(applies.shift(), applies), right: parseOne(tokens)};
-	}
-
-	// iterate on applies:
-	return parseOne(tokens, applies);
-}
 
 function unparse(ast, parens) {
 	if (!parens) parens = 0;
