@@ -210,6 +210,8 @@ runOutputs(State, NewElements) ->
 					end,
 	%using foldr removes the need to lists:reverse at the end
 	ListOfNewStates = lists:foldr(Processor, [], ListOfOutputs),
+	%% NOTE: needs to be in the same order as the outputs are in getOutputs above, which means
+	%% 		may need to add the name of the output along with the state in the future (if List Output changes)
 	cellState:updateOutputStates(ListOfNewStates, State).
 
 sendTo(CellPointers, From, Elements) ->
