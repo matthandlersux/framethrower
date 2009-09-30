@@ -1,7 +1,7 @@
--module (outputs.erl).
+-module (outputs).
 -compile(export_all).
--export ([callOutput/4, sendTo/3]).
--include().
+
+%-include().
 
 -ifdef( debug ).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
@@ -22,7 +22,7 @@
 %% ====================================================
 
 % Output :: Tuple3 SendTo OutputFunction OutputState
-% Outputs :: List Output
+% Outputs :: List Output (maybe will change to a dict or something else)
 %
 % SendTo :: List CellPointer
 % OutputFunction :: Tuple Atom (List Arguments)
@@ -59,6 +59,17 @@ callOutput(Name, ElementsState, Elements) ->
 	
 callOutput(Name, Args, ElementsState, Elements) ->
 	callOutput(Name, Args, [], ElementsState, Elements).
+
+%% ====================================================
+%% External API for dealing with Output State
+%% ====================================================
+
+%% 
+%% newState :: Outputs
+%% 
+
+newState() ->
+	[{newSendTos(), standard(), undefined}].
 	
 %% 
 %% standard :: OutputFunction
@@ -67,9 +78,11 @@ callOutput(Name, Args, ElementsState, Elements) ->
 
 standard() -> {send, []}.
 
-%% ====================================================
-%% External API for dealing with Output State
-%% ====================================================
+%% 
+%% newSendTos :: SendTo
+%% 
+
+newSendTos() -> [].
 
 %% 
 %% injectOutput :: OutputFunction -> CellPointer -> Outputs -> Outputs
@@ -78,9 +91,11 @@ standard() -> {send, []}.
 injectOutput(OutputFunction, SendTo, OutputState) ->
 	case getOutput(OutputFunction, OutputState) of
 		error ->
-			;
+			todo;
 		Output ->
 			SendTos = getSendTos(Output),
+			todo
+	end.
 			
 
 %% 
@@ -89,11 +104,57 @@ injectOutput(OutputFunction, SendTo, OutputState) ->
 
 getSendTos({SendTos, _NameAndArgs, _State}) ->
 	SendTos.
+	
+%% 
+%% toList :: Outputs -> List Output
+%% 
+
+toList(Outputs) -> Outputs.
+
+%% 
+%% updateOutputStates :: List OutputStates -> Outputs -> Outputs
+%% 
+
+updateOutputStates(NewOutputStates, Outputs) ->
+	Combine = fun(OutputState, Output) -> setelement(3, Output, OutputState) end,
+	lists:zipwith(Combine, NewOutputStates, Outputs).
+	
+%% 
+%% getOutput :: OutputFunction -> OutputState -> Output
+%% 
+
+getOutput(OutputFunction, OutputState) ->
+	lists:keyfind(OutputFunction, 2, OutputState).
 
 %% ====================================================
 %% Internal API
 %% ====================================================
 
+processElement(Name, Args, OutputState, ElementsState, Element) ->
+	case erlang:apply(outputs, Name, Args ++ OutputState ++ ElementsState ++ Element) of
+		{NewState, Elements} when is_list(Elements) ->
+			{NewState, Elements};
+		{NewState, Elements} when is_tuple(Elements) ->
+			{NewState, [Elements]}
+	end.
+
+getName({_SendTo, {Name, _Args}, _State}) -> Name.
+	
+getArgs({_SendTo, {_Name, Args}, _State}) -> Args.
+	
+getState({_SendTo, {_Name, _Args}, State}) -> State.
+
+%% ====================================================
+%% Outputs For Primfuncs
+%% ====================================================
+
+
+%% 
+%% calling the function without any parameters is the constructor for the state
+%% 
+
+takeOne() -> undefined.
+	
 takeOne(undefined, [{add, Element}|_]) ->
 	{ Element, {add, Element} };
 takeOne(OutputState, [{add, Element}|_]) ->
@@ -111,7 +172,8 @@ takeOne(OutputState, [{remove, Element}|Rest]) ->
 				
 				
 				
-				{ OutputState, [] }
+				{ OutputState, [] } -> todo
+			end
 	end.
 		
 %% 
