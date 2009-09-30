@@ -99,15 +99,15 @@
 	variables
 }).
 
--record(cellState, {
-	funcs, 
-	dots, 
-	onRemoves=[],
-	dependencies=[],
-	funcColor=0, 
-	intercept, 
-	done=false
-}).
+% -record(cellState, {
+% 	funcs, 
+% 	dots, 
+% 	onRemoves=[],
+% 	dependencies=[],
+% 	funcColor=0, 
+% 	intercept, 
+% 	done=false
+% }).
 
 -record(interceptState, {
 	function, 
