@@ -15,6 +15,7 @@
 
 % options = [{output_before_done, true}, ...],
 % intercept = {invert, [CellPointer1, CellPointer2], {last_message, X}},
+% heard from (for checking when done on multiple informants)
 % elements = ___,
 % stash = ___,
 % outputs = [{[CellPointer1, ...], {takeOne, [Arg1, Arg2]}, {one_taken, X}}, ...]
@@ -30,16 +31,26 @@
 %% External API
 %% ====================================================
 
-new() ->
-	.
+new(CellType) ->
+	-record (cellState, {
+		options = [],
+		intercept = intercepts:standard(),
+		done = [],
+		cellElements:new(CellType),
+		stash = [],
+		outputs = outputs:newState(),
+		flags = [],
+		informants = []
+	}).
 
 %% 
-%% injectOutput :: #cellState -> #outputFunction -> #cellPointer -> #cellState
+%% injectOutput :: CellState -> OutputFunction -> CellPointer -> CellState
 %% 
 
 injectOutput(State, OutputFunction, OutputTo) ->
-	State1 = addOutput(State, OutputFunction),
-	connectOutput(State, OutputFunction, OutputTo).
+	%%%% TODO when there are a lot of outputs, switch from a list to a dict
+	Outputs = State#cellState.outputs,
+	State#cellState{outputs = outputs:addOutput(OutputFunction, OutputTo, Outputs)}.
 
 %% 
 %% injectIntercept :: #cellState -> #interceptObject -> #cellState
@@ -50,9 +61,13 @@ injectIntercept(State, {_FunctionName, _InterceptState, _Args} = InterceptPointe
 	
 
 
-	
+%% 
+%% getElements :: CellState -> CellElements
+%%		used to pass the elements data structure to outputs incase they want to run functions on the whole set
+%% 
+
 getElements(State) ->
-	%unpack elements so that they are {add, Element} without the weighting
+	
 	.
 	
 getOutputs(State) ->
