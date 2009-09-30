@@ -35,7 +35,7 @@ makePipe = action (instance::Situation, type::Situation) {
 
 
 
-putPipeIn = action (pipe::Pipe, container::List Pipe) {
+putPipeIn = action (pipe::Pipe, container::[Pipe]) {
 	set (Pipe:container pipe) container,
 	extract container as pipeSegment {
 		add (Pipe:contains pipeSegment) pipe
@@ -43,16 +43,16 @@ putPipeIn = action (pipe::Pipe, container::List Pipe) {
 },
 
 putPipeIn1 = action (pipe::Pipe, pipe0::Pipe) {
-	putPipeIn pipe (cons pipe0 nil)
+	putPipeIn pipe [pipe0]
 },
 putPipeIn2 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe) {
-	putPipeIn pipe (cons pipe0 (cons pipe1 nil))
+	putPipeIn pipe [pipe0, pipe1]
 },
 putPipeIn3 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe) {
-	putPipeIn pipe (cons pipe0 (cons pipe1 (cons pipe2 nil)))
+	putPipeIn pipe [pipe0, pipe1, pipe2]
 },
 putPipeIn4 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe, pipe3::Pipe) {
-	putPipeIn pipe (cons pipe0 (cons pipe1 (cons pipe2 (cons pipe3 nil))))
+	putPipeIn pipe [pipe0, pipe1, pipe2, pipe3]
 },
 
 
