@@ -35,10 +35,10 @@
 %% External API
 %% ====================================================
 
-call(Output, Elements, ElementsToAdd) ->
-	Name = getName(Output),
-	Args = getArgs(Output),
-	State = getState(Output),
+call(OutputFunction, Elements, ElementsToAdd) ->
+	Name = getName(OutputFunction),
+	Args = getArgs(OutputFunction),
+	State = getState(OutputFunction),
 	callOutput(Name, Args, State, Elements, ElementsToAdd).
 
 %% 
@@ -59,25 +59,37 @@ callOutput(Name, ElementsState, Elements) ->
 	
 callOutput(Name, Args, ElementsState, Elements) ->
 	callOutput(Name, Args, [], ElementsState, Elements).
-
-%% 
-%% sendTo :: Output -> Cellpointer -> List Elements -> void
-%% 
-
-sendTo(Output, From, Elements) ->
-	CellPointers = sendTos(Output),
-	Send = 	fun(CellPointer) ->
-				cell:sendElements(CellPointer, From, Elements)
-			end,
-	lists:foreach(Send, CellPointers).
 	
 %% 
-%% standard :: Output
+%% standard :: OutputFunction
 %%   this is the standard output function, it has no functional part, it sends elements straight through
 %% 
 
-standard() -> {send, undefined, []}.
-	
+standard() -> {send, []}.
+
+%% ====================================================
+%% External API for dealing with Output State
+%% ====================================================
+
+%% 
+%% injectOutput :: OutputFunction -> CellPointer -> Outputs -> Outputs
+%% 
+
+injectOutput(OutputFunction, SendTo, OutputState) ->
+	case getOutput(OutputFunction, OutputState) of
+		error ->
+			;
+		Output ->
+			SendTos = getSendTos(Output),
+			
+
+%% 
+%% getSendTos :: Output -> List CellPointer
+%% 
+
+getSendTos({SendTos, _NameAndArgs, _State}) ->
+	SendTos.
+
 %% ====================================================
 %% Internal API
 %% ====================================================
