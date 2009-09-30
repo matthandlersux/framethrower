@@ -26,22 +26,24 @@
 %% TYPES
 %% ====================================================
 
+-record (cellState, {
+	name,
+	options = [],
+	intercept = undefined, %intercepts:standard(),
+	done = [],
+	elements = cellElements:new(),
+	stash = [],
+	outputs = outputs:newState(),
+	flags = [],
+	informants = []
+}).
 
 %% ====================================================
 %% External API
 %% ====================================================
 
 new(CellType) ->
-	-record (cellState, {
-		options = [],
-		intercept = intercepts:standard(),
-		done = [],
-		cellElements:new(CellType),
-		stash = [],
-		outputs = outputs:newState(),
-		flags = [],
-		informants = []
-	}).
+	#cellState{elements = cellElements:new(CellType)}.
 
 %% 
 %% injectOutput :: CellState -> OutputFunction -> CellPointer -> CellState
