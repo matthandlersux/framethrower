@@ -1,4 +1,4 @@
--module (cellState.erl).
+-module (cellState).
 -compile(export_all).
 
 -include("../include/scaffold.hrl").
@@ -13,6 +13,7 @@
 %% notes
 %% ====================================================
 
+% name = string
 % options = [{output_before_done, true}, ...],
 % intercept = {invert, [CellPointer1, CellPointer2], {last_message, X}},
 % heard from (for checking when done on multiple informants)
@@ -55,43 +56,59 @@ injectOutput(State, OutputFunction, OutputTo) ->
 	State#cellState{outputs = outputs:addOutput(OutputFunction, OutputTo, Outputs)}.
 
 %% 
-%% injectIntercept :: #cellState -> #interceptObject -> #cellState
+%% injectIntercept :: CellState -> Intercept -> CellState
 %% 
 
-injectIntercept(State, {_FunctionName, _InterceptState, _Args} = InterceptPointer) ->
-	replace(State, intercept, InterceptPointer).
+injectIntercept(State, Intercept) ->
+	State#cellState{intercept = Intercept}.
 	
-
-
 %% 
 %% getElements :: CellState -> CellElements
 %%		used to pass the elements data structure to outputs incase they want to run functions on the whole set
 %% 
 
-getElements(State) ->
-	
-	.
-	
-getOutputs(State) ->
-	%return list of outputs like [{}]
-	.
-	
-cellPointer(State) ->
-	.
-	
-updateOutputStates(OutputStates, State) ->
-	.
-	
-getFlag(State, Flag) ->
-	.
+getElements(#cellState{elements = CellElements} = State) -> CellElements.
+
+%% 
+%% getOutputs :: CellState -> List Output
+%% 
+
+getOutputs(#cellState{outputs = Outputs} = State) ->
+	outputs:toList(Outputs).
+
+%% 
+%% cellPointer :: CellState -> CellPointer
+%% 
+
+cellPointer(#cellState{name = Name} = State) ->
+	cellPointer:create(Name, self()).
+
+%% 
+%% updateOutputStates :: List OutputStates -> CellState -> CellState
+%%  	needs to be in the same order as the outputs are in getOutputs
+%% 
+
+updateOutputStates(OutputStates, #cellState{outputs = Outputs} = State) ->
+	State#cellState{outputs = outputs:updateOutputStates(OutputStates, Outputs)}.
+
+%% 
+%% getFlag :: CellState -> Atom -> Bool
+%% 
+
+getFlag(#cellState{flags = Flags} = State, Flag) ->
+	case lists:keyfind(Flag, 1, Flags) of
+		false -> false;
+		{Flag, Value} -> Value
+	end.
 
 %% 
 %% updateStash :: CellState -> List Element -> List Element
 %%		takes stash, merges with new elements, returns all elements (called when done)
 %% 
 
-updateStash(State, Elements) ->
-	.
+updateStash(#cellState{stash = Stash} = State, Elements) ->
+	%ordering is very important here
+	todo.
 	
 %% 
 %% mergeStash :: CellState -> List Element -> CellState
@@ -99,8 +116,8 @@ updateStash(State, Elements) ->
 %%		cell is waiting to be done
 %% 
 
-mergeStash(State, Elements) ->
-	.
+mergeStash(#cellState{stash = Stash} = State, Elements) ->
+	todo.
 
 %% ====================================================
 %% Internal API
@@ -114,9 +131,9 @@ mergeStash(State, Elements) ->
 %% Utilities
 %% ====================================================
 
-state(State, Field) ->
-	State#cellState.Field.
-	
-replace(State, Field, NewField) ->
-	%erlang may not allow this
-	State#cellState{Field = NewField}.
+% state(State, Field) ->
+% 	State#cellState.Field.
+% 	
+% replace(State, Field, NewField) ->
+% 	%erlang may not allow this
+% 	State#cellState{Field = NewField}.
