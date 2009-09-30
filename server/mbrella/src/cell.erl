@@ -65,15 +65,10 @@ makeLinkedCellLeashed() ->
 
 sendElements(CellPointer, From, Elements) ->
 	gen_server:cast(cellPointer:pid(CellPointer), {sendElements, From, Elements});
-% sendElements(CellPointer, From, Elements) ->
-% 	gen_server:cast(cellPid(CellPointer), {sendElements, From, self(), Elements}).
-	
-sendMessages(CellPointer, Messages) ->
-	gen_server:cast(cellPointer:pid(CellPointer), {sendMessages, Messages}).
 
-%% 
-%% primfunc api
-%% 
+%% ====================================================
+%% PrimFun API
+%% ====================================================
 
 %create cell is defined above
 
@@ -122,37 +117,6 @@ injectIntercept(CellPointer, InterceptPointer) ->
 	).
 
 %% ====================================================
-%% Internal API
-%% ====================================================
-
-%% 
-%% runOutputs :: CellState -> List Elements -> CellState
-%%		runOutputs takes the cellState and Elements to be sent
-%%		it runs the elements through each output, then sends the results to the sendto's of that output
-%%		it then updates the states of all the outputs, and returns a new cellstate
-%% 
-
-runOutputs(State, NewElements) ->
-	ListOfOutputs = cellState:getOutputs(State),
-	AllElements = cellState:getElements(State),
-	From = cellState:cellPointer(State),
-	Processor = 	fun(Output, ListOfNewStates) ->
-						{NewOutputState, ElementsToSend} = outputs:call(Output, AllElements, NewElements),
-						outputs:sendTo(Output, From, ElementsToSend),
-						[NewOutputState] ++ ListOfNewStates
-					end,
-	%using foldr removes the need to lists:reverse at the end
-	ListOfNewStates = lists:foldr(Processor, [], ListOfOutputs),
-	cellState:updateOutputStates(ListOfNewStates, State).
-	
-outputAllElements(State, OutputFunction, OutputTo) ->
-	Elements = cellState:getElements(State),
-	ThisCell = cellState:getCellPointer(State),
-	{NewState, NewElements} = outputs:callOutput(OutputFunction, Elements),
-	cell:sendElements(OutputTo, ThisCell, NewElements),
-	NewState.
-
-%% ====================================================
 %% gen_server callbacks
 %% ====================================================
 
@@ -162,7 +126,7 @@ init() ->
 
 %% 
 %% 
-%% Flags :: List a, a :: leashed | 
+%% Flags :: List Tuple Atom a, a :: leashed | 
 %% 
 
 init(Flags) ->
@@ -224,11 +188,44 @@ code_change(OldVsn, State, Extra) ->
     {ok, State}.
 
 %% ====================================================
-%% Utilities
+%% Internal API
 %% ====================================================
 
-cellPid(CellPointer) ->
-	CellPointer#cellPointer.pid.
+%% 
+%% runOutputs :: CellState -> List Elements -> CellState
+%%		runOutputs takes the cellState and Elements to be sent
+%%		it runs the elements through each output, then sends the results to the sendto's of that output
+%%		it then updates the states of all the outputs, and returns a new cellstate
+%% 
+
+runOutputs(State, NewElements) ->
+	ListOfOutputs = cellState:getOutputs(State),
+	AllElements = cellState:getElements(State),
+	From = cellState:cellPointer(State),
+	Processor = 	fun(Output, ListOfNewStates) ->
+						{NewOutputState, ElementsToSend} = outputs:call(Output, AllElements, NewElements),
+						ListOfSendTos = outputs:getSendTos(Output),
+						sendTo(ListOfSendTos, From, ElementsToSend),
+						[NewOutputState] ++ ListOfNewStates
+					end,
+	%using foldr removes the need to lists:reverse at the end
+	ListOfNewStates = lists:foldr(Processor, [], ListOfOutputs),
+	cellState:updateOutputStates(ListOfNewStates, State).
+
+sendTo(CellPointers, From, Elements) ->
+	Send = 	fun(CellPointer) ->
+				cell:sendElements(CellPointer, From, Elements)
+			end,
+	lists:foreach(Send, CellPointers).
+
+outputAllElements(State, OutputFunction, OutputTo) ->
+	AllElements = cellState:getElements(State),
+	ElementsList = cellElements:elementsToList(AllElements),
+	ThisCell = cellState:getCellPointer(State),
+	{NewState, NewElements} = outputs:callOutput(OutputFunction, AllElements, Elements),
+	cell:sendElements(OutputTo, ThisCell, NewElements),
+	NewState.
 	
-cellName(CellPointer) ->
-	CellPointer#cellPointer.name.
+%% ====================================================
+%% Utilities
+%% ====================================================
