@@ -5,6 +5,9 @@ template() {
 	debug = jsaction(s::String)::Void {
 		console.debug(s);
 	},
+	test2 = action(x::[(Number, Number)])::List (Tuple2 Number Number) {
+		return x
+	},
 	w = z,
 	z = plus 1 x,
 	x = fetch y,
