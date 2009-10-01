@@ -254,16 +254,24 @@
 			lowPassFilter: {
 				type: "Unit a -> Unit a",
 				func: function (cell) {
-					var currentValue;
+					var inputCellValue;
+					var outputCellValue;
+					
 					var outputCell = makeCell();
-					cell.inject(outputCell, function (val) {
-						if (currentValue !== val) {
-							if (currentValue !== undefined) {
-								outputCell.removeLine(currentValue);								
+					
+					function update() {
+						if (outputCellValue !== inputCellValue) {
+							if (outputCellValue !== undefined) {
+								outputCell.removeLine(outputCellValue);
 							}
-							currentValue = val;
-							outputCell.addLine(currentValue);
+							outputCellValue = inputCellValue;
+							outputCell.addLine(outputCellValue);
 						}
+					}
+					
+					cell.inject(outputCell, function (val) {
+						inputCellValue = val;
+						setTimeout(update, 0);
 						return function () {
 							
 						};

@@ -320,7 +320,10 @@ function xmlToDOM(xml, env, context, lastElement) {
 
 
 			var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to the evaluated template's {node: NODE, cleanup: FUNCTION}
-
+			
+			if (!result.inject) {
+				console.error("Runtime error with f:each", result);
+			}
 
 			var feachInjectedFunc = result.inject(emptyFunction, function (value) {
 
@@ -493,9 +496,11 @@ function xmlToDOM(xml, env, context, lastElement) {
 					console.log("Trying to attach a f:on to nothing");
 				} else {
 					lastElement.appendChild(fonNode);
+					attachEventStyle(lastElement, eventName);
 				}
 				function cleanupOn() {
 					lastElement.removeChild(fonNode);
+					removeEventStyle(lastElement, eventName);
 					fonNode.custom = null;
 				}
 				return {node: createWrapper(), cleanup: cleanupOn};

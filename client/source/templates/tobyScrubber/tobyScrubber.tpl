@@ -82,51 +82,16 @@ template () {
 	
 	
 	
+	// ==========
+	// Derived State
+	// ==========
+	
+	timelineShownStart = divide scrollAmount zoomFactor,
+	timelineShownDuration = divide timelineWidth zoomFactor,
 	
 	
-	zoomDivisions = 18,
-	getDivisionOn = function (divisions::Number, time::Number, duration::Number)::Number {
-		return Math.round(divisions*time/duration);
-	},
-	divisionOn = fetch (lowPassFilter (unfetch (getDivisionOn zoomDivisions (divide scrollAmount zoomFactor) movieDuration))),
-	shownDivision = divide movieDuration zoomDivisions,
-	shownStart = multiply shownDivision (subtract divisionOn 1),
-	shownDuration = multiply shownDivision 3,	
-
 	
 	
-	// getOnEitherSide = function (range::Number, center::Number)::Set Number {
-	// 	var ret = [];
-	// 	for (var i = -range; i <= range; i++) {
-	// 		ret.push(center+i);
-	// 	}
-	// 	return arrayToSet(ret);
-	// },
-	// 
-	// shownDivisions = bindSet (getOnEitherSide 1) (returnUnitSet (unfetch divisionOn)),
-	// shownDuration = divide movieDuration zoomDivisions,
-	// shownStart = multiply divisionOn shownDuration,
-	
-	filterStamps = function (start::Number, duration::Number, timestamps::List a)::List (Tuple2 Number Number) {
-		var ret = [];
-		forEach(timestamps.asArray, function (pair) {
-			if (pair.asArray[0] >= start) {
-				if (pair.asArray[0] < start+duration) {
-					ret.push(pair);
-				}
-			}
-		});
-		return arrayToList(ret);
-	},
-	
-	shownCuts = filterStamps shownStart shownDuration cuts,
-	
-	
-	showCuts = boolToUnit (fetch (lowPassFilter (unfetch (greaterThan (divide (multiply zoomFactor movieDuration) timelineWidth) zoomDivisions)))),
-
-
-
-
 
 
 
@@ -179,8 +144,7 @@ template () {
 	
 	<div>
 		<div>
-//			shownDivisions: {shownDivisions}
-			//{countChanges showCuts}
+		
 		</div>
 	
 		<div style-width="{timelineWidth}" style-height="{timelineHeight}" style-left="0" style-bottom="0" style-position="absolute" style-background-color="#eee">
@@ -229,8 +193,8 @@ template () {
 						start = fst (fst chapter),
 						duration = snd (fst chapter),
 						<div style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide duration movieDuration)}" style-position="absolute" style-height="200">
-							<div style-padding="4" style-border-right="1px solid #ccc">
-								<div style-height="100" style-background-color="#ccc" style-background-image="{getFrame start 0 100}" style-background-repeat="no-repeat" style-background-position="center center" />
+							<div style-padding="4" style-border-right="1px solid #000">
+								<div style-height="100" style-background-color="#ccc" style-background-image="{getFrame start 0 100}" style-background-repeat="no-repeat" style-background-position="left center" />
 							</div>
 							// <div style-position="absolute" style-left="0" style-top="-140" style-width="200" style-height="136" style-background-color="#f90">
 							// 	{snd chapter}
@@ -243,23 +207,48 @@ template () {
 				<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid #f90" />
 				
 				
-				<div style-position="absolute" style-top="100" style-left="0" style-width="100%">
-					<f:each showCuts as _>
-						<f:each shownCuts as cut>
-							start = fst cut,
-							duration = snd cut,
-							<div style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide duration movieDuration)}" style-position="absolute" style-height="200" style-overflow="hidden">
-								<div style-padding="1">
-									<div style-position="relative" style-width="100%" style-height="50" style-background-color="#ccc" style-overflow="hidden">
-										<div style-position="absolute" style-left="0" style-top="0" style-width="111" style-height="50" style-background-image="{getFrame start 0 50}" style-background-repeat="no-repeat" style-background-position="center center" />
+				<div style-position="absolute" style-top="130" style-left="0" style-width="100%">
+					<f:each divideStamps cuts as div>
+						getUrl = function (frames::List a)::String {
+							var times = [];
+							forEach(frames.asArray, function (pair) {
+								times.push(pair.asArray[0]);
+							});
+							var url = "url(http:/"+"/media.eversplosion.com/mrtesting/frames.php?width=111&height=50&time=" + times.join(",") + ")";
+							return url;
+						},
+						url = getUrl (snd div),
+						indexList = function (list::List a)::List (Tuple2 Number a) {
+							var ret = [];
+							forEach(list.asArray, function (x, i) {
+								ret.push(makeTuple2(i, x));
+							});
+							return arrayToList(ret);
+						},
+						getBackgroundPosition = function (index::Number, height::Number)::String {
+							return "0px -"+(index*height)+"px";
+						},
+						getShown = function (start::Number, duration::Number, tStart::Number, tDuration::Number)::Boolean {
+							return start <= tStart+tDuration && start+duration >= tStart;
+						},
+						shown = fetch (lowPassFilter (unfetch (getShown (fst (fst div)) (snd (fst div)) timelineShownStart timelineShownDuration))),
+						boolToDisplay = function (x::Boolean)::String {
+							if (x) return "block";
+							else return "none";
+						},
+						<div style-display="{boolToDisplay shown}">
+							<f:each indexList (snd div) as cut>
+								index = fst cut,
+								start = fst (snd cut),
+								duration = snd (snd cut),
+								<div style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide duration movieDuration)}" style-position="absolute" style-height="200" style-overflow="hidden">
+									<div style-padding="1" style-border-right="1px solid #000">
+										<div style-height="50" style-background-color="#ccc" style-background-image="{url}" style-background-repeat="no-repeat" style-background-position="{getBackgroundPosition index 50}" />
+										//<div style-height="50" style-background-color="#ccc" style-background-image="{getFrame start 0 50}" style-background-repeat="no-repeat" style-background-position="center center" />
 									</div>
-									
-									
-									
-									//<div style-height="50" style-background-color="#ccc" style-background-image="{getFrame start 0 50}" style-background-repeat="no-repeat" style-background-position="center center" />
 								</div>
-							</div>
-						</f:each>
+							</f:each>
+						</div>
 					</f:each>
 				</div>
 				
@@ -334,17 +323,17 @@ template () {
 		</div>
 		
 		// Preview Movie
-		<div style-position="absolute" style-bottom="200" style-right="0" style-width="320" style-height="144" style-border="1px solid #f90">
-			<f:call>
-				videoURL = function ()::String {
-					return "http:/"+"/media.eversplosion.com/tmp/mr-scrub.mp4";
-				},
-				
-				loadedDurationS = state(Unit Number),
-				quicktime 320 144 videoURL previewTimeS loadedDurationS
-				//quicktime (screenWidth) (subtract screenHeight 200) videoURL previewTimeS loadedDurationS
-			</f:call>
-		</div>
+		// <div style-position="absolute" style-bottom="200" style-right="0" style-width="320" style-height="144" style-border="1px solid #f90">
+		// 	<f:call>
+		// 		videoURL = function ()::String {
+		// 			return "http:/"+"/media.eversplosion.com/tmp/mr-scrub.mp4";
+		// 		},
+		// 		
+		// 		loadedDurationS = state(Unit Number),
+		// 		quicktime 320 144 videoURL previewTimeS loadedDurationS
+		// 		//quicktime (screenWidth) (subtract screenHeight 200) videoURL previewTimeS loadedDurationS
+		// 	</f:call>
+		// </div>
 		
 	</div>
 	

@@ -185,7 +185,7 @@ function evaluate2(expr) {
 				
 				return ret;
 			} else {
-				return ret;
+				return evaluate2(ret);
 			}
 			
 		}
