@@ -496,9 +496,11 @@ function xmlToDOM(xml, env, context, lastElement) {
 					console.log("Trying to attach a f:on to nothing");
 				} else {
 					lastElement.appendChild(fonNode);
+					attachEventStyle(lastElement, eventName);
 				}
 				function cleanupOn() {
 					lastElement.removeChild(fonNode);
+					removeEventStyle(lastElement, eventName);
 					fonNode.custom = null;
 				}
 				return {node: createWrapper(), cleanup: cleanupOn};

@@ -1,7 +1,5 @@
 chapters = function ()::List (Tuple2 (Tuple2 Number Number) String) {
 	
-	console.log("consle at the beginning");
-	
 	var timestamps = [
 		{
 			"time": 0,
