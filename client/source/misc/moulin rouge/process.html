@@ -1,0 +1,127 @@
+<html>
+<head>
+	
+<script src="../../js/util/util.js"></script>
+<script src="../../js/external/json2.js"></script>
+
+
+
+</head>
+<body>
+	
+<pre>
+<script>
+
+function loadTextNow(url) {
+	try {
+		var req = new XMLHttpRequest();
+		req.open("GET", url, false);
+		req.send(null);
+	} catch (e) {
+		console.log("loadXMLNow failed: " + url);
+	}
+
+    return req.responseText;
+}
+
+var srt = loadTextNow("captions.srt");
+
+var captions = srt.split("\r\n\r\n");
+
+
+function processCaptionText(text) {
+	// remove <i></i>
+	text = text.replace(/<i>/g, "");
+	text = text.replace(/<\/i>/g, "");
+	// remove weird characters
+	text = text.replace(/[^a-zA-z0-9\t\n .\/<>?;:"'`!@#$%^&*\(\)\[\]\{\}_+=-|\\]/g, " ");
+	return text;
+}
+
+
+captions = map(captions, function (caption) {
+
+	var lines = caption.split("\r\n");
+
+	var time = lines[1];
+	var timeSplit = time.split(" --> ");
+
+	function convertTime(s) {
+		var hms = s.split(":");
+		var secondsSplit = hms[2].split(",");
+		var seconds = +secondsSplit[0] + secondsSplit[1]*.001;
+		return hms[0]*3600 + hms[1]*60 + seconds;
+	}
+
+	var startTime = convertTime(timeSplit[0]);
+	var duration = convertTime(timeSplit[1]) - startTime;
+
+	lines.shift();
+	lines.shift();
+	var text = lines.join("");
+	text = processCaptionText(text);
+
+	// return {
+	// 	start: startTime,
+	// 	duration: duration,
+	// 	text: text
+	// };
+	return {
+		start: startTime,
+		duration: duration,
+		text: text
+	};
+
+});
+
+
+var combinedCaptions = [];
+var threshold = 0.2;
+
+var previousTime = -500;
+var previousStart;
+var previousText;
+forEach(captions, function (caption) {
+	if (caption.start - previousTime < threshold) {
+		previousTime = previousTime + caption.duration;
+		previousText = previousText + caption.text;
+	} else {
+		if (previousTime >= 0) {
+			combinedCaptions.push({
+				start: previousStart,
+				duration: previousTime - previousStart,
+				text: previousText
+			});
+		}
+		previousStart = caption.start;
+		previousTime = caption.start+caption.duration;
+		previousText = caption.text;
+	}
+});
+if (previousTime >= 0) {
+	combinedCaptions.push({
+		start: previousStart,
+		duration: previousTime - previousStart,
+		text: previousText
+	});
+}
+
+
+captions = combinedCaptions;
+
+
+//console.log(captions);
+
+//console.log(JSON.stringify(captions));
+
+var stringified = JSON.stringify(captions);
+
+var newlines = stringified.replace(/,\{"start/g, ",\n{\"start");
+
+document.write(newlines);
+
+</script>
+</pre>
+
+</body>
+</html>

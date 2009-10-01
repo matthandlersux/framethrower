@@ -1,25 +1,16 @@
+// preparse(mainTemplate);
 
-preparse(mainTemplate);
-
-desugarFetch(mainTemplate);
-
-// var testCell = makeControlledCell("Set Number");
-// 
-// testCell.control.add(5);
-// testCell.control.add(2);
-// testCell.control.add(88);
-// 
-// 
-// base.add("testCell", testCell);
+// desugarFetch(mainTemplate);
 
 
-var compiledTemplate = makeClosure(mainTemplate, base.env);
+//var compiledTemplate = makeClosure(mainTemplate, base.env);
+var compiledTemplate = evaluate(makeClosure(mainTemplate, base.env));
 
 
 function initialize() {
 	var node = xmlToDOM(compiledTemplate.xml, compiledTemplate.env);
 	
 	document.body.appendChild(node.node);
+
+	document.body.focus();
 }
-
-

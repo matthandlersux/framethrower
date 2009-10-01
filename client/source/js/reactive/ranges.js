@@ -48,10 +48,10 @@ function makeRangedView(onAdd, onRemove, sSet) {
 	rView.inRange = function (key) {
 		if (range == undefined) return true;
 		var curInd = sSet.getIndex(key);
-		if (range.type = 'key') {
+		if (range.type === 'key') {
 			return (curInd >= sSet.getIndex(range.start) && curInd <= sSet.getIndex(range.end));
 		} else {
-			return (curInd >= range.start && curInd <= range.end);
+			return (curInd >= sSet.getNearestIndexRight(range.start) && curInd <= sSet.getNearestIndexLeft(range.end));
 		}
 	};
 	

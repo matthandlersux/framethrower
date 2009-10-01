@@ -20,6 +20,7 @@ var globalEventHandlers = {};
 			})) return child2;
 			child2 = child2.parentNode;
 		}
+		return undefined;
 	}
 	
 	// =========================================================
@@ -50,11 +51,13 @@ var globalEventHandlers = {};
 				}
 			};
 			
-			var action = makeActionClosure(lineAction, env);
+			var action = makeClosure(lineAction, env);
 
 			//console.log("about to execute an action!", action);
 
 			executeAction(action);
+			
+			if (eventName==="mousedown") dont(e); // we're doing a drag-and-drop so prevent text highlighting
 		}
 		
 		
@@ -63,7 +66,7 @@ var globalEventHandlers = {};
 			var did = false;
 			forEach(globalEventHandlers[eventName], function (handler) {
 				did = true;
-				trigger(handler.lineAction, handler.env, {
+				trigger(handler.action, handler.env, {
 					e: e,
 					mouseCurrentPos: mouseCurrentPos
 				});
@@ -91,13 +94,12 @@ var globalEventHandlers = {};
 			var fonEls = xpath("f:on[@event='" + eventName + "']", fon[0]);
 			
 			forEach(fonEls, function (fonEl) {
-				trigger(fonEl.custom.lineAction, fonEl.custom.env, {
+				trigger(fonEl.custom.action, fonEl.custom.env, {
 					e: e,
 					target: fonEl.parentNode,
 					mouseCurrentPos: mouseCurrentPos
 				});
 			});
-
 		}
 	}
 	
@@ -135,11 +137,11 @@ var globalEventHandlers = {};
 			var tmp = currentFocus;
 			currentFocus=false;
 			tmp.blur();
-		}		
-		if (e.target.localName !== "input" && e.target.localName !== "button" && e.target.localName !== "embed") {
-			//document.body.focus();
-			dont(e);
 		}
+		// if (e.target.localName !== "input" && e.target.localName !== "button" && e.target.localName !== "embed") {
+		// 	//document.body.focus();
+		// 	dont(e);
+		// }
 	}
 	function mouseup(e) {
 		processEvent("mouseup", e);
@@ -245,14 +247,9 @@ var globalEventHandlers = {};
 // Global UI Cells
 // =========================================================
 
-(function () {
+var initializeGlobalUICells = function () {
 	//var ui = rootObjects["ui.ui"].prop;
 	var ui = base.env("ui.ui").prop;
-	
-	function onload() {
-		document.body.focus();
-		resizeScreen();
-	}
 	
 	function resizeScreen(e) {
 		//console.log("detected screen resize");
@@ -275,12 +272,13 @@ var globalEventHandlers = {};
 	}
 	
 	window.addEventListener("resize", resizeScreen, true);
-	document.addEventListener("load", onload, true);
 	
 	document.addEventListener("mousemove", mousemove, true);
 	document.addEventListener("mousedown", mousedown, true);
 	document.addEventListener("mouseup", mouseup, true);
-})();
+	
+	resizeScreen();
+};
 
 
 

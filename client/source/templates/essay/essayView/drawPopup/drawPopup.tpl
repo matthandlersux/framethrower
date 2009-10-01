@@ -72,7 +72,7 @@ template (pop::Popup) {
 	
 	<div style-position="absolute" style-top="0" style-left="0" style-width="{screenWidth}" style-height="{screenHeight}">
 		<f:on click>
-			remove(popup)
+			unset popup
 		</f:on>
 		<div>
 			<f:on click></f:on>

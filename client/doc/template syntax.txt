@@ -5,7 +5,7 @@ A let (.let file) contains a comma separated list of LETLINES.
 
 
 TEMPLATE
-	template(PARAMS) {
+	template(PARAMS)::TYPE { //TYPE is optional
 		LETLINES
 	}
 
@@ -24,7 +24,7 @@ LETLINE
 	VARTOCREATE = LINE
 
 LINE
-	TEMPLATE | EXPR | BLOCK | JAVASCRIPT | CASE | XML | STATE | ACTIONTPL
+	TEMPLATE | EXPR | BLOCK | JAVASCRIPT | JSACTION | CASE | XML | STATE | ACTIONTPL
 
 CASE
 	if EXPR as VARTOCREATE {
@@ -48,6 +48,11 @@ BLOCK
 
 JAVASCRIPT
 	function (PARAMS)::TYPE {
+		JSCODE
+	}
+
+JSACTION
+	jsaction (PARAMS)::TYPE {
 		JSCODE
 	}
 
@@ -84,7 +89,7 @@ TYPE
 	you know what types look like (words with spaces, end it on comma or close-brace)
 
 ACTIONTPL
-	action(PARAMS){
+	action(PARAMS)::TYPE{ //Type is optional
 		ACTSTMTS
 	}
 
@@ -92,13 +97,13 @@ ACTSTMTS
 	comma separated list of ACTSTMTs
 
 ACTSTMT
-	VARTOCREATE = LINE | ACTION | VARTOCREATE <- ACTION | VARTOCREATE <- extract EXPR |
+	VARTOCREATE = ACTION | VARTOCREATE <- ACTION |
 	extract EXPR as VARTOCREATE {
 		ACTSTMTS
 	}
 
 ACTION
-	CREATE | UPDATE | EXTRACT | LINE
+	CREATE | EXTRACT | LINE
 
 CREATE
 	create(TYPE, PROPERTIES) |
@@ -108,20 +113,14 @@ PROPERTIES
 	this is a representation of properties of a created object (based on JSON notation). It looks like:
 	{STRING: EXPR}
 
-UPDATE
-	add(EXPR, EXPR)
-	| add(EXPR, EXPR, EXPR)
-	| remove(EXPR, EXPR)
-	| remove(EXPR)
-
 EXTRACT
 	(extract works like f:each within an action.)
 	extract EXPR as VARTOCREATE {ACTSTMTS}
 	| extract EXPR as VARTOCREATE, VARTOCREATE {ACTSTMTS} // for key, value when extracting from Maps
-	| VARTOCREATE = extract EXPR, ACTSTMTS	//"sugar" syntax, can only be used for extracting from a Unit
+	| VARTOCREATE <- extract EXPR, ACTSTMTS	//"sugar" syntax, can only be used for extracting from a Unit
 
 
-Basically the idea is that templates have a bunch of lets: VARTOCREATE = LINE, with the very last one being just a LINE. Action "templates" are the same thing but can also have CREATE, UPDATE and EXTRACT in addition to the normal things in LINE. Also, actions don't need to have the "VARTOCREATE = " at every line other than the last.
+Basically the idea is that templates have a bunch of lets: VARTOCREATE = LINE, with the very last one being just a LINE. Action "templates" are the same thing but can also have CREATE and EXTRACT in addition to the normal things in LINE. Also, actions don't need to have the "VARTOCREATE = " at every line other than the last.
 
 So you have some idea of the semantics: in templates, the first bunch of lines are the let statements. They can be in any order and have mutual recursion. The last line is the output of the template, it can use the various things created with the let statements.
 

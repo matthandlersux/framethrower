@@ -3,8 +3,7 @@
 XML
 	{kind: "for-each", select: AST, lineTemplate: LINETEMPLATE} | // this lineTemplate should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
 	{kind: "call", lineTemplate: LINETEMPLATE} | // this lineTemplate should take zero parameters.
-	{kind: "on", event: EVENT, lineAction: LINEACTION} | // this action should take zero parameters.
-	{kind: "trigger", trigger: AST, lineAction: LINEACTION} | // trigger should evaluate to a reactive value, action should take one (or two) parameters
+	{kind: "on", event: EVENT, action: LINETEMPLATE} | // this action should take zero parameters.
 	{kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise?: LINETEMPLATE} |
 	// test should evaluate to a cell, if it is non-empty then lineTemplate is run as if it were a for-each. If it is empty, otherwise is called.
 	// lineTemplate should take one parameter
@@ -290,7 +289,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 	} else if (xml.kind === "for-each") {
 		//var select = parseExpression(parse(xml.select), env);
 		var select = parseExpression(xml.select, env);
-		var result = evaluate(select);
+		var result = evaluate2(select);
 		
 		var wrapper = createWrapper();
 		
@@ -321,7 +320,10 @@ function xmlToDOM(xml, env, context, lastElement) {
 
 
 			var entries = {}; // this is a hash of stringified values (from the Unit/Set/Map result) to the evaluated template's {node: NODE, cleanup: FUNCTION}
-
+			
+			if (!result.inject) {
+				console.error("Runtime error with f:each", result);
+			}
 
 			var feachInjectedFunc = result.inject(emptyFunction, function (value) {
 
@@ -395,7 +397,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 		// {kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise?: LINETEMPLATE | CASE}
 		
 		var select = parseExpression(xml.test, env);
-		var result = evaluate(select);
+		var result = evaluate2(select);
 		
 		var wrapper = createWrapper();
 		
@@ -448,13 +450,14 @@ function xmlToDOM(xml, env, context, lastElement) {
 		
 		return {node: wrapper, cleanup: cleanupCase};
 	} else if (xml.kind === "call") {
-		var xmlp = makeClosure(xml.lineTemplate, env);
+		//var xmlp = makeClosure(xml.lineTemplate, env);
+		var xmlp = evaluate(makeClosure(xml.lineTemplate, env));
 		return xmlToDOM(xmlp.xml, xmlp.env, context, lastElement);
 	} else if (xml.kind === "on") {
 		var node = createEl("f:on");
 		if (xml.event === "init") {
 			setTimeout(function () {
-				var action = makeActionClosure(xml.lineAction, env);
+				var action = makeClosure(xml.action, env);
 				executeAction(action);
 			}, 0);
 			return {node: node, cleanup: null};
@@ -475,7 +478,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 				}
 				var identifier = localIds();
 				globalEventHandlers[eventName][identifier] = {
-					lineAction: xml.lineAction,
+					action: xml.action,
 					env: env
 				};
 				function cleanupGlobal() {
@@ -486,16 +489,18 @@ function xmlToDOM(xml, env, context, lastElement) {
 				var fonNode = createEl("f:on");
 				setAttr(fonNode, "event", eventName);
 				fonNode.custom = {};
-				fonNode.custom.lineAction = xml.lineAction;
+				fonNode.custom.action = xml.action;
 				fonNode.custom.env = env;
 				
 				if (!lastElement) {
 					console.log("Trying to attach a f:on to nothing");
 				} else {
 					lastElement.appendChild(fonNode);
+					attachEventStyle(lastElement, eventName);
 				}
 				function cleanupOn() {
 					lastElement.removeChild(fonNode);
+					removeEventStyle(lastElement, eventName);
 					fonNode.custom = null;
 				}
 				return {node: createWrapper(), cleanup: cleanupOn};
@@ -503,7 +508,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 				
 				// setAttr(node, "event", eventName);
 				// node.custom = {};
-				// node.custom.lineAction = xml.lineAction;
+				// node.custom.action = xml.action;
 				// node.custom.env = env;
 				// 
 				// function cleanupOn() {
@@ -521,7 +526,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 			
 			cleanupFunc = false;
 			
-			var actionClosure = makeActionClosure(xml.lineAction, env);
+			var actionClosure = makeClosure(xml.action, env);
 
 			//var expr = parseExpression(parse(xml.trigger), env);
 			var expr = parseExpression(xml.trigger, env);
@@ -577,7 +582,7 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 	} else {
 		var expr = parseExpression(xmlInsert.expr, env);
 		//var expr = parseExpression(parse(xmlInsert.expr), env);
-		var result = evaluate(expr);
+		var result = evaluate2(expr);
 		
 		//console.log("doing an insert", expr, result);
 

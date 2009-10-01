@@ -4,7 +4,7 @@ LINE
 	{kind: "lineExpr", expr: AST, type: TYPE} |
 	{kind: "lineXML", xml: XML} |
 	{kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
-	{kind: "lineState", lineAction: LINEACTION} | // action takes no parameters
+	{kind: "lineState", action: LINETEMPLATE} | // action takes no parameters
 	LINETEMPLATE |
 	LINEACTION
 
@@ -12,12 +12,11 @@ LINETEMPLATE
 	{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, output: LINE, type: TYPE}
 
 LINEACTION
-	{kind: "lineAction", params: [VARTOCREATE], [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
+	{kind: "lineAction", [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
 
 ACTIONUNIT
 	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
-	{kind: "actionUpdate", target: AST, actionType: "add" | "remove", key?: AST, value?: AST} |
-	{kind: "extract", select: AST, lineAction: LINEACTION} // this lineAction should take one (or two) parameters.
+	{kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
 
 
 
@@ -25,8 +24,7 @@ ACTIONUNIT
 XML
 	{kind: "for-each", select: AST, lineTemplate: LINETEMPLATE} | // this lineTemplate should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
 	{kind: "call", lineTemplate: LINETEMPLATE} | // this lineTemplate should take zero parameters.
-	{kind: "on", event: EVENT, lineAction: LINEACTION} | // this action should take zero parameters.
-	{kind: "trigger", trigger: AST, lineAction: LINEACTION} | // trigger should evaluate to a reactive value, action should take one (or two) parameters
+	{kind: "on", event: EVENT, action: LINETEMPLATE} | // this action should take zero parameters.
 	{kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise?: LINETEMPLATE} |
 	// test should evaluate to a cell, if it is non-empty then lineTemplate is run as if it were a for-each. If it is empty, otherwise is called.
 	// lineTemplate should take one parameter
@@ -121,9 +119,11 @@ function evaluateLine(line, env) {
 		{kind: "lineExpr", expr: AST, type: TYPE} |
 		{kind: "lineXML", xml: XML} |
 		{kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
-		{kind: "lineState", lineAction: LINEACTION} | // action takes no parameters
+		{kind: "lineState", action: LINETEMPLATE} | // action takes no parameters |
+		{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
+		{kind: "extract", select: AST, action: LINETEMPLATE} // this action should take one (or two) parameters. |
 		{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, output: LINE, type: TYPE} |
-		{kind: "lineAction", params: [VARTOCREATE], [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
+		{kind: "lineAction", [{name?: VARTOCREATE, action: ACTIONUNIT | LINE}], type: TYPE}
 	*/
 	
 	if (line.kind === "lineExpr") {
@@ -131,22 +131,28 @@ function evaluateLine(line, env) {
 		// var expr = parseExpression(line.expr, newEnv);
 		var expr = parseExpression(line.expr, env);
 		//var expr = parseExpression(parse(line.expr), newEnv);
-		return evaluate(expr);
-		//return expr;
+		//return evaluate(expr);
+		return expr;
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line, env);
 	} else if (line.kind === "lineJavascript") {
-		return makeFun(line.type, curry(line.f));
+		if (line.f.length === 0) return line.f();
+		else return makeFun(line.type, curry(line.f));
 		//return makeFun(parseType(line.type), line.f);
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);
 	} else if (line.kind === "lineState") {
-		var ac = makeActionClosure(line.lineAction, env);
+		var ac = evaluateLine(line.action, env);
 		return executeAction(ac);
 		
 		//return makeCC(line.type);
 		//return makeCC(parseType(line.type));
 	} else if (line.kind === "lineAction") {
 		return makeActionClosure(line, env);
+	} else if(line.kind === "actionCreate") {
+		// TODO actions in a let are possible in actions, but not in templates? may as well be in both.
+		// desugar as a one-action lineAction:
+		var lineAction = {actions: [{action: line}]};
+		return makeActionClosure(lineAction, env);
 	}
 }

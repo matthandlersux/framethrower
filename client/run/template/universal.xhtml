@@ -26,7 +26,7 @@ var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
 
 </script>
 
-<script type="text/javascript" src="../../source/js/external/yuiloader-min.js"></script> 
+<script type="text/javascript" src="../../source/js/external/yuiloader-min.js"></script>
 <script src="../../source/js/include.js"></script>
 
 <script>
@@ -34,7 +34,7 @@ var templateFile = location.hash.substr(1);
 if (!templateFile) {
 	alert("Place the name of the template after the hash (universal.xhtml#NAMEOFTEMPLATE)");
 }
-includes.htmlInclude(["core", "browser"], [ROOTDIR+"generated/templates/"+templateFile+".js", "init.js"], "initialize()");
+includes.htmlInclude(["core", "browser"], [ROOTDIR+"generated/templates/"+templateFile+".js", "init.js"], "initialize(); initializeGlobalUICells();");
 </script>
 
 </head>

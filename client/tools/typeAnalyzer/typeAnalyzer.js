@@ -8,7 +8,7 @@ function typeAnalyze(line) {
 		GlobalError = true;
 		var debugRef = currentLine.debugRef;
 		msg = msg.replace(/\n/g, "<br />");
-		print(
+		console.log(
 			"<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://"
 			+ debugRef.file + "&line=" + debugRef.lineNumber + "\">error on line" + 
 			debugRef.lineNumber + "</a> <br />" + msg + "<br /><br /></div>"
@@ -162,25 +162,67 @@ function typeAnalyze(line) {
 				});
 				extra.let = let;
 
-				// check that output matches the output type (XMLP)
+				// check that output matches the output type
 				var outputAnalysis = staticTypeAnalysis(line.output, newEnv);
 				extra.output = outputAnalysis;
-				if (!compareTypes(outputAnalysis.type, typeArray[typeArray.length - 1])) {
+				
+				// TODO: take out the second condition from this when type annotations are worked out with Andrew -Toby
+				if (!compareTypes(outputAnalysis.type, typeArray[typeArray.length - 1]) && unparseType(typeArray[typeArray.length - 1]) !== "Action a0") {
 					var extraInfo = line.output.kind === "lineExpr" ? "\nwith `"+unparse(line.output.expr)+"`\n\n"+getWordsTypes(line.output.expr, newEnv) : "";
-					staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got `"+unparseType(outputAnalysis.type)+"`" + extraInfo);
+					staticAnalysisError("Template output is not the right type. Expected `"+unparseType(typeArray[typeArray.length - 1])+"` but got 1 `"+unparseType(outputAnalysis.type)+"`" + extraInfo);
 				}
+				
+				typeArray[typeArray.length - 1] = outputAnalysis.type;
+				type = arrayToCurriedType(typeArray);
 			}
 
 		} else if (line.kind === "lineJavascript") {
 			type = line.type;
 		} else if (line.kind === "lineXML") {
 			type = parseType("XMLP");
-			// check that everything inside is good to go
+			// check that all the XML inside is good to go
 			staticTypeAnalysisXML(line.xml, env);
 		} else if (line.kind === "lineState") {
-			type = getActionReturnType(line.lineAction, env);
+			var actionType = staticTypeAnalysis(line.action, env).type;
+			checkIsAction(actionType);
+			type = actionType.right;
 		} else if (line.kind === "lineAction") {
-			type = getActionReturnType(line, env);
+			type = getActionResultType(line.actions, env);
+			//type = line.type;
+		} else if (line.kind === "actionCreate") {
+			// check that properties are appropriate
+			// TODO
+			
+			type = makeTypeApply(parseType("Action"), line.type);
+		} else if (line.kind === "extract") {
+			// TODO
+			
+			var selectType = getTypeOfAST(line.select, env);
+			var constructor = getTypeConstructor(selectType);
+			
+			var hackedLineTemplate = {
+				kind: "lineTemplate",
+				params: line.action.params,
+				let: line.action.let,
+				output: line.action.output
+			};
+			
+			if (constructor === "Map") {
+			    var keyType = selectType.left.right;
+			    var valueType = selectType.right;
+
+			    hackedLineTemplate.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("Action a0")));
+			} else if (constructor === "Unit" || constructor === "Set" || constructor === "List") {
+			    var keyType = selectType.right;
+
+			    hackedLineTemplate.type = makeTypeLambda(keyType, parseType("Action a0"));
+			} else {
+			    staticAnalysisError("Extract select type is not a cell or list.");
+			}
+			
+			staticTypeAnalysis(hackedLineTemplate, env);
+			
+			type = parseType("Action Void");
 		}
 
 		var ret = makePlaceholder(type);
@@ -188,6 +230,32 @@ function typeAnalyze(line) {
 		ret.extra = extra;
 		ret.success = !GlobalError;
 		return ret;
+	}
+	
+	
+	function getActionResultType(actions, env) {
+		var scope = {};
+		var actionEnv = extendEnv(env, scope);
+		
+		var outputType = parseType("Action Void");
+		forEach(actions, function (action) {
+			var type = staticTypeAnalysis(action.action, actionEnv).type;
+			checkIsAction(type);
+			if (action.name !== undefined) {
+				scope[action.name] = makePlaceholder(type.right);
+			} else {
+				outputType = type;
+			}
+		});
+		
+		return outputType;
+	}
+	
+	function checkIsAction(type) {
+		if (!type.left || type.left.value !== "Action") {
+			//print("Is the thing even a type? "+JSON.stringify(type)+"<br><br>");
+			staticAnalysisError("Expecting an Action but got `"+unparseType(type)+"`");
+		}
 	}
 
 
@@ -255,110 +323,24 @@ function typeAnalyze(line) {
 				var valueType = selectType.right;
 
 				hackedLineTemplate.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("XMLP")));
-			} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set" || constructor === "List") {
+			} else if (constructor === "Unit" || constructor === "Set" || constructor === "List") {
 				var keyType = selectType.right;
 
 				hackedLineTemplate.type = makeTypeLambda(keyType, parseType("XMLP"));
 			} else {
-				staticAnalysisError("f:each select type is not a cell.");
+				staticAnalysisError("f:each select type is not a cell. But is instead of type `"+unparseType(selectType)+"`");
 			}
 
 			staticTypeAnalysis(hackedLineTemplate, env);
 		} else if (xml.kind === "call") {
 			staticTypeAnalysis(xml.lineTemplate, env);
 		} else if (xml.kind === "on") {
-			getActionReturnType(xml.lineAction, extendEnv(env, eventExtraTypes));
+			var actionType = staticTypeAnalysis(xml.action, extendEnv(env, eventExtraTypes));
+			checkIsAction(actionType.type);
 		} else if (xml.kind === "trigger") {
 			// TODO
 		}
 	}
-
-
-
-	function getActionReturnType(lineAction, env) {
-		var type = lineAction.type;
-
-		var scope = {};
-		var typeArray = typeCurriedToArray(type);
-		forEach(lineAction.params, function (param, i) {
-			scope[param] = makePlaceholder(typeArray[i]);
-		});
-		var envWithParams = extendEnv(env, scope);
-
-		var returnType = parseType("Void");
-
-		forEach(lineAction.actions, function (actionLine) {
-			var ac = actionLine.action;
-			currentLine = ac;
-
-			var type;
-			if (ac.kind === "actionCreate") {
-				type = ac.type;
-				// TODO: check that properties are correctly there
-			} else if (ac.kind === "actionUpdate") {
-				// check that it's actually a cell, and the supplied key/value expressions are the proper type
-				var modifyingType = getTypeOfAST(ac.target, envWithParams);
-				var keyType = ac.key ? getTypeOfAST(ac.key, envWithParams) : undefined;
-				var valueType = ac.value ? getTypeOfAST(ac.value, envWithParams) : undefined;
-
-				var constructor = getTypeConstructor(modifyingType);
-				if (constructor === "Map") {
-					if (keyType && !compareTypes(keyType, modifyingType.left.right)) {
-						staticAnalysisError("Update key, `"+unparse(ac.key)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(keyType)+"`" + "\n\n"+getWordsTypes(ac.key, envWithParams));
-					}
-					if (valueType && !compareTypes(valueType, modifyingType.right)) {
-						staticAnalysisError("Update value, `"+unparse(ac.value)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(valueType)+"`" + "\n\n"+getWordsTypes(ac.value, envWithParams));
-					}
-				} else if (constructor === "Unit" || constructor === "Set") {
-					if (keyType && !compareTypes(keyType, modifyingType.right)) {
-						staticAnalysisError("Update key, `"+unparse(ac.key)+"`, has wrong type, expected `"+unparseType(modifyingType.right)+"` but got `"+unparseType(keyType)+"`" + "\n\n"+getWordsTypes(ac.key, envWithParams));
-					}
-				} else {
-					staticAnalysisError("Update action target not a Map, Set, or Unit");
-				}
-				// TODO check that the add/remove has key/value as appropriate
-			} else if (ac.kind === "extract") {
-				
-				var selectType = getTypeOfAST(ac.select, envWithParams);
-				
-				var constructor = getTypeConstructor(selectType);
-				
-				var hackedAction = {
-					kind: "lineAction",
-					params: ac.lineAction.params,
-					actions: ac.lineAction.actions
-				};
-				
-				if (constructor === "Map") {
-					var keyType = selectType.left.right;
-					var valueType = selectType.right;
-				
-					hackedAction.type = makeTypeLambda(keyType, makeTypeLambda(valueType, parseType("XMLP")));
-				} else if (constructor === "Unit" || constructor === "Future" || constructor === "Set" || constructor === "List") {
-					var keyType = selectType.right;
-				
-					hackedAction.type = makeTypeLambda(keyType, parseType("XMLP"));
-				} else {
-					staticAnalysisError("Extract select type is not a cell.");
-				}
-				
-				getActionReturnType(hackedAction, envWithParams);
-				
-			} else {
-				type = staticTypeAnalysis(ac, envWithParams).type;
-			}
-			if (actionLine.name) {
-				scope[actionLine.name] = makePlaceholder(type);
-			} else if (type) {
-				returnType = type;
-			}
-		});
-
-		var newTypeArray = typeArray.slice(0, -1).concat([returnType]);
-
-		return arrayToCurriedType(newTypeArray);
-	}
-	
 	
 	
 	return staticTypeAnalysis(line, base.env);

@@ -36,7 +36,7 @@ var classesToMake = {
 			"type": "Situation",
 			"instance": "Situation",
 			//"container": "Map Ord Pipe",
-			"container": "Unit (List Pipe)",
+			"container": "Unit [Pipe]",
 			"contains": "Set Pipe",
 			"truth": "Unit Number"
 		}

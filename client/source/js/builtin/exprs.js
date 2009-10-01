@@ -1,15 +1,24 @@
 
 
-// ========================================================================
-// Basic utility
-// ========================================================================
-
-addExpr("compose", "(b -> c) -> (a -> b) -> a -> c", "f -> g -> x -> f (g x)");
-addExpr("identity", "a -> a", "x -> x");
-addExpr("swap", "(a -> b -> c) -> b -> a -> c", "f -> x -> y -> f y x");
 
 (function () {
 	var exprLib = {
+		// ========================================================================
+		// Basic utility
+		// ========================================================================
+
+		compose: {
+			type: "(b -> c) -> (a -> b) -> a -> c",
+			expr: "f -> g -> x -> f (g x)"
+		},
+		identity: {
+			type: "a -> a",
+			expr: "x -> x"
+		},
+		swap: {
+			type: "(a -> b -> c) -> b -> a -> c",
+			expr: "f -> x -> y -> f y x"
+		},
 		
 		// ========================================================================
 		// Monadic utility
@@ -18,10 +27,6 @@ addExpr("swap", "(a -> b -> c) -> b -> a -> c", "f -> x -> y -> f y x");
 		returnSet: {
 			type: "a -> Set a",
 			expr: "x -> returnUnitSet (returnUnit x)"
-		},
-		returnFutureSet: {
-			type: "Future a -> Set a",
-			expr: "x -> returnUnitSet (returnFutureUnit x)"
 		},
 		mapUnit: {
 			type: "(a -> b) -> Unit a -> Unit b",
@@ -51,17 +56,9 @@ addExpr("swap", "(a -> b -> c) -> b -> a -> c", "f -> x -> y -> f y x");
 			type: "(a -> Unit b) -> Set a -> Set b",
 			expr: "f -> bindSet (compose returnUnitSet f)"
 		},
-		bindFutureSet: {
-			type: "(a -> Future b) -> Set a -> Set b",
-			expr: "f -> bindSet (compose returnFutureSet f)"
-		},
 		bindSetUnit: {
 			type: "(a -> Set b) -> Unit a -> Set b",
 			expr: "f -> compose (bindSet f) returnUnitSet"
-		},
-		bindFutureUnit: {
-			type: "(a -> Future b) -> Unit a -> Unit b",
-			expr: "f -> bindUnit (compose returnFutureUnit f)"
 		},
 		mapUnitSet: {
 			type: "(Unit a -> Unit b) -> Set a -> Set b",

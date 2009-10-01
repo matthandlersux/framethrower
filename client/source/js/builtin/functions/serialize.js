@@ -39,7 +39,7 @@
 
 	/*
 	uses cell.getState() recursively to generate a JSON-ish representation for the cell
-		Units, Futures, and Sets turn into arrays [],
+		Units and Sets turn into arrays [],
 		Maps turn into arrays of {key: --, value: --}
 	*/
 	function convertStateToJSON(cell) {
@@ -81,7 +81,7 @@
 			// TODO: not sure how depender works...
 
 			// returns a function to stop listening to the cell
-			c = evaluate(c);
+			//c = evaluate(c);
 
 			setTimeout(session.flush,0);
 

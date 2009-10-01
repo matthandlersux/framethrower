@@ -83,15 +83,6 @@
 					return outputCell;
 				}
 			},
-			returnFuture : { // TODO: test this, merge code with returnUnit
-				type : "a -> Future a",
-				func : function (val) {
-					var outputCell = makeCell();
-					outputCell.addLine(val);
-					outputCell.setDone();
-					return outputCell;
-				}
-			},
 		 	returnUnitSet : {
 				type : "Unit a -> Set a",
 				func : function (cell) {
@@ -108,16 +99,6 @@
 					var outputCell = makeCellMapInput();
 					cell.inject(outputCell, function (val) {
 						return outputCell.addLine({key:key, val:val});
-					});
-					return outputCell;
-				}
-			},
-			returnFutureUnit : {
-				type : "Future a -> Unit a",
-				func : function (cell) {
-					var outputCell = makeCell();
-					cell.inject(outputCell, function(val) {
-						outputCell.addLine(val);
 					});
 					return outputCell;
 				}
@@ -142,20 +123,6 @@
 						return injectedFunc.unInject;
 					});
 
-					return outputCell;
-				}
-			},
-			bindFuture : {
-				type : "(a -> Future b) -> Future a -> Future b",
-				func : function (f, cell) {
-					var outputCell = makeCell();
-
-					cell.inject(outputCell, function (val) {
-						var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
-							outputCell.addLine(innerVal);
-						});
-						return injectedFunc.unInject;
-					});
 					return outputCell;
 				}
 			},
@@ -256,6 +223,76 @@
 						outputCell.addLine(nullObject);
 						outputCell.setDone();
 					}
+					return outputCell;
+				}
+			},
+			unitDone: {
+				type: "Unit Null -> Unit Null",
+				func: function (cell) {
+					var currentValue = false;
+					var outputValue = false;
+					var outputCell = makeCell();
+					cell.inject(outputCell, function (val) {
+						currentValue = true;
+						return function () {
+							currentValue = false;
+						};
+					});
+					cell.injectDependency(function () {
+						if (outputValue !== currentValue) {
+							outputValue = currentValue;
+							if (outputValue) {
+								outputCell.addLine(nullObject);
+							} else {
+								outputCell.removeLine(nullObject);
+							}
+						}
+					});
+					return outputCell;
+				}
+			},
+			lowPassFilter: {
+				type: "Unit a -> Unit a",
+				func: function (cell) {
+					var inputCellValue;
+					var outputCellValue;
+					
+					var outputCell = makeCell();
+					
+					function update() {
+						if (outputCellValue !== inputCellValue) {
+							if (outputCellValue !== undefined) {
+								outputCell.removeLine(outputCellValue);
+							}
+							outputCellValue = inputCellValue;
+							outputCell.addLine(outputCellValue);
+						}
+					}
+					
+					cell.inject(outputCell, function (val) {
+						inputCellValue = val;
+						setTimeout(update, 0);
+						return function () {
+							
+						};
+					});
+					return outputCell;
+				}
+			},
+			countChanges: { // for debugging
+				type: "Unit a -> Unit Number",
+				func: function (cell) {
+					var currentValue = 0;
+					var outputCell = makeCell();
+					outputCell.addLine(currentValue);
+					cell.inject(outputCell, function (val) {
+						outputCell.removeLine(currentValue);
+						currentValue += 1;
+						outputCell.addLine(currentValue);
+						return function () {
+							
+						};
+					});
 					return outputCell;
 				}
 			},
@@ -394,7 +431,6 @@
 			defaultValue: {
 				type: "a -> Unit a -> Unit a",
 				func: function (defaultValue, cell) {
-					// TODO: add this server-side
 					var outputCell = makeCell();
 					var current = defaultValue;
 					outputCell.addLine(defaultValue);
