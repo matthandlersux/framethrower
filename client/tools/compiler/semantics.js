@@ -243,8 +243,17 @@ var semantics = function(){
 		var JS = funcText.substr(bracketIndex);
 		if(jsTransformer)
 			JS = jsTransformer(JS);
+
+		// TODO BUG this will fail if any of the param types have parentheses:
 		var rParenIndex = args.indexOf(")");
+
+		// TODO this will fail if there is whitespace around the "::":
 		var outputType = args.substr(rParenIndex+3);
+		
+		// TODO in general, hasn't the compiler already decided what things are vars and what things are types?
+		// seems like we are re-parsing 'by hand'...
+		
+
 		if (outputType.length == 0) {
 			outputType = undefined;
 		}
