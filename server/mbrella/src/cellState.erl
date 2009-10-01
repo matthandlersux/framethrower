@@ -31,7 +31,7 @@
 	name,
 	options = [],
 	intercept = undefined, %intercepts:standard(),
-	done = [],
+	done = false,
 	elements = cellElements:new(),
 	stash = [],
 	outputs = outputs:newState(),
@@ -46,6 +46,9 @@
 new(CellType) ->
 	#cellState{elements = cellElements:new(CellType)}.
 
+new(CellType, [{name, Name}]) ->
+	#cellState{elements = cellElements:new(CellType), name = Name}.
+	
 %% 
 %% injectOutput :: CellState -> OutputFunction -> CellPointer -> CellState
 %% 
@@ -61,6 +64,40 @@ injectOutput(State, OutputFunction, OutputTo) ->
 
 injectIntercept(State, Intercept) ->
 	State#cellState{intercept = Intercept}.
+
+%% 
+%% updateInformants :: CellState -> List CellPointers -> CellState
+%% 
+
+updateInformants(State, InformantsList) ->
+	Informants = lists:map(fun(CellPointer) -> {CellPointer, false} end, InformantsList),
+	State#cellState{informants = Informants}.
+
+%% 
+%% setDone :: CellState -> CellPointer -> CellState
+%% 
+
+setDone(#cellState{informants = Informants, done = Done} = State, CellPointer) ->
+	if
+		Done -> State;
+		true ->
+			FindCellPointer = 	fun({CellPointerFromList, IsDone}, IsTotalDone) ->
+									if 
+										IsDone andalso IsTotalDone ->
+											{{CellPointerFromList, IsDone}, true};
+										IsDone andalso (not IsTotalDone) ->
+											{{CellPointerFromList, IsDone}, false};
+										CellPointer =:= CellPointerFromList ->
+											{{CellPointerFromList, true}, IsTotalDone};
+										not IsDone ->
+											{{CellPointerFromList, IsDone}, false};
+										true ->
+											{{CellPointerFromList, IsDone}, IsDone}
+									end
+								end,
+			{NewInformants, Done1} = lists:mapfoldl(FindCellPointer, true, Informants),
+			State#cellState{informants = NewInformants, done = Done1}
+	end.
 	
 %% 
 %% getElements :: CellState -> CellElements
@@ -84,6 +121,13 @@ cellPointer(#cellState{name = Name} = State) ->
 	cellPointer:create(Name, self()).
 
 %% 
+%% getIntercept :: CellState -> Intercept
+%% 
+
+getIntercept(#cellState{intercept = Intercept} = State) ->
+	Intercept.
+
+%% 
 %% updateOutputStates :: List OutputStates -> CellState -> CellState
 %%  	needs to be in the same order as the outputs are in getOutputs
 %% 
@@ -102,23 +146,36 @@ getFlag(#cellState{flags = Flags} = State, Flag) ->
 	end.
 
 %% 
-%% updateStash :: CellState -> List Element -> List Element
+%% updateStash :: CellState -> List Element -> CellState
 %%		takes stash, merges with new elements, returns all elements (called when done)
 %% 
 
 updateStash(#cellState{stash = Stash} = State, Elements) ->
-	%ordering is very important here
-	todo.
+	State#cellState{stash = Elements ++ Stash}.
 	
 %% 
-%% mergeStash :: CellState -> List Element -> CellState
+%% mergeStash :: CellState -> List Element -> List Element
 %% 		stores elements that have been processed by the intercept but aren't ready to move because the 
 %%		cell is waiting to be done
 %% 
 
-mergeStash(#cellState{stash = Stash} = State, Elements) ->
-	todo.
+mergeWithStash(#cellState{stash = Stash}, Elements) ->
+	Elements ++ Stash.
+	
+%% 
+%% injectElements :: CellState -> Elements -> Tuple CellState List Element
+%% 
 
+injectElements(#cellState{elements = ElementsState} = State, NewElements) ->
+	{NewElementState, ElementsResponse} = cellElements:process(ElementsState, NewElements),
+	{State#cellState{elements = NewElementState}, ElementsResponse}.
+
+%% 
+%% isDone :: CellState -> Bool
+%% 
+
+isDone(#cellState{done = Done}) ->
+	Done.
 %% ====================================================
 %% Internal API
 %% ====================================================

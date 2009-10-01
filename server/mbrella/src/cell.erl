@@ -1,4 +1,4 @@
--module (cell.erl).
+-module (cell).
 
 -behaviour(gen_server).
 
@@ -6,12 +6,13 @@
 
 -include("../include/scaffold.hrl").
 
--ifdef( debug ).
+% -ifdef( debug ).
+% -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
+% -else.
+% -define( trace(X), void ).
+% -endif.
+% -define(this(Field), State#cellState.Field).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
--else.
--define( trace(X), void ).
--endif.
--define(this(Field), State#cellState.Field).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export ([
@@ -34,26 +35,37 @@
 %% create cells
 %% 
 
+makeCell() -> makeCell(unit).
 
-makeCell() ->
-	{ok, Pid} = gen_server:start(?MODULE, [], []),
-	Name = env:nameAndStoreCell(Pid),
-	#cellPointer{name = Name, pid = Pid}.
+makeCell(CellType) ->
+	Name = "server" ++ integer_to_list(random:uniform(1000)),
+	{ok, Pid} = gen_server:start(?MODULE, [CellType, {name, Name}], []),
+	%Name = env:nameAndStoreCell(Pid),
+	cellPointer:new(Name, Pid).
 	
-makeLinkedCell() ->
-	{ok, Pid} = gen_server:start_link(?MODULE, [], []),
-	Name = env:nameAndStoreCell(Pid),
-	#cellPointer{name = Name, pid = Pid}.
-	
-makeCellLeashed() ->
-	{ok, Pid} = gen_server:start(?MODULE, [leashed], []),
-	Name = env:nameAndStoreCell(Pid),
-	#cellPointer{name = Name, pid = Pid}.
-	
-makeLinkedCellLeashed() ->
-	{ok, Pid} = gen_server:start(?MODULE, [leashed], []),
-	Name = env:nameAndStoreCell(Pid),
-	#cellPointer{name = Name, pid = Pid}.
+makeLinkedCell() -> makeLinkedCell(unit).
+
+makeLinkedCell(CellType) ->
+	{ok, Pid} = gen_server:start_link(?MODULE, [CellType], []),
+	%Name = env:nameAndStoreCell(Pid),
+	Name = "server" ++ integer_to_list(random:uniform(1000)),
+	cellPointer:new(Name, Pid).
+
+makeCellLeashed() -> makeCellLeashed(unit).
+
+makeCellLeashed(CellType) ->
+	{ok, Pid} = gen_server:start(?MODULE, [CellType, leashed], []),
+	%Name = env:nameAndStoreCell(Pid),
+	Name = "server" ++ integer_to_list(random:uniform(1000)),
+	cellPointer:new(Name, Pid).
+
+makeLinkedCellLeashed() -> makeLinkedCellLeashed(unit).
+
+makeLinkedCellLeashed(CellType) ->
+	{ok, Pid} = gen_server:start(?MODULE, [CellType, leashed], []),
+	%Name = env:nameAndStoreCell(Pid),
+	Name = "server" ++ integer_to_list(random:uniform(1000)),
+	cellPointer:new(Name, Pid).
 
 %% 
 %% add/remove Elements
@@ -64,7 +76,7 @@ makeLinkedCellLeashed() ->
 %% Elements :: List Tuple ("add" | "remove") Elements
 
 sendElements(CellPointer, From, Elements) ->
-	gen_server:cast(cellPointer:pid(CellPointer), {sendElements, From, Elements});
+	gen_server:cast(cellPointer:pid(CellPointer), {sendElements, From, Elements}).
 
 %% ====================================================
 %% PrimFun API
@@ -73,10 +85,10 @@ sendElements(CellPointer, From, Elements) ->
 %create cell is defined above
 
 leash(CellPointer) ->
-	gen_server:cast(cellPid(CellPointer), leash).
+	gen_server:cast(cellPointer:cellPid(CellPointer), leash).
 	
 unleash(CellPointer) ->
-	gen_server:cast(cellPid(CellPointer), unleash).
+	gen_server:cast(cellPointer:cellPid(CellPointer), unleash).
 
 %% 
 %% inject output function 
@@ -116,25 +128,38 @@ injectIntercept(CellPointer, InterceptPointer) ->
 		{injectIntercept, InterceptPointer}
 	).
 
+
+%% ====================================================
+%% Debug API
+%% ====================================================
+
+getState(CellPointer) ->
+	gen_server:call(cellPointer:pid(CellPointer), getState).
+
 %% ====================================================
 %% gen_server callbacks
 %% ====================================================
 
-init() ->
+
+%% 
+%% init :: List Atom | EmptyList -> Tuple Atom CellState
+%% Flags :: List Tuple Atom b 
+%%			b :: leashed | unleashed | etc...
+%% 
+
+init([]) ->
 	process_flag(trap_exit, true),
-    {ok, cellState:new()}.
-
-%% 
-%% 
-%% Flags :: List Tuple Atom a, a :: leashed | 
-%% 
-
-init(Flags) ->
+    {ok, cellState:new()};
+init([Type]) when is_atom(Type) ->
 	process_flag(trap_exit, true),
-    {ok, cellState:new(Flags)}.
+	{ok, cellState:new(Type)};
+init([Type|Flags]) ->
+	process_flag(trap_exit, true),
+    {ok, cellState:new(Type, Flags)}.
 
 
-
+handle_call(getState, _From, State) ->
+	{reply, State, State};
 handle_call(Msg, From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -142,41 +167,52 @@ handle_call(Msg, From, State) ->
 
 
 handle_cast({injectIntercept, InterceptPointer}, State) ->
-	{noreply, cellState:injectIntercept(State, InterceptPointer)};
+	Informants = intercepts:getArguments(InterceptPointer),
+	Informants1 = cellPointer:filterList(Informants),
+	State1 = cellState:updateInformants(State, Informants1),
+	{noreply, cellState:injectIntercept(State1, InterceptPointer)};
 	
 handle_cast({sendElements, From, Elements}, State) ->
-	Intercept = cellState:getIntercept(State),
-	{NewState, NewElements} = intercepts:call(Intercept, From, Elements),
-	State1 = cellState:updateIntercept(NewState),
-	
+	State2 = 
+		case cellState:getIntercept(State) of
+			undefined ->
+				NewElements = Elements,
+				cellState:setDone(State, From);
+			Intercept ->
+				{InterceptState, NewElements} = intercepts:call(Intercept, From, Elements),
+				State1 = cellState:updateIntercept(InterceptState),
+				cellState:setDone(State1, From)
+		end,
+
 	%check if done
+	IsDone = cellState:isDone(State2),
 	
-	if
-		cellState:getFlag(State, waitForDone) =:= true andalso cellState:isDone(State) =:= true ->
-			FinalElementsMerged = cellState:mergeStash(State, NewElements),
-			FinalElements = cellState:updateElements(State, FinalElementsMerged),
-			NewState = runOutputs(State, FinalElementsMerged),
-			{noreply, NewState};
-		cellState:getFlag(State, waitForDone) =:= true andalso cellState:isDone(State) =:= false ->
-			NewState = cellState:updateStash(State, FinalElements),
-			{noreply, NewState};
-		true -> 
-			FinalElements = cellState:updateElements(State, NewElements),
-			NewState = runOutputs(State, FinalElements),
-			{noreply, NewState}
+	case cellState:getFlag(State2, waitForDone) of
+		true when IsDone =:= true ->
+			FinalElementsMerged = cellState:mergeWithStash(State2, NewElements),
+			{State3, FinalElements} = cellState:injectElements(State2, FinalElementsMerged),
+			FinalState = runOutputs(State3, FinalElements),
+			{noreply, FinalState};
+		true ->
+			NewState1 = cellState:updateStash(State2, NewElements),
+			{noreply, NewState1};
+		_ ->
+			{State3, FinalElements} = cellState:injectElements(State2, NewElements),
+			FinalState = runOutputs(State3, FinalElements),
+			{noreply, FinalState}
 	end;
 	
 handle_cast({injectOutput, OutputFunction, OutputTo}, State) ->
-	link(cellPid(OutputTo)),
+	link(cellPointer:cellPid(OutputTo)),
 	NewState1 = cellState:injectOutput(State, OutputFunction, OutputTo),
 	NewState2 = outputAllElements(NewState1, OutputFunction, OutputTo),
 	{noreply, NewState2};
 	
 handle_cast(leash, State) ->
-    {noreply, State#cellState{leash = true}};
+    {noreply, cellState:updateFlag(leash, true, State)};
 
 handle_cast(unleash, State) ->
-	{noreply, State#cellState{leash = false}}.
+	{noreply, cellState:updateFlag(leash, false, State)}.
 
 terminate(Reason, State) ->
     ok.
@@ -224,7 +260,7 @@ outputAllElements(State, OutputFunction, OutputTo) ->
 	AllElements = cellState:getElements(State),
 	ElementsList = cellElements:elementsToList(AllElements),
 	ThisCell = cellState:getCellPointer(State),
-	{NewState, NewElements} = outputs:callOutput(OutputFunction, AllElements, Elements),
+	{NewState, NewElements} = outputs:callOutput(OutputFunction, AllElements, ElementsList),
 	cell:sendElements(OutputTo, ThisCell, NewElements),
 	NewState.
 	

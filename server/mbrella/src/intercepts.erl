@@ -47,6 +47,8 @@ callIntercept(Name, From, Elements) ->
 	
 callIntercept(Name, Args, From, Elements) ->
 	callIntercept(Name, Args, [], From, Elements).
+	
+getArguments(Intercept) -> getArgs(Intercept).
 %% ====================================================
 %% Internal API
 %% ====================================================
@@ -66,7 +68,6 @@ processMessage(Name, Args, State, From, Element) ->
 
 %	-the intercepts job is to take keyed/unkeyed input messages, do something to them, and return an 
 %	updated state and the elements that result
-%
 %	interceptFunction :: Args -> InterceptState -> KeyedMessages -> Tuple InterceptState UnkeyedMessages
 
 fold( Function, FunctionInverse, InterceptState, From, Element ) ->

@@ -35,11 +35,19 @@
 %% External API
 %% ====================================================
 
-call(OutputFunction, Elements, ElementsToAdd) ->
+%% 
+%% call :: Output -> ElementState -> List Element -> Tuple OutputState List Element
+%% 
+
+call({_, OutputFunction, OutputState}, Elements, ElementsToAdd) ->
+	call(OutputFunction, OutputState, Elements, ElementsToAdd).
+
+call({send, []}, _, _, ElementsToAdd) ->
+	{undefined, ElementsToAdd};	
+call(OutputFunction, OutputState, Elements, ElementsToAdd) ->
 	Name = getName(OutputFunction),
 	Args = getArgs(OutputFunction),
-	State = getState(OutputFunction),
-	callOutput(Name, Args, State, Elements, ElementsToAdd).
+	callOutput(Name, Args, OutputState, Elements, ElementsToAdd).
 
 %% 
 %% callOutput :: FunctionName -> Arguments -> OutputState -> ElementState -> Elements -> Tuple OutputState Elements
