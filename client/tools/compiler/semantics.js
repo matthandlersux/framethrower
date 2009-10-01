@@ -248,8 +248,8 @@ var semantics = function(){
 			JS = jsTransformer(JS);
 
 		var rParenIndex = args.lastIndexOf(")::"); // parenthesis before output type is end of args list
-		if(rParenIndex === -1) // there is no output type
-			rParenIndex = args.lastIndexOf(")"); // so last parenthesis is end of args list
+		if(rParenIndex === -1) // unless there is no output type
+			rParenIndex = args.lastIndexOf(")"); // in which case last parenthesis is end of args list
 
 		// TODO this will fail if there is any whitespace variation:
 		var outputType = args.substr(rParenIndex+3);

@@ -5,7 +5,7 @@ template() {
 	debug = jsaction(s::String)::Void {
 		console.debug(s);
 	},
-	test2 = action(x::[(Number, Number)])::List (Tuple2 Number Number) {
+	test2 = action(x::[(Number, Number)])::[(Number, Number)] {
 		return x
 	},
 	w = z,
