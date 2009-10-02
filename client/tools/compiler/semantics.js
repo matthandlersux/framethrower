@@ -236,47 +236,25 @@ var semantics = function(){
 		};
 	}
 
-	function makeFunction(funcText, jsTransformer, outputTypeTransformer) {
-		// TODO in general, hasn't the compiler already decided what things are vars and what things are types?
-		// seems like we are re-parsing 'by hand'...
-	
-		var bracketIndex = funcText.indexOf('{');
-		var lParenIndex = funcText.indexOf('(');
-		var args = funcText.substr(lParenIndex, bracketIndex - lParenIndex);
-		var JS = funcText.substr(bracketIndex);
+	function makeFunction(funcObject, jsTransformer, outputTypeTransformer) {
+		var JS = funcObject.functionbody;
 		if(jsTransformer)
 			JS = jsTransformer(JS);
 
-		var rParenIndex = args.lastIndexOf(")::"); // parenthesis before output type is end of args list
-		if(rParenIndex === -1) // unless there is no output type
-			rParenIndex = args.lastIndexOf(")"); // in which case last parenthesis is end of args list
 
-		// TODO this will fail if there is any whitespace variation:
-		var outputType = args.substr(rParenIndex+3);
-		
+		var outputType = funcObject.type;
 		if (outputType.length == 0) {
 			outputType = undefined;
 		}
-		args = args.substr(0, rParenIndex);
+		
+		args = makeList(funcObject.arglist, 'arglist', 'variable');
 
-		//remove parens
-		args = args.replace(/[\(\)]/g, "");
-		
-		args = args.split(",");
-		
 		var argList = [];
 		forEach(args, function(arg) {
-			if (arg.length > 0) {
-				var newArg = {};
-				argList.push(newArg);
-				var parts = arg.split("::");
-				if(def(parts[0])) {
-					newArg.name = parts[0];
-				}
-				if(def(parts[1])) {
-					newArg.type = parts[1];
-				}
-			}
+			var newArg = {};
+			argList.push(newArg);
+			newArg.name = arg.identifier;
+			newArg.type = arg.type;
 		});
 
 		var funcString = "function (";
@@ -297,7 +275,7 @@ var semantics = function(){
 				typeCounter++;
 			}
 		});
-		funcString += ") " + JS + "";
+		funcString += ") { " + JS + " }";
 		if (def(outputType)) {
 			if(outputTypeTransformer)
 				outputType = outputTypeTransformer(outputType);
@@ -305,6 +283,7 @@ var semantics = function(){
 		} else {
 			typeString += "t" + typeCounter;
 		}
+		
 		return {
 			kind: "lineJavascript",
 			type: parseType(typeString),
@@ -741,7 +720,7 @@ var semantics = function(){
 				return nodeName.indexOf(string) == 0;
 			}
 			
-			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('styleattname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('function') || startsWith('jsaction') || startsWith('xmltext')) {
+			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('styleattname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('jsaction') || startsWith('xmltext')) {
 				var string = makeString(value, nodeName);
 				lineNum += lineBreakCount(string);
 				tree[nodeName] = stripSpaces(string);
