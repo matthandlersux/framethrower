@@ -4,13 +4,12 @@ var GLOBAL_ERRORS = false;
 ROOTDIR = "../../";
 function include (bundles, extraFiles) {
 	try {
-		load(ROOTDIR + "tools/util/java.js");
 		load(ROOTDIR + "source/js/include.js");
 		includes.rhinoInclude(bundles, extraFiles);
 	} catch (e) {}
 }
 include(["core"], ["tplparser.js", "semantics.js", "../typeAnalyzer/typeAnalyzer.js"]);
-	
+
 function loadTextNow(url) {
 	try {
 		var req = new XMLHttpRequest();
@@ -88,44 +87,50 @@ function mergeIntoObject(sink, source) {
 
 
 function compileFolder(folderPath, rebuild) {
-	var folder = java.io.File("../../source/templates/" + folderPath);
-	var binfolder = java.io.File("../../generated/templates/" + folderPath);
-	if(!binfolder.exists()) {
-		binfolder.mkdir();
+	var folder = "../../source/templates/" + folderPath;
+	var folderName;
+	var slashIndex = folder.lastIndexOf("/");
+	if (slashIndex !== -1) {
+		folderName = folder.substr(slashIndex+1);
+	} else {
+		folderName = folder;
 	}
 	
-	var children = folder.listFiles();
+	var binfolder = "../../generated/templates/" + folderPath;
+	
+	makeDirectory(binfolder);
+	
+	var childFiles = listFiles(folder);
+	var childDirectories = listDirectories(folder);
+		
 	var lets = {};
 	var mainJSON;
-	if (children !== null) { 
-		forEach(children, function(child) {
-			if (child.isDirectory()) {
-				var let = compileFolder(folderPath + "/" + child.getName(), rebuild);
-				if (let !== undefined) {
-					lets[child.getName()] = let;
-				}
+	forEach(childFiles, function(child) {
+		var nameWithExt = child;
+		var name = nameWithExt.substr(0, nameWithExt.length - 4);
+		var ext = nameWithExt.substr(nameWithExt.length - 3);
+		if (ext === "tpl") {
+			if(name == folderName) {
+				mainJSON = compileFile(folderPath + "/" + child, rebuild, false);
 			} else {
-				var nameWithExt = child.getName();
-				var name = nameWithExt.substr(0, nameWithExt.length() - 4);
-				var ext = nameWithExt.substr(nameWithExt.length() - 3);
-				if (ext === "tpl") {
-					if(name == (folder.getName())) {
-						mainJSON = compileFile(folderPath + "/" + child.getName(), rebuild, false);
-					} else {
-						var let = compileFile(folderPath + "/" + child.getName(), rebuild, false);
-						if (let !== undefined) {
-							lets[name] = let;
-						}
-					}
-				} else if (ext === "let") {
-					var includeLets = compileFile(folderPath + "/" + child.getName(), rebuild, true);
-					if (includeLets !== undefined) {
-						mergeIntoObject(lets, includeLets);
-					}
+				var let = compileFile(folderPath + "/" + child, rebuild, false);
+				if (let !== undefined) {
+					lets[name] = let;
 				}
 			}
-		});
-	}
+		} else if (ext === "let") {
+			var includeLets = compileFile(folderPath + "/" + child, rebuild, true);
+			if (includeLets !== undefined) {
+				mergeIntoObject(lets, includeLets);
+			}
+		}
+	});
+	forEach(childDirectories, function(child) {
+		var let = compileFolder(folderPath + "/" + child, rebuild);
+		if (let !== undefined) {
+			lets[child] = let;
+		}
+	});
 	if (mainJSON.let === undefined) mainJSON.let = {};
 	mergeIntoObject(mainJSON.let, lets);
 	return mainJSON;
@@ -140,19 +145,23 @@ function log () {
 }
 
 function compileFile (filePath, rebuild, isLetFile) {
-	var file = java.io.File("../../source/templates/" + filePath);
-	var binfile = java.io.File("../../generated/templates/" + filePath + ".ser");
-	if (!rebuild && binfile.exists() && (binfile.lastModified() > file.lastModified())) {
-		return deserialize(binfile.getAbsolutePath());
+	var file = "../../source/templates/" + filePath;
+	var binfile = "../../generated/templates/" + filePath + ".ser";
+
+
+//TODO add functions for lastModified to shell c++
+	if (false) {
+	// if (!rebuild && binfile && binfile.exists() && (binfile.lastModified() > file.lastModified())) {
+	// 	return deserialize(binfile.getAbsolutePath());
 	} else {
 		var str;
 		try {
-			str = readFile(file.getAbsolutePath());
+			str = read(file);
 		} catch (e) {
 			str = loadTextNow("../../source/templates/" + filePath);
 			console.log("Str: " + str);
 		}
-		
+				
 		if (isLetFile) {
 			str = "includefile " + str;
 		}
@@ -172,8 +181,15 @@ function compileFile (filePath, rebuild, isLetFile) {
 			}
 			throw("Parse Error");
 		} else {
-			result = semantics.processTree(parseResult.result, "" + file.getCanonicalPath());
+			var filePath;
+			if (file) {
+				//TODO add getCanonicalPath to shell c++
+				// filePath = file.getCanonicalPath();
+				filePath = file;
+			}
+			result = semantics.processTree(parseResult.result, "" + filePath);
 			try {
+				//TODO: add serialize to shell c++
 				serialize(result, binfile.getAbsolutePath());
 			} catch (e) {}
 			return result;
@@ -272,30 +288,27 @@ function countLines (wholeString, position) {
 //java -jar ../util/js.jar -opt -1 assembler.js <root folder> rebuild
 
 try{
-	if( arguments.length > 0 ) { 
+	//TODO: pass in arguments through shell
+	var arguments = ["test", "rebuild"];	
+	if( arguments.length > 0 ) { 		
 		var rebuild = false;
 		if (arguments[1] == "rebuild") {
 			rebuild = true;
 		}
 	
 		//create bin folder if it doesn't exist
-		var binfolder1 = java.io.File("../../generated");
-		var binfolder = java.io.File("../../generated/templates");
-		if(!binfolder1.exists()) {
-			binfolder1.mkdir();
-		}
-		if(!binfolder.exists()) {
-			binfolder.mkdir();
-		}
+		var binfolder1 = "../../generated";
+		var binfolder = "../../generated/templates";
+		
+		makeDirectory(binfolder1);
+		makeDirectory(binfolder);
+
 		var totalCompiledJSON = compileFolder(arguments[0], rebuild);
 		if(!GLOBAL_ERRORS) {
 			desugarFetch(totalCompiledJSON);
 			var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
-			var fw = new java.io.FileWriter("../../generated/templates/" + arguments[0] + ".js");
-			var bw = new java.io.BufferedWriter(fw);
-
-			bw.write(totalCompiledString);
-			bw.close();
+			
+			write("../../generated/templates/" + arguments[0] + ".js", totalCompiledString);
 			var result = typeAnalyze(totalCompiledJSON);
 			if (result.success) {
 				console.log('success');
