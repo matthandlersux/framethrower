@@ -80,6 +80,36 @@ makeLinkedCellLeashed(CellType) ->
 sendElements(_, _, []) -> ok;
 sendElements(CellPointer, From, Elements) ->
 	gen_server:cast(cellPointer:pid(CellPointer), {sendElements, From, Elements}).
+	
+%% 
+%% addValue :: CellPointer -> Value -> ok
+%% 
+
+addValue(CellPointer, Value) ->
+	addValues(CellPointer, [Value]).
+
+%% 
+%% addValues :: CellPointer -> List Value -> ok
+%% 
+
+addValues(CellPointer, Values) ->
+	Elements = lists:map(fun(V) -> {add, V} end, Values),
+	gen_server:cast(cellPointer:pid(CellPointer), {injectElements, Elements}).
+	
+%% 
+%% removeValue :: CellPointer -> Value -> ok
+%% 
+
+removeValue(CellPointer, Value) ->
+	removeValues(CellPointer, [Value]).
+
+%% 
+%% addValues :: CellPointer -> List Value -> ok
+%% 
+
+removeValues(CellPointer, Values) ->
+	Elements = lists:map(fun(V) -> {remove, V} end, Values),
+	gen_server:cast(cellPointer:pid(CellPointer), {injectElements, Elements}).
 
 %% ====================================================
 %% PrimFun API
@@ -174,6 +204,10 @@ handle_cast({injectIntercept, InterceptPointer}, State) ->
 	Informants1 = cellPointer:filterList(Informants),
 	State1 = cellState:updateInformants(State, Informants1),
 	{noreply, cellState:injectIntercept(State1, InterceptPointer)};
+
+handle_cast({injectElements, Elements}, CellState) ->
+	CellState1 = injectElements(CellState, Elements),
+	{noreply, CellState1};
 	
 handle_cast({sendElements, From, Elements}, State) ->
 	State2 = 
@@ -186,25 +220,10 @@ handle_cast({sendElements, From, Elements}, State) ->
 				State1 = cellState:updateInterceptState(State, InterceptState),
 				cellState:setDone(State1, From)
 		end,
+	
+	CellState = injectElements(State2, NewElements),
+	{noreply, CellState};
 
-	%check if done
-	IsDone = cellState:isDone(State2),
-	
-	case cellState:getFlag(State2, waitForDone) of
-		true when IsDone =:= true ->
-			FinalElementsMerged = cellState:mergeWithStash(State2, NewElements),
-			{State3, FinalElements} = cellState:injectElements(State2, FinalElementsMerged),
-			FinalState = runOutputs(State3, FinalElements),
-			{noreply, FinalState};
-		true ->
-			NewState1 = cellState:updateStash(State2, NewElements),
-			{noreply, NewState1};
-		_ ->
-			{State3, FinalElements} = cellState:injectElements(State2, NewElements),
-			FinalState = runOutputs(State3, FinalElements),
-			{noreply, FinalState}
-	end;
-	
 handle_cast({injectOutput, OutputFunction, OutputTo}, State) ->
 	link(cellPointer:pid(OutputTo)),
 	NewState1 = cellState:injectOutput(State, OutputFunction, OutputTo),
@@ -255,11 +274,19 @@ runOutputs(State, NewElements) ->
 	%% 		may need to add the name of the output along with the state in the future (if List Output changes)
 	cellState:updateOutputStates(ListOfNewStates, State).
 
+%% 
+%% sendTo :: List CellPointer -> CellPointer -> List Element -> void
+%% 
+
 sendTo(CellPointers, From, Elements) ->
 	Send = 	fun(CellPointer) ->
 				cell:sendElements(CellPointer, From, Elements)
 			end,
 	lists:foreach(Send, CellPointers).
+
+%% 
+%% outputAllElements :: CellState -> Output -> CellPointer -> CellState
+%% 
 
 outputAllElements(CellState, Output, OutputTo) ->
 	AllElements = cellState:getElements(CellState),
@@ -269,7 +296,27 @@ outputAllElements(CellState, Output, OutputTo) ->
 	NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
 	cell:sendElements(OutputTo, ThisCell, NewElements),
 	NewCellState.
+
+
+%% 
+%% injectElements :: CellState -> List Element -> CellState
+%% 
+
+injectElements(CellState, Elements) ->
+	IsDone = cellState:isDone(CellState),
+	WaitForDone = cellState:getFlag(CellState, waitForDone),
+	IsLeashed = cellState:getFlag(CellState, leash),
 	
+	if
+		IsLeashed orelse (WaitForDone andalso (not IsDone)) ->
+			cellState:updateStash(CellState, Elements);
+		true ->
+			Elements1 = cellState:getStash(CellState, Elements),
+			CellState1 = cellState:emptyStash(CellState),
+			{CellState2, Elements2} = cellState:injectElements(CellState1, Elements),
+			runOutputs(CellState2, Elements2)
+	end.
+		
 %% ====================================================
 %% Utilities
 %% ====================================================

@@ -161,13 +161,20 @@ updateStash(#cellState{stash = Stash} = State, Elements) ->
 	State#cellState{stash = Elements ++ Stash}.
 	
 %% 
-%% mergeStash :: CellState -> List Element -> List Element
+%% getStash :: CellState -> List Element -> List Element
 %% 		stores elements that have been processed by the intercept but aren't ready to move because the 
 %%		cell is waiting to be done
 %% 
 
-mergeWithStash(#cellState{stash = Stash}, Elements) ->
-	Elements ++ Stash.
+getStash(#cellState{stash = Stash}, Elements) ->
+	Stash.
+	
+%% 
+%% emptyStash :: CellState -> CellState 
+%% 
+
+emptyStash(CellState) ->
+	CellState#cellState{stash = []}.
 	
 %% 
 %% injectElements :: CellState -> Elements -> Tuple CellState List Element
