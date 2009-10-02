@@ -177,7 +177,7 @@ function compileFile (filePath, rebuild, isLetFile) {
 			for( i = 0; i < error_cnt; i++ ) {
 				var lineInfo = countLines(str, error_off[i]);
 				var escapedLine= lineInfo.line.split("&").join("&amp;").split( "<").join("&lt;").split(">").join("&gt;")				
-				log("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
+				log("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + getCanonicalPath(file) + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
 			}
 			throw("Parse Error");
 		} else {

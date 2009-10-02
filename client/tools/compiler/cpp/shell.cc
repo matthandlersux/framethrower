@@ -57,6 +57,7 @@ v8::Handle<v8::String> ReadFile(const char* name);
 v8::Handle<v8::Value> ListFiles(const v8::Arguments& args);
 v8::Handle<v8::Value> ListDirectories(const v8::Arguments& args);
 v8::Handle<v8::Value> MakeDirectory(const v8::Arguments& args);
+v8::Handle<v8::Value> GetCanonicalPath(const v8::Arguments& args);
 v8::Handle<v8::Value> ListItems(const char* name, int type);
 void ReportException(v8::TryCatch* handler);
 
@@ -79,6 +80,8 @@ int RunMain(int argc, char* argv[]) {
   global->Set(v8::String::New("listDirectories"), v8::FunctionTemplate::New(ListDirectories));
   // Bind the global 'makeDirectory' function to the C++ MakeDirectory callback.
   global->Set(v8::String::New("makeDirectory"), v8::FunctionTemplate::New(MakeDirectory));
+  // Bind the global 'getCanonicalPath' function to the C++ GetCanonicalPath callback.
+  global->Set(v8::String::New("getCanonicalPath"), v8::FunctionTemplate::New(GetCanonicalPath));
 
   // Bind the global 'load' function to the C++ Load callback.
   global->Set(v8::String::New("load"), v8::FunctionTemplate::New(Load));
@@ -242,7 +245,6 @@ v8::Handle<v8::Value> MakeDirectory(const v8::Arguments& args) {
 	}
 
 	const char* name = ToCString(dirName);
-	int mode = 0777; 
 	
 	bool success = boost::filesystem::create_directory(name);
 	if (success) {
@@ -254,7 +256,21 @@ v8::Handle<v8::Value> MakeDirectory(const v8::Arguments& args) {
 
 
 
+v8::Handle<v8::Value> GetCanonicalPath(const v8::Arguments& args) {
+	if (args.Length() != 1) {
+	  return v8::ThrowException(v8::String::New("Requires 1 Parameter"));
+	}
 
+	v8::String::Utf8Value dirName(args[0]);
+	if (*dirName == NULL) {
+	  return v8::ThrowException(v8::String::New("Directory Name is null"));
+	}
+
+	const char* name = ToCString(dirName);
+	
+	string fullpath = boost::filesystem::complete(name).string();
+	return v8::String::New(fullpath.c_str());
+}
 
 
 // The callback that is invoked by v8 whenever the JavaScript 'load'
