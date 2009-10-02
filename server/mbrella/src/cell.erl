@@ -56,7 +56,7 @@ makeLinkedCell(CellType) ->
 makeCellLeashed() -> makeCellLeashed(unit).
 
 makeCellLeashed(CellType) ->
-	{ok, Pid} = gen_server:start(?MODULE, [CellType, leashed], []),
+	{ok, Pid} = gen_server:start(?MODULE, [CellType, {leashed, true}], []),
 	%Name = env:nameAndStoreCell(Pid),
 	Name = "server" ++ integer_to_list(random:uniform(1000)),
 	cellPointer:new(Name, Pid).
@@ -64,7 +64,7 @@ makeCellLeashed(CellType) ->
 makeLinkedCellLeashed() -> makeLinkedCellLeashed(unit).
 
 makeLinkedCellLeashed(CellType) ->
-	{ok, Pid} = gen_server:start(?MODULE, [CellType, leashed], []),
+	{ok, Pid} = gen_server:start(?MODULE, [CellType, {leashed, true}], []),
 	%Name = env:nameAndStoreCell(Pid),
 	Name = "server" ++ integer_to_list(random:uniform(1000)),
 	cellPointer:new(Name, Pid).
@@ -305,7 +305,7 @@ outputAllElements(CellState, Output, OutputTo) ->
 injectElements(CellState, Elements) ->
 	IsDone = cellState:isDone(CellState),
 	WaitForDone = cellState:getFlag(CellState, waitForDone),
-	IsLeashed = cellState:getFlag(CellState, leash),
+	IsLeashed = cellState:getFlag(CellState, leashed),
 	
 	if
 		IsLeashed orelse (WaitForDone andalso (not IsDone)) ->

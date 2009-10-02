@@ -31,7 +31,7 @@
 	elements = cellElements:new(),
 	stash = [],
 	outputs = outputs:newState(),
-	flags = [],
+	flags = [{leashed, false}, {waitForDone, false}],
 	informants = []
 }).
 
@@ -42,8 +42,8 @@
 new(CellType) ->
 	#cellState{elements = cellElements:new(CellType)}.
 
-new(CellType, [{name, Name}]) ->
-	#cellState{elements = cellElements:new(CellType), name = Name}.
+new(CellType, Flags) ->
+	processFlags(#cellState{elements = cellElements:new(CellType)}, Flags).
 	
 %% 
 %% injectOutput :: CellState -> OutputFunction -> CellPointer -> CellState
@@ -151,6 +151,18 @@ getFlag(#cellState{flags = Flags} = State, Flag) ->
 		false -> false;
 		{Flag, Value} -> Value
 	end.
+	
+%% 
+%% setFlag :: CellState -> Atom -> Bool -> CellState
+%% 
+
+setFlag(#cellState{flags = Flags} = State, Flag, Value) ->
+	case lists:keytake(Flag, 1, Flags) of
+		false -> 
+			exit(cant_find_flag);
+		{value, OldFlag, RestOfFlags} ->
+			State#cellState{ flags = [{Flag, Value}] ++ RestOfFlags }
+	end.
 
 %% 
 %% updateStash :: CellState -> List Element -> CellState
@@ -194,6 +206,22 @@ isDone(#cellState{done = Done}) ->
 %% Internal API
 %% ====================================================
 
+%% 
+%% processFlags :: CellState -> List (Tuple Atom Value) -> CellState
+%% 
+
+processFlags(CellState, []) -> CellState;
+processFlags(CellState, [H|T]) ->
+	processFlags(processFlag(CellState, H), T).
+
+%% 
+%% processFlag :: CellState -> Tuple Atom Value -> CellState
+%% 
+
+processFlag(CellState, {name, Name}) ->
+	CellState#cellState{name = Name};
+processFlag(CellState, {Flag, Bool}) ->
+	setFlag(CellState, Flag, Bool).
 
 
 
