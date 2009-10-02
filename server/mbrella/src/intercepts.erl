@@ -1,4 +1,4 @@
--module (intercepts.erl).
+-module (intercepts).
 -compile(export_all).
 
 % -include().
@@ -14,7 +14,6 @@
 %% ====================================================
 
 % Intercept :: Tuple InterceptFunction InterceptState
-% Intercepts :: List Intercept
 %
 % InterceptFunction :: Tuple Atom (List Argument)
 % InterceptState :: a
@@ -32,14 +31,15 @@ call(Intercept, From, Elements) ->
 	Name = getName(Intercept),
 	Args = getArgs(Intercept),
 	State = getState(Intercept),
-	callIntercept(Name, Args, State, From, Elements)
+	callIntercept(Name, Args, State, From, Elements).
 
-callIntercept(_, _, _, []) -> {undefined, []};
+callIntercept(_, _, _, _, []) -> {undefined, []};
 callIntercept(Name, Args, State, From, Elements) ->
 	Process = fun(Element, {OldState, OldElements}) ->
-		{NewState, Elements} = processMessage(Name, Args, OldState, From, Element),
-		{NewState, Elements ++ OldElements}
+		{NewState, ProcessedElements} = processMessage(Name, Args, OldState, From, Element),
+		{NewState, ProcessedElements ++ OldElements}
 	end,
+	?trace(Elements),
 	lists:foldr(Process, {State, []}, Elements).
 
 callIntercept(Name, From, Elements) ->
@@ -49,26 +49,36 @@ callIntercept(Name, Args, From, Elements) ->
 	callIntercept(Name, Args, [], From, Elements).
 	
 getArguments(Intercept) -> getArgs(Intercept).
+
 %% ====================================================
 %% Internal API
 %% ====================================================
 
 processMessage(Name, Args, State, From, Element) ->
-	case erlang:apply(intercepts, Name, Args ++ State ++ From ++ Element) of
+	case erlang:apply(intercepts, Name, Args ++ [State] ++ [From] ++ [Element]) of
 		{NewState, Elements} when is_list(Elements) ->
 			{NewState, Elements};
 		{NewState, Elements} when is_tuple(Elements) ->
 			{NewState, [Elements]}
 	end.
+	
+getName({{Name, _Args}, _State}) -> Name.
+	
+getArgs({{_Name, Args}, _State}) -> Args.
+	
+getState({{_Name, _Args}, State}) -> State.
 
 %% ====================================================
 %% Intercept Functions
 %% ====================================================
 
-
 %	-the intercepts job is to take keyed/unkeyed input messages, do something to them, and return an 
 %	updated state and the elements that result
 %	interceptFunction :: Args -> InterceptState -> KeyedMessages -> Tuple InterceptState UnkeyedMessages
+
+debug( _, From, Element ) ->
+	io:format("RECEIVED FROM: ~p: ~p~n", [From, Element]),
+	{[],Element}.
 
 fold( Function, FunctionInverse, InterceptState, From, Element ) ->
 	
@@ -129,7 +139,7 @@ invert( SelfPointer, CellPointerParent, State, From, Element ) ->
 							todo
 					end;
 				error ->
-					invertStateHoldMessage(Message)
+					todo %invertStateHoldMessage(Element)
 			end
 	end.
 
@@ -163,15 +173,17 @@ invertStateGetCellpointer(_) -> todo.
 
 setDifference(CellPointer1, CellPointer2, State, From, Element) ->
 	Value = cellElements:value(Element),
+	Name1 = cellPointer:name(CellPointer1),
+	Name2 = cellPointer:name(CellPointer2),
 	case cellPointer:name(From) of
-		cellPointer:name(CellPointer1) ->
+		Name1 ->
 			case cellElements:modifier(Element) of
 				add ->
 					setDifferenceStateAdd(State, Value);
 				remove ->
 					setDifferenceStateSubtract(State, Value)
 			end;
-		cellPointer:name(CellPointer2) ->
+		Name2 ->
 			case cellElements:modifier(Element) of
 				add ->
 					setDifferenceStateSubtract(State, Value);

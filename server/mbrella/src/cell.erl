@@ -77,6 +77,7 @@ makeLinkedCellLeashed(CellType) ->
 %% sendElements :: CellPointer -> CellPointer -> Elements -> ok
 %% Elements :: List Tuple ("add" | "remove") Elements
 
+sendElements(_, _, []) -> ok;
 sendElements(CellPointer, From, Elements) ->
 	gen_server:cast(cellPointer:pid(CellPointer), {sendElements, From, Elements}).
 
@@ -97,12 +98,12 @@ unleash(CellPointer) ->
 %% 
 
 injectOutput(CellPointer, OutputToCellPointer) ->
-	injectOutput(CellPointer, OutputToCellPointer, outputs:standard()).
+	injectOutput(CellPointer, outputs:standard(), OutputToCellPointer).
 	
-injectOutput(CellPointer, OutputToCellPointer, OutputFunction) ->
+injectOutput(CellPointer, OutputFunction, OutputToCellPointer) ->
 	gen_server:cast(
 		cellPointer:pid(CellPointer), 
-		{injectOutput, OutputToCellPointer, OutputFunction }
+		{injectOutput, OutputFunction, OutputToCellPointer }
 	).
 	
 %% 
@@ -182,7 +183,7 @@ handle_cast({sendElements, From, Elements}, State) ->
 				cellState:setDone(State, From);
 			Intercept ->
 				{InterceptState, NewElements} = intercepts:call(Intercept, From, Elements),
-				State1 = cellState:updateIntercept(InterceptState),
+				State1 = cellState:updateInterceptState(State, InterceptState),
 				cellState:setDone(State1, From)
 		end,
 
@@ -205,9 +206,11 @@ handle_cast({sendElements, From, Elements}, State) ->
 	end;
 	
 handle_cast({injectOutput, OutputFunction, OutputTo}, State) ->
-	link(cellPointer:cellPid(OutputTo)),
+	link(cellPointer:pid(OutputTo)),
 	NewState1 = cellState:injectOutput(State, OutputFunction, OutputTo),
-	NewState2 = outputAllElements(NewState1, OutputFunction, OutputTo),
+	Outputs = cellState:getOutputs(NewState1),
+	Output = outputs:getOutput(OutputFunction, Outputs),
+	NewState2 = outputAllElements(NewState1, Output, OutputTo),
 	{noreply, NewState2};
 	
 handle_cast(leash, State) ->
@@ -258,13 +261,14 @@ sendTo(CellPointers, From, Elements) ->
 			end,
 	lists:foreach(Send, CellPointers).
 
-outputAllElements(State, OutputFunction, OutputTo) ->
-	AllElements = cellState:getElements(State),
-	ElementsList = cellElements:elementsToList(AllElements),
-	ThisCell = cellState:getCellPointer(State),
-	{NewState, NewElements} = outputs:callOutput(OutputFunction, AllElements, ElementsList),
+outputAllElements(CellState, Output, OutputTo) ->
+	AllElements = cellState:getElements(CellState),
+	ElementsList = cellElements:toList(AllElements),
+	ThisCell = cellState:cellPointer(CellState),
+	{OutputState, NewElements} = outputs:call(Output, AllElements, ElementsList),
+	NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
 	cell:sendElements(OutputTo, ThisCell, NewElements),
-	NewState.
+	NewCellState.
 	
 %% ====================================================
 %% Utilities

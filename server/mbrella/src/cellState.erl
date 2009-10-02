@@ -3,11 +3,7 @@
 
 -include("../include/scaffold.hrl").
 
--ifdef( debug ).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
--else.
--define( trace(X), void ).
--endif.
 
 %% ====================================================
 %% notes
@@ -53,9 +49,8 @@ new(CellType, [{name, Name}]) ->
 %% injectOutput :: CellState -> OutputFunction -> CellPointer -> CellState
 %% 
 
-injectOutput(State, OutputFunction, OutputTo) ->
+injectOutput(#cellState{outputs = Outputs} = State, OutputFunction, OutputTo) ->
 	%%%% TODO when there are a lot of outputs, switch from a list to a dict
-	Outputs = State#cellState.outputs,
 	State#cellState{outputs = outputs:addOutput(OutputFunction, OutputTo, Outputs)}.
 
 %% 
@@ -134,6 +129,18 @@ getIntercept(#cellState{intercept = Intercept} = State) ->
 
 updateOutputStates(OutputStates, #cellState{outputs = Outputs} = State) ->
 	State#cellState{outputs = outputs:updateOutputStates(OutputStates, Outputs)}.
+
+updateOutputState( #cellState{outputs = Outputs} = CellState, OutputFunction, NewOutputState) ->
+	CellState#cellState{outputs = outputs:updateOutputState(Outputs, OutputFunction, NewOutputState)}.
+	
+%% 
+%% updateInterceptState :: CellState -> a -> CellState
+%% 
+
+updateInterceptState(#cellState{intercept = Intercept} = CellState, InterceptState) ->
+	CellState#cellState{intercept = setelement(2, Intercept, InterceptState)}.
+
+%updateIntercept(Cell)
 
 %% 
 %% getFlag :: CellState -> Atom -> Bool

@@ -103,6 +103,16 @@ process(CellElements, ListOfElements) when is_list(ListOfElements) ->
 				end,
 	lists:foldr(Process, {CellElements, []}, ListOfElements).
 
+%% 
+%% toList :: CellElements -> List Element
+%% 
+
+toList({unit, {Value, Weight}}) -> 
+	[valueToElement(Value, Weight)];
+toList({set, ElementState}) ->
+	ElementList = dict:to_list(ElementState),
+	lists:map(fun({V,W}) -> valueToElement(V, W) end, ElementList).
+	
 %% ====================================================
 %% Internal API
 %% ====================================================
@@ -160,6 +170,11 @@ processor({mapRange, SetElements}, {add, NewElement}) ->
 	todo;
 processor({mapRange, SetElements}, {remove, NewElement}) ->
 	todo.
+
+	
+valueToElement(Value, 0) -> [];
+valueToElement(Value, Weight) when Weight > 0 -> {add, Value};
+valueToElement(Value, Weight) when Weight < 0 -> {remove, Value}.
 
 %% ====================================================
 %% we will need special set of functions for cellpointers due to distributed...

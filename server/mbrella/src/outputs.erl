@@ -128,11 +128,42 @@ updateOutputStates(NewOutputStates, Outputs) ->
 	lists:zipwith(Combine, NewOutputStates, Outputs).
 	
 %% 
+%% updateOutputState :: Outputs -> OutputFunction | Output -> a -> Outputs
+%% 
+
+updateOutputState(Outputs, {_,OutputFunction,_}, OutputState) ->
+	updateOutputState(Outputs, OutputFunction, OutputState);
+updateOutputState(Outputs, OutputFunction, OutputState) ->
+	case lists:keytake(OutputFunction, 2, Outputs) of
+		false ->
+			exit(some_wrong_call_to_update_outputs),
+			Outputs;
+		{value, OldOutput, OutputsLeftOver} ->
+			[setelement(3, OldOutput, OutputState)] ++ OutputsLeftOver
+	end.
+	
+%% 
 %% getOutput :: OutputFunction -> OutputState -> Output
 %% 
 
 getOutput(OutputFunction, OutputState) ->
 	lists:keyfind(OutputFunction, 2, OutputState).
+	
+%% 
+%% addOutput :: OutputFunction -> CellPointer -> Outputs -> Outputs
+%% 
+
+addOutput(OutputFunction, OutputTo, Outputs) ->
+	case lists:keytake(OutputFunction, 2, Outputs) of
+		false ->
+			[{[OutputTo], OutputFunction, construct(OutputFunction)}] ++ Outputs;
+		{value,{SendTos, _OutputFunction, _OutputState} = OldOutput, OutputsLeftOver} ->
+			case lists:member(OutputTo, SendTos) of
+				true ->
+					Outputs;
+				false -> [setelement(1, OldOutput, [OutputTo] ++ SendTos)] ++ OutputsLeftOver
+			end
+	end.
 
 %% ====================================================
 %% Internal API
@@ -151,6 +182,9 @@ getName({_SendTo, {Name, _Args}, _State}) -> Name.
 getArgs({_SendTo, {_Name, Args}, _State}) -> Args.
 	
 getState({_SendTo, {_Name, _Args}, State}) -> State.
+
+construct({Name, _Args}) ->
+	erlang:apply(outputs, Name, []).
 
 %% ====================================================
 %% Outputs For Primfuncs
