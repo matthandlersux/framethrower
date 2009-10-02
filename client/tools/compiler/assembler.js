@@ -288,8 +288,6 @@ function countLines (wholeString, position) {
 //java -jar ../util/js.jar -opt -1 assembler.js <root folder> rebuild
 
 try{
-	//TODO: pass in arguments through shell
-	var arguments = ["test", "rebuild"];	
 	if( arguments.length > 0 ) { 		
 		var rebuild = false;
 		if (arguments[1] == "rebuild") {
