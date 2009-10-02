@@ -54,7 +54,6 @@ var includes = (function () {
 			"source/js/builtin/eventExtras.js",
 
 			// "source/js/templates/preparse.js", // might want to do this at compile time?
-			"source/js/structure/fetch.js"
 		],
 		browser: [
 			"source/js/external/firebugx.js",

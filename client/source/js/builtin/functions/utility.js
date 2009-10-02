@@ -31,3 +31,4 @@ addFun("clampMax", "Number -> Number -> Number", function (x, max) {
 	if (x > max) return max;
 	else return x;
 });
+addFun("round", "Number -> Number", function (x) {return Math.round(x);});

@@ -237,14 +237,23 @@ var semantics = function(){
 	}
 
 	function makeFunction(funcText, jsTransformer, outputTypeTransformer) {
+		// TODO in general, hasn't the compiler already decided what things are vars and what things are types?
+		// seems like we are re-parsing 'by hand'...
+	
 		var bracketIndex = funcText.indexOf('{');
 		var lParenIndex = funcText.indexOf('(');
 		var args = funcText.substr(lParenIndex, bracketIndex - lParenIndex);
 		var JS = funcText.substr(bracketIndex);
 		if(jsTransformer)
 			JS = jsTransformer(JS);
-		var rParenIndex = args.indexOf(")");
+
+		var rParenIndex = args.lastIndexOf(")::"); // parenthesis before output type is end of args list
+		if(rParenIndex === -1) // unless there is no output type
+			rParenIndex = args.lastIndexOf(")"); // in which case last parenthesis is end of args list
+
+		// TODO this will fail if there is any whitespace variation:
 		var outputType = args.substr(rParenIndex+3);
+		
 		if (outputType.length == 0) {
 			outputType = undefined;
 		}

@@ -84,7 +84,7 @@ makeInfon3 = action (relation::Situation, p1::Situation, p2::Situation, p3::Situ
 	makePipeIn1 arg3 p3 pipe
 },
 
-createClone = action (objectToClone::Situation, cloneIntoSituation::Situation, pipe::List Pipe) {
+createClone = action (objectToClone::Situation, cloneIntoSituation::Situation, pipe::[Pipe])::(Situation, [Pipe]) {
 	clone <- makeSituation,
 	putSituationIn cloneIntoSituation clone,
 	extract Situation:propName objectToClone as name {
@@ -92,24 +92,24 @@ createClone = action (objectToClone::Situation, cloneIntoSituation::Situation, p
 	},
 	clonePipe <- makePipe clone objectToClone,
 	putPipeIn clonePipe pipe,
-	return ( makeTuple2 clone (cons clonePipe nil) )
+	return (clone, [clonePipe])
 },
 
 
-createTimePoint = action (timeline::Situation, pipeFromTimeline::List Pipe, seconds::Number) {
+createTimePoint = action (timeline::Situation, pipeFromTimeline::[Pipe], seconds::Number)::Situation {
 	tpPair <- createClone timelinePoint timeline pipeFromTimeline,
 	tp = fst tpPair,
 	set (Situation:propTime tp) seconds,
 	return tp
 },
-createTextPoint = action (textline::Situation, pipeFromTextline::List Pipe, char::Number) {
+createTextPoint = action (textline::Situation, pipeFromTextline::[Pipe], char::Number)::Situation {
 	tpPair <- createClone textlinePoint textline pipeFromTextline,
 	tp = fst tpPair,
 	set (Situation:propTime tp) char,
 	return tp
 },
 
-createInterval = action (line::Situation, pipeFromLine::List Pipe, startPoint::Situation, endPoint::Situation) {
+createInterval = action (line::Situation, pipeFromLine::[Pipe], startPoint::Situation, endPoint::Situation)::Situation {
 	intPair <- createClone lineInterval line pipeFromLine,
 	int = fst intPair,
 	makeInfon3 lineHasEndpoints lineHasEndpointsStart lineHasEndpointsEnd lineHasEndpointsBetween line startPoint endPoint int,
@@ -140,7 +140,7 @@ movieTomr = state {makePipe mr movie},
 
 mrEssay = state {makeSituationNamedIn "Tedg's Moulin Rouge Essay" universe},
 essayToMrEssay = state {makePipe mrEssay essay},
-pipeTextlineToMrEssay = cons textlineToEssay (cons essayToMrEssay nil),
+pipeTextlineToMrEssay = [textlineToEssay, essayToMrEssay],
 
 mrClonePair = state {createClone mr mrEssay nil},
 mrEssayTimeline = fst mrClonePair,

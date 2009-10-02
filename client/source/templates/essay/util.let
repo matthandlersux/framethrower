@@ -7,7 +7,7 @@ nameSituation = action (sit::Situation, name::String) {
 timeSituation = action (sit::Situation, time::Number) {
 	set (Situation:propTime sit) time
 },
-makeSituationNamed = action (name::String) {
+makeSituationNamed = action (name::String)::Situation {
 	sit <- makeSituation,
 	nameSituation sit name,
 	return sit
@@ -16,13 +16,13 @@ putSituationIn = action (parent::Situation, child::Situation) {
 	add (Situation:contains parent) child,
 	set (Situation:container child) parent
 },
-makeSituationNamedIn = action (name::String, parent::Situation) {
+makeSituationNamedIn = action (name::String, parent::Situation)::Situation {
 	sit <- makeSituationNamed name,
 	putSituationIn parent sit,
 	return sit
 },
 
-makePipe = action (instance::Situation, type::Situation) {
+makePipe = action (instance::Situation, type::Situation)::Pipe {
 	pipe <- create(Pipe, {instance:instance, type:type}),
 	set (Pipe:truth pipe) 1,
 	add (Situation:asInstance instance) pipe,
@@ -35,7 +35,7 @@ makePipe = action (instance::Situation, type::Situation) {
 
 
 
-putPipeIn = action (pipe::Pipe, container::List Pipe) {
+putPipeIn = action (pipe::Pipe, container::[Pipe]) {
 	set (Pipe:container pipe) container,
 	extract container as pipeSegment {
 		add (Pipe:contains pipeSegment) pipe
@@ -43,16 +43,16 @@ putPipeIn = action (pipe::Pipe, container::List Pipe) {
 },
 
 putPipeIn1 = action (pipe::Pipe, pipe0::Pipe) {
-	putPipeIn pipe (cons pipe0 nil)
+	putPipeIn pipe [pipe0]
 },
 putPipeIn2 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe) {
-	putPipeIn pipe (cons pipe0 (cons pipe1 nil))
+	putPipeIn pipe [pipe0, pipe1]
 },
 putPipeIn3 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe) {
-	putPipeIn pipe (cons pipe0 (cons pipe1 (cons pipe2 nil)))
+	putPipeIn pipe [pipe0, pipe1, pipe2]
 },
 putPipeIn4 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe, pipe3::Pipe) {
-	putPipeIn pipe (cons pipe0 (cons pipe1 (cons pipe2 (cons pipe3 nil))))
+	putPipeIn pipe [pipe0, pipe1, pipe2, pipe3]
 },
 
 
@@ -86,22 +86,22 @@ putPipeIn4 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe, pipe3::P
 // 	add(Pipe:contains pipe3, pipe)
 // },
 
-makePipeIn1 = action (instance::Situation, type::Situation, pipe0::Pipe) {
+makePipeIn1 = action (instance::Situation, type::Situation, pipe0::Pipe)::Pipe {
 	pipe <- makePipe instance type,
 	putPipeIn1 pipe pipe0,
 	return pipe
 },
-makePipeIn2 = action (instance::Situation, type::Situation, pipe0::Pipe, pipe1::Pipe) {
+makePipeIn2 = action (instance::Situation, type::Situation, pipe0::Pipe, pipe1::Pipe)::Pipe {
 	pipe <- makePipe instance type,
 	putPipeIn2 pipe pipe0 pipe1,
 	return pipe
 },
-makePipeIn3 = action (instance::Situation, type::Situation, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe) {
+makePipeIn3 = action (instance::Situation, type::Situation, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe)::Pipe {
 	pipe <- makePipe instance type,
 	putPipeIn3 pipe pipe0 pipe1 pipe2,
 	return pipe
 },
-makePipeIn4 = action (instance::Situation, type::Situation, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe, pipe3::Pipe) {
+makePipeIn4 = action (instance::Situation, type::Situation, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe, pipe3::Pipe)::Pipe {
 	pipe <- makePipe instance type,
 	putPipeIn4 pipe pipe0 pipe1 pipe2 pipe3,
 	return pipe

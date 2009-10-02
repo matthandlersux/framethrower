@@ -41,3 +41,12 @@ function setNodeAttribute(node, attName, attValue) {
 	}
 }
 
+function attachEventStyle(node, eventName) {
+	if (eventName === "mousedown") {
+		node.style.cursor = "-moz-grab";
+	}
+}
+
+function removeEventStyle(node, eventName) {
+	node.style.cursor = "auto";
+}

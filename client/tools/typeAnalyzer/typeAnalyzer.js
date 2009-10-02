@@ -252,7 +252,7 @@ function typeAnalyze(line) {
 	}
 	
 	function checkIsAction(type) {
-		if (!type.left || !type.left.value === "Action") {
+		if (!type.left || type.left.value !== "Action") {
 			//print("Is the thing even a type? "+JSON.stringify(type)+"<br><br>");
 			staticAnalysisError("Expecting an Action but got `"+unparseType(type)+"`");
 		}
