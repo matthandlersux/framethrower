@@ -173,11 +173,11 @@ function compileFile (filePath, rebuild, isLetFile) {
 		if( !parseResult.success ) {
 			error_cnt = parseResult.result;
 			GLOBAL_ERRORS = true;
-			log("<b>Parse errors, File: " + file.getName() + "</b><br />");
+			log("<b>Parse errors, File: " + file + "</b><br />");
 			for( i = 0; i < error_cnt; i++ ) {
 				var lineInfo = countLines(str, error_off[i]);
 				var escapedLine= lineInfo.line.split("&").join("&amp;").split( "<").join("&lt;").split(">").join("&gt;")				
-				log("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file.getCanonicalPath() + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
+				log("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + file + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
 			}
 			throw("Parse Error");
 		} else {
@@ -190,7 +190,7 @@ function compileFile (filePath, rebuild, isLetFile) {
 			result = semantics.processTree(parseResult.result, "" + filePath);
 			try {
 				//TODO: add serialize to shell c++
-				serialize(result, binfile.getAbsolutePath());
+				serialize(result, binfile);
 			} catch (e) {}
 			return result;
 		}
