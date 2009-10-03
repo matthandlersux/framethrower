@@ -33,7 +33,7 @@ call(Intercept, From, Elements) ->
 	State = getState(Intercept),
 	callIntercept(Name, Args, State, From, Elements).
 
-callIntercept(_, _, _, _, []) -> {undefined, []};
+callIntercept(_, _, State, _, []) -> {State, []};
 callIntercept(Name, Args, State, From, Elements) ->
 	Process = fun(Element, {OldState, OldElements}) ->
 		{NewState, ProcessedElements} = processMessage(Name, Args, OldState, From, Element),

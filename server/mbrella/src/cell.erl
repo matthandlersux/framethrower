@@ -129,11 +129,11 @@ unleash(CellPointer) ->
 
 injectOutput(CellPointer, OutputToCellPointer) ->
 	injectOutput(CellPointer, outputs:standard(), OutputToCellPointer).
-	
-injectOutput(CellPointer, OutputFunction, OutputToCellPointer) ->
+
+injectOutput(CellPointer, OutputNameOrFunction, OutputToCellPointer) ->
 	gen_server:cast(
 		cellPointer:pid(CellPointer), 
-		{injectOutput, OutputFunction, OutputToCellPointer }
+		{injectOutput, OutputNameOrFunction, OutputToCellPointer}
 	).
 	
 %% 
@@ -152,7 +152,7 @@ uninjectOutput(CellPointer, OutputToCellPointer, OutputFunction) ->
 
 
 %% 
-%% inject intercept function
+%% injectIntercept :: CellPointer -> Intercept -> ok
 %% 
 
 injectIntercept(CellPointer, InterceptPointer) ->
@@ -161,6 +161,12 @@ injectIntercept(CellPointer, InterceptPointer) ->
 		{injectIntercept, InterceptPointer}
 	).
 
+%% 
+%% addInformant :: CellPointer -> CellPointer -> ok
+%% 
+
+addInformant(CellPointer, Informant) ->
+	gen_server:cast(cellPointer:pid(CellPointer), {addInformant, Informant}).
 
 %% ====================================================
 %% Debug API
@@ -224,11 +230,11 @@ handle_cast({sendElements, From, Elements}, State) ->
 	CellState = injectElements(State2, NewElements),
 	{noreply, CellState};
 
-handle_cast({injectOutput, OutputFunction, OutputTo}, State) ->
+handle_cast({injectOutput, OutputNameOrFunction, OutputTo}, State) ->
 	link(cellPointer:pid(OutputTo)),
-	NewState1 = cellState:injectOutput(State, OutputFunction, OutputTo),
+	NewState1 = cellState:injectOutput(State, OutputNameOrFunction, OutputTo),
 	Outputs = cellState:getOutputs(NewState1),
-	Output = outputs:getOutput(OutputFunction, Outputs),
+	Output = outputs:getOutput(OutputNameOrFunction, Outputs),
 	NewState2 = outputAllElements(NewState1, Output, OutputTo),
 	{noreply, NewState2};
 	
@@ -265,10 +271,9 @@ runOutputs(State, NewElements) ->
 	Processor = 	fun(Output, ListOfNewStates) ->
 						{NewOutputState, ElementsToSend} = outputs:call(Output, AllElements, NewElements),
 						ListOfSendTos = outputs:getSendTos(Output),
-						sendTo(ListOfSendTos, From, ElementsToSend),
+						ElementsToSend =:= [] orelse sendTo(ListOfSendTos, From, ElementsToSend),
 						[NewOutputState] ++ ListOfNewStates
 					end,
-	%using foldr removes the need to lists:reverse at the end
 	ListOfNewStates = lists:foldr(Processor, [], ListOfOutputs),
 	%% NOTE: needs to be in the same order as the outputs are in getOutputs above, which means
 	%% 		may need to add the name of the output along with the state in the future (if List Output changes)
@@ -291,11 +296,20 @@ sendTo(CellPointers, From, Elements) ->
 outputAllElements(CellState, Output, OutputTo) ->
 	AllElements = cellState:getElements(CellState),
 	ElementsList = cellElements:toList(AllElements),
-	ThisCell = cellState:cellPointer(CellState),
-	{OutputState, NewElements} = outputs:call(Output, AllElements, ElementsList),
-	NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
-	cell:sendElements(OutputTo, ThisCell, NewElements),
-	NewCellState.
+	if
+		length(ElementsList) =:= 0 -> CellState;
+		true ->
+			ThisCell = cellState:cellPointer(CellState),
+			{OutputState, NewElements} = outputs:call(Output, AllElements, ElementsList),
+			NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
+			
+			if
+				NewElements =:= [] -> NewCellState;
+				true -> 
+					cell:sendElements(OutputTo, ThisCell, NewElements),
+					NewCellState
+			end
+	end.
 
 
 %% 

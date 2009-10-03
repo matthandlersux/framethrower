@@ -33,12 +33,18 @@
 % 	cell:injectOutput(Cell, OutputCell, send),
 % 	cell:unleash(OutputCell).
 
+%% 
+%% isEmpty :: Set a -> Unit Null
+%% 
+
 isEmpty(CellPointer) ->
-	OutputCell = cell:makeLeashedCell(unit),
+	OutputCell = cell:makeCellLeashed(unit),
+	% need to add informant manually because it isn't an argument
 	cell:addInformant(OutputCell, CellPointer),
-	cell:addElement(OutputCell, null),
-	cell:injectIntercept(OutputCell, {switch, undefined, []})
-	cell:injectOutput(CellPointer, OutputCell).
+	cell:addValue(OutputCell, null),
+	cell:injectOutput(CellPointer, outputs:construct(OutputCell, isEmpty)),
+	cell:unleash(OutputCell),
+	OutputCell.
 	
 reactiveAnd(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeLeashedCell(unit),

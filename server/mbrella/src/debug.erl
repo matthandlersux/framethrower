@@ -418,3 +418,12 @@ C2 = cell:makeCell(set).
 cell:injectIntercept(C2, {{debug, []}, []}),
 cell:injectOutput(C1, C2),
 cell:sendElements(C1, {"name", self()}, [{add,matt},{add,toby},{remove, toby},{add,andrew},{add,matt}]).
+
+f(),
+C = cell:makeCell(unit).
+S = cell:makeCell(set).
+D = cell:makeCell(unit).
+cell:addValues(S, [toby, matt, andrew]),
+cell:injectOutput(C, D),
+cell:injectIntercept(D, {{debug, []}, []}),
+cell:injectOutput(S, isEmpty, C).

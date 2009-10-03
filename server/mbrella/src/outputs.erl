@@ -60,7 +60,12 @@ callOutput(Name, Args, State, ElementsState, Elements) ->
 		{NewState, Elements} = processElement(Name, Args, OldState, ElementsState, Element),
 		{NewState, Elements ++ OldElements}
 	end,
-	lists:foldr(Process, {State, []}, Elements).
+	try lists:foldr(Process, {State, []}, Elements)
+	catch
+		throw:NewStateAndElements -> 
+			?trace(NewStateAndElements),
+			NewStateAndElements
+	end.
 
 callOutput(Name, ElementsState, Elements) ->
 	callOutput(Name, [], [], ElementsState, Elements).
@@ -143,9 +148,10 @@ updateOutputState(Outputs, OutputFunction, OutputState) ->
 	end.
 	
 %% 
-%% getOutput :: OutputFunction -> OutputState -> Output
+%% getOutput :: Atom | OutputFunction -> OutputState -> Output
 %% 
 
+getOutput(OutputName, OutputState) when is_atom(OutputName) -> getOutput({OutputName, []}, OutputState);
 getOutput(OutputFunction, OutputState) ->
 	lists:keyfind(OutputFunction, 2, OutputState).
 	
@@ -153,10 +159,11 @@ getOutput(OutputFunction, OutputState) ->
 %% addOutput :: OutputFunction -> CellPointer -> Outputs -> Outputs
 %% 
 
-addOutput(OutputFunction, OutputTo, Outputs) ->
+addOutput(OutputNameOrFunction, OutputTo, Outputs) ->
+	OutputFunction = toFunction(OutputNameOrFunction),
 	case lists:keytake(OutputFunction, 2, Outputs) of
 		false ->
-			[{[OutputTo], OutputFunction, construct(OutputFunction)}] ++ Outputs;
+			[construct(OutputTo, OutputFunction)] ++ Outputs;
 		{value,{SendTos, _OutputFunction, _OutputState} = OldOutput, OutputsLeftOver} ->
 			case lists:member(OutputTo, SendTos) of
 				true ->
@@ -169,28 +176,76 @@ addOutput(OutputFunction, OutputTo, Outputs) ->
 %% Internal API
 %% ====================================================
 
+
+%% 
+%% toFunction :: Name | Tuple Name (List Value) -> Tuple Name (List Value)
+%% 
+
+toFunction(OutputFunction) when is_tuple(OutputFunction) -> OutputFunction;
+toFunction(Name) when is_atom(Name) -> {Name, []}.
+
+%% 
+%% processElement :: Atom -> List Value -> OutputState -> ElementState -> Element -> 
+%%					Tuple OutputState (List Element) | Tuple3 Atom OutputState (List Element)
+%% 
+
 processElement(Name, Args, OutputState, ElementsState, Element) ->
-	case erlang:apply(outputs, Name, Args ++ OutputState ++ ElementsState ++ Element) of
+	case erlang:apply(outputs, Name, Args ++ [OutputState] ++ [ElementsState] ++ [Element]) of
 		{NewState, Elements} when is_list(Elements) ->
 			{NewState, Elements};
 		{NewState, Elements} when is_tuple(Elements) ->
 			{NewState, [Elements]}
 	end.
 
-getName({_SendTo, {Name, _Args}, _State}) -> Name.
-	
-getArgs({_SendTo, {_Name, Args}, _State}) -> Args.
-	
+getName({_SendTo, {Name, _Args}, _State}) -> Name;
+getName({Name, _Args}) -> Name.	
+
+getArgs({_SendTo, {_Name, Args}, _State}) -> Args;
+getArgs({_Name, Args}) -> Args.
+
 getState({_SendTo, {_Name, _Args}, State}) -> State.
 
-construct({Name, _Args}) ->
-	erlang:apply(outputs, Name, []).
 
+%% 
+%% construct :: CellPointer -> OutputFunction | OutputName -> Output
+%%		used by primFuncs to create an output and construct its state
+%% 
+	
+construct(CellPointerSendTo, {Name, Args}) ->
+	{[CellPointerSendTo], {Name, Args}, construct({Name, Args})};
+construct(CellPointerSendTo, Name) ->
+	construct(CellPointerSendTo, {Name, []}).
+
+%% 
+%% construct :: OutputFunction -> OutputState
+%% 
+
+construct({Name, Args}) ->
+	erlang:apply(outputs, Name, Args).
+	
 %% ====================================================
 %% Outputs For Primfuncs
 %% ====================================================
 
 
+isEmpty() -> 
+	empty.
+	
+isEmpty(null, ElementsState, _Element) ->
+	case cellElements:isEmpty(ElementsState) of
+		true ->
+			throw({null, []});
+		false ->
+			throw({empty, cellElements:createRemove(null)})
+	end;
+isEmpty(empty, ElementsState, _Element) ->
+	case cellElements:isEmpty(ElementsState) of
+		true ->
+			throw({null, cellElements:createAdd(null)});
+		false ->
+			throw({empty, []})
+	end.
+		
 %% 
 %% calling the function without any parameters is the constructor for the state
 %% 

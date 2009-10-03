@@ -101,17 +101,37 @@ process(CellElements, ListOfElements) when is_list(ListOfElements) ->
 					{NewCellElements, Response} = processor(OldCellElements, Element),
 					{NewCellElements, Response ++ ElementsAcc}
 				end,
-	lists:foldr(Process, {CellElements, []}, ListOfElements).
-
+	lists:foldr(Process, {CellElements, []}, ListOfElements);
+process(CellElements, Element) ->
+	process(CellElements, [Element]).
+	
 %% 
 %% toList :: CellElements -> List Element
 %% 
 
 toList({unit, {Value, Weight}}) -> 
-	[valueToElement(Value, Weight)];
+	valueToElementList(Value, Weight);
 toList({set, ElementState}) ->
 	ElementList = dict:to_list(ElementState),
-	lists:map(fun({V,W}) -> valueToElement(V, W) end, ElementList).
+	lists:flatmap(fun({V,W}) -> valueToElementList(V, W) end, ElementList).
+
+%% ====================================================
+%% External API For Outputs
+%% ====================================================
+
+isEmpty({unit, {_Value, Weight}}) when Weight =< 0 -> true;
+isEmpty({unit, _UnitState}) -> false;
+isEmpty({set, SetElements}) ->
+	CheckEmpty = 	fun(_, Weight, _) ->
+						if 
+							Weight > 0 -> throw(false);
+							true -> true
+						end
+					end,
+	try dict:fold(CheckEmpty, true, SetElements)
+	catch
+		throw:false -> false
+	end.
 	
 %% ====================================================
 %% Internal API
@@ -171,10 +191,14 @@ processor({mapRange, SetElements}, {add, NewElement}) ->
 processor({mapRange, SetElements}, {remove, NewElement}) ->
 	todo.
 
-	
-valueToElement(Value, 0) -> [];
-valueToElement(Value, Weight) when Weight > 0 -> {add, Value};
-valueToElement(Value, Weight) when Weight < 0 -> {remove, Value}.
+%% 
+%% valueToElementList :: Value -> Number -> List a
+%%  				a :: Nothing | Tuple Atom Value
+%% 
+
+valueToElementList(Value, 0) -> [];
+valueToElementList(Value, Weight) when Weight > 0 -> [{add, Value}];
+valueToElementList(Value, Weight) when Weight < 0 -> [{remove, Value}].
 
 %% ====================================================
 %% we will need special set of functions for cellpointers due to distributed...
