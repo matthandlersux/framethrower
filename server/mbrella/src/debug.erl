@@ -412,6 +412,7 @@ httpSearchPage() ->
 %% new cell debugging
 %% ====================================================
 
+% debug sending messages and printing them
 f(),
 C1 = cell:makeCell(set).
 C2 = cell:makeCell(set).
@@ -419,6 +420,7 @@ cell:injectIntercept(C2, {{debug, []}, []}),
 cell:injectOutput(C1, C2),
 cell:sendElements(C1, {"name", self()}, [{add,matt},{add,toby},{remove, toby},{add,andrew},{add,matt}]).
 
+% debug isEmpty
 f(),
 C = cell:makeCell(unit).
 S = cell:makeCell(set).
@@ -428,6 +430,7 @@ cell:injectOutput(C, D),
 cell:injectIntercept(D, {{debug, []}, []}),
 cell:injectOutput(S, isEmpty, C).
 
+% debug reactiveAnd w/o flags
 f(),
 C1 = cell:makeCell(unit).
 C2 = cell:makeCell(unit).
@@ -440,6 +443,7 @@ cell:injectOutput(C1, S),
 cell:injectOutput(C2, S),
 cell:injectOutput(S, D).
 
+% debug reactiveOr w/o flags
 f(),
 C1 = cell:makeCell(unit).
 C2 = cell:makeCell(unit).
@@ -450,3 +454,46 @@ cell:injectIntercept(D, {{debug, []}, []}),
 cell:injectOutput(C1, S),
 cell:injectOutput(C2, S),
 cell:injectOutput(S, D).
+
+% debug setDifference w/o flags
+f(),
+S1 = cell:makeCell(set).
+S2 = cell:makeCell(set).
+S = cell:makeCell(set).
+D = cell:makeCell(set).
+cell:addValues(S1, [toby, matt, andrew, harold, mattg]),
+cell:addValues(S2, [matt, mattg, ed, tedg]),
+cell:injectIntercept(D, {{debug, []}, []}),
+cell:injectIntercept(S, intercepts:construct(setDifference, [S1, S2])),
+cell:injectOutput(S1, S),
+cell:injectOutput(S2, S),
+cell:injectOutput(S, D).
+
+cell:removeValue(S1, toby).
+cell:addValue(S2, toby).
+cell:addValue(S1, toby).
+cell:removeValue(S1, toby).
+cell:removeValue(S2, toby).
+cell:addValue(S1, toby).
+
+% debug setDifference w/o flags
+f(),
+S1 = cell:makeCell(set).
+S2 = cell:makeCell(set).
+S = cell:makeCell(set).
+D = cell:makeCell(set).
+cell:addValues(S1, [toby, matt, andrew, harold, mattg]),
+cell:addValues(S2, [matt, mattg, ed, tedg]),
+cell:injectIntercept(D, {{debug, []}, []}),
+cell:injectIntercept(S, intercepts:construct(setDifference, [S1, S2])),
+cell:setFlag(S, waitForDone, true),
+cell:injectOutput(S, D),
+cell:injectOutput(S2, S).
+
+cell:injectOutput(S1, S),
+cell:removeValue(S1, toby).
+cell:addValue(S2, toby).
+cell:addValue(S1, toby).
+cell:removeValue(S1, toby).
+cell:removeValue(S2, toby).
+cell:addValue(S1, toby).

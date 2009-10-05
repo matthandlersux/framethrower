@@ -166,19 +166,16 @@ setFlag(#cellState{flags = Flags} = State, Flag, Value) ->
 
 %% 
 %% updateStash :: CellState -> List Element -> CellState
-%%		takes stash, merges with new elements, returns all elements (called when done)
 %% 
 
 updateStash(#cellState{stash = Stash} = State, Elements) ->
 	State#cellState{stash = Elements ++ Stash}.
 	
 %% 
-%% getStash :: CellState -> List Element -> List Element
-%% 		stores elements that have been processed by the intercept but aren't ready to move because the 
-%%		cell is waiting to be done
+%% getStash :: CellState -> List Element
 %% 
 
-getStash(#cellState{stash = Stash}, Elements) ->
+getStash(#cellState{stash = Stash}) ->
 	Stash.
 	
 %% 

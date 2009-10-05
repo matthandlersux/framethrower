@@ -66,6 +66,19 @@ reactiveOr(CellPointer1, CellPointer2) ->
 	cell:injectOutput(CellPointer2, OutputCell),
 	cell:unleash(OutputCell).
 	
+%% 
+%% setDifference :: Set a -> Set a -> Set a
+%% 
+	
+setDifference(CellPointer1, CellPointer2) ->
+	OutputCell = cell:makeCellLeashed(set),
+	cell:setFlag(OutputCell, waitForDone, true),
+	cell:injectIntercept(OutputCell, intercepts:construct(setDifference, [CellPointer1, CellPointer2])),
+	% inject cellpointer2 first so that the initial sending doesnt flicker
+	cell:injectOutput(CellPointer2, OutputCell),
+	cell:injectOutput(CellPointer1, OutputCell),
+	cell:unleash(OutputCell).
+	
 % takeOne(CellPointer) ->
 % 	OutputCell = cell:makeCell(unit),
 % 	.
@@ -77,16 +90,6 @@ invert(CellPointer) ->
 	cell:injectOutput(CellPointer, OutputCell, {sideEffectInject, undefined, [OutputCell]}),
 	cell:unleash(OutputCell).
 	
-setDifference(CellPointer1, CellPointer2) ->
-	OutputCell = cell:makeLeashedCell(set),
-	cell:addInformant(OutputCell, CellPointer1),
-	cell:addInformant(OutputCell, CellPointer2),
-	cell:injectIntercept(OutputCell, {setDifference, intercepts:setDifferenceState(), [CellPointer1, CellPointer2]}),
-	cell:injectOutput(CellPointer1, OutputCell),
-	cell:injectOutput(CellPointer2, OutputCell),
-	cell:unleash(OutputCell).
-	
-
 %% ====================================================
 %% Internal API
 %% ====================================================

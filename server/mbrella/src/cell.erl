@@ -77,7 +77,7 @@ makeLinkedCellLeashed(CellType) ->
 %% sendElements :: CellPointer -> CellPointer -> Elements -> ok
 %% Elements :: List Tuple ("add" | "remove") Elements
 
-sendElements(_, _, []) -> ok;
+% sendElements(_, _, []) -> ok;
 sendElements(CellPointer, From, Elements) ->
 	gen_server:cast(cellPointer:pid(CellPointer), {sendElements, From, Elements}).
 	
@@ -110,6 +110,13 @@ removeValue(CellPointer, Value) ->
 removeValues(CellPointer, Values) ->
 	Elements = lists:map(fun(V) -> {remove, V} end, Values),
 	gen_server:cast(cellPointer:pid(CellPointer), {injectElements, Elements}).
+	
+%% 
+%% setFlag :: CellPointer -> Atom -> Bool -> ok
+%% 
+
+setFlag(CellPointer, Flag, Setting) ->
+	gen_server:cast(cellPointer:pid(CellPointer), {setFlag, Flag, Setting}).
 
 %% ====================================================
 %% PrimFun API
@@ -118,10 +125,10 @@ removeValues(CellPointer, Values) ->
 %create cell is defined above
 
 leash(CellPointer) ->
-	gen_server:cast(cellPointer:cellPid(CellPointer), leash).
+	gen_server:cast(cellPointer:cellPid(CellPointer), {setFlag, leashed, true}).
 	
 unleash(CellPointer) ->
-	gen_server:cast(cellPointer:cellPid(CellPointer), unleash).
+	gen_server:cast(cellPointer:cellPid(CellPointer), {setFlag, leashed, false}).
 
 %% 
 %% inject output function 
@@ -216,19 +223,24 @@ handle_cast({injectElements, Elements}, CellState) ->
 	{noreply, CellState1};
 	
 handle_cast({sendElements, From, Elements}, State) ->
-	State2 = 
-		case cellState:getIntercept(State) of
-			undefined ->
-				NewElements = Elements,
-				cellState:setDone(State, From);
-			Intercept ->
-				{InterceptState, NewElements} = intercepts:call(Intercept, From, Elements),
-				State1 = cellState:updateInterceptState(State, InterceptState),
-				cellState:setDone(State1, From)
-		end,
+	if
+		Elements =:= [] ->
+			{noreply, cellState:setDone(State, From)};
+		true -> 
+			State2 = 
+				case cellState:getIntercept(State) of
+					undefined ->
+						NewElements = Elements,
+						cellState:setDone(State, From);
+					Intercept ->
+						{InterceptState, NewElements} = intercepts:call(Intercept, From, Elements),
+						State1 = cellState:updateInterceptState(State, InterceptState),
+						cellState:setDone(State1, From)
+				end,
 	
-	CellState = injectElements(State2, NewElements),
-	{noreply, CellState};
+			CellState = injectElements(State2, NewElements),
+			{noreply, CellState}
+	end;
 
 handle_cast({injectOutput, OutputNameOrFunction, OutputTo}, State) ->
 	link(cellPointer:pid(OutputTo)),
@@ -237,12 +249,9 @@ handle_cast({injectOutput, OutputNameOrFunction, OutputTo}, State) ->
 	Output = outputs:getOutput(OutputNameOrFunction, Outputs),
 	NewState2 = outputAllElements(NewState1, Output, OutputTo),
 	{noreply, NewState2};
-	
-handle_cast(leash, State) ->
-    {noreply, cellState:updateFlag(leash, true, State)};
 
-handle_cast(unleash, State) ->
-	{noreply, cellState:updateFlag(leash, false, State)}.
+handle_cast({setFlag, Flag, Setting}, State) ->
+	{noreply, cellState:setFlag(State, Flag, Setting)}.
 
 terminate(Reason, State) ->
     ok.
@@ -271,7 +280,7 @@ runOutputs(State, NewElements) ->
 	Processor = 	fun(Output, ListOfNewStates) ->
 						{NewOutputState, ElementsToSend} = outputs:call(Output, AllElements, NewElements),
 						ListOfSendTos = outputs:getSendTos(Output),
-						ElementsToSend =:= [] orelse sendTo(ListOfSendTos, From, ElementsToSend),
+						sendTo(ListOfSendTos, From, ElementsToSend),
 						[NewOutputState] ++ ListOfNewStates
 					end,
 	ListOfNewStates = lists:foldr(Processor, [], ListOfOutputs),
@@ -299,14 +308,8 @@ outputAllElements(CellState, Output, OutputTo) ->
 	ThisCell = cellState:cellPointer(CellState),
 	{OutputState, NewElements} = outputs:call(Output, AllElements, ElementsList),
 	NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
-	
-	if
-		NewElements =:= [] -> NewCellState;
-		true -> 
-			cell:sendElements(OutputTo, ThisCell, NewElements),
-			NewCellState
-	end.
-
+	cell:sendElements(OutputTo, ThisCell, NewElements),
+	NewCellState.
 
 %% 
 %% injectElements :: CellState -> List Element -> CellState
@@ -321,9 +324,9 @@ injectElements(CellState, Elements) ->
 		IsLeashed orelse (WaitForDone andalso (not IsDone)) ->
 			cellState:updateStash(CellState, Elements);
 		true ->
-			Elements1 = cellState:getStash(CellState, Elements),
+			Elements1 = cellState:getStash(CellState),
 			CellState1 = cellState:emptyStash(CellState),
-			{CellState2, Elements2} = cellState:injectElements(CellState1, Elements),
+			{CellState2, Elements2} = cellState:injectElements(CellState1, Elements ++ Elements1),
 			runOutputs(CellState2, Elements2)
 	end.
 		

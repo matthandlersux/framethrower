@@ -3,11 +3,7 @@
 
 %-include().
 
--ifdef( debug ).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
--else.
--define( trace(X), void ).
--endif.
 
 %% ====================================================
 %% notes
@@ -84,6 +80,13 @@ createRemove(Value) ->
 	
 modifier({Modifier, _}) ->
 	Modifier.
+
+%% 
+%% switch :: Element -> Element
+%% 
+
+switch({add, V}) -> {remove, V};
+switch({remove, V}) -> {add, V}.
 
 %% 
 %% value :: Element -> Value

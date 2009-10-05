@@ -195,53 +195,73 @@ invertStateStoreKeydInput(CellFromName, Tag) ->
 invertStateGetValue(_) -> todo.
 invertStateGetCellpointer(_) -> todo.
 
+% there should be a way to make this work easily like the following, it would just require some clever
+% flag or something, work on it some more later
 
+% setDifference() -> undefined.
+% 
+% setDifference(_CellPointer1, CellPointer2, _, From, Element) ->
+% 	Name = cellPointer:name(CellPointer2),
+% 	case cellPointer:name(From) of
+% 		Name ->
+% 			{undefined, cellElements:switch(Element)};
+% 		_ ->
+% 			{undefined, Element}
+% 	end.
+	
+setDifference() ->
+	dict:new().
+	
 setDifference(CellPointer1, CellPointer2, State, From, Element) ->
 	Value = cellElements:value(Element),
+	Modifier = cellElements:modifier(Element),
 	Name1 = cellPointer:name(CellPointer1),
 	Name2 = cellPointer:name(CellPointer2),
 	case cellPointer:name(From) of
-		Name1 ->
-			case cellElements:modifier(Element) of
-				add ->
-					setDifferenceStateAdd(State, Value);
-				remove ->
-					setDifferenceStateSubtract(State, Value)
-			end;
+		% name2 comes first because we want the first set of messages to be the remove messages
+		% this sets up the blocking beforehand
 		Name2 ->
-			case cellElements:modifier(Element) of
+			case Modifier of
 				add ->
-					setDifferenceStateSubtract(State, Value);
+					case dict:find(Value, State) of 
+						error ->
+							{dict:store(Value, {false, true}, State), []};
+						{ok, {true, false}} ->
+							{dict:store(Value, {true, true}, State), {remove, Value}}
+						% {ok, {false, false}} ->
+						% 	{dict:store(Value, {false, true}, State), []}
+					end;
 				remove ->
-					setDifferenceStateAdd(State, Value)
+					case dict:find(Value, State) of 
+						error ->
+							{State, []};
+						{ok, {true, true}} ->
+							{dict:store(Value, {true, false}, State), {add, Value}};
+						{ok, {false, true}} ->
+							{dict:erase(Value, State), []}
+					end
+			end;
+		Name1 ->
+			case Modifier of
+				add ->
+					case dict:find(Value, State) of 
+						error ->
+							{dict:store(Value, {true, false}, State), [{add, Value}]};
+						{ok, {false, true}} ->
+							{dict:store(Value, {true, true}, State), []}
+						% {ok, {false, false}} ->
+						% 	{dict:store(Value, {true, false}, State), [{add, Value}]}
+					end;
+				remove ->
+					case dict:find(Value, State) of
+						% error ->
+						% 	{State, [{remove, Value}]};
+						{ok, {true, false}} ->
+							{dict:erase(Value, State), [{remove, Value}]};
+						{ok, {true, true}} ->
+							{dict:store(Value, {false, true}, State), []}
+					end
 			end
-	end.
-	
-setDifferenceState() ->
-	dict:store(done, {false, false}, dict:new()).
-	
-%% 
-%% setDifferenceStateAdd :: SetDifferenceState -> Element -> Tuple SetDifferenceState Element
-%% 
-
-setDifferenceStateAdd(SetDifferenceState, Value) ->
-	case dict:find(Value, SetDifferenceState) of
-		Result when 
-		Result =:= {ok, 0};
-		Result =:= error ->
-			{dict:store(Value, 1, SetDifferenceState), cellElements:createAdd(Value)};
-		{ok, Weight} ->
-			{dict:store(Value, Weight+1, SetDifferenceState), []}
-	end.
-	
-setDifferenceStateSubtract(SetDifferenceState, Value) ->
-	case dict:find(Value, SetDifferenceState) of
-		Result when 
-		Result =:= {ok, 0};
-		Result =:= error ->
-			{dict:store(Value, -1, SetDifferenceState), []};
-		{ok, Weight} ->
-			{dict:store(Value, Weight-1, SetDifferenceState), cellElements:createRemove(Value)}
 	end.
 
 %% ====================================================
