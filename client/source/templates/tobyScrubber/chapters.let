@@ -1,0 +1,162 @@
+chapters = function ()::List (Tuple2 (Tuple2 Number Number) String) {
+	
+	var timestamps = [
+		{
+			"time": 0,
+			"title": "Main Titles",
+		},
+		{
+			"time": 76.504,
+			"title": "There Was A Boy...",
+		},
+		{
+			"time": 330.36,
+			"title": "Meet the Bohemians",
+		},
+		{
+			"time": 645.027,
+			"title": "At the Moulin Rouge \"You'll Have Fun\"",
+		},
+		{
+			"time": 782.953,
+			"title": "The Can-Can (Bohos Evade Zidler)",
+		},
+		{
+			"time": 849.25,
+			"title": "Satine - The Sparkling Diamond",
+		},
+		{
+			"time": 1259.26,
+			"title": "Satine Falls",
+		},
+		{
+			"time": 1504.747,
+			"title": "A Poetry Reading",
+		},
+		{
+			"time": 1652.425,
+			"title": "Your Song",
+		},
+		{
+			"time": 1881.022,
+			"title": "Introducing the Duke",
+		},
+		{
+			"time": 2142.717,
+			"title": "The Emergency Rehearsal",
+		},
+		{
+			"time": 2403.444,
+			"title": "The Pitch",
+		},
+		{
+			"time": 2668.112,
+			"title": "One Day I'll Fly Away",
+		},
+		{
+			"time": 2922.136,
+			"title": "Elephant Love Medley",
+		},
+		{
+			"time": 3206.031,
+			"title": "The Contract",
+		},
+		{
+			"time": 3303.444,
+			"title": "On With the Show",
+		},
+		{
+			"time": 3459.073,
+			"title": "The Duke's Demand",
+		},
+		{
+			"time": 3571.328,
+			"title": "A Darker Force",
+		},
+		{
+			"time": 3680.688,
+			"title": "Like A Virgin",
+		},
+		{
+			"time": 3937.237,
+			"title": "Satine Is Dying.",
+		},
+		{
+			"time": 4075.511,
+			"title": "Come What May",
+		},
+		{
+			"time": 4358.248,
+			"title": "I Don't Like This Ending",
+		},
+		{
+			"time": 4682.244,
+			"title": "Le Tango De Roxanne",
+		},
+		{
+			"time": 5126.301,
+			"title": "We'll Leave Tonight",
+		},
+		{
+			"time": 5222.668,
+			"title": "I'll Have the Boy Killed",
+		},
+		{
+			"time": 5383.006,
+			"title": "Fool to Believe",
+		},
+		{
+			"time": 5515.278,
+			"title": "The Show Must Go On",
+		},
+		{
+			"time": 5689.8,
+			"title": "Satine's Sacrifice",
+		},
+		{
+			"time": 5773.141,
+			"title": "The Storm Breaks",
+		},
+		{
+			"time": 5922.633,
+			"title": "Hindi Said Diamonds",
+		},
+		{
+			"time": 6136.257,
+			"title": "This Woman Is Yours Now",
+		},
+		{
+			"time": 6457.204,
+			"title": "Come What May (Reprise)",
+		},
+		{
+			"time": 6684.822,
+			"title": "Coup D'Etat",
+		},
+		{
+			"time": 6792.397,
+			"title": "The Final Curtain",
+		},
+		{
+			"time": 7112.384,
+			"title": "Above All Things...Love",
+		},
+		{
+			"time": 7213.751,
+			"title": "End Credits",
+		}
+	];
+	
+	var ret = [];
+	
+	var endTime = 7668.189;
+	
+	forEach(timestamps, function (timestamp, i) {
+		var next = (i === timestamps.length - 1) ? endTime : timestamps[i+1].time;
+		var pair = makeTuple2(timestamp.time, next - timestamp.time);
+		
+		ret.push(makeTuple2(pair, timestamp.title));
+	});
+	
+	return arrayToList(ret);
+}

@@ -1020,7 +1020,7 @@ load(["../../source/js/util/util.js"]);
 function print_actions()
 {
 	var code = new String();
-	var re = new RegExp( "%[0-9]+|%%" );
+	var re = new RegExp( "%[0-9s]+|%%" );
 	var semcode, strmatch;
 	var i, j, k, idx;
 	
@@ -1063,10 +1063,19 @@ function print_actions()
 				strmatch = re.exec( productions[i].code.substr( j, productions[i].code.length ) );
 				if( strmatch && strmatch.index == 0 )
 				{
-					if( strmatch[0] == "%%" )
+					if( strmatch[0] == "%%" ) {
 						semcode += "rval";
-					else
-					{
+					} else if (strmatch[0] == "%s") {
+						//custom code to add all matched things on rhs together as strings
+						semcode = "rval = \"\"";
+						var rhs = productions[i].rhs;
+						forEach(rhs, function (symbol, idx) {
+							semcode += " + ";
+							idx = rhs.length - idx;
+							semcode += "vstack[ vstack.length - " + idx + " ]";
+						});
+						semcode += ";";
+					} else {
 						idx = parseInt( strmatch[0].substr( 1, strmatch[0].length ) );
 						idx = productions[i].rhs.length - idx + 1;
 						semcode += "vstack[ vstack.length - " + idx + " ]";

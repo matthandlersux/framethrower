@@ -14,13 +14,6 @@ var literalEnv = function (s) {
 	}
 };
 
-function makeApplies(f, args) {
-	var expr = f;
-	for(var i=0; i<args.length; i++)
-		expr = makeApply(expr, args[i]);
-	return expr;
-}
-
 var mapUnitCache = {};
 var mapUnitEnv = function (s) {
 	// if string isn't of the form 'mapUnitN' then just use literalEnv:

@@ -1,7 +1,8 @@
 template(b) {
 	// do lambdas remember their environment? (no)
+	w = x,
 	x = 1,
-	y = _ -> x,
+	// y = _ -> x,
 	x = 2,
 	
 	// does type-checking behave in the same way? (yes)
@@ -24,13 +25,15 @@ template(b) {
 				{x}
 				{a}
 				{b}
-				{y 0} // this outputs 2... why not 3?
+				// {y 0} // this outputs 2
+				{w} // this outputs 2
 			</div>
 		</f:each>
 	
 		<div>
-			{y 0} // this outputs 2
+			// {y 0} // this outputs 2
 			{z 0} // this outputs 0
+			{w} // this outputs 2
 		</div>
 	</f:wrapper>
 }

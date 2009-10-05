@@ -1,6 +1,6 @@
-preparse(mainTemplate);
+// preparse(mainTemplate);
 
-desugarFetch(mainTemplate);
+// desugarFetch(mainTemplate);
 
 
 //var compiledTemplate = makeClosure(mainTemplate, base.env);

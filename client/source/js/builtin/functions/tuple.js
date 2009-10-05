@@ -14,8 +14,17 @@
 		return pair.asArray[1];
 	}
 	
-	addFun("makeTuple2", "a -> b -> Tuple2 a b", makeTuple2);
-	addFun("fst", "Tuple2 a b -> a", fst);
-	addFun("snd", "Tuple2 a b -> b", snd);
+	addFun("makeTuple2", "a -> b -> (a, b)", makeTuple2);
+	addFun("fst", "(a, b) -> a", fst);
+	addFun("snd", "(a, b) -> b", snd);
 
 })();
+
+
+function makeTuple2(x, y) {
+    return {
+        kind: "tuple2",
+        remote: 2,
+        asArray: [x, y]
+    };
+}

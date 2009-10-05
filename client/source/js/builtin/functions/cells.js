@@ -226,6 +226,76 @@
 					return outputCell;
 				}
 			},
+			unitDone: {
+				type: "Unit Null -> Unit Null",
+				func: function (cell) {
+					var currentValue = false;
+					var outputValue = false;
+					var outputCell = makeCell();
+					cell.inject(outputCell, function (val) {
+						currentValue = true;
+						return function () {
+							currentValue = false;
+						};
+					});
+					cell.injectDependency(function () {
+						if (outputValue !== currentValue) {
+							outputValue = currentValue;
+							if (outputValue) {
+								outputCell.addLine(nullObject);
+							} else {
+								outputCell.removeLine(nullObject);
+							}
+						}
+					});
+					return outputCell;
+				}
+			},
+			lowPassFilter: {
+				type: "Unit a -> Unit a",
+				func: function (cell) {
+					var inputCellValue;
+					var outputCellValue;
+					
+					var outputCell = makeCell();
+					
+					function update() {
+						if (outputCellValue !== inputCellValue) {
+							if (outputCellValue !== undefined) {
+								outputCell.removeLine(outputCellValue);
+							}
+							outputCellValue = inputCellValue;
+							outputCell.addLine(outputCellValue);
+						}
+					}
+					
+					cell.inject(outputCell, function (val) {
+						inputCellValue = val;
+						setTimeout(update, 0);
+						return function () {
+							
+						};
+					});
+					return outputCell;
+				}
+			},
+			countChanges: { // for debugging
+				type: "Unit a -> Unit Number",
+				func: function (cell) {
+					var currentValue = 0;
+					var outputCell = makeCell();
+					outputCell.addLine(currentValue);
+					cell.inject(outputCell, function (val) {
+						outputCell.removeLine(currentValue);
+						currentValue += 1;
+						outputCell.addLine(currentValue);
+						return function () {
+							
+						};
+					});
+					return outputCell;
+				}
+			},
 
 			// ============================================================================
 			// Other functions?

@@ -1,9 +1,7 @@
 (function () {
-	listType = parseType("List");
-	
 	var nil = {
 		kind: "list",
-		type: parseType("List a"),
+		type: parseType("[a]"),
 		name: "[]",
 		remote: 2,
 		outsideScope: 0,
@@ -49,8 +47,8 @@
 	}
 	
 	base.add("nil", nil);
-	addFun("cons", "a -> List a -> List a", cons);
-	addFun("head", "List a -> a", head);
-	addFun("tail", "List a -> List a", tail);
-	addFun("append", "List a -> List a -> List a", append);
+	addFun("cons", "a -> [a] -> [a]", cons);
+	addFun("head", "[a] -> a", head);
+	addFun("tail", "[a] -> [a]", tail);
+	addFun("append", "[a] -> [a] -> [a]", append);
 })();

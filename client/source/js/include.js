@@ -2,6 +2,8 @@ var GLOBAL = {
 	typeCheck: false // run-time type checking
 };
 
+var console;
+
 var includes = (function () {
 	var includeBundles = {
 		core: [
@@ -11,6 +13,8 @@ var includes = (function () {
 			"source/js/util/util.js",
 			"source/js/util/conSortedSet.js",
 
+			"source/js/structure/util.js",
+			
 			"source/js/structure/constructors/constructors.js",
 			"source/js/structure/constructors/parse.js",
 			"source/js/structure/constructors/types.js",
@@ -23,6 +27,8 @@ var includes = (function () {
 			"source/js/structure/baseEnv.js",
 
 			"source/js/structure/evaluate.js",
+			
+			"source/js/structure/fetch.js",
 
 			"source/js/reactive/hash.js",
 			"source/js/reactive/cells.js",
@@ -47,8 +53,7 @@ var includes = (function () {
 			"source/js/builtin/rootObjects.js",
 			"source/js/builtin/eventExtras.js",
 
-			"source/js/templates/preparse.js", // might want to do this at compile time?
-			"source/js/templates/fetch.js"
+			// "source/js/templates/preparse.js", // might want to do this at compile time?
 		],
 		browser: [
 			"source/js/external/firebugx.js",
@@ -95,6 +100,17 @@ var includes = (function () {
 		},
 		
 		rhinoInclude: function (bundles, extraFiles) {
+			if (!console) {
+				console = {};
+				console.warn = function() {
+					print("WARNING:");
+					print.apply(null, arguments);
+				};
+				console.err = console.warn;
+				console.log = function() {
+					print.apply(null, arguments);
+				};
+			}
 			var includes = prepareIncludes(bundles, extraFiles);
 			for (var i = 0, len = includes.length; i < len; i++) {
 				load(includes[i]);

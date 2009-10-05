@@ -6,18 +6,17 @@
 //this will go at the top of each rhino tool
 ROOTDIR = "../../";
 function include (bundles, extraFiles) {
-	if (load !== undefined) {
+	try {
 		load(ROOTDIR + "tools/util/java.js");
 		load(ROOTDIR + "source/js/include.js");
 		includes.rhinoInclude(bundles, extraFiles);
-	}
+	} catch (e) {}
 }
 include(["core"], [ROOTDIR + "tools/typeAnalyzer/typeAnalyzer.js"]);
 
 var runTypeAnalyzer = function (mainTemplate) {
-	preparse(mainTemplate);
 	var result = typeAnalyze(mainTemplate);
 	if (result.success) {
-		print('success');
+		console.log('success');
 	}
 }

@@ -49,6 +49,57 @@ function mapUnitJS(f, outputType, numArgs) {
 	};
 }
 
+// // takes a predicate (function that returns a bool), and returns a function that takes the same arguments but all as Unit's and returns type Unit Null.
+// // Then whenever all the Unit's are occupied, and the predicate is true, the output Unit is occupied. Otherwise, the output is not occupied.
+// // numArgs is optional
+// function (pred, numArgs) {
+// 	if (numArgs === undefined) pred = f.length;
+// 	return function () {
+// 		var args = arguments;
+// 		
+// 		var currentValue = false;
+// 		var outputCell = makeCell();
+// 		outputCell.type = parseType("Unit Null");
+// 		
+// 		var inputs = [];
+// 		
+// 		function update() {
+// 			var allDone = all(args, function (arg, i) {
+// 				return inputs[i] !== undefined; 
+// 			});
+// 			if (allDone) {
+// 				var newValue = f.apply(null, inputs);
+// 				if (currentValue !== newValue) {
+// 					currentValue = newValue;
+// 					if (currentValue) {
+// 						outputCell.addLine(nullObject);
+// 					} else {
+// 						outputCell.removeLine(nullObject);
+// 					}
+// 				}
+// 			}
+// 		}
+// 		
+// 		forEach(args, function (arg, i) {
+// 			arg.inject(outputCell, function (val) {
+// 				inputs[i] = val;
+// 				update();
+// 				return function () {
+// 					inputs[i] = undefined;
+// 					update();
+// 				};
+// 			});
+// 		});
+// 		
+// 		if (numArgs === 0) {
+// 			update(); // for mapUnit0
+// 		}
+// 		
+// 		return outputCell;
+// 	};
+// }
+
+
 
 function arrayToSet(array, type) {
 	var outputCell = makeCell();

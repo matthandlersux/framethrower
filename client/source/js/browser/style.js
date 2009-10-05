@@ -17,8 +17,9 @@ function setNodeStyle(node, styleName, styleValue) {
 	// TODO this will need some additional code for convenience/browser bullshit (px, etc)
 	// https://developer.mozilla.org/en/DOM/CSS
 	
-	if (styleNamesThatTakePx[styleName] && styleValue !== "auto") {
+	if (styleNamesThatTakePx[styleName] && styleValue !== "auto" && (typeof styleValue !== "string" || styleValue.charAt(styleValue.length-1)!=="%")) {
 		styleValue = Math.round(styleValue) + "px";
+		//styleValue = Math.floor(styleValue) + "px";
 	}
 	if (styleName === "float") {
 		styleName = "cssFloat"; // will need to be "styleFloat" for IE
@@ -40,3 +41,12 @@ function setNodeAttribute(node, attName, attValue) {
 	}
 }
 
+function attachEventStyle(node, eventName) {
+	if (eventName === "mousedown") {
+		node.style.cursor = "-moz-grab";
+	}
+}
+
+function removeEventStyle(node, eventName) {
+	node.style.cursor = "auto";
+}

@@ -172,20 +172,20 @@ function evaluate2(expr) {
 
 			if (typeof ret === "function") {
 				// if ret is a function, return a Fun and annotate its type and expr
-				return makeFun(resultType, ret, stringify(expr), expr.remote);
+				return makeFun(resultType, ret, resultExprStringified, expr.remote);
 			} else if (ret.kind === "cell") {
 				// if ret is a cell, memoize the result and annotate its type and expr
 				
 				// annotate
 				ret.type = resultType;
-				ret.name = stringify(expr);
+				ret.name = resultExprStringified;
 				ret.remote = expr.remote;
 				
 				memoizeCell(resultExprStringified, ret);
 				
 				return ret;
 			} else {
-				return ret;
+				return evaluate2(ret);
 			}
 			
 		}

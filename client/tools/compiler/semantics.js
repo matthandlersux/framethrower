@@ -101,27 +101,23 @@ var semantics = function(){
 		return hyphenatedString.replace(/\-./g, cnvrt);
 	}
 
-	function printObj(obj) {
-		function helper(obj) {
-			var output = "";
-			if(objectLike(obj)) {
-				output += "{";
-				forEach(obj, function(value, name) {
-					output += name + ":";
-					output += helper(value) + ",";
-				});
-				output += "}";
-			} else {
-				output += obj;
-			}
-			return output;
-		}
-		print(helper(obj));
-	}
-
-	if (def(load)) {
-		load(["../../source/js/util/util.js"]);
-	}
+	// function printObj(obj) {
+	// 	function helper(obj) {
+	// 		var output = "";
+	// 		if(objectLike(obj)) {
+	// 			output += "{";
+	// 			forEach(obj, function(value, name) {
+	// 				output += name + ":";
+	// 				output += helper(value) + ",";
+	// 			});
+	// 			output += "}";
+	// 		} else {
+	// 			output += obj;
+	// 		}
+	// 		return output;
+	// 	}
+	// 	print(helper(obj));
+	// }
 
 
 	// ====================================================
@@ -175,7 +171,7 @@ var semantics = function(){
 			lastActionType = "Action (" + lastActionType + ")";
 		}
 		
-		var actionLine = {lineAction: {kind: "lineAction", actions: actlist, type:lastActionType}};
+		var actionLine = {lineAction: {kind: "lineAction", actions: actlist}, type: lastActionType};
 		
 		var wrappedTemplate = {
 			arglist: node.arglist,
@@ -233,39 +229,32 @@ var semantics = function(){
 	
 		return {
 			kind: "case", 
-			test: node.expr.exprcode,
+			test: parse(node.expr.exprcode),
 			lineTemplate: template,
 			otherwise: otherwise,
 			debugRef: node.debugRef
 		};
 	}
 
-	function makeFunction(funcText) {
-		//8 characters in 'function'
-		var bracketIndex = funcText.indexOf('{');
-		var args = funcText.substr(8, bracketIndex - 8);
-		var JS = funcText.substr(bracketIndex);
-		var parenIndex = args.indexOf(")");
-		var outputType = args.substr(parenIndex+3);
+	function makeFunction(funcObject, jsTransformer, outputTypeTransformer) {
+		var JS = funcObject.functionbody;
+		if(jsTransformer)
+			JS = jsTransformer(JS);
+
+
+		var outputType = funcObject.type;
 		if (outputType.length == 0) {
 			outputType = undefined;
 		}
-		args = args.substr(0, parenIndex);
+		
+		args = makeList(funcObject.arglist, 'arglist', 'variable');
 
-		//remove parens
-		args = args.replace(/[\(\)]/g, "");
-		args = args.split(",");
 		var argList = [];
 		forEach(args, function(arg) {
 			var newArg = {};
 			argList.push(newArg);
-			var parts = arg.split("::");
-			if(def(parts[0])) {
-				newArg.name = parts[0];
-			}
-			if(def(parts[1])) {
-				newArg.type = parts[1];
-			}
+			newArg.name = arg.identifier;
+			newArg.type = arg.type;
 		});
 
 		var funcString = "function (";
@@ -275,27 +264,29 @@ var semantics = function(){
 		forEach(argList, function(arg) {
 			if(!first) {
 				funcString += ", ";
-				typeString += " -> ";
 			} else {
 				first = false;
 			}
 			funcString += arg.name;
 			if (def(arg.type)) {
-				typeString += "(" + arg.type + ")";
+				typeString += "(" + arg.type + ") -> ";
 			} else {
-				typeString += "t" + typeCounter;
+				typeString += "t" + typeCounter + " -> ";
 				typeCounter++;
 			}
 		});
-		funcString += ") " + JS + "";
+		funcString += ") { " + JS + " }";
 		if (def(outputType)) {
-			typeString += " -> " + "(" + outputType + ")";
+			if(outputTypeTransformer)
+				outputType = outputTypeTransformer(outputType);
+			typeString += "(" + outputType + ")";
 		} else {
-			typeString += " -> " + "t" + typeCounter;
+			typeString += "t" + typeCounter;
 		}
+		
 		return {
 			kind: "lineJavascript",
-			type: typeString,
+			type: parseType(typeString),
 			f: {
 				kind: "jsFunction",
 				func: funcString
@@ -314,10 +305,9 @@ var semantics = function(){
 	
 	function makeLineTemplate(node, isBlock) {
 		var params = makeList(node.arglist, 'arglist', 'variable');
-		
 		var lets = makeListObject(node.fullletlist.letlist, 'letlist', 'let', getLetKeyVal);
-		var output = makeLine(node.fullletlist.line);
 		
+		var output = node.fullletlist.line;
 		//give undefined param types a letter
 		var counter = 0;
 		var paramList = [];
@@ -359,12 +349,12 @@ var semantics = function(){
 			kind: "lineTemplate",
 			params: paramList,
 			let: lets,
-			output: output,
+			output: makeLine(output),
 			debugRef: node.debugRef
 		};
 
 		if (typeString !== undefined) {
-			ret.type = typeString;
+			ret.type = parseType(typeString);
 		}
 
 		return ret;
@@ -398,16 +388,17 @@ var semantics = function(){
 				var action = {
 					expr: {exprcode:"return x"}
 				};
-				fullactlist = {actlist:actlist, action:action};
+				fullactlist = {actlist:actlist, action:action, type: node.type};
 			} else {
-				fullactlist = {actlist:{}, action:createAction};
+				fullactlist = {actlist:{}, action:createAction, type: node.type};
 			}
 			addDebugRef(fullactlist, node.debugRef);
 		} else if (def(node.fullactlist)) {
 			fullactlist = node.fullactlist;
+			fullactlist.type = "a0";
 		}
 
-		var lineTemplate = makeActionTemplate({arglist:{}, fullactlist:fullactlist, debugRef: node.debugRef});
+		var lineTemplate = makeActionTemplate({arglist:{}, fullactlist:fullactlist, debugRef: node.debugRef, type:fullactlist.type});
 		return {
 			kind: "lineState",
 			action: lineTemplate,
@@ -433,7 +424,7 @@ var semantics = function(){
 			var template = makeLineTemplate(wrappedTemplate);
 			return {
 				kind: "for-each",
-				select: node.expr.exprcode,
+				select: parse(node.expr.exprcode),
 				lineTemplate: template,
 				debugRef: node.debugRef
 			};
@@ -473,7 +464,7 @@ var semantics = function(){
 		function makeInsert (node) {
 			return {
 				kind: "insert",
-				expr: node.expr.exprcode,
+				expr: parse(node.expr.exprcode),
 				debugRef: node.debugRef
 			};
 		}
@@ -615,7 +606,7 @@ var semantics = function(){
 			var proplist = makeListObject(node.proplist, 'proplist', 'prop', getKeyVal);
 			return {
 				kind: "actionCreate",
-				type: node.type,
+				type: parseType(node.type),
 				prop: proplist,
 				debugRef: node.debugRef
 			};
@@ -631,15 +622,21 @@ var semantics = function(){
 			var lineTemplate = makeActionTemplate(wrappedActiontpl);
 			return {
 				kind: "extract",
-				select: node.expr.exprcode,
+				select: parse(node.expr.exprcode),
 				action: lineTemplate,
 				debugRef: node.debugRef
 			};
 		}
-
 		switch (name) {
 			case 'function':
 				var lineFunc = makeFunction(value);
+				lineFunc.debugRef = node.debugRef;
+				return lineFunc;
+			case 'jsaction':
+				var lineFunc = makeFunction(value,
+					function(JS) { return "{ return makeActionJavascript(function() "+JS+"); }"; },
+					function(outputType) { return "Action ("+outputType+")"; }
+				);
 				lineFunc.debugRef = node.debugRef;
 				return lineFunc;
 			case 'template':
@@ -651,6 +648,10 @@ var semantics = function(){
 			case 'lineAction':
 				return value;
 			case 'expr':
+				value.exprcode = parse(value.exprcode);
+				if(value.type !== undefined) {
+					value.type = parseType(value.type);
+				}
 				return {kind: "lineExpr", expr: value.exprcode, type: value.type, debugRef: node.debugRef};
 			case 'letlistblock':
 				value.arglist = [];
@@ -689,10 +690,10 @@ var semantics = function(){
 			if (name == 'stringescapequotes') {
 				var string = makeString(tree);
 				lineNum += lineBreakCount(string);
-				//string = string.replace(/\\/g, "\\\\");
-				string = string.replace(/\\\"/g, "\\\\\"");
-				string = string.replace(/\"/g, "\\\"");
-				// string = string.replace(/\n/g, "\\n");
+				////string = string.replace(/\\/g, "\\\\");
+				//string = string.replace(/\\\"/g, "\\\\\"");
+				//string = string.replace(/\"/g, "\\\"");
+				//// string = string.replace(/\n/g, "\\n");
 				return string;
 			} else if (name == 'string') {
 				var string = makeString(tree);
@@ -719,7 +720,7 @@ var semantics = function(){
 				return nodeName.indexOf(string) == 0;
 			}
 			
-			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('styleattname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('function') || startsWith('xmltext')) {
+			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('styleattname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('jsaction') || startsWith('xmltext')) {
 				var string = makeString(value, nodeName);
 				lineNum += lineBreakCount(string);
 				tree[nodeName] = stripSpaces(string);

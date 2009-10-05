@@ -15,9 +15,9 @@ template () {
 	
 	
 	
-	textpointInfonPairs = mapSet (textpoint -> makeTuple2 (Situation:propTime textpoint) (getInfonsAboutRole textpoint ulinkSource)) textpoints :: Set (Tuple2 (Unit Number) (Set Pipe)),
+	textpointInfonPairs = mapSet (textpoint -> (Situation:propTime textpoint, getInfonsAboutRole textpoint ulinkSource)) textpoints :: Set (Unit Number, Set Pipe),
 	
-	pointsAndLinks = bindSet (pair -> mapUnitSet (mapUnit2 makeTuple2 (fst pair)) (snd pair)) textpointInfonPairs :: Set (Tuple2 Number Pipe),
+	pointsAndLinks = bindSet (pair -> mapUnitSet (mapUnit2 makeTuple2 (fst pair)) (snd pair)) textpointInfonPairs :: Set (Number, Pipe),
 	
 	
 	
@@ -39,7 +39,7 @@ template () {
 			//</img>
 		</span>
 	},
-	writeThumbnails = template (infons::List Pipe) {
+	writeThumbnails = template (infons::[Pipe]) {
 		<div style-float="right" style-margin-right="-370" style-width="350">
 			<f:each infons as infon>
 				timeObject = fetch (takeOne (getInfonRole ulinkTarget infon)),
@@ -69,7 +69,7 @@ template () {
 	},
 	
 	
-	f = function (writeString::String->XMLP, writeNewLine::XMLP, writePointLink::Pipe->XMLP, writeThumbnails::List Pipe->XMLP, s::String, pointsAndLinks::JSON)::List XMLP {
+	f = function (writeString::String->XMLP, writeNewLine::XMLP, writePointLink::Pipe->XMLP, writeThumbnails::[Pipe]->XMLP, s::String, pointsAndLinks::JSON)::[XMLP] {
 		
 		// hack to get it to not take so damn long to start up
 		if (pointsAndLinks.length < 33) return arrayToList([]);
@@ -155,7 +155,7 @@ template () {
 	},
 	markup = f writeString writeNewLine writePointLink writeThumbnails essayText (fetch (jsonify pointsAndLinks)),
 	
-	writeList = template (xs::List XMLP) {
+	writeList = template (xs::[XMLP]) {
 		<f:each xs as x>
 			<f:call>x</f:call>
 		</f:each>
