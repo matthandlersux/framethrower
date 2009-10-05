@@ -497,3 +497,13 @@ cell:addValue(S1, toby).
 cell:removeValue(S1, toby).
 cell:removeValue(S2, toby).
 cell:addValue(S1, toby).
+
+% debug takeOne
+f(),
+S = cell:makeCell(set).
+U = cell:makeCell(unit).
+D = cell:makeCell(unit).
+cell:addValues(S, [toby, matt, andrew, harold, mattg]),
+cell:injectIntercept(D, {{debug, []}, []}),
+cell:injectOutput(S, takeOne, U),
+cell:injectOutput(U, D).

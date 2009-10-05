@@ -79,9 +79,14 @@ setDifference(CellPointer1, CellPointer2) ->
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:unleash(OutputCell).
 	
-% takeOne(CellPointer) ->
-% 	OutputCell = cell:makeCell(unit),
-% 	.
+%% 
+%% takeOne :: Set a -> Unit a
+%% 
+
+takeOne(CellPointer) ->
+	OutputCell = cell:makeCell(unit),
+	cell:injectOutput(CellPointer, outputs:construct(takeOne, OutputCell)),
+	OutputCell.
 	
 invert(CellPointer) ->
 	OutputCell = cell:makeLeashedCell(map),

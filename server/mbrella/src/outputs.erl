@@ -3,11 +3,7 @@
 
 %-include().
 
--ifdef( debug ).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
--else.
--define( trace(X), void ).
--endif.
 
 %% ====================================================
 %% NOTES
@@ -57,13 +53,12 @@ call(OutputFunction, OutputState, Elements, ElementsToAdd) ->
 	
 callOutput(Name, Args, State, ElementsState, Elements) ->
 	Process = fun(Element, {OldState, OldElements}) ->
-		{NewState, Elements} = processElement(Name, Args, OldState, ElementsState, Element),
-		{NewState, Elements ++ OldElements}
+		{NewState, NewElements} = processElement(Name, Args, OldState, ElementsState, Element),
+		{NewState, NewElements ++ OldElements}
 	end,
 	try lists:foldr(Process, {State, []}, Elements)
 	catch
 		throw:NewStateAndElements -> 
-			?trace(NewStateAndElements),
 			NewStateAndElements
 	end.
 
@@ -111,7 +106,7 @@ injectOutput(OutputFunction, SendTo, OutputState) ->
 	end.
 			
 
-%% 
+%%  need to change to informers
 %% getSendTos :: Output -> List CellPointer
 %% 
 
@@ -235,6 +230,9 @@ construct({Name, Args}) ->
 %% Outputs For Primfuncs
 %% ====================================================
 
+%% 
+%% calling the function without any parameters is the constructor for the state
+%% 
 
 isEmpty() -> 
 	empty.
@@ -254,32 +252,36 @@ isEmpty(empty, ElementsState, _Element) ->
 			throw({empty, []})
 	end.
 		
-%% 
-%% calling the function without any parameters is the constructor for the state
-%% 
+
 
 takeOne() -> undefined.
-	
-takeOne(undefined, [{add, Element}|_]) ->
-	{ Element, {add, Element} };
-takeOne(OutputState, [{add, Element}|_]) ->
-	{ OutputState, [] };
-takeOne(OutputState, [{remove, Element}|Rest]) ->
-	if
-		OutputState =:= Element andalso length(Rest) =:= 0 -> 
-			{ undefined, {remove, OutputState} };
-		% OutputState =:= Element ->
-		% 	[{add, NewElement}|_] = Rest,
-		% 	{ NewElement, [{remove, Element},{add, NewElement}] };
-		true ->
-			{Removes, Adds} = lists:partition(fun({Modifier, _}) -> Modifier =:= remove end, Rest),
-			case lists:keyfind(OutputState, 2, Removes) of
-				
-				
-				
-				{ OutputState, [] } -> todo
+
+takeOne(undefined, _, Element) ->
+	case cellElements:modifier(Element) of
+		add -> {cellElements:value(Element), Element};
+		remove -> {undefined, []}
+	end;
+takeOne(OneElement, ElementsState, Element) ->
+	Value = cellElements:value(Element),
+	case cellElements:modifier(Element) of
+		add -> {OneElement, []};
+		remove -> 
+			if
+				Value =:= OneElement ->
+					NewElement = cellElements:takeOne(ElementsState),
+					NewVal = 	if 
+									NewElement =:= [] -> 
+										NewElement1 = [],
+										undefined; 
+									true -> 
+										NewElement1 = [NewElement],
+										cellElements:value(NewElement)
+								end,
+					{NewVal, NewElement1 ++ [cellElements:createRemove(Value)]};
+				true -> {OneElement, []}
 			end
 	end.
+			
 		
 %% 
 %%	sideEffectInject :: CellPointer -> Element -> Element

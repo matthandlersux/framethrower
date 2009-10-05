@@ -135,6 +135,22 @@ isEmpty({set, SetElements}) ->
 	catch
 		throw:false -> false
 	end.
+
+%% 
+%% takeOne :: CellElements -> List Element
+%% 
+
+takeOne({set, SetElements}) ->
+	TakeOne = 	fun(Key, Weight, _) ->
+					if
+						Weight > 0 -> throw({add, Key});
+						true -> []
+					end
+				end,
+	try dict:fold(TakeOne, [], SetElements)
+	catch
+		throw:Response -> Response
+	end.
 	
 %% ====================================================
 %% Internal API
