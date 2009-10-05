@@ -296,19 +296,15 @@ sendTo(CellPointers, From, Elements) ->
 outputAllElements(CellState, Output, OutputTo) ->
 	AllElements = cellState:getElements(CellState),
 	ElementsList = cellElements:toList(AllElements),
+	ThisCell = cellState:cellPointer(CellState),
+	{OutputState, NewElements} = outputs:call(Output, AllElements, ElementsList),
+	NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
+	
 	if
-		length(ElementsList) =:= 0 -> CellState;
-		true ->
-			ThisCell = cellState:cellPointer(CellState),
-			{OutputState, NewElements} = outputs:call(Output, AllElements, ElementsList),
-			NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
-			
-			if
-				NewElements =:= [] -> NewCellState;
-				true -> 
-					cell:sendElements(OutputTo, ThisCell, NewElements),
-					NewCellState
-			end
+		NewElements =:= [] -> NewCellState;
+		true -> 
+			cell:sendElements(OutputTo, ThisCell, NewElements),
+			NewCellState
 	end.
 
 

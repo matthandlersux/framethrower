@@ -427,3 +427,26 @@ cell:addValues(S, [toby, matt, andrew]),
 cell:injectOutput(C, D),
 cell:injectIntercept(D, {{debug, []}, []}),
 cell:injectOutput(S, isEmpty, C).
+
+f(),
+C1 = cell:makeCell(unit).
+C2 = cell:makeCell(unit).
+S = cell:makeCell(unit).
+D = cell:makeCell(unit).
+cell:addValue(C1, null),
+cell:injectIntercept(S, intercepts:construct(reactiveAnd, [C1, C2])),
+cell:injectIntercept(D, {{debug, []}, []}),
+cell:injectOutput(C1, S),
+cell:injectOutput(C2, S),
+cell:injectOutput(S, D).
+
+f(),
+C1 = cell:makeCell(unit).
+C2 = cell:makeCell(unit).
+S = cell:makeCell(unit).
+D = cell:makeCell(unit).
+cell:addValue(C1, null),
+cell:injectIntercept(D, {{debug, []}, []}),
+cell:injectOutput(C1, S),
+cell:injectOutput(C2, S),
+cell:injectOutput(S, D).

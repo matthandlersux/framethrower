@@ -50,6 +50,20 @@ callIntercept(Name, Args, From, Elements) ->
 	
 getArguments(Intercept) -> getArgs(Intercept).
 
+%% 
+%% construct :: Atom -> List a -> Intercept
+%% 
+
+construct(Name, Arguments) ->
+	{{Name, Arguments}, construct(Name)}.
+	
+%% 
+%% construct :: Atom -> Intercept State
+%% 
+
+construct(Name) ->
+	erlang:apply(intercepts, Name, []).
+	
 %% ====================================================
 %% Internal API
 %% ====================================================
@@ -85,9 +99,10 @@ fold( Function, FunctionInverse, InterceptState, From, Element ) ->
 	{todo_NewInterceptState, todo_ElementsToAdd}.
 	
 %% 
-%% reactiveAnd ::
-%%	Message will look like {add, FromCellPointer, null}
+%% reactiveAnd :: 
 %% 
+
+reactiveAnd() -> {remove, remove}.
 
 reactiveAnd( CellPointer1, CellPointer2, {Cell1Val, Cell2Val}, From, Element ) ->
 	CellName1 = cellPointer:name(CellPointer1),
@@ -96,19 +111,29 @@ reactiveAnd( CellPointer1, CellPointer2, {Cell1Val, Cell2Val}, From, Element ) -
 		CellName1 -> 
 			Cell1NewVal = cellElements:modifier(Element),
 			if 
-				Cell2Val =:= undefined -> { {Cell1NewVal, Cell2Val}, [] };
-				Cell1NewVal =:= add andalso Cell2Val =:= add -> { {Cell1NewVal, Cell2Val}, {add, null} };
-				true -> { {Cell1NewVal, Cell2Val}, {remove, null} }
+				Cell2Val =:= remove -> { {Cell1NewVal, Cell2Val}, [] };
+				Cell1Val =:= remove andalso Cell1NewVal =:= add andalso Cell2Val =:= add -> 
+					{ {Cell1NewVal, Cell2Val}, {add, null} };
+				Cell1NewVal =:= remove andalso (Cell1Val =:= add andalso Cell2Val =:= add) ->
+					{ {Cell1NewVal, Cell2Val}, {remove, null} };
+				true -> { {Cell1NewVal, Cell2Val}, [] }
 			end;
 		CellName2 ->
 			Cell2NewVal = cellElements:modifier(Element),
 			if 
-				Cell1Val =:= undefined -> { {Cell1Val, Cell2NewVal}, [] };
-				Cell1Val =:= add andalso Cell2NewVal =:= add -> { {Cell1Val, Cell2NewVal}, {add, null} };
-				true -> { {Cell1Val, Cell2NewVal}, {remove, null} }
+				Cell1Val =:= remove -> { {Cell1Val, Cell2NewVal}, [] };
+				Cell2Val =:= remove andalso Cell1Val =:= add andalso Cell2NewVal =:= add -> 
+					{ {Cell1Val, Cell2NewVal}, {add, null} };
+				Cell2NewVal =:= remove andalso (Cell1Val =:= add andalso Cell2Val =:= add) ->
+					{ {Cell1Val, Cell2NewVal}, {remove, null} };
+				true -> { {Cell1Val, Cell2NewVal}, [] }
 			end
 	end.
-	
+
+%% 
+%% comment
+%% 
+
 
 invert( SelfPointer, CellPointerParent, State, From, Element ) ->
 	CellName1 = cellPointer:name(CellPointerParent),

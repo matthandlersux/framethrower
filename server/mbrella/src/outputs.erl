@@ -206,11 +206,19 @@ getArgs({_Name, Args}) -> Args.
 getState({_SendTo, {_Name, _Args}, State}) -> State.
 
 
+
+%% 
+%% construct :: CellPointer -> Atom -> List a -> Output
+%% 
+
+construct(CellPointerSendTo, Name, Args) ->
+	{[CellPointerSendTo], {Name, Args}, construct({Name, Args})}.
+
 %% 
 %% construct :: CellPointer -> OutputFunction | OutputName -> Output
 %%		used by primFuncs to create an output and construct its state
 %% 
-	
+
 construct(CellPointerSendTo, {Name, Args}) ->
 	{[CellPointerSendTo], {Name, Args}, construct({Name, Args})};
 construct(CellPointerSendTo, Name) ->

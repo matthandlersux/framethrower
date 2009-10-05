@@ -26,15 +26,9 @@
 %% External API
 %% ====================================================
 
-% fold(Cell, Function, FunctionInverse, InitialValue) ->
-% 	OutputCell = cell:makeLeashedCell(unit),
-% 	cell:addElement(OutputCell, InitialValue),
-% 	cell:injectIntercept(OutputCell, {fold, InitialValue, [Function, FunctionInverse]}),
-% 	cell:injectOutput(Cell, OutputCell, send),
-% 	cell:unleash(OutputCell).
-
 %% 
 %% isEmpty :: Set a -> Unit Null
+%%		waitForDone = false
 %% 
 
 isEmpty(CellPointer) ->
@@ -45,24 +39,29 @@ isEmpty(CellPointer) ->
 	cell:injectOutput(CellPointer, outputs:construct(OutputCell, isEmpty)),
 	cell:unleash(OutputCell),
 	OutputCell.
-	
+
+%% 
+%% reactiveAnd :: Unit Null -> Unit Null -> Unit Null
+%%		waitForDone = false
+%% 
+
 reactiveAnd(CellPointer1, CellPointer2) ->
-	OutputCell = cell:makeLeashedCell(unit),
-	cell:addInformant(OutputCell, CellPointer1),
-	cell:addInformant(OutputCell, CellPointer2),
-	InterceptState = {undefined, undefined},
-	cell:injectIntercept(OutputCell, {reactiveAnd, InterceptState, [CellPointer1, CellPointer2]}),
+	OutputCell = cell:makeCellLeashed(unit),
+	cell:injectIntercept(OutputCell, intercepts:construct(reactiveAnd, [CellPointer1, CellPointer2])),
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
-	cell:unleash(OutputCell).
+	cell:unleash(OutputCell),
+	OutputCell.
 	
+%% 
+%% reactiveOr :: Unit Null -> Unit Null -> Unit Null
+%%		waitForDone = false
+%% 
+
 reactiveOr(CellPointer1, CellPointer2) ->
-	OutputCell = cell:makeLeashedCell(set),
-	cell:addInformant(OutputCell, CellPointer1),
-	cell:addInformant(OutputCell, CellPointer2),
-	% weighting of set handles the add null add null remove null -> true functionality
-	% cell:injectIntercept(OutputCell, {reactiveOr, undefined, []}),
-	% cell:injectIntercept(OutputCell, {stripName, undefined, []}),
+	OutputCell = cell:makeCellLeashed(unit),
+	% the weighting of units takes care of all the reactive or functionality
+	% cell:injectIntercept(OutputCell, intercepts:construct(reactiveOr, [CellPointer1, CellPointer2])),
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
 	cell:unleash(OutputCell).
