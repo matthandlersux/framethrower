@@ -131,110 +131,146 @@ reactiveAnd( CellPointer1, CellPointer2, {Cell1Val, Cell2Val}, From, Element ) -
 	end.
 
 invert() ->
-	% tags, b's locations, stash of messages that maybe havent shown up in the right order
-	{dict:new(), dict:new(), dict:new()}.
+	dict:new().
 	
-invert(SelfPointer, CellPointerParent, {Tags, BLocations, Stash} = InvertState, From, Element) ->
-	Parent = cellPointer:name(CellPointerParent),
+invert(SelfPointer, CellPointerParent, InvertState, From, Element) ->
 	Modifier = cellElements:modifier(Element),
-
-	case cellPointer:name(From) of
-		ATag = cellElements:mapKey(Element),
-		SetOfBCellPointer = cellElements:mapValue(Element),
-		SetOfBCellName = cellPointer:name(SetOfBCellPointer),
-		% Parent ->
-		% 	if
-		% 		Modifier =:= add ->
-		% 			% check stash for elements that arrived before tag was set up
-		% 			% note, dict:find(key, Stash) returns List of Lists
-		% 			{{dict:store(SetOfBCellName, ATag, Tags), BLocations, Stash}, []};
-		% 		true ->
-		% 			% remove from stash with BCellName
-		% 			{{dict:erase(SetOfBCellName, Tags), BLocations, Stash}, []}
-		% 	end;
-		SetOfBCellName ->
-			case dict:find(SetOfBCellName, Tags) of
+	{Word, Document} = cellElements:value(Element),
+	if
+		Modifier =:= add ->
+			case dict:find(Word, InvertState) of
 				error ->
-					{{Tags, BLocations, dict:append(SetOfBCellName, [Element])}, []}
-				{ok, FoundATag} ->
-					BValue = cellElements:value(Element),
-					if
-						Modifier =:= add ->
-							case dict:find(BValue, BLocations) of
-								error ->
-									createCell,
-									make this cell an informant for it,
-									add foundatag to it,
-									return;
-								{ok, BCellPointer} ->
-									cell:sendElements(BCellPointer, SelfPointer, cellElements:create)
-							end;
+					% need to be make linked cell
+					SetOfDocsForWord = cell:makeCell(set),
+					% cell:addInformant(...),
+					cell:sendElements(SetOfDocsForWord, SelfPointer, [cellElements:createAdd(Document)]),
+					% or do cell:addValue...
+					{dict:store(Word, {SetOfDocsForWord, 1}, InvertState), [cellElements:createAddMap(Word, SetOfDocsForWord)]};
+				{ok, {SetOfDocsForWord, Weight}} ->
+					cell:sendElements(SetOfDocsForWord, SelfPointer, [cellElements:createAdd(Document)]),
+					{dict:store(Word, {SetOfDocsForWord, Weight +1}, InvertState), [cellElements:createAddMap(Word, SetOfDocsForWord)]}
+			end;
+		true ->
+			case dict:find(Word, InvertState) of 
+				error ->
+					exit(got_remove_before_add);
+				{ok, {SetOfDocsForWord, Weight}} ->
+					cell:sendElements(SetOfDocsForWord, SelfPointer, [cellElements:createRemove(Document)]),
+					if 
+						Weight =:= 1 ->
+							% cell:killCell(SetOfDocsForWord),
+							{dict:erase(Word, InvertState), [cellElements:createRemoveMap(Word, SetOfDocsForWord)]};
 						true ->
-							
+							{dict:store(Word, {SetOfDocsForWord, Weight -1}, InvertState), [cellElements:createRemoveMap(Word, SetOfDocsForWord)]}
 					end
 			end
 	end.
-							
-
-invert( SelfPointer, CellPointerParent, State, From, Element ) ->
-	CellName1 = cellPointer:name(CellPointerParent),
-	case cellPointer:name(From) of
-		CellName1 ->
-			% message is {add, {map, {key, value}}}, or remove
-			% create cell for that key if it doesnt exist
-			% key/value then gets used to tag incoming messages
-			NewState = invertStateProcess(State, Element),
-			% check if any messages in holding and return them
-			{NewState1, Elements} = todo; %invert( CellPointerParent, NewState, Message );
-		CellPointerInformant ->
-			case invertStateGetValue(CellPointerInformant) of
-				{ok, Value} ->
-					ElementValue = cellElements:setValue(Element),
-					case invertStateGetCellpointer(ElementValue) of
-						{ok, CellPointer} ->
-							%send Value to cellpointer using the modifier from message
-							cell:sendElements(
-								CellPointer,
-								SelfPointer, 
-								cellElements:set(cellElements:modifier(Element), Value),
-							{State, [must_return_elements_for_weighting]});
-						error ->
-							%create cell associated with cellMessage:setValue(Message)
-							%add Value to that new cell
-							%store location of cell, return {state, {map, {MessageElement, cell}}}
-							todo
-					end;
-				error ->
-					todo %invertStateHoldMessage(Element)
-			end
-	end.
-
-%% 
-%% Message should be like {add, {map, {a1, cellpointerb's}}}
-%% 
-
-invertStateProcess(State, Element) ->
-	case cellElements:modifier(Element) of
-		add ->
-			CellPointerSetOfAs = cell:makeCell(set),
-			invertStateStoreKeydInput(
-				cellPointer:name(cellMessage:mapValue(Element)),
-				cellMessage:mapKey(Element)
-			),
-			todo;
-		remove ->
-			todo
-	end.
-	
-invertBaseState() ->
-	dict:new().
-	
-%if b comes from cellname, store tag in cell associated with b
-invertStateStoreKeydInput(CellFromName, Tag) ->
-	todo.
-	
-invertStateGetValue(_) -> todo.
-invertStateGetCellpointer(_) -> todo.
+	% 
+	% invert() ->
+	% 	% tags, b's locations, stash of messages that maybe havent shown up in the right order
+	% 	{dict:new(), dict:new(), dict:new()}.
+	% 	
+	% invert(SelfPointer, CellPointerParent, {Tags, BLocations, Stash} = InvertState, From, Element) ->
+	% 	Parent = cellPointer:name(CellPointerParent),
+	% 	Modifier = cellElements:modifier(Element),
+	% 
+	% 	case cellPointer:name(From) of
+	% 		ATag = cellElements:mapKey(Element),
+	% 		SetOfBCellPointer = cellElements:mapValue(Element),
+	% 		SetOfBCellName = cellPointer:name(SetOfBCellPointer),
+	% 		% Parent ->
+	% 		% 	if
+	% 		% 		Modifier =:= add ->
+	% 		% 			% check stash for elements that arrived before tag was set up
+	% 		% 			% note, dict:find(key, Stash) returns List of Lists
+	% 		% 			{{dict:store(SetOfBCellName, ATag, Tags), BLocations, Stash}, []};
+	% 		% 		true ->
+	% 		% 			% remove from stash with BCellName
+	% 		% 			{{dict:erase(SetOfBCellName, Tags), BLocations, Stash}, []}
+	% 		% 	end;
+	% 		SetOfBCellName ->
+	% 			case dict:find(SetOfBCellName, Tags) of
+	% 				error ->
+	% 					{{Tags, BLocations, dict:append(SetOfBCellName, [Element])}, []}
+	% 				{ok, FoundATag} ->
+	% 					BValue = cellElements:value(Element),
+	% 					if
+	% 						Modifier =:= add ->
+	% 							case dict:find(BValue, BLocations) of
+	% 								error ->
+	% 									createCell,
+	% 									make this cell an informant for it,
+	% 									add foundatag to it,
+	% 									return;
+	% 								{ok, BCellPointer} ->
+	% 									cell:sendElements(BCellPointer, SelfPointer, cellElements:create)
+	% 							end;
+	% 						true ->
+	% 							
+	% 					end
+	% 			end
+	% 	end.
+	% 							
+	% 
+	% invert( SelfPointer, CellPointerParent, State, From, Element ) ->
+	% 	CellName1 = cellPointer:name(CellPointerParent),
+	% 	case cellPointer:name(From) of
+	% 		CellName1 ->
+	% 			% message is {add, {map, {key, value}}}, or remove
+	% 			% create cell for that key if it doesnt exist
+	% 			% key/value then gets used to tag incoming messages
+	% 			NewState = invertStateProcess(State, Element),
+	% 			% check if any messages in holding and return them
+	% 			{NewState1, Elements} = todo; %invert( CellPointerParent, NewState, Message );
+	% 		CellPointerInformant ->
+	% 			case invertStateGetValue(CellPointerInformant) of
+	% 				{ok, Value} ->
+	% 					ElementValue = cellElements:setValue(Element),
+	% 					case invertStateGetCellpointer(ElementValue) of
+	% 						{ok, CellPointer} ->
+	% 							%send Value to cellpointer using the modifier from message
+	% 							cell:sendElements(
+	% 								CellPointer,
+	% 								SelfPointer, 
+	% 								cellElements:set(cellElements:modifier(Element), Value),
+	% 							{State, [must_return_elements_for_weighting]});
+	% 						error ->
+	% 							%create cell associated with cellMessage:setValue(Message)
+	% 							%add Value to that new cell
+	% 							%store location of cell, return {state, {map, {MessageElement, cell}}}
+	% 							todo
+	% 					end;
+	% 				error ->
+	% 					todo %invertStateHoldMessage(Element)
+	% 			end
+	% 	end.
+	% 
+	% %% 
+	% %% Message should be like {add, {map, {a1, cellpointerb's}}}
+	% %% 
+	% 
+	% invertStateProcess(State, Element) ->
+	% 	case cellElements:modifier(Element) of
+	% 		add ->
+	% 			CellPointerSetOfAs = cell:makeCell(set),
+	% 			invertStateStoreKeydInput(
+	% 				cellPointer:name(cellMessage:mapValue(Element)),
+	% 				cellMessage:mapKey(Element)
+	% 			),
+	% 			todo;
+	% 		remove ->
+	% 			todo
+	% 	end.
+	% 	
+	% invertBaseState() ->
+	% 	dict:new().
+	% 	
+	% %if b comes from cellname, store tag in cell associated with b
+	% invertStateStoreKeydInput(CellFromName, Tag) ->
+	% 	todo.
+	% 	
+	% invertStateGetValue(_) -> todo.
+	% invertStateGetCellpointer(_) -> todo.
 
 % there should be a way to make this work easily like the following, it would just require some clever
 % flag or something, work on it some more later

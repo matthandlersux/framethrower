@@ -61,6 +61,13 @@ create(Modifier, Value) ->
 	{Modifier, Value}.
 
 %% 
+%% createMap :: Atom -> Value -> Value -> Element
+%% 
+
+createMap(Modifier, Key, Value) ->
+	create(Modifier, {Key, Value}).
+	
+%% 
 %% createAdd :: Value -> Element
 %% 
 	
@@ -74,6 +81,19 @@ createAdd(Value) ->
 createRemove(Value) ->
 	{remove, Value}.
 
+%% 
+%% createAddMap :: Value -> Value -> Element
+%% 
+
+createAddMap(Key, Value) ->
+	createAdd({Key, Value}).
+
+%% 
+%% createRemoveMap :: Value -> Value -> Element
+%% 
+
+createRemoveMap(Key, Value) ->
+	createRemove({Key, Value}).
 %% 
 %% modifier :: Element -> Atom
 %% 
@@ -103,6 +123,13 @@ mapValue({_, {_, Value}}) ->
 	Value.
 	
 %% 
+%% mapKey :: Element -> MapKey
+%% 
+
+mapKey({_, {Key, _}}) ->
+	Key.
+	
+%% 
 %% process :: CellElements -> List Element -> Tuple CellElements (List Element)
 %% 
 
@@ -123,7 +150,10 @@ toList({unit, {Value, Weight}}) ->
 	valueToElementList(Value, Weight);
 toList({set, ElementState}) ->
 	ElementList = dict:to_list(ElementState),
-	lists:flatmap(fun({V,W}) -> valueToElementList(V, W) end, ElementList).
+	lists:flatmap(fun({V,W}) -> valueToElementList(V, W) end, ElementList);
+toList({map, ElementState}) ->
+	ElementList = dict:to_list(ElementState),
+	lists:flatmap(fun({K,{V,W}}) -> valueToElementList({K, V}, W) end, ElementList).
 
 %% ====================================================
 %% External API For Outputs

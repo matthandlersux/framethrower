@@ -215,7 +215,8 @@ handle_call(Msg, From, State) ->
 handle_cast({injectIntercept, InterceptPointer}, State) ->
 	Informants = intercepts:getArguments(InterceptPointer),
 	Informants1 = cellPointer:filterList(Informants),
-	State1 = cellState:updateInformants(State, Informants1),
+	Informants2 = Informants1 -- [cellState:cellPointer(State)],
+	State1 = cellState:updateInformants(State, Informants2),
 	{noreply, cellState:injectIntercept(State1, InterceptPointer)};
 
 handle_cast({injectElements, Elements}, CellState) ->

@@ -292,7 +292,7 @@ takeOne(OneElement, ElementsState, Element) ->
 %% invert :: Map a (Set b)
 %% 
 
-invert(_CellPointer) -> undefined;
+invert(_CellPointer) -> undefined.
 
 invert(CellPointer, _State, _ElementsState, Element) ->
 	Modifier = cellElements:modifier(Element),
@@ -300,20 +300,20 @@ invert(CellPointer, _State, _ElementsState, Element) ->
 	ATag = cellElements:mapKey(Element),
 	if 
 		Modifier =:= add ->
-			cell:injectOutput(SetOfBCellPointer, {invertSend [ATag]}, CellPointer);
+			cell:injectOutput(SetOfBCellPointer, {invertSend, [ATag]}, CellPointer);
 		true ->
-			cell:uninjectOutput(SetOfBCellPointer, {invertSend [ATag]}, CellPointer)
+			cell:uninjectOutput(SetOfBCellPointer, {invertSend, [ATag]}, CellPointer)
 	end,
 	{undefined, []}.
 	
 % go over the way i thought i was supposed to do it tomorrow
 	
-invertSend(ATag) -> ATag;
+invertSend(ATag) -> ATag.
 
-invertSend(ATag, _ElementsState, Element) ->
+invertSend(ATag, _OutputState, _ElementsState, Element) ->
 	Modifier = cellElements:modifier(Element),
 	Value = cellElements:value(Element),
-	cellElements:createMap(Modifier, ATag, Value).
+	{ATag, cellElements:createMap(Modifier, Value, ATag)}.
 
 
 %% ====================================================

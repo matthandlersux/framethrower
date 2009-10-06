@@ -507,3 +507,23 @@ cell:addValues(S, [toby, matt, andrew, harold, mattg]),
 cell:injectIntercept(D, {{debug, []}, []}),
 cell:injectOutput(S, takeOne, U),
 cell:injectOutput(U, D).
+
+% debug invert
+f(),
+M = cell:makeCell(map).
+S1 = cell:makeCell(set).
+S2 = cell:makeCell(set).
+S3 = cell:makeCell(set).
+I = cell:makeCell(map).
+D = cell:makeCell(unit).
+cell:injectIntercept(D, {{debug, []}, []}).
+
+cell:addValues(M, [{tobydoc, S1}, {mattdoc, S2}, {andrewdoc, S3}]).
+cell:addValues(S1, [this,that,other,him,her,belief]).
+cell:addValues(S2, [that,other,him, species, left]).
+cell:addValues(S3, [roy, blimp, him, her, species, clever]).
+
+cell:injectIntercept(I, intercepts:construct(invert, [I, M])).
+cell:injectOutput(M, {invert, [I]}, I).
+
+cell:injectOutput(I, D).
