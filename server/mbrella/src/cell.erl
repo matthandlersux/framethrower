@@ -240,6 +240,8 @@ handle_cast({sendElements, From, Elements}, State) ->
 				end,
 	
 			CellState = injectElements(State2, NewElements),
+			
+			% TODO!! IF FLAG IS SET, CHECK IF EMPTY, KILL CELL IF NECESSARY
 			{noreply, CellState}
 	end;
 

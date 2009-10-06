@@ -310,7 +310,7 @@ mapAdd(MapElements, {NewElementKey, NewElementValue}) ->
 	end.
 
 %% 
-%% mapAdd :: Dict -> Tuple Value Value -> Tuple Dict (List Element)
+%% mapRemove :: Dict -> Tuple Value Value -> Tuple Dict (List Element)
 %% 
 
 mapRemove(MapElements, {NewElementKey, NewElementValue}) ->
@@ -318,8 +318,8 @@ mapRemove(MapElements, {NewElementKey, NewElementValue}) ->
 		true ->
 			{OldElementValue, Weight} = dict:fetch(NewElementKey, MapElements),
 			if
-				Weight =:= 1 -> {dict:erase(NewElementKey, MapElements), []};
-				true -> {dict:store(NewElementKey, {OldElementValue, Weight + 1}, MapElements), []}
+				Weight =:= 1 -> {dict:erase(NewElementKey, MapElements), [{remove, {NewElementKey, OldElementValue}}]};
+				true -> {dict:store(NewElementKey, {OldElementValue, Weight - 1}, MapElements), []}
 			end;
 		false ->
 			{dict:store(NewElementKey, {NewElementValue, -1}, MapElements), [{remove, {NewElementKey, NewElementValue}}]}

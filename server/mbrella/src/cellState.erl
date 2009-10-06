@@ -31,7 +31,7 @@
 	elements = cellElements:new(),
 	stash = [],
 	outputs = outputs:newState(),
-	flags = [{leashed, false}, {waitForDone, false}],
+	flags = [{leashed, false}, {waitForDone, false}, {killOnEmpty, false}],
 	informants = []
 }).
 
