@@ -43,7 +43,7 @@ template (items::List ((Number, Number), a), height::Number, padding::Number) {
 				start = fst (fst (snd cut)),
 				duration = snd (fst (snd cut)),
 				<div style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide duration movieDuration)}" style-position="absolute">
-					<div style-padding="{padding}" style-border-right="1px solid #000">
+					<div style-padding="{padding}" style-border-right="1px solid #000" style-background-color="#fff">
 						<div style-height="{height}" style-background-color="#ccc" style-background-image="{url}" style-background-repeat="no-repeat" style-background-position="{getBackgroundPosition index height}" />
 					</div>
 				</div>

@@ -1,7 +1,7 @@
-// template (divisions::Number, timestamps::List ((Number, Number), d))::List ((Number, Number), (List ((Number, Number), d))) {
-// 	js = function (divisions::Number, totalDuration::Number, timestamps::List ((Number, Number), d))::List ((Number, Number), (List ((Number, Number), d))) {
-template (divisions::Number, timestamps::List b)::List ((Number, Number), (List ((Number, Number), d))) {
-	js = function (divisions::Number, totalDuration::Number, timestamps::List b)::List ((Number, Number), (List ((Number, Number), d))) {
+template (divisions::Number, timestamps::List ((Number, Number), d))::List ((Number, Number), (List ((Number, Number), d))) {
+	js = function (divisions::Number, totalDuration::Number, timestamps::List ((Number, Number), d))::List ((Number, Number), (List ((Number, Number), d))) {
+// template (divisions::Number, timestamps::List b)::List ((Number, Number), (List ((Number, Number), d))) {
+// 	js = function (divisions::Number, totalDuration::Number, timestamps::List b)::List ((Number, Number), (List ((Number, Number), d))) {
 
 
 
