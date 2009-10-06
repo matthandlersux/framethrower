@@ -96,6 +96,13 @@ value({_, Value}) ->
 	Value.
 
 %% 
+%% mapValue :: Element -> MapValue
+%% 
+
+mapValue({_, {_, Value}}) ->
+	Value.
+	
+%% 
 %% process :: CellElements -> List Element -> Tuple CellElements (List Element)
 %% 
 

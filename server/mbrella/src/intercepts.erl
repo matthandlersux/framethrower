@@ -130,10 +130,51 @@ reactiveAnd( CellPointer1, CellPointer2, {Cell1Val, Cell2Val}, From, Element ) -
 			end
 	end.
 
-%% 
-%% comment
-%% 
+invert() ->
+	% tags, b's locations, stash of messages that maybe havent shown up in the right order
+	{dict:new(), dict:new(), dict:new()}.
+	
+invert(SelfPointer, CellPointerParent, {Tags, BLocations, Stash} = InvertState, From, Element) ->
+	Parent = cellPointer:name(CellPointerParent),
+	Modifier = cellElements:modifier(Element),
 
+	case cellPointer:name(From) of
+		ATag = cellElements:mapKey(Element),
+		SetOfBCellPointer = cellElements:mapValue(Element),
+		SetOfBCellName = cellPointer:name(SetOfBCellPointer),
+		% Parent ->
+		% 	if
+		% 		Modifier =:= add ->
+		% 			% check stash for elements that arrived before tag was set up
+		% 			% note, dict:find(key, Stash) returns List of Lists
+		% 			{{dict:store(SetOfBCellName, ATag, Tags), BLocations, Stash}, []};
+		% 		true ->
+		% 			% remove from stash with BCellName
+		% 			{{dict:erase(SetOfBCellName, Tags), BLocations, Stash}, []}
+		% 	end;
+		SetOfBCellName ->
+			case dict:find(SetOfBCellName, Tags) of
+				error ->
+					{{Tags, BLocations, dict:append(SetOfBCellName, [Element])}, []}
+				{ok, FoundATag} ->
+					BValue = cellElements:value(Element),
+					if
+						Modifier =:= add ->
+							case dict:find(BValue, BLocations) of
+								error ->
+									createCell,
+									make this cell an informant for it,
+									add foundatag to it,
+									return;
+								{ok, BCellPointer} ->
+									cell:sendElements(BCellPointer, SelfPointer, cellElements:create)
+							end;
+						true ->
+							
+					end
+			end
+	end.
+							
 
 invert( SelfPointer, CellPointerParent, State, From, Element ) ->
 	CellName1 = cellPointer:name(CellPointerParent),

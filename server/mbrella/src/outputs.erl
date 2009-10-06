@@ -234,6 +234,10 @@ construct({Name, Args}) ->
 %% calling the function without any parameters is the constructor for the state
 %% 
 
+%% 
+%% isEmpty :: Set a -> Unit Null
+%% 
+
 isEmpty() -> 
 	empty.
 	
@@ -252,7 +256,9 @@ isEmpty(empty, ElementsState, _Element) ->
 			throw({empty, []})
 	end.
 		
-
+%% 
+%% takeOne :: Set a -> Unit a
+%% 
 
 takeOne() -> undefined.
 
@@ -282,18 +288,32 @@ takeOne(OneElement, ElementsState, Element) ->
 			end
 	end.
 			
-		
 %% 
-%%	sideEffectInject :: CellPointer -> Element -> Element
-%% 		takes a {map, {Key, CellPointerSet}} and injects a send into CellPointerSet, returns element
+%% invert :: Map a (Set b)
 %% 
+
+invert(_CellPointer) -> undefined;
+
+invert(CellPointer, _State, _ElementsState, Element) ->
+	Modifier = cellElements:modifier(Element),
+	SetOfBCellPointer = cellElements:mapValue(Element),
+	ATag = cellElements:mapKey(Element),
+	if 
+		Modifier =:= add ->
+			cell:injectOutput(SetOfBCellPointer, {invertSend [ATag]}, CellPointer);
+		true ->
+			cell:uninjectOutput(SetOfBCellPointer, {invertSend [ATag]}, CellPointer)
+	end,
+	{undefined, []}.
 	
-sideEffectInject(CellPointerOutput, {add, {map, {Key, CellPointerSet}}} = Element) ->
-	cell:injectOutput(CellPointerSet, CellPointerOutput),
-	{ undefined, Element };
-sideEffectInject(CellPointerOutput, {remove, {map, {Key, CellPointerSet}}} = Element) ->
-	cell:uninjectOutput(CellPointerSet, CellPointerOutput),
-	{ undefined, Element }.
+% go over the way i thought i was supposed to do it tomorrow
+	
+invertSend(ATag) -> ATag;
+
+invertSend(ATag, _ElementsState, Element) ->
+	Modifier = cellElements:modifier(Element),
+	Value = cellElements:value(Element),
+	cellElements:createMap(Modifier, ATag, Value).
 
 
 %% ====================================================

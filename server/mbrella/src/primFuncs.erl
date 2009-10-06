@@ -60,8 +60,8 @@ reactiveAnd(CellPointer1, CellPointer2) ->
 
 reactiveOr(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeCellLeashed(unit),
-	% the weighting of units takes care of all the reactive or functionality
-	% cell:injectIntercept(OutputCell, intercepts:construct(reactiveOr, [CellPointer1, CellPointer2])),
+	% the weighting of units takes care of all the reactive-or functionality
+	% 	cell:injectIntercept(OutputCell, intercepts:construct(reactiveOr, [CellPointer1, CellPointer2])),
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
 	cell:unleash(OutputCell).
@@ -85,14 +85,17 @@ setDifference(CellPointer1, CellPointer2) ->
 
 takeOne(CellPointer) ->
 	OutputCell = cell:makeCell(unit),
-	cell:injectOutput(CellPointer, outputs:construct(takeOne, OutputCell)),
+	cell:injectOutput(CellPointer, takeOne, OutputCell),
 	OutputCell.
 	
+%% 
+%% invert :: Map a (Set b) -> Map b (Set a)
+%% 
+
 invert(CellPointer) ->
-	OutputCell = cell:makeLeashedCell(map),
-	cell:addInformant(OutputCell, CellPointer),
-	cell:injectIntercept(OutputCell, {invert, intercepts:invertBaseState(), [OutputCell, CellPointer]}),
-	cell:injectOutput(CellPointer, OutputCell, {sideEffectInject, undefined, [OutputCell]}),
+	OutputCell = cell:makeCellLeashed(map),
+	cell:injectIntercept(OutputCell, intercepts:construct(invert, [OutputCell, CellPointer])),
+	cell:injectOutput(CellPointer, {invert, [OutputCell]}, OutputCell),
 	cell:unleash(OutputCell).
 	
 %% ====================================================
