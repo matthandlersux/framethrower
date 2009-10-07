@@ -1,10 +1,4 @@
-all: mbrella pipeline
-
-pipeline: mochiweb
+all:
 	(cd pipeline;$(MAKE))
-
-#mochiweb:
-#	(cd mochiweb;$(MAKE))
-	
-mbrella:
-	(cd mbrella/;$(MAKE))
+	(cd mochiweb;$(MAKE))
+	(cd mbrella;$(MAKE))

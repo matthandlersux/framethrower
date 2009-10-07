@@ -3,7 +3,7 @@
 
 -import(lists,[reverse/1, suffix/2]).
 
--include ("../mbrella/include/scaffold.hrl").
+-include ("../../include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 

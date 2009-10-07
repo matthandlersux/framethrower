@@ -6,7 +6,7 @@
 -import (mblib, [maybeStore/3]).
 
 -include ("ast.hrl").
--include ("../mbrella/include/scaffold.hrl").
+-include ("../../include/scaffold.hrl").
 -define (do(X, Y, Next), then( Y, fun(X) -> Next end )).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 

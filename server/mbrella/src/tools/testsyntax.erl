@@ -1,6 +1,6 @@
 -module(testsyntax).
 -compile(export_all).
--include("../include/scaffold.hrl").
+-include("../../include/scaffold.hrl").
 -include_lib("xmerl/include/xmerl.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).

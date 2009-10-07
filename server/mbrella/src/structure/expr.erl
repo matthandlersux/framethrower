@@ -3,7 +3,7 @@
 
 -import (parse, [choice/2, choice/1, literal/0, identifier/0, failure/0,
  				boolean/0, null/0, natural/0, symbol/1, return/1, then/2, nest/3, alphaNum/0, float/0]).
--include ("../include/scaffold.hrl").
+-include ("../../include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
 

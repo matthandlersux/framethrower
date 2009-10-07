@@ -2,7 +2,7 @@
 
 -behaviour(gen_server).
 -import(mblib, [curry/1]).
--include ("../include/scaffold.hrl").
+-include ("../../include/scaffold.hrl").
 -export([start/0, stop/0, nameAndStoreCell/1, nameAndStoreObj/1, store/2, lookup/1, addFun/3, getState/0, getStateDict/0, createEnv/0]).
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3, getPrimitives/0]).

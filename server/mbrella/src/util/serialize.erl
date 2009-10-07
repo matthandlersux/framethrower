@@ -20,8 +20,8 @@
 %% Include files
 %% --------------------------------------------------------------------
 
--include ("../include/scaffold.hrl").
--include ("../../lib/ast.hrl").
+-include ("../../include/scaffold.hrl").
+-include ("../../include/ast.hrl").
 
 %% --------------------------------------------------------------------
 %% External exports

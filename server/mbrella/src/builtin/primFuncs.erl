@@ -1,7 +1,7 @@
--module (primFuncs.erl).
+-module (primFuncs).
 -compile(export_all).
 
--include().
+% -include().
 
 -ifdef( debug ).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).

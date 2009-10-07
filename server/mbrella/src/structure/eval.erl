@@ -4,7 +4,7 @@
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define(consKeysRight, [4] ).
 
--include ("../include/scaffold.hrl").
+-include ("../../include/scaffold.hrl").
 
 %% 
 %% Expr consists of:

@@ -4,7 +4,7 @@
 
 -compile(export_all).
 
--include("../include/scaffold.hrl").
+-include("../../include/scaffold.hrl").
 
 
 % -ifdef( debug ).

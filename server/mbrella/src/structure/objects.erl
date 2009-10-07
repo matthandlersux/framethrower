@@ -6,8 +6,8 @@
 -module(objects).
 
 -behaviour(gen_server).
--include("../include/scaffold.hrl").
--include ("../../lib/ast.hrl").
+-include("../../include/scaffold.hrl").
+-include ("../../include/ast.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 

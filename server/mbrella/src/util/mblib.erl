@@ -1,7 +1,7 @@
 -module (mblib).
 -compile (export_all).
 
--include ("../mbrella/include/scaffold.hrl").
+-include ("../../include/scaffold.hrl").
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define(consKeysLeftRight, [3, 4] ).
 
@@ -126,9 +126,9 @@ rInfo(exprApply) ->
 rInfo(exprLambda) ->
 	record_info(fields, exprLambda);
 rInfo(session) ->
-	record_info(fields, session);
-rInfo(cellState) ->
-	record_info(fields, cellState).
+	record_info(fields, session).
+% rInfo(cellState) ->
+% 	record_info(fields, cellState).
 	
 %% 
 %% which figures out the placement of an element in a record
@@ -316,7 +316,9 @@ prepareStateScript() ->
 	UpdatedStruct = serialize:updatePrepareState(PrepareStateStruct),
 	preparedState.
 
-
+printHi() ->
+	?trace("Hi"),
+	ok.
 
 	% case inets:start() of
 	% 	ok ->
