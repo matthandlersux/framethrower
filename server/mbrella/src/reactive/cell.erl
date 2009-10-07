@@ -50,7 +50,7 @@
 makeCell() -> 
 	{ok, Pid} = gen_server:start(?MODULE, [], []),
 	NewCell = #exprCell{pid=Pid},
-	NamedCell = env:nameAndStoreCell(NewCell),
+	NamedCell = globalStore:nameAndStoreCell(NewCell),
 	#cellPointer{name = NamedCell#exprCell.name, pid = Pid}.
 
 %%----------------------------------------------------------------------

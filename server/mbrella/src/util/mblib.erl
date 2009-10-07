@@ -1,7 +1,7 @@
 -module (mblib).
 -compile (export_all).
 
--include ("../mbrella/include/scaffold.hrl").
+-include ("../../mbrella/include/scaffold.hrl").
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define(consKeysLeftRight, [3, 4] ).
 
@@ -193,7 +193,7 @@ exprElementToJson(X) when is_list(X) ->
 		false -> X
 	end;
 exprElementToJson(X) when is_pid(X) ->
-	#exprCell{name = Name} = env:lookup(X),
+	#exprCell{name = Name} = globalStore:lookup(X),
 	list_to_binary(Name);
 exprElementToJson(CellPointer) when is_record(CellPointer, cellPointer) ->
 	list_to_binary(CellPointer#cellPointer.name);
@@ -213,7 +213,7 @@ createExprLib(ExprLibStruct) ->
 		Name = binary_to_list(BinName),
 		try 
 			ParsedExpr = expr:exprParse(binary_to_list(BinExpr)),
-			env:store(Name, {exprLib, ParsedExpr})
+			globalStore:store(Name, {exprLib, ParsedExpr})
 		catch
 			_:_ -> nosideeffect
 		end
@@ -267,7 +267,7 @@ startScript(Options) ->
 	spawn( fun() ->
 		sessionManager:start(),
 		memoize:start(),
-		env:start(),
+		globalStore:start(),
 		objects:start(),
 		mblib:bootJsonScript(),
 	

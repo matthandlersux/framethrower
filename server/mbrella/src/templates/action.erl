@@ -46,10 +46,6 @@ start_link() ->
 		Else -> Else
 	end.
 
-aFunc() ->
-	?trace("This is just so so so good").
-
-
 testJSON() ->
 	{ok, JSONBinary} = file:read_file("../lib/bootJSON"),
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
@@ -57,7 +53,8 @@ testJSON() ->
 	{struct, Lets} = SharedLetStruct,
 	lists:map(fun(Let) ->
 		{LetName, LetStruct} = Let,
-		Reply = gen_server:cast(?MODULE, {addLet, LetName, LetStruct}),
+		LetNameString = binary_to_list(LetName),
+		Reply = gen_server:call(?MODULE, {addLet, LetNameString, LetStruct}),
 		?trace(Reply)
 	end, Lets),
 	ok.
@@ -68,6 +65,11 @@ addActionsFromJSON(ActionsJSON) ->
 
 performAction(ActionName, Params) ->
 	gen_server:call(?MODULE, {performAction, ActionName, Params}).
+
+
+
+getState() ->
+	gen_server:call(?MODULE, getState).
 
 stop() ->
 	gen_server:call(?MODULE, stop).
@@ -101,6 +103,19 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
+handle_call({addLet, LetName, LetStruct}, _, State) ->
+	NewState = dict:store(LetName, LetStruct, State),
+    {reply, ok, NewState};
+handle_call({performAction, ActionName, Params}, _, State) ->
+	ActionJSON = dict:find(ActionName, State),
+	?trace("Performing Action"),
+	?trace(ActionJSON),
+	
+	
+	
+    {reply, ok, State};
+handle_call(getState, _, State) ->
+	{reply, State, State};
 handle_call(stop, _, State) ->
 	{stop, normal, stopped, State}.
 
@@ -111,9 +126,6 @@ handle_call(stop, _, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_cast({addLet, LetName, LetStruct}, State) ->
-	NewState = dict:store(LetName, LetStruct, State),
-    {noreply, NewState};
 handle_cast({serializeEnv, _}, State) ->
     {noreply, State};
 handle_cast({terminate, Reason}, State) ->
@@ -152,18 +164,111 @@ code_change(OldVsn, State, Extra) ->
 
 %%For Now we'll have all the functions for processing template JSON here. Will want to reorganize this into another file probably
 
-evaluateLine() -> ok.
+% returns {Result, NewEnv}, Env may change because it is lazy
+evaluateLine(Line, Env) -> ok.
+	% Kind = 	binary_to_list(struct:get_value(<<"kind">>, Line)),
+	% case Kind of
+	% 	"lineExpr" ->
+	% 		Expr = binary_to_list(struct:get_value(<<"expr">>, Line)),
+	% 		expr:exprParse(Expr, Env);
+	% 	"lineTemplate" ->
+	% 		
+	% 	"lineJavascript" ->
+	% 	"lineXML" ->
+	% 	"lineState" ->
+	% 	"lineAction" ->
+	% 	"actionCreate" ->
+	% end.
+% 
+% function evaluateLine(line, env) {
+% 	
+% 	if (line.kind === "lineExpr") {
+% 		var expr = parseExpression(line.expr, env);
+% 		return expr;
+% 	} else if (line.kind === "lineTemplate") {
+% 		return makeClosure(line, env);
+% 	} else if (line.kind === "lineJavascript") {
+% 		if (line.f.length === 0) return line.f();
+% 		else return makeFun(line.type, curry(line.f));
+% 		//return makeFun(parseType(line.type), line.f);
+% 	} else if (line.kind === "lineXML") {
+% 		return makeXMLP(line.xml, env);
+% 	} else if (line.kind === "lineState") {
+% 		var ac = evaluateLine(line.action, env);
+% 		return executeAction(ac);		
+% 		//return makeCC(line.type);
+% 		//return makeCC(parseType(line.type));
+% 	} else if (line.kind === "lineAction") {
+% 		return makeActionClosure(line, env);
+% 	} else if(line.kind === "actionCreate") {
+% 		// TODO actions in a let are possible in actions, but not in templates? may as well be in both.
+% 		// desugar as a one-action lineAction:
+% 		var lineAction = {actions: [{action: line}]};
+% 		return makeActionClosure(lineAction, env);
+% 	}
+% }
+% 
+
+
 
 executeAction() -> ok.
 
 makeActionClosure() -> ok.
 
-makeClosure() -> ok.
+accumulate(SavedArgs, Fun, Expects) ->
+	case lists:length(SavedArgs) of
+		Expects -> Fun(SavedArgs);
+		_ -> fun (Arg) -> accumulate([Arg | SavedArgs], Fun, Expects) end
+	end.
+
+curry(Fun, Expects) ->
+	accumulate([], Fun, Expects).
+
+extendEnv(Env, Scope) -> 
+	dict:merge(fun(A, B) -> A end, Env, Scope).
+
+makeClosure(LineTemplate, Env) ->
+	Params = struct:get_value(<<"params">>, LineTemplate),
+	Type = struct:get_value(<<"type">>, LineTemplate),
+	ParamLength = lists:length(Params),
+	F = curry(fun(Args) -> 
+		Scope = dict:new(),
+		ArgsAndParams = lists:zip(Args, Params),
+		NewScope = lists:foldl(fun({Arg, Param}, InnerScope) -> 
+			dict:store(binary_to_list(Param), Arg, InnerScope)
+		end, Scope, ArgsAndParams),
+		EnvWithParams = extendEnv(Env, NewScope),
+		Lets = struct:get_value(<<"let">>, LineTemplate),
+		EnvWithLets = addLets(Lets, EnvWithParams),
+		Output = struct:get_value(<<"output">>, LineTemplate),
+		evaluateLine(Output, EnvWithLets)
+	end, ParamLength),
+	case ParamLength of
+		0 -> F;
+		_ -> #exprFun{function=F}
+	end.
 
 % Should have this somewhere
 % parseExpression() -> ok.
 
-addLets() -> ok.
+addLets(Lets, Env) -> ok.
+
+
+% function addLets(lets, env) {
+% 	var memo = {};
+% 	function newEnv(s) {
+% 		if (memo[s] !== undefined) {
+% 			return memo[s];
+% 		} else if (lets[s] !== undefined) {
+% 			memo[s] = evaluateLine(lets[s], newEnv);
+% 			return memo[s];
+% 		} else {
+% 			return env(s);
+% 		}
+% 	}
+% 	return newEnv;
+% }
+
 
 addFun() -> ok.
 

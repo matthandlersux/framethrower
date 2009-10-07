@@ -6,8 +6,8 @@
 -module(objects).
 
 -behaviour(gen_server).
--include("../include/scaffold.hrl").
--include ("../../lib/ast.hrl").
+-include("../../include/scaffold.hrl").
+-include ("../../include/ast.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
@@ -119,12 +119,12 @@ makeCasts(SuperClass, TargetClass) ->
 	CastUpFuncName = TargetClassName ++ [$~] ++ SuperClassName,
 	CastUpType = TargetClassName ++ " -> " ++ SuperClassName,
 	CastUpFunc = SuperClass#class.castUp,
-	env:addFun(CastUpFuncName, CastUpType, CastUpFunc),
+	globalStore:addFun(CastUpFuncName, CastUpType, CastUpFunc),
 	
 	CastDownFuncName = SuperClassName ++ [$~] ++ TargetClassName,
 	CastDownType = SuperClassName ++ " -> Unit " ++ TargetClassName,
 	CastDownFunc = TargetClass#class.castDown,
-	env:addFun(CastDownFuncName, CastDownType, CastDownFunc),
+	globalStore:addFun(CastDownFuncName, CastDownType, CastDownFunc),
 	
 	makeCasts(SuperClass#class.inherit, TargetClass).
 
@@ -187,7 +187,7 @@ addMemoLookup(ClassDef) ->
 				MemoString = makeMemoString(ArgList),
 				getBroadcaster(ClassName, MemoString)
 			end, length(Memoize), []),
-			env:addFun(FuncName, FuncType, Func)
+			globalStore:addFun(FuncName, FuncType, Func)
 	end.
 
 castPropsUpIfNeeded(Props, ObjClass, Classes) ->
@@ -198,7 +198,7 @@ castPropsUpIfNeeded(Props, ObjClass, Classes) ->
 			false ->
 				case dict:find(PropName, Props) of
 					{ok, ObjectPointer} when is_record(ObjectPointer, objectPointer) ->
-						InstanceValue = env:lookup(ObjectPointer#objectPointer.name),
+						InstanceValue = globalStore:lookup(ObjectPointer#objectPointer.name),
 						InstanceType = type:get(InstanceValue),
 						case type:compareTypes(InstanceType, PropType) of
 							true -> ObjectPointer;
@@ -254,7 +254,7 @@ makeInheritedCopies(Obj, Classes) ->
 		UpClass ->
 			UpClassName = UpClass#class.name,
 			NewCopy = Obj#object{type = #type{type=typeName, value=list_to_atom(UpClassName)}},
-			NewerCopy = env:nameAndStoreObj(NewCopy),
+			NewerCopy = globalStore:nameAndStoreObj(NewCopy),
 			Dict = makeInheritedCopies(NewerCopy, Classes),
 			dict:store(UpClassName, NewerCopy, Dict)
 	end.
@@ -262,7 +262,7 @@ makeInheritedCopies(Obj, Classes) ->
 checkPointer(ObjectOrPointer) ->
 	Answer = case ObjectOrPointer of
 		ObjectPointer when is_record(ObjectPointer, objectPointer) ->
-			env:lookup(ObjectPointer#objectPointer.name);
+			globalStore:lookup(ObjectPointer#objectPointer.name);
 		_ -> ObjectOrPointer
 	end,
 	if
@@ -326,9 +326,9 @@ handle_call({create, ClassName, PropDict, InName}, From, State) ->
 			
 			%add this obj to env
 			NamedO = case InName of
-				noname -> env:nameAndStoreObj(OWithProps);
+				noname -> globalStore:nameAndStoreObj(OWithProps);
 				_ -> 
-					env:store(InName, OWithProps),
+					globalStore:store(InName, OWithProps),
 					OWithProps#object{name=InName}
 			end,
 			
@@ -345,7 +345,7 @@ handle_call({create, ClassName, PropDict, InName}, From, State) ->
 			CopiesWithDict = dict:map(fun(CopyClassName, Copy) ->
 				CopyName = Copy#object.name,
 				CopyWithDict = Copy#object{castingDict = CopyNames},
-				env:store(CopyName, CopyWithDict),
+				globalStore:store(CopyName, CopyWithDict),
 				CopyWithDict
 			end, Copies),
 			
@@ -446,7 +446,7 @@ handle_cast({addProp, Name, PropName, TypeString}, State) ->
 		Obj = checkPointer(ObjOrPointer),
 		dict:fetch(PropName, Obj#object.prop)
 	end,
-	env:addFun(GetFuncName, FuncType, GetFunc),
+	globalStore:addFun(GetFuncName, FuncType, GetFunc),
 	NewState = State#state{classes=NewClasses},
 	{noreply, NewState};
 handle_cast({addToMemoTable, Obj, Props}, State) ->

@@ -39,9 +39,9 @@ evaluate(Expr) when is_record(Expr, exprApply) orelse is_record(Expr, exprLambda
 									%decide if it needs to be named
 									#exprFun{function = X, bottom = BottomExpr};
 								Result when is_record(Result, cellPointer) ->
-									Cell = env:lookup(Result#cellPointer.name),
+									Cell = globalStore:lookup(Result#cellPointer.name),
 									CellWithBottom = Cell#exprCell{bottom = BottomExpr},
-									env:store(Result#cellPointer.name, CellWithBottom),
+									globalStore:store(Result#cellPointer.name, CellWithBottom),
 									OnRemove = memoize:add( BottomExpr, Result),
 									cell:addOnRemove(Result, OnRemove),
 									Result;
@@ -90,7 +90,7 @@ betaReduce( Expr, BinderLevel, ReplaceExpr ) ->
 applyFun( #exprFun{function = Fun} = ExprFun, Expr ) when is_record(ExprFun, exprFun) ->
 	Fun(Expr);
 applyFun( #funPointer{name = Name} = FunPointer, Expr ) when is_record(FunPointer, funPointer) ->
-	#exprFun{function = Fun} = env:lookup(Name),
+	#exprFun{function = Fun} = globalStore:lookup(Name),
 	Fun(Expr).
 	
 bottomOut( InExpr ) -> 
@@ -103,7 +103,7 @@ bottomOut( InExpr ) ->
 					ExprFun#exprFun.bottom
 			end;
 		ExprPointer when is_record(ExprPointer, cellPointer) ->
-			Expr = env:lookup(ExprPointer#cellPointer.name),
+			Expr = globalStore:lookup(ExprPointer#cellPointer.name),
 			case Expr#exprCell.bottom of 
 				undefined ->
 					Expr#exprCell.name;

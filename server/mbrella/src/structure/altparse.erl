@@ -3,7 +3,7 @@
 
 -import(lists,[reverse/1, suffix/2]).
 
--include ("../mbrella/include/scaffold.hrl").
+-include ("../../mbrella/include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
@@ -11,46 +11,50 @@
 %% Parser
 %% ====================================================
 
-parse(S) ->
-	{Ans, []} = parseExpr(S),
+parse(S, Env) ->
+	{Ans, []} = parseExpr(S, Env),
 	Ans.
 
-parseExpr([$(|Right] = S) ->
+parseExpr([$(|Right] = S, Env) ->
 	%apply or lambda
 	case Right of
 		[$\\|Rest] ->
 			%lambda
-			{Expr, [$)|Remaining]} = parseExpr(Rest),
+			{Expr, [$)|Remaining]} = parseExpr(Rest, Env),
 			{#exprLambda{
 				expr = Expr
 			}, Remaining};
 		_ ->
 			%apply
-			{ApplyLeft, SpaceAndRight} = parseExpr(Right),
+			{ApplyLeft, SpaceAndRight} = parseExpr(Right, Env),
 			[$ |Rest] = SpaceAndRight,
-			{ApplyRight, [$)|Remaining]} = parseExpr(Rest),
+			{ApplyRight, [$)|Remaining]} = parseExpr(Rest, Env),
 			{#exprApply{
 				left = ApplyLeft,
 				right = ApplyRight
 			}, Remaining}
 	end;
-parseExpr([$\"|Right] = S) ->
+parseExpr([$\"|Right] = S, _) ->
 	%quoted string
 	cutOffRightQuote(Right);
-parseExpr([$ |Right] = S) ->
+parseExpr([$ |Right] = S, Env) ->
 	%not sure if this will happen
-	parseExpr(Right);
-parseExpr([$/|Right] = S) ->
+	parseExpr(Right, Env);
+parseExpr([$/|Right] = S, _) ->
 	{NumString, Rest} = untilSpaceOrRightParen(Right),
 	Num = list_to_integer(NumString),
 	{#exprVar{index = Num}, Rest};
-parseExpr([_|Right] = S) ->
+parseExpr([_|Right] = S, Env) ->
 	%env variable or number
 	%read until space or right paren
 	{VarOrPrim, Rest} = untilSpaceOrRightParen(S),
 	Ans = case extractPrim(VarOrPrim) of
 		error ->
-			lookupInEnv(VarOrPrim);
+			case Env(VarOrPrim) of
+				notfound ->
+					lookupInEnv(VarOrPrim);
+				Found -> Found
+			end;
 		Prim ->
 			Prim
 	end,
@@ -90,15 +94,9 @@ extractPrim(VarOrPrim) ->
 	end.
 
 lookupInEnv(ParsedString) ->
-	case env:lookup(ParsedString) of
+	case globalStore:lookupPointer(ParsedString) of
 		notfound ->
 			% #exprVar{value = ParsedString};
 			throw({variable_not_in_environment, [{variable, ParsedString}]});
-		ExprCell when is_record(ExprCell, exprCell) -> 
-			#cellPointer{name = ParsedString, pid = ExprCell#exprCell.pid};
-		Object when is_record(Object, object) -> 
-			#objectPointer{name = ParsedString};
-		ExprFun when is_record(ExprFun, exprFun) ->
-			#funPointer{name = ParsedString};
-		{exprLib, Expr} -> Expr
+		Found -> Found
 	end.

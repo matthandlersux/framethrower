@@ -376,7 +376,7 @@ getDebugHTML(Name, BaseURL) ->
 		expr:unparse(Bottom)
 	end,
 
-	case env:lookup(Name) of
+	case globalStore:lookup(Name) of
 		Object when is_record(Object, object) ->
 			Name ++ ": Object <br />" ++ 
 			"Type: " ++ type:unparse(Object#object.type) ++"<br />" ++

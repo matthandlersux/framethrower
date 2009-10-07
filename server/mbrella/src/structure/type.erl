@@ -6,7 +6,7 @@
 -import (mblib, [maybeStore/3]).
 
 -include ("ast.hrl").
--include ("../mbrella/include/scaffold.hrl").
+-include ("../../mbrella/include/scaffold.hrl").
 -define (do(X, Y, Next), then( Y, fun(X) -> Next end )).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
@@ -129,7 +129,7 @@ getType( Expr, Env ) when is_record(Expr, exprVar) ->
 	try dict:fetch(Expr#exprVar.index, Env)
 		% {TypeString, _Fun} -> type(typeVar, parse:tast( TypeString ))
 	catch _:_ ->
-		case env:lookup(Expr#exprVar.index) of
+		case globalStore:lookup(Expr#exprVar.index) of
 			notfound -> erlang:error({typeVar_not_found, Expr});
 			Result -> Result
 		end
