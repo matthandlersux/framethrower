@@ -140,7 +140,7 @@ process(CellElements, ListOfElements) when is_list(ListOfElements) ->
 				end,
 	lists:foldr(Process, {CellElements, []}, ListOfElements);
 process(CellElements, Element) ->
-	process(CellElements, [Element]).
+	processor(CellElements, Element).
 	
 %% 
 %% toList :: CellElements -> List Element

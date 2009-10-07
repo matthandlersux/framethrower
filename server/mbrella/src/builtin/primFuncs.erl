@@ -95,7 +95,21 @@ invert(CellPointer) ->
 	OutputCell = cell:makeCellLeashed(map),
 	cell:injectIntercept(OutputCell, invert, [OutputCell, CellPointer]),
 	cell:injectOutput(CellPointer, OutputCell, invert, [OutputCell]),
-	cell:unleash(OutputCell).
+	cell:unleash(OutputCell),
+	OutputCell.
+	
+%% 
+%% unfoldSet :: (a -> Set a) -> a -> Set a
+%% 
+
+unfoldSet(ExprString, Object) ->
+	OutputCell = cell:makeCellLeashed(set),
+	InitialSetPointer = eval:evaluate( #exprApply{left = ExprString, right = Object} ),
+	cell:injectIntercept(OutputCell, unfoldSet, [ExprString, OutputCell]),
+	cell:sendElements(OutputCell, [cellElements:createAdd(Object)]),
+	cell:injectOutput(InitialSetPointer, OutputCell),
+	cell:unleash(OutputCell),
+	OutputCell.
 	
 %% ====================================================
 %% Internal API

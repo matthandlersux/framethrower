@@ -75,9 +75,12 @@ makeLinkedCellLeashed(CellType) ->
 
 %% 
 %% sendElements :: CellPointer -> CellPointer -> Elements -> ok
-%% Elements :: List Tuple ("add" | "remove") Elements
+%% Elements :: List Tuple ("add" | "remove") Value
+%%
 
-% sendElements(_, _, []) -> ok;
+sendElements(CellPointer, Elements) ->
+	sendElements(CellPointer, cellPointer:dummy(), Elements).
+	
 sendElements(CellPointer, From, Elements) ->
 	gen_server:cast(cellPointer:pid(CellPointer), {sendElements, From, Elements}).
 	
