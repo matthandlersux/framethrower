@@ -157,17 +157,24 @@ uninjectOutput(CellPointer, OutputToCellPointer, OutputFunction) ->
 		{uninjectOutput, OutputToCellPointer, OutputFunction }
 	).
 
+%% 
+%% injectIntercept :: CellPointer -> InterceptName -> ok
+%% 
+
+injectIntercept(CellPointer, InterceptName) ->
+	injectIntercept(CellPointer, InterceptName, []).
 
 %% 
-%% injectIntercept :: CellPointer -> Intercept -> ok
+%% injectIntercept :: CellPointer -> InterceptName -> List a -> ok
 %% 
 
-injectIntercept(CellPointer, InterceptPointer) ->
+injectIntercept(CellPointer, InterceptName, Args) ->
+	Intercept = intercepts:construct(InterceptName, Args),
 	gen_server:cast(
 		cellPointer:pid(CellPointer),
-		{injectIntercept, InterceptPointer}
+		{injectIntercept, Intercept}
 	).
-
+	
 %% 
 %% addInformant :: CellPointer -> CellPointer -> ok
 %% 

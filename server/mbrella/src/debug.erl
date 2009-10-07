@@ -416,7 +416,7 @@ httpSearchPage() ->
 f(),
 C1 = cell:makeCell(set).
 C2 = cell:makeCell(set).
-cell:injectIntercept(C2, {{debug, []}, []}),
+cell:injectIntercept(C2, debug),
 cell:injectOutput(C1, C2),
 cell:sendElements(C1, {"name", self()}, [{add,matt},{add,toby},{remove, toby},{add,andrew},{add,matt}]).
 
@@ -427,7 +427,7 @@ S = cell:makeCell(set).
 D = cell:makeCell(unit).
 cell:addValues(S, [toby, matt, andrew]),
 cell:injectOutput(C, D),
-cell:injectIntercept(D, {{debug, []}, []}),
+cell:injectIntercept(D, debug),
 cell:injectOutput(S, isEmpty, C).
 
 % debug reactiveAnd w/o flags
@@ -437,8 +437,8 @@ C2 = cell:makeCell(unit).
 S = cell:makeCell(unit).
 D = cell:makeCell(unit).
 cell:addValue(C1, null),
-cell:injectIntercept(S, intercepts:construct(reactiveAnd, [C1, C2])),
-cell:injectIntercept(D, {{debug, []}, []}),
+cell:injectIntercept(S, reactiveAnd, [C1, C2]),
+cell:injectIntercept(D, debug),
 cell:injectOutput(C1, S),
 cell:injectOutput(C2, S),
 cell:injectOutput(S, D).
@@ -450,7 +450,7 @@ C2 = cell:makeCell(unit).
 S = cell:makeCell(unit).
 D = cell:makeCell(unit).
 cell:addValue(C1, null),
-cell:injectIntercept(D, {{debug, []}, []}),
+cell:injectIntercept(D, debug),
 cell:injectOutput(C1, S),
 cell:injectOutput(C2, S),
 cell:injectOutput(S, D).
@@ -463,8 +463,8 @@ S = cell:makeCell(set).
 D = cell:makeCell(set).
 cell:addValues(S1, [toby, matt, andrew, harold, mattg]),
 cell:addValues(S2, [matt, mattg, ed, tedg]),
-cell:injectIntercept(D, {{debug, []}, []}),
-cell:injectIntercept(S, intercepts:construct(setDifference, [S1, S2])),
+cell:injectIntercept(D, debug),
+cell:injectIntercept(S, setDifference, [S1, S2]),
 cell:injectOutput(S1, S),
 cell:injectOutput(S2, S),
 cell:injectOutput(S, D).
@@ -484,8 +484,8 @@ S = cell:makeCell(set).
 D = cell:makeCell(set).
 cell:addValues(S1, [toby, matt, andrew, harold, mattg]),
 cell:addValues(S2, [matt, mattg, ed, tedg]),
-cell:injectIntercept(D, {{debug, []}, []}),
-cell:injectIntercept(S, intercepts:construct(setDifference, [S1, S2])),
+cell:injectIntercept(D, debug),
+cell:injectIntercept(S, setDifference, [S1, S2]),
 cell:setFlag(S, waitForDone, true),
 cell:injectOutput(S, D),
 cell:injectOutput(S2, S).
@@ -504,7 +504,7 @@ S = cell:makeCell(set).
 U = cell:makeCell(unit).
 D = cell:makeCell(unit).
 cell:addValues(S, [toby, matt, andrew, harold, mattg]),
-cell:injectIntercept(D, {{debug, []}, []}),
+cell:injectIntercept(D, debug),
 cell:injectOutput(S, takeOne, U),
 cell:injectOutput(U, D).
 
@@ -516,14 +516,15 @@ S2 = cell:makeCell(set).
 S3 = cell:makeCell(set).
 I = cell:makeCell(map).
 D = cell:makeCell(unit).
-cell:injectIntercept(D, {{debug, []}, []}).
+cell:injectIntercept(D, debug).
 
 cell:addValues(M, [{tobydoc, S1}, {mattdoc, S2}, {andrewdoc, S3}]).
 cell:addValues(S1, [this,that,other,him,her,belief]).
 cell:addValues(S2, [that,other,him, species, left]).
 cell:addValues(S3, [roy, blimp, him, her, species, clever]).
 
-cell:injectIntercept(I, intercepts:construct(invert, [I, M])).
+cell:injectIntercept(I, invert, [I, M]).
 cell:injectOutput(M, {invert, [I]}, I).
 
 cell:injectOutput(I, D).
+

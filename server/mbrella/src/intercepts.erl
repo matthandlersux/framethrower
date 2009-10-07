@@ -89,6 +89,7 @@ getState({{_Name, _Args}, State}) -> State.
 %	-the intercepts job is to take keyed/unkeyed input messages, do something to them, and return an 
 %	updated state and the elements that result
 %	interceptFunction :: Args -> InterceptState -> KeyedMessages -> Tuple InterceptState UnkeyedMessages
+debug() -> [].
 
 debug( _, From, Element ) ->
 	io:format("RECEIVED FROM: ~p: ~p~n", [From, Element]),

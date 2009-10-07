@@ -47,7 +47,7 @@ isEmpty(CellPointer) ->
 
 reactiveAnd(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeCellLeashed(unit),
-	cell:injectIntercept(OutputCell, intercepts:construct(reactiveAnd, [CellPointer1, CellPointer2])),
+	cell:injectIntercept(OutputCell, reactiveAnd, [CellPointer1, CellPointer2]),
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
 	cell:unleash(OutputCell),
@@ -61,7 +61,6 @@ reactiveAnd(CellPointer1, CellPointer2) ->
 reactiveOr(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeCellLeashed(unit),
 	% the weighting of units takes care of all the reactive-or functionality
-	% 	cell:injectIntercept(OutputCell, intercepts:construct(reactiveOr, [CellPointer1, CellPointer2])),
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
 	cell:unleash(OutputCell).
@@ -73,7 +72,7 @@ reactiveOr(CellPointer1, CellPointer2) ->
 setDifference(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeCellLeashed(set),
 	cell:setFlag(OutputCell, waitForDone, true),
-	cell:injectIntercept(OutputCell, intercepts:construct(setDifference, [CellPointer1, CellPointer2])),
+	cell:injectIntercept(OutputCell, setDifference, [CellPointer1, CellPointer2]),
 	% inject cellpointer2 first so that the initial sending doesnt flicker
 	cell:injectOutput(CellPointer2, OutputCell),
 	cell:injectOutput(CellPointer1, OutputCell),
@@ -94,7 +93,7 @@ takeOne(CellPointer) ->
 
 invert(CellPointer) ->
 	OutputCell = cell:makeCellLeashed(map),
-	cell:injectIntercept(OutputCell, intercepts:construct(invert, [OutputCell, CellPointer])),
+	cell:injectIntercept(OutputCell, invert, [OutputCell, CellPointer]),
 	cell:injectOutput(CellPointer, {invert, [OutputCell]}, OutputCell),
 	cell:unleash(OutputCell).
 	
