@@ -154,8 +154,8 @@ getOutput(OutputFunction, OutputState) ->
 %% addOutput :: OutputFunction -> CellPointer -> Outputs -> Outputs
 %% 
 
-addOutput(OutputNameOrFunction, OutputTo, Outputs) ->
-	OutputFunction = toFunction(OutputNameOrFunction),
+addOutput(OutputFunction, OutputTo, Outputs) ->
+	% OutputFunction = toFunction(OutputNameOrFunction),
 	case lists:keytake(OutputFunction, 2, Outputs) of
 		false ->
 			[construct(OutputTo, OutputFunction)] ++ Outputs;
@@ -300,9 +300,9 @@ invert(CellPointer, _State, _ElementsState, Element) ->
 	ATag = cellElements:mapKey(Element),
 	if 
 		Modifier =:= add ->
-			cell:injectOutput(SetOfBCellPointer, {invertSend, [ATag]}, CellPointer);
+			cell:injectOutput(SetOfBCellPointer, CellPointer, invertSend, [ATag]);
 		true ->
-			cell:uninjectOutput(SetOfBCellPointer, {invertSend, [ATag]}, CellPointer)
+			cell:uninjectOutput(SetOfBCellPointer, CellPointer, invertSend, [ATag])
 	end,
 	{undefined, []}.
 	

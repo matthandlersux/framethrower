@@ -36,7 +36,7 @@ isEmpty(CellPointer) ->
 	% need to add informant manually because it isn't an argument
 	cell:addInformant(OutputCell, CellPointer),
 	cell:addValue(OutputCell, null),
-	cell:injectOutput(CellPointer, outputs:construct(OutputCell, isEmpty)),
+	cell:injectOutput(CellPointer, OutputCell, isEmpty),
 	cell:unleash(OutputCell),
 	OutputCell.
 
@@ -84,7 +84,7 @@ setDifference(CellPointer1, CellPointer2) ->
 
 takeOne(CellPointer) ->
 	OutputCell = cell:makeCell(unit),
-	cell:injectOutput(CellPointer, takeOne, OutputCell),
+	cell:injectOutput(CellPointer, OutputCell, takeOne),
 	OutputCell.
 	
 %% 
@@ -94,7 +94,7 @@ takeOne(CellPointer) ->
 invert(CellPointer) ->
 	OutputCell = cell:makeCellLeashed(map),
 	cell:injectIntercept(OutputCell, invert, [OutputCell, CellPointer]),
-	cell:injectOutput(CellPointer, {invert, [OutputCell]}, OutputCell),
+	cell:injectOutput(CellPointer, OutputCell, invert, [OutputCell]),
 	cell:unleash(OutputCell).
 	
 %% ====================================================

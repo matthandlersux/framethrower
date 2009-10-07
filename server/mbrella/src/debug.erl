@@ -428,7 +428,7 @@ D = cell:makeCell(unit).
 cell:addValues(S, [toby, matt, andrew]),
 cell:injectOutput(C, D),
 cell:injectIntercept(D, debug),
-cell:injectOutput(S, isEmpty, C).
+cell:injectOutput(S, C, isEmpty).
 
 % debug reactiveAnd w/o flags
 f(),
@@ -505,7 +505,7 @@ U = cell:makeCell(unit).
 D = cell:makeCell(unit).
 cell:addValues(S, [toby, matt, andrew, harold, mattg]),
 cell:injectIntercept(D, debug),
-cell:injectOutput(S, takeOne, U),
+cell:injectOutput(S, U, takeOne),
 cell:injectOutput(U, D).
 
 % debug invert
@@ -524,7 +524,7 @@ cell:addValues(S2, [that,other,him, species, left]).
 cell:addValues(S3, [roy, blimp, him, her, species, clever]).
 
 cell:injectIntercept(I, invert, [I, M]).
-cell:injectOutput(M, {invert, [I]}, I).
+cell:injectOutput(M, I, invert, [I]).
 
 cell:injectOutput(I, D).
 

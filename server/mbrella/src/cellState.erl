@@ -49,9 +49,9 @@ new(CellType, Flags) ->
 %% injectOutput :: CellState -> OutputFunction -> CellPointer -> CellState
 %% 
 
-injectOutput(#cellState{outputs = Outputs} = State, OutputNameOrFunction, OutputTo) ->
+injectOutput(#cellState{outputs = Outputs} = State, OutputFunction, OutputTo) ->
 	%%%% TODO when there are a lot of outputs, switch from a list to a dict
-	State#cellState{outputs = outputs:addOutput(OutputNameOrFunction, OutputTo, Outputs)}.
+	State#cellState{outputs = outputs:addOutput(OutputFunction, OutputTo, Outputs)}.
 
 %% 
 %% injectIntercept :: CellState -> Intercept -> CellState

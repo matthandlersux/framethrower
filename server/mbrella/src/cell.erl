@@ -21,7 +21,7 @@
 	makeCell/0, makeLinkedCell/0, makeCellLeashed/0, makeLinkedCellLeashed/0,
 	sendElements/3,
 	leash/1, unleash/1,
-	injectOutput/2, injectOutput/3, uninjectOutput/2, uninjectOutput/3,
+	injectOutput/2, injectOutput/3,
 	injectIntercept/2
 	]).
 %% ====================================================
@@ -131,16 +131,28 @@ unleash(CellPointer) ->
 	gen_server:cast(cellPointer:cellPid(CellPointer), {setFlag, leashed, false}).
 
 %% 
-%% inject output function 
+%% injectOutput :: CellPointer -> CellPointer -> ok
 %% 
 
 injectOutput(CellPointer, OutputToCellPointer) ->
-	injectOutput(CellPointer, outputs:standard(), OutputToCellPointer).
+	injectOutput(CellPointer, OutputToCellPointer, send).
 
-injectOutput(CellPointer, OutputNameOrFunction, OutputToCellPointer) ->
+%% 
+%% injectOutput :: CellPointer -> CellPointer -> Atom -> ok
+%% 
+
+injectOutput(CellPointer, OutputToCellPointer, OutputName) ->
+	injectOutput(CellPointer, OutputToCellPointer, OutputName, []).
+
+%% 
+%% injectOutput :: CellPointer -> CellPointer -> Atom -> List a -> ok
+%% 
+	
+injectOutput(CellPointer, OutputToCellPointer, OutputName, Arguments) ->
+	OutputFunction = {OutputName, Arguments},
 	gen_server:cast(
-		cellPointer:pid(CellPointer), 
-		{injectOutput, OutputNameOrFunction, OutputToCellPointer}
+		cellPointer:pid(CellPointer),
+		{injectOutput, OutputToCellPointer, OutputFunction}
 	).
 	
 %% 
@@ -148,14 +160,7 @@ injectOutput(CellPointer, OutputNameOrFunction, OutputToCellPointer) ->
 %%  most likely send all those removes down to the cell it was connected to
 %% 
 
-uninjectOutput(CellPointer, OutputToCellPointer) ->
-	uninjectOutput(CellPointer, OutputToCellPointer, {send, undefined, []}).
-	
-uninjectOutput(CellPointer, OutputToCellPointer, OutputFunction) ->
-	gen_server:cast(
-		cellPointer:pid(CellPointer),
-		{uninjectOutput, OutputToCellPointer, OutputFunction }
-	).
+
 
 %% 
 %% injectIntercept :: CellPointer -> InterceptName -> ok
@@ -252,11 +257,11 @@ handle_cast({sendElements, From, Elements}, State) ->
 			{noreply, CellState}
 	end;
 
-handle_cast({injectOutput, OutputNameOrFunction, OutputTo}, State) ->
+handle_cast({injectOutput, OutputTo, OutputFunction}, State) ->
 	link(cellPointer:pid(OutputTo)),
-	NewState1 = cellState:injectOutput(State, OutputNameOrFunction, OutputTo),
+	NewState1 = cellState:injectOutput(State, OutputFunction, OutputTo),
 	Outputs = cellState:getOutputs(NewState1),
-	Output = outputs:getOutput(OutputNameOrFunction, Outputs),
+	Output = outputs:getOutput(OutputFunction, Outputs),
 	NewState2 = outputAllElements(NewState1, Output, OutputTo),
 	{noreply, NewState2};
 
