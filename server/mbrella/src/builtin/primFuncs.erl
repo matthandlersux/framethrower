@@ -107,7 +107,7 @@ unfoldSet(ExprString, Object) ->
 	InitialSetPointer = eval:evaluate( #exprApply{left = ExprString, right = Object} ),
 	cell:injectIntercept(OutputCell, unfoldSet, [ExprString, OutputCell]),
 	cell:sendElements(OutputCell, [cellElements:createAdd(Object)]),
-	cell:injectOutput(InitialSetPointer, OutputCell),
+	cell:injectOutput(InitialSetPointer, OutputCell, becomeInformant),
 	cell:unleash(OutputCell),
 	OutputCell.
 	

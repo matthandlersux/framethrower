@@ -316,6 +316,32 @@ invertSend(ATag, _OutputState, _ElementsState, Element) ->
 	{ATag, cellElements:createMap(Modifier, Value, ATag)}.
 
 
+%% 
+%% becomeInformant :: 
+%% 		if the value is a cell, make that cell an informant for the InformToCellPointer
+%% 
+
+becomeInformant() -> false.
+
+becomeInformant(InformToCellPointer, IsInformant, _ElementsState, Element) ->
+	Value = cellElements:value(Element),
+	Modifier = cellElements:modifier(Element),
+	case cellPointer:isCellPointer(Value) of
+		true ->
+			if
+				Modifier =:= add andalso IsInformant -> {IsInformant, Element};
+				Modifier =:= add -> 
+					cell:addInformant(InformToCellPointer, Value),
+					{true, Element};
+				Modifier =:= remove andalso IsInformant -> 
+					cell:removeInformant(InformToCellPointer, Value),
+					{false, Element};
+				true -> {IsInformant, Element}
+			end;
+		false -> {IsInformant, Element}
+	end.
+					
+					
 %% ====================================================
 %% Utilities
 %% ====================================================
