@@ -243,7 +243,7 @@ var semantics = function(){
 
 
 		var outputType = funcObject.type;
-		if (outputType.length == 0) {
+		if (outputType && outputType.length == 0) {
 			outputType = undefined;
 		}
 		
