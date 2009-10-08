@@ -1,7 +1,9 @@
-===Fundamental Built-in Functions===
+
+==Fundamental Built-in Functions==
+
 [For more, see ../generated/builtin/tooltips.txt]
 
-==State==
+=State=
 set			:: Unit a -> a -> Action Void
 unset		:: Unit a -> Action Void
 add			:: Set a -> a -> Action Void
@@ -9,14 +11,14 @@ remove		:: Set a -> a -> Action Void
 addEntry	:: Map k v -> k -> v -> Action Void
 removeEntry	:: Map k v -> k -> Action Void
 
-==Lists==
+=Lists=
 nil		:: [a]
 cons	:: a -> [a] -> [a]
 append	:: [a] -> [a] -> [a]
 head	:: [a] -> a
 tail	:: [a] -> [a]
 
-==Tuples==
+=Tuples=
 makeTupleN	:: t1 -> ... -> tN -> (t1, ..., tN)
 tupleNgetI	:: (t1, ..., tN) -> tI
 fst			:: (a, b) -> a
@@ -24,7 +26,7 @@ snd			:: (a, b) -> b
 [Note that the value '(x1, ..., xN)' desugars to 'makeTupleN x1 ... xN',
 and the type '(t1, ..., tN)' desugars to 'TupleN t1 ... tN'.]
 
-==The Unit "Monad"==
+=The Unit "Monad"=
 returnUnit	:: a -> Unit a
 bindUnit	:: (a -> Unit b) -> Unit a -> Unit b
 mapUnitN	:: (t1 -> ... -> tN) -> Unit t1 -> ... -> Unit tN
