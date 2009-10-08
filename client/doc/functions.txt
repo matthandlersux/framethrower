@@ -12,15 +12,17 @@ removeEntry	:: Map k v -> k -> Action Void
 ==Lists==
 nil		:: [a]
 cons	:: a -> [a] -> [a]
+append	:: [a] -> [a] -> [a]
 head	:: [a] -> a
 tail	:: [a] -> [a]
-append	:: [a] -> [a] -> [a]
 
 ==Tuples==
 makeTupleN	:: t1 -> ... -> tN -> (t1, ..., tN)
 tupleNgetI	:: (t1, ..., tN) -> tI
 fst			:: (a, b) -> a
 snd			:: (a, b) -> b
+[Note that the value '(x1, ..., xN)' desugars to 'makeTupleN x1 ... xN',
+and the type '(t1, ..., tN)' desugars to 'TupleN t1 ... tN'.]
 
 ==The Unit "Monad"==
 returnUnit	:: a -> Unit a
@@ -32,8 +34,8 @@ fetch		:: Unit a -> a
 	and thus 'fetch' cannot really be a function.
 	In fact it is special syntax which virally makes
 	every related expression "fetched" as well,
-	and then desugars everything into true operations on Units,
-	specifically 'mapUnitN' expressions and <f:each> statements.
+	and then desugars everything into the Unit "monad",
+	as 'mapUnitN' expressions and <f:each> statements.
 	For example, consider a template which keeps track of a radius
 	and uses some other 'drawArea::Number->XMLP' template to draw the corresponding area:
 	template() {
@@ -66,5 +68,5 @@ unfetch		:: a -> Unit a
 		radiusS = state(Unit Number),
 		drawArea (mapUnit1 ( _fetched0 -> product 3.14159 (product 2 _fetched0) ) radiusS)
 	}
-	[Note: 'unfetch' will also work fine on expressions that aren't actually fetched;
+	[Note that 'unfetch' will also work fine on expressions that aren't actually fetched;
 	in that case it desugars to 'mapUnit0' which is equivalent to 'returnUnit'.]
