@@ -425,117 +425,117 @@ dsend() ->
 
 % debug isEmpty
 disEmpty() ->
-	f(),
-	C = cell:makeCell(unit),
-	S = cell:makeCell(set),
-	D = cell:makeCell(unit),
-	cell:addValues(S, [toby, matt, andrew]),
-	cell:injectOutput(C, D),
-	cell:injectIntercept(D, debug),
-	cell:injectOutput(S, C, isEmpty).
+f(),
+C = cell:makeCell(unit),
+S = cell:makeCell(set),
+D = cell:makeCell(unit),
+cell:addValues(S, [toby, matt, andrew]),
+cell:injectOutput(C, D),
+cell:injectIntercept(D, debug),
+cell:injectOutput(S, C, isEmpty).
 
 % debug reactiveAnd w/o flags
 dreactiveAnd() ->
-	f(),
-	C1 = cell:makeCell(unit),
-	C2 = cell:makeCell(unit),
-	S = cell:makeCell(unit),
-	D = cell:makeCell(unit),
-	cell:addValue(C1, null),
-	cell:injectIntercept(S, reactiveAnd, [C1, C2]),
-	cell:injectIntercept(D, debug),
-	cell:injectOutput(C1, S),
-	cell:injectOutput(C2, S),
-	cell:injectOutput(S, D).
+f(),
+C1 = cell:makeCell(unit),
+C2 = cell:makeCell(unit),
+S = cell:makeCell(unit),
+D = cell:makeCell(unit),
+cell:addValue(C1, null),
+cell:injectIntercept(S, reactiveAnd, [C1, C2]),
+cell:injectIntercept(D, debug),
+cell:injectOutput(C1, S),
+cell:injectOutput(C2, S),
+cell:injectOutput(S, D).
 
 % debug reactiveOr w/o flags
 dreactiveOr() ->
-	f(),
-	C1 = cell:makeCell(unit),
-	C2 = cell:makeCell(unit),
-	S = cell:makeCell(unit),
-	D = cell:makeCell(unit),
-	cell:addValue(C1, null),
-	cell:injectIntercept(D, debug),
-	cell:injectOutput(C1, S),
-	cell:injectOutput(C2, S),
-	cell:injectOutput(S, D).
+f(),
+C1 = cell:makeCell(unit),
+C2 = cell:makeCell(unit),
+S = cell:makeCell(unit),
+D = cell:makeCell(unit),
+cell:addValue(C1, null),
+cell:injectIntercept(D, debug),
+cell:injectOutput(C1, S),
+cell:injectOutput(C2, S),
+cell:injectOutput(S, D).
 
 % debug setDifference w/o flags
 dsetDifference1() ->
-	f(),
-	S1 = cell:makeCell(set),
-	S2 = cell:makeCell(set),
-	S = cell:makeCell(set),
-	D = cell:makeCell(set),
-	cell:addValues(S1, [toby, matt, andrew, harold, mattg]),
-	cell:addValues(S2, [matt, mattg, ed, tedg]),
-	cell:injectIntercept(D, debug),
-	cell:injectIntercept(S, setDifference, [S1, S2]),
-	cell:injectOutput(S1, S),
-	cell:injectOutput(S2, S),
-	cell:injectOutput(S, D),
+f(),
+S1 = cell:makeCell(set),
+S2 = cell:makeCell(set),
+S = cell:makeCell(set),
+D = cell:makeCell(set),
+cell:addValues(S1, [toby, matt, andrew, harold, mattg]),
+cell:addValues(S2, [matt, mattg, ed, tedg]),
+cell:injectIntercept(D, debug),
+cell:injectIntercept(S, setDifference, [S1, S2]),
+cell:injectOutput(S1, S),
+cell:injectOutput(S2, S),
+cell:injectOutput(S, D),
 
-	cell:removeValue(S1, toby),
-	cell:addValue(S2, toby),
-	cell:addValue(S1, toby),
-	cell:removeValue(S1, toby),
-	cell:removeValue(S2, toby),
-	cell:addValue(S1, toby).
+cell:removeValue(S1, toby),
+cell:addValue(S2, toby),
+cell:addValue(S1, toby),
+cell:removeValue(S1, toby),
+cell:removeValue(S2, toby),
+cell:addValue(S1, toby).
 
 % debug setDifference w/o flags
 dsetDifference2() ->
-	f(),
-	S1 = cell:makeCell(set),
-	S2 = cell:makeCell(set),
-	S = cell:makeCell(set),
-	D = cell:makeCell(set),
-	cell:addValues(S1, [toby, matt, andrew, harold, mattg]),
-	cell:addValues(S2, [matt, mattg, ed, tedg]),
-	cell:injectIntercept(D, debug),
-	cell:injectIntercept(S, setDifference, [S1, S2]),
-	cell:setFlag(S, waitForDone, true),
-	cell:injectOutput(S, D),
-	cell:injectOutput(S2, S),
+f(),
+S1 = cell:makeCell(set),
+S2 = cell:makeCell(set),
+S = cell:makeCell(set),
+D = cell:makeCell(set),
+cell:addValues(S1, [toby, matt, andrew, harold, mattg]),
+cell:addValues(S2, [matt, mattg, ed, tedg]),
+cell:injectIntercept(D, debug),
+cell:injectIntercept(S, setDifference, [S1, S2]),
+cell:setFlag(S, waitForDone, true),
+cell:injectOutput(S, D),
+cell:injectOutput(S2, S),
 
-	cell:injectOutput(S1, S),
-	cell:removeValue(S1, toby),
-	cell:addValue(S2, toby),
-	cell:addValue(S1, toby),
-	cell:removeValue(S1, toby),
-	cell:removeValue(S2, toby),
-	cell:addValue(S1, toby).
+cell:injectOutput(S1, S),
+cell:removeValue(S1, toby),
+cell:addValue(S2, toby),
+cell:addValue(S1, toby),
+cell:removeValue(S1, toby),
+cell:removeValue(S2, toby),
+cell:addValue(S1, toby).
 
 % debug takeOne
 dtakeOne() ->
-	f(),
-	S = cell:makeCell(set),
-	U = cell:makeCell(unit),
-	D = cell:makeCell(unit),
-	cell:addValues(S, [toby, matt, andrew, harold, mattg]),
-	cell:injectIntercept(D, debug),
-	cell:injectOutput(S, U, takeOne),
-	cell:injectOutput(U, D).
+f(),
+S = cell:makeCell(set),
+U = cell:makeCell(unit),
+D = cell:makeCell(unit),
+cell:addValues(S, [toby, matt, andrew, harold, mattg]),
+cell:injectIntercept(D, debug),
+cell:injectOutput(S, U, takeOne),
+cell:injectOutput(U, D).
 
 % debug invert
 dInvert() ->
-	f(),
-	M = cell:makeCell(map),
-	S1 = cell:makeCell(set),
-	S2 = cell:makeCell(set),
-	S3 = cell:makeCell(set),
-	I = cell:makeCell(map),
-	D = cell:makeCell(unit),
-	cell:injectIntercept(D, debug),
+f(),
+M = cell:makeCell(map),
+S1 = cell:makeCell(set),
+S2 = cell:makeCell(set),
+S3 = cell:makeCell(set),
+I = cell:makeCell(map),
+D = cell:makeCell(unit),
+cell:injectIntercept(D, debug),
 
-	cell:addValues(M, [{tobydoc, S1}, {mattdoc, S2}, {andrewdoc, S3}]),
-	cell:addValues(S1, [this,that,other,him,her,belief]),
-	cell:addValues(S2, [that,other,him, species, left]),
-	cell:addValues(S3, [roy, blimp, him, her, species, clever]),
+cell:addValues(M, [{tobydoc, S1}, {mattdoc, S2}, {andrewdoc, S3}]),
+cell:addValues(S1, [this,that,other,him,her,belief]),
+cell:addValues(S2, [that,other,him, species, left]),
+cell:addValues(S3, [roy, blimp, him, her, species, clever]),
 
-	cell:injectIntercept(I, invert, [I, M]),
-	
-	cell:injectOutput(M, I, invert, [I]),
+cell:injectIntercept(I, invert, [I, M]),
 
-	cell:injectOutput(I, D).
+cell:injectOutput(M, I, invert, [I]),
+
+cell:injectOutput(I, D).
 

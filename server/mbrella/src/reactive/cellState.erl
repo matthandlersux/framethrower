@@ -54,6 +54,13 @@ injectOutput(#cellState{outputs = Outputs} = State, OutputFunction, OutputTo) ->
 	State#cellState{outputs = outputs:addOutput(OutputFunction, OutputTo, Outputs)}.
 
 %% 
+%% uninjectOutput :: CellState -> OutputFunction -> CellPointer -> CellState
+%% 
+
+uninjectOutput(#cellState{outputs = Outputs} = State, OutputFunction, OutputTo) ->
+	State#cellState{outputs = outputs:removeOutput(OutputFunction, OutputTo, Outputs)}.
+
+%% 
 %% injectIntercept :: CellState -> Intercept -> CellState
 %% 
 
@@ -67,6 +74,27 @@ injectIntercept(State, Intercept) ->
 updateInformants(State, InformantsList) ->
 	Informants = lists:map(fun(CellPointer) -> {CellPointer, false} end, InformantsList),
 	State#cellState{informants = Informants}.
+
+%% 
+%% addInformant :: CellState -> CellPointer -> CellState
+%% 		
+%%		
+
+addInformant(#cellState{informants = Informants} = CellState, CellPointer) ->
+	CellState#cellState{informants = [{CellPointer, false}] ++ Informants}.
+
+%% 
+%% removeInformant :: CellState -> CellPointer -> CellState
+%% 		
+%%		
+
+removeInformant(#cellState{informants = Informants} = CellState, CellPointer) ->
+	case lists:keytake(CellPointer, 1, Informants) of
+		{value, _Informant, RestOfInformants} ->
+			CellState#cellState{informants = RestOfInformants};
+		false ->
+			exit(removed_informant_that_didnt_exist)
+	end.
 
 %% 
 %% setDone :: CellState -> CellPointer -> CellState

@@ -1,7 +1,7 @@
 -module (primFuncs).
 -compile(export_all).
 
-% -include().
+-include ("../../include/scaffold.hrl").
 
 -ifdef( debug ).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).

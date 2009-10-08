@@ -154,6 +154,36 @@ toList({set, ElementState}) ->
 toList({map, ElementState}) ->
 	ElementList = dict:to_list(ElementState),
 	lists:flatmap(fun({K,{V,W}}) -> valueToElementList({K, V}, W) end, ElementList).
+	
+%% 
+%% toListOfRemoves :: CellElements -> List Element
+%% 		
+%%		
+
+toListOfRemoves({unit, {Value, Weight}}) when Weight > 0 -> 
+	valueToElementList(Value, -Weight);
+toListOfRemoves({unit, _}) -> 
+	[];
+toListOfRemoves({set, ElementState}) ->
+	ElementList = dict:to_list(ElementState),
+	lists:flatmap(
+		fun({V,W}) when W > 0 ->
+			valueToElementList(V, -W);
+		(_) ->
+			[]
+		end, ElementList
+	);
+toListOfRemoves({map, ElementState}) ->
+	ElementList = dict:to_list(ElementState),
+	lists:flatmap(
+		fun({K, {V,W}}) when W > 0 ->
+			valueToElementList({K, V}, -W);
+		(_) ->
+			[]
+		end, ElementList
+	).
+
+
 
 %% ====================================================
 %% External API For Outputs

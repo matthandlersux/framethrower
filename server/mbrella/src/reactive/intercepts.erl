@@ -1,13 +1,11 @@
 -module (intercepts).
 -compile(export_all).
 
-% -include().
+-include ("../../include/scaffold.hrl").
 
--ifdef( debug ).
+
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
--else.
--define( trace(X), void ).
--endif.
+
 
 %% ====================================================
 %% TYPES
@@ -39,7 +37,6 @@ callIntercept(Name, Args, State, From, Elements) ->
 		{NewState, ProcessedElements} = processMessage(Name, Args, OldState, From, Element),
 		{NewState, ProcessedElements ++ OldElements}
 	end,
-	?trace(Elements),
 	lists:foldr(Process, {State, []}, Elements).
 
 callIntercept(Name, From, Elements) ->

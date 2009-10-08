@@ -77,7 +77,7 @@ callOutput(Name, Args, ElementsState, Elements) ->
 %% 
 
 newState() ->
-	[{newSendTos(), standard(), undefined}].
+	[{newConnections(), standard(), undefined}].
 	
 %% 
 %% standard :: OutputFunction
@@ -87,31 +87,31 @@ newState() ->
 standard() -> {send, []}.
 
 %% 
-%% newSendTos :: SendTo
+%% newConnections :: SendTo
 %% 
 
-newSendTos() -> [].
+newConnections() -> [].
 
 %% 
 %% injectOutput :: OutputFunction -> CellPointer -> Outputs -> Outputs
 %% 
 
-injectOutput(OutputFunction, SendTo, OutputState) ->
-	case getOutput(OutputFunction, OutputState) of
-		error ->
-			todo;
-		Output ->
-			SendTos = getSendTos(Output),
-			todo
-	end.
+% injectOutput(OutputFunction, SendTo, OutputState) ->
+% 	case getOutput(OutputFunction, OutputState) of
+% 		error ->
+% 			todo;
+% 		Output ->
+% 			Connections = getConnections(Output),
+% 			todo
+% 	end.
 			
 
 %%  need to change to informers
-%% getSendTos :: Output -> List CellPointer
+%% getConnections :: Output -> List CellPointer
 %% 
 
-getSendTos({SendTos, _NameAndArgs, _State}) ->
-	SendTos.
+getConnections({Connections, _NameAndArgs, _State}) ->
+	Connections.
 	
 %% 
 %% toList :: Outputs -> List Output
@@ -155,15 +155,31 @@ getOutput(OutputFunction, OutputState) ->
 %% 
 
 addOutput(OutputFunction, OutputTo, Outputs) ->
-	% OutputFunction = toFunction(OutputNameOrFunction),
 	case lists:keytake(OutputFunction, 2, Outputs) of
 		false ->
 			[construct(OutputTo, OutputFunction)] ++ Outputs;
-		{value,{SendTos, _OutputFunction, _OutputState} = OldOutput, OutputsLeftOver} ->
-			case lists:member(OutputTo, SendTos) of
+		{value,{Connections, _OutputFunction, _OutputState} = OldOutput, OutputsLeftOver} ->
+			case lists:member(OutputTo, Connections) of
 				true ->
 					Outputs;
-				false -> [setelement(1, OldOutput, [OutputTo] ++ SendTos)] ++ OutputsLeftOver
+				false -> [setelement(1, OldOutput, [OutputTo] ++ Connections)] ++ OutputsLeftOver
+			end
+	end.
+	
+%% 
+%% removeOutput :: OutputFunction -> CellPointer -> Outputs -> Outputs
+%% 
+
+removeOutput(OutputFunction, OutputTo, Outputs) ->
+	case lists:keytake(OutputFunction, 2, Outputs) of
+		false ->
+			Outputs;
+		{value, {Connections, OutputFunction, _OutputState} = OldOutput, OutputsLeftOver} ->
+			case Connections -- [OutputTo] of
+				[] when OutputFunction =/= {send, []} ->
+					OutputsLeftOver;
+				LeftoverConnections ->
+					[setelement(1, OldOutput, LeftoverConnections)] ++ OutputsLeftOver
 			end
 	end.
 
@@ -300,8 +316,10 @@ invert(CellPointer, _State, _ElementsState, Element) ->
 	ATag = cellElements:mapKey(Element),
 	if 
 		Modifier =:= add ->
+			cell:addInformant(CellPointer, SetOfBCellPointer),
 			cell:injectOutput(SetOfBCellPointer, CellPointer, invertSend, [ATag]);
 		true ->
+			cell:removeInformant(CellPointer, SetOfBCellPointer),
 			cell:uninjectOutput(SetOfBCellPointer, CellPointer, invertSend, [ATag])
 	end,
 	{undefined, []}.

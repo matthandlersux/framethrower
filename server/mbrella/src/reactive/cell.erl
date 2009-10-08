@@ -18,7 +18,7 @@
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export ([
-	makeCell/0, makeLinkedCell/0, makeCellLeashed/0, makeLinkedCellLeashed/0,
+	makeCell/0, makeCell/1, makeLinkedCell/0, makeCellLeashed/0, makeLinkedCellLeashed/0,
 	sendElements/3,
 	leash/1, unleash/1,
 	injectOutput/2, injectOutput/3,
@@ -159,11 +159,32 @@ injectOutput(CellPointer, OutputToCellPointer, OutputName, Arguments) ->
 	).
 	
 %% 
-%% uninjectOutput needs to pass all elements as {remove, Element} to all its outputs, process, and then
-%%  most likely send all those removes down to the cell it was connected to
+%% uninjectOutput :: CellPointer -> CellPointer -> ok
+%% 		
+%%		 
+
+uninjectOutput(CellPointer, OutputToCellPointer) ->
+	uninjectOutput(CellPointer, OutputToCellPointer, send).
+
 %% 
+%% uninjectOutput :: CellPointer -> CellPointer -> Atom -> ok
+%% 		
+%%		
 
+uninjectOutput(CellPointer, OutputToCellPointer, OutputName) ->
+	uninjectOutput(CellPointer, OutputToCellPointer, OutputName, []).
+	
+%% 
+%% uninjectOutput :: CellPointer -> CellPointer -> Atom -> List a -> ok
+%% 		
+%%		
 
+uninjectOutput(CellPointer, OutputToCellPointer, OutputName, Arguments) ->
+	OutputFunction = {OutputName, Arguments},
+	gen_server:cast(
+		cellPointer:pid(CellPointer),
+		{uninjectOutput, OutputToCellPointer, OutputFunction}
+	).
 
 %% 
 %% injectIntercept :: CellPointer -> InterceptName -> ok
@@ -226,6 +247,11 @@ handle_call(Msg, From, State) ->
     {reply, Reply, State}.
 
 
+handle_cast({addInformant, InformantCellPointer}, State) ->
+	{noreply, cellState:addInformant(State, InformantCellPointer)};
+
+handle_cast({addInformant, InformantCellPointer}, State) ->
+	{noreply, cellState:removeInformant(State, InformantCellPointer)};
 
 handle_cast({injectIntercept, InterceptPointer}, State) ->
 	Informants = intercepts:getArguments(InterceptPointer),
@@ -268,6 +294,14 @@ handle_cast({injectOutput, OutputTo, OutputFunction}, State) ->
 	NewState2 = outputAllElements(NewState1, Output, OutputTo),
 	{noreply, NewState2};
 
+handle_cast({uninjectOutput, OutputTo, OutputFunction}, State) ->
+	unlink(cellPointer:pid(OutputTo)),
+	Outputs = cellState:getOutputs(State),
+	Output = outputs:getOutput(OutputFunction, Outputs),
+	NewState = unoutputAllElements(State, Output, OutputTo),
+	NewState1 = cellState:uninjectOutput(NewState, OutputFunction, OutputTo),
+	{noreply, NewState1};
+
 handle_cast({setFlag, Flag, Setting}, State) ->
 	{noreply, cellState:setFlag(State, Flag, Setting)}.
 
@@ -297,8 +331,8 @@ runOutputs(State, NewElements) ->
 	From = cellState:cellPointer(State),
 	Processor = 	fun(Output, ListOfNewStates) ->
 						{NewOutputState, ElementsToSend} = outputs:call(Output, AllElements, NewElements),
-						ListOfSendTos = outputs:getSendTos(Output),
-						sendTo(ListOfSendTos, From, ElementsToSend),
+						ListOfConnections = outputs:getConnections(Output),
+						sendTo(ListOfConnections, From, ElementsToSend),
 						[NewOutputState] ++ ListOfNewStates
 					end,
 	ListOfNewStates = lists:foldr(Processor, [], ListOfOutputs),
@@ -328,6 +362,21 @@ outputAllElements(CellState, Output, OutputTo) ->
 	NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
 	cell:sendElements(OutputTo, ThisCell, NewElements),
 	NewCellState.
+
+%% 
+%% unoutputAllElements :: CellState -> Output -> CellPointer -> CellState
+%% 		
+%%		
+
+unoutputAllElements(CellState, Output, OutputTo) ->
+	AllElements = cellState:getElements(CellState),
+	ElementsList = cellElements:toListOfRemoves(AllElements),
+	ThisCell = cellState:cellPointer(CellState),
+	{OutputState, NewElements} = outputs:call(Output, AllElements, ElementsList),
+	NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
+	cell:sendElements(OutputTo, ThisCell, NewElements),
+	NewCellState.
+
 
 %% 
 %% injectElements :: CellState -> List Element -> CellState
