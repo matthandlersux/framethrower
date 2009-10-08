@@ -144,9 +144,9 @@ invert(SelfPointer, CellPointerParent, InvertState, From, Element) ->
 				error ->
 					% need to be make linked cell
 					SetOfDocsForWord = cell:makeCell(set),
-					% cell:addInformant(...),
+					% no informants needed
 					cell:sendElements(SetOfDocsForWord, SelfPointer, [cellElements:createAdd(Document)]),
-					% or do cell:addValue...
+					% could also do cell:addValues, not sure if it matters
 					{dict:store(Word, {SetOfDocsForWord, 1}, InvertState), [cellElements:createAddMap(Word, SetOfDocsForWord)]};
 				{ok, {SetOfDocsForWord, Weight}} ->
 					cell:sendElements(SetOfDocsForWord, SelfPointer, [cellElements:createAdd(Document)]),
@@ -160,7 +160,7 @@ invert(SelfPointer, CellPointerParent, InvertState, From, Element) ->
 					cell:sendElements(SetOfDocsForWord, SelfPointer, [cellElements:createRemove(Document)]),
 					if 
 						Weight =:= 1 ->
-							% cell:killCell(SetOfDocsForWord),
+							cell:kill(SetOfDocsForWord),
 							{dict:erase(Word, InvertState), [cellElements:createRemoveMap(Word, SetOfDocsForWord)]};
 						true ->
 							{dict:store(Word, {SetOfDocsForWord, Weight -1}, InvertState), [cellElements:createRemoveMap(Word, SetOfDocsForWord)]}
@@ -182,7 +182,7 @@ setDifference(CellPointer1, CellPointer2, State, From, Element) ->
 	Name2 = cellPointer:name(CellPointer2),
 	case cellPointer:name(From) of
 		% name2 comes first because we want the first set of messages to be the remove messages
-		% this sets up the blocking beforehand
+		% this prevents items from being added, then removed immediately
 		Name2 ->
 			case Modifier of
 				add ->

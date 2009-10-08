@@ -210,6 +210,23 @@ injectIntercept(CellPointer, InterceptName, Args) ->
 
 addInformant(CellPointer, Informant) ->
 	gen_server:cast(cellPointer:pid(CellPointer), {addInformant, Informant}).
+	
+%% 
+%% removeInformant :: CellPointer -> CellPointer -> ok
+%% 
+
+removeInformant(CellPointer, Informant) ->
+	gen_server:cast(cellPointer:pid(CellPointer), {removeInformant, Informant}).
+	
+%% 
+%% kill :: CellPointer -> ok
+%% 		
+%%		
+
+kill(CellPointer) ->
+	gen_server:cast(cellPointer:pid(CellPointer), kill).
+
+
 
 %% ====================================================
 %% Debug API
@@ -250,7 +267,7 @@ handle_call(Msg, From, State) ->
 handle_cast({addInformant, InformantCellPointer}, State) ->
 	{noreply, cellState:addInformant(State, InformantCellPointer)};
 
-handle_cast({addInformant, InformantCellPointer}, State) ->
+handle_cast({removeInformant, InformantCellPointer}, State) ->
 	{noreply, cellState:removeInformant(State, InformantCellPointer)};
 
 handle_cast({injectIntercept, InterceptPointer}, State) ->
@@ -303,10 +320,25 @@ handle_cast({uninjectOutput, OutputTo, OutputFunction}, State) ->
 	{noreply, NewState1};
 
 handle_cast({setFlag, Flag, Setting}, State) ->
-	{noreply, cellState:setFlag(State, Flag, Setting)}.
+	{noreply, cellState:setFlag(State, Flag, Setting)};
+	
+handle_cast(kill, State) ->
+	{stop, normal, cellState:setFlag(State, leashed, true)}.
 
+terminate(normal, State) ->
+	?trace(killed),
+    Outputs = cellState:getOutputs(State),
+	UnOutputAll = 	fun(Output) ->
+						Connections = outputs:getConnections(Output),
+						SendUnOutput = 	fun(Connection) ->
+											unoutputAllElements(State, Output, Connection)
+										end,
+						lists:foreach(SendUnOutput, Connections)
+					end,
+	lists:foreach(UnOutputAll, Outputs);
+	% tell all informants to remove you maybe?
 terminate(Reason, State) ->
-    ok.
+	Reason.
 
 handle_info(Info, State) ->
     {noreply, State}.
