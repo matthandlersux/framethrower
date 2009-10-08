@@ -1,0 +1,77 @@
+===Fundamental Built-in Functions===
+(for more, see ../generated/builtin/tooltips.txt)
+
+==State==
+set			:: Unit a -> a -> Action Void
+unset		:: Unit a -> Action Void
+add			:: Set a -> a -> Action Void
+remove		:: Set a -> a -> Action Void
+addEntry	:: Map k v -> k -> v -> Action Void
+removeEntry	:: Map k v -> k -> Action Void
+
+==Lists==
+cons	:: a -> [a] -> [a]
+head	:: [a] -> a
+tail	:: [a] -> [a]
+append	:: [a] -> [a] -> [a]
+
+==Tuples==
+makeTupleN	:: t1 -> ... -> tN -> (t1, ..., tN)
+tupleNgetI	:: (t1, ..., tN) -> tI
+fst			:: (a, b) -> a
+snd			:: (a, b) -> b
+
+==Monoids==
+mapUnitN		:: (t1 -> ... -> tN) -> Unit t1 -> ... -> Unit tN
+returnUnit		:: a -> Unit a
+returnUnitSet	:: Unit a -> Set a
+returnUnitMap	:: a -> Unit b -> Map a b
+bindUnit		:: (a -> Unit b) -> Unit a -> Unit b
+bindSet			:: (a -> Set b) -> Set a -> Set b
+bindMap			:: (a -> b -> Map a c) -> Map a b -> Map a c
+
+==Fetching==
+fetch	:: Unit a -> a
+	returns the "value" of a Unit.
+	However, a fixed Unit has no fixed value,
+	and thus 'fetch' cannot really be a function.
+	In fact it is special syntax which virally makes
+	every related expression "fetched" as well,
+	and then desugars everything into true operations on Units,
+	specifically 'mapUnitN' expressions and <f:each> statements.
+	For example, consider a template which keeps track of a radius
+	and uses some other 'drawArea::Number->XMLP' template to draw the corresponding area:
+	template() {
+		radiusS = state(Unit Number),
+		diameter = product 2 (fetch radiusS),
+		drawArea (product 3.14159 diameter)
+	}
+	then it type-checks as expected based on the signature of 'fetch', but actually desugars to:
+	template() {
+		radiusS = state(Unit Number),
+		<f:each mapUnit1 ( _fetched0 -> drawArea (product 3.14159 (product 2 _fetched0)) ) radiusS as _fetch>
+			_fetch
+		</f:each>
+	}
+	Thus we are able to deal with the "value" of a reactive quantity as though it is constant,
+	and the required reactive code is automatically written for us.
+
+==Unfetching==
+unfetch	:: a -> Unit a
+	unfetch takes a "fetched" expression and turns it back into a "normal" expression.
+	This is possible since the code using an unfetched expression expects a Unit, which is
+	what the fetched expression "really" was all along.
+	For example, consider the same template as above, but now 'drawArea::Unit Number->XMLP'
+	expects a Unit. It is still much easier to do the math on fetched expressions, so we would write:
+	template() {
+		radiusS = state(Unit Number),
+		diameter = product 2 (fetch radiusS),
+		drawArea (unfetch (product 3.14159 diameter))
+	}
+	which desugars to:
+	template() {
+		radiusS = state(Unit Number),
+		drawArea (mapUnit1 ( _fetched0 -> product 3.14159 (product 2 _fetched0) ) radiusS)
+	}
+	[Note: 'unfetch' will also work fine on expressions that aren't actually fetched;
+	in that case it desugars to 'mapUnit0' which is equivalent to 'returnUnit'.]
