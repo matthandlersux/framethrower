@@ -93,6 +93,7 @@ takeOne(CellPointer) ->
 
 invert(CellPointer) ->
 	OutputCell = cell:makeCellLeashed(map),
+	cell:setFlag(OutputCell, waitForDone, true),
 	cell:injectIntercept(OutputCell, invert, [OutputCell, CellPointer]),
 	cell:injectOutput(CellPointer, OutputCell, invert, [OutputCell]),
 	cell:unleash(OutputCell),
