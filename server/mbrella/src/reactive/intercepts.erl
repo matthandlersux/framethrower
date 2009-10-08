@@ -244,11 +244,11 @@ unfoldSet(ExprString, InitialObject, SelfCellPointer, State, _From, Element) ->
 		true ->
 			if
 				ResponseModifier =:= add ->
-					NewSetPointer = eval:evaluate( #exprApply{left = ExprString, right = ResponseValue} ),
+					NewSetPointer = eval:evaluate( expr:apply(ExprString, ResponseValue) ),
 					cell:injectOutput(NewSetPointer, SelfCellPointer),
 					{NewState, Response};
 				true ->
-					ExistingSetPointer = eval:evaluate( #exprApply{left = ExprString, right = ResponseValue} ),
+					ExistingSetPointer = eval:evaluate( expr:apply(ExprString, ResponseValue) ),
 					cell:uninjectOutput(ExistingSetPointer, SelfCellPointer),
 					{NewState, Response}
 			end

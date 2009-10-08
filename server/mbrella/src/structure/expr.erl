@@ -37,6 +37,14 @@ unparse(Expr) ->
 	{String, _} = unparse(Expr, []),
 	String.
 
+%% 
+%% apply :: Expr -> Expr -> Expr
+%% 		
+%%		
+	
+apply(Left, Right) ->
+	#exprApply{left = Left, right = Right}.
+
 %% ====================================================
 %% Internal API
 %% ====================================================
