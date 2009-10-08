@@ -634,7 +634,7 @@ var semantics = function(){
 				return lineFunc;
 			case 'jsaction':
 				var lineFunc = makeFunction(value,
-					function(JS) { return "{ return makeActionJavascript(function() "+JS+"); }"; },
+					function(JS) { return "{ return makeActionJavascript( function() { "+JS+" } ); }"; },
 					function(outputType) { return "Action ("+outputType+")"; }
 				);
 				lineFunc.debugRef = node.debugRef;
