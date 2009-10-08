@@ -1,25 +1,14 @@
-/*
-Here we define our base environment (base), which is used by expressions.
-base.env will convert literal strings (Number's, String's, Bool's) to their actual representation
-*/
+// familyEnv is incorporated into the base environment in baseEnv.js
+// it contains families of functions, such as mapUnitN, makeTupleN, et cetera.
 
-
-
-var literalEnv = function (s) {
-	var lit = parseLiteral(s);
-	if (lit !== undefined) {
-		return lit;
-	} else {
-		return emptyEnv(s);
-	}
-};
+var familyEnv = undefinedEnv;
 
 var mapUnitCache = {};
 var mapUnitEnv = function (s) {
-	// if string isn't of the form 'mapUnitN' then just use literalEnv:
+	// if string isn't of the form 'mapUnitN' then give up:
 	var mapUnitMatch = /^mapUnit(\d+)$/.exec(s);
 	if(!mapUnitMatch)
-		return literalEnv(s);
+		return undefined;
 
 	var v = mapUnitCache[s];
 	if(v!==undefined)
@@ -41,7 +30,8 @@ var mapUnitEnv = function (s) {
 	};
 	v = makeFun(type, curry(mapUnit, n+1));
 	mapUnitCache[s] = v;
+	
 	return v;
 };
 
-var base = makeDynamicEnv(mapUnitEnv);
+familyEnv = extendEnv(familyEnv, mapUnitEnv);
