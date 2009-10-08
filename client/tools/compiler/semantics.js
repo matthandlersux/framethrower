@@ -5,10 +5,6 @@ var semantics = function(){
 	// ==================================
 	// UTIL
 	// ==================================
-	
-	function def(obj) {
-		return obj !== undefined;
-	}
 
 	function addDebugRef(obj, debugRef) {
 		if(objectLike(obj)) {

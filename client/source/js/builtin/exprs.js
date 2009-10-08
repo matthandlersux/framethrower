@@ -122,6 +122,19 @@
 		unfoldMapInv: {
 			type: "(a -> Set a) -> a -> Map Number (Set a)",
 			expr: "f -> x -> invert (mapMapValue returnSet (unfoldMap f x))"
+		},
+
+		// ========================================================================
+		// Tuple utility
+		// ========================================================================
+		
+		fst: {
+			type: "(a, b) -> a",
+			expr: "tuple -> tuple2get1 tuple"
+		},
+		snd: {
+			type: "(a, b) -> b",
+			expr: "tuple -> tuple2get2 tuple"
 		}
 		
 	};

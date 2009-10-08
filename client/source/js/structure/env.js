@@ -82,3 +82,15 @@ function makeDynamicEnv(inherit) {
 		}
 	};
 }
+
+function makeCachedEnv(env) {
+	var cache = {};
+	return function(s) {
+		var v = cache[s];
+		if(!def(v)) {
+			v = env(s);
+			cache[s] = v;
+		}
+		return v;
+	};
+}
