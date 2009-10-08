@@ -30,6 +30,10 @@ pid({_Name, Pid}) ->
 	
 filterList(ListOfArguments) ->
 	lists:filter(fun({N, P}) -> (is_list(N) andalso is_pid(P)); (_) -> false end, ListOfArguments).
+	
+isCellPointer({Name, Pid}) when is_list(Name) andalso is_pid(Pid) -> true;
+isCellPointer(_) -> false.
+
 %% ====================================================
 %% Internal API
 %% ====================================================
