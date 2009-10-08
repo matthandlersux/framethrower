@@ -720,7 +720,7 @@ var semantics = function(){
 				return nodeName.indexOf(string) == 0;
 			}
 			
-			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('styleattname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('jsaction') || startsWith('xmltext')) {
+			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('styleattname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('xmltext')) {
 				var string = makeString(value, nodeName);
 				lineNum += lineBreakCount(string);
 				tree[nodeName] = stripSpaces(string);
