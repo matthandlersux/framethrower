@@ -1,5 +1,5 @@
 ===Fundamental Built-in Functions===
-(for more, see ../generated/builtin/tooltips.txt)
+[For more, see ../generated/builtin/tooltips.txt]
 
 ==State==
 set			:: Unit a -> a -> Action Void
@@ -10,6 +10,7 @@ addEntry	:: Map k v -> k -> v -> Action Void
 removeEntry	:: Map k v -> k -> Action Void
 
 ==Lists==
+nil		:: [a]
 cons	:: a -> [a] -> [a]
 head	:: [a] -> a
 tail	:: [a] -> [a]
@@ -21,17 +22,11 @@ tupleNgetI	:: (t1, ..., tN) -> tI
 fst			:: (a, b) -> a
 snd			:: (a, b) -> b
 
-==Monoids==
-mapUnitN		:: (t1 -> ... -> tN) -> Unit t1 -> ... -> Unit tN
-returnUnit		:: a -> Unit a
-returnUnitSet	:: Unit a -> Set a
-returnUnitMap	:: a -> Unit b -> Map a b
-bindUnit		:: (a -> Unit b) -> Unit a -> Unit b
-bindSet			:: (a -> Set b) -> Set a -> Set b
-bindMap			:: (a -> b -> Map a c) -> Map a b -> Map a c
-
-==Fetching==
-fetch	:: Unit a -> a
+==The Unit "Monad"==
+returnUnit	:: a -> Unit a
+bindUnit	:: (a -> Unit b) -> Unit a -> Unit b
+mapUnitN	:: (t1 -> ... -> tN) -> Unit t1 -> ... -> Unit tN
+fetch		:: Unit a -> a
 	returns the "value" of a Unit.
 	However, a fixed Unit has no fixed value,
 	and thus 'fetch' cannot really be a function.
@@ -55,9 +50,7 @@ fetch	:: Unit a -> a
 	}
 	Thus we are able to deal with the "value" of a reactive quantity as though it is constant,
 	and the required reactive code is automatically written for us.
-
-==Unfetching==
-unfetch	:: a -> Unit a
+unfetch		:: a -> Unit a
 	unfetch takes a "fetched" expression and turns it back into a "normal" expression.
 	This is possible since the code using an unfetched expression expects a Unit, which is
 	what the fetched expression "really" was all along.
