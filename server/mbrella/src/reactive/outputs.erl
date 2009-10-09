@@ -240,7 +240,7 @@ construct(CellPointerSendTo, Name) ->
 %% 
 
 construct({Name, Args}) ->
-	erlang:apply(outputs, Name, Args).
+	erlang:apply(outputs, Name, []).
 	
 %% ====================================================
 %% Outputs For Primfuncs
@@ -308,7 +308,7 @@ takeOne(OneElement, ElementsState, Element) ->
 %% invert :: Map a (Set b)
 %% 
 
-invert(_CellPointer) -> undefined.
+invert() -> undefined.
 
 invert(CellPointer, _State, _ElementsState, Element) ->
 	Modifier = cellElements:modifier(Element),
@@ -317,26 +317,41 @@ invert(CellPointer, _State, _ElementsState, Element) ->
 	if 
 		Modifier =:= add ->
 			cell:addInformant(CellPointer, SetOfBCellPointer),
-			cell:injectOutput(SetOfBCellPointer, CellPointer, invertSend, [ATag]);
+			cell:injectOutput(SetOfBCellPointer, CellPointer, sendMap, [ATag]);
 		true ->
 			cell:removeInformant(CellPointer, SetOfBCellPointer),
-			cell:uninjectOutput(SetOfBCellPointer, CellPointer, invertSend, [ATag])
+			cell:uninjectOutput(SetOfBCellPointer, CellPointer, sendMap, [ATag])
 	end,
 	{undefined, []}.
 	
-% go over the way i thought i was supposed to do it tomorrow
-	
-invertSend(ATag) -> ATag.
+% % go over the way i thought i was supposed to do it tomorrow
+% 	
+% invertSend(ATag) -> ATag.
+% 
+% invertSend(ATag, _OutputState, _ElementsState, Element) ->
+% 	Modifier = cellElements:modifier(Element),
+% 	Value = cellElements:value(Element),
+% 	{ATag, cellElements:createMap(Modifier, Value, ATag)}.
 
-invertSend(ATag, _OutputState, _ElementsState, Element) ->
+
+%% 
+%% sendMap 
+%% 		used by invert and returnUnitMap
+%%		
+
+
+sendMap() -> undefined.
+
+sendMap(Key, _State, _ElementsState, Element) ->
 	Modifier = cellElements:modifier(Element),
 	Value = cellElements:value(Element),
-	{ATag, cellElements:createMap(Modifier, Value, ATag)}.
+	{undefined, cellElements:createMap(Modifier, Value, Key)}
 
 
 %% 
 %% becomeInformant :: 
-%% 		if the value is a cell, make that cell an informant for the InformToCellPointer
+%% 		if the value is a cell, make that cell an informant for the InformToCellPointer. used by 
+%%		unfoldSet
 %% 
 
 becomeInformant() -> false.

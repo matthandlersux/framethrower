@@ -111,7 +111,54 @@ unfoldSet(ExprString, Object) ->
 	cell:injectOutput(InitialSetPointer, OutputCell, becomeInformant),
 	cell:unleash(OutputCell),
 	OutputCell.
+
+%% ---------------------------------------------
+%% return
+%% ---------------------------------------------
+
+%% 
+%% returnUnit :: a -> Unit a
+%% 		
+%%		
+
+returnUnit(Value) ->
+	OutputCell = cell:makeCell(unit),
+	cell:addValue(OutputCell, Value),
+	OutputCell.
 	
+%% 
+%% returnUnitSet :: Unit a -> Set a
+%% 		
+%%		
+
+returnUnitSet(CellPointer) ->
+	OutputCell = cell:makeCell(set),
+	cell:injectOutput(CellPointer, OutputCell),
+	OutputCell.
+	
+%% 
+%% returnUnitMap :: a -> Unit b - > Map a b
+%% 		
+%%		
+
+returnUnitMap(Key, CellPointer) ->
+	OutputCell = cell:makeCell(map),
+	cell:injectOutput(CellPointer, OutputCell, sendMap, [Key]),
+	OutputCell.
+	
+%% 
+%% bindMap :: (a -> b -> Map a c) -> Map a b -> Map a c
+%% 		
+%%		
+
+bindMap(ExprString, CellPointer) ->
+	OutputCell = cell:makeCell(map),
+	
+
+
+
+
+
 %% ====================================================
 %% Internal API
 %% ====================================================
