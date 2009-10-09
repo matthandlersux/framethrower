@@ -17,6 +17,8 @@ cons	:: a -> [a] -> [a]
 append	:: [a] -> [a] -> [a]
 head	:: [a] -> a
 tail	:: [a] -> [a]
+[Note that the value '[x1, ..., xN]' desugars to '(cons x1 (cons x2 (...(cons xN nil)...)))',
+and the type '[a]' desugars to 'List a'.]
 
 =Tuples=
 makeTupleN	:: t1 -> ... -> tN -> (t1, ..., tN)
@@ -26,10 +28,18 @@ snd			:: (a, b) -> b
 [Note that the value '(x1, ..., xN)' desugars to 'makeTupleN x1 ... xN',
 and the type '(t1, ..., tN)' desugars to 'TupleN t1 ... tN'.]
 
+=The Action "Monad"=
+return		:: a -> Action a
+	Given a value, returns an 'Action' whose result will always be that value.
+	This is useful since the last line of an action must be an 'Action',
+	so 'return' gives a way to use a non-'Action' for the result of an action.
+
 =The Unit "Monad"=
 returnUnit	:: a -> Unit a
 bindUnit	:: (a -> Unit b) -> Unit a -> Unit b
 mapUnitN	:: (t1 -> ... -> tN) -> Unit t1 -> ... -> Unit tN
+
+=Fetching=
 fetch		:: Unit a -> a
 	returns the "value" of a Unit.
 	However, a fixed Unit has no fixed value,
@@ -72,3 +82,34 @@ unfetch		:: a -> Unit a
 	}
 	[Note that 'unfetch' will also work fine on expressions that aren't actually fetched;
 	in that case it desugars to 'mapUnit0' which is equivalent to 'returnUnit'.]
+return		:: a -> Action a
+	'return', mentioned earlier, has an interesting use for fetched values within an action.
+	Specifically, since using a fetched value during the execution of an action forces its
+	current value to be extracted, you can get the current value by performing the trivial
+	'return' Action on the fetched value.
+	For example, consider the template:
+	template() {
+		xS = state(Unit Number),
+		x = fetch xS,
+		yS = state(Unit Number),
+		...
+		<f:on mousedown>
+			midX = quotient (sum x event.mouseX) 2,
+			set xS midX, // line A
+			set yS midX // line B
+		</f:on>
+		...
+	}
+	Presumably the programmer was thinking of midX as a fixed value, since that is what it appears to be.
+	Since it's fetched, however, it's actually reactive, so changing 'xS' in line A means that in line B
+	midX will have a different value (since midX depends on xS). Sometimes this sort of reactivity is what you
+	want, even within an action, but in this instance it is probably better to "fix" the value of midX:
+		...
+		<f:on mousedown>
+			midX <- return (quotient (sum x event.mouseX) 2),
+			set xS midX, // line A
+			set yS midX // line B
+		</f:on>
+		...
+	Now midX is guaranteed to be a fixed value, since it is the result of an 'Action' that was executed at
+	a particular time. Thus its value in lines A and B will be the same.
