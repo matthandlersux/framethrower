@@ -202,6 +202,8 @@ bindMap(ExprString, CellPointer) ->
 union(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeCell(set),
 	cell:setFlag(OutputCell, waitForDone, true),
+	cell:addInformant(OutputCell, CellPointer1),
+	cell:addInformant(OutputCell, CellPointer2),
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
 	OutputCell.
