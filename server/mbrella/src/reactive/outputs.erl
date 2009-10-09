@@ -317,36 +317,36 @@ invert(CellPointer, _State, _ElementsState, Element) ->
 	if 
 		Modifier =:= add ->
 			cell:addInformant(CellPointer, SetOfBCellPointer),
-			cell:injectOutput(SetOfBCellPointer, CellPointer, sendMap, [ATag]);
+			cell:injectOutput(SetOfBCellPointer, CellPointer, sendMapValueAsKey, [ATag]);
 		true ->
 			cell:removeInformant(CellPointer, SetOfBCellPointer),
-			cell:uninjectOutput(SetOfBCellPointer, CellPointer, sendMap, [ATag])
+			cell:uninjectOutput(SetOfBCellPointer, CellPointer, sendMapValueAsKey, [ATag])
 	end,
 	{undefined, []}.
-	
-% % go over the way i thought i was supposed to do it tomorrow
-% 	
-% invertSend(ATag) -> ATag.
-% 
-% invertSend(ATag, _OutputState, _ElementsState, Element) ->
-% 	Modifier = cellElements:modifier(Element),
-% 	Value = cellElements:value(Element),
-% 	{ATag, cellElements:createMap(Modifier, Value, ATag)}.
-
 
 %% 
-%% sendMap 
-%% 		used by invert and returnUnitMap
+%% sendMap :: a -> Map a b
+%% 		converts a -> Map Key a used by returnUnitMap
 %%		
-
 
 sendMap() -> undefined.
 
 sendMap(Key, _State, _ElementsState, Element) ->
 	Modifier = cellElements:modifier(Element),
 	Value = cellElements:value(Element),
-	{undefined, cellElements:createMap(Modifier, Value, Key)}
+	{undefined, cellElements:createMap(Modifier, Key, Value)}.
 
+%% 
+%% sendMapValueAsKey :: a -> Map b a
+%% 		converts a -> Map Key a used by invert
+%%		
+
+sendMapValueAsKey() -> undefined.
+
+sendMapValueAsKey(Key, _State, _ElementsState, Element) ->
+	Modifier = cellElements:modifier(Element),
+	Value = cellElements:value(Element),
+	{undefined, cellElements:createMap(Modifier, Value, Key)}.
 
 %% 
 %% becomeInformant :: 
