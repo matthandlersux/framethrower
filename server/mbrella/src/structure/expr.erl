@@ -41,9 +41,15 @@ unparse(Expr) ->
 %% apply :: Expr -> Expr -> Expr
 %% 		
 %%		
-	
+
+apply(Result, []) ->
+	Result;
+apply(Left, [H|T]) ->
+	expr:apply( expr:apply(Left, H), T);
 apply(Left, Right) ->
 	#exprApply{left = Left, right = Right}.
+	
+
 
 %% ====================================================
 %% Internal API

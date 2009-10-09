@@ -200,17 +200,148 @@ union(CellPointer1, CellPointer2) ->
 %% 
 	
 setDifference(CellPointer1, CellPointer2) ->
-	OutputCell = cell:makeCellLeashed(set),
+	OutputCell = cell:makeCell(set),
 	cell:setFlag(OutputCell, waitForDone, true),
 	cell:injectIntercept(OutputCell, setDifference, [CellPointer1, CellPointer2]),
 	% inject cellpointer2 first so that the initial sending doesnt flicker
 	cell:injectOutput(CellPointer2, OutputCell),
 	cell:injectOutput(CellPointer1, OutputCell),
-	cell:unleash(OutputCell).
+	cell:unleash(OutputCell),
+	OutputCell.
 
 %% ---------------------------------------------
 %% map unit functions
 %% ---------------------------------------------
+
+%(mapUnit2 sum zoomStartS zoomDurationS)
+
+mapUnit(ExprString, Value) ->
+	OutputCell = cell:makeCell(unit),
+	ValueCell = cell:makeCell(unit),
+	cell:addValue(ValueCell, Value),
+	cell:injectIntercept(OutputCell, applyExpr, [ExprString]),
+	OutputCell.
+	
+mapUnit2(ExprString, Value1, Value2) ->
+	OutputCell = cell:makeCell(unit),
+	ValueCell1 = cell:makeCell(unit),
+	cell:addValue(ValueCell1, Value1),
+	ValueCell2 = cell:makeCell(unit),
+	cell:addValue(ValueCell2, Value2),
+	cell:injectIntercept(OutputCell, applyExpr, [ExprString, ValueCell1, ValueCell2]),
+	OutputCell.
+	
+%% ---------------------------------------------
+%% non reactive functions
+%% ---------------------------------------------
+
+%% 
+%% equal :: a -> a -> Bool
+%% 		
+%%		
+
+equal(A, B) ->
+	A =:= B.
+
+%% 
+%% dNot :: Bool -> Bool
+%% 		
+%%		
+
+dNot(Bool) ->
+	not Bool.
+	
+%% 
+%% dOr :: Bool -> Bool -> Bool
+%% 		
+%%		
+
+dOr(Bool1, Bool2) ->
+	Bool1 orelse Bool2.
+	
+%% 
+%% dAnd :: Bool -> Bool -> Bool
+%% 		
+%%		
+
+dAnd(Bool1, Bool2) ->
+	Bool1 andalso Bool2.
+	
+%% 
+%% plus :: Number -> Number -> Number
+%% 		
+%%		
+
+plus(Number1, Number2) ->
+	Number1 + Number2.
+	
+%% 
+%% subtract :: Number -> Number -> Number
+%% 		
+%%		
+
+subtract(Number1, Number2) ->
+	Number1 - Number2.
+
+%% ---------------------------------------------
+%% other functions
+%% ---------------------------------------------
+
+%% 
+%% boolToUnit :: Bool -> Unit Null
+%% 		
+%%		
+
+boolToUnit(Bool) ->
+	OutputCell = cell:makeCell(unit),
+	Bool andalso cell:addValue(OutputCell, null),
+	OutputCell.
+
+%% 
+%% oneTo :: Number -> Set Number
+%% 		
+%%		
+
+oneTo(Number) ->
+	OutputCell = cell:makeCell(set),
+	cell:addValues(OutputCell, lists:seq(1, Number)),
+	OutputCell.
+
+%% 
+%% oneToMap :: Number -> Number -> Map Number Number
+%% 		
+%%		
+
+oneToMap(Number1, Number2) ->
+	OutputCell = cell:makeCell(map),
+	ListOfMaps = lists:map(fun(N) -> {N, Number2} end, lists:seq(1, Number1)),
+	cell:addValues(OutputCell, ListOfMaps),
+	OutputCell.
+
+%% 
+%% reactiveNot :: Unit Null -> Unit Null
+%% 		
+%%		
+
+reactiveNot(CellPointer) ->
+	OutputCell = cell:makeCell(unit),
+	cell:addValue(OutputCell, null),
+	cell:injectIntercept(OutputCell, reactiveNot),
+	cell:injectOutput(CellPointer, OutputCell),
+	OutputCell.
+	
+%% 
+%% gate :: Unit b -> a -> Unit a
+%% 		
+%%		
+
+gate(CellPointer, InnerValue) ->
+	OutputCell = cell:makeCell(unit),
+	cell:injectIntercept(OutputCell, gate, [InnerValue]),
+	cell:injectOutput(CellPointer, OutputCell, isEmpty),
+	OutputCell.
+
+
 
 
 
