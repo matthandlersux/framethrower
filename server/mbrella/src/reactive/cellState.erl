@@ -18,6 +18,12 @@
 % outputs = [{[CellPointer1, ...], {takeOne, [Arg1, Arg2]}, {one_taken, X}}, ...]
 % flags = [{name, true|false}, ...]
 % informants = [CellPointer1, CellPointer2, ...]
+% dock = [{CellPointer, ElementList}]
+
+% optimizations:
+% make connections a dict,
+% make dock keyed on elements/output rather than cellpointer (duplicates element storage),
+% make informants a dict if larger than x (invert has a lot of informants, also unfoldSet etc...)
 
 %% ====================================================
 %% TYPES
@@ -32,7 +38,8 @@
 	stash = [],
 	outputs = outputs:newState(),
 	flags = [{leashed, false}, {waitForDone, false}, {killOnEmpty, false}],
-	informants = []
+	informants = [],
+	dock = []
 }).
 
 %% ====================================================
@@ -212,7 +219,42 @@ getStash(#cellState{stash = Stash}) ->
 
 emptyStash(CellState) ->
 	CellState#cellState{stash = []}.
+
+%% 
+%% updateDock :: CellState -> CellPointer -> List Element -> CellState
+%% 
+
+updateDock(#cellState{dock = Dock} = State, CellPointer, Elements) ->
+	case lists:keytake(CellPointer, 1, Dock) of
+		false ->
+			State#cellState{ dock = [{CellPointer, Elements}] ++ Dock };
+		{value, {_CellPointer, OldElements}, RestOfDock} ->
+			State#cellState{ dock = [{CellPointer, Elements ++ OldElements}] ++ RestOfDock }
+	end.
 	
+%% 
+%% getDock :: CellState -> CellPointer -> List Element
+%% 
+
+getDock(#cellState{dock = Dock}, CellPointer) ->
+	case lists:keyfind(CellPointer, 1, Dock) of
+		false -> [];
+		{_, ElementList} -> ElementList
+	end.
+
+getDock(#cellState{dock = Dock}) ->
+	Dock.
+	
+%% 
+%% emptyDock :: CellState -> CellPointer -> CellState 
+%% 
+
+emptyDock(#cellState{dock = Dock} = CellState, CellPointer) ->
+	CellState#cellState{dock = lists:keydelete(CellPointer, 1, Dock)}.
+
+emptyDock(CellState) ->
+	CellState#cellState{dock = []}.
+
 %% 
 %% injectElements :: CellState -> Elements -> Tuple CellState List Element
 %% 

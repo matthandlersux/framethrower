@@ -539,3 +539,34 @@ cell:injectOutput(M, I, invert, [I]),
 
 cell:injectOutput(I, D).
 
+% debug union
+dUnion() ->
+f(),
+S1 = cell:makeCell(set),
+S2 = cell:makeCell(set),
+D = cell:makeCell(set),
+cell:injectIntercept(D, debug),
+
+cell:addValues(S1, [toby,andrew,harold,matt,mattg]),
+cell:addValues(S2, [toby,andrew,harold,matt,mattg,ed,ted,bill,jon]),
+
+U = primFuncs:union(S1, S2),
+
+cell:injectOutput(U, D).
+
+
+% debug union and debug leash
+dUnionLeash() ->
+f(),
+S1 = cell:makeCell(set),
+S2 = cell:makeCell(set),
+D = cell:makeCell(set),
+cell:injectIntercept(D, debug),
+
+cell:addValues(S1, [toby,andrew,harold,matt,mattg]),
+cell:addValues(S2, [toby,andrew,harold,matt,mattg,ed,ted,bill,jon]),
+cell:leash(S2),
+
+U = primFuncs:union(S1, S2),
+
+cell:injectOutput(U, D).

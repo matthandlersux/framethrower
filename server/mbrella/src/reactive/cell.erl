@@ -128,10 +128,10 @@ setFlag(CellPointer, Flag, Setting) ->
 %create cell is defined above
 
 leash(CellPointer) ->
-	gen_server:cast(cellPointer:cellPid(CellPointer), {setFlag, leashed, true}).
+	gen_server:cast(cellPointer:pid(CellPointer), {setFlag, leashed, true}).
 	
 unleash(CellPointer) ->
-	gen_server:cast(cellPointer:cellPid(CellPointer), {setFlag, leashed, false}).
+	gen_server:cast(cellPointer:pid(CellPointer), unleash).
 
 %% 
 %% injectOutput :: CellPointer -> CellPointer -> ok
@@ -323,7 +323,18 @@ handle_cast({setFlag, Flag, Setting}, State) ->
 	{noreply, cellState:setFlag(State, Flag, Setting)};
 	
 handle_cast(kill, State) ->
-	{stop, normal, cellState:setFlag(State, leashed, true)}.
+	{stop, normal, cellState:setFlag(State, leashed, true)};
+	
+handle_cast(unleash, State) ->
+	State1 = cellState:setFlag(State, leashed, false),
+	Dock = cellState:getDock(State1),
+	State2 = cellState:emptyDock(State1),
+	SelfPointer = cellState:cellPointer(State2),
+	OutputDock = 	fun({CellPointer, ElementList}) ->
+						sendElements(CellPointer, SelfPointer, ElementList)
+					end,
+	lists:foreach(OutputDock, Dock),
+	{noreply, State2}.
 
 terminate(normal, State) ->
 	?trace(killed),
@@ -392,8 +403,20 @@ outputAllElements(CellState, Output, OutputTo) ->
 	ThisCell = cellState:cellPointer(CellState),
 	{OutputState, NewElements} = outputs:call(Output, AllElements, ElementsList),
 	NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
-	cell:sendElements(OutputTo, ThisCell, NewElements),
-	NewCellState.
+	
+	IsDone = cellState:isDone(CellState),
+	WaitForDone = cellState:getFlag(CellState, waitForDone),
+	IsLeashed = cellState:getFlag(CellState, leashed),
+	
+	if
+		IsLeashed orelse (WaitForDone andalso (not IsDone)) ->
+			cellState:updateDock(NewCellState, OutputTo, NewElements);
+		true ->
+			ExtraElements = cellState:getDock(NewCellState, OutputTo),
+			NewCellState1 = cellState:emptyDock(NewCellState, OutputTo),
+			cell:sendElements(OutputTo, ThisCell, NewElements ++ ExtraElements),
+			NewCellState1
+	end.
 
 %% 
 %% unoutputAllElements :: CellState -> Output -> CellPointer -> CellState

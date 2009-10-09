@@ -173,7 +173,7 @@ bindUnit(ExprString, CellPointer) ->
 %% 		
 %%		
 
-bindUnit(ExprString, CellPointer) ->
+bindSet(ExprString, CellPointer) ->
 	OutputCell = cell:makeCell(set),
 	cell:setFlag(OutputCell, waitForDone, true),
 	cell:injectOutput(CellPointer, OutputCell, applyAndInject, [ExprString, OutputCell]),
@@ -189,6 +189,23 @@ bindMap(ExprString, CellPointer) ->
 	cell:setFlag(OutputCell, waitForDone, true),
 	cell:injectOutput(CellPointer, OutputCell, applyAndInject, [ExprString, OutputCell]),
 	OutputCell.
+
+%% ---------------------------------------------
+%% other functions
+%% ---------------------------------------------
+
+%% 
+%% union :: Set a -> Set a -> Set a
+%% 		
+%%		
+
+union(CellPointer1, CellPointer2) ->
+	OutputCell = cell:makeCell(set),
+	cell:setFlag(OutputCell, waitForDone, true),
+	cell:injectOutput(CellPointer1, OutputCell),
+	cell:injectOutput(CellPointer2, OutputCell),
+	OutputCell.
+
 
 %% ====================================================
 %% Internal API
