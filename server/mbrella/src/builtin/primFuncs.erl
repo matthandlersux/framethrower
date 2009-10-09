@@ -68,19 +68,6 @@ reactiveOr(CellPointer1, CellPointer2) ->
 	cell:unleash(OutputCell).
 	
 %% 
-%% setDifference :: Set a -> Set a -> Set a
-%% 
-	
-setDifference(CellPointer1, CellPointer2) ->
-	OutputCell = cell:makeCellLeashed(set),
-	cell:setFlag(OutputCell, waitForDone, true),
-	cell:injectIntercept(OutputCell, setDifference, [CellPointer1, CellPointer2]),
-	% inject cellpointer2 first so that the initial sending doesnt flicker
-	cell:injectOutput(CellPointer2, OutputCell),
-	cell:injectOutput(CellPointer1, OutputCell),
-	cell:unleash(OutputCell).
-	
-%% 
 %% takeOne :: Set a -> Unit a
 %% 
 
@@ -191,7 +178,7 @@ bindMap(ExprString, CellPointer) ->
 	OutputCell.
 
 %% ---------------------------------------------
-%% other functions
+%% set functions
 %% ---------------------------------------------
 
 %% 
@@ -207,6 +194,24 @@ union(CellPointer1, CellPointer2) ->
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
 	OutputCell.
+
+%% 
+%% setDifference :: Set a -> Set a -> Set a
+%% 
+	
+setDifference(CellPointer1, CellPointer2) ->
+	OutputCell = cell:makeCellLeashed(set),
+	cell:setFlag(OutputCell, waitForDone, true),
+	cell:injectIntercept(OutputCell, setDifference, [CellPointer1, CellPointer2]),
+	% inject cellpointer2 first so that the initial sending doesnt flicker
+	cell:injectOutput(CellPointer2, OutputCell),
+	cell:injectOutput(CellPointer1, OutputCell),
+	cell:unleash(OutputCell).
+
+%% ---------------------------------------------
+%% map unit functions
+%% ---------------------------------------------
+
 
 
 %% ====================================================
