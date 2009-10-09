@@ -374,7 +374,61 @@ becomeInformant(InformToCellPointer, IsInformant, _ElementsState, Element) ->
 		false -> {IsInformant, Element}
 	end.
 					
-					
+%% 
+%% applyAndInject
+%% 		
+%%		
+
+applyAndInject() -> undefined.
+
+applyAndInject(ExprString, InjectToCellPointer, _State, _ElementsState, Element) ->
+	applyAndInject(ExprString, InjectToCellPointer, send, [], undefined, undefined, Element).
+	
+applyAndInject(ExprString, InjectToCellPointer, OutputName, _State, _ElementsState, Element) ->
+	applyAndInject(ExprString, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
+
+applyAndInject(ExprString, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
+	Value = cellElements:value(Element),
+	NewCellPointer = eval:evaluate( expr:apply(ExprString, Value) ),
+	case cellElements:modifier(Element) of
+		add ->
+			cell:addInformant(InjectToCellPointer, NewCellPointer),
+			cell:injectOutput(NewCellPointer, InjectToCellPointer, OutputName, OutputArgs);
+		remove ->
+			cell:removeInformant(InjectToCellPointer, NewCellPointer),
+			cell:uninjectOutput(NewCellPointer, InjectToCellPointer, OutputArgs, OutputArgs)
+	end,
+	{undefined, []}.
+	
+%% 
+%% applyAndInjectMap
+%% 		
+%%		
+
+applyAndInjectMap() -> undefined.
+
+applyAndInjectMap(ExprString, InjectToCellPointer, _State, _ElementsState, Element) ->
+	applyAndInjectMap(ExprString, InjectToCellPointer, send, [], undefined, undefined, Element).
+	
+applyAndInjectMap(ExprString, InjectToCellPointer, OutputName, _State, _ElementsState, Element) ->
+	applyAndInjectMap(ExprString, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
+
+applyAndInjectMap(ExprString, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
+	Value = cellElements:mapValue(Element),
+	Key = cellElements:mapKey(Element),
+	NewExpr = eval:evaluate( expr:apply(ExprString, Key) ),
+	NewCellPointer = eval:evaluate( expr:apply(NewExpr, Value) ),
+	case cellElements:modifier(Element) of
+		add ->
+			cell:addInformant(InjectToCellPointer, NewCellPointer),
+			cell:injectOutput(NewCellPointer, InjectToCellPointer, OutputName, OutputArgs);
+		remove ->
+			cell:removeInformant(InjectToCellPointer, NewCellPointer),
+			cell:uninjectOutput(NewCellPointer, InjectToCellPointer, OutputArgs, OutputArgs)
+	end,
+	{undefined, []}.
+	
+			
 %% ====================================================
 %% Utilities
 %% ====================================================

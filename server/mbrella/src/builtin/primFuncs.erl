@@ -47,6 +47,7 @@ isEmpty(CellPointer) ->
 
 reactiveAnd(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeCellLeashed(unit),
+	cell:setFlag(OutputCell, waitForDone, true),
 	cell:injectIntercept(OutputCell, reactiveAnd, [CellPointer1, CellPointer2]),
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
@@ -60,6 +61,7 @@ reactiveAnd(CellPointer1, CellPointer2) ->
 
 reactiveOr(CellPointer1, CellPointer2) ->
 	OutputCell = cell:makeCellLeashed(unit),
+	cell:setFlag(OutputCell, waitForDone, true),
 	% the weighting of units takes care of all the reactive-or functionality
 	cell:injectOutput(CellPointer1, OutputCell),
 	cell:injectOutput(CellPointer2, OutputCell),
@@ -105,7 +107,8 @@ invert(CellPointer) ->
 
 unfoldSet(ExprString, Object) ->
 	OutputCell = cell:makeCellLeashed(set),
-	InitialSetPointer = eval:evaluate( #exprApply{left = ExprString, right = Object} ),
+	cell:setFlag(OutputCell, waitForDone, true),
+	InitialSetPointer = eval:evaluate( expr:apply(ExprString, Object) ),
 	cell:injectIntercept(OutputCell, unfoldSet, [ExprString, OutputCell]),
 	cell:sendElements(OutputCell, [cellElements:createAdd(Object)]),
 	cell:injectOutput(InitialSetPointer, OutputCell, becomeInformant),
@@ -147,17 +150,37 @@ returnUnitMap(Key, CellPointer) ->
 	OutputCell.
 	
 %% 
+%% bindUnit :: (a -> Unit b) -> Unit a -> Unit b
+%% 		
+%%		
+
+bindUnit(ExprString, CellPointer) ->
+	OutputCell = cell:makeCell(unit),
+	cell:setFlag(OutputCell, waitForDone, true),
+	cell:injectOutput(CellPointer, OutputCell, applyAndInject, [ExprString, OutputCell]),
+	OutputCell.
+
+%% 
+%% bindSet :: (a -> Set b) -> Set a -> Set b
+%% 		
+%%		
+
+bindUnit(ExprString, CellPointer) ->
+	OutputCell = cell:makeCell(set),
+	cell:setFlag(OutputCell, waitForDone, true),
+	cell:injectOutput(CellPointer, OutputCell, applyAndInject, [ExprString, OutputCell]),
+	OutputCell.
+
+%% 
 %% bindMap :: (a -> b -> Map a c) -> Map a b -> Map a c
 %% 		
 %%		
 
 bindMap(ExprString, CellPointer) ->
 	OutputCell = cell:makeCell(map),
-	
-
-
-
-
+	cell:setFlag(OutputCell, waitForDone, true),
+	cell:injectOutput(CellPointer, OutputCell, applyAndInjectMap, [ExprString, OutputCell]),
+	OutputCell.
 
 %% ====================================================
 %% Internal API
