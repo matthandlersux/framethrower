@@ -388,7 +388,12 @@ applyAndInject(ExprString, InjectToCellPointer, OutputName, _State, _ElementsSta
 	applyAndInject(ExprString, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
 
 applyAndInject(ExprString, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
-	Value = cellElements:value(Element),
+	NewExpr = 	case cellElements:value(Element) of
+					{Key, Value} ->
+						eval:evaluate( expr:apply(ExprString, Key) );
+					Value ->
+						ExprString
+				end,			
 	NewCellPointer = eval:evaluate( expr:apply(ExprString, Value) ),
 	case cellElements:modifier(Element) of
 		add ->
@@ -398,36 +403,7 @@ applyAndInject(ExprString, InjectToCellPointer, OutputName, OutputArgs, _State, 
 			cell:removeInformant(InjectToCellPointer, NewCellPointer),
 			cell:uninjectOutput(NewCellPointer, InjectToCellPointer, OutputArgs, OutputArgs)
 	end,
-	{undefined, []}.
-	
-%% 
-%% applyAndInjectMap
-%% 		
-%%		
-
-applyAndInjectMap() -> undefined.
-
-applyAndInjectMap(ExprString, InjectToCellPointer, _State, _ElementsState, Element) ->
-	applyAndInjectMap(ExprString, InjectToCellPointer, send, [], undefined, undefined, Element).
-	
-applyAndInjectMap(ExprString, InjectToCellPointer, OutputName, _State, _ElementsState, Element) ->
-	applyAndInjectMap(ExprString, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
-
-applyAndInjectMap(ExprString, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
-	Value = cellElements:mapValue(Element),
-	Key = cellElements:mapKey(Element),
-	NewExpr = eval:evaluate( expr:apply(ExprString, Key) ),
-	NewCellPointer = eval:evaluate( expr:apply(NewExpr, Value) ),
-	case cellElements:modifier(Element) of
-		add ->
-			cell:addInformant(InjectToCellPointer, NewCellPointer),
-			cell:injectOutput(NewCellPointer, InjectToCellPointer, OutputName, OutputArgs);
-		remove ->
-			cell:removeInformant(InjectToCellPointer, NewCellPointer),
-			cell:uninjectOutput(NewCellPointer, InjectToCellPointer, OutputArgs, OutputArgs)
-	end,
-	{undefined, []}.
-	
+	{undefined, []}.	
 			
 %% ====================================================
 %% Utilities

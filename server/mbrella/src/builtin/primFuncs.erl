@@ -115,9 +115,11 @@ unfoldSet(ExprString, Object) ->
 	cell:unleash(OutputCell),
 	OutputCell.
 
+
 %% ---------------------------------------------
 %% return
 %% ---------------------------------------------
+
 
 %% 
 %% returnUnit :: a -> Unit a
@@ -148,7 +150,13 @@ returnUnitMap(Key, CellPointer) ->
 	OutputCell = cell:makeCell(map),
 	cell:injectOutput(CellPointer, OutputCell, sendMap, [Key]),
 	OutputCell.
-	
+
+
+%% ---------------------------------------------
+%% bind
+%% ---------------------------------------------
+
+
 %% 
 %% bindUnit :: (a -> Unit b) -> Unit a -> Unit b
 %% 		
@@ -179,7 +187,7 @@ bindUnit(ExprString, CellPointer) ->
 bindMap(ExprString, CellPointer) ->
 	OutputCell = cell:makeCell(map),
 	cell:setFlag(OutputCell, waitForDone, true),
-	cell:injectOutput(CellPointer, OutputCell, applyAndInjectMap, [ExprString, OutputCell]),
+	cell:injectOutput(CellPointer, OutputCell, applyAndInject, [ExprString, OutputCell]),
 	OutputCell.
 
 %% ====================================================
