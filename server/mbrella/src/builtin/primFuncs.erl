@@ -338,7 +338,7 @@ reactiveNot(CellPointer) ->
 gate(CellPointer, InnerValue) ->
 	OutputCell = cell:makeCell(unit),
 	cell:injectIntercept(OutputCell, gate, [InnerValue]),
-	cell:injectOutput(CellPointer, OutputCell, isEmpty),
+	cell:injectOutput(CellPointer, OutputCell),
 	OutputCell.
 
 

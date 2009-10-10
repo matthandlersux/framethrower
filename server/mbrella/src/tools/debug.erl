@@ -434,6 +434,18 @@ cell:injectOutput(C, D),
 cell:injectIntercept(D, debug),
 cell:injectOutput(S, C, isEmpty).
 
+% debug isEmpty2
+disEmpty2() ->
+f(),
+C = cell:makeCell(unit),
+S = cell:makeCell(set),
+D = cell:makeCell(unit),
+cell:injectOutput(C, D),
+cell:injectIntercept(D, debug),
+cell:injectOutput(S, C, isEmpty),
+
+cell:addValues(S, [toby, matt, andrew]).
+
 % debug reactiveAnd w/o flags
 dreactiveAnd() ->
 f(),
@@ -570,3 +582,14 @@ cell:leash(S2),
 U = primFuncs:union(S1, S2),
 
 cell:injectOutput(U, D).
+
+% debug gate
+dGate() ->
+f(),
+K = cell:makeCell(unit),
+D = cell:makeCell(unit),
+cell:injectIntercept(D, debug),
+
+G = primFuncs:gate(K, "larry"),
+cell:injectOutput(G, D, isEmpty),
+cell:injectOutput(G, D).

@@ -50,7 +50,13 @@ call(OutputFunction, OutputState, Elements, ElementsToAdd) ->
 %%		used by a cell when adding a new outputFunction or receiving a new element
 %%		returns the new state of that outputFunction and the elements to be sent
 %% 
-	
+
+callOutput(Name, Args, State, ElementsState, []) ->
+	try processElement(Name, Args, State, ElementsState, [])
+	catch
+		throw:NewStateAndElements ->
+			NewStateAndElements
+	end;
 callOutput(Name, Args, State, ElementsState, Elements) ->
 	Process = fun(Element, {OldState, OldElements}) ->
 		{NewState, NewElements} = processElement(Name, Args, OldState, ElementsState, Element),
@@ -262,12 +268,12 @@ isEmpty(null, ElementsState, _Element) ->
 		true ->
 			throw({null, []});
 		false ->
-			throw({empty, cellElements:createRemove(null)})
+			throw({empty, [cellElements:createRemove(null)]})
 	end;
 isEmpty(empty, ElementsState, _Element) ->
 	case cellElements:isEmpty(ElementsState) of
 		true ->
-			throw({null, cellElements:createAdd(null)});
+			throw({null, [cellElements:createAdd(null)]});
 		false ->
 			throw({empty, []})
 	end.
@@ -278,6 +284,8 @@ isEmpty(empty, ElementsState, _Element) ->
 
 takeOne() -> undefined.
 
+takeOne(OneElement, ElementsState, []) ->
+	{OneElement, []};
 takeOne(undefined, _, Element) ->
 	case cellElements:modifier(Element) of
 		add -> {cellElements:value(Element), Element};
@@ -310,6 +318,7 @@ takeOne(OneElement, ElementsState, Element) ->
 
 invert() -> undefined.
 
+invert(_, _, _, []) -> {undefined, []};
 invert(CellPointer, _State, _ElementsState, Element) ->
 	Modifier = cellElements:modifier(Element),
 	SetOfBCellPointer = cellElements:mapValue(Element),
@@ -331,6 +340,7 @@ invert(CellPointer, _State, _ElementsState, Element) ->
 
 sendMap() -> undefined.
 
+sendMap(_, _, _, []) -> {undefined, []};
 sendMap(Key, _State, _ElementsState, Element) ->
 	Modifier = cellElements:modifier(Element),
 	Value = cellElements:value(Element),
@@ -343,6 +353,7 @@ sendMap(Key, _State, _ElementsState, Element) ->
 
 sendMapValueAsKey() -> undefined.
 
+sendMapValueAsKey(_, _, _, []) -> [];
 sendMapValueAsKey(Key, _State, _ElementsState, Element) ->
 	Modifier = cellElements:modifier(Element),
 	Value = cellElements:value(Element),
@@ -356,6 +367,7 @@ sendMapValueAsKey(Key, _State, _ElementsState, Element) ->
 
 becomeInformant() -> false.
 
+becomeInformant(_, IsInformant, _, []) -> {IsInformant, []};
 becomeInformant(InformToCellPointer, IsInformant, _ElementsState, Element) ->
 	Value = cellElements:value(Element),
 	Modifier = cellElements:modifier(Element),
@@ -387,6 +399,7 @@ applyAndInject(ExprString, InjectToCellPointer, _State, _ElementsState, Element)
 applyAndInject(ExprString, InjectToCellPointer, OutputName, _State, _ElementsState, Element) ->
 	applyAndInject(ExprString, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
 
+applyAndInject(_, _, _, _, _, _, []) -> {undefined, []};
 applyAndInject(ExprString, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
 	NewExpr = 	case cellElements:value(Element) of
 					{Key, Value} ->
