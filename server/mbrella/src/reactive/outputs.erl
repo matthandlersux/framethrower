@@ -55,7 +55,9 @@ callOutput(Name, Args, State, ElementsState, []) ->
 	try processElement(Name, Args, State, ElementsState, [])
 	catch
 		throw:NewStateAndElements ->
-			NewStateAndElements
+			NewStateAndElements;
+		_:_ ->
+			{State, []}
 	end;
 callOutput(Name, Args, State, ElementsState, Elements) ->
 	Process = fun(Element, {OldState, OldElements}) ->
@@ -284,8 +286,6 @@ isEmpty(empty, ElementsState, _Element) ->
 
 takeOne() -> undefined.
 
-takeOne(OneElement, ElementsState, []) ->
-	{OneElement, []};
 takeOne(undefined, _, Element) ->
 	case cellElements:modifier(Element) of
 		add -> {cellElements:value(Element), Element};
@@ -318,7 +318,6 @@ takeOne(OneElement, ElementsState, Element) ->
 
 invert() -> undefined.
 
-invert(_, _, _, []) -> {undefined, []};
 invert(CellPointer, _State, _ElementsState, Element) ->
 	Modifier = cellElements:modifier(Element),
 	SetOfBCellPointer = cellElements:mapValue(Element),
@@ -340,7 +339,6 @@ invert(CellPointer, _State, _ElementsState, Element) ->
 
 sendMap() -> undefined.
 
-sendMap(_, _, _, []) -> {undefined, []};
 sendMap(Key, _State, _ElementsState, Element) ->
 	Modifier = cellElements:modifier(Element),
 	Value = cellElements:value(Element),
@@ -353,7 +351,6 @@ sendMap(Key, _State, _ElementsState, Element) ->
 
 sendMapValueAsKey() -> undefined.
 
-sendMapValueAsKey(_, _, _, []) -> [];
 sendMapValueAsKey(Key, _State, _ElementsState, Element) ->
 	Modifier = cellElements:modifier(Element),
 	Value = cellElements:value(Element),
@@ -367,7 +364,6 @@ sendMapValueAsKey(Key, _State, _ElementsState, Element) ->
 
 becomeInformant() -> false.
 
-becomeInformant(_, IsInformant, _, []) -> {IsInformant, []};
 becomeInformant(InformToCellPointer, IsInformant, _ElementsState, Element) ->
 	Value = cellElements:value(Element),
 	Modifier = cellElements:modifier(Element),
@@ -399,7 +395,6 @@ applyAndInject(ExprString, InjectToCellPointer, _State, _ElementsState, Element)
 applyAndInject(ExprString, InjectToCellPointer, OutputName, _State, _ElementsState, Element) ->
 	applyAndInject(ExprString, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
 
-applyAndInject(_, _, _, _, _, _, []) -> {undefined, []};
 applyAndInject(ExprString, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
 	NewExpr = 	case cellElements:value(Element) of
 					{Key, Value} ->

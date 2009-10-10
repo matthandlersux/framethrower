@@ -401,7 +401,6 @@ outputAllElements(CellState, Output, OutputTo) ->
 	AllElements = cellState:getElements(CellState),
 	ElementsList = cellElements:toList(AllElements),
 	ThisCell = cellState:cellPointer(CellState),
-	?trace({Output, AllElements, ElementsList}),
 	{OutputState, NewElements} = outputs:call(Output, AllElements, ElementsList),
 	NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
 	
