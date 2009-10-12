@@ -11,24 +11,24 @@
 %% Parser
 %% ====================================================
 
-parse(S, Env) ->
-	{Ans, []} = parseExpr(S, Env),
+parse(S, Scope) ->
+	{Ans, []} = parseExpr(S, Scope),
 	Ans.
 
-parseExpr([$(|Right] = S, Env) ->
+parseExpr([$(|Right] = S, Scope) ->
 	%apply or lambda
 	case Right of
 		[$\\|Rest] ->
 			%lambda
-			{Expr, [$)|Remaining]} = parseExpr(Rest, Env),
+			{Expr, [$)|Remaining]} = parseExpr(Rest, Scope),
 			{#exprLambda{
 				expr = Expr
 			}, Remaining};
 		_ ->
 			%apply
-			{ApplyLeft, SpaceAndRight} = parseExpr(Right, Env),
+			{ApplyLeft, SpaceAndRight} = parseExpr(Right, Scope),
 			[$ |Rest] = SpaceAndRight,
-			{ApplyRight, [$)|Remaining]} = parseExpr(Rest, Env),
+			{ApplyRight, [$)|Remaining]} = parseExpr(Rest, Scope),
 			{#exprApply{
 				left = ApplyLeft,
 				right = ApplyRight
@@ -37,20 +37,20 @@ parseExpr([$(|Right] = S, Env) ->
 parseExpr([$\"|Right] = S, _) ->
 	%quoted string
 	cutOffRightQuote(Right);
-parseExpr([$ |Right] = S, Env) ->
+parseExpr([$ |Right] = S, Scope) ->
 	%not sure if this will happen
-	parseExpr(Right, Env);
+	parseExpr(Right, Scope);
 parseExpr([$/|Right] = S, _) ->
 	{NumString, Rest} = untilSpaceOrRightParen(Right),
 	Num = list_to_integer(NumString),
 	{#exprVar{index = Num}, Rest};
-parseExpr([_|Right] = S, Env) ->
+parseExpr([_|Right] = S, Scope) ->
 	%env variable or number
 	%read until space or right paren
 	{VarOrPrim, Rest} = untilSpaceOrRightParen(S),
 	Ans = case extractPrim(VarOrPrim) of
 		error ->
-			case Env(VarOrPrim) of
+			case scope:lookup(Scope, VarOrPrim) of
 				notfound ->
 					lookupInEnv(VarOrPrim);
 				Found -> Found

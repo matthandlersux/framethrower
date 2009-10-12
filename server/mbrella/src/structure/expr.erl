@@ -24,12 +24,10 @@
 %% 
 
 exprParse(String) ->
-	EmptyEnv = fun(_) -> notfound end,
-	%Throw away the environment, it is empty anyway
-	{Result, _} = altparse:parse(String, EmptyEnv),
-	Result.
-exprParse(String, Env) ->
-	altparse:parse(String, Env).
+	EmptyScope = scope:makeScope(),
+	altparse:parse(String, EmptyScope).
+exprParse(String, Scope) ->
+	altparse:parse(String, Scope).
 
 %% 
 %% unparse:: Expr -> String

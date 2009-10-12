@@ -4,5 +4,10 @@ setNum3 = action (testObject::testClass) {
 
 setNum5 = action (testObject::testClass) {
 	set (TestClass:num testObject) 5
-}
+},
 
+simple = template () {
+	x = plus 5 3,
+	y = plus x 6,
+	y
+}

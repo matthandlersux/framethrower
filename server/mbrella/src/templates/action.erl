@@ -47,7 +47,10 @@ start_link() ->
 	end.
 
 testJSON() ->
-	{ok, JSONBinary} = file:read_file("../lib/bootJSON"),
+	JSONBinary = case file:read_file("priv/bootJSON") of
+		{ok, JSON} -> JSON;
+		{error, Error} -> ?trace("Error"), throw(Error)
+	end,
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
 	SharedLetStruct = struct:get_value(<<"sharedLet">>, Struct),
 	{struct, Lets} = SharedLetStruct,
@@ -63,8 +66,8 @@ testJSON() ->
 addActionsFromJSON(ActionsJSON) ->
 	gen_server:cast(?MODULE, {addActionJSON, ActionsJSON}).
 
-performAction(ActionName, Params) ->
-	gen_server:call(?MODULE, {performAction, ActionName, Params}).
+evaluateTemplate(Name, Params) ->
+	gen_server:call(?MODULE, {evaluateTemplate, Name, Params}).
 
 
 
@@ -106,14 +109,15 @@ init([]) ->
 handle_call({addLet, LetName, LetStruct}, _, State) ->
 	NewState = dict:store(LetName, LetStruct, State),
     {reply, ok, NewState};
-handle_call({performAction, ActionName, Params}, _, State) ->
-	ActionJSON = dict:find(ActionName, State),
-	?trace("Performing Action"),
-	?trace(ActionJSON),
-	
-	
-	
-    {reply, ok, State};
+handle_call({evaluateTemplate, Name, Params}, _, State) ->
+	Template = case dict:find(Name, State) of
+		{ok, Found} -> Found;
+		error -> throw("Error finding template: " ++ Name)
+	end,
+	Result = eval:evaluate(makeClosure(Template, scope:makeScope())),
+	?trace("Result: "),
+	?trace(Result),
+    {reply, Result, State};
 handle_call(getState, _, State) ->
 	{reply, State, State};
 handle_call(stop, _, State) ->
@@ -126,8 +130,6 @@ handle_call(stop, _, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_cast({serializeEnv, _}, State) ->
-    {noreply, State};
 handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
 
@@ -164,21 +166,29 @@ code_change(OldVsn, State, Extra) ->
 
 %%For Now we'll have all the functions for processing template JSON here. Will want to reorganize this into another file probably
 
-% returns {Result, NewEnv}, Env may change because it is lazy
-evaluateLine(Line, Env) -> ok.
-	% Kind = 	binary_to_list(struct:get_value(<<"kind">>, Line)),
-	% case Kind of
-	% 	"lineExpr" ->
-	% 		Expr = binary_to_list(struct:get_value(<<"expr">>, Line)),
-	% 		expr:exprParse(Expr, Env);
-	% 	"lineTemplate" ->
-	% 		
-	% 	"lineJavascript" ->
-	% 	"lineXML" ->
-	% 	"lineState" ->
-	% 	"lineAction" ->
-	% 	"actionCreate" ->
-	% end.
+
+evaluateLine(Line, Scope) ->
+	Kind = binary_to_list(struct:get_value(<<"kind">>, Line)),
+	case Kind of
+		"lineExpr" ->
+			Expr = binary_to_list(struct:get_value(<<"expr">>, Line)),
+			?trace("Parsing expr: " ++ Expr),
+			Result = expr:exprParse(Expr, Scope),
+			?trace("Done parsing expr: " ++ Expr),
+			Result;
+		"lineTemplate" ->
+			makeClosure(Line, Scope);
+		"lineJavascript" ->
+			ignore;
+		"lineXML" ->
+			ignore;
+		"lineState" ->
+			ignore;
+		"lineAction" ->
+			ignore;
+		"actionCreate" ->
+			ignore
+	end.
 % 
 % function evaluateLine(line, env) {
 % 	
@@ -216,7 +226,7 @@ executeAction() -> ok.
 makeActionClosure() -> ok.
 
 accumulate(SavedArgs, Fun, Expects) ->
-	case lists:length(SavedArgs) of
+	case length(SavedArgs) of
 		Expects -> Fun(SavedArgs);
 		_ -> fun (Arg) -> accumulate([Arg | SavedArgs], Fun, Expects) end
 	end.
@@ -224,24 +234,35 @@ accumulate(SavedArgs, Fun, Expects) ->
 curry(Fun, Expects) ->
 	accumulate([], Fun, Expects).
 
-extendEnv(Env, Scope) -> 
-	dict:merge(fun(A, B) -> A end, Env, Scope).
-
-makeClosure(LineTemplate, Env) ->
+makeClosure(LineTemplate, ParentScope) ->
 	Params = struct:get_value(<<"params">>, LineTemplate),
 	Type = struct:get_value(<<"type">>, LineTemplate),
-	ParamLength = lists:length(Params),
+	ParamLength = length(Params),
 	F = curry(fun(Args) -> 
-		Scope = dict:new(),
-		ArgsAndParams = lists:zip(Args, Params),
-		NewScope = lists:foldl(fun({Arg, Param}, InnerScope) -> 
-			dict:store(binary_to_list(Param), Arg, InnerScope)
-		end, Scope, ArgsAndParams),
-		EnvWithParams = extendEnv(Env, NewScope),
+		%make a new scope for this closure
+		Scope = scope:makeScope(ParentScope),
+
+		% add the arguments to the closure to the scope
+		ArgsAndParams = lists:zip(Params, Args),
+		lists:map(fun({Arg, Param}) -> 
+			scope:addLet(Scope, binary_to_list(Param), Arg)
+		end, ArgsAndParams),
+
+		% add the lets in the closure to the scope lazily
 		Lets = struct:get_value(<<"let">>, LineTemplate),
-		EnvWithLets = addLets(Lets, EnvWithParams),
+		LetsList = struct:to_list(Lets),
+		
+		lists:map(fun({LetName, LetValue}) -> 
+			GetValue = fun() -> 
+				?trace(["Evaluating lazy let: " , LetValue]),
+				evaluateLine(LetValue, Scope)
+			end,
+			scope:addLazyLet(Scope, binary_to_list(LetName), GetValue)
+		end, LetsList),
+		
+		% evaluate the output of the closure
 		Output = struct:get_value(<<"output">>, LineTemplate),
-		evaluateLine(Output, EnvWithLets)
+		evaluateLine(Output, Scope)
 	end, ParamLength),
 	case ParamLength of
 		0 -> F;
@@ -250,25 +271,6 @@ makeClosure(LineTemplate, Env) ->
 
 % Should have this somewhere
 % parseExpression() -> ok.
-
-addLets(Lets, Env) -> ok.
-
-
-% function addLets(lets, env) {
-% 	var memo = {};
-% 	function newEnv(s) {
-% 		if (memo[s] !== undefined) {
-% 			return memo[s];
-% 		} else if (lets[s] !== undefined) {
-% 			memo[s] = evaluateLine(lets[s], newEnv);
-% 			return memo[s];
-% 		} else {
-% 			return env(s);
-% 		}
-% 	}
-% 	return newEnv;
-% }
-
 
 addFun() -> ok.
 

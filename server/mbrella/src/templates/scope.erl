@@ -27,13 +27,10 @@
 
 %% --------------------------------------------------------------------
 %% External exports
--export([makeScope/0, makeScope/1, lookup/2, getState/1, stop/1]).
+-export([makeScope/0, makeScope/1, lookup/2, addLazyLet/3, addLet/3, getState/1, stop/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
-
--compile(export_all).
-
 
 
 %% ====================================================================
@@ -55,8 +52,11 @@ start_link(Parent) ->
 	end.
 
 % GetValue is fun/0 to be run the first time Name is looked up
-addLet(Pid, Name, GetValue) ->
-	gen_server:call(Pid, {addLet, Name, GetValue}).
+addLazyLet(Pid, Name, GetValue) ->
+	gen_server:call(Pid, {addLazyLet, Name, GetValue}).
+
+addLet(Pid, Name, Value) ->
+	gen_server:call(Pid, {addLet, Name, Value}).
 
 % Lookup will return error if Name is not found in this scope or any parent scope
 lookup(Pid, Name) ->
@@ -97,8 +97,12 @@ init([Parent]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({addLet, Name, GetValue}, _, State) ->
+handle_call({addLazyLet, Name, GetValue}, _, State) ->
 	NewDict = dict:store(Name, {notEvaluated, GetValue}, ?this(dict)),
+	NewState = State#scopeState{dict=NewDict},
+    {reply, ok, NewState};
+handle_call({addLet, Name, Value}, _, State) ->
+	NewDict = dict:store(Name, {evaluated, Value}, ?this(dict)),
 	NewState = State#scopeState{dict=NewDict},
     {reply, ok, NewState};
 handle_call({lookup, Name}, _, State) ->
@@ -165,6 +169,6 @@ code_change(OldVsn, State, Extra) ->
 %% --------------------------------------------------------------------
 lookupInParent(Name, Parent) ->
 	case Parent of
-		noParent -> error;
+		noParent -> notFound;
 		Pid -> lookup(Pid, Name)
 	end.

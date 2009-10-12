@@ -34,7 +34,7 @@ var generateFiles = function () {
 	var bootJSONString = JSON.stringify(bootJSON);
 
 	try {
-		writeStringToFile(ROOTDIR + "../server/lib/bootJSON", bootJSONString);
+		writeStringToFile(ROOTDIR + "../server/pipeline/priv/bootJSON", bootJSONString);
 		print('success');
 	} catch (e) {
 		console.log("Running from browser, so not writing bootJSON: ", bootJSON);
