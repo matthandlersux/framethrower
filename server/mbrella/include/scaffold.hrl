@@ -99,6 +99,11 @@
 	variables
 }).
 
+-record(scopeState, {
+	dict, 
+	parent
+}).
+
 -record(cellState, {
 	funcs, 
 	dots, 
