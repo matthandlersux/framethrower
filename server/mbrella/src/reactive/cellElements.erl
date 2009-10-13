@@ -54,6 +54,14 @@ new(mapRange) ->
 	{mapRange, rangedict:new()}.
 
 %% 
+%% type :: CellElements -> Atom
+%% 		
+%%		
+
+type({Type, _}) ->
+	Type.
+
+%% 
 %% create :: Atom -> Value -> Element
 %% 
 	
