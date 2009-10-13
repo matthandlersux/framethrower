@@ -2937,7 +2937,7 @@ switch( act )
 	break;
 	case 139:
 	{
-		rval = {};
+		rval = "";; 
 	}
 	break;
 	case 140:

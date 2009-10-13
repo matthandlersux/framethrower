@@ -681,41 +681,20 @@ var semantics = function(){
 			return string.replace(/^\s+|\s+$/g,"");
 		}
 		
-		function makeString (tree, name) {
-			if(tree === undefined) return undefined;
-			if (name == 'stringescapequotes') {
-				var string = makeString(tree);
-				lineNum += lineBreakCount(string);
-				////string = string.replace(/\\/g, "\\\\");
-				//string = string.replace(/\\\"/g, "\\\\\"");
-				//string = string.replace(/\"/g, "\\\"");
-				//// string = string.replace(/\n/g, "\\n");
-				return string;
-			} else if (name == 'string') {
-				var string = makeString(tree);
-				lineNum += lineBreakCount(string);
-				string = string.replace(/\"/g, "");
-				string = string.replace(/\n/g, "\\n");
-				return string;
-			} else {
-				if(!arrayLike(tree) && !objectLike(tree)) {
-					return tree;
-				}
-				var output = "";
-				forEach(tree, function(node, name) {
-					output += (makeString(node, name));
-				});
-				return output;
-			}
-		}
-
-		
 		var startLine = lineNum;
 		forEach(tree, function(value, nodeName) {
+			function startsWith (string) {
+				return nodeName.indexOf(string) == 0;
+			}
+			
 			if(objectLike(value)) {
 				handleWhiteSpace(value);
 			} else {
 				lineNum += lineBreakCount(value);
+				if (nodeName === "string") {
+					value = value.replace(/\"/g, "");
+					value = value.replace(/\n/g, "\\n");
+				}
 				tree[nodeName] = stripSpaces(value);
 			}
 		});

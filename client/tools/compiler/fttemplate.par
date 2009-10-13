@@ -334,7 +334,7 @@ TEXT:
 	| LTSLASH			[* %% = %s; *]
 	| NONLTBRACKET		[* %% = %s; *]
 	| TEXT TEXT			[* %% = %s; *]
-	|
+	|					[* %% = %s; *]
 	;
 
 XMLTEXT:
