@@ -254,6 +254,15 @@ emptyDock(#cellState{dock = Dock} = CellState, CellPointer) ->
 
 emptyDock(CellState) ->
 	CellState#cellState{dock = []}.
+	
+%% 
+%% emptyElements :: CellState -> CellState
+%% 		
+%%		
+
+emptyElements(#cellState{elements = Elements} = CellState) ->
+	Type = cellElements:type(Elements),
+	CellState#cellState{elements = cellElements:new(Type)}.
 
 %% 
 %% injectElements :: CellState -> Elements -> Tuple CellState List Element
