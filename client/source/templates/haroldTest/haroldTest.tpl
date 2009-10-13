@@ -2,14 +2,14 @@ template() {
 	test = template(x::Number)::Number {
 		plus 100 x
 	},
-	Test := [Test2 Number Number],
-	Test2 := Tuple2,
 	debug = jsaction(s::String)::Void {
 		console.debug(s);
 	},
+	Test := [Test2 Number Number],
 	test2 = action(x::Test)::[(Number, Number)] {
 		return x
 	},
+	Test2 := Tuple2,
 	test4 = state(Unit [String], ["yeah!"]),
 	test5 = fetch test4,
 	a = c,
@@ -26,7 +26,8 @@ template() {
 	
 	<div>
 		<f:on mouseup>
-			x <- create(Unit (Number, Number)),
+			Test := Unit,
+			x <- create(Test (Test2 Number Number)),
 			debug (head test5)
 		</f:on>
 		
