@@ -33,6 +33,7 @@
 	'([\r\n\t\ ])*,([\r\n\t\ ])*'			COMMA
 	'([\r\n\t\ ])*;([\r\n\t\ ])*'			SEMICOLON
 	'([\r\n\t\ ])*::([\r\n\t\ ])*'			DOUBLECOLON
+	'([\r\n\t\ ])*:=([\r\n\t\ ])*'			COLONEQUALS
 	'([\r\n\t\ ])*:([\r\n\t\ ])*'			COLON
 	'([\r\n\t\ ])*=([\r\n\t\ ])*'			EQUALS
 	'([\r\n\t\ ])*\<\/([\r\n\t\ ])*'		LTSLASH
@@ -117,11 +118,16 @@ LETLISTBLOCK:
 
 LETLIST:
 	LETLIST LET COMMA									
+	| LETLIST NEWTYPE COMMA
 	|													
 	;
 
 LET:
 	IDENTIFIER EQUALS LINE								
+	;
+
+NEWTYPE:
+	IDENTIFIER COLONEQUALS TYPE								
 	;
 
 STATE:
