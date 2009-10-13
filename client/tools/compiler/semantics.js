@@ -128,14 +128,14 @@ var semantics = function(){
 			allActList.push({action: fullActList.action, debugRef: fullActList.action.debugRef});
 		}
 		
-		//split list into lets (something = something) and actionLine (something <- something)
+		//split list into letlists (something = something, or something := something) and actionLine (something <- something)
 		var actlist = [];
-		var lets = [];
+		var letlist = {};
 		var actionFound = false;
 		
 		for(var i=0; i<allActList.length; i++) {
 			var listElement = allActList[i];
-			if (def(listElement.equals)) {
+			if (def(listElement.equals) || def(listElement.colonequals)) { // LET or NEWTYPE
 				if (actionFound) {
 					var subActionTemplate = {actiontpl: {fullactlist: {actlist: allActList.slice(i)}, debugRef:listElement.debugRef}};
 					var lineAction = {
@@ -145,7 +145,10 @@ var semantics = function(){
 					actlist.push(lineAction);
 					break;
 				}
-				lets.push({identifier:listElement.identifier, line:listElement.action, debugRef:listElement.debugRef});
+				if(def(listElement.equals))
+					letlist = {letlist: letlist, let: listElement};
+				else if(def(listElement.colonequals))
+					letlist = {letlist: letlist, newtype: listElement};
 			} else {
 				var output = {
 					action: makeLine(listElement.action),
@@ -172,7 +175,7 @@ var semantics = function(){
 		var wrappedTemplate = {
 			arglist: node.arglist,
 			fullletlist: {
-				letlist: lets,
+				letlist: letlist,
 				line: actionLine
 			},
 			debugRef: node.debugRef
@@ -296,12 +299,21 @@ var semantics = function(){
 			val: makeLine(node.line),
 			debugRef: node.debugRef
 		};
+	}	
+
+	function getNewtypeKeyVal (node) {
+		return {
+			key: node.identifier,
+			val: parseType(node.type),
+			debugRef: node.debugRef
+		};
 	}
 	
 	
 	function makeLineTemplate(node, isBlock) {
 		var params = makeList(node.arglist, 'arglist', 'variable');
 		var lets = makeListObject(node.fullletlist.letlist, 'letlist', 'let', getLetKeyVal);
+		var newtypes = makeListObject(node.fullletlist.letlist, 'letlist', 'newtype', getNewtypeKeyVal);
 		
 		var output = node.fullletlist.line;
 		//give undefined param types a letter
@@ -345,6 +357,7 @@ var semantics = function(){
 			kind: "lineTemplate",
 			params: paramList,
 			let: lets,
+			newtype: newtypes,
 			output: makeLine(output),
 			debugRef: node.debugRef
 		};
@@ -703,11 +716,16 @@ var semantics = function(){
 	
 	function makeIncludeblock (node) {
 		var lets = makeListObject(node.letlist, 'letlist', 'let', getLetKeyVal);
+		var newtypes = makeListObject(node.letlist, 'letlist', 'newtype', getNewtypeKeyVal);
 		if (def(node.let)) {
 			var lastLet = getLetKeyVal(node.let);
 			lets[lastLet.key] = lastLet.val;
 		}
-		return lets;
+		if (def(node.newtype)) {
+			var lastNewtype = getNewtypeKeyVal(node.newtype);
+			newtypes[lastNewtype.key] = lastNewtype.val;
+		}
+		return {let: lets, newtype: newtypes};
 	}
 	
 	

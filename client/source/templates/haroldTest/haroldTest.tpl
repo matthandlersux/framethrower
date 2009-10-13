@@ -11,9 +11,11 @@ template() {
 	},
 	test4 = state(Unit [String], ["yeah!"]),
 	test5 = fetch test4,
-	w = z,
-	z = plus 1 x,
+	a = c,
+	b = fetch y,
+	c = plus b x,
 	x = fetch y,
+	f = x -> plus 50 x,
 	y = state(Unit Number, 10),
 	y = state(Unit Number, 100),
 	swap = tuple -> (snd tuple, fst tuple),
@@ -27,8 +29,8 @@ template() {
 			debug (head test5)
 		</f:on>
 		
-		<div>{head list} {head test5}</div>
+		<div>{head list} {head test5} {f 5}</div>
 		
-		<f:call>test1 (test w)</f:call>
+		<f:call>test1 (test a)</f:call>
 	</div>
 }

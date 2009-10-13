@@ -104,6 +104,7 @@ function compileFolder(folderPath, rebuild) {
 	var childDirectories = listDirectories(folder);
 		
 	var lets = {};
+	var newtypes = {};
 	var mainJSON;
 	forEach(childFiles, function(child) {
 		var nameWithExt = child;
@@ -121,7 +122,10 @@ function compileFolder(folderPath, rebuild) {
 		} else if (ext === "let") {
 			var includeLets = compileFile(folderPath + "/" + child, rebuild, true);
 			if (includeLets !== undefined) {
-				mergeIntoObject(lets, includeLets);
+				if(includeLets.let !== undefined )
+					mergeIntoObject(lets, includeLets.let);
+				if(includeLets.newtype !== undefined )
+					mergeIntoObject(newtypes, includeLets.newtype);
 			}
 		}
 	});
@@ -132,7 +136,9 @@ function compileFolder(folderPath, rebuild) {
 		}
 	});
 	if (mainJSON.let === undefined) mainJSON.let = {};
+	if (mainJSON.newtype === undefined) mainJSON.newtype = {};
 	mergeIntoObject(mainJSON.let, lets);
+	mergeIntoObject(mainJSON.newtype, newtypes);
 	return mainJSON;
 }
 
@@ -303,6 +309,7 @@ try{
 
 		var totalCompiledJSON = compileFolder(arguments[0], rebuild);
 		if(!GLOBAL_ERRORS) {
+			desugarNewtype(totalCompiledJSON);
 			desugarFetch(totalCompiledJSON);
 			var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
 			
