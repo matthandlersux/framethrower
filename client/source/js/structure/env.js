@@ -12,6 +12,10 @@ var falseEnv = function (s) {
 	return false;
 };
 
+var undefinedEnv = function (s) {
+	return undefined;
+}
+
 function envAdd(parentEnv, name, value) {
 	/*
 	Takes an environment and adds a new binding (of name to value) to it.
@@ -26,14 +30,25 @@ function envAdd(parentEnv, name, value) {
 }
 
 function extendEnv(parentEnv, hash) {
-	return function (s) {
-		var lookup = hash[s];
-		if (lookup === undefined) {
-			return parentEnv(s);
-		} else {
-			return lookup;
+	if(typeof hash === "function") {
+		return function(s) {
+			var lookup = hash(s);
+			if (lookup === undefined) {
+				return parentEnv(s);
+			} else {
+				return lookup;
+			}
 		}
-	};
+	}
+	else
+		return function (s) {
+			var lookup = hash[s];
+			if (lookup === undefined) {
+				return parentEnv(s);
+			} else {
+				return lookup;
+			}
+		};
 }
 
 
@@ -65,5 +80,17 @@ function makeDynamicEnv(inherit) {
 		debug: function () {
 			return lookup;
 		}
+	};
+}
+
+function makeCachedEnv(env) {
+	var cache = {};
+	return function(s) {
+		var v = cache[s];
+		if(!def(v)) {
+			v = env(s);
+			cache[s] = v;
+		}
+		return v;
 	};
 }

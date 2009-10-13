@@ -761,7 +761,7 @@ cutTimestamps = function ()::List Number {
 
 
 
-captions = function ()::List (Tuple2 (Tuple2 Number Number) String) {
+captions = function ()::List ((Number, Number), String) {
 	var captions = 
 	
 	[{"start":8.007,"duration":7.822000000000001,"text":"  [ Orchestra Tuning Up ]       [ Audience Applauding ]         "},

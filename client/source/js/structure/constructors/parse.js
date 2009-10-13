@@ -82,7 +82,7 @@ function parseAndDesugar(makeTuple, makeList, s) {
 			if(tokens[0] !== ")") throw "Parse error: missing )";
 			tokens.shift();
 
-			ast = makeTuple(tuple); // simply returns the first ast for a 1-tuple
+			ast = makeTuple(tuple); // note that for a 1-tuple this is simply the first ast
 		}
 
 		else if(tokens[0] === "[") { // a list

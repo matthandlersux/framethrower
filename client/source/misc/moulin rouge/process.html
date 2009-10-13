@@ -58,7 +58,7 @@ captions = map(captions, function (caption) {
 
 	lines.shift();
 	lines.shift();
-	var text = lines.join("");
+	var text = lines.join("\n");
 	text = processCaptionText(text);
 
 	// return {
@@ -84,7 +84,7 @@ var previousText;
 forEach(captions, function (caption) {
 	if (caption.start - previousTime < threshold) {
 		previousTime = previousTime + caption.duration;
-		previousText = previousText + caption.text;
+		previousText = previousText + "\n" + caption.text;
 	} else {
 		if (previousTime >= 0) {
 			combinedCaptions.push({
@@ -107,7 +107,7 @@ if (previousTime >= 0) {
 }
 
 
-captions = combinedCaptions;
+//captions = combinedCaptions;
 
 
 //console.log(captions);

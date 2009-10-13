@@ -5,10 +5,6 @@ var semantics = function(){
 	// ==================================
 	// UTIL
 	// ==================================
-	
-	function def(obj) {
-		return obj !== undefined;
-	}
 
 	function addDebugRef(obj, debugRef) {
 		if(objectLike(obj)) {
@@ -243,7 +239,7 @@ var semantics = function(){
 
 
 		var outputType = funcObject.type;
-		if (outputType.length == 0) {
+		if (outputType && outputType.length == 0) {
 			outputType = undefined;
 		}
 		
@@ -634,7 +630,7 @@ var semantics = function(){
 				return lineFunc;
 			case 'jsaction':
 				var lineFunc = makeFunction(value,
-					function(JS) { return "{ return makeActionJavascript(function() "+JS+"); }"; },
+					function(JS) { return "return makeActionJavascript( function() { "+JS+" } );"; },
 					function(outputType) { return "Action ("+outputType+")"; }
 				);
 				lineFunc.debugRef = node.debugRef;
@@ -685,52 +681,21 @@ var semantics = function(){
 			return string.replace(/^\s+|\s+$/g,"");
 		}
 		
-		function makeString (tree, name) {
-			if(tree === undefined) return undefined;
-			if (name == 'stringescapequotes') {
-				var string = makeString(tree);
-				lineNum += lineBreakCount(string);
-				////string = string.replace(/\\/g, "\\\\");
-				//string = string.replace(/\\\"/g, "\\\\\"");
-				//string = string.replace(/\"/g, "\\\"");
-				//// string = string.replace(/\n/g, "\\n");
-				return string;
-			} else if (name == 'string') {
-				var string = makeString(tree);
-				lineNum += lineBreakCount(string);
-				string = string.replace(/\"/g, "");
-				string = string.replace(/\n/g, "\\n");
-				return string;
-			} else {
-				if(!arrayLike(tree) && !objectLike(tree)) {
-					return tree;
-				}
-				var output = "";
-				forEach(tree, function(node, name) {
-					output += (makeString(node, name));
-				});
-				return output;
-			}
-		}
-
-		
 		var startLine = lineNum;
 		forEach(tree, function(value, nodeName) {
 			function startsWith (string) {
 				return nodeName.indexOf(string) == 0;
 			}
 			
-			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('styleattname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('jsaction') || startsWith('xmltext')) {
-				var string = makeString(value, nodeName);
-				lineNum += lineBreakCount(string);
-				tree[nodeName] = stripSpaces(string);
+			if(objectLike(value)) {
+				handleWhiteSpace(value);
 			} else {
-				if(objectLike(value)) {
-					handleWhiteSpace(value);
-				} else {
-					lineNum += lineBreakCount(value);
-					tree[nodeName] = stripSpaces(value);
+				lineNum += lineBreakCount(value);
+				if (nodeName === "string") {
+					value = value.replace(/\"/g, "");
+					value = value.replace(/\n/g, "\\n");
 				}
+				tree[nodeName] = stripSpaces(value);
 			}
 		});
 		tree.debugRef = {lineNumber: startLine, file: filename};

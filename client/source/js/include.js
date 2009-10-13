@@ -24,7 +24,6 @@ var includes = (function () {
 			"source/js/structure/objects.js",
 
 			"source/js/structure/env.js",
-			"source/js/structure/baseEnv.js",
 
 			"source/js/structure/evaluate.js",
 			
@@ -34,7 +33,9 @@ var includes = (function () {
 			"source/js/reactive/cells.js",
 			"source/js/reactive/ranges.js",
 			"source/js/reactive/controlledCell.js",
-
+			
+			"source/js/builtin/families.js",
+			"source/js/builtin/baseEnv.js",
 			"source/js/builtin/builtin.js",
 			"source/js/builtin/functions/syntax.js",
 			"source/js/builtin/functions/actions.js",

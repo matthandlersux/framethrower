@@ -1,3 +1,8 @@
+
+function def(obj) {
+	return obj !== undefined;
+}
+
 // http://javascript.crockford.com/remedial.html
 function typeOf(value){
     var s = typeof value;

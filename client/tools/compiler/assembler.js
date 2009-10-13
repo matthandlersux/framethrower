@@ -323,4 +323,6 @@ try{
 	} else {
 		log( 'usage: rhino assembler.js <root folder> [rebuild]' );
 	}
-} catch (e) {}
+} catch (e) {
+	log(e.stack);
+}
