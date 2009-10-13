@@ -18,16 +18,73 @@
 %% ====================================================
 
 %% 
-%% exprParse:: String -> Expr
+%% parseExpression:: AST (JSON struct) -> Expr
 %%		Expr:: exprFun | exprCell | cons | String | Number | Bool | null
-%% exprParse takes a string and returns an expression, an expression can then be fed into eval:evaluate
+%% parseExpression takes AST as JSON and returns an expression, an expression can then be fed into eval:evaluate
 %% 
 
-exprParse(String) ->
+parseExpression(AST) ->
 	EmptyScope = scope:makeScope(),
-	altparse:parse(String, EmptyScope).
-exprParse(String, Scope) ->
-	altparse:parse(String, Scope).
+	altparse:parse(AST, EmptyScope).
+parseExpression(AST, Scope) ->
+	altparse:parse(AST, Scope, dict:new()).
+
+parseExpression(AST, Scope, DeBruijnHash) ->
+	case AST of
+		Binary when is_binary(Binary) ->
+			String = binary_to_list(Binary),
+			case dict:find(String, DeBruijnHash) of
+				{ok, Found} -> makeVar(Found).
+				error -> scope:lookup(Scope, String)
+			end;
+		Struct ->
+			case struct:get_value(<<"cons">>, Struct) of
+				<<"lambda">> -> 
+					NewDeBruijnHash = incrementHash(DeBruijnHash);
+					VarName = struct:get_value(<<"left">>, Struct),
+					NewerDeBruijnHash dict:store(VarName, 1, NewDeBruijnHash),
+					Right = struct:get_value(<<"right">>, Struct),
+					makeLambda(VarName, parseExpression(Right, Scope, NewerDeBruijnHash));
+				<<"apply">> -> ;
+					Left = parseExpression(struct:get_value(<<"left">>, Struct), Scope, DeBruijnHash),
+					Right = parseExpression(struct:get_value(<<"right">>, Struct), Scope, DeBruijnHash),
+					makeApply(Left, Right)
+			end
+	end,
+	ok.
+
+
+
+% function parseExpression(ast, env, deBruijnHash) {
+% 	if (!deBruijnHash) deBruijnHash = {};
+% 	function incrementHash() {
+% 		var newDeBruijnHash = {};
+% 		forEach(deBruijnHash, function (index, varName) {
+% 			newDeBruijnHash[varName] = index + 1;
+% 		});
+% 		return newDeBruijnHash;
+% 	}
+% 
+% 	if (typeOf(ast) === "string") {
+% 		if (deBruijnHash[ast]) {
+% 			return makeVar(deBruijnHash[ast]);
+% 		} else {
+% 			return env(ast);			
+% 		}
+% 	} else if (ast.cons === "lambda") {
+% 		var newDeBruijnHash = incrementHash();
+% 		var varName = ast.left;
+% 		newDeBruijnHash[varName] = 1;
+% 		return makeLambda(varName, parseExpression(ast.right, env, newDeBruijnHash));
+% 	} else if (ast.cons === "apply") {
+% 		return makeApply(parseExpression(ast.left, env, deBruijnHash), parseExpression(ast.right, env, deBruijnHash));
+% 	}
+% }
+
+
+
+
+
 
 %% 
 %% unparse:: Expr -> String
