@@ -15,6 +15,7 @@ function desugarNewtype(o, env) {
 		do {
 			stable = true; // assume nothing is going to happen
 			for(var v in o.newtype) {
+				// console.log(JSONtoString(o.newtype[v])+"<br/>");
 				o.newtype[v] = substituteType(o.newtype[v], env); // desugar as much as possible for now
 					
 				if(env(v)!==o.newtype[v]) {
@@ -29,8 +30,15 @@ function desugarNewtype(o, env) {
 		delete o.newtype;
 	}
 	
-	if(o.type) // we assume every entry called 'type' is a type
+	if(typeLike(o.type)) // we assume all types are called 'type'
 		o.type = substituteType(o.type, env);
 	
 	forEach(o, function(o) {desugarNewtype(o, env);});
+}
+
+function typeLike(o) {
+	if(!o) return false;
+	if(o.kind==="typeName" || o.kind==="typeApply" || o.kind==="typeLambda" || o.kind==="typeVar")
+		return true;
+	return false;
 }

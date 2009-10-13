@@ -20,10 +20,11 @@ function makeApplies(expr, args) {
 * does not modify type.
 */
 function substituteType(type, env) {
+	// console.log(JSONtoString(type)+"<br/>");
 	var kind = type.kind;
 	
 	if(kind === "typeVar") {
-		if(env(type.val))
+		if(env(type.value))
 			throw "overridden type also used as type variable: "+JSONtoString(type);
 		return type;
 	}
