@@ -2,28 +2,30 @@
 
 -behaviour(gen_server).
 
--compile(export_all).
-
--include("../../include/scaffold.hrl").
-
-
-% -ifdef( debug ).
-% -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
-% -else.
-% -define( trace(X), void ).
-% -endif.
-% -define(this(Field), State#cellState.Field).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
 
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export ([
-	makeCell/0, makeCell/1, makeLinkedCell/0, makeCellLeashed/0, makeLinkedCellLeashed/0,
-	sendElements/3,
-	leash/1, unleash/1,
-	injectOutput/2, injectOutput/3,
-	injectIntercept/2
+	makeCell/0, makeCell/1, makeLinkedCell/0, makeLinkedCell/1, makeCellLeashed/0, 
+		makeCellLeashed/1, makeLinkedCellLeashed/0, makeLinkedCellLeashed/1,
+	addValue/2, addValues/2, removeValue/2, removeValues/2,
+	sendElements/2, sendElements/3,
+	leash/1, unleash/1, setFlag/3,
+	injectOutput/2, injectOutput/3, injectOutput/4,
+	uninjectOutput/2, uninjectOutput/3, uninjectOutput/4,
+	injectIntercept/2, injectIntercept/3,
+	addInformant/2, removeInformant/2,
+	empty/1,
+	kill/1
 	]).
+	
+%% ====================================================
+%% NOTES
+%% ====================================================
+
+% figure out what happens if you uninject an output while a cell is leashed
+
 %% ====================================================
 %% TYPES
 %% ====================================================
