@@ -229,6 +229,8 @@ mapUnit2(ExprString, Value1, Value2) ->
 	ValueCell2 = cell:makeCell(unit),
 	cell:addValue(ValueCell2, Value2),
 	cell:injectIntercept(OutputCell, applyExpr, [ExprString, ValueCell1, ValueCell2]),
+	cell:injectOutput(ValueCell1, OutputCell),
+	cell:injectOutput(ValueCell2, OutputCell),
 	OutputCell.
 	
 %% ---------------------------------------------
