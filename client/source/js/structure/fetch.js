@@ -48,7 +48,7 @@ function desugarFetch(template, env) {
 					desugarFetch(let, env); // desugar as much as possible for now
 					
 					if(hasVariable(let.expr, fetchEnv) && env(v)!==let.expr) {
-						// expr is fetched, and either hadn't been desugared before or has changed.
+						// expr is fetched, and either hadn't been stored before or has changed.
 						env = envAdd(env, v, let.expr);
 						stable = false; // things are happening
 					}

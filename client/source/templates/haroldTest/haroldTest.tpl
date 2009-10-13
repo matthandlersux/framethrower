@@ -2,11 +2,12 @@ template() {
 	test = template(x::Number)::Number {
 		plus 100 x
 	},
-	Hey := Tuple,
+	Test := [Test2 Number Number],
+	Test2 := Tuple2,
 	debug = jsaction(s::String)::Void {
 		console.debug(s);
 	},
-	test2 = action(x::[(Number, Number)])::[(Number, Number)] {
+	test2 = action(x::Test)::[(Number, Number)] {
 		return x
 	},
 	test4 = state(Unit [String], ["yeah!"]),
