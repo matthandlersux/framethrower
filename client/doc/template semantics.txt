@@ -10,7 +10,7 @@ LINE
 	LINEACTION
 	
 LINETEMPLATE
-	{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, output: LINE, type: TYPE}
+	{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, newtypes?: {VARTOCREATE: TYPE}, output: LINE, type: TYPE}
 
 LINEACTION
 	{kind: "lineAction", actions: [{name?: VARTOCREATE, action: LINE}], type: TYPE}
