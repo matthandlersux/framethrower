@@ -24,10 +24,10 @@
 %% 
 
 exprParse(String) ->
-	altparse:parse(String).
+	parse:parse(String).
 exprParse(String, _CustomEnv) ->
 	% TODO: make serveradvice be able to pass a customenvironment to the parser
-	altparse:parse(String).
+	parse:parse(String).
 
 %% 
 %% unparse:: Expr -> String
