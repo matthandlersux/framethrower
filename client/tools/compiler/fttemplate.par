@@ -131,16 +131,16 @@ STATE:
 	;
 
 TYPE:
-	TYPE TYPE
-	| IDENTIFIER
-	| LPAREN INNERTYPE RPAREN
-	| LSQUARE INNERTYPE RSQUARE
-	| DASH GT
+	TYPE TYPE						[* %% = %s; *]
+	| IDENTIFIER					[* %% = %s; *]
+	| LPAREN INNERTYPE RPAREN		[* %% = %s; *]
+	| LSQUARE INNERTYPE RSQUARE		[* %% = %s; *]
+	| DASH GT						[* %% = %s; *]
 	;
 
 INNERTYPE:
-	TYPE
-	| INNERTYPE COMMA INNERTYPE
+	TYPE							[* %% = %s; *]
+	| INNERTYPE COMMA INNERTYPE		[* %% = %s; *]
 	;
 
 IFBLOCK:
@@ -209,19 +209,19 @@ EXPR:
 	;
 
 EXPRCODE:
-	IDENTIFIER 
-	| STRINGESCAPEQUOTES 
-	| LPAREN INNERCODE RPAREN
-	| LSQUARE INNERCODE RSQUARE
-	| IDENTIFIER COLON IDENTIFIER
-	| DASH GT
-	| DASH IDENTIFIER
-	| EXPRCODE EXPRCODE
+	IDENTIFIER 						[* %% = %s; *]
+	| STRINGESCAPEQUOTES 			[* %% = %s; *]
+	| LPAREN INNERCODE RPAREN		[* %% = %s; *]
+	| LSQUARE INNERCODE RSQUARE		[* %% = %s; *]
+	| IDENTIFIER COLON IDENTIFIER	[* %% = %s; *]
+	| DASH GT						[* %% = %s; *]
+	| DASH IDENTIFIER				[* %% = %s; *]
+	| EXPRCODE EXPRCODE				[* %% = %s; *]
 	;
 	
 INNERCODE:
-	EXPRCODE
-	| INNERCODE COMMA INNERCODE
+	EXPRCODE						[* %% = %s; *]
+	| INNERCODE COMMA INNERCODE		[* %% = %s; *]
 	;
 
 XML:
@@ -251,8 +251,8 @@ TAG:
 	;
 
 TAGNAME:
-	IDENTIFIER
-	| IDENTIFIER COLON IDENTIFIER							
+	IDENTIFIER							[* %% = %s; *]
+	| IDENTIFIER COLON IDENTIFIER		[* %% = %s; *]		
 	;
 
 
@@ -277,10 +277,10 @@ ATTASSIGN:
 	;
 
 ATTNAME:
-	IDENTIFIER
-	| KEYWORD
-	| ATTNAME DASH ATTNAME
-	| ATTNAME COLON ATTNAME
+	IDENTIFIER					[* %% = %s; *]
+	| KEYWORD					[* %% = %s; *]
+	| ATTNAME DASH ATTNAME		[* %% = %s; *]
+	| ATTNAME COLON ATTNAME		[* %% = %s; *]
 	;
 
 ATTRIBUTE:
@@ -305,20 +305,20 @@ STYLEASSIGN:
 	;
 
 STYLEATTNAME:
-	IDENTIFIER
-	| KEYWORD
-	| STYLEATTNAME DASH STYLEATTNAME
+	IDENTIFIER							[* %% = %s; *]
+	| KEYWORD							[* %% = %s; *]
+	| STYLEATTNAME DASH STYLEATTNAME	[* %% = %s; *]
 	;
 
 STYLETEXT:
-	KEYWORD
-	| IDENTIFIER
-	| COMMA
-	| LPAREN
-	| RPAREN
-	| EQUALS
-	| STYLETEXT DASH STYLETEXT							
-	| STYLETEXT STYLETEXT								
+	KEYWORD						[* %% = %s; *]
+	| IDENTIFIER				[* %% = %s; *]
+	| COMMA						[* %% = %s; *]
+	| LPAREN					[* %% = %s; *]
+	| RPAREN					[* %% = %s; *]
+	| EQUALS					[* %% = %s; *]
+	| STYLETEXT DASH STYLETEXT	[* %% = %s; *]			
+	| STYLETEXT STYLETEXT		[* %% = %s; *]			
 	;
 
 TEXT:

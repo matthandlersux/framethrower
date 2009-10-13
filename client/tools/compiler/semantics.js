@@ -712,21 +712,11 @@ var semantics = function(){
 		
 		var startLine = lineNum;
 		forEach(tree, function(value, nodeName) {
-			function startsWith (string) {
-				return nodeName.indexOf(string) == 0;
-			}
-			
-			if (startsWith('type') || startsWith('exprcode') || startsWith('styletext') || startsWith('attname') || startsWith('styleattname') || startsWith('tagname') || startsWith('text') || startsWith('string') || startsWith('stringescapequotes') || startsWith('xmltext')) {
-				var string = makeString(value, nodeName);
-				lineNum += lineBreakCount(string);
-				tree[nodeName] = stripSpaces(string);
+			if(objectLike(value)) {
+				handleWhiteSpace(value);
 			} else {
-				if(objectLike(value)) {
-					handleWhiteSpace(value);
-				} else {
-					lineNum += lineBreakCount(value);
-					tree[nodeName] = stripSpaces(value);
-				}
+				lineNum += lineBreakCount(value);
+				tree[nodeName] = stripSpaces(value);
 			}
 		});
 		tree.debugRef = {lineNumber: startLine, file: filename};

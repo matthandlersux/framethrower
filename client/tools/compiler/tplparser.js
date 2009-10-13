@@ -2412,37 +2412,37 @@ switch( act )
 	break;
 	case 38:
 	{
-		rval = {'type':vstack[ vstack.length - 2 ], 'type2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 39:
 	{
-		rval = {'identifier':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 40:
 	{
-		rval = {'lparen':vstack[ vstack.length - 3 ], 'innertype':vstack[ vstack.length - 2 ], 'rparen':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 41:
 	{
-		rval = {'lsquare':vstack[ vstack.length - 3 ], 'innertype':vstack[ vstack.length - 2 ], 'rsquare':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 42:
 	{
-		rval = {'dash':vstack[ vstack.length - 2 ], 'gt':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 43:
 	{
-		rval = {'type':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 44:
 	{
-		rval = {'innertype':vstack[ vstack.length - 3 ], 'comma':vstack[ vstack.length - 2 ], 'innertype2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 45:
@@ -2602,52 +2602,52 @@ switch( act )
 	break;
 	case 76:
 	{
-		rval = {'identifier':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 77:
 	{
-		rval = {'stringescapequotes':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 78:
 	{
-		rval = {'lparen':vstack[ vstack.length - 3 ], 'innercode':vstack[ vstack.length - 2 ], 'rparen':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 79:
 	{
-		rval = {'lsquare':vstack[ vstack.length - 3 ], 'innercode':vstack[ vstack.length - 2 ], 'rsquare':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 80:
 	{
-		rval = {'identifier':vstack[ vstack.length - 3 ], 'colon':vstack[ vstack.length - 2 ], 'identifier2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 81:
 	{
-		rval = {'dash':vstack[ vstack.length - 2 ], 'gt':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 82:
 	{
-		rval = {'dash':vstack[ vstack.length - 2 ], 'identifier':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 83:
 	{
-		rval = {'exprcode':vstack[ vstack.length - 2 ], 'exprcode2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 84:
 	{
-		rval = {'exprcode':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 85:
 	{
-		rval = {'innercode':vstack[ vstack.length - 3 ], 'comma':vstack[ vstack.length - 2 ], 'innercode2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 86:
@@ -2707,12 +2707,12 @@ switch( act )
 	break;
 	case 97:
 	{
-		rval = {'identifier':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 98:
 	{
-		rval = {'identifier':vstack[ vstack.length - 3 ], 'colon':vstack[ vstack.length - 2 ], 'identifier2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 99:
@@ -2757,22 +2757,22 @@ switch( act )
 	break;
 	case 107:
 	{
-		rval = {'identifier':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 108:
 	{
-		rval = {'keyword':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 109:
 	{
-		rval = {'attname':vstack[ vstack.length - 3 ], 'dash':vstack[ vstack.length - 2 ], 'attname2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 110:
 	{
-		rval = {'attname':vstack[ vstack.length - 3 ], 'colon':vstack[ vstack.length - 2 ], 'attname2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 111:
@@ -2822,57 +2822,57 @@ switch( act )
 	break;
 	case 120:
 	{
-		rval = {'identifier':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 121:
 	{
-		rval = {'keyword':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 122:
 	{
-		rval = {'styleattname':vstack[ vstack.length - 3 ], 'dash':vstack[ vstack.length - 2 ], 'styleattname2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 123:
 	{
-		rval = {'keyword':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 124:
 	{
-		rval = {'identifier':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 125:
 	{
-		rval = {'comma':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 126:
 	{
-		rval = {'lparen':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 127:
 	{
-		rval = {'rparen':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 128:
 	{
-		rval = {'equals':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 129:
 	{
-		rval = {'styletext':vstack[ vstack.length - 3 ], 'dash':vstack[ vstack.length - 2 ], 'styletext2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 3 ] + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 130:
 	{
-		rval = {'styletext':vstack[ vstack.length - 2 ], 'styletext2':vstack[ vstack.length - 1 ]};
+		rval = "" + vstack[ vstack.length - 2 ] + vstack[ vstack.length - 1 ];; 
 	}
 	break;
 	case 131:
