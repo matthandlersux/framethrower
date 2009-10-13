@@ -83,7 +83,15 @@ function makeClosure(lineTemplate, env) {
 		});
 		var envWithParams = extendEnv(env, scope);
 		
-		var envWithLets = addLets(lineTemplate.let, envWithParams);
+		if (LOCAL && lineTemplate.sharedLet !== undefined) {
+			forEach(lineTemplate.sharedLet, function(sharedLet, name) {
+				lineTemplate.let[name] = sharedLet;
+			});
+		} else {
+			//TODO
+		}
+		var envWithLets = addLets(lineTemplate.let, envWithParams)
+		
 		
 		return evaluateLine(lineTemplate.output, envWithLets);
 	}, params.length);
@@ -143,8 +151,7 @@ function evaluateLine(line, env) {
 		return makeXMLP(line.xml, env);
 	} else if (line.kind === "lineState") {
 		var ac = evaluateLine(line.action, env);
-		return executeAction(ac);
-		
+		return executeAction(ac);		
 		//return makeCC(line.type);
 		//return makeCC(parseType(line.type));
 	} else if (line.kind === "lineAction") {

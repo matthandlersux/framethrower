@@ -1,0 +1,4 @@
+code:add_patha("../mochiweb/ebin/").
+code:add_patha("../mbrella/ebin/").
+code:add_patha("./ebin/").
+

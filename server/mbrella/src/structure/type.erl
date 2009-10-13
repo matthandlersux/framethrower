@@ -129,7 +129,7 @@ getType( Expr, Env ) when is_record(Expr, exprVar) ->
 	try dict:fetch(Expr#exprVar.index, Env)
 		% {TypeString, _Fun} -> type(typeVar, parse:tast( TypeString ))
 	catch _:_ ->
-		case env:lookup(Expr#exprVar.index) of
+		case globalStore:lookup(Expr#exprVar.index) of
 			notfound -> erlang:error({typeVar_not_found, Expr});
 			Result -> Result
 		end

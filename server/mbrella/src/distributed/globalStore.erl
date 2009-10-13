@@ -1,16 +1,16 @@
--module (env).
+-module (globalStore).
 
 -behaviour(gen_server).
 -import(mblib, [curry/1]).
 -include ("../../include/scaffold.hrl").
--export([start/0, stop/0, nameAndStoreCell/1, nameAndStoreObj/1, store/2, lookup/1, addFun/3, getState/0, getStateDict/0, createEnv/0]).
+-export([start/0, stop/0, nameAndStoreCell/1, nameAndStoreObj/1, store/2, lookup/1, lookupPointer/1, addFun/3, getState/0, getStateDict/0, createEnv/0]).
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3, getPrimitives/0]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
--define (this(Field), State#envState.Field).
+-define (this(Field), State#globalStoreState.Field).
 
--record (envState, {
+-record (globalStoreState, {
 	nameCounter,
 	globalTable,
 	baseEnv
@@ -48,6 +48,18 @@ getStateDict() ->
 lookup(Name) ->
 	gen_server:call(?MODULE, {lookup, Name}).
 
+lookupPointer(ParsedString) ->
+	case lookup(ParsedString) of
+		notfound -> notfound;
+		ExprCell when is_record(ExprCell, exprCell) -> 
+			#cellPointer{name = ParsedString, pid = ExprCell#exprCell.pid};
+		Object when is_record(Object, object) -> 
+			#objectPointer{name = ParsedString};
+		ExprFun when is_record(ExprFun, exprFun) ->
+			#funPointer{name = ParsedString};
+		{exprLib, Expr} -> Expr
+	end.
+
 addFun(Name, Type, Function) ->
 	gen_server:cast(?MODULE, {addFun, Name, Type, Function}).
 
@@ -73,20 +85,20 @@ createEnv() ->
 init([]) ->
 	process_flag(trap_exit, true),
 	%may want to change globalTable from dict to ETS table
-    {ok, #envState{nameCounter = 0, globalTable = ets:new(env, []), baseEnv = createEnv()}}.
+    {ok, #globalStoreState{nameCounter = 0, globalTable = ets:new(env, []), baseEnv = createEnv()}}.
 
 handle_call({nameAndStoreCell, ExprCell}, _, State) ->
 	NewNameCounter = ?this(nameCounter) + 1,
 	Name = "server." ++ integer_to_list(NewNameCounter),
 	NewExprCell = ExprCell#exprCell{name=Name},
 	ets:insert(?this(globalTable), {Name, NewExprCell}),
-    {reply, NewExprCell, State#envState{nameCounter = NewNameCounter}};
+    {reply, NewExprCell, State#globalStoreState{nameCounter = NewNameCounter}};
 handle_call({nameAndStoreObj, Obj}, _, State) ->
 	NewNameCounter = ?this(nameCounter) + 1,
 	Name = "server." ++ integer_to_list(NewNameCounter),
 	NewObj = Obj#object{name=Name},
 	ets:insert(?this(globalTable), {Name, NewObj}),
-    {reply, NewObj, State#envState{nameCounter = NewNameCounter}};
+    {reply, NewObj, State#globalStoreState{nameCounter = NewNameCounter}};
 handle_call({lookup, Name}, _, State) ->
 	BaseCell = dict:find(Name, ?this(baseEnv)),
 	GlobalCell = case BaseCell of

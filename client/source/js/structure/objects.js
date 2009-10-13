@@ -2,6 +2,9 @@
 var objects = (function () {
 
 	function isRemoteClass(className) {
+		if (className === "TestClass") {
+			return true;
+		}
 		return inherits(className, "Object");
 	}
 	

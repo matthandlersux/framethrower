@@ -319,6 +319,7 @@ toList(X) when is_list(X) -> X;
 toList(X) when is_function(X) -> "function";
 toList(X) -> binary_to_list(mblib:exprElementToJson(X)).
 
+<<<<<<< HEAD:server/mbrella/src/tools/debug.erl
 getDebugHTML(Name, BaseURL) -> notImplemented.
 	% GetElemHtml = fun (Elem) ->
 	% 	case Elem of
@@ -394,6 +395,83 @@ getDebugHTML(Name, BaseURL) -> notImplemented.
 	% 	notfound ->
 	% 		notfound
 	% end.
+=======
+getDebugHTML(Name, BaseURL) ->
+	GetElemHtml = fun (Elem) ->
+		case Elem of
+			Cell when is_record(Cell, cellPointer) ->
+				Id = toList(Elem),
+				"<a href=\"" ++ BaseURL ++ Id ++ "\">" ++ "Cell: " ++ Id ++ "</a>";
+			Object when is_record(Object, objectPointer) ->
+				Id = toList(Elem),
+				"<a href=\"" ++ BaseURL ++ Id ++ "\">" ++ "Object: " ++ Id ++ "</a>";
+			Intercept when is_pid(Intercept) ->
+				OwnerCell = (intercept:getState(Intercept))#interceptState.ownerCell,
+				Id = toList(OwnerCell),
+				"<a href=\"" ++ BaseURL ++ Id ++ "\">" ++ "Intercept OwnerCell: " ++ Id ++ "</a>";
+			Other ->
+				toList(Elem)
+		end
+	end,
+	
+	GetPropHTML = fun (Prop) ->
+		dict:fold(fun(PropName, PropVal, Acc) ->
+			Acc ++ PropName ++ ": " ++ GetElemHtml(PropVal) ++ "<br />"
+		end, "", Prop)
+	end,
+	
+	GetStateArrayHTML = fun (StateArray) ->
+		lists:foldr(fun(Elem, Acc) ->
+			case Elem of
+				{pair, Key, Val} -> Acc ++ "{Key: " ++ GetElemHtml(Key) ++ ", Val: " ++ GetElemHtml(Val) ++ "}, ";
+				_ -> Acc ++ GetElemHtml(Elem) ++ ", "
+			end
+		end, "", StateArray)
+	end,
+
+	GetCastingHTML = fun (CastingDict) ->
+		dict:fold(fun(ClassName, ObjectString, Acc) ->
+			Acc ++ ClassName ++ ": " ++ GetElemHtml(#objectPointer{name = ObjectString}) ++ "<br />"
+		end, "", CastingDict)
+	end,
+	
+	GetDependenciesHTML = fun (CellState) ->
+		Dependencies = CellState#cellState.dependencies,
+		lists:foldr(fun(Dependency, Acc) ->
+			Acc ++ "Cell: " ++ GetElemHtml(Dependency#depender.cell) ++ ", Id: " ++ toList(Dependency#depender.id) ++ "<br />"
+		end, "", Dependencies)
+	end,
+	
+	GetDependersHTML = fun (CellState) ->
+		Funcs = CellState#cellState.funcs,
+		dict:fold(fun(Id, Func, Acc) ->
+			Acc ++ "FuncId: " ++ toList(Id) ++ ", Depender: " ++ GetElemHtml(Func#func.depender) ++ "<br />"
+		end, "", Funcs)
+	end,
+
+	GetBottomExprHTML = fun (Bottom) ->
+		expr:unparse(Bottom)
+	end,
+
+	case globalStore:lookup(Name) of
+		Object when is_record(Object, object) ->
+			Name ++ ": Object <br />" ++ 
+			"Type: " ++ type:unparse(Object#object.type) ++"<br />" ++
+			"Prop: <br />" ++ GetPropHTML(Object#object.prop) ++ "<br />" ++
+			"Casting: <br />" ++ GetCastingHTML(Object#object.castingDict) ++ "<br />";
+		Cell when is_record(Cell, exprCell) ->
+			CellPointer = #cellPointer{name = Name, pid = Cell#exprCell.pid},
+			Name ++ ": Cell <br />" ++ 
+			"Type: " ++ toList(type:unparse(Cell#exprCell.type)) ++"<br />" ++
+			"State: " ++ GetStateArrayHTML(cell:getStateArray(CellPointer)) ++ "<br />" ++ 
+			"Done: " ++ toList((cell:getState(CellPointer))#cellState.done) ++ "<br /><br />" ++
+			"Dependencies: " ++ GetDependenciesHTML(cell:getState(CellPointer)) ++ "<br />" ++
+			"Dependers: " ++ GetDependersHTML(cell:getState(CellPointer)) ++ "<br /><br />" ++
+			"Bottom Expr: " ++ GetBottomExprHTML(Cell#exprCell.bottom) ++ "<br />";
+		notfound ->
+			notfound
+	end.
+>>>>>>> initState:server/mbrella/src/tools/debug.erl
 	
 
 httpSearchPage() ->

@@ -1,6 +1,17 @@
 template () {
 
 	// ==========
+	// Utility
+	// ==========
+	
+	boolToDisplay = function (x::Bool)::String {
+		if (x) return "block";
+		else return "none";
+	},
+
+
+
+	// ==========
 	// Sizing, constants
 	// ==========
 
@@ -23,13 +34,13 @@ template () {
 	// Grabbing timestamps, etc. (will be replaced)
 	// ==========
 	
-	timestampsToPairs = function(timestamps::List Number, endTime::Number)::List (Tuple2 Number Number) {
+	timestampsToPairs = function(timestamps::List Number, endTime::Number)::List ((Number, Number), Null) {
 		var pairs = [];
 		timestamps = timestamps.asArray;
 		forEach(timestamps, function (timestamp, i) {
 			var next = (i === timestamps.length - 1) ? endTime : timestamps[i+1];
 			var pair = makeTuple2(timestamp, next - timestamp);
-			pairs.push(pair);
+			pairs.push(makeTuple2(pair, nullObject));
 		});
 		
 		return arrayToList(pairs);
@@ -133,18 +144,12 @@ template () {
 		return (100*fraction)+"%";
 	},
 	
-	rulerMarkings = function ()::List Number {
-		var markings = [];
-		for (var i = 0; i < 7668; i += 600) {
-			markings.push(i);
-		}
-		return arrayToList(markings);
-	},
+
 	
 	
 	<div>
 		<div>
-		
+			{previewTime}
 		</div>
 	
 		<div style-width="{timelineWidth}" style-height="{timelineHeight}" style-left="0" style-bottom="0" style-position="absolute" style-background-color="#eee">
@@ -173,84 +178,28 @@ template () {
 					</f:on>
 				</f:wrapper>
 			</f:call>
-			<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}">
+			<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}" style-height="100%">
 				<f:on mousemove>
 					set previewTimeS (divide (plus event.mouseX scrollAmount) zoomFactor)
 				</f:on>
 				
-				// Ruler markings
-				<div style-position="absolute" style-top="0" style-left="0" style-width="100%" style-height="100%">
-					<f:each rulerMarkings as rulerMarking>
-						<div style-left="{makePercent (divide rulerMarking movieDuration)}" style-top="0" style-height="100%" style-border-left="1px dashed #999" style-color="#999" style-font-size="11" style-padding-left="3" style-position="absolute">
-							{formatTime rulerMarking}
-						</div>
-					</f:each>
-				</div>
+				// Ruler
+				<f:call>ruler</f:call>
 				
 				// Chapters
 				<div style-position="absolute" style-top="20" style-left="0" style-width="100%">
-					<f:each chapters as chapter>
-						start = fst (fst chapter),
-						duration = snd (fst chapter),
-						<div style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide duration movieDuration)}" style-position="absolute" style-height="200">
-							<div style-padding="4" style-border-right="1px solid #000">
-								<div style-height="100" style-background-color="#ccc" style-background-image="{getFrame start 0 100}" style-background-repeat="no-repeat" style-background-position="left center" />
-							</div>
-							// <div style-position="absolute" style-left="0" style-top="-140" style-width="200" style-height="136" style-background-color="#f90">
-							// 	{snd chapter}
-							// </div>
-						</div>
-					</f:each>
+					<f:call>drawTimelineLayer chapters 100 3</f:call>
 				</div>
+								
+				// Cuts
+				<div style-position="absolute" style-top="130" style-left="0" style-width="100%">
+					<f:call>drawTimelineLayer cuts 50 1</f:call>
+				</div>
+				
 				
 				// Preview time orange bar
 				<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid #f90" />
 				
-				
-				<div style-position="absolute" style-top="130" style-left="0" style-width="100%">
-					<f:each divideStamps cuts as div>
-						getUrl = function (frames::List a)::String {
-							var times = [];
-							forEach(frames.asArray, function (pair) {
-								times.push(pair.asArray[0]);
-							});
-							var url = "url(http:/"+"/media.eversplosion.com/mrtesting/frames.php?width=111&height=50&time=" + times.join(",") + ")";
-							return url;
-						},
-						url = getUrl (snd div),
-						indexList = function (list::List a)::List (Tuple2 Number a) {
-							var ret = [];
-							forEach(list.asArray, function (x, i) {
-								ret.push(makeTuple2(i, x));
-							});
-							return arrayToList(ret);
-						},
-						getBackgroundPosition = function (index::Number, height::Number)::String {
-							return "0px -"+(index*height)+"px";
-						},
-						getShown = function (start::Number, duration::Number, tStart::Number, tDuration::Number)::Boolean {
-							return start <= tStart+tDuration && start+duration >= tStart;
-						},
-						shown = fetch (lowPassFilter (unfetch (getShown (fst (fst div)) (snd (fst div)) timelineShownStart timelineShownDuration))),
-						boolToDisplay = function (x::Boolean)::String {
-							if (x) return "block";
-							else return "none";
-						},
-						<div style-display="{boolToDisplay shown}">
-							<f:each indexList (snd div) as cut>
-								index = fst cut,
-								start = fst (snd cut),
-								duration = snd (snd cut),
-								<div style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide duration movieDuration)}" style-position="absolute" style-height="200" style-overflow="hidden">
-									<div style-padding="1" style-border-right="1px solid #000">
-										<div style-height="50" style-background-color="#ccc" style-background-image="{url}" style-background-repeat="no-repeat" style-background-position="{getBackgroundPosition index 50}" />
-										//<div style-height="50" style-background-color="#ccc" style-background-image="{getFrame start 0 50}" style-background-repeat="no-repeat" style-background-position="center center" />
-									</div>
-								</div>
-							</f:each>
-						</div>
-					</f:each>
-				</div>
 				
 				// <div style-position="absolute" style-top="120" style-left="0" style-width="100%">
 				// 	<f:each captions as caption>

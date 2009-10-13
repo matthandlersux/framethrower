@@ -219,10 +219,10 @@ processActionJson ( Action, SessionPid ) ->
 processActionList(Actions) ->
 	{Results, Variables} = processActionList(Actions, []),
 	JsonResults = lists:map(fun(error) -> error; (ExprElement) ->
-		[mblib:exprElementToJson(ExprElement), mblib:exprElementToJson(type:unparse((env:lookup(ExprElement#objectPointer.name))#object.type))]
+		[mblib:exprElementToJson(ExprElement), mblib:exprElementToJson(type:unparse((globalStore:lookup(ExprElement#objectPointer.name))#object.type))]
 	end, Results),
 	JsonVariables = lists:map(fun({Error,error}) -> {Error,error}; ({Name,ExprElement}) ->
-		{mblib:exprElementToJson(Name),[mblib:exprElementToJson(ExprElement), mblib:exprElementToJson(type:unparse((env:lookup(ExprElement#objectPointer.name))#object.type))]}
+		{mblib:exprElementToJson(Name),[mblib:exprElementToJson(ExprElement), mblib:exprElementToJson(type:unparse((globalStore:lookup(ExprElement#objectPointer.name))#object.type))]}
 	end, Variables),	
 	{JsonResults, JsonVariables}.
 
@@ -348,7 +348,7 @@ propToDict({struct, [{BinaryKey, VarOrExprElement}|Props]}, Conversions, Dict) -
 % propToDict({struct, []}, _, Dict) -> Dict;
 % propToDict({struct, [{Key, Value}|Props]}, Conversions, Dict) ->
 % 	CellName = binaryScopeVarToCellName( Value, Conversions ),
-% 	propToDict({struct, Props}, Conversions, dict:store( binary_to_list(Key), env:lookup(binary_to_list(CellName)), Dict)).
+% 	propToDict({struct, Props}, Conversions, dict:store( binary_to_list(Key), globalStore:lookup(binary_to_list(CellName)), Dict)).
 
 %% 
 %% bindVarOrFormatExprElement:: Variable | ExprEelement -> List {Variable, ExprElement} -> Number | String | Bool | Object
@@ -358,10 +358,10 @@ bindVarOrFormatExprElement(VariableOrCellName, Conversions) when is_binary(Varia
 	% ?trace(binary_to_list(VariableOrCellName)),
 	case binary_to_list(VariableOrCellName) of
 		"server." ++ _ = ObjectName ->
-			Obj = env:lookup(ObjectName),
+			Obj = globalStore:lookup(ObjectName),
 			#objectPointer{name = Obj#object.name};
 		"shared." ++ _ = ObjectName ->
-			Obj = env:lookup(ObjectName),
+			Obj = globalStore:lookup(ObjectName),
 			#objectPointer{name = Obj#object.name};			
 		"\"" ++ _ = String ->
 			bindVarOrFormatExprElement(String, null);

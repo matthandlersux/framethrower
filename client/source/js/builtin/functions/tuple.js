@@ -19,3 +19,12 @@
 	addFun("snd", "(a, b) -> b", snd);
 
 })();
+
+
+function makeTuple2(x, y) {
+    return {
+        kind: "tuple2",
+        remote: 2,
+        asArray: [x, y]
+    };
+}

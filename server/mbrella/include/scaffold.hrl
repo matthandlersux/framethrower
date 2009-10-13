@@ -108,6 +108,10 @@
 % 	intercept, 
 % 	done=false
 % }).
+-record(scopeState, {
+	dict, 
+	parent
+}).
 
 -record(interceptState, {
 	function, 
