@@ -66,8 +66,10 @@ template () {
 		layers <- create(Map Ord (String, Number, XMLP)),
 		layer1 = drawTimelineLayer chapters 100 3,
 		layer2 = drawTimelineLayer cuts 50 1,
+		layer3 = drawBubbles captions,
 		addEntry layers (numToOrd 1) ("Chapters", 106, layer1),
-		addEntry layers (numToOrd 2) ("Shots", 52, layer2),
+		//addEntry layers (numToOrd 2) ("Shots", 52, layer2),
+		addEntry layers (numToOrd 3) ("Captions", 24, layer3),
 		return layers
 	},
 	
