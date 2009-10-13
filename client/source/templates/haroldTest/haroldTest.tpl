@@ -2,6 +2,7 @@ template() {
 	test = template(x::Number)::Number {
 		plus 100 x
 	},
+	Hey := Tuple,
 	debug = jsaction(s::String)::Void {
 		console.debug(s);
 	},
