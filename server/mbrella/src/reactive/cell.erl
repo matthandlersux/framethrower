@@ -226,7 +226,13 @@ removeInformant(CellPointer, Informant) ->
 kill(CellPointer) ->
 	gen_server:cast(cellPointer:pid(CellPointer), kill).
 
+%% 
+%% empty :: CellPointer -> ok
+%% 		
+%%		
 
+empty(CellPointer) ->
+	gen_server:cast(cellPointer:pid(CellPointer), empty).
 
 %% ====================================================
 %% Debug API
@@ -324,6 +330,9 @@ handle_cast({setFlag, Flag, Setting}, State) ->
 	
 handle_cast(kill, State) ->
 	{stop, normal, cellState:setFlag(State, leashed, true)};
+	
+handle_cast(empty, State) ->
+	{noreply, cellState:emptyElements(State)};
 	
 handle_cast(unleash, State) ->
 	State1 = cellState:setFlag(State, leashed, false),
