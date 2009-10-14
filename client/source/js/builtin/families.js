@@ -23,7 +23,7 @@ var mapUnitEnv = function (s) {
 			return evaluate(makeApplies(func, arguments));
 		}).apply(null, args); // remaining arguments are the cells
 	};
-	return makeFun(type, curry(mapUnit, n+1));
+	return makeFun(type, mapUnit, n+1);
 };
 familyEnv = extendEnv(familyEnv, mapUnitEnv);
 
@@ -41,7 +41,7 @@ var makeTupleEnv = function (s) {
 	}
 	var type = parseType( paramsType+" -> "+tupleType );
 
-	return makeFun(type, curry(makeTuple, n));
+	return makeFun(type, makeTuple, n);
 };
 familyEnv = extendEnv(familyEnv, makeTupleEnv);
 
@@ -58,7 +58,7 @@ var tupleGetEnv = function (s) {
 		tupleType += " t"+j;
 	var type = parseType( tupleType+" -> t"+i );
 
-	return makeFun(type, function(tuple) { return tuple.asArray[i-1]; });
+	return makeFun(type, function(tuple) { return tuple.asArray[i-1]; }, 1);
 };
 familyEnv = extendEnv(familyEnv, tupleGetEnv);
 

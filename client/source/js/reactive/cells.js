@@ -20,7 +20,7 @@ var CELLSCREATED = 0;
 function makeBaseCell (toKey) {
 	CELLCOUNT++;
 	CELLSCREATED++;
-	var cell = {kind: "cell", remote: 2, name: localIds()};
+	var cell = makeStartCap();
 	var dots = makeConSortedSetStringify();
 	var funcs = {};
 	
