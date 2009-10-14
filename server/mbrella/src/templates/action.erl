@@ -238,10 +238,10 @@ parseExpression(Binary, DeBruijnHash) when is_binary(Binary) ->
 			String = binary_to_list(Binary),
 			case extractPrim(String) of
 				error ->
-					String
+					String;
 				Prim ->
-					makeLiteral(Prim)
-			end;
+					ast:makeLiteral(Prim)
+			end
 	end.
 
 %% run MapFunction on anything with name FieldName in JSON
@@ -258,26 +258,13 @@ mapFields(NonJSON, _, _) ->
 
 
 bindExpr(Expr, Scope) -> 
-	case Expr of
-		String when is_list(String) ->
-			case scope:lookup(Scope, String) of
-				notfound ->
-					globalStore:lookupPointer(String);
-				Found -> Found
-			end;
-		AST -> case ast:type(AST) of			
-			apply ->
-				ast:
-				
-				#exprApply{left=Left, right=Right} = Apply,
-				#exprApply{left=bindExpr(Left, Scope), right=bindExpr(Right, Scope)};
-			lambda when is_record(Lambda, exprLambda) ->
-				#exprLambda{expr=Expr} = Lambda,
-				#exprLambda{expr=bindExpr(Expr, Scope)};
-			Other -> AST
-		Other -> Other
-	end.
-
+	ast:mapStrings(Expr, fun(String) -> 
+		case scope:lookup(Scope, String) of
+			notfound ->
+				globalStore:lookupPointer(String);
+			Found -> Found
+		end
+	end).
 
 executeAction() -> ok.
 

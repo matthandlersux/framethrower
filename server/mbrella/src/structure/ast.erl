@@ -188,3 +188,32 @@ betaReduce({variable, VarIndex} = Variable, Replacements, Index) ->
 	end;
 betaReduce(AST, _Replacement, _Index) ->
 	AST.
+	
+	
+	
+	
+	
+	
+	
+	
+%% 
+%% mapStrings :: AST (with Strings) -> (String -> AST) -> AST (without Strings)
+%% 		
+%%
+	
+mapStrings(String, MapFunction) when is_list(String) ->
+	MapFunction(String);
+mapStrings({lambda, {Num, AST}}, MapFunction) ->
+	makeLambda(
+		mapStrings(AST, MapFunction),
+		Num
+	);
+mapStrings({apply, {AST, ListOfParameters}}, MapFunction) ->
+	makeApply(
+		mapStrings(AST, MapFunction),
+		lists:map(fun(Elem) ->
+			mapStrings(Elem, MapFunction)
+		end, ListOfParameters)
+	);
+mapStrings(AST, _) ->
+	AST.
