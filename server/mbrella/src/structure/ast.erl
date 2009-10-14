@@ -135,16 +135,9 @@ type({Type, _Data}) ->
 % 	erlang:apply(primFuncs, Function, lists:reverse(ListOfParameters));
 	
 %% 
-%% betaReduce :: AST -> AST -> AST
+%% betaReduce :: AST -> List AST -> AST
 %% 		
 %%		
-
-% betaReduce(Lambda, Replacement) ->
-% 	{lambda, {Num, AST}} = betaReduce(Lambda, Replacement, 0),
-% 	if
-% 		Num =:= 1 -> AST;
-% 		true -> makeLambda(AST, Num - 1)
-% 	end.
 	
 betaReduce(Lambda, ListOfReplacements) ->
 	NumReplacements = length(ListOfReplacements),
@@ -180,22 +173,14 @@ betaReduce({variable, Index}, [Replacement|_Rest], Index) ->
 	Replacement;
 betaReduce({variable, VarIndex} = Variable, Replacements, Index) ->
 	if
-		VarIndex =< ( Index - length(Replacements) + 1) ->
-			?trace(VarIndex =< ( Index - length(Replacements) + 1)),
+		(Index - length(Replacements) + 1) < VarIndex andalso VarIndex < Index ->
 			lists:nth(Index - VarIndex + 1, Replacements);
 		true ->
 			Variable
 	end;
 betaReduce(AST, _Replacement, _Index) ->
 	AST.
-	
-	
-	
-	
-	
-	
-	
-	
+		
 %% 
 %% mapStrings :: AST (with Strings) -> (String -> AST) -> AST (without Strings)
 %% 		
