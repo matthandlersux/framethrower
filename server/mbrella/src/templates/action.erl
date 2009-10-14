@@ -224,21 +224,25 @@ evaluateLine(Line, Scope) ->
 
 %% Convert a JSON expression to an expression using erlang records in deBruijn format
 parseExpression({struct, [{<<"cons">>, <<"apply">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
-	#exprApply{left=parseExpression(Left, DeBruijnHash), right=parseExpression(Right, DeBruijnHash)};
+	ast:makeApply(parseExpression(Left, DeBruijnHash), parseExpression(Right, DeBruijnHash));
 parseExpression({struct, [{<<"cons">>, <<"lambda">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
 	NewDeBruijnHash = dict:map(fun(Key, Value) -> Value + 1 end, DeBruijnHash),
 	VarName = Left,
 	NewerDeBruijnHash = dict:store(VarName, 1, NewDeBruijnHash),
-	#exprLambda{expr=parseExpression(Right, NewerDeBruijnHash)};
+	ast:makeLambda(parseExpression(Right, NewerDeBruijnHash));
 parseExpression(Binary, DeBruijnHash) when is_binary(Binary) ->
 	case dict:find(Binary, DeBruijnHash) of
-		{ok, Found} ->
-			#exprVar{index=Found};
+		{ok, Index} ->
+			ast:makeVariable(Index);
 		error ->
-			binary_to_list(Binary)
-	end;
-parseExpression(Other, _) ->
-	Other.
+			String = binary_to_list(Binary),
+			case extractPrim(String) of
+				error ->
+					String
+				Prim ->
+					makeLiteral(Prim)
+			end;
+	end.
 
 %% run MapFunction on anything with name FieldName in JSON
 mapFields({struct, List}, FieldName, MapFunction) -> 
@@ -255,23 +259,22 @@ mapFields(NonJSON, _, _) ->
 
 bindExpr(Expr, Scope) -> 
 	case Expr of
-		Apply when is_record(Apply, exprApply) ->
-			#exprApply{left=Left, right=Right} = Apply,
-			#exprApply{left=bindExpr(Left, Scope), right=bindExpr(Right, Scope)};
-		Lambda when is_record(Lambda, exprLambda) ->
-			#exprLambda{expr=Expr} = Lambda,
-			#exprLambda{expr=bindExpr(Expr, Scope)};
 		String when is_list(String) ->
-			case extractPrim(String) of
-				error ->
-					case scope:lookup(Scope, String) of
-						notfound ->
-							globalStore:lookupPointer(String);
-						Found -> Found
-					end;
-				Prim ->
-					Prim
+			case scope:lookup(Scope, String) of
+				notfound ->
+					globalStore:lookupPointer(String);
+				Found -> Found
 			end;
+		AST -> case ast:type(AST) of			
+			apply ->
+				ast:
+				
+				#exprApply{left=Left, right=Right} = Apply,
+				#exprApply{left=bindExpr(Left, Scope), right=bindExpr(Right, Scope)};
+			lambda when is_record(Lambda, exprLambda) ->
+				#exprLambda{expr=Expr} = Lambda,
+				#exprLambda{expr=bindExpr(Expr, Scope)};
+			Other -> AST
 		Other -> Other
 	end.
 
