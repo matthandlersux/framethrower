@@ -2,6 +2,8 @@
 
 -compile( export_all ).
 
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+
 %% ====================================================
 %% TYPES
 %% ====================================================
@@ -72,6 +74,14 @@ makeFunction(Name) ->
 	{function, {Name, Arity}}.
 
 %% 
+%% makeVariable :: Number -> AST
+%% 		
+%%		
+
+makeVariable(Number) ->
+	{variable, Number}.
+
+%% 
 %% makeLambda :: AST -> AST
 %% 		
 %%		
@@ -112,14 +122,69 @@ type({Type, _Data}) ->
 %% 		takes care of apply for everyone
 %%		
 
-apply({function, {{Name, Val}, 1}}, AST) ->
-	% call Name with Val and get back a new function
-	todo.
-apply({function, {Name, 1}}, AST) ->
-	erlang:apply(primFuncs, Name, [AST]);
-apply({function, _ASTData} = Function, AST) ->
-	makeApply(Function, [AST]);
-apply({apply, { {function, {, Arity}} }})
+% apply({function, {{Name, Val}, 1}}, AST) ->
+% 	% call Name with Val and get back a new function
+% 	todo.
+% apply({function, {Name, 1}}, AST) ->
+% 	erlang:apply(primFuncs, Name, [AST]);
+% apply({function, _ASTData} = Function, AST) ->
+% 	makeApply(Function, [AST]);
+% apply({apply, { {function, {, Arity}} }})
+% 
+% apply(Function, ListOfParameters) ->
+% 	erlang:apply(primFuncs, Function, lists:reverse(ListOfParameters));
+	
+%% 
+%% betaReduce :: AST -> AST -> AST
+%% 		
+%%		
 
-apply(Function, ListOfParameters) ->
-	erlang:apply(primFuncs, Function, lists:reverse(ListOfParameters));
+% betaReduce(Lambda, Replacement) ->
+% 	{lambda, {Num, AST}} = betaReduce(Lambda, Replacement, 0),
+% 	if
+% 		Num =:= 1 -> AST;
+% 		true -> makeLambda(AST, Num - 1)
+% 	end.
+	
+betaReduce(Lambda, ListOfReplacements) ->
+	NumReplacements = length(ListOfReplacements),
+	{lambda, {Num, AST}} = betaReduce(Lambda, ListOfReplacements, 0),
+	if
+		Num =:= NumReplacements -> AST;
+		true -> makeLambda(AST, Num - NumReplacements)
+	end.
+	
+%% ====================================================
+%% Internal API
+%% ====================================================
+
+%% 
+%% betaReduce :: AST -> AST -> Number -> AST
+%% 		
+%%		
+
+betaReduce([], _, _) -> [];
+betaReduce([H|T], Replacement, Index) ->
+	[ betaReduce(H, Replacement, Index) | betaReduce(T, Replacement, Index) ];
+betaReduce({lambda, {Num, AST}}, Replacement, Index) ->
+	makeLambda(
+		betaReduce(AST, Replacement, Index + Num),
+		Num
+	);
+betaReduce({apply, {AST, ListOfParameters}}, Replacement, Index) ->
+	makeApply(
+		betaReduce(AST, Replacement, Index),
+		betaReduce(ListOfParameters, Replacement, Index)
+	);
+betaReduce({variable, Index}, [Replacement|_Rest], Index) ->
+	Replacement;
+betaReduce({variable, VarIndex} = Variable, Replacements, Index) ->
+	if
+		VarIndex =< ( Index - length(Replacements) + 1) ->
+			?trace(VarIndex =< ( Index - length(Replacements) + 1)),
+			lists:nth(Index - VarIndex + 1, Replacements);
+		true ->
+			Variable
+	end;
+betaReduce(AST, _Replacement, _Index) ->
+	AST.
