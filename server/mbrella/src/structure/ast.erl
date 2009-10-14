@@ -8,14 +8,16 @@
 %% TYPES
 %% ====================================================
 
-% Literal	 	:: String | Number | Bool | Null
-% Null			:: Atom
-% String 		:: List
-% Bool			:: Atom
-% AST			:: Tuple Atom ASTData
-% ASTData		:: Literal | Tuple 
-% 				ie 		{CellPointer, BottomExpr} | {Atom, Number} | {AST, List}
-% CellPointer 	:: Tuple String Pid
+% Literal	 		:: String | Number | Bool | Null
+% Null				:: Atom
+% String 			:: List
+% Bool				:: Atom
+% AST				:: Tuple Atom ASTData
+% ASTData			:: Literal | Tuple 
+% 					ie 		{CellPointer, BottomExpr} | Function | {AST, List}
+% Function			:: Tuple Atom Number
+% AccessorFunction	:: Tuple (Tuple Atom Parameter) Number
+% CellPointer 		:: Tuple String Pid
 
 %% ====================================================
 %% External API
@@ -122,6 +124,10 @@ type({Type, _Data}) ->
 %% 		takes care of apply for everyone
 %%		
 
+% things that get applied:
+% 		(a -> b) Param1
+% 		functionName Param1
+%		(functionName Param1) Param2
 % apply({function, {{Name, Val}, 1}}, AST) ->
 % 	% call Name with Val and get back a new function
 % 	todo.
@@ -133,6 +139,13 @@ type({Type, _Data}) ->
 % 
 % apply(Function, ListOfParameters) ->
 % 	erlang:apply(primFuncs, Function, lists:reverse(ListOfParameters));
+
+
+apply({function, {Name, 1}}, AST) when is_atom(Name) ->
+	erlang:apply(primFuncs, Name, [AST]);
+
+apply({function, _ASTData} = Function, AST) ->
+	makeApply(Function, [AST]);
 	
 %% 
 %% betaReduce :: AST -> List AST -> AST
@@ -173,7 +186,7 @@ betaReduce({variable, Index}, [Replacement|_Rest], Index) ->
 	Replacement;
 betaReduce({variable, VarIndex} = Variable, Replacements, Index) ->
 	if
-		(Index - length(Replacements) + 1) < VarIndex andalso VarIndex < Index ->
+		(Index - length(Replacements) + 1) =< VarIndex andalso VarIndex < Index ->
 			lists:nth(Index - VarIndex + 1, Replacements);
 		true ->
 			Variable
