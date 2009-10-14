@@ -60,7 +60,14 @@ addLet(Pid, Name, Value) ->
 
 % Lookup will return error if Name is not found in this scope or any parent scope
 lookup(Pid, Name) ->
-	gen_server:call(Pid, {lookup, Name}).
+	Response = gen_server:call(Pid, {lookup, Name, self(), Pid}),
+	case Response of
+		waitForResponse ->			
+			receive
+				{lookupResult, LookupResult} -> LookupResult
+			end;
+		Value -> Value
+	end.
 
 getState(Pid) ->
 	gen_server:call(Pid, getState).
@@ -105,23 +112,26 @@ handle_call({addLet, Name, Value}, _, State) ->
 	NewDict = dict:store(Name, {evaluated, Value}, ?this(dict)),
 	NewState = State#scopeState{dict=NewDict},
     {reply, ok, NewState};
-handle_call({lookup, Name}, _, State) ->
+handle_call({lookup, Name, From, ThisScope}, _, State) ->
 	%look for Name within the local Scope, evaluating it if necessary and updating the scope
-	{LocalResult, NewDict} = case dict:find(Name, ?this(dict)) of
+	Response = case dict:find(Name, ?this(dict)) of
 		{ok, {notEvaluated, GetValue}} -> 
-			Value = GetValue(),
-			DictWithVal = dict:store(Name, {evaluated, Value}, ?this(dict)),
-			{Value, DictWithVal};
-		{ok, {evaluated, Value}} -> {Value, ?this(dict)};
-		error -> {error, ?this(dict)}
+			%spawn a new process to evaluate GetValue
+			spawn(fun() ->
+				Value = GetValue(),
+				updateLet(ThisScope, Name, Value),
+				From ! {lookupResult, Value}
+			end),
+			waitForResponse;
+		{ok, {evaluated, Value}} -> Value;
+		error -> error
 	end,
-	NewState = State#scopeState{dict=NewDict},
 	%now look for Name in the parent Scope in case it was not found locally
-	GlobalResult = case LocalResult of
+	GlobalResponse = case Response of
 		error -> lookupInParent(Name, ?this(parent));
-		_ -> LocalResult
+		_ -> Response
 	end,
-    {reply, GlobalResult, NewState};
+    {reply, GlobalResponse, State};
 handle_call(getState, _, State) ->
 	{reply, State, State};
 handle_call(stop, _, State) ->
@@ -134,6 +144,10 @@ handle_call(stop, _, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
+handle_cast({updateLet, Name, Value}, State) ->
+	DictWithVal = dict:store(Name, {evaluated, Value}, ?this(dict)),
+	NewState = State#scopeState{dict=DictWithVal},
+	{noreply, NewState};
 handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
 
@@ -167,6 +181,11 @@ code_change(OldVsn, State, Extra) ->
 %% --------------------------------------------------------------------
 %%% Internal functions
 %% --------------------------------------------------------------------
+
+
+updateLet(Pid, Name, Value) ->
+	gen_server:cast(Pid, {updateLet, Name, Value}).
+
 lookupInParent(Name, Parent) ->
 	case Parent of
 		noParent -> notFound;

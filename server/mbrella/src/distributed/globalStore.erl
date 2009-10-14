@@ -24,7 +24,7 @@ start() ->
 		{"swap", "(\\ (\\ (\\ ((/3 /1) /2))))"}
 		% {"swap", "f -> x -> y -> f y x"}
 	],
-	lists:map(fun ({Name, ExprString}) -> addExpr(Name, expr:exprParse(ExprString)) end, FuncExprs),
+	lists:map(fun ({Name, ExprString}) -> addExpr(Name, parse:parse(ExprString)) end, FuncExprs),
 	ok.
 
 stop() ->

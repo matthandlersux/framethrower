@@ -11,6 +11,9 @@
 %% Parser
 %% ====================================================
 
+parse(S) ->
+	parse(S, scope:makeScope()).
+
 parse(S, Scope) ->
 	{Ans, []} = parseExpr(S, Scope),
 	Ans.

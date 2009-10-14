@@ -52,8 +52,12 @@ testJSON() ->
 		{error, Error} -> ?trace("Error"), throw(Error)
 	end,
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
+	
 	SharedLetStruct = struct:get_value(<<"sharedLet">>, Struct),
-	{struct, Lets} = SharedLetStruct,
+	%convert exprs within sharedLetStruct to use erlang records instead of JSON
+	SharedLetConverted = mapFields(SharedLetStruct, <<"expr">>, fun(Expr) -> parseExpression(Expr, dict:new()) end),
+	
+	{struct, Lets} = SharedLetConverted,
 	lists:map(fun(Let) ->
 		{LetName, LetStruct} = Let,
 		LetNameString = binary_to_list(LetName),
@@ -115,8 +119,7 @@ handle_call({evaluateTemplate, Name, Params}, _, State) ->
 		error -> throw("Error finding template: " ++ Name)
 	end,
 	Result = eval:evaluate(makeClosure(Template, scope:makeScope())),
-	?trace("Result: "),
-	?trace(Result),
+	?trace(["Result: ", Result]),
     {reply, Result, State};
 handle_call(getState, _, State) ->
 	{reply, State, State};
@@ -171,10 +174,10 @@ evaluateLine(Line, Scope) ->
 	Kind = binary_to_list(struct:get_value(<<"kind">>, Line)),
 	case Kind of
 		"lineExpr" ->
-			Expr = binary_to_list(struct:get_value(<<"expr">>, Line)),
-			?trace("Parsing expr: " ++ Expr),
-			Result = expr:exprParse(Expr, Scope),
-			?trace("Done parsing expr: " ++ Expr),
+			Expr = (struct:get_value(<<"expr">>, Line)),
+			?trace(["Binding expr: ", Expr]),
+			Result = bindExpr(Expr, Scope),
+			?trace([{"Done parsing expr: ", Expr}, {"Result:", Result}]),
 			Result;
 		"lineTemplate" ->
 			makeClosure(Line, Scope);
@@ -219,6 +222,58 @@ evaluateLine(Line, Scope) ->
 % }
 % 
 
+%% Convert a JSON expression to an expression using erlang records in deBruijn format
+parseExpression({struct, [{<<"cons">>, <<"apply">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
+	#exprApply{left=parseExpression(Left, DeBruijnHash), right=parseExpression(Right, DeBruijnHash)};
+parseExpression({struct, [{<<"cons">>, <<"lambda">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
+	NewDeBruijnHash = dict:map(fun(Key, Value) -> Value + 1 end, DeBruijnHash),
+	VarName = Left,
+	NewerDeBruijnHash = dict:store(VarName, 1, NewDeBruijnHash),
+	#exprLambda{expr=parseExpression(Right, NewerDeBruijnHash)};
+parseExpression(Binary, DeBruijnHash) when is_binary(Binary) ->
+	case dict:find(Binary, DeBruijnHash) of
+		{ok, Found} ->
+			#exprVar{index=Found};
+		error ->
+			binary_to_list(Binary)
+	end;
+parseExpression(Other, _) ->
+	Other.
+
+%% run MapFunction on anything with name FieldName in JSON
+mapFields({struct, List}, FieldName, MapFunction) -> 
+	ConvertedList = lists:map(fun({Name, Value}) ->
+		case Name of
+			FieldName -> {Name, MapFunction(Value)};
+			_ -> {Name, mapFields(Value, FieldName, MapFunction)}
+		end
+	end, List),
+	{struct, ConvertedList};
+mapFields(NonJSON, _, _) ->
+	NonJSON.
+
+
+bindExpr(Expr, Scope) -> 
+	case Expr of
+		Apply when is_record(Apply, exprApply) ->
+			#exprApply{left=Left, right=Right} = Apply,
+			#exprApply{left=bindExpr(Left, Scope), right=bindExpr(Right, Scope)};
+		Lambda when is_record(Lambda, exprLambda) ->
+			#exprLambda{expr=Expr} = Lambda,
+			#exprLambda{expr=bindExpr(Expr, Scope)};
+		String when is_list(String) ->
+			case extractPrim(String) of
+				error ->
+					case scope:lookup(Scope, String) of
+						notfound ->
+							globalStore:lookupPointer(String);
+						Found -> Found
+					end;
+				Prim ->
+					Prim
+			end;
+		Other -> Other
+	end.
 
 
 executeAction() -> ok.
@@ -275,3 +330,19 @@ makeClosure(LineTemplate, ParentScope) ->
 addFun() -> ok.
 
 makeActionErlang() -> ok.
+
+%copied from parse.erl. TODO: put in utility file
+extractPrim(VarOrPrim) ->
+	case VarOrPrim of
+		"null" -> null;
+		"true" -> true;
+		"false" -> false;
+		_ ->
+			try list_to_integer(VarOrPrim)
+			catch _:_ ->
+				try list_to_float(VarOrPrim)
+				catch _:_ ->
+					error
+				end
+			end
+	end.
