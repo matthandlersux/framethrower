@@ -18,37 +18,37 @@
 % number
 %% 
 
-evaluate(AST) ->
-	Type = ast:type(AST),
-	evaluate(Type, AST).
-	
-evaluate(apply, AST) ->
-	LHS = ast:lhs(AST),
-	RHS = ast:rhs(AST),
-	EvalLHS = evaluate(LHS),
-	case ast:type( EvalLHS ) of
-		lambda ->
-			evaluate( betaReduce( EvalLHS, RHS ) );
-		_ ->
-			BottomExpr = bottomOut( AST ),
-			case mewpile:get( BottomExpr ) of
-				false ->
-					F = evaluate( EvalLHS ),
-					Parameters = evaluate( RHS ),
-					ResultOfApply = applyFun( F, Parameters ),
-					case ast:type(ResultOfApply) of
-						function ->
-							ast:createFunction( ResultOfApply );
-						cellPointer ->
-							;
-				CellPointer ->
-					CellPointer
-			end
-	end
-			
-	;
-evaluate(_LambdaObjectNumStringBool, AST) ->
-	AST.
+% evaluate(AST) ->
+% 	Type = ast:type(AST),
+% 	evaluate(Type, AST).
+% 	
+% evaluate(apply, AST) ->
+% 	LHS = ast:lhs(AST),
+% 	RHS = ast:rhs(AST),
+% 	EvalLHS = evaluate(LHS),
+% 	case ast:type( EvalLHS ) of
+% 		lambda ->
+% 			evaluate( betaReduce( EvalLHS, RHS ) );
+% 		_ ->
+% 			BottomExpr = bottomOut( AST ),
+% 			case mewpile:get( BottomExpr ) of
+% 				false ->
+% 					F = evaluate( EvalLHS ),
+% 					Parameters = evaluate( RHS ),
+% 					ResultOfApply = applyFun( F, Parameters ),
+% 					case ast:type(ResultOfApply) of
+% 						function ->
+% 							ast:createFunction( ResultOfApply );
+% 						cellPointer ->
+% 							;
+% 				CellPointer ->
+% 					CellPointer
+% 			end
+% 	end
+% 			
+% 	;
+% evaluate(_LambdaObjectNumStringBool, AST) ->
+% 	AST.
 			
 
 % Evaluate with older memoization strategy
