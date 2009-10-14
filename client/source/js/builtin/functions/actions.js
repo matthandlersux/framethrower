@@ -4,7 +4,7 @@ function makeActionJavascript(f) {
 	var action = {kind: "actionJavascript", f: f}, // will be interpreted by executeAction()
 		lineAction = {actions: [{action: action}]};
 	
-	return makeActionClosure(lineAction, emptyEnv);
+	return makeInstruction(lineAction, emptyEnv);
 }
 
 addFun("return", "a -> Action a", function(x) {

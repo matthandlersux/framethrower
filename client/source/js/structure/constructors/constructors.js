@@ -1,16 +1,6 @@
-
 /*
-Make those tags universal
-Make constructor functions for Fun's, StartCap's, and Objects
 
-Make full beta reduction thing
-
-
-Tags on expr's:
-	name (stringify)
-	remote (getRemote)
-	type
-	outsideScope
+All expressions are created by the functions here.
 
 */
 
@@ -50,7 +40,7 @@ function makeObject(type) {
 	};
 }
 
-// TODO: rename makeCell and rename the other function of that name
+// TODO: rename this to makeCell and rename the other function of that name
 function makeStartCap() {
 	return {
 		kind: "cell",
@@ -122,9 +112,28 @@ function makeTuple() {
 
 // =====================================================================
 // Things created/returned by template system (client only)
-// XMLP, action??
+// xmlp, instruction
 // =====================================================================
 
+function makeXMLP(xml, env) {
+	if (env === undefined) env = emptyEnv;
+	return {
+		kind: "xmlp", 
+		name: localIds(),
+		remote: 2,
+		xml: xml,
+		env: env
+	};
+}
+
+function makeInstruction(lineAction, env) {
+	return {
+		kind: "instruction",
+		instructions: lineAction.actions,
+		env: env,
+		remote: 2
+	};
+}
 
 // =====================================================================
 // Lambda calculus constructs
@@ -148,13 +157,12 @@ function makeApply(left, right) {
 	};
 }
 function makeLambda(varName, expr) {
-	var lam = {
+	return {
 		kind: "exprLambda",
 		varName: varName,
 		expr: expr,
 		outsideScope: Math.max(0, getOutsideScope(expr) - 1)
 	};
-	return lam;
 }
 
 
@@ -172,8 +180,8 @@ function makeLambda(varName, expr) {
 // =====================================================================
 // These are functions that can be called on all expr's.
 // They tag expr's with memoized results
-// tags:
-// name, stringifyForServer, outsideScope
+// 
+// tags: name, stringifyForServer, outsideScope
 // =====================================================================
 
 
