@@ -84,6 +84,8 @@ makeLambda(AST) ->
 %% 		
 %%		
 
+makeLambda({lambda, {NumOfVariables, AST}}, NewNumOfVariables) ->
+	{lambda, {NewNumOfVariables + NumOfVariables, AST}};
 makeLambda(AST, NumOfVariables) ->
 	{lambda, {NumOfVariables, AST}}.
 
@@ -92,6 +94,8 @@ makeLambda(AST, NumOfVariables) ->
 %% 		
 %%		
 
+makeApply({apply, {AST, ListOfParameters}}, NewParameters) ->
+	{apply, {AST, NewParameters ++ ListOfParameters}};
 makeApply(AST, ListOfParameters) ->
 	{apply, {AST, ListOfParameters}}.
 
@@ -102,3 +106,20 @@ makeApply(AST, ListOfParameters) ->
 
 type({Type, _Data}) ->
 	Type.
+	
+%% 
+%% apply :: AST -> AST -> AST
+%% 		takes care of apply for everyone
+%%		
+
+apply({function, {{Name, Val}, 1}}, AST) ->
+	% call Name with Val and get back a new function
+	todo.
+apply({function, {Name, 1}}, AST) ->
+	erlang:apply(primFuncs, Name, [AST]);
+apply({function, _ASTData} = Function, AST) ->
+	makeApply(Function, [AST]);
+apply({apply, { {function, {, Arity}} }})
+
+apply(Function, ListOfParameters) ->
+	erlang:apply(primFuncs, Function, lists:reverse(ListOfParameters));
