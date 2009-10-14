@@ -75,7 +75,7 @@ function makeClosure(lineTemplate, env) {
 	var params = lineTemplate.params;
 	var type = lineTemplate.type;
 	
-	var f = curry(function () {
+	var f = function () {
 		var scope = {};
 		var args = arguments;
 		forEach(params, function (param, i) {
@@ -86,12 +86,12 @@ function makeClosure(lineTemplate, env) {
 		var envWithLets = addLets(lineTemplate.let, envWithParams);
 		
 		return evaluateLine(lineTemplate.output, envWithLets);
-	}, params.length);
+	};
 	
 	if (params.length > 0) {
-		return makeFun(type, f);
+		return makeFun(type, f, params.length);
 	} else {
-		return f;
+		return f();
 	}
 }
 
@@ -137,7 +137,7 @@ function evaluateLine(line, env) {
 		return makeClosure(line, env);
 	} else if (line.kind === "lineJavascript") {
 		if (line.f.length === 0) return line.f();
-		else return makeFun(line.type, curry(line.f));
+		else return makeFun(line.type, line.f, line.f.length);
 		//return makeFun(parseType(line.type), line.f);
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);
