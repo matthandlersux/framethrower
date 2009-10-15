@@ -94,6 +94,7 @@ function makeOrd(value) {
 function makeList(asArray) {
 	return {
 		kind: "list",
+		type: parseType("[a]"),
 		remote: 2,
 		outsideScope: 0,
 		asArray: asArray
