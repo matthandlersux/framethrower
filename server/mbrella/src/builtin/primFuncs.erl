@@ -213,7 +213,7 @@ setDifference(CellPointer1, CellPointer2) ->
 %% map unit functions
 %% ---------------------------------------------
 
-%(mapUnit2 sum zoomStartS zoomDurationS)
+
 
 mapUnit(ExprString, Value) ->
 	OutputCell = cell:makeCell(unit),
@@ -300,27 +300,6 @@ boolToUnit(Bool) ->
 	OutputCell.
 
 %% 
-%% oneTo :: Number -> Set Number
-%% 		
-%%		
-
-oneTo(Number) ->
-	OutputCell = cell:makeCell(set),
-	cell:addValues(OutputCell, lists:seq(1, Number)),
-	OutputCell.
-
-%% 
-%% oneToMap :: Number -> Number -> Map Number Number
-%% 		
-%%		
-
-oneToMap(Number1, Number2) ->
-	OutputCell = cell:makeCell(map),
-	ListOfMaps = lists:map(fun(N) -> {N, Number2} end, lists:seq(1, Number1)),
-	cell:addValues(OutputCell, ListOfMaps),
-	OutputCell.
-
-%% 
 %% reactiveNot :: Unit Null -> Unit Null
 %% 		
 %%		
@@ -343,9 +322,41 @@ gate(CellPointer, InnerValue) ->
 	cell:injectOutput(CellPointer, OutputCell),
 	OutputCell.
 
+%% ---------------------------------------------
+%% debug primfuncs
+%% ---------------------------------------------
 
+%% 
+%% oneTo :: Number -> Set Number
+%% 		
+%%		
 
+oneTo(Number) ->
+	OutputCell = cell:makeCell(set),
+	cell:addValues(OutputCell, lists:seq(1, Number)),
+	OutputCell.
 
+%% 
+%% oneToMap :: Number -> Number -> Map Number Number
+%% 		
+%%		
+
+oneToMap(Number1, Number2) ->
+	OutputCell = cell:makeCell(map),
+	ListOfMaps = lists:map(fun(N) -> {N, Number2} end, lists:seq(1, Number1)),
+	cell:addValues(OutputCell, ListOfMaps),
+	OutputCell.
+	
+%% 
+%% debug :: CellPointer -> CellPointer
+%% 		prints out the contents of any cell
+%%		
+
+debug(CellPointer) ->
+	OutputCell = cell:makeCell(set),
+	cell:injectIntercept(OutputCell, debug),
+	cell:injectOutput(CellPointer, OutputCell),
+	OutputCell.
 
 %% ====================================================
 %% Internal API
