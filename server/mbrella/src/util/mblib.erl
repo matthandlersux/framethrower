@@ -316,31 +316,7 @@ prepareStateScript() ->
 	UpdatedStruct = serialize:updatePrepareState(PrepareStateStruct),
 	preparedState.
 
-printHi() ->
-	?trace("Hi"),
-	ok.
 
-	% case inets:start() of
-	% 	ok ->
-	% 		receive
-	% 		after 2000 ->
-	% 				case http:request("http://localhost:8000/newSession") of
-	% 					{ok, {_, _, "{" ++ SessionId}} ->
-	% 						{ok, JSONBinary} = file:read_file("lib/bootJSON"),
-	% 					    {ok, _} = http:request(
-	% 							post,
-	% 							{
-	% 								"http://localhost:8000/action",
-	% 								[],
-	% 								"application/x-www-form-urlencoded",
-	% 								"json={\"actions\":" ++ binary_to_list(JSONBinary) ++ ", " ++ SessionId
-	% 							},
-	% 							[],
-	% 							[]
-	% 						);
-	% 					_ -> erlang:error(couldnt_load_boot_json)
-	% 				end
-	% 		end;
-	% 	_ -> erlang:error(couldnt_start_inets)
-	% end,
-	% inets:stop(),
+initializeDebugState() ->
+	% Add more here
+	functionTable:create().
