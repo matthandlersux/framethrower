@@ -212,7 +212,7 @@ createExprLib(ExprLibStruct) ->
 		{BinName, BinExpr} = Anything,
 		Name = binary_to_list(BinName),
 		try 
-			ParsedExpr = expr:exprParse(binary_to_list(BinExpr)),
+			ParsedExpr = parse:parse(binary_to_list(BinExpr)),
 			globalStore:store(Name, {exprLib, ParsedExpr})
 		catch
 			_:_ -> nosideeffect

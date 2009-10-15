@@ -138,7 +138,7 @@ runTemplate (Template, Params, Templates, Scope, OrderPid, DoneCell, Depth) ->
 		DExpr = getFromStruct("value", Derive),
 		%TODO: here we need to evaluate and send every derive to the client
 		
-		try expr:exprParse(DExpr, AccScope) of
+		try parse:parse(DExpr, AccScope) of
 			DParsed -> 
 				case eval:evaluate( DParsed ) of
 					Cell when is_record(Cell, cellPointer) ->
@@ -204,7 +204,7 @@ processThunk (Thunk, Templates, Scope, OrderPid, DoneCell, Depth) ->
 	ParamExprs = lists:map(fun(Param) ->
 		PValue = getFromStruct("value", Param),
 	
-		PParsed = try expr:exprParse(PValue, Scope)
+		PParsed = try parse:parse(PValue, Scope)
 			catch _:_ -> undefined
 		end,
 
@@ -276,7 +276,7 @@ processPattern (Pattern, Templates, Scope, OrderPid, DoneCell, Depth) ->
 		Index+1
 	end, 0, MatchList),
 	
-	GetFirstExpr = expr:exprParse("theMap -> bindMap returnUnitMap (bindMap returnUnitMap (buildMap (swap getKey theMap) (returnUnitSet (takeLast (keys (bindMap returnUnitMap theMap))))))"),
+	GetFirstExpr = parse:parse("theMap -> bindMap returnUnitMap (bindMap returnUnitMap (buildMap (swap getKey theMap) (returnUnitSet (takeLast (keys (bindMap returnUnitMap theMap))))))"),
 	GetFirstCell = eval:evaluate({cons, apply, GetFirstExpr, MatchCell}),
 	
 	UpdateFun = fun ({pair, Index, Val}) ->

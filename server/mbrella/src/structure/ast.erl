@@ -109,6 +109,28 @@ makeApply({apply, {AST, ListOfParameters}}, NewParameters) ->
 makeApply(AST, ListOfParameters) ->
 	{apply, {AST, ListOfParameters}}.
 
+
+%% Getter (Accessor) Functions
+
+% helper
+getFlatValue({_, Value}) -> Value.
+
+getString(Input) -> getFlatValue(Input).
+getNumber(Input) -> getFlatValue(Input).
+getBool(Input) -> getFlatValue(Input).
+getNull(Input) -> getFlatValue(Input).
+getVariable(Input) -> getFlatValue(Input).
+getCellName({_, {{Name, _}, _}}) -> Name.
+getCellPid({_, {{_, Pid}, _}}) -> Pid.
+getFunctionName({_, {Name, _}}) -> Name.
+getFunctionArity({_, {_, Arity}}) -> Arity.
+
+getLambdaNumber({_, NumOfVariables, _}) -> NumOfVariables.
+getLambdaAST({_, {_, AST}}) -> AST.
+
+getApplyFunction({_, {AST, _}}) -> AST.
+getApplyParameters({_, {_, ListOfParameters}}) -> ListOfParameters.
+
 %% 
 %% type :: AST -> Atom
 %% 		
@@ -198,7 +220,7 @@ betaReduce(AST, _Replacement, _Index) ->
 	
 %% 
 %% mapStrings :: AST (with Strings) -> (String -> AST) -> AST (without Strings)
-%% 		
+%% 
 %%
 	
 mapStrings(String, MapFunction) when is_list(String) ->
@@ -217,3 +239,20 @@ mapStrings({apply, {AST, ListOfParameters}}, MapFunction) ->
 	);
 mapStrings(AST, _) ->
 	AST.
+	
+	
+	
+%% 
+%% fold :: AST -> b -> (AST -> b -> b) -> b
+%% 
+%%
+
+fold(FoldFunction, Accum, {lambda, {_, AST}} = Lambda) ->
+	FoldFunction(Lambda, fold(FoldFunction, Accum, AST));
+fold(FoldFunction, Accum, {apply, {AST, ListOfParameters}} = Apply) ->
+	ListAccum = lists:fold(fun(Elem, InnerAccum) ->
+		fold(FoldFunction, InnerAccum, Elem)
+	end, ListOfParameters),
+	FoldFunction(Apply, fold(FoldFunction, ListAccum, AST));
+fold(FoldFunction, Accum, AST) ->
+	FoldFunction(AST, Accum).
