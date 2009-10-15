@@ -218,6 +218,8 @@ type({Type, _Data}) ->
 %% 		takes care of apply for everyone
 %%		
 
+apply(AST, Parameter) when not is_list(Parameter) ->
+	ast:apply(AST, [Parameter]);
 apply({function, {Accessor, _Arity}}, ListOfParameters) when is_tuple(Accessor) ->
 	todo;
 apply({function, {Name, _Arity}}, ListOfParameters) ->
@@ -235,7 +237,22 @@ betaReduce(Lambda, ListOfReplacements) ->
 		Num =:= NumReplacements -> AST;
 		true -> makeLambda(AST, Num - NumReplacements)
 	end.
-	
+
+%% 
+%% termToAST :: ErlangTerm -> AST
+%% 		
+%%		
+
+termToAST(Literal) when not is_tuple(Literal) ->
+	makeLiteral(Literal);
+termToAST(Term) ->
+	case cellPointer:isCellPointer(Term) of
+		true ->
+			makeCell( Term );
+		false ->
+			exit(not_yet_implemented)
+	end.
+
 %% ====================================================
 %% Internal API
 %% ====================================================
@@ -338,4 +355,6 @@ toTerm({function, _} = Function) ->
 toTerm({apply, _} = Apply) ->
 	Apply;
 toTerm({lambda, _} = Lambda) ->
-	Lambda.
+	Lambda;
+toTerm(Term) ->
+	Term.
