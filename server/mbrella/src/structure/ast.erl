@@ -112,6 +112,16 @@ makeApply(AST, ListOfParameters) ->
 	{apply, {AST, ListOfParameters}}.
 
 %% 
+%% getArity :: AST -> Number
+%% 		takes a function lambda or apply
+%%		
+
+getArity({function, {_Name, Arity}}) -> Arity;
+getArity({apply, { {function, {_Name, Arity}} , Parameters}}) -> Arity - Parameters;
+getArity({apply, { {lambda, {NumVars, _AST}}, Parameters}}) -> NumVars - Parameters;
+getArity({lambda, {NumVars, _AST}}) -> NumVars.
+
+%% 
 %% type :: AST -> Atom
 %% 		
 %%		
@@ -141,11 +151,14 @@ type({Type, _Data}) ->
 % 	erlang:apply(primFuncs, Function, lists:reverse(ListOfParameters));
 
 
-apply({function, {Name, 1}}, AST) when is_atom(Name) ->
-	erlang:apply(primFuncs, Name, [AST]);
+% apply({function, {Name, 1}}, AST) when is_atom(Name) ->
+% 	erlang:apply(primFuncs, Name, [AST]);
+% 
+% apply({function, _ASTData} = Function, AST) ->
+% 	makeApply(Function, [AST]);
 
-apply({function, _ASTData} = Function, AST) ->
-	makeApply(Function, [AST]);
+apply(Function, AST) ->
+	Arity = getArity(Function),
 	
 %% 
 %% betaReduce :: AST -> List AST -> AST
