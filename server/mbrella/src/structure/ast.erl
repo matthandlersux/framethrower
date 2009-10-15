@@ -214,37 +214,15 @@ type({Type, _Data}) ->
 	Type.
 	
 %% 
-%% apply :: AST -> AST -> AST
+%% apply :: AST -> List AST -> AST | CellPointer | ObjectPointer | Literal ... etc...
 %% 		takes care of apply for everyone
 %%		
 
-% things that get applied:
-% 		(a -> b) Param1
-% 		functionName Param1
-%		(functionName Param1) Param2
-% apply({function, {{Name, Val}, 1}}, AST) ->
-% 	% call Name with Val and get back a new function
-% 	todo.
-% apply({function, {Name, 1}}, AST) ->
-% 	erlang:apply(primFuncs, Name, [AST]);
-% apply({function, _ASTData} = Function, AST) ->
-% 	makeApply(Function, [AST]);
-% apply({apply, { {function, {, Arity}} }})
-% 
-% apply(Function, ListOfParameters) ->
-% 	erlang:apply(primFuncs, Function, lists:reverse(ListOfParameters));
+apply({function, {Accessor, _Arity}}, ListOfParameters) when is_tuple(Accessor) ->
+	todo;
+apply({function, {Name, _Arity}}, ListOfParameters) ->
+	erlang:apply(primFuncs, Name, toTerm(ListOfParameters)).
 
-
-% apply({function, {Name, 1}}, AST) when is_atom(Name) ->
-% 	erlang:apply(primFuncs, Name, [AST]);
-% 
-% apply({function, _ASTData} = Function, AST) ->
-% 	makeApply(Function, [AST]);
-
-apply(Function, AST) ->
-	Arity = getArity(Function),
-	ok.
-	
 %% 
 %% betaReduce :: AST -> List AST -> AST
 %% 		
@@ -320,3 +298,44 @@ mapStrings({apply, {AST, ListOfParameters}}, MapFunction) ->
 	);
 mapStrings(AST, _) ->
 	AST.
+	
+%% 
+%% fold :: AST -> b -> (AST -> b -> b) -> b
+%% 
+%%
+
+fold(FoldFunction, Accum, {lambda, {_, AST}} = Lambda) ->
+	FoldFunction(Lambda, fold(FoldFunction, Accum, AST));
+fold(FoldFunction, Accum, {apply, {AST, ListOfParameters}} = Apply) ->
+	ListAccum = lists:fold(fun(Elem, InnerAccum) ->
+		fold(FoldFunction, InnerAccum, Elem)
+	end, ListOfParameters),
+	FoldFunction(Apply, fold(FoldFunction, ListAccum, AST));
+fold(FoldFunction, Accum, AST) ->
+	FoldFunction(AST, Accum).
+	
+%% 
+%% toTerm :: AST -> ErlangTerm
+%% 		:: List AST -> List Erlang Term
+%%		
+
+toTerm([]) -> 
+	[];
+toTerm([H|T]) ->
+	[toTerm(H)|toTerm(T)];
+toTerm({string, String}) ->
+	String;
+toTerm({number, Number}) ->
+	Number;
+toTerm({bool, Bool}) ->
+	Bool;
+toTerm({null, Null}) ->
+	Null;
+toTerm({cell, {CellPointer, _BottomExpr}}) ->
+	CellPointer;
+toTerm({function, _} = Function) ->
+	Function;
+toTerm({apply, _} = Apply) ->
+	Apply;
+toTerm({lambda, _} = Lambda) ->
+	Lambda.
