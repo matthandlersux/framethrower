@@ -17,7 +17,8 @@
 	injectIntercept/2, injectIntercept/3,
 	addInformant/2, removeInformant/2,
 	empty/1,
-	kill/1
+	kill/1,
+	getState/1
 	]).
 	
 %% ====================================================
@@ -50,25 +51,25 @@ makeCell(CellType) ->
 makeLinkedCell() -> makeLinkedCell(unit).
 
 makeLinkedCell(CellType) ->
-	{ok, Pid} = gen_server:start_link(?MODULE, [CellType], []),
-	%Name = env:nameAndStoreCell(Pid),
 	Name = "server" ++ integer_to_list(random:uniform(1000)),
+	{ok, Pid} = gen_server:start_link(?MODULE, [CellType, {name, Name}], []),
+	%Name = env:nameAndStoreCell(Pid),
 	cellPointer:new(Name, Pid).
 
 makeCellLeashed() -> makeCellLeashed(unit).
 
 makeCellLeashed(CellType) ->
-	{ok, Pid} = gen_server:start(?MODULE, [CellType, {leashed, true}], []),
-	%Name = env:nameAndStoreCell(Pid),
 	Name = "server" ++ integer_to_list(random:uniform(1000)),
+	{ok, Pid} = gen_server:start(?MODULE, [CellType, {leashed, true}, {name, Name}], []),
+	%Name = env:nameAndStoreCell(Pid),
 	cellPointer:new(Name, Pid).
 
 makeLinkedCellLeashed() -> makeLinkedCellLeashed(unit).
 
 makeLinkedCellLeashed(CellType) ->
-	{ok, Pid} = gen_server:start(?MODULE, [CellType, {leashed, true}], []),
-	%Name = env:nameAndStoreCell(Pid),
 	Name = "server" ++ integer_to_list(random:uniform(1000)),
+	{ok, Pid} = gen_server:start_link(?MODULE, [CellType, {leashed, true}, {name, Name}], []),
+	%Name = env:nameAndStoreCell(Pid),
 	cellPointer:new(Name, Pid).
 
 %% 
