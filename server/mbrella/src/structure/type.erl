@@ -47,7 +47,7 @@ get( Expr ) ->
 %% 
 	
 show( String ) when is_list( String ) ->
-	show( expr:exprParse(String) );
+	show( parse:parse(String) );
 show( Expr ) ->
 	unparse( type:get(Expr) ).
 	

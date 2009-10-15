@@ -72,7 +72,7 @@ parseEndCap(R, State) ->
 	#testWorld{startCaps=StartCaps, outMessages=OutMessages} = State,
 	Name = getAtt(name, R),
 	Expression = getAtt(expression, R),
-	EC = eval:evaluate(expr:exprParse(Expression, StartCaps)),
+	EC = eval:evaluate(parse:parse(Expression, StartCaps)),
 
 	Self = self(),
 	cell:inject(EC, 
