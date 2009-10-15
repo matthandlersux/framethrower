@@ -8,14 +8,16 @@
 %% TYPES
 %% ====================================================
 
-% Literal	 	:: String | Number | Bool | Null
-% Null			:: Atom
-% String 		:: List
-% Bool			:: Atom
-% AST			:: Tuple Atom ASTData
-% ASTData		:: Literal | Tuple 
-% 				ie 		{CellPointer, BottomExpr} | {Atom, Number} | {AST, List}
-% CellPointer 	:: Tuple String Pid
+% Literal	 		:: String | Number | Bool | Null
+% Null				:: Atom
+% String 			:: List
+% Bool				:: Atom
+% AST				:: Tuple Atom ASTData
+% ASTData			:: Literal | Tuple 
+% 					ie 		{CellPointer, BottomExpr} | Function | {AST, List}
+% Function			:: Tuple Atom Number
+% AccessorFunction	:: Tuple (Tuple Atom Parameter) Number
+% CellPointer 		:: Tuple String Pid
 
 %% ====================================================
 %% External API
@@ -144,6 +146,10 @@ type({Type, _Data}) ->
 %% 		takes care of apply for everyone
 %%		
 
+% things that get applied:
+% 		(a -> b) Param1
+% 		functionName Param1
+%		(functionName Param1) Param2
 % apply({function, {{Name, Val}, 1}}, AST) ->
 % 	% call Name with Val and get back a new function
 % 	todo.
@@ -155,18 +161,18 @@ type({Type, _Data}) ->
 % 
 % apply(Function, ListOfParameters) ->
 % 	erlang:apply(primFuncs, Function, lists:reverse(ListOfParameters));
+
+
+apply({function, {Name, 1}}, AST) when is_atom(Name) ->
+	erlang:apply(primFuncs, Name, [AST]);
+
+apply({function, _ASTData} = Function, AST) ->
+	makeApply(Function, [AST]);
 	
 %% 
-%% betaReduce :: AST -> AST -> AST
+%% betaReduce :: AST -> List AST -> AST
 %% 		
 %%		
-
-% betaReduce(Lambda, Replacement) ->
-% 	{lambda, {Num, AST}} = betaReduce(Lambda, Replacement, 0),
-% 	if
-% 		Num =:= 1 -> AST;
-% 		true -> makeLambda(AST, Num - 1)
-% 	end.
 	
 betaReduce(Lambda, ListOfReplacements) ->
 	NumReplacements = length(ListOfReplacements),
@@ -202,22 +208,14 @@ betaReduce({variable, Index}, [Replacement|_Rest], Index) ->
 	Replacement;
 betaReduce({variable, VarIndex} = Variable, Replacements, Index) ->
 	if
-		VarIndex =< ( Index - length(Replacements) + 1) ->
-			?trace(VarIndex =< ( Index - length(Replacements) + 1)),
+		(Index - length(Replacements) + 1) =< VarIndex andalso VarIndex < Index ->
 			lists:nth(Index - VarIndex + 1, Replacements);
 		true ->
 			Variable
 	end;
 betaReduce(AST, _Replacement, _Index) ->
 	AST.
-	
-	
-	
-	
-	
-	
-	
-	
+		
 %% 
 %% mapStrings :: AST (with Strings) -> (String -> AST) -> AST (without Strings)
 %% 
