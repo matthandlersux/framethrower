@@ -1,4 +1,4 @@
--module (eval2).
+-module (eval).
 -compile( export_all).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
@@ -35,7 +35,7 @@ evaluate(apply, AST) ->
 		lambda ->
 			evaluate( ast:betaReduce(FunctionOrLambda, Parameters) );
 		function ->
-			Arity = ast:getArity(FunctionOrLambda)
+			Arity = ast:getArity(FunctionOrLambda),
 			if
 				Arity =:= length(Parameters) ->
 					ReducedParameters = evaluateList( Parameters ),
