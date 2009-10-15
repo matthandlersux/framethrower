@@ -22,7 +22,7 @@ parse(S) ->
 	parse(S, scope:makeScope()).
 
 parse(S, Scope) ->
-	{Result, _} = parser(S, Scope),
+	{Result, _} = parser(S, empty, Scope),
 	Result.
 
 
@@ -30,50 +30,49 @@ parse(S, Scope) ->
 %% parser:: String (deBruijn style) -> Scope -> {AST, String}
 %%
 
-parser([$(|Right], Scope) ->
-	%apply or lambda
-	case Right of
-		[$\\|Rest] ->
-			%lambda
-			{Expr, [$)|Remaining]} = parser(Rest, Scope),
-			{ast:makeLambda(Expr), Remaining};
-		_ ->
-			%apply
-			{ApplyLeft, SpaceAndRight} = parser(Right, Scope),
-			[$ |Rest] = SpaceAndRight,
-			{ApplyRight, [$)|Remaining]} = parser(Rest, Scope),
-			{ast:makeApply(ApplyLeft, ApplyRight), Remaining}
-	end;
-parser([$\"|Right], _) ->
-	%quoted string
-	cutOffRightQuote(Right);
-parser([$ |Right], Scope) ->
-	%not sure if this will happen
-	parser(Right, Scope);
-parser([$/|Right], _) ->
-	{NumString, Rest} = untilSpaceOrRightParen(Right),
-	Num = list_to_integer(NumString),
-	{ast:makeVariable(Num), Rest};
-parser(S, Scope) ->
-	%env variable or number
-	%read until space or right paren
-	{VarOrPrim, Rest} = untilSpaceOrRightParen(S),
-	Ans = case extractPrim(VarOrPrim) of
-		error ->
-			case functionTable:lookup(VarOrPrim) of
-				notfound -> 
-					case scope:lookup(Scope, VarOrPrim) of
-						notfound ->
-							globalStore:lookupPointer(VarOrPrim);
+
+parser(String, LeftAST, Scope) ->
+	{AST, Remaining} = case String of
+		[$(|Right] ->
+			{ParsedAST, [$)|Rest]} = parser(trimSpace(Right), empty, Scope),
+			{ParsedAST, trimSpace(Rest)};
+		[$\\|Right] ->
+			{ParsedAST, Rest} = parser(trimSpace(Right), empty, Scope),
+			{ast:makeLambda(ParsedAST), Rest};
+		[$/|Right] ->
+			{NumString, Rest} = untilSpaceOrRightParen(Right),
+			Num = list_to_integer(NumString),
+			{ast:makeVariable(Num), Rest};
+		[$\"|Right] ->
+			%quoted string
+			cutOffRightQuote(Right);
+		_ -> %string
+			{VarOrPrim, Rest} = untilSpaceOrRightParen(String),
+			Ans = case extractPrim(VarOrPrim) of
+				error ->
+					case functionTable:lookup(VarOrPrim) of
+						notfound -> 
+							case scope:lookup(Scope, VarOrPrim) of
+								notfound ->
+									globalStore:lookupPointer(VarOrPrim);
+								Found -> Found
+							end;
 						Found -> Found
 					end;
-				Found -> Found
-			end;
-		Prim ->
-			ast:makeLiteral(Prim)
+				Prim ->
+					ast:makeLiteral(Prim)
+			end,
+			{Ans, Rest}
 	end,
-	{Ans, Rest}.
-
+	NewAST = case LeftAST of
+		empty -> AST;
+		_ -> ast:makeApply(LeftAST, AST)
+	end,
+	case Remaining of
+		[] -> {NewAST, []};
+		[$)|_] -> {NewAST, Remaining};
+		_ -> parser(Remaining, NewAST, Scope)
+	end.
 
 
 %% 
@@ -85,12 +84,13 @@ unparse(AST) ->
 		apply ->
 			UnparsedFunction = unparse(ast:getApplyFunction(AST)),
 			UnparsedParameters = lists:map(fun unparse/1, ast:getApplyParameters(AST)),
-			string:join([UnparsedFunction | UnparsedParameters], " ");
+			"(" ++ string:join([UnparsedFunction | UnparsedParameters], " ") ++ ")";
 		lambda ->
-			Num = ast:getLambdaNumber(AST),
-			Slashes = lists:duplicate(Num, $\\),
+			Num = ast:getArity(AST),
+			StartSlashes = lists:flatten(lists:duplicate(Num, "(\\")),
+			EndSlashes = lists:flatten(lists:duplicate(Num, ")")),
 			ASTString = unparse(ast:getLambdaAST(AST)),
-			"(" ++ Slashes ++ " " ++ ASTString ++ ")";
+			StartSlashes ++ " " ++ ASTString ++ EndSlashes;
 		string ->
 			ast:getString(AST);
 		number ->
@@ -126,12 +126,15 @@ cutOffRightQuote([L|R]) ->
 untilSpaceOrRightParen([]) ->
 	{[], []};
 untilSpaceOrRightParen([$ |_] = S) ->
-	{[], S};
+	{[], trimSpace(S)};
 untilSpaceOrRightParen([$)|_] = S) ->
-	{[], S};
+	{[], trimSpace(S)};
 untilSpaceOrRightParen([L|R]) ->
 	{Ans, Rest} = untilSpaceOrRightParen(R),
 	{[L|Ans], Rest}.
+
+trimSpace([$ |Rest]) -> trimSpace(Rest);
+trimSpace(S) ->	S.
 
 extractPrim(VarOrPrim) ->
 	case VarOrPrim of
