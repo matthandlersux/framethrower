@@ -389,20 +389,20 @@ becomeInformant(InformToCellPointer, IsInformant, _ElementsState, Element) ->
 
 applyAndInject() -> undefined.
 
-applyAndInject(ExprString, InjectToCellPointer, _State, _ElementsState, Element) ->
-	applyAndInject(ExprString, InjectToCellPointer, send, [], undefined, undefined, Element).
+applyAndInject(AST, InjectToCellPointer, _State, _ElementsState, Element) ->
+	applyAndInject(AST, InjectToCellPointer, send, [], undefined, undefined, Element).
 	
-applyAndInject(ExprString, InjectToCellPointer, OutputName, _State, _ElementsState, Element) ->
-	applyAndInject(ExprString, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
+applyAndInject(AST, InjectToCellPointer, OutputName, _State, _ElementsState, Element) ->
+	applyAndInject(AST, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
 
-applyAndInject(ExprString, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
-	NewExpr = 	case cellElements:value(Element) of
+applyAndInject(AST, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
+	NewAST = 	case cellElements:value(Element) of
 					{Key, Value} ->
-						eval:evaluate( expr:apply(ExprString, Key) );
+						eval:evaluate( ast:makeApply(AST, ast:termToAST(Key) ) );
 					Value ->
-						ExprString
-				end,			
-	NewCellPointer = eval:evaluate( expr:apply(ExprString, Value) ),
+						AST
+				end,
+	NewCellPointer = eval:evaluate( ast:makeApply(NewAST, ast:termToAST(Value) ) ),
 	case cellElements:modifier(Element) of
 		add ->
 			cell:addInformant(InjectToCellPointer, NewCellPointer),

@@ -5,3 +5,4 @@ server/erl_crash.dump
 server/1
 server/test.Sun_Apr__5_22_45_02_EDT_2009.ets
 client/generated/*
+server/pipeline/erl_crash.dump
