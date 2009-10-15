@@ -106,14 +106,14 @@ makeLambda(AST, NumOfVariables) ->
 	{lambda, {NumOfVariables, AST}}.
 
 %% 
-%% makeApply :: AST -> List a -> AST
+%% makeApply :: AST -> a -> AST
 %% 		
 %%		
 
-makeApply({apply, {AST, ListOfParameters}}, NewParameters) ->
-	{apply, {AST, [NewParameters] ++ ListOfParameters}};
-makeApply(AST, ListOfParameters) ->
-	{apply, {AST, ListOfParameters}}.
+makeApply({apply, {AST, ListOfParameters}}, NewParameter) ->
+	{apply, {AST, [NewParameter] ++ ListOfParameters}};
+makeApply(AST, Parameter) ->
+	{apply, {AST, Parameter}}.
 
 
 %% ---------------------------------------------
