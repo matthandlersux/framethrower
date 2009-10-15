@@ -109,6 +109,8 @@ makeLambda(AST, NumOfVariables) ->
 %% 		
 %%		
 
+makeApply({apply, {AST, ListOfParameters}}, Parameters) when is_list(Parameters) ->
+	{apply, {AST, Parameters ++ ListOfParameters}};
 makeApply({apply, {AST, ListOfParameters}}, NewParameter) ->
 	{apply, {AST, [NewParameter] ++ ListOfParameters}};
 makeApply(AST, Parameters) when is_list(Parameters) ->
