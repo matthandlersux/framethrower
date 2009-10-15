@@ -10,6 +10,9 @@ template() {
 		return x
 	},
 	Test2 := Tuple2,
+	apply = f -> x -> f x,
+	plus5 = apply (plus 5),
+	test3 = apply plus5 1,
 	test4 = state(Unit [String], ["yeah!"]),
 	test5 = fetch test4,
 	a = c,
@@ -25,13 +28,16 @@ template() {
 	list = toList (swap (toTuple [1,2,3,4,5])),
 	
 	<div>
+		<f:on init>
+			
+		</f:on>
 		<f:on mouseup>
 			Test := Unit,
 			x <- create(Test (Test2 Number Number)),
 			debug (head test5)
 		</f:on>
 		
-		<div>{head list} {head test5} {f 5}</div>
+		<div>{head list} {head test5} {f 5} {test3}</div>
 		
 		<f:call>test1 (test a)</f:call>
 	</div>

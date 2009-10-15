@@ -12,6 +12,14 @@ function getFuncAndParams(expr) {
 	return {func: expr, params: params};
 }
 
+function fullBetaReduceExpr(expr) {
+	var expr0;
+	do {
+		expr0 = expr;
+		expr = betaReduceExpr(expr);
+	} while(expr!==expr0);
+	return expr;
+}
 
 function betaReduceExpr(expr) {
 	var orig = expr;
@@ -142,7 +150,8 @@ function evaluate2(expr) {
 	
 	if (expr.kind === "exprApply") {
 		
-		expr = betaReduceExpr(expr);
+		expr = fullBetaReduceExpr(expr);
+		
 		if (expr.kind !== "exprApply") {
 			return expr;
 		}
