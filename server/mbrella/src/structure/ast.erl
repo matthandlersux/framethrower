@@ -195,7 +195,7 @@ getApplyFunction({_, {AST, _}}) -> AST.
 %% 		
 %%		
 
-getApplyParameters({_, {_, ListOfParameters}}) -> ListOfParameters.
+getApplyParameters({_, {_, ListOfParameters}}) -> lists:reverse( ListOfParameters ).
 
 %% 
 %% getArity :: AST -> Number
