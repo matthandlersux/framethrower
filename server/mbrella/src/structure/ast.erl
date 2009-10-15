@@ -204,7 +204,7 @@ getApplyParameters({_, {_, ListOfParameters}}) -> ListOfParameters.
 
 getArity({function, {_Name, Arity}}) -> Arity;
 getArity({lambda, {NumVars, _AST}}) -> NumVars;
-getArity({apply, { AST , Parameters}}) -> getArity(Arity) - length(Parameters).
+getArity({apply, { AST , Parameters}}) -> getArity(AST) - length(Parameters).
 
 %% 
 %% type :: AST -> Atom
@@ -244,6 +244,7 @@ type({Type, _Data}) ->
 
 apply(Function, AST) ->
 	Arity = getArity(Function),
+	ok.
 	
 %% 
 %% betaReduce :: AST -> List AST -> AST
@@ -320,20 +321,3 @@ mapStrings({apply, {AST, ListOfParameters}}, MapFunction) ->
 	);
 mapStrings(AST, _) ->
 	AST.
-	
-	
-	
-%% 
-%% fold :: AST -> b -> (AST -> b -> b) -> b
-%% 
-%%
-
-fold(FoldFunction, Accum, {lambda, {_, AST}} = Lambda) ->
-	FoldFunction(Lambda, fold(FoldFunction, Accum, AST));
-fold(FoldFunction, Accum, {apply, {AST, ListOfParameters}} = Apply) ->
-	ListAccum = lists:fold(fun(Elem, InnerAccum) ->
-		fold(FoldFunction, InnerAccum, Elem)
-	end, ListOfParameters),
-	FoldFunction(Apply, fold(FoldFunction, ListAccum, AST));
-fold(FoldFunction, Accum, AST) ->
-	FoldFunction(AST, Accum).
