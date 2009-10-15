@@ -39,13 +39,9 @@ parser([$(|Right], Scope) ->
 			{ast:makeLambda(Expr), Remaining};
 		_ ->
 			%apply
-			?trace("In Apply"),
 			{ApplyLeft, SpaceAndRight} = parser(Right, Scope),
-			?trace("In Apply 2"),
 			[$ |Rest] = SpaceAndRight,
-			?trace("In Apply 3"),
 			{ApplyRight, [$)|Remaining]} = parser(Rest, Scope),
-			?trace(["Making Apply", ApplyLeft, ApplyRight]),
 			{ast:makeApply(ApplyLeft, ApplyRight), Remaining}
 	end;
 parser([$\"|Right], _) ->
@@ -64,9 +60,13 @@ parser(S, Scope) ->
 	{VarOrPrim, Rest} = untilSpaceOrRightParen(S),
 	Ans = case extractPrim(VarOrPrim) of
 		error ->
-			case scope:lookup(Scope, VarOrPrim) of
-				notfound ->
-					globalStore:lookupPointer(VarOrPrim);
+			case functionTable:lookup(VarOrPrim) of
+				notfound -> 
+					case scope:lookup(Scope, VarOrPrim) of
+						notfound ->
+							globalStore:lookupPointer(VarOrPrim);
+						Found -> Found
+					end;
 				Found -> Found
 			end;
 		Prim ->
@@ -108,7 +108,7 @@ unparse(AST) ->
 		cell ->
 			ast:getCellName(AST);
 		function ->
-			ast:getFunctionName(AST)
+			atom_to_list(ast:getFunctionName(AST))
 	end.
 
 

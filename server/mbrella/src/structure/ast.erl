@@ -71,12 +71,11 @@ makeCell(Name, Pid) ->
 	{cell, {{Name, Pid}, undefined}}.
 
 %% 
-%% makeFunction :: Atom -> AST
+%% makeFunction :: Atom -> Number -> AST
 %% 		
 %%		
 
-makeFunction(Name) ->
-	Arity = erlang:apply(primFuncs, Name, []),
+makeFunction(Name, Arity) ->
 	{function, {Name, Arity}}.
 
 %% 
@@ -113,7 +112,7 @@ makeLambda(AST, NumOfVariables) ->
 makeApply({apply, {AST, ListOfParameters}}, NewParameter) ->
 	{apply, {AST, [NewParameter] ++ ListOfParameters}};
 makeApply(AST, Parameter) ->
-	{apply, {AST, Parameter}}.
+	{apply, {AST, [Parameter]}}.
 
 
 %% ---------------------------------------------
