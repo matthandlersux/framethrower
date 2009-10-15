@@ -92,7 +92,7 @@ makeVariable(Number) ->
 %%		
 
 makeLambda(AST) ->
-	{lambda, {1, AST}}.
+	makeLambda(AST, 1).
 
 %% 
 %% makeLambda :: AST -> Number -> AST
