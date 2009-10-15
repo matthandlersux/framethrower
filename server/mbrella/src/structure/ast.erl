@@ -23,6 +23,10 @@
 %% External API
 %% ====================================================
 
+%% ---------------------------------------------
+%% Maker functions
+%% ---------------------------------------------
+
 %% 
 %% makeLiteral :: Literal -> AST
 %% 		
@@ -107,41 +111,100 @@ makeLambda(AST, NumOfVariables) ->
 %%		
 
 makeApply({apply, {AST, ListOfParameters}}, NewParameters) ->
-	{apply, {AST, NewParameters ++ ListOfParameters}};
+	{apply, {AST, [NewParameters] ++ ListOfParameters}};
 makeApply(AST, ListOfParameters) ->
 	{apply, {AST, ListOfParameters}}.
 
 
-%% Getter (Accessor) Functions
+%% ---------------------------------------------
+%% Getter Functions
+%% ---------------------------------------------
 
-% helper
-getFlatValue({_, Value}) -> Value.
+%% 
+%% getString :: AST -> String
+%% 		
+%%		
 
 getString(Input) -> getFlatValue(Input).
-getNumber(Input) -> getFlatValue(Input).
-getBool(Input) -> getFlatValue(Input).
-getNull(Input) -> getFlatValue(Input).
-getVariable(Input) -> getFlatValue(Input).
-getCellName({_, {{Name, _}, _}}) -> Name.
-getCellPid({_, {{_, Pid}, _}}) -> Pid.
-getFunctionName({_, {Name, _}}) -> Name.
-getFunctionArity({_, {_, Arity}}) -> Arity.
 
-getLambdaNumber({_, NumOfVariables, _}) -> NumOfVariables.
+%% 
+%% getNumber :: AST -> Number
+%% 		
+%%		
+
+getNumber(Input) -> getFlatValue(Input).
+
+%% 
+%% getBool :: AST -> Bool
+%% 		
+%%		
+
+getBool(Input) -> getFlatValue(Input).
+
+%% 
+%% getNull :: AST -> Null
+%% 		
+%%		
+
+getNull(Input) -> getFlatValue(Input).
+
+%% 
+%% getVariable :: AST -> Variable
+%% 		
+%%		
+
+getVariable(Input) -> getFlatValue(Input).
+
+%% 
+%% getCellName :: AST -> CellName
+%% 		
+%%		
+
+getCellName({_, {{Name, _}, _}}) -> Name.
+
+%% 
+%% getCellPid :: AST -> Pid
+%% 		
+%%		
+
+getCellPid({_, {{_, Pid}, _}}) -> Pid.
+
+%% 
+%% getFunctionName :: AST -> Atom
+%% 		
+%%		
+
+getFunctionName({_, {Name, _}}) -> Name.
+
+%% 
+%% getLambdaAST :: AST -> AST
+%% 		
+%%		
+
 getLambdaAST({_, {_, AST}}) -> AST.
 
+%% 
+%% getApplyFunction :: AST -> AST
+%% 		
+%%		
+
 getApplyFunction({_, {AST, _}}) -> AST.
+
+%% 
+%% getApplyParameters :: AST -> List AST
+%% 		
+%%		
+
 getApplyParameters({_, {_, ListOfParameters}}) -> ListOfParameters.
 
 %% 
 %% getArity :: AST -> Number
-%% 		takes a function lambda or apply
+%% 		takes a function, lambda, or apply
 %%		
 
 getArity({function, {_Name, Arity}}) -> Arity;
-getArity({apply, { {function, {_Name, Arity}} , Parameters}}) -> Arity - Parameters;
-getArity({apply, { {lambda, {NumVars, _AST}}, Parameters}}) -> NumVars - Parameters;
-getArity({lambda, {NumVars, _AST}}) -> NumVars.
+getArity({lambda, {NumVars, _AST}}) -> NumVars;
+getArity({apply, { AST , Parameters}}) -> getArity(Arity) - length(Parameters).
 
 %% 
 %% type :: AST -> Atom
@@ -198,6 +261,13 @@ betaReduce(Lambda, ListOfReplacements) ->
 %% ====================================================
 %% Internal API
 %% ====================================================
+
+%% 
+%% getFlatValue :: AST -> String | Number | Bool | Null
+%% 		
+%%		
+
+getFlatValue({_, Value}) -> Value.
 
 %% 
 %% betaReduce :: AST -> AST -> Number -> AST
