@@ -71,12 +71,11 @@ makeCell(Name, Pid) ->
 	{cell, {{Name, Pid}, undefined}}.
 
 %% 
-%% makeFunction :: Atom -> AST
+%% makeFunction :: Atom -> Number -> AST
 %% 		
 %%		
 
-makeFunction(Name) ->
-	Arity = erlang:apply(primFuncs, Name, []),
+makeFunction(Name, Arity) ->
 	{function, {Name, Arity}}.
 
 %% 
@@ -299,8 +298,6 @@ mapStrings({apply, {AST, ListOfParameters}}, MapFunction) ->
 	);
 mapStrings(AST, _) ->
 	AST.
-	
-	
 	
 %% 
 %% fold :: AST -> b -> (AST -> b -> b) -> b

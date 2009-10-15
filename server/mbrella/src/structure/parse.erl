@@ -21,43 +21,52 @@
 parse(S) ->
 	parse(S, scope:makeScope()).
 
+parse(S, Scope) ->
+	{Result, _} = parser(S, Scope),
+	Result.
+
+
 %% 
-%% parse:: String (deBruijn style) -> Scope -> AST
+%% parser:: String (deBruijn style) -> Scope -> {AST, String}
 %%
 
-parse([$(|Right] = S, Scope) ->
+parser([$(|Right], Scope) ->
 	%apply or lambda
 	case Right of
 		[$\\|Rest] ->
 			%lambda
-			{Expr, [$)|Remaining]} = parse(Rest, Scope),
+			{Expr, [$)|Remaining]} = parser(Rest, Scope),
 			{ast:makeLambda(Expr), Remaining};
 		_ ->
 			%apply
-			{ApplyLeft, SpaceAndRight} = parse(Right, Scope),
+			{ApplyLeft, SpaceAndRight} = parser(Right, Scope),
 			[$ |Rest] = SpaceAndRight,
-			{ApplyRight, [$)|Remaining]} = parse(Rest, Scope),
-			{ast:makeApply(ApplyRight, ApplyRight), Remaining}
+			{ApplyRight, [$)|Remaining]} = parser(Rest, Scope),
+			{ast:makeApply(ApplyLeft, ApplyRight), Remaining}
 	end;
-parse([$\"|Right] = S, _) ->
+parser([$\"|Right], _) ->
 	%quoted string
 	cutOffRightQuote(Right);
-parse([$ |Right] = S, Scope) ->
+parser([$ |Right], Scope) ->
 	%not sure if this will happen
-	parse(Right, Scope);
-parse([$/|Right] = S, _) ->
+	parser(Right, Scope);
+parser([$/|Right], _) ->
 	{NumString, Rest} = untilSpaceOrRightParen(Right),
 	Num = list_to_integer(NumString),
 	{ast:makeVariable(Num), Rest};
-parse([_|Right] = S, Scope) ->
+parser(S, Scope) ->
 	%env variable or number
 	%read until space or right paren
 	{VarOrPrim, Rest} = untilSpaceOrRightParen(S),
 	Ans = case extractPrim(VarOrPrim) of
 		error ->
-			case scope:lookup(Scope, VarOrPrim) of
-				notfound ->
-					globalStore:lookupPointer(VarOrPrim);
+			case functionTable:lookup(VarOrPrim) of
+				notfound -> 
+					case scope:lookup(Scope, VarOrPrim) of
+						notfound ->
+							globalStore:lookupPointer(VarOrPrim);
+						Found -> Found
+					end;
 				Found -> Found
 			end;
 		Prim ->
@@ -72,34 +81,35 @@ parse([_|Right] = S, Scope) ->
 %% 
 
 unparse(AST) ->
-	ast:fold(fun(InnerAST, String) ->
-		case ast:type(InnerAST) of
-			apply ->
-				"(" ++ String ++ ")";
-			lambda ->
-				Num = ast:getLambdaNumber(InnerAST),
-				Slashes = lists:duplicate(Num, $\\),
-				"(" ++ Slashes ++ " " ++ String ++ ")";
-			string ->
-				ast:getString(InnerAST) ++ " " ++ String;
-			number ->
-				NumberString = case ast:getNumber(InnerAST) of
-					Integer when is_integer(Integer) -> integer_to_list(Integer);
-					Float when is_float(Float) -> float_to_list(Float)
-				end,
-				NumberString ++ " " ++ String;
-			bool ->
-				atom_to_list(ast:getBool(InnerAST)) ++ " " ++ String;
-			null ->
-				atom_to_list(ast:getNull(InnerAST)) ++ " " ++ String;
-			variable ->
-				"/" ++ integer_to_list(ast:getVariable(InnerAST)) ++ " " ++ String;
-			cell ->
-				ast:getCellName(InnerAST) ++ " " ++ String;
-			function ->
-				ast:getFunctionName(InnerAST) ++ " " ++ String
-		end
-	end, "", AST).
+	case ast:type(AST) of
+		apply ->
+			UnparsedFunction = unparse(ast:getApplyFunction(AST)),
+			UnparsedParameters = lists:map(fun unparse/1, ast:getApplyParameters(AST)),
+			string:join([UnparsedFunction | UnparsedParameters], " ");
+		lambda ->
+			Num = ast:getLambdaNumber(AST),
+			Slashes = lists:duplicate(Num, $\\),
+			ASTString = unparse(ast:getLambdaAST(AST)),
+			"(" ++ Slashes ++ " " ++ ASTString ++ ")";
+		string ->
+			ast:getString(AST);
+		number ->
+			NumberString = case ast:getNumber(AST) of
+				Integer when is_integer(Integer) -> integer_to_list(Integer);
+				Float when is_float(Float) -> float_to_list(Float)
+			end,
+			NumberString;
+		bool ->
+			atom_to_list(ast:getBool(AST));
+		null ->
+			atom_to_list(ast:getNull(AST));
+		variable ->
+			"/" ++ integer_to_list(ast:getVariable(AST));
+		cell ->
+			ast:getCellName(AST);
+		function ->
+			atom_to_list(ast:getFunctionName(AST))
+	end.
 
 
 
@@ -115,9 +125,9 @@ cutOffRightQuote([L|R]) ->
 
 untilSpaceOrRightParen([]) ->
 	{[], []};
-untilSpaceOrRightParen([$ |R] = S) ->
+untilSpaceOrRightParen([$ |_] = S) ->
 	{[], S};
-untilSpaceOrRightParen([$)|R] = S) ->
+untilSpaceOrRightParen([$)|_] = S) ->
 	{[], S};
 untilSpaceOrRightParen([L|R]) ->
 	{Ans, Rest} = untilSpaceOrRightParen(R),
