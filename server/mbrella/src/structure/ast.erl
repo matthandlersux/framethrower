@@ -204,7 +204,7 @@ getApplyParameters({_, {_, ListOfParameters}}) -> lists:reverse( ListOfParameter
 
 getArity({function, {_Name, Arity}}) -> Arity;
 getArity({lambda, {NumVars, _AST}}) -> NumVars;
-getArity({apply, { AST , Parameters}}) -> getArity(Arity) - length(Parameters).
+getArity({apply, { AST , Parameters}}) -> getArity(AST) - length(Parameters).
 
 %% 
 %% type :: AST -> Atom
