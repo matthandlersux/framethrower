@@ -76,7 +76,7 @@ makeCell(Name, Pid) ->
 %%		
 
 makeObject(Name) ->
-	{object, Name}
+	{object, Name}.
 
 %% 
 %% makeFunction :: Atom -> Number -> AST
