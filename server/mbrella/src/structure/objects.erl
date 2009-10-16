@@ -51,6 +51,10 @@ stop() ->
 	gen_server:call(?MODULE, stop).
 
 
+accessor(ClassName, PropName, ObjectName) ->
+	objectStore:getField(ObjectName, PropName).
+
+
 makeClasses(ClassesToMake) ->
 	lists:map(fun (ClassDef) ->
 		#classToMake{name = Name, inherit = Inherit, prop = Prop, memoize = Memoize} = ClassDef,
@@ -82,23 +86,6 @@ create(ClassName, Props) ->
 		ErrorType:ErrorPattern -> 
 			{error, objectCreationError}
 	end.
-
-add(ObjOrPointer, Property, Key) ->
-	Object = checkPointer(ObjOrPointer),
-	Prop = Object#object.prop,
-	Cell = dict:fetch(Property, Prop),
-	Type = getPropType(Object#object.type, Property),
-	controlledCell:add(Type, Cell, Key),
-	ok.
-
-remove(ObjOrPointer, Property, Key) ->
-	Object = checkPointer(ObjOrPointer),
-	Cell = dict:fetch(Property, Object#object.prop),
-	case Key of
-		undefined -> controlledCell:remove(Cell);
-		_ -> controlledCell:remove(Cell, Key)
-	end,
-	ok.
 
 getBroadcaster(ClassName, MemoString) ->
 	gen_server:call(?MODULE, {getBroadcaster, ClassName, MemoString}).
@@ -442,11 +429,6 @@ handle_cast({addProp, Name, PropName, TypeString}, State) ->
 	NewClasses = dict:store(Name, Class#class{prop = NewProps}, Classes),
 	GetFuncName = Name ++ ":" ++ PropName,
 	FuncType = Name ++ " -> (" ++ TypeString ++ ")",
-	GetFunc = fun(ObjOrPointer) ->
-		Obj = checkPointer(ObjOrPointer),
-		dict:fetch(PropName, Obj#object.prop)
-	end,
-	globalStore:addFun(GetFuncName, FuncType, GetFunc),
 	NewState = State#state{classes=NewClasses},
 	{noreply, NewState};
 handle_cast({addToMemoTable, Obj, Props}, State) ->
