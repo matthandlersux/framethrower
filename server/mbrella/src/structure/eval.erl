@@ -92,44 +92,6 @@ evaluateList( [H|T] ) ->
 % evaluate(Object) when is_record(Object, object) -> 
 % 	#objectPointer{name = Object#object.name};
 % evaluate(NumStringBool) -> NumStringBool.	
-
-%% 
-%% betaReduce:: ExprLambda -> Expr -> Expr
-%%		betaReduce takes the ExprLambda#exprLambda.expr and an aritrary expression and returns 
-%%		ExprLambda#exprLambda.expr such that every occurence 
-%%		of that ExprLambdas variable is replaced by Expr
-%%		
-%%		this function in De Bruijn aware, though it does not know how to pronounce "De Bruijn" 
-%% 
-
-% betaReduce( Expr, ReplaceExpr) ->
-% 	betaReduce( Expr, 1, ReplaceExpr).
-% 	
-% betaReduce( Expr, BinderLevel, ReplaceExpr ) ->
-% 	case Expr of
-% 		#exprVar{index = BinderLevel} ->
-% 			ReplaceExpr;
-% 		Lambda when is_record(Lambda, exprLambda) ->
-% 			#exprLambda{
-% 				expr = betaReduce( Lambda#exprLambda.expr, BinderLevel + 1, ReplaceExpr)
-% 			};
-% 		Apply when is_record(Apply, exprApply) ->
-% 			#exprApply{
-% 				left = betaReduce( Apply#exprApply.left, BinderLevel, ReplaceExpr),
-% 				right = betaReduce( Apply#exprApply.right, BinderLevel, ReplaceExpr)
-% 			};
-% 		_ -> Expr
-% 	end.
-
-%% 
-%% take a primitave/created function and apply it to the right hand side object
-%% 
-
-% applyFun( #exprFun{function = Fun} = ExprFun, Expr ) when is_record(ExprFun, exprFun) ->
-% 	Fun(Expr);
-% applyFun( #funPointer{name = Name} = FunPointer, Expr ) when is_record(FunPointer, funPointer) ->
-% 	#exprFun{function = Fun} = globalStore:lookup(Name),
-% 	Fun(Expr).
 	
 % bottomOut( InExpr ) -> 
 % 	case InExpr of
@@ -159,9 +121,3 @@ evaluateList( [H|T] ) ->
 % 			};
 % 		_ -> InExpr
 % 	end.
-
-% normalize( Expression ) -> 
-% 	NormFun = fun( Expr ) when is_record(Expr, exprFun) ->
-% 		{ok, Expr#exprFun{type = undefined, function = undefined, bottom = undefined}}
-% 	end,
-% 	mblib:traverse(Expression, NormFun).

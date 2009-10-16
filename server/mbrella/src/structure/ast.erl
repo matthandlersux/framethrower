@@ -69,6 +69,14 @@ makeCell(CellPointer) when is_tuple(CellPointer) ->
 
 makeCell(Name, Pid) ->
 	{cell, {{Name, Pid}, undefined}}.
+	
+%% 
+%% makeObject :: String -> AST
+%% 		
+%%		
+
+makeObject(Name) ->
+	{object, Name}.
 
 %% 
 %% makeFunction :: Atom -> Number -> AST
@@ -77,6 +85,14 @@ makeCell(Name, Pid) ->
 
 makeFunction(Name, Arity) ->
 	{function, {Name, Arity}}.
+	
+%% 
+%% makeAccessor :: Atom -> Atom -> AST
+%% 		accessors are always arity 1
+%%		
+
+makeAccessor(ClassName, FieldName) ->
+	{function, {{accessor, [ClassName, FieldName]}, 1}}.
 
 %% 
 %% makeVariable :: Number -> AST
@@ -166,6 +182,13 @@ getVariable(Input) -> getFlatValue(Input).
 getCellName({_, {{Name, _}, _}}) -> Name.
 
 %% 
+%% getObject :: AST -> String
+%% 		
+%%		
+
+getObject(Object) -> getFlatValue(Object).
+
+%% 
 %% getCellPid :: AST -> Pid
 %% 		
 %%		
@@ -205,7 +228,7 @@ getApplyParameters({_, {_, ListOfParameters}}) -> lists:reverse( ListOfParameter
 %% 		takes a function, lambda, or apply
 %%		
 
-getArity({function, {_Name, Arity}}) -> Arity;
+getArity({function, {_NameOrTuple, Arity}}) -> Arity;
 getArity({lambda, {NumVars, _AST}}) -> NumVars;
 getArity({apply, { AST , Parameters}}) -> getArity(AST) - length(Parameters).
 
@@ -224,8 +247,13 @@ type({Type, _Data}) ->
 
 apply(AST, Parameter) when not is_list(Parameter) ->
 	ast:apply(AST, [Parameter]);
-apply({function, {Accessor, _Arity}}, ListOfParameters) when is_tuple(Accessor) ->
-	todo;
+apply({function, {{Family, Arguments}, _Arity}}, ListOfParameters) ->
+	if
+		Family =:= accessor ->
+			erlang:apply(objects, accessor, Arguments ++ toTerm(ListOfParameters));
+		true ->
+			exit(wrong_family_function)
+	end;
 apply({function, {Name, _Arity}}, ListOfParameters) ->
 	erlang:apply(primFuncs, Name, toTerm(ListOfParameters)).
 
@@ -352,6 +380,8 @@ toTerm({bool, Bool}) ->
 	Bool;
 toTerm({null, Null}) ->
 	Null;
+toTerm({object, Name}) ->
+	Name;
 toTerm({cell, {CellPointer, _BottomExpr}}) ->
 	CellPointer;
 toTerm({function, _} = Function) ->
