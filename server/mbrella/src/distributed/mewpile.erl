@@ -8,13 +8,15 @@
 
 -behaviour(gen_server).
 
+-define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
+
 %% --------------------------------------------------------------------
 %% Include files
 %% --------------------------------------------------------------------
 
 %% --------------------------------------------------------------------
 %% External exports
--export([mewpilate/1, new/0, store/2, get/1]).
+-export([mewpilate/1, new/0, store/2, get/1, debug/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -62,6 +64,14 @@ mewpilate([H|T]) ->
 	[mewpilate(H)|mewpilate(T)];
 mewpilate(AST) ->
 	mewpilate(ast:type(AST), AST).
+	
+%% 
+%% debug :: List CellAST
+%% 		
+%%		
+
+debug() ->
+	gen_server:call(?MODULE, debug).
 
 %% ====================================================================
 %% Server functions
@@ -88,7 +98,9 @@ init(_) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({get, AST}, From, ETS) ->
+handle_call(debug, _, ETS) ->
+	{reply, ets:tab2list(ETS), ETS};
+handle_call({get, AST}, _From, ETS) ->
 	NormalizedAST = mewpilate(AST),
 	Reply = 	case ets:lookup(ETS, NormalizedAST) of
 					[{_, CellAST}] ->
