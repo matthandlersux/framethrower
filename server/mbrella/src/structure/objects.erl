@@ -96,6 +96,9 @@ addToMemoTable(Obj, Prop) ->
 getPropType(Class, PropName) ->
 	gen_server:call(?MODULE, {getPropType, Class, PropName}).
 
+getState() ->
+	gen_server:call(?MODULE, getState).
+
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
@@ -383,6 +386,8 @@ handle_call({getPropType, Class, PropName}, _, State) ->
 	C = dict:fetch(ClassName, Classes),
 	PropType = getInheritedPropType(C, PropName),
 	{reply, PropType, State};
+handle_call(getState, _, State) ->
+	{reply, State, State};	
 handle_call(stop, _, State) ->
 	{stop, normal, stopped, State}.
 
@@ -427,8 +432,6 @@ handle_cast({addProp, Name, PropName, TypeString}, State) ->
 	Class = dict:fetch(Name, Classes),
 	NewProps = dict:store(PropName, Type, Class#class.prop),
 	NewClasses = dict:store(Name, Class#class{prop = NewProps}, Classes),
-	GetFuncName = Name ++ ":" ++ PropName,
-	FuncType = Name ++ " -> (" ++ TypeString ++ ")",
 	NewState = State#state{classes=NewClasses},
 	{noreply, NewState};
 handle_cast({addToMemoTable, Obj, Props}, State) ->

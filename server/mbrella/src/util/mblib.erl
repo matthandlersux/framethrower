@@ -297,7 +297,7 @@ startScript(Options) ->
 %% 
 
 bootJsonScript() ->
-	{ok, JSONBinary} = file:read_file("lib/bootJSON"),
+	{ok, JSONBinary} = file:read_file("priv/bootJSON"),
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
 	ClassesStruct = struct:get_value(<<"classes">>, Struct),
 	RootObjectsStruct = struct:get_value(<<"rootObjects">>, Struct),
