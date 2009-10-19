@@ -12,6 +12,7 @@
 	addValue/2, addValues/2, removeValue/2, removeValues/2,
 	sendElements/2, sendElements/3,
 	leash/1, unleash/1, setFlag/3,
+	setBottom/2,
 	injectOutput/2, injectOutput/3, injectOutput/4,
 	uninjectOutput/2, uninjectOutput/3, uninjectOutput/4,
 	injectIntercept/2, injectIntercept/3,
@@ -336,7 +337,7 @@ handle_cast({setFlag, Flag, Setting}, State) ->
 	{noreply, cellState:setFlag(State, Flag, Setting)};
 
 handle_cast({setBottom, Bottom}, State) ->
-	{noreply, cellState:setBottom(State, Bottom)};
+	{noreply, cellState:updateBottom(State, Bottom)};
 
 handle_cast(kill, State) ->
 	{stop, normal, cellState:setFlag(State, leashed, true)};
