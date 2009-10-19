@@ -43,7 +43,7 @@
 makeCell() -> makeCell(unit).
 
 makeCell(CellType) ->
-	Name = "server" ++ integer_to_list(random:uniform(1000)),
+	Name = cellStore:getName(),
 	{ok, Pid} = gen_server:start(?MODULE, [CellType, {name, Name}], []),
 	%Name = env:nameAndStoreCell(Pid),
 	cellPointer:new(Name, Pid).
@@ -51,7 +51,7 @@ makeCell(CellType) ->
 makeLinkedCell() -> makeLinkedCell(unit).
 
 makeLinkedCell(CellType) ->
-	Name = "server" ++ integer_to_list(random:uniform(1000)),
+	Name = cellStore:getName(),
 	{ok, Pid} = gen_server:start_link(?MODULE, [CellType, {name, Name}], []),
 	%Name = env:nameAndStoreCell(Pid),
 	cellPointer:new(Name, Pid).
@@ -59,7 +59,7 @@ makeLinkedCell(CellType) ->
 makeCellLeashed() -> makeCellLeashed(unit).
 
 makeCellLeashed(CellType) ->
-	Name = "server" ++ integer_to_list(random:uniform(1000)),
+	Name = cellStore:getName(),
 	{ok, Pid} = gen_server:start(?MODULE, [CellType, {leashed, true}, {name, Name}], []),
 	%Name = env:nameAndStoreCell(Pid),
 	cellPointer:new(Name, Pid).
@@ -67,7 +67,7 @@ makeCellLeashed(CellType) ->
 makeLinkedCellLeashed() -> makeLinkedCellLeashed(unit).
 
 makeLinkedCellLeashed(CellType) ->
-	Name = "server" ++ integer_to_list(random:uniform(1000)),
+	Name = cellStore:getName(),
 	{ok, Pid} = gen_server:start_link(?MODULE, [CellType, {leashed, true}, {name, Name}], []),
 	%Name = env:nameAndStoreCell(Pid),
 	cellPointer:new(Name, Pid).

@@ -24,14 +24,24 @@ stop() ->
 getName() ->
 	gen_server:call(?MODULE, getName).
 
-store(Name, Cell) ->
-	gen_server:cast(?MODULE, {store, Name, Cell}).
+%% 
+%% store :: String -> Pid -> ok
+%% 		
+%%		
+
+store(Name, Pid) ->
+	gen_server:cast(?MODULE, {store, Name, Pid}).
 
 getState() ->
 	gen_server:call(?MODULE, getState).
 
 getStateDict() ->
 	gen_server:call(?MODULE, getStateDict).
+
+%% 
+%% lookup :: String -> CellPointer
+%% 		
+%%		
 
 lookup(Name) ->
 	gen_server:call(?MODULE, {lookup, Name}).
@@ -52,7 +62,7 @@ handle_call(getName, _, State) ->
 handle_call({lookup, Name}, _, State) ->
 	GlobalCell = case ets:lookup(?this(globalTable), Name) of
 		[{_, Reply}] ->
-			Reply;
+			cellPointer:create(Name, Reply);
 		[] -> 
 			notfound
 	end,
@@ -65,8 +75,8 @@ handle_call(stop, _, State) ->
 	{stop, normal, stopped, State}.
 
 
-handle_cast({store, Name, Cell}, State) ->
-	ets:insert(?this(globalTable), {Name, Cell}),
+handle_cast({store, Name, Pid}, State) ->
+	ets:insert(?this(globalTable), {Name, Pid}),
     {noreply, State}.
 
 
