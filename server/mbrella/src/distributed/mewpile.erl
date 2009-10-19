@@ -8,6 +8,7 @@
 
 -behaviour(gen_server).
 
+-define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
 
 %% --------------------------------------------------------------------
@@ -31,9 +32,9 @@
 %% 		
 %%		
 
-new() -> start_link().
-start_link() ->
-	case gen_server:start_link({local, ?MODULE}, ?MODULE, [], []) of
+new() -> start().
+start() ->
+	case gen_server:start({local, ?MODULE}, ?MODULE, [], []) of
 		{ok, Pid} -> Pid;
 		Else -> Else
 	end.
