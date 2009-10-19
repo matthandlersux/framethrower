@@ -73,12 +73,8 @@ makeLinkedCellLeashed(CellType) ->
 	cellPointer:new(Name, Pid).
 
 %% 
-%% add/remove Elements
-%% 
-
-%% 
 %% sendElements :: CellPointer -> CellPointer -> Elements -> ok
-%% Elements :: List Tuple ("add" | "remove") Value
+%% 		Elements :: List Tuple ("add" | "remove") Value
 %%
 
 sendElements(CellPointer, Elements) ->
