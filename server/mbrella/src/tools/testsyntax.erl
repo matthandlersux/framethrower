@@ -117,9 +117,9 @@ extractMessage(R, State) when is_record(R, xmlElement) ->
 		{pair, Key, {scPatternMatch, Name}} ->
 			{Key, dict:fetch(Name, StartCaps)};
 		{func, Name} ->
-			globalStore:lookup(Name);
+			cellStore:lookup(Name);
 		{pair, Key, {func, Name}} ->
-			{Key, globalStore:lookup(Name)};			
+			{Key, cellStore:lookup(Name)};			
 		Arg -> Arg
 	end,
 	case R#xmlElement.name of

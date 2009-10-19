@@ -54,7 +54,7 @@ parser(String, LeftAST, Scope) ->
 						notfound -> 
 							case scope:lookup(Scope, VarOrPrim) of
 								notfound ->
-									globalStore:lookup(VarOrPrim);
+									cellStore:lookup(VarOrPrim);
 								Found -> Found
 							end;
 						Found -> Found

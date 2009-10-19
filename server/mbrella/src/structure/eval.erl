@@ -89,9 +89,9 @@ evaluateList( [H|T] ) ->
 % 									%decide if it needs to be named
 % 									#exprFun{function = X, bottom = BottomExpr};
 % 								Result when is_record(Result, cellPointer) ->
-% 									Cell = globalStore:lookup(Result#cellPointer.name),
+% 									Cell = cellStore:lookup(Result#cellPointer.name),
 % 									CellWithBottom = Cell#exprCell{bottom = BottomExpr},
-% 									globalStore:store(Result#cellPointer.name, CellWithBottom),
+% 									cellStore:store(Result#cellPointer.name, CellWithBottom),
 % 									OnRemove = memoize:add( BottomExpr, Result),
 % 									cell:addOnRemove(Result, OnRemove),
 % 									Result;
@@ -115,7 +115,7 @@ evaluateList( [H|T] ) ->
 % 					ExprFun#exprFun.bottom
 % 			end;
 % 		ExprPointer when is_record(ExprPointer, cellPointer) ->
-% 			Expr = globalStore:lookup(ExprPointer#cellPointer.name),
+% 			Expr = cellStore:lookup(ExprPointer#cellPointer.name),
 % 			case Expr#exprCell.bottom of 
 % 				undefined ->
 % 					Expr#exprCell.name;

@@ -261,7 +261,7 @@ bindExpr(Expr, Scope) ->
 	ast:mapStrings(Expr, fun(String) -> 
 		case scope:lookup(Scope, String) of
 			notfound ->
-				globalStore:lookupPointer(String);
+				cellStore:lookupPointer(String);
 			Found -> Found
 		end
 	end).
