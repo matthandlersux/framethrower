@@ -227,38 +227,9 @@ createClasses(ClassesStruct) ->
 		Prop = lists:map(fun({PropName, PropVal}) ->
 			{binary_to_list(PropName), binary_to_list(PropVal)}
 		end, BinProp),
-
-		InheritBin = struct:get_value(<<"inherit">>, Fields),
-		MemoizeBin = struct:get_value(<<"memoize">>, Fields),
-
-		WithProps = #classToMake{ name = binary_to_list(Name),prop = Prop},
-		WithInherit = case InheritBin of
-			undefined -> WithProps;
-			_ -> WithProps#classToMake{inherit = binary_to_list(InheritBin)}
-		end,
-		case MemoizeBin of
-			undefined -> WithInherit;
-			_ ->
-				Memoize = lists:map(fun(MemoField) ->
-					binary_to_list(MemoField)
-				end, MemoizeBin),
-				WithInherit#classToMake{memoize = Memoize}
-		end
+		#classToMake{ name = binary_to_list(Name), prop = Prop}
 	end, Classes),
 	objects:makeClasses(ClassesToMake).
-
-createRootObjects(RootObjectsStruct) ->
-	RootObjects = struct:to_list(RootObjectsStruct),
-	lists:foreach(fun({Name, ObjectStruct}) ->
-		Type = struct:get_value(<<"type">>, ObjectStruct),
-		Prop = struct:get_value(<<"prop">>, ObjectStruct),
-		?trace(["Prop:", Prop]),
-		NewProp = lists:foldr(fun({Field, Value}, PropDict) ->
-			
-			dict:store(binary_to_list(Field), Value, PropDict)
-		end, dict:new(), struct:to_list(Prop)),
-		objects:createWithName(binary_to_list(Type), NewProp, binary_to_list(Name))
-	end, RootObjects).
 
 
 %% 
@@ -318,7 +289,7 @@ prepareStateScript() ->
 	{ok, JSONBinary} = file:read_file("lib/bootJSON"),
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),	
 	PrepareStateStruct = struct:get_value(<<"prepareState">>, Struct),
-	UpdatedStruct = serialize:updatePrepareState(PrepareStateStruct),
+	serialize:updatePrepareState(PrepareStateStruct),
 	preparedState.
 
 

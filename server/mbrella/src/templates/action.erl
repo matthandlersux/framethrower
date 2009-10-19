@@ -176,7 +176,7 @@ evaluateLine(Line, Scope) ->
 		"lineExpr" ->
 			Expr = (struct:get_value(<<"expr">>, Line)),
 			?trace(["Binding expr: ", Expr]),
-			Result = bindExpr(Expr, Scope),
+			Result = parse:bind(Expr, Scope),
 			?trace([{"Done parsing expr: ", Expr}, {"Result:", Result}]),
 			Result;
 		"lineTemplate" ->
@@ -257,14 +257,6 @@ mapFields(NonJSON, _, _) ->
 	NonJSON.
 
 
-bindExpr(Expr, Scope) -> 
-	ast:mapStrings(Expr, fun(String) -> 
-		case scope:lookup(Scope, String) of
-			notfound ->
-				cellStore:lookupPointer(String);
-			Found -> Found
-		end
-	end).
 
 executeAction() -> ok.
 
