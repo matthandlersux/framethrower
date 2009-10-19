@@ -16,7 +16,6 @@
 %%		
 
 evaluate(AST) ->
-	% do some mewpile stuff here maybe?
 	evaluate(ast:type(AST), AST).
 
 %% ====================================================
@@ -39,7 +38,20 @@ evaluate(apply, AST) ->
 			if
 				Arity =:= length(Parameters) ->
 					ReducedParameters = evaluateList( Parameters ),
-					ast:apply(FunctionOrLambda, ReducedParameters);
+					case mewpile:get(AST) of
+						false ->
+							ASTResult = ast:apply(FunctionOrLambda, ReducedParameters),
+							case cellPointer:isCellPointer(ASTResult) of
+								true ->
+									CellAST = ast:makeCell(ASTResult),
+									mewpile:store( AST, CellAST ),
+									CellAST;
+								false ->
+									ASTResult
+							end;
+						CellAst ->
+							CellAst
+					end;
 				true ->
 					AST
 			end

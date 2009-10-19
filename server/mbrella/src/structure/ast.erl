@@ -122,7 +122,7 @@ makeLambda(AST, NumOfVariables) ->
 
 %% 
 %% makeApply :: AST -> a -> AST
-%% 		
+%% 			:: AST -> List a -> AST
 %%		
 
 makeApply({apply, {AST, ListOfParameters}}, Parameters) when is_list(Parameters) ->
@@ -222,6 +222,13 @@ getApplyFunction({_, {AST, _}}) -> AST.
 %%		
 
 getApplyParameters({_, {_, ListOfParameters}}) -> lists:reverse( ListOfParameters ).
+
+%% 
+%% extractApplyParameters :: AST -> List AST
+%% 		used when you want to preserve the internal ordering of the list of parameters... mainly because they get reversed
+%%		
+
+extractApplyParameters({_, {_, ListOfParameters}}) -> ListOfParameters.
 
 %% 
 %% getArity :: AST -> Number

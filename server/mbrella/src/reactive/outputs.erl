@@ -402,7 +402,8 @@ applyAndInject(AST, InjectToCellPointer, OutputName, OutputArgs, _State, _Elemen
 					Value ->
 						AST
 				end,
-	NewCellPointer = eval:evaluate( ast:makeApply(NewAST, ast:termToAST(Value) ) ),
+	NewCellAST = eval:evaluate( ast:makeApply(NewAST, ast:termToAST(Value) ) ),
+	NewCellPointer = ast:toTerm(NewCellAST),
 	case cellElements:modifier(Element) of
 		add ->
 			cell:addInformant(InjectToCellPointer, NewCellPointer),
