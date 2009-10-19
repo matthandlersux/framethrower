@@ -3,6 +3,17 @@
 
 var familyEnv = undefinedEnv;
 
+
+// TODO should replace mapUnitJS with a function that works like this but is simpler:
+function mapUnit() {
+	// args are [function, cell1, cell2, ...]
+	var args = Array.prototype.slice.call(arguments);
+	var func = args.shift(); // first argument is the function
+	return mapUnitJS(function () { // javascript version of func
+		return evaluate(makeApplies(func, arguments));
+	}).apply(null, args); // remaining arguments are the cells
+}
+
 var mapUnitEnv = function (s) {
 	// if string isn't of the form 'mapUnitN' then give up:
 	var mapUnitMatch = /^mapUnit(\d+)$/.exec(s);
@@ -16,13 +27,7 @@ var mapUnitEnv = function (s) {
 		mapType += " -> Unit t"+i;
 	}
 	var type = parseType( "("+fType+") -> "+mapType );
-	var mapUnit = function() {
-		var args = Array.prototype.slice.call(arguments);
-		var func = args.shift(); // first argument is the function
-		return mapUnitJS(function () { // javascript version of func
-			return evaluate(makeApplies(func, arguments));
-		}).apply(null, args); // remaining arguments are the cells
-	};
+	
 	return makeFun(type, mapUnit, n+1);
 };
 familyEnv = extendEnv(familyEnv, mapUnitEnv);
