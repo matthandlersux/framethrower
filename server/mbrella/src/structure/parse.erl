@@ -2,6 +2,7 @@
 
 -include ("../../include/scaffold.hrl").
 
+-define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
 -export([parse/1, parse/2, unparse/1]).
 
@@ -54,7 +55,9 @@ parser(String, LeftAST, Scope) ->
 						notfound -> 
 							case scope:lookup(Scope, VarOrPrim) of
 								notfound ->
-									cellStore:lookup(VarOrPrim);
+									% TODO: should only lookup if the word starts with cell or object or whatever... throw error otherwise
+									CellPointer = cellStore:lookup(VarOrPrim),
+									ast:makeCell(CellPointer);
 								Found -> Found
 							end;
 						Found -> Found
