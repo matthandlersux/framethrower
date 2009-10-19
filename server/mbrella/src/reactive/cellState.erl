@@ -39,7 +39,8 @@
 	outputs = outputs:newState(),
 	flags = [{leashed, false}, {waitForDone, false}, {killOnEmpty, false}],
 	informants = [],
-	dock = []
+	dock = [],
+	bottom
 }).
 
 %% ====================================================
@@ -74,6 +75,14 @@ uninjectOutput(#cellState{outputs = Outputs} = State, OutputFunction, OutputTo) 
 injectIntercept(State, Intercept) ->
 	State#cellState{intercept = Intercept}.
 
+%% 
+%% updateBottom :: CellState -> AST -> CellState
+%% 		
+%%		
+
+updateBottom(State, AST) ->
+	State#cellState{bottom = AST}.
+	
 %% 
 %% updateInformants :: CellState -> List CellPointers -> CellState
 %% 

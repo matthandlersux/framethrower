@@ -119,6 +119,7 @@ handle_call({get, AST}, _From, ETS) ->
 %% --------------------------------------------------------------------
 handle_cast({store, AST, CellAST}, ETS) ->
 	NormalizedAST = mewpilate(AST),
+	cell:setBottom(ast:toTerm(CellAST), NormalizedAST),
 	ets:insert(ETS, {NormalizedAST, CellAST}),
     {noreply, ETS}.
 

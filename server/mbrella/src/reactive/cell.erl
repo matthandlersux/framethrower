@@ -124,6 +124,14 @@ removeValues(CellPointer, Values) ->
 setFlag(CellPointer, Flag, Setting) ->
 	gen_server:cast(cellPointer:pid(CellPointer), {setFlag, Flag, Setting}).
 
+%% 
+%% setBottom :: CellPointer -> AST -> ok
+%% 		
+%%		
+
+setBottom(CellPointer, AST) ->
+	gen_server:cast(cellPointer:pid(CellPointer), {setBottom, AST}).
+
 %% ====================================================
 %% PrimFun API
 %% ====================================================
@@ -330,7 +338,10 @@ handle_cast({uninjectOutput, OutputTo, OutputFunction}, State) ->
 
 handle_cast({setFlag, Flag, Setting}, State) ->
 	{noreply, cellState:setFlag(State, Flag, Setting)};
-	
+
+handle_cast({setBottom, Bottom}, State) ->
+	{noreply, cellState:setBottom(State, Bottom)};
+
 handle_cast(kill, State) ->
 	{stop, normal, cellState:setFlag(State, leashed, true)};
 	
@@ -350,6 +361,7 @@ handle_cast(unleash, State) ->
 
 terminate(normal, State) ->
 	?trace(killed),
+	% TODO: remove from mewpile and 
     Outputs = cellState:getOutputs(State),
 	UnOutputAll = 	fun(Output) ->
 						Connections = outputs:getConnections(Output),
