@@ -45,7 +45,7 @@ makeCell() -> makeCell(unit).
 makeCell(CellType) ->
 	Name = cellStore:getName(),
 	{ok, Pid} = gen_server:start(?MODULE, [CellType, {name, Name}], []),
-	%Name = env:nameAndStoreCell(Pid),
+	cellStore:store(Name, Pid),
 	cellPointer:new(Name, Pid).
 	
 makeLinkedCell() -> makeLinkedCell(unit).
@@ -53,7 +53,7 @@ makeLinkedCell() -> makeLinkedCell(unit).
 makeLinkedCell(CellType) ->
 	Name = cellStore:getName(),
 	{ok, Pid} = gen_server:start_link(?MODULE, [CellType, {name, Name}], []),
-	%Name = env:nameAndStoreCell(Pid),
+	cellStore:store(Name, Pid),
 	cellPointer:new(Name, Pid).
 
 makeCellLeashed() -> makeCellLeashed(unit).
@@ -61,7 +61,7 @@ makeCellLeashed() -> makeCellLeashed(unit).
 makeCellLeashed(CellType) ->
 	Name = cellStore:getName(),
 	{ok, Pid} = gen_server:start(?MODULE, [CellType, {leashed, true}, {name, Name}], []),
-	%Name = env:nameAndStoreCell(Pid),
+	cellStore:store(Name, Pid),
 	cellPointer:new(Name, Pid).
 
 makeLinkedCellLeashed() -> makeLinkedCellLeashed(unit).
@@ -69,7 +69,7 @@ makeLinkedCellLeashed() -> makeLinkedCellLeashed(unit).
 makeLinkedCellLeashed(CellType) ->
 	Name = cellStore:getName(),
 	{ok, Pid} = gen_server:start_link(?MODULE, [CellType, {leashed, true}, {name, Name}], []),
-	%Name = env:nameAndStoreCell(Pid),
+	cellStore:store(Name, Pid),
 	cellPointer:new(Name, Pid).
 
 %% 
