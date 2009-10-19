@@ -33,7 +33,7 @@ lookup(Name) ->
 		[{_, Found}] ->
 			Found;
 		[] -> 
-			notFound
+			notfound
 	end.
 	
 	

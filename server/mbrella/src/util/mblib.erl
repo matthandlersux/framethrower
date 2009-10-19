@@ -324,4 +324,7 @@ prepareStateScript() ->
 
 initializeDebugState() ->
 	% Add more here
-	functionTable:create().
+	functionTable:create(),
+	mewpile:new(),
+	cellStore:start(),
+	objectStore:start().

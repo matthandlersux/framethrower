@@ -53,7 +53,7 @@ lookup(Name) ->
 init([]) ->
 	process_flag(trap_exit, true),
 	%may want to change globalTable from dict to ETS table
-    {ok, #cellStoreState{nameCounter = 0, globalTable = ets:new(cellStore, [])}}.
+    {ok, #cellStoreState{nameCounter = 0, globalTable = ets:new(cellStore, [named_table])}}.
 
 handle_call(getName, _, State) ->
 	NewNameCounter = ?this(nameCounter) + 1,
