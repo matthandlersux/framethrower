@@ -1,4 +1,4 @@
--module (globalStore).
+-module (cellStore).
 
 -behaviour(gen_server).
 -include ("../../include/scaffold.hrl").
@@ -7,9 +7,9 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
--define (this(Field), State#globalStoreState.Field).
+-define (this(Field), State#cellStoreState.Field).
 
--record (globalStoreState, {
+-record (cellStoreState, {
 	nameCounter,
 	globalTable
 }).
@@ -24,8 +24,8 @@ stop() ->
 getName() ->
 	gen_server:call(?MODULE, getName).
 
-store(Name, Obj) ->
-	gen_server:cast(?MODULE, {store, Name, Obj}).
+store(Name, Cell) ->
+	gen_server:cast(?MODULE, {store, Name, Cell}).
 
 getState() ->
 	gen_server:call(?MODULE, getState).
@@ -43,12 +43,12 @@ lookup(Name) ->
 init([]) ->
 	process_flag(trap_exit, true),
 	%may want to change globalTable from dict to ETS table
-    {ok, #globalStoreState{nameCounter = 0, globalTable = ets:new(globalStore, [])}}.
+    {ok, #cellStoreState{nameCounter = 0, globalTable = ets:new(cellStore, [])}}.
 
 handle_call(getName, _, State) ->
 	NewNameCounter = ?this(nameCounter) + 1,
 	Name = "cell." ++ integer_to_list(NewNameCounter),
-    {reply, Name, State#globalStoreState{nameCounter = NewNameCounter}};
+    {reply, Name, State#cellStoreState{nameCounter = NewNameCounter}};
 handle_call({lookup, Name}, _, State) ->
 	GlobalCell = case ets:lookup(?this(globalTable), Name) of
 		[{_, Reply}] ->

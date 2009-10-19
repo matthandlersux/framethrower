@@ -73,7 +73,7 @@ stop() ->
 %%SERIALIZE
 
 serializeNow(ETS) ->
-	EnvEts = globalStore:getStateDict(),
+	EnvEts = cellStore:getStateDict(),
 	AddIfObj = fun({_, ObjOrCellOrFunc}, InProcess) ->
 		case ObjOrCellOrFunc of
 			Obj when is_record(Obj, object) -> 
@@ -106,7 +106,7 @@ serializeCell(CellPointer, InProcess, ETS) ->
 		NewStateArray = [NewProperty|InnerStateArray],
 		{NewStateArray, NewInnerInProcess}
 	end, {[], NewInProcess}, StateArray),
-	Cell = globalStore:lookup(Name),
+	Cell = cellStore:lookup(Name),
 	NewCell = Cell#exprCell{pid=UpdatedStateArray},
 	ets:insert(ETS, {Name, NewCell}),
 	{#cellPointer{name=Name}, UpdatedInProcess}.
@@ -121,7 +121,7 @@ serializeProp(Property, InProcess, ETS) when is_record(Property, objectPointer) 
 	PropName = Property#objectPointer.name,
 	case dict:find(PropName, InProcess) of
 		error -> 
-			Object = globalStore:lookup(PropName),
+			Object = cellStore:lookup(PropName),
 			serializeObj(Object, InProcess, ETS);
 		_ -> {#objectPointer{name=PropName}, InProcess}
 	end;
@@ -144,7 +144,7 @@ unserializeNow(ETS) ->
 	
 	%map casting tables to new object names, and update objects in env
 	dict:map(fun(Name, ObjPointer) ->
-		Obj = globalStore:lookup(ObjPointer#objectPointer.name), 
+		Obj = cellStore:lookup(ObjPointer#objectPointer.name), 
 		mapCastingDict(Obj, NewObjectDict)
 	end, NewObjectDict),
 	%add objects/cells/primitives to all cells
@@ -154,7 +154,7 @@ unserializeNow(ETS) ->
 	%add objects to memoTables
 	
 	dict:map(fun(Name, ObjPointer) -> 
-		Obj = globalStore:lookup(ObjPointer#objectPointer.name),
+		Obj = cellStore:lookup(ObjPointer#objectPointer.name),
 		memoizeObject(Obj)
 	end, NewObjectDict),
 	
@@ -184,7 +184,7 @@ unserializeNow(ETS) ->
 makeCells(Cell, CellDict) when is_record(Cell, exprCell) ->
 	NewCellPointer = cell:makeCell(),
 	cell:done(NewCellPointer),
-	NewCell = globalStore:lookup(NewCellPointer#cellPointer.name),
+	NewCell = cellStore:lookup(NewCellPointer#cellPointer.name),
 	% TypedCell = NewCell#exprCell{type=Cell#exprCell.type, bottom=Cell#exprCell.bottom},
 	% cell:update(TypedCell),
 	dict:store(Cell#exprCell.name, NewCellPointer, CellDict);
@@ -217,9 +217,9 @@ tryMakeObject(Obj, Dependencies, CellDict, ObjectDict) when is_record(Obj, objec
 				%this will write over the existing shared objects in the environment
 				%TODO: may want a way to tell objects not to populate the root objects if we are using serialize
 				"shared." ++ _ = ObjectName -> 
-					globalStore:store(ObjectName, ObjWithProp),
+					cellStore:store(ObjectName, ObjWithProp),
 					ObjWithProp;
-				_ -> globalStore:nameAndStoreObj(ObjWithProp)
+				_ -> cellStore:nameAndStoreObj(ObjWithProp)
 			end,
 			NewObjectDict = dict:store(Obj#object.name, #objectPointer{name = NewObj#object.name}, ObjectDict),
 			Deps = case dict:find(Obj#object.name, Dependencies) of
@@ -247,7 +247,7 @@ mapCastingDict(Obj, ObjectDict) when is_record(Obj, object) ->
 		(dict:fetch(ObjName, ObjectDict))#objectPointer.name
 	end, CastingDict),
 	UpdatedObj = Obj#object{castingDict = NewCastingDict},
-	globalStore:store(UpdatedObj#object.name, UpdatedObj);
+	cellStore:store(UpdatedObj#object.name, UpdatedObj);
 mapCastingDict(_, _) -> nosideeffect.	
 
 populateCells(Cell, CellDict, ObjectDict) when is_record(Cell, exprCell) -> 

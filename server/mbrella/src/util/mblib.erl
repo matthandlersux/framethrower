@@ -193,7 +193,7 @@ exprElementToJson(X) when is_list(X) ->
 		false -> X
 	end;
 exprElementToJson(X) when is_pid(X) ->
-	#exprCell{name = Name} = globalStore:lookup(X),
+	#exprCell{name = Name} = cellStore:lookup(X),
 	list_to_binary(Name);
 exprElementToJson(CellPointer) when is_record(CellPointer, cellPointer) ->
 	list_to_binary(CellPointer#cellPointer.name);
@@ -213,7 +213,7 @@ createExprLib(ExprLibStruct) ->
 		Name = binary_to_list(BinName),
 		try 
 			ParsedExpr = parse:parse(binary_to_list(BinExpr)),
-			globalStore:store(Name, {exprLib, ParsedExpr})
+			cellStore:store(Name, {exprLib, ParsedExpr})
 		catch
 			_:_ -> nosideeffect
 		end
@@ -274,7 +274,7 @@ startScript(Options) ->
 	spawn( fun() ->
 		sessionManager:start(),
 		memoize:start(),
-		globalStore:start(),
+		cellStore:start(),
 		objects:start(),
 		mblib:bootJsonScript(),
 	
