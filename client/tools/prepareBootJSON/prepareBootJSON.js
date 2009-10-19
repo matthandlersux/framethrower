@@ -7,11 +7,11 @@ var generateFiles = function () {
 
 	//generate bootJSON file to be used by server
 
-	var rootObjects = {};
 	var rootExprs = {};
 	forEach(baseObjects, function (object, name) {
 		if (object.kind === "object") {
-			rootObjects[name] = unparseType(object.type);
+			//TODO: remove root Objects
+			//ignore rootObjects (they will probably be obsolete soon)
 		} else if (object.kind === "fun") {
 			//ignore primFuncs (they are shared already)
 		} else if (object.kind === "exprLambda" || object.kind === "exprApply") {
@@ -27,7 +27,6 @@ var generateFiles = function () {
 	//TODO: should we add classesToMake to the 'base' object?
 	bootJSON.classes = classesToMake; //classesToMake defined in builtin/classes.js
 
-	bootJSON.rootObjects = rootObjects;
 	bootJSON.exprLib = rootExprs;
 	bootJSON.sharedLet = mainTemplate.sharedLet;
 

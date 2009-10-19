@@ -204,7 +204,7 @@ castPropsUpIfNeeded(Props, ObjClass, Classes) ->
 								end
 						end;
 					{ok, Prop} -> Prop;
-					Error -> ?trace("Property not initialized")
+					Error -> ?trace(["Property not initialized:", ObjClass, PropName])
 				end
 		end
 	end, ObjClass#class.prop),
@@ -222,9 +222,7 @@ makeProps(Props, ObjClass, Classes) ->
 				true ->
 					% PropCell = (cell:makeCell())#exprCell{type=PropType},
 					% cell:update(PropCell),
-					PropCell = cell:makeCell(),
-					cell:done(PropCell),
-					PropCell;
+					cell:makeCell(type:outerType(PropType));
 				false ->
 					dict:fetch(PropName, Props)
 			end

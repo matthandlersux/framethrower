@@ -249,8 +249,15 @@ createClasses(ClassesStruct) ->
 
 createRootObjects(RootObjectsStruct) ->
 	RootObjects = struct:to_list(RootObjectsStruct),
-	lists:foreach(fun({Name, Type}) ->
-		objects:createWithName(binary_to_list(Type), dict:new(), binary_to_list(Name))
+	lists:foreach(fun({Name, ObjectStruct}) ->
+		Type = struct:get_value(<<"type">>, ObjectStruct),
+		Prop = struct:get_value(<<"prop">>, ObjectStruct),
+		?trace(["Prop:", Prop]),
+		NewProp = lists:foldr(fun({Field, Value}, PropDict) ->
+			
+			dict:store(binary_to_list(Field), Value, PropDict)
+		end, dict:new(), struct:to_list(Prop)),
+		objects:createWithName(binary_to_list(Type), NewProp, binary_to_list(Name))
 	end, RootObjects).
 
 
@@ -300,11 +307,9 @@ bootJsonScript() ->
 	{ok, JSONBinary} = file:read_file("priv/bootJSON"),
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
 	ClassesStruct = struct:get_value(<<"classes">>, Struct),
-	RootObjectsStruct = struct:get_value(<<"rootObjects">>, Struct),
 	ExprLibStruct = struct:get_value(<<"exprLib">>, Struct),
 
 	createClasses(ClassesStruct),
-	createRootObjects(RootObjectsStruct),
 	createExprLib(ExprLibStruct),
 
 	bootedJSONScript.
