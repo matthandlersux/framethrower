@@ -188,6 +188,6 @@ updateLet(Pid, Name, Value) ->
 
 lookupInParent(Name, Parent) ->
 	case Parent of
-		noParent -> notFound;
+		noParent -> notfound;
 		Pid -> lookup(Pid, Name)
 	end.
