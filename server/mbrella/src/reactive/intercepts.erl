@@ -261,12 +261,12 @@ unfoldSet(ExprString, InitialObject, SelfCellPointer, State, _From, Element) ->
 
 applyExpr() -> {undefined, orddict:new()}.
 
-applyExpr(AST, ListOfCellPointers, {InnterValue, Params}, From, Element) ->
+applyExpr(AST, ListOfCellPointers, {InnerValue, Params}, From, Element) ->
 	Name = cellPointer:name(From),
 	WhichParam = 	fun(CellPointer, Index) ->
-						if
-							Name =:= cellPointer:name(CellPointer) -> throw(Index);
-							true -> Index + 1
+						case cellPointer:name(CellPointer) of
+							Name -> throw(Index);
+							_ -> Index + 1
 						end
 					end,
 	ParamNum = 	try lists:foldl(WhichParam, 1, ListOfCellPointers)
@@ -281,10 +281,9 @@ applyExpr(AST, ListOfCellPointers, {InnterValue, Params}, From, Element) ->
 		Modifier =:= remove andalso InnerValue =:= undefined ->
 			{{undefined, orddict:erase(ParamNum, Params)}, []};
 		Modifier =:= remove ->
-			NewParams = setelement(ParamNum, Params, undefined),
 			{{undefined, orddict:erase(ParamNum, Params)}, [cellElements:createRemove(InnerValue)]};
 		Modifier =:= add andalso InnerValue =:= undefined ->
-			NewParams = orddict:store(ParamNum, NewValue, Params)},
+			NewParams = orddict:store(ParamNum, NewValue, Params),
 			NumberOfArguments = orddict:size(NewParams),
 			if
 				NumberOfArguments =:= length(ListOfCellPointers) ->

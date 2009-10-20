@@ -213,25 +213,7 @@ setDifference(CellPointer1, CellPointer2) ->
 %% map unit functions
 %% ---------------------------------------------
 
-
-
-mapUnit(ExprString, Value) ->
-	OutputCell = cell:makeCell(unit),
-	ValueCell = cell:makeCell(unit),
-	cell:addValue(ValueCell, Value),
-	cell:injectIntercept(OutputCell, applyExpr, [ExprString]),
-	OutputCell.
-	
-mapUnit2(ExprString, Value1, Value2) ->
-	OutputCell = cell:makeCell(unit),
-	ValueCell1 = cell:makeCell(unit),
-	cell:addValue(ValueCell1, Value1),
-	ValueCell2 = cell:makeCell(unit),
-	cell:addValue(ValueCell2, Value2),
-	cell:injectIntercept(OutputCell, applyExpr, [ExprString, ValueCell1, ValueCell2]),
-	cell:injectOutput(ValueCell1, OutputCell),
-	cell:injectOutput(ValueCell2, OutputCell),
-	OutputCell.
+% moved to family.erl
 	
 %% ---------------------------------------------
 %% non reactive functions
