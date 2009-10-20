@@ -52,7 +52,13 @@ var debug = (function () {
 	};
 })();
 
-
+function getStackTrace() {
+	try {
+		not.defined += 1;
+	} catch(e) {
+		return e.stack;
+	}
+}
 
 function testExpr(exprString) {
 	var a = evaluate(parseExpr(exprString));
