@@ -4,7 +4,7 @@
 
 -define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
--export([parse/1, parse/2, unparse/1]).
+-export([parse/1, parse/2, bind/1, bind/2, unparse/1]).
 
 %% ====================================================
 %% TYPES
@@ -21,6 +21,10 @@
 
 parse(S) ->
 	parse(S, scope:makeScope()).
+
+%% 
+%% parse:: String (deBruijn style) -> Scope -> AST
+%%
 
 parse(S, Scope) ->
 	{Result, _} = parser(S, empty, Scope),
@@ -48,24 +52,9 @@ parser(String, LeftAST, Scope) ->
 			%quoted string
 			cutOffRightQuote(Right);
 		_ -> %string
-			{VarOrPrim, Rest} = untilSpaceOrRightParen(String),
-			Ans = case extractPrim(VarOrPrim) of
-				error ->
-					case functionTable:lookup(VarOrPrim) of
-						notfound -> 
-							case scope:lookup(Scope, VarOrPrim) of
-								notfound ->
-									% TODO: should only lookup if the word starts with cell or object or whatever... throw error otherwise
-									CellPointer = cellStore:lookup(VarOrPrim),
-									ast:makeCell(CellPointer);
-								Found -> Found
-							end;
-						Found -> Found
-					end;
-				Prim ->
-					ast:makeLiteral(Prim)
-			end,
-			{Ans, Rest}
+			{StringToParse, Rest} = untilSpaceOrRightParen(String),
+			ParsedString = parseString(StringToParse, Scope),
+			{ParsedString, Rest}
 	end,
 	NewAST = case LeftAST of
 		empty -> AST;
@@ -76,6 +65,23 @@ parser(String, LeftAST, Scope) ->
 		[$)|_] -> {NewAST, Remaining};
 		_ -> parser(Remaining, NewAST, Scope)
 	end.
+
+
+%% 
+%% bind:: AST (without pointers) -> AST (with pointers)
+%%
+
+bind(AST) ->
+	bind(AST, scope:makeScope()).
+
+%% 
+%% bind:: AST (without pointers) -> Scope -> AST (with pointers)
+%%
+
+bind(AST, Scope) ->
+	ast:mapStrings(AST, fun(String) -> 
+		parseString(String, Scope)
+	end).
 
 
 %% 
@@ -138,6 +144,27 @@ untilSpaceOrRightParen([L|R]) ->
 
 trimSpace([$ |Rest]) -> trimSpace(Rest);
 trimSpace(S) ->	S.
+
+
+parseString(String, Scope) ->
+	case extractPrim(String) of
+		error ->
+			case functionTable:lookup(String) of
+				notfound -> 
+					case scope:lookup(Scope, String) of
+						notfound ->
+							% TODO: should only lookup if the word starts with cell or object or whatever... throw error otherwise
+							CellPointer = cellStore:lookup(String),
+							ast:makeCell(CellPointer);
+						Found -> Found
+					end;
+				Found -> Found
+			end;
+		Prim ->
+			ast:makeLiteral(Prim)
+	end.
+
+
 
 extractPrim(VarOrPrim) ->
 	case VarOrPrim of
