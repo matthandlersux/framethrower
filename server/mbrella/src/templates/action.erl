@@ -61,8 +61,7 @@ testJSON() ->
 	lists:map(fun(Let) ->
 		{LetName, LetStruct} = Let,
 		LetNameString = binary_to_list(LetName),
-		Reply = gen_server:call(?MODULE, {addLet, LetNameString, LetStruct}),
-		?trace(Reply)
+		Reply = gen_server:call(?MODULE, {addLet, LetNameString, LetStruct})
 	end, Lets),
 	ok.
 
@@ -111,15 +110,16 @@ init([]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call({addLet, LetName, LetStruct}, _, State) ->
-	NewState = dict:store(LetName, LetStruct, State),
+	Closure = makeClosure(LetStruct, scope:makeScope()),
+	NewState = dict:store(LetName, Closure, State),
     {reply, ok, NewState};
 handle_call({evaluateTemplate, Name, Params}, _, State) ->
-	Template = case dict:find(Name, State) of
+	Closure = case dict:find(Name, State) of
 		{ok, Found} -> Found;
 		error -> throw("Error finding template: " ++ Name)
 	end,
-	Result = eval:evaluate(makeClosure(Template, scope:makeScope())),
-	?trace(["Result: ", Result]),
+	AppliedClosure = ast:makeApply(Closure, Params),
+	Result = eval:evaluate(AppliedClosure),
     {reply, Result, State};
 handle_call(getState, _, State) ->
 	{reply, State, State};
@@ -144,7 +144,7 @@ handle_cast({terminate, Reason}, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_info(Info, State) ->
+handle_info(_Info, State) ->
     {noreply, State}.
 
 %% --------------------------------------------------------------------
@@ -152,7 +152,7 @@ handle_info(Info, State) ->
 %% Description: Shutdown the server
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
-terminate(Reason, State) ->
+terminate(_Reason, _State) ->
     ok.
 
 %% --------------------------------------------------------------------
@@ -160,7 +160,7 @@ terminate(Reason, State) ->
 %% Purpose: Convert process state when code is changed
 %% Returns: {ok, NewState}
 %% --------------------------------------------------------------------
-code_change(OldVsn, State, Extra) ->
+code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 %% --------------------------------------------------------------------
@@ -175,9 +175,7 @@ evaluateLine(Line, Scope) ->
 	case Kind of
 		"lineExpr" ->
 			Expr = (struct:get_value(<<"expr">>, Line)),
-			?trace(["Binding expr: ", Expr]),
 			Result = parse:bind(Expr, Scope),
-			?trace([{"Done parsing expr: ", Expr}, {"Result:", Result}]),
 			Result;
 		"lineTemplate" ->
 			makeClosure(Line, Scope);
@@ -226,7 +224,7 @@ evaluateLine(Line, Scope) ->
 parseExpression({struct, [{<<"cons">>, <<"apply">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
 	ast:makeApply(parseExpression(Left, DeBruijnHash), parseExpression(Right, DeBruijnHash));
 parseExpression({struct, [{<<"cons">>, <<"lambda">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
-	NewDeBruijnHash = dict:map(fun(Key, Value) -> Value + 1 end, DeBruijnHash),
+	NewDeBruijnHash = dict:map(fun(_Key, Value) -> Value + 1 end, DeBruijnHash),
 	VarName = Left,
 	NewerDeBruijnHash = dict:store(VarName, 1, NewDeBruijnHash),
 	ast:makeLambda(parseExpression(Right, NewerDeBruijnHash));
@@ -238,7 +236,7 @@ parseExpression(Binary, DeBruijnHash) when is_binary(Binary) ->
 			String = binary_to_list(Binary),
 			case extractPrim(String) of
 				error ->
-					String;
+					ast:makeUnboundVariable(String);
 				Prim ->
 					ast:makeLiteral(Prim)
 			end
@@ -262,52 +260,42 @@ executeAction() -> ok.
 
 makeActionClosure() -> ok.
 
-accumulate(SavedArgs, Fun, Expects) ->
-	case length(SavedArgs) of
-		Expects -> Fun(SavedArgs);
-		_ -> fun (Arg) -> accumulate([Arg | SavedArgs], Fun, Expects) end
-	end.
-
-curry(Fun, Expects) ->
-	accumulate([], Fun, Expects).
 
 makeClosure(LineTemplate, ParentScope) ->
 	Params = struct:get_value(<<"params">>, LineTemplate),
-	Type = struct:get_value(<<"type">>, LineTemplate),
 	ParamLength = length(Params),
-	F = curry(fun(Args) -> 
-		%make a new scope for this closure
-		Scope = scope:makeScope(ParentScope),
 
-		% add the arguments to the closure to the scope
-		ArgsAndParams = lists:zip(Params, Args),
-		lists:map(fun({Arg, Param}) -> 
-			scope:addLet(Scope, binary_to_list(Param), Arg)
-		end, ArgsAndParams),
+	%make a new scope for this closure
+	Scope = scope:makeScope(ParentScope),
 
-		% add the lets in the closure to the scope lazily
-		Lets = struct:get_value(<<"let">>, LineTemplate),
-		LetsList = struct:to_list(Lets),
-		
-		lists:map(fun({LetName, LetValue}) -> 
-			GetValue = fun() -> 
-				?trace(["Evaluating lazy let: " , LetValue]),
-				evaluateLine(LetValue, Scope)
-			end,
-			scope:addLazyLet(Scope, binary_to_list(LetName), GetValue)
-		end, LetsList),
-		
-		% evaluate the output of the closure
-		Output = struct:get_value(<<"output">>, LineTemplate),
-		evaluateLine(Output, Scope)
-	end, ParamLength),
-	case ParamLength of
-		0 -> F;
-		_ -> #exprFun{function=F}
-	end.
+	% add the lets in the closure to the scope lazily
+	Lets = struct:get_value(<<"let">>, LineTemplate),
+	LetsList = struct:to_list(Lets),
+	
+	lists:map(fun({LetName, LetValue}) -> 
+		GetValue = fun() -> 
+			evaluateLine(LetValue, Scope)
+		end,
+		scope:addLazyLet(Scope, binary_to_list(LetName), GetValue)
+	end, LetsList),	
+	
+	% the output of the closure
+	Output = struct:get_value(<<"output">>, LineTemplate),
+	ast:makeClosure(Params, Output, Scope, ParamLength).
 
-% Should have this somewhere
-% parseExpression() -> ok.
+
+% closureFunction is called by ast:apply
+closureFunction(Params, Output, Scope, Args) -> 
+	% add the arguments to the closure to the scope
+	ParamsAndArgs = lists:zip(Params, Args),
+	lists:map(fun({Param, Arg}) -> 
+		scope:addLet(Scope, binary_to_list(Param), Arg)
+	end, ParamsAndArgs),
+	% evaluate the output of the closure
+	evaluateLine(Output, Scope).
+
+
+
 
 addFun() -> ok.
 

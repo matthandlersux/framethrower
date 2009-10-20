@@ -45,6 +45,14 @@ makeLiteral(null) ->
 	{null, null}.
 
 %% 
+%% makeUnboundVariable :: String -> AST
+%% 		
+%%		
+
+makeUnboundVariable(String) ->
+	{unboundVariable, String}.
+
+%% 
 %% makeCell :: String -> AST
 %% 		
 %%		
@@ -83,6 +91,8 @@ makeObject(Name) ->
 %% 		
 %%		
 
+makeFunction(Name, 0) ->
+	ast:apply({function, {Name, 0}}, []);
 makeFunction(Name, Arity) ->
 	{function, {Name, Arity}}.
 	
@@ -101,6 +111,16 @@ makeAccessor(ClassName, FieldName) ->
 
 makeFamilyFunction(Name, Arity, Arguments) ->
 	{function, {{Name, Arguments}, Arity}}.
+
+%% 
+%% makeClosure :: LineTemplate (JSON) -> Scope -> Arity -> AST
+%%
+%%		
+
+makeClosure(Params, Output, Scope, 0) ->
+	ast:apply({function, {{closure, [Params, Output, Scope]}, 0}}, []);
+makeClosure(Params, Output, Scope, Arity) ->
+	{function, {{closure, [Params, Output, Scope]}, Arity}}.
 
 %% 
 %% makeVariable :: Number -> AST
@@ -263,10 +283,13 @@ type({Type, _Data}) ->
 apply(AST, Parameter) when not is_list(Parameter) ->
 	ast:apply(AST, [Parameter]);
 apply({function, {{Family, Arguments}, _Arity}}, ListOfParameters) ->
-	if
-		Family =:= accessor ->
+	case Family of
+		accessor ->
 			erlang:apply(objects, accessor, Arguments ++ toTerm(ListOfParameters));
-		true ->
+		closure ->
+			% closure take the listOfParameters as a List of ASTs so it can run evaluate
+			erlang:apply(action, closureFunction, Arguments ++ [ListOfParameters]);
+		_ ->
 			FamilyFunction = erlang:apply(family, Family, Arguments),
 			lists:foldl(fun(A, F) -> F(A) end, FamilyFunction, toTerm(ListOfParameters))
 	end;
@@ -343,41 +366,27 @@ betaReduce(AST, _Replacement, _Index) ->
 	AST.
 		
 %% 
-%% mapStrings :: AST (with Strings) -> (String -> AST) -> AST (without Strings)
+%% mapType :: AstType -> AST -> (String -> AST) -> AST
 %% 
 %%
 	
-mapStrings(String, MapFunction) when is_list(String) ->
-	MapFunction(String);
-mapStrings({lambda, {Num, AST}}, MapFunction) ->
+mapType(Type, {Type, Value}, MapFunction) ->
+	MapFunction(Value);
+mapType(Type, {lambda, {Num, AST}}, MapFunction) ->
 	makeLambda(
-		mapStrings(AST, MapFunction),
+		mapType(Type, AST, MapFunction),
 		Num
 	);
-mapStrings({apply, {AST, ListOfParameters}}, MapFunction) ->
+mapType(Type, {apply, {AST, ListOfParameters}}, MapFunction) ->
 	makeApply(
-		mapStrings(AST, MapFunction),
+		mapType(Type, AST, MapFunction),
 		lists:map(fun(Elem) ->
-			mapStrings(Elem, MapFunction)
+			mapType(Type, Elem, MapFunction)
 		end, ListOfParameters)
 	);
-mapStrings(AST, _) ->
+mapType(_Type, AST, _MapFunction) ->
 	AST.
 	
-%% 
-%% fold :: AST -> b -> (AST -> b -> b) -> b
-%% 
-%%
-
-fold(FoldFunction, Accum, {lambda, {_, AST}} = Lambda) ->
-	FoldFunction(Lambda, fold(FoldFunction, Accum, AST));
-fold(FoldFunction, Accum, {apply, {AST, ListOfParameters}} = Apply) ->
-	ListAccum = lists:fold(fun(Elem, InnerAccum) ->
-		fold(FoldFunction, InnerAccum, Elem)
-	end, ListOfParameters),
-	FoldFunction(Apply, fold(FoldFunction, ListAccum, AST));
-fold(FoldFunction, Accum, AST) ->
-	FoldFunction(AST, Accum).
 	
 %% 
 %% toTerm :: AST -> ErlangTerm

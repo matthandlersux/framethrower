@@ -6,9 +6,9 @@ setNum5 = action (testObject::testClass) {
 	set (TestClass:num testObject) 5
 },
 
-simple = template () {
-	blah = (t -> plus t 1),
-	x = plus 5 3,
-	y = plus x 6,
+simple = template (input::Number) {
+	add1 = (t -> plus t 1),
+	x = add1 input,
+	y = plus x 2,
 	y
 }
