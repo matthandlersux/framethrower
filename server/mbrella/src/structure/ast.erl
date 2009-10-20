@@ -259,7 +259,8 @@ apply({function, {{Family, Arguments}, _Arity}}, ListOfParameters) ->
 		Family =:= accessor ->
 			erlang:apply(objects, accessor, Arguments ++ toTerm(ListOfParameters));
 		true ->
-			exit(wrong_family_function)
+			FamilyFunction = erlang:apply(family, Family, Arguments),
+			lists:foldl(fun(A, F) -> F(A) end, FamilyFunction, ListOfParameters)
 	end;
 apply({function, {Name, _Arity}}, ListOfParameters) ->
 	erlang:apply(primFuncs, Name, toTerm(ListOfParameters)).
