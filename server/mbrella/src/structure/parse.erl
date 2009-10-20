@@ -53,7 +53,12 @@ parser(String, LeftAST, Scope) ->
 			cutOffRightQuote(Right);
 		_ -> %string
 			{StringToParse, Rest} = untilSpaceOrRightParen(String),
-			ParsedString = parseString(StringToParse, Scope),
+			ParsedString = case extractPrim(StringToParse) of
+				error ->
+					parseString(StringToParse, Scope);
+				Prim ->
+					ast:makeLiteral(Prim)
+			end,
 			{ParsedString, Rest}
 	end,
 	NewAST = case LeftAST of
@@ -79,7 +84,7 @@ bind(AST) ->
 %%
 
 bind(AST, Scope) ->
-	ast:mapStrings(AST, fun(String) -> 
+	ast:mapType(unboundVariable, AST, fun(String) -> 
 		parseString(String, Scope)
 	end).
 
@@ -146,24 +151,19 @@ trimSpace([$ |Rest]) -> trimSpace(Rest);
 trimSpace(S) ->	S.
 
 
+
 parseString(String, Scope) ->
-	case extractPrim(String) of
-		error ->
+	case scope:lookup(Scope, String) of
+		notfound -> 
 			case functionTable:lookup(String) of
-				notfound -> 
-					case scope:lookup(Scope, String) of
-						notfound ->
-							% TODO: should only lookup if the word starts with cell or object or whatever... throw error otherwise
-							CellPointer = cellStore:lookup(String),
-							ast:makeCell(CellPointer);
-						Found -> Found
-					end;
+				notfound ->
+					% TODO: should only lookup if the word starts with cell or object or whatever... throw error otherwise
+					CellPointer = cellStore:lookup(String),
+					ast:makeCell(CellPointer);
 				Found -> Found
 			end;
-		Prim ->
-			ast:makeLiteral(Prim)
+		Found -> Found
 	end.
-
 
 
 extractPrim(VarOrPrim) ->
