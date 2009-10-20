@@ -282,7 +282,8 @@ apply({function, {{Family, Arguments}, _Arity}}, ListOfParameters) ->
 			% closure take the listOfParameters as a List of ASTs so it can run evaluate
 			erlang:apply(action, closureFunction, Arguments ++ [ListOfParameters]);
 		_ ->
-			exit(wrong_family_function)
+			FamilyFunction = erlang:apply(family, Family, Arguments),
+			lists:foldl(fun(A, F) -> F(A) end, FamilyFunction, ListOfParameters)
 	end;
 apply({function, {Name, _Arity}}, ListOfParameters) ->
 	erlang:apply(primFuncs, Name, toTerm(ListOfParameters)).
