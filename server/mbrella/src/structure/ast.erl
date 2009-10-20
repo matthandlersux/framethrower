@@ -93,6 +93,14 @@ makeFunction(Name, Arity) ->
 
 makeAccessor(ClassName, FieldName) ->
 	{function, {{accessor, [ClassName, FieldName]}, 1}}.
+	
+%% 
+%% makeFamilyFunction :: Atom -> Number -> List a -> AST
+%% 		
+%%		
+
+makeFamilyFunction(Name, Arity, Arguments) ->
+	{function, {{Name, Arguments}, Arity}}.
 
 %% 
 %% makeVariable :: Number -> AST

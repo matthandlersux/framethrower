@@ -27,13 +27,26 @@ add(Name, Value) ->
 	ok.
 
 % lookup:: String -> AST
-% Lookup a function by Name. 
+% Lookup a function by Name.
+lookup("mapUnit" ++ X) 
 lookup(Name) ->
 	case ets:lookup(functionTable, Name) of
 		[{_, Found}] ->
 			Found;
 		[] -> 
-			notfound
+			case Name of
+				"mapUnit" ++ N ->
+					Arity = list_to_integer(N),
+					ast:makeFamilyFunction(mapUnit, Arity, [Arity]);
+				"makeTuple" ++ N ->
+					Arity = list_to_integer(N),
+					ast:makeFamilyFunction(makeTuple, Arity, [Arity]);
+				[$t,$u,$p,$l,$e,N1,$g,$e,$t,N2] ->
+					Args = [list_to_integer([N1]), list_to_integer([N2])],
+					ast:makeFamilyFunction(tupleGet, 2, Args);
+				_ ->
+					notfound
+			end
 	end.
 	
 	
