@@ -259,80 +259,44 @@ unfoldSet(ExprString, InitialObject, SelfCellPointer, State, _From, Element) ->
 %% 		used for mapunits
 %%		
 
-applyExpr() -> {undefined, erlang:make_tuple(6, undefined)}.
+applyExpr() -> {undefined, orddict:new()}.
 
-applyExpr(ExprString, _CellPointer, State, From, Element) ->
-	applyExprHelper(ExprString, 1, State, Element).
+applyExpr(AST, ListOfCellPointers, {InnterValue, Params}, From, Element) ->
+	Name = cellPointer:name(From),
+	WhichParam = 	fun(CellPointer, Index) ->
+						if
+							Name =:= cellPointer:name(CellPointer) -> throw(Index);
+							true -> Index + 1
+						end
+					end,
+	ParamNum = 	try lists:foldl(WhichParam, 1, ListOfCellPointers)
+				catch 
+					throw:Index -> Index
+				end,
+
+	Modifier = cellElements:modifier(Element),
+	NewValue = cellElements:value(Element),
 	
-applyExpr(ExprString, CellPointer1, CellPointer2, State, From, Element) ->
-	Name1 = cellPointer:name(CellPointer1),
-	Name2 = cellPointer:name(CellPointer2),
-	FromName = cellPointer:name(From),
-	
-	ParamNum = 	(Name1 =:= FromName andalso 1) orelse
-				(Name2 =:= FromName andalso 2),
-	
-	applyExprHelper(ExprString, ParamNum, State, Element).
-	
-applyExpr(ExprString, CellPointer1, CellPointer2, CellPointer3, State, From, Element) ->
-	Name1 = cellPointer:name(CellPointer1),
-	Name2 = cellPointer:name(CellPointer2),
-	Name3 = cellPointer:name(CellPointer3),
-	FromName = cellPointer:name(From),
-	
-	ParamNum = 	(Name1 =:= FromName andalso 1) orelse
-				(Name2 =:= FromName andalso 2) orelse
-				(Name3 =:= FromName andalso 3),
-	
-	applyExprHelper(ExprString, ParamNum, State, Element).
-	
-applyExpr(ExprString, CellPointer1, CellPointer2, CellPointer3, CellPointer4, State, From, Element) ->
-	Name1 = cellPointer:name(CellPointer1),
-	Name2 = cellPointer:name(CellPointer2),
-	Name3 = cellPointer:name(CellPointer3),
-	Name4 = cellPointer:name(CellPointer4),
-	FromName = cellPointer:name(From),
-	
-	ParamNum = 	(Name1 =:= FromName andalso 1) orelse
-				(Name2 =:= FromName andalso 2) orelse
-				(Name3 =:= FromName andalso 3) orelse
-				(Name4 =:= FromName andalso 4),
-	
-	applyExprHelper(ExprString, ParamNum, State, Element).
-	
-applyExpr(ExprString, CellPointer1, CellPointer2, CellPointer3, CellPointer4, CellPointer5, State, From, Element) ->
-	Name1 = cellPointer:name(CellPointer1),
-	Name2 = cellPointer:name(CellPointer2),
-	Name3 = cellPointer:name(CellPointer3),
-	Name4 = cellPointer:name(CellPointer4),
-	Name5 = cellPointer:name(CellPointer5),
-	FromName = cellPointer:name(From),
-	
-	ParamNum = 	(Name1 =:= FromName andalso 1) orelse
-				(Name2 =:= FromName andalso 2) orelse
-				(Name3 =:= FromName andalso 3) orelse
-				(Name4 =:= FromName andalso 4) orelse
-				(Name5 =:= FromName andalso 5),
-	
-	applyExprHelper(ExprString, ParamNum, State, Element).
-	
-applyExpr(ExprString, CellPointer1, CellPointer2, CellPointer3, CellPointer4, CellPointer5, CellPointer6, State, From, Element) ->
-	Name1 = cellPointer:name(CellPointer1),
-	Name2 = cellPointer:name(CellPointer2),
-	Name3 = cellPointer:name(CellPointer3),
-	Name4 = cellPointer:name(CellPointer4),
-	Name5 = cellPointer:name(CellPointer5),
-	Name6 = cellPointer:name(CellPointer6),
-	FromName = cellPointer:name(From),
-	
-	ParamNum = 	(Name1 =:= FromName andalso 1) orelse
-				(Name2 =:= FromName andalso 2) orelse
-				(Name3 =:= FromName andalso 3) orelse
-				(Name4 =:= FromName andalso 4) orelse
-				(Name5 =:= FromName andalso 5) orelse
-				(Name6 =:= FromName andalso 6),
-	
-	applyExprHelper(ExprString, ParamNum, State, Element).
+	if 
+		Modifier =:= remove andalso InnerValue =:= undefined ->
+			{{undefined, orddict:erase(ParamNum, Params)}, []};
+		Modifier =:= remove ->
+			NewParams = setelement(ParamNum, Params, undefined),
+			{{undefined, orddict:erase(ParamNum, Params)}, [cellElements:createRemove(InnerValue)]};
+		Modifier =:= add andalso InnerValue =:= undefined ->
+			NewParams = orddict:store(ParamNum, NewValue, Params)},
+			NumberOfArguments = orddict:size(NewParams),
+			if
+				NumberOfArguments =:= length(ListOfCellPointers) ->
+					ListOfArguments = lists:map( fun({_,V}) -> V end, orddict:to_list(NewParams) ),
+					NewInnerValue = ast:apply(AST, ListOfArguments),
+					{{NewInnerValue, NewParams}, [cellElements:createAdd(NewInnerValue)]};
+				true ->
+					{{undefined, NewParams}, []}
+			end;
+		true ->
+			exit(received_add_before_remove)
+	end.
 	
 %% 
 %% gate :: 
@@ -358,35 +322,6 @@ gate(Value, State, _From, Element) ->
 %% ====================================================
 %% Intercept Function's Utilities
 %% ====================================================
-
-%% 
-%% applyExprHelper :: Expr -> Number -> ApplyExprState -> Element -> Tuple ApplyExprState (List Element)
-%% 					ApplyExprState :: Tuple Value (Tuple6 Value Value Value Value Value Value)
-%%		
-
-applyExprHelper(ExprString, ParamNum, State, Element) ->
-	{InnerValue, Params} = State,
-	Modifier = cellElements:modifier(Element),
-	NewValue = cellElements:value(Element),
-	
-	if 
-		Modifier =:= remove andalso InnerValue =:= undefined ->
-			NewParams = setelement(ParamNum, Params, undefined),
-			{setelement(2, State, NewParams), []};
-		Modifier =:= remove ->
-			NewParams = setelement(ParamNum, Params, undefined),
-			{setelement(2, State, NewParams), [cellElements:createRemove(InnerValue)]};
-		Modifier =:= add andalso InnerValue =:= undefined ->
-			NewParams = setelement(ParamNum, Params, NewValue),
-			ParamsList = lists:takewhile(fun(undefined) -> false; (_) -> true end, tuple_to_list(NewParams)),
-			NewInnerValue = eval:evaluate( expr:apply( ExprString, ParamsList ) ),
-			{{NewInnerValue, NewParams}, [cellElements:createAdd(NewInnerValue)]};
-		true ->
-			NewParams = setelement(ParamNum, Params, NewValue),
-			ParamsList = lists:takewhile(fun(undefined) -> false; (_) -> true end, tuple_to_list(NewParams)),
-			NewInnerValue = eval:evaluate( expr:apply( ExprString, ParamsList ) ),
-			{{NewInnerValue, NewParams}, [cellElements:createAdd(NewInnerValue), cellElements:createRemove(InnerValue)]}
-	end.
 
 %% ====================================================
 %% Utilities
