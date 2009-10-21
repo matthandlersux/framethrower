@@ -272,7 +272,7 @@ getArity({apply, { AST , Parameters}}) -> getArity(AST) - length(Parameters).
 %% 		
 %%		
 
-type({Type, _Data}) ->
+type({Type, _Data}) when is_atom(Type) ->
 	Type.
 	
 %% 

@@ -396,14 +396,14 @@ applyAndInject(AST, InjectToCellPointer, OutputName, _State, _ElementsState, Ele
 	applyAndInject(AST, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
 
 applyAndInject(AST, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
+	% evaluation should return a special AST, a partially completed apply or lambda
 	NewAST = 	case cellElements:value(Element) of
 					{Key, Value} ->
 						eval:evaluate( ast:makeApply(AST, ast:termToAST(Key) ) );
 					Value ->
 						AST
 				end,
-	NewCellAST = eval:evaluate( ast:makeApply(NewAST, ast:termToAST(Value) ) ),
-	NewCellPointer = ast:toTerm(NewCellAST),
+	NewCellPointer = eval:evaluate( ast:makeApply(NewAST, ast:termToAST(Value) ) ),
 	case cellElements:modifier(Element) of
 		add ->
 			cell:addInformant(InjectToCellPointer, NewCellPointer),

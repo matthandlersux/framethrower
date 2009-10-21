@@ -7,16 +7,33 @@
 -include ("../../include/scaffold.hrl").
 
 %% ====================================================
+%% TYPES
+%% ====================================================
+
+% we have String form, as the text gets sent to the server
+% 		AST form as the parser spits out, the structured expressions representation functionality in the language
+% 		and erlang terms, which are the goal of evaluations
+
+%% ====================================================
 %% External API
 %% ====================================================
 
 %% 
-%% evaluate :: AST -> AST | CellPointer | ObjectPointer | Literal ... etc...
+%% eval :: String -> AST | CellPointer | ObjectPointer | Literal ... etc...
+%% 		
+%%		
+
+eval(String) ->
+	evaluate(parse:parse(String)).
+	
+%% 
+%% evaluate :: AST -> CellPointer | ObjectPointer | Literal | LambdaAST | ApplyAST
 %% 		
 %%		
 
 evaluate(AST) ->
-	evaluate(ast:type(AST), AST).
+	Result = evaluateAST(ast:type(AST), AST),
+	ast:toTerm(Result).
 
 %% ====================================================
 %% Internal API
@@ -27,7 +44,7 @@ evaluate(AST) ->
 %% 		
 %%		
 
-evaluate(apply, AST) ->
+evaluateAST(apply, AST) ->
 	FunctionOrLambda = ast:getApplyFunction(AST),
 	Parameters = ast:getApplyParameters(AST),
 	case ast:type(FunctionOrLambda) of
@@ -37,9 +54,9 @@ evaluate(apply, AST) ->
 			Arity = ast:getArity(FunctionOrLambda),
 			if
 				Arity =:= length(Parameters) ->
-					ReducedParameters = evaluateList( Parameters ),
 					case mewpile:get(AST) of
 						false ->
+							ReducedParameters = evaluateList( Parameters ),
 							ASTResult = ast:apply(FunctionOrLambda, ReducedParameters),
 							case cellPointer:isCellPointer(ASTResult) of
 								true ->
@@ -56,7 +73,7 @@ evaluate(apply, AST) ->
 					AST
 			end
 	end;
-evaluate(_Type, AST) ->
+evaluateAST(_Type, AST) ->
 	AST.
 
 %% 
@@ -66,7 +83,7 @@ evaluate(_Type, AST) ->
 
 evaluateList( [] ) -> [];
 evaluateList( [H|T] ) -> 
-	[evaluate(H)|evaluateList(T)].
+	[evaluateAST(ast:type(H), H)|evaluateList(T)].
 
 % Evaluate with older memoization strategy
 % evaluate(Expr) when is_record(Expr, exprApply) orelse is_record(Expr, exprLambda) ->
