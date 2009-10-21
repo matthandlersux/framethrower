@@ -158,8 +158,13 @@ parseString(String, Scope) ->
 			case functionTable:lookup(String) of
 				notfound ->
 					% TODO: should only lookup if the word starts with cell or object or whatever... throw error otherwise
-					CellPointer = cellStore:lookup(String),
-					ast:makeCell(CellPointer);
+					% TODO: remove the following (added case statement for debugging)
+					case cellStore:lookup(String) of
+						notfound ->
+							exit({bad_word,String});
+						CellPointer -> 
+							ast:makeCell(CellPointer)						
+					end;
 				Found -> Found
 			end;
 		Found -> Found
