@@ -13,6 +13,7 @@
 //	cell.setDone()
 
 function graphCells() {
+	console.log("digraph {");
 	var connectedCells = {};
 	forEach(CELLS, function(c) {
 		forEach(c.getFuncs(), function(f) {
@@ -24,8 +25,9 @@ function graphCells() {
 		});
 	});
 	forEach(connectedCells, function(c) {
-		console.log(c.id+' [tooltip="'+c.name+'"];');
+		console.log(c.id+' [tooltip="'+c.name+'"]');
 	});
+	console.log("}");
 }
 
 var CELLS = {};
