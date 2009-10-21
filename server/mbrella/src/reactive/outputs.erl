@@ -1,8 +1,6 @@
 -module (outputs).
 -compile(export_all).
 
-%-include().
-
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
 
 %% ====================================================
@@ -17,10 +15,10 @@
 %% TYPES
 %% ====================================================
 
-% Output :: Tuple3 SendTo OutputFunction OutputState
-% Outputs :: List Output (maybe will change to a dict or something else)
+% Output :: Tuple3 Connections OutputFunction OutputState
+% Outputs :: List Output 		(maybe will change to a dict or something else)
 %
-% SendTo :: List CellPointer
+% Connections :: List CellPointer
 % OutputFunction :: Tuple Atom (List Arguments)
 % OutputState :: a
 % Arguments :: b
@@ -100,21 +98,7 @@ standard() -> {send, []}.
 
 newConnections() -> [].
 
-%% 
-%% injectOutput :: OutputFunction -> CellPointer -> Outputs -> Outputs
-%% 
-
-% injectOutput(OutputFunction, SendTo, OutputState) ->
-% 	case getOutput(OutputFunction, OutputState) of
-% 		error ->
-% 			todo;
-% 		Output ->
-% 			Connections = getConnections(Output),
-% 			todo
-% 	end.
-			
-
-%%  need to change to informers
+%%  
 %% getConnections :: Output -> List CellPointer
 %% 
 
@@ -334,7 +318,7 @@ invert(CellPointer, _State, _ElementsState, Element) ->
 
 %% 
 %% sendMap :: a -> Map a b
-%% 		converts a -> Map Key a used by returnUnitMap
+%% 		converts a -> Map Key a (used by returnUnitMap)
 %%		
 
 sendMap() -> undefined.
@@ -346,7 +330,7 @@ sendMap(Key, _State, _ElementsState, Element) ->
 
 %% 
 %% sendMapValueAsKey :: a -> Map b a
-%% 		converts a -> Map Key a used by invert
+%% 		converts a -> Map Key a (used by invert)
 %%		
 
 sendMapValueAsKey() -> undefined.
