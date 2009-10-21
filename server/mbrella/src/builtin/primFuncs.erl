@@ -1,20 +1,25 @@
 -module (primFuncs).
--compile(export_all).
 
--include ("../../include/scaffold.hrl").
+-export ([
+	isEmpty/1, takeOne/1,
+	gate/2,
+	reactiveAnd/2, reactiveOr/2, reactiveNot/1,
+	returnUnit/1, returnUnitSet/1, returnUnitMap/2, boolToUnit/1,
+	bindUnit/2, bindSet/2, bindMap/2,
+	union/2, setDifference/2, unfoldSet/2, invert/1,
+	equal/2, dOr/2, dNot/1, dAnd/2, plus/2, subtract/2,
+	oneTo/1, oneToMap/2, debug/1	
+]).
 
--ifdef( debug ).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
--else.
--define( trace(X), void ).
--endif.
+-define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
 
 %% ====================================================
 %% NOTES
 %% ====================================================
 
 %
-%	-any functions that dont have the cellpointers as arguments need to know about their informants
+% any function that doesnt have the cellpointer it depends on as arguments needs to know about its informants
 %
 
 %% ====================================================
@@ -25,6 +30,11 @@
 %% ====================================================
 %% External API
 %% ====================================================
+
+%% ---------------------------------------------
+%% functions that act on the whole element structure
+%% ---------------------------------------------
+
 
 %% 
 %% isEmpty :: Set a -> Unit Null
@@ -39,7 +49,33 @@ isEmpty(CellPointer) ->
 	cell:injectOutput(CellPointer, OutputCell, isEmpty),
 	cell:unleash(OutputCell),
 	OutputCell.
+	
+%% 
+%% takeOne :: Set a -> Unit a
+%% 
 
+takeOne(CellPointer) ->
+	OutputCell = cell:makeCell(unit),
+	cell:injectOutput(CellPointer, OutputCell, takeOne),
+	OutputCell.
+
+%% ---------------------------------------------
+%% reactive boolean functions
+%% ---------------------------------------------
+
+
+%% 
+%% reactiveNot :: Unit Null -> Unit Null
+%% 		
+%%		
+
+reactiveNot(CellPointer) ->
+	OutputCell = cell:makeCell(unit),
+	cell:addValue(OutputCell, null),
+	cell:injectIntercept(OutputCell, reactiveNot),
+	cell:injectOutput(CellPointer, OutputCell),
+	OutputCell.
+	
 %% 
 %% reactiveAnd :: Unit Null -> Unit Null -> Unit Null
 %%		waitForDone = false
@@ -67,42 +103,6 @@ reactiveOr(CellPointer1, CellPointer2) ->
 	cell:injectOutput(CellPointer2, OutputCell),
 	cell:unleash(OutputCell).
 	
-%% 
-%% takeOne :: Set a -> Unit a
-%% 
-
-takeOne(CellPointer) ->
-	OutputCell = cell:makeCell(unit),
-	cell:injectOutput(CellPointer, OutputCell, takeOne),
-	OutputCell.
-	
-%% 
-%% invert :: Map a (Set b) -> Map b (Set a)
-%% 
-
-invert(CellPointer) ->
-	OutputCell = cell:makeCellLeashed(map),
-	cell:setFlag(OutputCell, waitForDone, true),
-	cell:injectIntercept(OutputCell, invert, [OutputCell, CellPointer]),
-	cell:injectOutput(CellPointer, OutputCell, invert, [OutputCell]),
-	cell:unleash(OutputCell),
-	OutputCell.
-	
-%% 
-%% unfoldSet :: (a -> Set a) -> a -> Set a
-%% 
-
-unfoldSet(ExprString, Object) ->
-	OutputCell = cell:makeCellLeashed(set),
-	cell:setFlag(OutputCell, waitForDone, true),
-	InitialSetPointer = eval:evaluate( expr:apply(ExprString, Object) ),
-	cell:injectIntercept(OutputCell, unfoldSet, [ExprString, OutputCell]),
-	cell:sendElements(OutputCell, [cellElements:createAdd(Object)]),
-	cell:injectOutput(InitialSetPointer, OutputCell, becomeInformant),
-	cell:unleash(OutputCell),
-	OutputCell.
-
-
 %% ---------------------------------------------
 %% return
 %% ---------------------------------------------
@@ -180,6 +180,33 @@ bindMap(ExprString, CellPointer) ->
 %% ---------------------------------------------
 %% set functions
 %% ---------------------------------------------
+
+	
+%% 
+%% invert :: Map a (Set b) -> Map b (Set a)
+%% 
+
+invert(CellPointer) ->
+	OutputCell = cell:makeCellLeashed(map),
+	cell:setFlag(OutputCell, waitForDone, true),
+	cell:injectIntercept(OutputCell, invert, [OutputCell, CellPointer]),
+	cell:injectOutput(CellPointer, OutputCell, invert, [OutputCell]),
+	cell:unleash(OutputCell),
+	OutputCell.
+	
+%% 
+%% unfoldSet :: (a -> Set a) -> a -> Set a
+%% 
+
+unfoldSet(ExprString, Object) ->
+	OutputCell = cell:makeCellLeashed(set),
+	cell:setFlag(OutputCell, waitForDone, true),
+	InitialSetPointer = eval:evaluate( expr:apply(ExprString, Object) ),
+	cell:injectIntercept(OutputCell, unfoldSet, [ExprString, OutputCell]),
+	cell:sendElements(OutputCell, [cellElements:createAdd(Object)]),
+	cell:injectOutput(InitialSetPointer, OutputCell, becomeInformant),
+	cell:unleash(OutputCell),
+	OutputCell.
 
 %% 
 %% union :: Set a -> Set a -> Set a
@@ -280,18 +307,6 @@ boolToUnit(Bool) ->
 	OutputCell = cell:makeCell(unit),
 	Bool andalso cell:addValue(OutputCell, null),
 	OutputCell.
-
-%% 
-%% reactiveNot :: Unit Null -> Unit Null
-%% 		
-%%		
-
-reactiveNot(CellPointer) ->
-	OutputCell = cell:makeCell(unit),
-	cell:addValue(OutputCell, null),
-	cell:injectIntercept(OutputCell, reactiveNot),
-	cell:injectOutput(CellPointer, OutputCell),
-	OutputCell.
 	
 %% 
 %% gate :: Unit b -> a -> Unit a
@@ -305,7 +320,7 @@ gate(CellPointer, InnerValue) ->
 	OutputCell.
 
 %% ---------------------------------------------
-%% debug primfuncs
+%% functions used for debugging
 %% ---------------------------------------------
 
 %% 
@@ -343,30 +358,6 @@ debug(CellPointer) ->
 %% ====================================================
 %% Internal API
 %% ====================================================
-
-% -get message [{add, value1},{add, value2},{add, value3}] or [{add,value1}] or [{remove, value3}]
-% -check if have intercept
-% -if so, call intercept function with arguments, extra arguments are message and state
-% 	-function returns {newstate, newmessage}
-% -update interceptstate, send newmessage to elements
-%
-% interceptFunctions :: List Args -> State -> List Message -> {ok, NewInterceptState, List Elements}
-% 
-% interceptFunctions are called on cell:sendElements -> cellState:interceptElements and needs to return
-%		the new intercept state, and the elements to be added to the cells elements, this way the 
-%		cellState:interceptElements can update the intercept and add the elements to the cells elements, then it can return
-%		the new whole state of the cell and the elements that are new, so that cell can send the new ones
-%		through the output functions
-%
-%	-the intercepts job is to take keyed/unkeyed input messages, do something to them, and return an 
-%	updated state and the elements that result
-%
-%	-cellstate will take the updated intercept state and update the intercept, it will take the new elements and
-%	add them to the cells elements, keeping track of which ones actually are new/etc... and then
-%	returns the new cellstate and new elements (the ones that need to be run through output functions)
-%
-%	-cell just has to pass the stuff along, but it takes the returned new elements and runs them through
-%	the output functions, and replaces the state
 	
 %% ====================================================
 %% Utilities
