@@ -3,6 +3,7 @@
 -compile( export_all ).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+-define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
 
 %% ====================================================
 %% TYPES
@@ -154,6 +155,7 @@ makeLambda(AST, NumOfVariables) ->
 %%		
 
 makeApply({apply, {AST, ListOfParameters}}, Parameters) when is_list(Parameters) ->
+	?colortrace(possible_parameter_mixup),
 	{apply, {AST, Parameters ++ ListOfParameters}};
 makeApply({apply, {AST, ListOfParameters}}, NewParameter) ->
 	{apply, {AST, [NewParameter] ++ ListOfParameters}};
