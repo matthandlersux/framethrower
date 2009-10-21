@@ -26,7 +26,7 @@ makeTuple(N) ->
 %% 		
 %%		
 
-tupleGet(_TupleSize, ElementIndex) ->
+tupleGet(ElementIndex) ->
 	fun(Tuple) ->
 		element(ElementIndex, Tuple)
 	end.

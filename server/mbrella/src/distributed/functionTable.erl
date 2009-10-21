@@ -40,9 +40,8 @@ lookup(Name) ->
 				"makeTuple" ++ N ->
 					Arity = list_to_integer(N),
 					ast:makeFamilyFunction(makeTuple, Arity, [Arity]);
-				[$t,$u,$p,$l,$e,N1,$g,$e,$t,N2] ->
-					Args = [list_to_integer([N1]), list_to_integer([N2])],
-					ast:makeFamilyFunction(tupleGet, 1, Args);
+				[$t,$u,$p,$l,$e,_N1,$g,$e,$t,N2] ->
+					ast:makeFamilyFunction(tupleGet, 1, [list_to_integer([N2])]);
 				_ ->
 					notfound
 			end
