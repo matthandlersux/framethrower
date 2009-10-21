@@ -1,4 +1,4 @@
-template (items::List ((Number, Number), a), height::Number, padding::Number) {
+template (items::List (TimeRange, a), height::Number, padding::Number) {
 	
 	// This is a magic constant. Experiment with it to get the best performance.
 	imagesPerDivision = 39,
@@ -19,7 +19,7 @@ template (items::List ((Number, Number), a), height::Number, padding::Number) {
 		return url;
 	},
 	
-	indexList = function (list::List a)::List (Tuple2 Number a) {
+	indexList = function (list::List a)::List (Number, a) {
 		var ret = [];
 		forEach(list.asArray, function (x, i) {
 			ret.push(makeTuple2(i, x));
@@ -35,13 +35,13 @@ template (items::List ((Number, Number), a), height::Number, padding::Number) {
 	
 	<f:each divideStamps divisions items as div>
 		url = getUrl (snd div) width height,
-		shown = fetch (lowPassFilter (unfetch (getShown (fst (fst div)) (snd (fst div)) timelineShownStart timelineShownDuration))),
+		shown = fetch (lowPassFilter (unfetch (getShown (trStart (fst div)) (trDuration (fst div)) timelineShownStart timelineShownDuration))),
 
 		<div style-display="{boolToDisplay shown}">
 			<f:each indexList (snd div) as cut>
 				index = fst cut,
-				start = fst (fst (snd cut)),
-				duration = snd (fst (snd cut)),
+				start = trStart (fst (snd cut)),
+				duration = trDuration (fst (snd cut)),
 				myXMLP = template () {
 					outString = function (s::a)::String {
 						if (typeof s === "string") {

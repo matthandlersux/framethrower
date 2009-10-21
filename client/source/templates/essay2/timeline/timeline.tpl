@@ -1,14 +1,17 @@
 template () {
-
+	
 	// ==========
-	// Utility
+	// Types
 	// ==========
 	
-	boolToDisplay = function (x::Bool)::String {
-		if (x) return "block";
-		else return "none";
-	},
-
+	TimeRange := (Number, Number),
+	trStart = fst,
+	trDuration = snd,
+	
+	TimelineLayer := (String, Number, XMLP),
+	tllLabel = tuple3get1,
+	tllHeight = tuple3get2,
+	tllContent = tuple3get3,
 
 
 	// ==========
@@ -63,7 +66,7 @@ template () {
 	// ==========
 	
 	layers = state {
-		layers <- create(Map Ord (String, Number, XMLP)),
+		layers <- create(Map Ord TimelineLayer),
 		layer1 = drawTimelineLayer chapters 100 3,
 		layer2 = drawTimelineLayer cuts 50 1,
 		layer3 = drawBubbles captions,
@@ -94,6 +97,14 @@ template () {
 				set zoomFactorS clampedZoom,
 				setScrollAmount newScroll
 			}
+		}
+	},
+	modifyZoom = function (oldZoom::Number, delta::Number)::Number {
+		var factor = 1.15;
+		if (delta > 0) {
+			return oldZoom * factor;
+		} else {
+			return oldZoom / factor;
 		}
 	},
 	
@@ -138,14 +149,7 @@ template () {
 
 	
 	
-	modifyZoom = function (oldZoom::Number, delta::Number)::Number {
-		var factor = 1.15;
-		if (delta > 0) {
-			return oldZoom * factor;
-		} else {
-			return oldZoom / factor;
-		}
-	},
+
 	
 	
 	getFrame = function (time::Number, width::Number, height::Number)::String {
@@ -208,9 +212,9 @@ template () {
 				</div>
 				<div style-position="absolute" style-top="{rulerHeight}" style-left="0" style-width="{layerLabelsWidth}" style-border-top="1px solid #666">
 					<f:each layers as index, layer>
-						<div style-height="{tuple3get2 layer}" style-border-bottom="1px solid #666" style-background-color="#aaa" style-overflow="hidden">
+						<div style-height="{tllHeight layer}" style-border-bottom="1px solid #666" style-background-color="#aaa" style-overflow="hidden">
 							<div style-text-align="right" style-padding="4" style-height="100%" style-border-right="1px solid #666">
-								{tuple3get1 layer}
+								{tllLabel layer}
 							</div>
 						</div>
 					</f:each>
@@ -264,28 +268,11 @@ template () {
 
 					<div style-position="absolute" style-top="{rulerHeight}" style-left="0" style-width="100%" style-border-top="1px solid #666">
 						<f:each layers as index, layer>
-							//layer = getKey index layers,
-							//<f:each layer as layer>
-								<div style-position="relative" style-width="100%" style-height="{tuple3get2 layer}" style-border-bottom="1px solid #666">
-									<f:call>tuple3get3 layer</f:call>
-								</div>
-							//</f:each>
+							<div style-position="relative" style-width="100%" style-height="{tuple3get2 layer}" style-border-bottom="1px solid #666">
+								<f:call>tllContent layer</f:call>
+							</div>
 						</f:each>
 					</div>
-
-
-
-					
-
-					// <div style-position="absolute" style-top="120" style-left="0" style-width="100%">
-					// 	<f:each captions as caption>
-					// 		start = fst (fst caption),
-					// 		duration = snd (fst caption),
-					// 		<div style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide duration movieDuration)}" style-position="absolute" style-height="10" style-overflow="hidden" style-background-color="#009" class="rounded">
-					// 			
-					// 		</div>
-					// 	</f:each>
-					// </div>
 
 				</div>
 
