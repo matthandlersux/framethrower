@@ -53,11 +53,7 @@ var debug = (function () {
 })();
 
 function getStackTrace() {
-	try {
-		not.defined += 1;
-	} catch(e) {
-		return e.stack;
-	}
+	return (new Error()).stack.split("\n");
 }
 
 function testExpr(exprString) {

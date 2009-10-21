@@ -12,8 +12,23 @@
 //	cell.removeLine()
 //	cell.setDone()
 
+function graphCells() {
+	var connectedCells = {};
+	forEach(CELLS, function(c) {
+		forEach(c.getFuncs(), function(f) {
+			if(f.depender.id) {
+				console.log(c.id+" -> "+f.depender.id);
+				connectedCells[c.id] = c;
+				connectedCells[f.depender.id] = f.depender;
+			}
+		});
+	});
+	forEach(connectedCells, function(c) {
+		console.log(c.id+' [tooltip="'+c.name+'"];');
+	});
+}
 
-
+var CELLS = {};
 var CELLCOUNT = 0;
 var CELLSCREATED = 0;
 
@@ -21,6 +36,8 @@ function makeBaseCell (toKey) {
 	CELLCOUNT++;
 	CELLSCREATED++;
 	var cell = makeStartCap();
+	cell.id = CELLSCREATED;
+	CELLS[cell.id] = cell;
 	var dots = makeConSortedSetStringify();
 	var funcs = {};
 	
@@ -39,6 +56,10 @@ function makeBaseCell (toKey) {
 	//GetState for DEBUG (and for convertExprXML.js)
 	cell.getState = function () {
 		return map(dots.toArray(), function (x) {return x.v.val;});
+	};
+	
+	cell.getDependencies = function() {
+		return dependencies;
 	};
 	
 	//pull through some range related functions from rangedSet to be used by some primFuncs (TODO: refactor)
@@ -126,6 +147,7 @@ function makeBaseCell (toKey) {
 				if (isEmpty(funcs) && !cell.persist) {
 					// console.log("removing a cell");
 					CELLCOUNT--;
+					delete CELLS[cell.id];
 					forEach(onRemoves, function(onRemove) {
 						onRemove();
 					});
