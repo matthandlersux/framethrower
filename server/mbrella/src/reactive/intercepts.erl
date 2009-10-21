@@ -89,7 +89,7 @@ getState({{_Name, _Args}, State}) -> State.
 debug() -> [].
 
 debug( _, From, Element ) ->
-	io:format("RECEIVED FROM: ~p: ~p~n", [From, Element]),
+	io:format("\033[45mRECEIVED FROM: ~p: ~p\033[49m~n", [From, Element]),
 	{[],Element}.
 
 fold( Function, FunctionInverse, InterceptState, From, Element ) ->
