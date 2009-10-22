@@ -149,10 +149,10 @@ returnUnitMap(Key, CellPointer) ->
 %% 		
 %%		
 
-bindUnit(ExprString, CellPointer) ->
+bindUnit(AST, CellPointer) ->
 	OutputCell = cell:makeCell(unit),
 	cell:setFlag(OutputCell, waitForDone, true),
-	cell:injectOutput(CellPointer, OutputCell, applyAndInject, [ExprString, OutputCell]),
+	cell:injectOutput(CellPointer, OutputCell, applyAndInject, [AST, OutputCell]),
 	OutputCell.
 
 %% 
@@ -160,10 +160,10 @@ bindUnit(ExprString, CellPointer) ->
 %% 		
 %%		
 
-bindSet(ExprString, CellPointer) ->
+bindSet(AST, CellPointer) ->
 	OutputCell = cell:makeCell(set),
 	cell:setFlag(OutputCell, waitForDone, true),
-	cell:injectOutput(CellPointer, OutputCell, applyAndInject, [ExprString, OutputCell]),
+	cell:injectOutput(CellPointer, OutputCell, applyAndInject, [AST, OutputCell]),
 	OutputCell.
 
 %% 
@@ -171,10 +171,10 @@ bindSet(ExprString, CellPointer) ->
 %% 		
 %%		
 
-bindMap(ExprString, CellPointer) ->
+bindMap(AST, CellPointer) ->
 	OutputCell = cell:makeCell(map),
 	cell:setFlag(OutputCell, waitForDone, true),
-	cell:injectOutput(CellPointer, OutputCell, applyAndInject, [ExprString, OutputCell]),
+	cell:injectOutput(CellPointer, OutputCell, applyAndInject, [AST, OutputCell]),
 	OutputCell.
 
 %% ---------------------------------------------
@@ -200,9 +200,24 @@ invert(CellPointer) ->
 
 unfoldSet(AST, Object) ->
 	OutputCell = cell:makeCellLeashed(set),
+	cell:setFlag(OutputCell, waitForDone, true),
 	InitialSetCellPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(Object)) ),
 	cell:injectIntercept(OutputCell, unfoldSet, [AST, Object, OutputCell]),
 	cell:addValue(OutputCell, Object),
+	cell:injectOutput(InitialSetCellPointer, OutputCell, becomeInformant, [OutputCell]),
+	cell:unleash(OutputCell),
+	OutputCell.
+
+%% 
+%% unfoldMap :: (a -> Set a) -> a -> Map a Number
+%% 
+
+unfoldMap(AST, Object) ->
+	OutputCell = cell:makeCellLeashed(set),
+	cell:setFlag(OutputCell, waitForDone, true),
+	InitialSetCellPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(Object)) ),
+	cell:injectIntercept(OutputCell, unfoldMap, [AST, Object, OutputCell]),
+	cell:addValue(OutputCell, {Object, 0}),
 	cell:injectOutput(InitialSetCellPointer, OutputCell, becomeInformant, [OutputCell]),
 	cell:unleash(OutputCell),
 	OutputCell.
