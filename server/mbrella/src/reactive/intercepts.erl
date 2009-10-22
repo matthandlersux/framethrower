@@ -246,11 +246,11 @@ unfoldSet(AST, InitialObject, SelfCellPointer, State, From, Element) ->
 			if
 				ResponseModifier =:= add ->
 					NewSetPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(ResponseValue)) ),
-					cell:injectOutput(NewSetPointer, SelfCellPointer),
+					cell:injectOutput(NewSetPointer, SelfCellPointer, becomeInformant, [SelfCellPointer]),
 					{NewState, ResponseElement};
 				true ->
 					ExistingSetPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(ResponseValue)) ),
-					cell:uninjectOutput(ExistingSetPointer, SelfCellPointer),
+					cell:uninjectOutput(ExistingSetPointer, SelfCellPointer, becomeInformant, [SelfCellPointer]),
 					{NewState, ResponseElement}
 			end
 	end.

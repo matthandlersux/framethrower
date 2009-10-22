@@ -200,12 +200,10 @@ invert(CellPointer) ->
 
 unfoldSet(AST, Object) ->
 	OutputCell = cell:makeCellLeashed(set),
-	% cell:setFlag(OutputCell, waitForDone, true),
 	InitialSetCellPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(Object)) ),
 	cell:injectIntercept(OutputCell, unfoldSet, [AST, Object, OutputCell]),
 	cell:addValue(OutputCell, Object),
-	cell:injectOutput(InitialSetCellPointer, OutputCell),
-	% cell:injectOutput(InitialSetCellPointer, OutputCell, becomeInformant, [OutputCell]),
+	cell:injectOutput(InitialSetCellPointer, OutputCell, becomeInformant, [OutputCell]),
 	cell:unleash(OutputCell),
 	OutputCell.
 
