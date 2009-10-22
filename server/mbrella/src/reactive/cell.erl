@@ -345,16 +345,23 @@ handle_cast(kill, State) ->
 handle_cast(empty, State) ->
 	{noreply, cellState:emptyElements(State)};
 	
-handle_cast(unleash, State) ->
-	State1 = cellState:setFlag(State, leashed, false),
-	Dock = cellState:getDock(State1),
-	State2 = cellState:emptyDock(State1),
-	SelfPointer = cellState:cellPointer(State2),
+handle_cast(unleash, CellState) ->
+	% need to get the stash and do a bunch of shit here, damnit
+	Elements = cellState:getStash(CellState),
+	CellState1 = cellState:emptyStash(CellState),
+	{CellState2, Elements1} = cellState:injectElements(CellState1, Elements),
+	
+	CellState3 = cellState:setFlag(CellState2, leashed, false),
+	Dock = cellState:getDock(CellState3),
+	CellState4 = cellState:emptyDock(CellState3),
+	SelfPointer = cellState:cellPointer(CellState4),
 	OutputDock = 	fun({CellPointer, ElementList}) ->
 						sendElements(CellPointer, SelfPointer, ElementList)
 					end,
 	lists:foreach(OutputDock, Dock),
-	{noreply, State2}.
+	
+	CellState5 = runOutputs(CellState4, Elements1),
+	{noreply, CellState5}.
 
 terminate(normal, State) ->
 	?trace(killed),
@@ -385,7 +392,7 @@ code_change(OldVsn, State, Extra) ->
 %% 
 %% runOutputs :: CellState -> List Elements -> CellState
 %%		runOutputs takes the cellState and Elements to be sent
-%%		it runs the elements through each output, then sends the results to the sendto's of that output
+%%		it runs the elements through each output, then sends the results to the connections of that output
 %%		it then updates the states of all the outputs, and returns a new cellstate
 %% 
 
