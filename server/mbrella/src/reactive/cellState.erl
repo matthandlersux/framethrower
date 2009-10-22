@@ -1,9 +1,8 @@
 -module (cellState).
 -compile(export_all).
 
--include("../../include/scaffold.hrl").
-
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
+-define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
 
 %% ====================================================
 %% notes
@@ -84,12 +83,14 @@ updateBottom(State, AST) ->
 	State#cellState{bottom = AST}.
 	
 %% 
-%% updateInformants :: CellState -> List CellPointers -> CellState
+%% addInformants :: CellState -> List CellPointers -> CellState
 %% 
 
-updateInformants(State, InformantsList) ->
-	Informants = lists:map(fun(CellPointer) -> {CellPointer, false} end, InformantsList),
-	State#cellState{informants = Informants}.
+addInformants(CellState, ListOfCellPointers) ->
+	AddInformant = 	fun(CellPointer, State) ->
+						addInformant(State, CellPointer)
+					end,
+	lists:foldl(AddInformant, CellState, ListOfCellPointers).
 
 %% 
 %% addInformant :: CellState -> CellPointer -> CellState
@@ -97,7 +98,14 @@ updateInformants(State, InformantsList) ->
 %%		
 
 addInformant(#cellState{informants = Informants} = CellState, CellPointer) ->
-	CellState#cellState{informants = [{CellPointer, false}] ++ Informants}.
+	% CellState#cellState{informants = [{CellPointer, false}] ++ Informants}.
+	?colortrace(CellPointer),
+	case lists:keytake(CellPointer, 1, Informants) of
+		{value, {_CellPointer, Done, Weight}, RestOfInformants} ->
+			CellState#cellState{informants = [{CellPointer, Done, Weight + 1}] ++ RestOfInformants};
+		false ->
+			CellState#cellState{informants = [{CellPointer, false, 1}] ++ Informants}
+	end.
 
 %% 
 %% removeInformant :: CellState -> CellPointer -> CellState
@@ -106,8 +114,10 @@ addInformant(#cellState{informants = Informants} = CellState, CellPointer) ->
 
 removeInformant(#cellState{informants = Informants} = CellState, CellPointer) ->
 	case lists:keytake(CellPointer, 1, Informants) of
-		{value, _Informant, RestOfInformants} ->
+		{value, {_CellPointer, Done, 1}, RestOfInformants} ->
 			CellState#cellState{informants = RestOfInformants};
+		{value, {_CellPointer, Done, Weight}, RestOfInformants} ->
+			CellState#cellState{informants = [{CellPointer, Done, Weight - 1}] ++ RestOfInformants};
 		false ->
 			exit(removed_informant_that_didnt_exist)
 	end.
@@ -120,18 +130,18 @@ setDone(#cellState{informants = Informants, done = Done} = State, CellPointer) -
 	if
 		Done -> State;
 		true ->
-			FindCellPointer = 	fun({CellPointerFromList, IsDone}, IsTotalDone) ->
+			FindCellPointer = 	fun({CellPointerFromList, IsDone, Weight}, IsTotalDone) ->
 									if 
 										IsDone andalso IsTotalDone ->
-											{{CellPointerFromList, IsDone}, true};
+											{{CellPointerFromList, IsDone, Weight}, true};
 										IsDone andalso (not IsTotalDone) ->
-											{{CellPointerFromList, IsDone}, false};
+											{{CellPointerFromList, IsDone, Weight}, false};
 										CellPointer =:= CellPointerFromList ->
-											{{CellPointerFromList, true}, IsTotalDone};
+											{{CellPointerFromList, true, Weight}, IsTotalDone};
 										not IsDone ->
-											{{CellPointerFromList, IsDone}, false};
+											{{CellPointerFromList, IsDone, Weight}, false};
 										true ->
-											{{CellPointerFromList, IsDone}, IsDone}
+											{{CellPointerFromList, IsDone, Weight}, IsDone}
 									end
 								end,
 			{NewInformants, Done1} = lists:mapfoldl(FindCellPointer, true, Informants),
