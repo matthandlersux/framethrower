@@ -17,7 +17,7 @@
 
 %% --------------------------------------------------------------------
 %% External exports
--export([mewpilate/1, new/0, store/2, get/1, debug/0]).
+-export([mewpilate/1, new/0, store/2, get/1, debug/0, reset/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -73,6 +73,14 @@ mewpilate(AST) ->
 
 debug() ->
 	gen_server:call(?MODULE, debug).
+	
+%% 
+%% reset :: ok
+%% 		
+%%		
+
+reset() ->
+	gen_server:cast(?MODULE, reset).
 
 %% ====================================================================
 %% Server functions
@@ -122,7 +130,10 @@ handle_cast({store, AST, CellAST}, ETS) ->
 	NormalizedAST = mewpilate(AST),
 	cell:setBottom(ast:toTerm(CellAST), NormalizedAST),
 	ets:insert(ETS, {NormalizedAST, CellAST}),
-    {noreply, ETS}.
+    {noreply, ETS};
+handle_cast(reset, ETS) ->
+	ets:delete_all_objects(ETS),
+	{noreply, ETS}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2

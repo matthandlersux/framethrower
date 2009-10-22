@@ -200,12 +200,12 @@ invert(CellPointer) ->
 
 unfoldSet(AST, Object) ->
 	OutputCell = cell:makeCellLeashed(set),
-	cell:setFlag(OutputCell, waitForDone, true),
-	% TODO: type error sortof... when AST gets applied to Object, Object is assumed to be an AST but if it isn't then it doesn't matter
-	InitialSetCellPointer = eval:evaluate( ast:makeApply(AST, Object) ),
-	cell:injectIntercept(OutputCell, unfoldSet, [AST, OutputCell]),
-	cell:sendElements(OutputCell, [cellElements:createAdd(Object)]),
-	cell:injectOutput(InitialSetCellPointer, OutputCell, becomeInformant),
+	% cell:setFlag(OutputCell, waitForDone, true),
+	InitialSetCellPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(Object)) ),
+	cell:injectIntercept(OutputCell, unfoldSet, [AST, Object, OutputCell]),
+	cell:addValue(OutputCell, Object),
+	cell:injectOutput(InitialSetCellPointer, OutputCell),
+	% cell:injectOutput(InitialSetCellPointer, OutputCell, becomeInformant, [OutputCell]),
 	cell:unleash(OutputCell),
 	OutputCell.
 
