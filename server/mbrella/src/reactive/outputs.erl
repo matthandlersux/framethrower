@@ -346,24 +346,23 @@ sendMapValueAsKey(Key, _State, _ElementsState, Element) ->
 %%		unfoldSet
 %% 
 
-becomeInformant() -> false.
+becomeInformant() -> undefined.
 
-becomeInformant(InformToCellPointer, IsInformant, _ElementsState, Element) ->
+becomeInformant(InformToCellPointer, _IsInformant, _ElementsState, Element) ->
 	Value = cellElements:value(Element),
 	Modifier = cellElements:modifier(Element),
 	case cellPointer:isCellPointer(Value) of
 		true ->
 			if
-				Modifier =:= add andalso IsInformant -> {IsInformant, Element};
 				Modifier =:= add -> 
 					cell:addInformant(InformToCellPointer, Value),
-					{true, Element};
-				Modifier =:= remove andalso IsInformant -> 
+					{undefined, Element};
+				true -> 
 					cell:removeInformant(InformToCellPointer, Value),
-					{false, Element};
-				true -> {IsInformant, Element}
+					{undefined, Element}
 			end;
-		false -> {IsInformant, Element}
+		false -> 
+			{undefined, Element}
 	end.
 					
 %% 
