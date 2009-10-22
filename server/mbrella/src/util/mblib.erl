@@ -69,25 +69,6 @@ pumpList([], _) -> [];
 pumpList([H|T], Fun) ->
 	[Fun(H)|pumpList(T, Fun)].
 
-%% MaybeStore for exprVars from type.erl
-%% 
-%% maybeStore:: Expr -> FreshVariable -> Env -> Env
-%% 
-
-maybeStore(#exprVar{index = OldVar} = Expr, NewVar, Env) when is_record(Expr, exprVar) ->
-	maybeStore(OldVar, NewVar, Env);
-
-%% 
-%% maybeStore:: Key -> NewKey -> Dict -> Dict
-%% 
-
-maybeStore(OldVar, NewVar, Dict) ->
-	try dict:fetch(OldVar, Dict) of
-		_ -> Dict
-	catch 
-		_:_ -> dict:store(OldVar, NewVar, Dict)
-	end.
-
 %% 
 %% catchElements is used to store elements while another function runs, this is a helper function
 %% 

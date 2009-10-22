@@ -1,52 +1,45 @@
 -module (type).
--compile( export_all).
 
--import (mblib, [maybeStore/3]).
-
--include ("ast.hrl").
 -include ("../../include/scaffold.hrl").
--define (do(X, Y, Next), then( Y, fun(X) -> Next end )).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
-
+-export([makeApply/2, makeLambda/2, makeTypeVar/1, makeTypeName/1]).
+-export([parse/1, unparse/1, isReactive/1, outerType/1]).
 
 %% ====================================================
 %% types
 %% ====================================================
 
-% Expr:
-% 	#exprLambda | #exprApply |	#exprFun | #exprCell | #exprVar | String | Num | Bool
 % 	
 % Type:
-% 	#type
-% 	
-
--record (cons, {type, left, right}).
-
-%% ====================================================
-%% external api
-%% ====================================================
+% 	{typeApply, {Type, Type}}
+% | {typeFun, {Type, Type}}
+% | {typeVar, String}
+% | {typeName, TypeAtom}
+%
+% TypeAtom: TODO: add all types from client
+%    unit | set | map | number | string | bool | null | ord
+%
 
 
 %%
 %% make Functions
 %%
 
-
 % makeApply :: Type -> Type -> Type
 makeApply(Left, Right) ->
-	{type, typeApply, {Left, Right}}.
+	{typeApply, {Left, Right}}.
 
-% makeApply :: Type -> Type -> Type	
+% makeLambda :: Type -> Type -> Type	
 makeLambda(Left, Right) ->
-	{type, typeFun, {Left, Right}}.
+	{typeFun, {Left, Right}}.
 
-% makeApply :: String -> Type
+% makeTypeVar :: String -> Type
 makeTypeVar(String) ->
-	{type, typeVar, String}.
+	{typeVar, String}.
 
-% makeApply :: String -> Type
+% makeTypeName :: Atom -> Type
 makeTypeName(String) ->
-	{type, typeName, String}.
+	{typeName, String}.
 
 
 
@@ -59,8 +52,13 @@ parse(S) ->
 	Result.
 
 %% 
-%% parser:: String -> Type -> {Type, String}
-%%
+%% parser:: String -> (Type | empty) -> {Type, String}
+%% Inputs: 
+%%	  String: the String to be parsed
+%%    LeftType: Type to be applied to the result of parsing String, or empty
+%% Output: {Type, String}
+%%    Type: the Type parsed from the input String
+%%    String: the rest of the String not parsed yet
 
 parser(String, LeftType) ->
 	{LeftTypeUsed, Type, Remaining} = case String of
@@ -91,7 +89,9 @@ parser(String, LeftType) ->
 		_ -> parser(Remaining, NewType)
 	end.
 
-
+%
+% extractTypeName :: String -> (TypeAtom | error)
+%
 extractTypeName(String) ->
 	IsTypeName = case String of
 		"Set" -> true;
@@ -112,28 +112,17 @@ extractTypeName(String) ->
 
 
 
-%% ====================================================
-%% Internal API
-%% ====================================================
-
-
-
-
-	
 %% 
-%% Expr:: string | bool | num | (Expr) | Expr -> Expr | exprFun | exprVar
-%% Type:: String | Bool | Num | {Type} | Type -> Type | [Type] | typeVar
-%% 
-	
+%% unparse:: Type -> String
+%%
 
-%% 
-%% unparse:: Type -> {String, [Variables]}
-%% 
-unparse(AST) when is_list(AST) ->
-	unparse(AST, []);
 unparse(AST) ->
 	{String, _} = unparse(AST, []),
 	String.
+
+%% 
+%% unparse:: Type -> Variables -> {String, [Variables]}
+%% Variables is a List of {String, String}, mapping variables in the type to normalized variable names
 
 unparse([], _) -> ok;
 unparse([{L,R}|T], Variables) ->
@@ -141,35 +130,35 @@ unparse([{L,R}|T], Variables) ->
 	{RHS, Vars2} = unparse(R, Vars1),
 	io:format("~s = ~s ~n~n", [LHS, RHS]),
 	unparse(T, Vars2);
-unparse(#type{type = typeFun, value = {L, R} }, Variables) ->
+unparse({typeFun, {L, R} }, Variables) ->
 	{String, Vars} = unparse(L, Variables),
 	{String2, Vars2} = unparse(R, Variables ++ Vars),
 	case L of
-		#type{type = typeFun} ->
+		{typeFun, _} ->
 			{"(" ++ String ++ ") -> " ++ String2, Vars2};
 		_ ->
 			{String ++ " -> " ++ String2, Vars2}
 	end;
-unparse(#type{type = typeApply, value = {L, R} }, Variables) ->
+unparse({typeApply, {L, R} }, Variables) ->
 	{String, Vars} = unparse(L, Variables),
 	{String2, Vars2} = unparse(R, Variables ++ Vars),
 	case L of
-		#type{type = typeFun} ->
+		{typeFun, _} ->
 			LHS = "(" ++ String ++ ")";
 		_ -> 
 			LHS = String
 	end,
 	case R of
-		#type{type = typeApply} ->
+		{typeApply, _} ->
 			{LHS ++ " (" ++ String2 ++ ")", Vars2};
-		#type{type = typeFun} ->
+		{typeFun, _} ->
 			{LHS ++ " (" ++ String2 ++ ")", Vars2};
 		_ ->
 			{LHS ++ " " ++ String2, Vars2}
 	end;
-unparse(#type{type = typeName, value = Value}, Variables) ->
+unparse({typeName, Value}, Variables) ->
 	unparse(parseUtil:toTitle(atom_to_list(Value)), Variables);
-unparse(#type{type = typeVar, value = Value}, Variables) ->
+unparse({typeVar, Value}, Variables) ->
 	case lists:keysearch(Value, 1, Variables) of
 		{value, {_, ChangeTo}} ->
 			unparse(ChangeTo, Variables);
@@ -181,11 +170,12 @@ unparse(#type{type = typeVar, value = Value}, Variables) ->
 					unparse( [LastVar + 1], Variables ++ [{Value, [LastVar + 1]}])
 			end
 	end;
-% unparse(#type{type = typeVar, value = Value}, Variables) ->
-% 	unparse(Value, Variables);
 unparse(String, Variables) ->
 	{String, Variables}.
 
+%% 
+%% isReactive :: Type -> Bool
+%% returns true for any applied type (Unit, Set, Map)
 
 isReactive(Type) ->
 	case outerType(Type) of
@@ -193,33 +183,17 @@ isReactive(Type) ->
 		_ -> true
 	end.
 
-outerType(#type{type = typeApply, value = {Val, _}}) ->
-	case Val of
-		#type{type = typeName, value = unit} -> unit;
-		#type{type = typeName, value = set} -> set;
-		#type{type = typeApply, value = {#type{type = typeName, value = map},_}} -> map;
-		_ -> false
+%% 
+%% outerType :: Type -> (Atom | error)
+%% returns the kind of a reactiveType, so outerType(parse("Set (a -> Unit b)")) returns set
+%% returns error for non reactive types
+
+outerType({typeApply, {Type, _}}) ->
+	case Type of
+		{typeName, TypeAtom} -> TypeAtom;
+		_ -> error
 	end;
-outerType(_) -> false.
-
-
-isMap(#type{type = typeApply, value = {#type{type = typeName, value = map}, _}}) ->
-	true;
-isMap(_) -> false.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+outerType(_) -> error.
 
 
 
@@ -245,48 +219,33 @@ isMap(_) -> false.
 %%
 %%
 
-%% 
-%% get:: Expr -> Type | Error
-%% 
-
-get( Expr ) ->
-	Expr1 = prefixTypeVars( Expr ),
-	{Type, Constraints} = genConstraints( Expr1 ),
-	Subs = unify(Constraints),
-	substitute(Type, Subs).
-
-
 
 %% 
-%% getType:: Expr -> Type
+%% getType:: Term -> Type
 %% 
 
-getType( Expr ) ->
-	getType( Expr, dict:new() ).
-	
-getType( Expr, _ ) when is_record(Expr, exprFun) ->
-	% io:format("~100p~n~n", [unparse(Expr#exprFun.type)]),
-	Expr#exprFun.type;
-getType( Expr, Env ) when is_record(Expr, exprVar) ->
-	try dict:fetch(Expr#exprVar.index, Env)
-		% {TypeString, _Fun} -> type(typeVar, parse:tast( TypeString ))
-	catch _:_ ->
-		case cellStore:lookup(Expr#exprVar.index) of
-			notfound -> erlang:error({typeVar_not_found, Expr});
-			Result -> Result
-		end
-	end;
-getType( Expr, _ ) when is_record(Expr, exprCell) ->
-	Expr#exprCell.type;
-getType( Obj, _ ) when is_record(Obj, object) ->
-	Obj#object.type;
-getType({primitive, Type, _}, _) -> 
-	makeTypeName(Type);
-getType({primitive, null}, _) -> makeTypeName(null);
-getType( Expr, _ ) when is_boolean(Expr) -> makeTypeName(bool);
-getType( null, _ ) -> makeTypeName(null);
-getType( Expr, _ ) when is_number(Expr) -> makeTypeName(number);
-getType( Expr, _ ) when is_list(Expr) -> makeTypeName(string).
+getType( AST ) ->
+	getType( AST, dict:new() ).
+
+getType( AST, Env ) ->
+	case ast:type(AST) of
+		apply -> 
+			AST1 = prefixTypeVars( AST ),
+			{Type, Constraints} = genConstraints( AST1 ),
+			Subs = unify(Constraints),
+			substitute(Type, Subs);
+		function ->
+			ast:getFunctionType(AST);
+		variable ->
+			case dict:find(ast:getVariable(AST), Env) of
+				{ok, Result} -> Result;
+				error -> erlang:error({typeVar_not_found, AST})
+			end;
+		cell -> ast:getCellType(AST);
+		object -> ast:getObjectType(AST);
+		Atom -> makeTypeName(Atom)
+	end.
+
 
 %% TODO: use correct AST functions/syntax
 %% genConstraints:: Expr -> {Type, [Constraints]}
@@ -305,21 +264,37 @@ genConstraints(Expr, Prefix, Env) ->
 			{getType( Expr, Env ), []};
 		apply ->
 			Variable = makeTypeVar("t" ++ Prefix),
-			Env1 = maybeStore(Expr#cons.left, Variable, Env),
-			Env2 = maybeStore(Expr#cons.right, Variable, Env1),
-			{Type1, Constraints1} = genConstraints( Expr#cons.left, Prefix ++ "1", Env2),
-			{Type2, Constraints2} = genConstraints( Expr#cons.right, Prefix ++ "2", Env2),
-			{Variable, Constraints1 ++ Constraints2 ++ [{Type1, {type, typeFun, {Type2, Variable}}}]};
+			Left = ast:getApplyFunctionArity1(Expr),
+			Right = ast:getApplyParameterArity1(Expr),
+			Env1 = maybeStore(Left, Variable, Env),
+			Env2 = maybeStore(Right, Variable, Env1),
+			{Type1, Constraints1} = genConstraints( Left, Prefix ++ "1", Env2),
+			{Type2, Constraints2} = genConstraints( Right, Prefix ++ "2", Env2),
+			{Variable, Constraints1 ++ Constraints2 ++ [{Type1, {typeFun, {Type2, Variable}}}]};
 		lambda ->
 			Variable = makeTypeVar("t" ++ Prefix),
-			Env1 = maybeStore(Expr#cons.left, Variable, Env),
-			Env2 = maybeStore(Expr#cons.right, Variable, Env1),
-			{Type1, Constraints1} = genConstraints( Expr#cons.right, Prefix ++ "3", Env2),
+			Left = ast:getApplyFunctionArity1(Expr),
+			Right = ast:getApplyParameterArity1(Expr),
+			Env1 = maybeStore(Left, Variable, Env),
+			Env2 = maybeStore(Right, Variable, Env1),
+			{Type1, Constraints1} = genConstraints( Right, Prefix ++ "3", Env2),
 			{makeLambda(Variable, Type1), Constraints1}
 	end.
 
+%% 
+%% maybeStore :: AST -> String -> Dict -> Dict
+%%
 
-
+maybeStore(AST, NewVar, Dict) ->
+	case ast:type(AST) of
+		variable ->
+			OldVar = ast:getVariable(AST),
+			case dict:find(OldVar, Dict) of
+				error -> dict:store(OldVar, NewVar, Dict);
+				_ -> Dict
+			end;
+		_ -> Dict
+	end.
 	
 %% 
 %% unify:: [Constraints] -> [Substitutions] | error
@@ -329,7 +304,7 @@ unify(Constraints) ->
 	unify(Constraints, []).
 
 unify([], Subs) -> Subs;
-unify([{#type{type = Ltype, value = Lvalue} = L, #type{type = Rtype, value = Rvalue} = R}|Constraints], Substitutions) ->
+unify([{{Ltype, Lvalue} = L, {Rtype, Rvalue} = R}|Constraints], Substitutions) ->
 	LCR = containsVar(L, R),
 	RCL = containsVar(R, L),
 	% io:format("~p~n~n", [unparse(Substitutions)]),
@@ -357,13 +332,16 @@ unify([{#type{type = Ltype, value = Lvalue} = L, #type{type = Rtype, value = Rva
 	
 
 %% 
-%% containsVar:: Does #type contain TypeVar
+%% containsVar:: TypeVar -> Type -> Bool
+%% Does Type contain TypeVar
 %% 
 
-containsVar(TypeVar, #type{type = Type, value = Val} = TypeRec) when is_record(TypeRec, type) ->
+containsVar(TypeVar, {Type, Val}) ->
 	case Type of
 		typeName -> false;
-		typeVar -> TypeVar#type.value =:= Val;
+		typeVar -> 
+			{typeVar, TypeVarValue} = TypeVar,
+			TypeVarValue =:= Val;
 		_ -> 
 			{L, R} = Val,
 			containsVar(TypeVar, L) orelse containsVar(TypeVar, R)
@@ -379,9 +357,9 @@ substitute(Expr, [H|T]) ->
 substitute([], {_VarName, _Type}) -> [];
 substitute([H|T], {VarName, Type}) ->
 	[substitute(H, {VarName, Type})|substitute(T, {VarName, Type})];
-substitute({L, R}, {VarName, Type}) ->
-	{substitute(L, {VarName, Type}), substitute(R, {VarName, Type})};
-substitute(#type{type = Type, value = Val} = TypeRecord, {VarName, NewType} = Sub) ->
+% substitute({L, R}, {VarName, Type}) ->
+% 	{substitute(L, {VarName, Type}), substitute(R, {VarName, Type})};
+substitute({Type, Val} = TypeRecord, {VarName, NewType} = Sub) ->
 	case Type of 
 		typeName -> TypeRecord;
 		typeVar when Val =:= VarName ->
@@ -391,31 +369,31 @@ substitute(#type{type = Type, value = Val} = TypeRecord, {VarName, NewType} = Su
 		typeVar ->
 			TypeRecord;
 		X when X =:= typeFun orelse X =:= typeApply ->
-			{L,R} = TypeRecord#type.value,
-			#type{type = Type, value = {substitute(L, Sub), substitute(R, Sub)}}
+			{L,R} = Val,
+			{Type, {substitute(L, Sub), substitute(R, Sub)}}
 	end.
 
 
 %% 
-%% shiftVars:: AST -> String -> AST
+%% shiftVars:: Type -> String -> Type
 %% 
 
-shiftVars(#type{type = Type, value = Value} = TypeExpr, Prefix) when is_record(TypeExpr, type) ->
+shiftVars({Type, Value}, Prefix) ->
 	case Type of
 		typeFun -> 
 			{Left, Right} = Value,
-			#type{type = typeFun, value = {shiftVars(Left, Prefix), shiftVars(Right, Prefix)}};
+			{typeFun, {shiftVars(Left, Prefix), shiftVars(Right, Prefix)}};
 		typeVar ->
 			% io:format("~p -> ~p ~n~n", [Value, Value ++ Prefix]),
-			TypeExpr#type{value = Value ++ Prefix};
+			{typeVar, Value ++ Prefix};
 		typeName ->
-			TypeExpr#type{value = shiftVars(Value, Prefix)};
+			{typeName, shiftVars(Value, Prefix)};
 		typeApply ->
 			{Left, Right} = Value,
-			#type{type = typeApply, value = {shiftVars(Left, Prefix), shiftVars(Right, Prefix)}}
+			{typeApply, {shiftVars(Left, Prefix), shiftVars(Right, Prefix)}}
 	end;
-shiftVars({Left, Right}, Prefix) when is_atom(Left) -> %this is for typeName = String a type things, may need to change
-	{Left, shiftVars(Right, Prefix)};
+% shiftVars({Left, Right}, Prefix) when is_atom(Left) -> %this is for typeName = String a type things, may need to change
+% 	{Left, shiftVars(Right, Prefix)};
 shiftVars(Anything, _) ->
 	Anything.
 
@@ -431,7 +409,7 @@ prefixTypeVars( Expr ) ->
 
 prefixTypeVars( #exprApply{ left = Left, right = Right } = Apply, Index ) when is_record( Apply, exprApply ) ->
 	Apply#exprApply{ left = prefixTypeVars(Left, Index ++ "x"), right = prefixTypeVars(Right, Index ++ "y") };
-prefixTypeVars( #exprLambda{ expr = Expr} = Lambda, Index ) when is_record( Lambda, exprLambda ) ->
+prefixTypeVars( #exprLambda{ expr = Expr} = Lambda, _Index ) when is_record( Lambda, exprLambda ) ->
 	Lambda#exprLambda{ expr = prefixTypeVars(Expr, "z") };
 prefixTypeVars(#exprFun{ type = Type } = ExprFun, Index ) when is_record( ExprFun, exprFun ) ->
 	ExprFun#exprFun{ type = shiftVars(Type, Index) };
@@ -441,24 +419,24 @@ prefixTypeVars( Expr, _ ) -> Expr.
 	
 	
 	
-bindVars(Explicit, Template, TypeVars) ->
+bindVars(Explicit, {TemplateKind, TemplateValue}, TypeVars) ->
 	if
-		Template#type.type == typeVar -> dict:store(Template#type.value, Explicit, TypeVars);
-		(Template#type.type == typeApply) or (Template#type.type == typeLambda) ->
-			{ELeft, ERight} = Explicit#type.value,
-			{TLeft, TRight} = Template#type.value,
+		TemplateKind == typeVar -> dict:store(TemplateValue, Explicit, TypeVars);
+		(TemplateKind == typeApply) or (TemplateKind == typeLambda) ->
+			{_, {ELeft, ERight}} = Explicit,
+			{TLeft, TRight} = TemplateValue,
 			NewTypeVars = bindVars(ELeft, TLeft, TypeVars),
 			bindVars(ERight, TRight, NewTypeVars);
 		true -> TypeVars
 	end.
 	
-build(Type, TypeVars) ->
-	case Type#type.type of
-		typeVar -> dict:fetch(Type#type.value, TypeVars);
+build({TypeKind, TypeValue} = Type, TypeVars) ->
+	case TypeKind of
+		typeVar -> dict:fetch(TypeValue, TypeVars);
 		typeName -> Type;
-		Kind -> 
-			{Left, Right} = Type#type.value,
-			#type{type=Kind, value={build(Left, TypeVars), build(Right, TypeVars)}}
+		_ -> 
+			{Left, Right} = TypeValue,
+			{TypeKind, {build(Left, TypeVars), build(Right, TypeVars)}}
 	end.
 	
 buildType(ExplicitType, TemplateTypeString, TypeToBuildString) ->
@@ -470,25 +448,25 @@ buildType(ExplicitType, TemplateTypeString, TypeToBuildString) ->
 	
 	
 
-compareHelper(Type1, Type2, Correspond12, Correspond21) ->
-	case Type1#type.type of
-		WrongType when not(WrongType == Type2#type.type) -> {false, Correspond12, Correspond21};
-		typeName -> {(Type1#type.value == Type2#type.value), Correspond12, Correspond21};
+compareHelper({Type1Kind, Type1Value}, {Type2Kind, Type2Value}, Correspond12, Correspond21) ->
+	case Type1Kind of
+		WrongType when not(WrongType == Type2Kind) -> {false, Correspond12, Correspond21};
+		typeName -> {(Type1Value == Type2Value), Correspond12, Correspond21};
 		typeVar -> 
-			T1C12 = dict:fetch(Type1#type.value, Correspond12),
-			C12 = (not T1C12) orelse (T1C12 == Type2#type.value),
-			T2C21 = dict:fetch(Type2#type.value, Correspond21),
-			C21 = (not T2C21) orelse (T2C21 == Type1#type.value),
+			T1C12 = dict:fetch(Type1Value, Correspond12),
+			C12 = (not T1C12) orelse (T1C12 == Type2Value),
+			T2C21 = dict:fetch(Type2Value, Correspond21),
+			C21 = (not T2C21) orelse (T2C21 == Type1Value),
 			case (C12 and C21) of
 				true -> 
-					NewCorrespond12 = dict:store(Type1#type.value, Type2#type.value, Correspond12),
-					NewCorrespond21 = dict:store(Type2#type.value, Type1#type.value, Correspond21),
+					NewCorrespond12 = dict:store(Type1Value, Type2Value, Correspond12),
+					NewCorrespond21 = dict:store(Type2Value, Type1Value, Correspond21),
 					{true, NewCorrespond12, NewCorrespond21};
 				false -> {false, Correspond12, Correspond21}
 			end;
 		_ -> 
-			{Left1, Right1} = Type1#type.value,
-			{Left2, Right2} = Type2#type.value,
+			{Left1, Right1} = Type1Value,
+			{Left2, Right2} = Type2Value,
 			{Comp1, NewCorrespond12, NewCorrespond21} = CH1 = compareHelper(Left1, Left2, Correspond12, Correspond21),
 			case Comp1 of
 				true -> compareHelper(Right1, Right2, NewCorrespond12, NewCorrespond21);
