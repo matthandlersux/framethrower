@@ -1,11 +1,19 @@
 template () {
-	x = state(Unit Number),
-	y = state(Unit Number),
+	xS = state(Unit Number, 100),
 	
-	a = action () {
-		set x 5
+	xfetched = fetch xS,
+	xS2 = unfetch xfetched,
+	
+	moveIt = action (start, xOffset) {
+		set xS (plus start xOffset)
 	},
-	<div>
-		Hello
+	
+	
+	<div style-position="absolute" style-left="{xS}">
+		drag me
+		<f:call>
+			// dragger xS moveIt
+			dragger xS2 moveIt
+		</f:call>
 	</div>
 }
