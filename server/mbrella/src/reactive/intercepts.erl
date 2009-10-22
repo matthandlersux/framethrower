@@ -233,22 +233,23 @@ setDifference(CellPointer1, CellPointer2, State, From, Element) ->
 
 unfoldSet() -> cellElements:new(set).
 
-unfoldSet(AST, InitialObject, SelfCellPointer, State, _From, Element) ->
-	{NewState, ResponseElement} = cellElements:process(State, Element),
-	ResponseModifier = cellElements:modifier(ResponseElement),
-	ResponseValue = cellElements:value(ResponseElement),
+unfoldSet(AST, InitialObject, SelfCellPointer, State, From, Element) ->
+	{NewState, Response} = cellElements:process(State, Element),
 	Value = cellElements:value(Element),
 	if
-		ResponseElement =:= [] orelse InitialObject =:= Value ->
-			{NewState, ResponseElement};
+		Response =:= [] orelse InitialObject =:= Value ->
+			{NewState, []};
 		true ->
+			[ResponseElement] = Response,
+			ResponseModifier = cellElements:modifier(ResponseElement),
+			ResponseValue = cellElements:value(ResponseElement),
 			if
 				ResponseModifier =:= add ->
-					NewSetPointer = eval:evaluate( ast:makeApply(AST, ResponseValue) ),
+					NewSetPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(ResponseValue)) ),
 					cell:injectOutput(NewSetPointer, SelfCellPointer),
 					{NewState, ResponseElement};
 				true ->
-					ExistingSetPointer = eval:evaluate( ast:makeApply(AST, ResponseValue) ),
+					ExistingSetPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(ResponseValue)) ),
 					cell:uninjectOutput(ExistingSetPointer, SelfCellPointer),
 					{NewState, ResponseElement}
 			end
