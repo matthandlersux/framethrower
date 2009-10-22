@@ -7,7 +7,6 @@
 
 -behaviour(gen_server).
 -include("../../include/scaffold.hrl").
--include ("../../include/ast.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define (this(Field), State#objectsState.Field).
@@ -27,7 +26,6 @@
 %% ====================================================================
 -record(objectsState, {classes=dict:new()}).
 -record(class, {name, prop=dict:new(),inherit,memoize,memoTable=dict:new(),castUp,castDown,makeMemoEntry}).
--record(memoEntry, {broadcaster, object}).
 
 %% ====================================================
 %% Types
@@ -51,7 +49,7 @@ stop() ->
 	gen_server:call(?MODULE, stop).
 
 
-accessor(ClassName, PropName, ObjectName) ->
+accessor(_ClassName, PropName, ObjectName) ->
 	objectStore:getField(ObjectName, PropName).
 
 
@@ -111,7 +109,7 @@ init([]) ->
 handle_call({create, ClassName, InstanceName, Prop}, _, State) ->
 	Classes = ?this(classes),
 	Class = dict:fetch(ClassName, Classes),
-	Type = #type{type=typeName, value=list_to_atom(ClassName)},
+	Type = type:makeTypeName(list_to_atom(ClassName)),
 	NewProp = makeReactiveProps(Prop, Class),
 	NewObject = {name = InstanceName, type = Type, prop = NewProp},
     {reply, NewObject, State};
@@ -157,7 +155,7 @@ handle_info({get, state}, State) ->
 %% Description: Shutdown the server
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
-terminate(Reason, State) ->
+terminate(_Reason, _State) ->
     ok.
 
 %% --------------------------------------------------------------------
@@ -165,5 +163,5 @@ terminate(Reason, State) ->
 %% Purpose: Convert process state when code is changed
 %% Returns: {ok, NewState}
 %% --------------------------------------------------------------------
-code_change(OldVsn, State, Extra) ->
+code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
