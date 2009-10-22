@@ -364,6 +364,31 @@ becomeInformant(InformToCellPointer, _IsInformant, _ElementsState, Element) ->
 		false -> 
 			{undefined, Element}
 	end.
+	
+%% 
+%% becomeInformantMap :: 
+%% 		if the value is a cell, make that cell an informant for the InformToCellPointer and return key'd value. used by 
+%%		unfoldMap
+%% 
+
+becomeInformantMap() -> undefined.
+
+becomeInformantMap(InformToCellPointer, MapValue, _IsInformant, _ElementsState, Element) ->
+	MapKey = cellElements:value(Element),
+	Modifier = cellElements:modifier(Element),
+	case cellPointer:isCellPointer(MapKey) of
+		true ->
+			if
+				Modifier =:= add -> 
+					cell:addInformant(InformToCellPointer, MapKey),
+					{undefined, [cellElements:createMap(Modifier, MapKey, MapValue)]};
+				true -> 
+					cell:removeInformant(InformToCellPointer, MapKey),
+					{undefined, [cellElements:createMap(Modifier, MapKey, MapValue)]}
+			end;
+		false -> 
+			{undefined, [cellElements:createMap(Modifier, MapKey, MapValue)]}
+	end.
 					
 %% 
 %% applyAndInject

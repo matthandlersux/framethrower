@@ -6,7 +6,7 @@
 	reactiveAnd/2, reactiveOr/2, reactiveNot/1,
 	returnUnit/1, returnUnitSet/1, returnUnitMap/2, boolToUnit/1,
 	bindUnit/2, bindSet/2, bindMap/2,
-	union/2, setDifference/2, unfoldSet/2, invert/1,
+	union/2, setDifference/2, unfoldSet/2, unfoldMap/2, invert/1,
 	equal/2, dOr/2, dNot/1, dAnd/2, plus/2, subtract/2,
 	oneTo/1, oneToMap/2, debug/1	
 ]).
@@ -213,12 +213,12 @@ unfoldSet(AST, Object) ->
 %% 
 
 unfoldMap(AST, Object) ->
-	OutputCell = cell:makeCellLeashed(set),
+	OutputCell = cell:makeCellLeashed(map),
 	cell:setFlag(OutputCell, waitForDone, true),
 	InitialSetCellPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(Object)) ),
 	cell:injectIntercept(OutputCell, unfoldMap, [AST, Object, OutputCell]),
-	cell:addValue(OutputCell, {Object, 0}),
-	cell:injectOutput(InitialSetCellPointer, OutputCell, becomeInformant, [OutputCell]),
+	cell:addValue( OutputCell, cellElements:createMap(Object, 0) ),
+	cell:injectOutput(InitialSetCellPointer, OutputCell, becomeInformantMap, [OutputCell, 0]),
 	cell:unleash(OutputCell),
 	OutputCell.
 

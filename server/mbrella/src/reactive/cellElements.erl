@@ -69,6 +69,15 @@ create(Modifier, Value) ->
 	{Modifier, Value}.
 
 %% 
+%% createMap :: Value -> Value -> Value
+%% 		used by unfold map... needed to create a map without a modifier
+%%		
+
+createMap(Key, Value) ->
+	{Key, Value}.
+
+
+%% 
 %% createMap :: Atom -> Value -> Value -> Element
 %% 
 

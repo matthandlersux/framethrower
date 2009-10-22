@@ -254,6 +254,35 @@ unfoldSet(AST, InitialObject, SelfCellPointer, State, From, Element) ->
 					{NewState, ResponseElement}
 			end
 	end.
+
+%% 
+%% unfoldMap ::
+%% 
+
+unfoldMap() -> cellElements:new(set).
+
+unfoldMap(AST, InitialObject, SelfCellPointer, State, From, Element) ->
+	Key = cellElements:mapKey(Element),
+	DepthValue = cellElements:mapValue(Element),
+	{NewState, Response} = cellElements:process(State, cellElements:createAdd(Key)),
+	if
+		Response =:= [] orelse InitialObject =:= Key ->
+			{NewState, []};
+		true ->
+			[ResponseElement] = Response,
+			ResponseModifier = cellElements:modifier(ResponseElement),
+			ResponseValue = cellElements:value(ResponseElement),
+			if
+				ResponseModifier =:= add ->
+					NewSetPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(ResponseValue)) ),
+					cell:injectOutput(NewSetPointer, SelfCellPointer, becomeInformantMap, [SelfCellPointer, DepthValue + 1]),
+					{NewState, [cellElements:createMap(ResponseModifier, ResponseValue, DepthValue)]};
+				true ->
+					ExistingSetPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(ResponseValue)) ),
+					cell:uninjectOutput(ExistingSetPointer, SelfCellPointer, becomeInformantMap, [SelfCellPointer, DepthValue + 1]),
+					{NewState, [cellElements:createMap(ResponseModifier, ResponseValue, DepthValue)]}
+			end
+	end.
 	
 %% 
 %% applyExpr :: 
