@@ -1,14 +1,5 @@
-setNum3 = action (testObject::testClass) {
-	set (TestClass:num testObject) 3
-},
-
-setNum5 = action (testObject::testClass) {
-	set (TestClass:num testObject) 5
-},
-
-simple = template (input::Number) {
-	add1 = (t -> plus t 1),
-	x = add1 input,
-	y = plus x 2,
-	y
+simple = action (input::Number) {
+	NumSet <- create(Set Number),
+	add NumSet 4,
+	return NumSet
 }

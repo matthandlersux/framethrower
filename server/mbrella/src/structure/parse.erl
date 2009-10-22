@@ -39,20 +39,20 @@ parse(S, Scope) ->
 parser(String, LeftAST, Scope) ->
 	{AST, Remaining} = case String of
 		[$(|Right] ->
-			{ParsedAST, [$)|Rest]} = parser(trimSpace(Right), empty, Scope),
-			{ParsedAST, trimSpace(Rest)};
+			{ParsedAST, [$)|Rest]} = parser(parseUtil:trimSpace(Right), empty, Scope),
+			{ParsedAST, parseUtil:trimSpace(Rest)};
 		[$\\|Right] ->
-			{ParsedAST, Rest} = parser(trimSpace(Right), empty, Scope),
+			{ParsedAST, Rest} = parser(parseUtil:trimSpace(Right), empty, Scope),
 			{ast:makeLambda(ParsedAST), Rest};
 		[$/|Right] ->
-			{NumString, Rest} = untilSpaceOrRightParen(Right),
+			{NumString, Rest} = parseUtil:untilSpaceOrRightParen(Right),
 			Num = list_to_integer(NumString),
 			{ast:makeVariable(Num), Rest};
 		[$\"|Right] ->
 			%quoted string
-			cutOffRightQuote(Right);
+			parseUtil:cutOffRightQuote(Right);
 		_ -> %string
-			{StringToParse, Rest} = untilSpaceOrRightParen(String),
+			{StringToParse, Rest} = parseUtil:untilSpaceOrRightParen(String),
 			ParsedString = case extractPrim(StringToParse) of
 				error ->
 					parseString(StringToParse, Scope);
@@ -131,24 +131,7 @@ unparse(AST) ->
 %% Internal Functions
 %% ====================================================
 
-cutOffRightQuote([$\"|R]) ->
-	{[], R};
-cutOffRightQuote([L|R]) ->
-	{Ans, Rest} = cutOffRightQuote(R),
-	{[L|Ans], Rest}.
 
-untilSpaceOrRightParen([]) ->
-	{[], []};
-untilSpaceOrRightParen([$ |_] = S) ->
-	{[], trimSpace(S)};
-untilSpaceOrRightParen([$)|_] = S) ->
-	{[], trimSpace(S)};
-untilSpaceOrRightParen([L|R]) ->
-	{Ans, Rest} = untilSpaceOrRightParen(R),
-	{[L|Ans], Rest}.
-
-trimSpace([$ |Rest]) -> trimSpace(Rest);
-trimSpace(S) ->	S.
 
 
 

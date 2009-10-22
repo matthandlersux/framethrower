@@ -9,9 +9,6 @@
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
 
-% get( String ) when is_list( String ) ->
-% 	type:get( expr:expr(String) );
-
 %% ====================================================
 %% types
 %% ====================================================
@@ -30,6 +27,224 @@
 %% ====================================================
 
 
+%%
+%% make Functions
+%%
+
+
+% makeApply :: Type -> Type -> Type
+makeApply(Left, Right) ->
+	{type, typeApply, {Left, Right}}.
+
+% makeApply :: Type -> Type -> Type	
+makeLambda(Left, Right) ->
+	{type, typeFun, {Left, Right}}.
+
+% makeApply :: String -> Type
+makeTypeVar(String) ->
+	{type, typeVar, String}.
+
+% makeApply :: String -> Type
+makeTypeName(String) ->
+	{type, typeName, String}.
+
+
+
+%% 
+%% parse:: String -> Type
+%%
+
+parse(S) ->
+	{Result, _} = parser(S, empty),
+	Result.
+
+%% 
+%% parser:: String -> Type -> {Type, String}
+%%
+
+parser(String, LeftType) ->
+	{LeftTypeUsed, Type, Remaining} = case String of
+		[$(|Right] ->
+			{ParsedType, [$)|Rest]} = parser(parseUtil:trimSpace(Right), empty),
+			{notused, ParsedType, parseUtil:trimSpace(Rest)};
+		[$-|[$>|Right]] ->
+			{ParsedType, Rest} = parser(parseUtil:trimSpace(Right), empty),
+			{used, makeLambda(LeftType, ParsedType), Rest};
+		_ -> %string
+			{StringToParse, Rest} = parseUtil:untilSpaceOrRightParen(String),
+			ParsedString = case extractTypeName(StringToParse) of
+				error ->
+					makeTypeVar(StringToParse);
+				TypeAtom ->
+					makeTypeName(TypeAtom)
+			end,
+			{notused, ParsedString, Rest}
+	end,
+	NewType = case {LeftTypeUsed, LeftType} of
+		{_, empty} -> Type;
+		{used, _} -> Type;
+		{notused, _} -> makeApply(LeftType, Type)
+	end,
+	case Remaining of
+		[] -> {NewType, []};
+		[$)|_] -> {NewType, Remaining};
+		_ -> parser(Remaining, NewType)
+	end.
+
+
+extractTypeName(String) ->
+	IsTypeName = case String of
+		"Set" -> true;
+		"Unit" -> true;
+		"Map" -> true;
+		"Number" -> true;
+		"String" -> true;
+		"Null" -> true;
+		"Bool" -> true;
+		"Ord" -> true;
+		% TODO: insert ALL needed types from client
+		_ -> false
+	end,
+	case IsTypeName of
+		true -> list_to_atom(string:to_lower(String));
+		false -> error
+	end.
+
+
+
+%% ====================================================
+%% Internal API
+%% ====================================================
+
+
+
+
+	
+%% 
+%% Expr:: string | bool | num | (Expr) | Expr -> Expr | exprFun | exprVar
+%% Type:: String | Bool | Num | {Type} | Type -> Type | [Type] | typeVar
+%% 
+	
+
+%% 
+%% unparse:: Type -> {String, [Variables]}
+%% 
+unparse(AST) when is_list(AST) ->
+	unparse(AST, []);
+unparse(AST) ->
+	{String, _} = unparse(AST, []),
+	String.
+
+unparse([], _) -> ok;
+unparse([{L,R}|T], Variables) ->
+	{LHS, Vars1} = unparse(L, Variables),
+	{RHS, Vars2} = unparse(R, Vars1),
+	io:format("~s = ~s ~n~n", [LHS, RHS]),
+	unparse(T, Vars2);
+unparse(#type{type = typeFun, value = {L, R} }, Variables) ->
+	{String, Vars} = unparse(L, Variables),
+	{String2, Vars2} = unparse(R, Variables ++ Vars),
+	case L of
+		#type{type = typeFun} ->
+			{"(" ++ String ++ ") -> " ++ String2, Vars2};
+		_ ->
+			{String ++ " -> " ++ String2, Vars2}
+	end;
+unparse(#type{type = typeApply, value = {L, R} }, Variables) ->
+	{String, Vars} = unparse(L, Variables),
+	{String2, Vars2} = unparse(R, Variables ++ Vars),
+	case L of
+		#type{type = typeFun} ->
+			LHS = "(" ++ String ++ ")";
+		_ -> 
+			LHS = String
+	end,
+	case R of
+		#type{type = typeApply} ->
+			{LHS ++ " (" ++ String2 ++ ")", Vars2};
+		#type{type = typeFun} ->
+			{LHS ++ " (" ++ String2 ++ ")", Vars2};
+		_ ->
+			{LHS ++ " " ++ String2, Vars2}
+	end;
+unparse(#type{type = typeName, value = Value}, Variables) ->
+	unparse(parseUtil:toTitle(atom_to_list(Value)), Variables);
+unparse(#type{type = typeVar, value = Value}, Variables) ->
+	case lists:keysearch(Value, 1, Variables) of
+		{value, {_, ChangeTo}} ->
+			unparse(ChangeTo, Variables);
+		false ->
+			case Variables of
+				[] -> unparse( "a", Variables ++ [{Value, "a"}]);
+				_ ->
+					{_, [LastVar]} = lists:last(Variables),
+					unparse( [LastVar + 1], Variables ++ [{Value, [LastVar + 1]}])
+			end
+	end;
+% unparse(#type{type = typeVar, value = Value}, Variables) ->
+% 	unparse(Value, Variables);
+unparse(String, Variables) ->
+	{String, Variables}.
+
+
+isReactive(Type) ->
+	case outerType(Type) of
+		false -> false;
+		_ -> true
+	end.
+
+outerType(#type{type = typeApply, value = {Val, _}}) ->
+	case Val of
+		#type{type = typeName, value = unit} -> unit;
+		#type{type = typeName, value = set} -> set;
+		#type{type = typeApply, value = {#type{type = typeName, value = map},_}} -> map;
+		_ -> false
+	end;
+outerType(_) -> false.
+
+
+isMap(#type{type = typeApply, value = {#type{type = typeName, value = map}, _}}) ->
+	true;
+isMap(_) -> false.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%
+%% TODO: Everything below here needs to be updated for AST syntax and possibly pointer syntax in order to work
+%% It would depend on keeping type information in the ASTs, which is not currently happening
+%%
+%%
+%%
+%%
+
 %% 
 %% get:: Expr -> Type | Error
 %% 
@@ -40,77 +255,6 @@ get( Expr ) ->
 	Subs = unify(Constraints),
 	substitute(Type, Subs).
 
-%% 
-%% show:: String | Expr -> String
-%% 
-	
-show( String ) when is_list( String ) ->
-	show( parse:parse(String) );
-show( Expr ) ->
-	unparse( type:get(Expr) ).
-	
-%% 
-%% parse:: String -> Type
-%% 
-
-parse(String) ->
-	case parse( control(), String) of
-		[{Result, []}] -> Result;
-		[{Result, Leftovers}] -> io:format("unused input \"~s\"~n~nresult: ~p~n", [Leftovers, Result]);
-		[] -> io:format("invalid input ~n", [])
-	end.
-
-%% ====================================================
-%% Internal API
-%% ====================================================
-
-
-
-%% ====================================================
-%% type parser CFG
-%% ====================================================
-
-	
-control() ->
-	?do(T, elem(),
-		choice(
-			?do( _, symbol("->"),
-			?do( E, control(),
-			return({type, typeFun, {T, E}}))), %or
-			return(T)
-		)
-	).
-
-elem() ->
-	choice(
-		?do( LeftMost, elem1(),
-			choice(
-				nest(LeftMost, term(), fun(X,Acc) -> {type, typeApply, {Acc, X}} end), %or
-				return( LeftMost )
-			)
-		), %or
-		term()
-	).
-
-elem1() ->
-	?do(Left, term(),
-	?do(Right, term(),
-	return({type, typeApply, {Left, Right}}))).
-
-term() ->
-	choice([
-		?do(_, symbol("("),
-		?do(E, control(),
-		?do(_, symbol(")"),
-		return(E)))), %or
-		?do(Type, type(), return({type, typeName, list_to_atom(Type)})), %or
-		?do(TypeVar, typeVar(), return({type, typeVar, TypeVar}) )
-	]).
-	
-%% 
-%% Expr:: string | bool | num | (Expr) | Expr -> Expr | exprFun | exprVar
-%% Type:: String | Bool | Num | {Type} | Type -> Type | [Type] | typeVar
-%% 
 
 
 %% 
@@ -132,27 +276,19 @@ getType( Expr, Env ) when is_record(Expr, exprVar) ->
 			Result -> Result
 		end
 	end;
-% getType( Expr, Env ) when is_record(Expr, cellPointer) ->
-	%
-getType( Expr, Env ) when is_record(Expr, exprCell) ->
+getType( Expr, _ ) when is_record(Expr, exprCell) ->
 	Expr#exprCell.type;
-getType( Obj, Env ) when is_record(Obj, object) ->
+getType( Obj, _ ) when is_record(Obj, object) ->
 	Obj#object.type;
 getType({primitive, Type, _}, _) -> 
-	case Type of
-		bool -> type(bool);
-		nat -> type(num);
-		string -> type(string)
-	end;
-getType({primitive, null}, _) -> type(null);
-getType( Expr, _ ) when is_boolean(Expr) -> type(bool);
-getType( null, _ ) -> type(null);
-getType( Expr, _ ) when is_number(Expr) -> type(num);
-getType( "<" ++ _ = XML, _) when is_list(XML) -> type(xml);
-getType( Expr, _ ) when is_list(Expr) -> type(string).
+	makeTypeName(Type);
+getType({primitive, null}, _) -> makeTypeName(null);
+getType( Expr, _ ) when is_boolean(Expr) -> makeTypeName(bool);
+getType( null, _ ) -> makeTypeName(null);
+getType( Expr, _ ) when is_number(Expr) -> makeTypeName(number);
+getType( Expr, _ ) when is_list(Expr) -> makeTypeName(string).
 
-
-%% 
+%% TODO: use correct AST functions/syntax
 %% genConstraints:: Expr -> {Type, [Constraints]}
 %% 
 genConstraints(Expr) ->
@@ -161,51 +297,28 @@ genConstraints(Expr) ->
 	genConstraints(Expr, "1", Env).
 
 genConstraints(Expr, Prefix, Env) ->
-	case exprType(Expr) of
+	case ast:type(Expr) of
 		exprVar ->
 			{getType(Expr, Env), []};
 		expr ->
 			% io:format("~p~n~n", [Expr]),
 			{getType( Expr, Env ), []};
 		apply ->
-			Variable = type(typeVar, "t" ++ Prefix),
+			Variable = makeTypeVar("t" ++ Prefix),
 			Env1 = maybeStore(Expr#cons.left, Variable, Env),
 			Env2 = maybeStore(Expr#cons.right, Variable, Env1),
 			{Type1, Constraints1} = genConstraints( Expr#cons.left, Prefix ++ "1", Env2),
 			{Type2, Constraints2} = genConstraints( Expr#cons.right, Prefix ++ "2", Env2),
 			{Variable, Constraints1 ++ Constraints2 ++ [{Type1, {type, typeFun, {Type2, Variable}}}]};
 		lambda ->
-			Variable = type(typeVar, "t" ++ Prefix),
+			Variable = makeTypeVar("t" ++ Prefix),
 			Env1 = maybeStore(Expr#cons.left, Variable, Env),
 			Env2 = maybeStore(Expr#cons.right, Variable, Env1),
 			{Type1, Constraints1} = genConstraints( Expr#cons.right, Prefix ++ "3", Env2),
-			{type(lambda, Variable, Type1), Constraints1}
+			{makeLambda(Variable, Type1), Constraints1}
 	end.
 
-%% 
-%% type returns a well formed type tuple
-%% 
-	
-type(bool) -> {type, typeName, 'Bool'};
-type(null) -> {type, typeName, 'Null'};
-type(num) -> {type, typeName, 'Number'};
-type(string) -> {type, typeName, 'String'};
-type(xml) -> {type, typeName, 'XML'}.
 
-type(typeVar, Val) -> {type, typeVar, Val};
-type(typeFun, String) -> String.
-
-type(lambda, Var, Type) -> {type, typeFun, {Var, Type}}.
-
-%% 
-%% exprType returns the type of an expression record, this is a hack so i dont have to convert my cons in expr
-%% 
-
-exprType(Expr) when is_record(Expr, cons) -> Expr#cons.type;
-exprType(Expr) when is_record(Expr, exprApply) -> apply;
-exprType(Expr) when is_record(Expr, exprLambda) -> lambda;
-exprType(Expr) when is_record(Expr, exprVar) -> exprVar;
-exprType(_) -> expr.
 
 	
 %% 
@@ -305,88 +418,8 @@ shiftVars({Left, Right}, Prefix) when is_atom(Left) -> %this is for typeName = S
 	{Left, shiftVars(Right, Prefix)};
 shiftVars(Anything, _) ->
 	Anything.
-	
-
-%% 
-%% unparse:: Type -> {String, [Variables]}
-%% 
-unparse(AST) when is_list(AST) ->
-	unparse(AST, []);
-unparse(AST) ->
-	{String, _} = unparse(AST, []),
-	String.
-
-unparse([], _) -> ok;
-unparse([{L,R}|T], Variables) ->
-	{LHS, Vars1} = unparse(L, Variables),
-	{RHS, Vars2} = unparse(R, Vars1),
-	io:format("~s = ~s ~n~n", [LHS, RHS]),
-	unparse(T, Vars2);
-unparse(#type{type = typeFun, value = {L, R} }, Variables) ->
-	{String, Vars} = unparse(L, Variables),
-	{String2, Vars2} = unparse(R, Variables ++ Vars),
-	case L of
-		#type{type = typeFun} ->
-			{"(" ++ String ++ ") -> " ++ String2, Vars2};
-		_ ->
-			{String ++ " -> " ++ String2, Vars2}
-	end;
-unparse(#type{type = typeApply, value = {L, R} }, Variables) ->
-	{String, Vars} = unparse(L, Variables),
-	{String2, Vars2} = unparse(R, Variables ++ Vars),
-	case L of
-		#type{type = typeFun} ->
-			LHS = "(" ++ String ++ ")";
-		_ -> 
-			LHS = String
-	end,
-	case R of
-		#type{type = typeApply} ->
-			{LHS ++ " (" ++ String2 ++ ")", Vars2};
-		#type{type = typeFun} ->
-			{LHS ++ " (" ++ String2 ++ ")", Vars2};
-		_ ->
-			{LHS ++ " " ++ String2, Vars2}
-	end;
-unparse(#type{type = typeName, value = Value}, Variables) ->
-	unparse(atom_to_list(Value), Variables);
-unparse(#type{type = typeVar, value = Value}, Variables) ->
-	case lists:keysearch(Value, 1, Variables) of
-		{value, {_, ChangeTo}} ->
-			unparse(ChangeTo, Variables);
-		false ->
-			case Variables of
-				[] -> unparse( "a", Variables ++ [{Value, "a"}]);
-				_ ->
-					{_, [LastVar]} = lists:last(Variables),
-					unparse( [LastVar + 1], Variables ++ [{Value, [LastVar + 1]}])
-			end
-	end;
-% unparse(#type{type = typeVar, value = Value}, Variables) ->
-% 	unparse(Value, Variables);
-unparse(String, Variables) ->
-	{String, Variables}.
 
 
-isReactive(Type) ->
-	case outerType(Type) of
-		false -> false;
-		_ -> true
-	end.
-
-outerType(#type{type = typeApply, value = {Val, _}}) ->
-	case Val of
-		#type{type = typeName, value = 'Unit'} -> unit;
-		#type{type = typeName, value = 'Set'} -> set;
-		#type{type = typeApply, value = {#type{type = typeName, value = 'Map'},_}} -> map;
-		_ -> false
-	end;
-outerType(_) -> false.
-
-
-isMap(#type{type = typeApply, value = {#type{type = typeName, value = 'Map'}, _}}) ->
-	true;
-isMap(_) -> false.
 
 	
 %% 
@@ -466,337 +499,4 @@ compareHelper(Type1, Type2, Correspond12, Correspond21) ->
 compareTypes(Type1, Type2) ->
 	{Answer, _, _} = compareHelper(Type1, Type2, dict:new(), dict:new()),
 	Answer.
-
-
-
-
-%% ====================================================
-%% Stuff from old parse file
-%% ====================================================
-%% ====================================================
-%% Stuff from old parse file
-%% ====================================================
-
-%% ====================================================
-%% Parser
-%% ====================================================
-
-%% 
-%% Ast :: List(Tuple(X, Y)) | List()
-%% 
-%% 
-%% Parser :: ¬ String -> Ast
-%% 
-
-
-%% 
-%% return X -> ¬ Y -> Ast
-%% 
-
-return(Ast) ->
-	fun(String) -> [{Ast, String}] end.
-%% 
-%% failure -> ¬ X -> Ast
-%% 
-
-failure() ->
-	fun(_String) -> [] end.
-
-%% 
-%% item -> ¬ String -> Ast
-%% 
-
-item() ->
-	fun(String) ->
-		case String of
-			[] -> [];
-			[H|T] -> [{H, T}]
-		end
-	end.
-
-%% 
-%% parser (Parser A) String -> Ast
-%% 
-
-parse(Parser, String) ->
-	Parser(String).
-
-%% 
-%% then (Parser A) (¬ Parser B) -> Ast		¬ Parser B = ¬ String -> Parser B
-%% 		the monadic part is that you can compose parsers into a new parser
-
-then(Parser, FunToParser) ->
-	fun(String) ->
-		case parse(Parser, String) of
-			[] -> [];
-			[{H, Tail}] -> parse( FunToParser(H), Tail )
-		end
-	end.
-
-%% 
-%% choice (Parser A) (Parser B) -> Ast
-%% 
-
-choice(Parser1, Parser2) ->
-	fun(String) ->
-		case parse(Parser1, String) of
-			[] -> parse(Parser2, String);
-			[{H, Tail}] -> [{H, Tail}]
-		end
-	end.
-
-choice([]) -> failure();
-choice([H|T]) ->
-	choice(H, choice(T)).
-
-
-%% 
-%% nest:: FirstElement -> Parser -> Fun -> Parser
-%%		nest was my solution to the left associativity of Apply's.  This could be a slow process but essentially it
-%%		returns a parser that takes the first element of something that is left associative (LeftMost) and then 
-%%		looks to see if there are more of those left associative elements to the right of it... it 
-%%		then folds NestFun on the elements that were parsed out so that you have for example:
-%%
-%%		nest(apply1, apply(),  fun(X, Acc) -> {cons, apply, Acc, X} end) -> Parser st.
-%%			parse(Parser, "apply2 apply3 apply4 apply5") ->
-%%				((((apply1 apply2) apply3) apply4) apply5)
-%% 
-
-	
-nest(LeftMost, Parser, NestFun) ->
-	fun(String) ->
-		case nestList(Parser, String) of
-			[] -> [];
-			[{ElemList, Tail}] -> [{lists:foldl(NestFun, LeftMost, ElemList), Tail}]
-		end			
-	end.
-	
-nestList(Parser, String) ->
-	nestList(Parser, [], String).
-	
-nestList(Parser, Acc, String) -> 
-		case parse(Parser, String) of
-			[] -> [{Acc, String}];
-			[{H, Tail}] -> nestList(Parser, Acc ++ [H], Tail)
-		end.
-
-%% 
-%% sat (Char -> Bool) -> (¬ Y -> Ast)
-%% 
-
-% do(X,Y,Z) says Parse a Y off the string and then take Z and make a parser out of it that includes Y in some way
-
-sat(Predicate) ->
-	?do( X, item(),
-		case Predicate(X) of
-			true -> return(X);
-			false -> failure()
-		end).
-
-%% 
-%% notSat (Char -> Bool) -> (¬ Y -> Ast)
-%% 
-	
-notSat(Predicate) ->
-	?do( X, item(),
-		case Predicate(X) of
-			true -> failure();
-			false -> return(X)
-		end
-	).
-
-many(Parser) ->
-	choice( many1(Parser), return([]) ).
-
-many1(Parser) ->
-	?do(V, Parser, 
-	?do(VS, many(Parser), 
-	return([V|VS]))).
-
-token(Parser) ->
-	?do( _, space(),
-	?do(V, Parser,
-	?do(_, space(),
-	return(V)))).
-		
-% p() ->
-% 	then( symbol("("), fun(_) ->
-% 			then( natural(), fun(N) ->
-% 					then( many( then( symbol(","), fun(_) -> natural() end )), fun(NS) ->
-% 						then( symbol(")"), fun(_) ->
-% 								return([N|NS])
-% 							end)
-% 					end)
-% 			end)
-% 	end).
-
-
-
-%% ====================================================
-%% utilities
-%% ====================================================
-
-%% 
-%% parsers
-%% 
-
-digit() ->
-	sat(fun isDigit/1).
-
-lower() ->
-	sat(fun isLower/1).
-
-upper() ->
-	sat(fun isUpper/1).
-
-letter() ->
-	sat(fun isAlpha/1).
-
-bool() ->
-	choice(
-		string("true"),
-		string("false")
-	).
-	
-nul() ->
-	string("null").
-
-alphaNum() ->
-	sat(fun isAlphaNum/1).
-
-alphaNumSpace() ->
-	sat(fun isAlphaNumSpace/1).
-
-alphaNumPunc() ->
-	sat(fun isAlphaNumPunc/1).
-
-char(Char) ->
-	sat(isChar(Char)).
-
-string([]) ->
-	return([]);
-string([H|T] = String) ->
-	then(char(H), fun(_) -> 
-				then( string(T), fun(_) ->
-					return(String)
-				end
-				)
-		end
-	).
-
-quotable() ->
-	many( choice(
-		notSat(isChar($")), %or
-		symbol("\\\"")
-	)).
-
-lit() ->
-	?do(_, symbol([$"]),
-	?do(Literal, quotable(),
-	?do(_, symbol([$"]),
-	return(Literal)))).
-	% return([$"] ++ Literal ++ [$"])))).
-
-ident() ->
-	?do(X, letter(),
-	?do(XS, many( alphaNumPunc() ),
-	return([X|XS]))).
-	
-typ() ->
-	?do(X, upper(),
-	?do(XS, many( alphaNumPunc() ),
-	return([X|XS]))).
-	
-typeW() ->
-	?do(X, upper(),
-	?do(Z, many( alphaNum() ),
-	?do(Y, typeVar(),
-	return([X|Y])))).
-	
-nat() ->
-	choice( 
-		?do( XS, many1( digit() ),
-		return(list_to_integer(XS)) ),
-		
-		?do( Neg, symbol([$-]),
-		?do( XS, many1( digit() ),
-		return(list_to_integer(Neg ++ XS)) ))
-	).
-
-floa() ->
-	choice( 
-		?do(Lead, many1( digit() ),
-		?do(_, symbol([$.]),
-		?do(Follow, many1( digit() ),
-		return( list_to_float(Lead ++ "." ++ Follow)) ))),
-		
-		?do( Neg, symbol([$-]),
-		?do(Lead, many1( digit() ),
-		?do(_, symbol([$.]),
-		?do(Follow, many1( digit() ),
-		return( list_to_float(Neg ++ Lead ++ "." ++ Follow)) ))))
-	).
-
-space() ->
-	then( many( sat( fun isSpace/1)), fun(_) -> return({}) end).
-
-identifier() ->
-	token( ident() ).
-
-type() ->
-	token( typ() ).
-	
-typeVar() ->
-	token( ident() ).
-	
-typeWithVar() ->
-	token( typeW() ).
-
-natural() ->
-	token( nat() ).
-
-float() ->
-	token( floa() ).
-
-symbol(XS) ->
-	token( string(XS) ).
-	
-literal() ->
-	token( lit() ).
-	
-boolean() ->
-	token( bool() ).
-
-null() ->
-	token( nul() ).
-
-%% ====================================================
-%% Char -> Bool functions
-%% ====================================================
-
-isDigit(Char) when Char >= $0, Char =< $9 -> true;
-isDigit(_) -> false.
-
-isLower(Char) when Char >= $a, Char =< $z -> true;
-isLower(_) -> false.
-
-isUpper(Char) when Char >= $A, Char =< $Z -> true;
-isUpper(_) -> false.
-
-isAlpha(Char) -> isLower(Char) orelse isUpper(Char).
-
-isEndOfString(eos) -> true;
-isEndOfString(_) -> false.
-
-isAlphaNum(Char) -> isLower(Char) orelse isUpper(Char) orelse isDigit(Char).
-
-isAlphaNumSpace(Char) -> isAlphaNum(Char) orelse isSpace(Char).
-
-isAlphaNumPunc(Char) -> isAlphaNum(Char) orelse Char =:= $. orelse Char =:= $~ orelse Char =:= $:.
-
-isChar(Char) ->
-	fun(TestChar) -> Char =:= TestChar end. 
-
-isSpace(Char) -> Char =:= $ .
-
 

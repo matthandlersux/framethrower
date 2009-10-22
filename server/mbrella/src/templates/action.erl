@@ -55,13 +55,15 @@ testJSON() ->
 	
 	SharedLetStruct = struct:get_value(<<"sharedLet">>, Struct),
 	%convert exprs within sharedLetStruct to use erlang records instead of JSON
-	SharedLetConverted = mapFields(SharedLetStruct, <<"expr">>, fun(Expr) -> parseExpression(Expr, dict:new()) end),
+	SharedLetConverted = mapFields(SharedLetStruct, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
+	%convert types within sharedLetStruct to use erlang records instead of JSON
+	SharedLetConverted2 = mapFields(SharedLetConverted, <<"type">>, fun(Type) -> convertJSONType(Type) end),
 	
-	{struct, Lets} = SharedLetConverted,
+	{struct, Lets} = SharedLetConverted2,
 	lists:map(fun(Let) ->
 		{LetName, LetStruct} = Let,
 		LetNameString = binary_to_list(LetName),
-		Reply = gen_server:call(?MODULE, {addLet, LetNameString, LetStruct})
+		gen_server:call(?MODULE, {addLet, LetNameString, LetStruct})
 	end, Lets),
 	ok.
 
@@ -175,90 +177,150 @@ evaluateLine(Line, Scope) ->
 	case Kind of
 		"lineExpr" ->
 			Expr = (struct:get_value(<<"expr">>, Line)),
-			Result = parse:bind(Expr, Scope),
-			Result;
+			parse:bind(Expr, Scope);
 		"lineTemplate" ->
 			makeClosure(Line, Scope);
+		"lineState" ->
+			Action = (struct:get_value(<<"action">>, Line)),
+			executeAction(evaluateLine(Action, Scope));
+		"lineAction" ->
+			makeActionClosure(Line, Scope);
+		"actionCreate" ->
+			% TODO actions in a let are possible in actions, but not in templates? may as well be in both.
+			% desugar as a one-action lineAction:			
+			EmptyStruct = {struct, []},
+			ActionStruct = struct:set_value(<<"action">>, Line, EmptyStruct),
+			LineAction = struct:set_value(<<"actions">>, ActionStruct, EmptyStruct),
+			makeActionClosure(LineAction, Scope);
 		"lineJavascript" ->
 			ignore;
 		"lineXML" ->
-			ignore;
-		"lineState" ->
-			ignore;
-		"lineAction" ->
-			ignore;
-		"actionCreate" ->
 			ignore
 	end.
-% 
-% function evaluateLine(line, env) {
+
+
+
+executeAction(ActionClosure) ->
+	{instruction, Instructions, Scope} = ActionClosure,
+	lists:foldr(fun(ActionLet, _) ->
+		Action = struct:get_value(<<"action">>, ActionLet),
+		ActionKind = struct:get_value(<<"kind">>, Action),
+		Output = case ActionKind of
+			<<"actionCreate">> ->
+				Type = struct:get_value(<<"type">>, Action),
+				case type:isReactive(Type) of
+					true -> cell:makeCell(type:outerType(Type));
+					false -> 
+						Prop = struct:get_value(<<"prop">>, Action),	
+						objects:create(Type, Prop)
+				end;
+			<<"extract">> ->
+				ok;
+			<<"actionJavascript">> ->
+				ok;
+			Other ->
+				ok
+		end,
+		ActionName = struct:get_value(<<"name">>, Action),
+		case {ActionName, Output} of
+			{undefined, _} ->
+				nosideeffect;
+			{_, undefined} ->
+				throw(["Trying to assign a let action, but the action has no return value", ActionLet]);
+			{_, _} ->
+				scope:addLet(ActionName, Output, Scope)
+		end,
+		Output
+	end, noOutput, Instructions).
+	
+
+
+% function executeAction(instruction) {
+% 	var scope = {};
+% 	var env = extendEnv(instruction.env, scope);
 % 	
-% 	if (line.kind === "lineExpr") {
-% 		var expr = parseExpression(line.expr, env);
-% 		return expr;
-% 	} else if (line.kind === "lineTemplate") {
-% 		return makeClosure(line, env);
-% 	} else if (line.kind === "lineJavascript") {
-% 		if (line.f.length === 0) return line.f();
-% 		else return makeFun(line.type, curry(line.f));
-% 		//return makeFun(parseType(line.type), line.f);
-% 	} else if (line.kind === "lineXML") {
-% 		return makeXMLP(line.xml, env);
-% 	} else if (line.kind === "lineState") {
-% 		var ac = evaluateLine(line.action, env);
-% 		return executeAction(ac);		
-% 		//return makeCC(line.type);
-% 		//return makeCC(parseType(line.type));
-% 	} else if (line.kind === "lineAction") {
-% 		return makeActionClosure(line, env);
-% 	} else if(line.kind === "actionCreate") {
-% 		// TODO actions in a let are possible in actions, but not in templates? may as well be in both.
-% 		// desugar as a one-action lineAction:
-% 		var lineAction = {actions: [{action: line}]};
-% 		return makeActionClosure(lineAction, env);
+% 	var output;
+% 	
+% 	function evalExpr(expr) {
+% 		return evaluate2(convertJSONExpression(expr, env));
 % 	}
+% 	
+% 	forEach(instruction.instructions, function (actionLet) {
+% 		output = undefined;
+% 		var action = actionLet.action;
+% 		if (action.kind === "actionCreate") {
+% 			// we're dealing with: {kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}}
+% 			
+% 			if (isReactive(action.type)) {
+% 				output = makeCC(action.type);
+% 			} else {
+% 				output = objects.make(action.type.value, map(action.prop, evalExpr));
+% 			}
+% 		} else if (action.kind === "extract") {
+% 			// we're dealing with: {kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
+% 			
+% 			var closure = makeClosure(action.action, env);
+% 			var inner;
+% 			var isMap = !!closure.type.left.left;
+% 			if (isMap) {
+% 				inner = function (o) {
+% 					return evaluate(makeApply(makeApply(closure, o.key), o.val));
+% 				};
+% 			} else {
+% 				inner = function (key) {
+% 					return evaluate(makeApply(closure, key));
+% 				};
+% 			}
+% 			
+% 			var select = evalExpr(action.select);
+% 			
+% 			// note that output will be the result of the last action:
+% 			if (select.kind === "list") {
+% 				forEach(select.asArray, function (element) {
+% 					output = executeAction(inner(element));
+% 				});
+% 			} else {
+% 				var done = false;
+% 				var cell = select;
+% 				var injectedFunc = cell.injectDependency(function () {
+% 					if (!done) {
+% 						done = true;
+% 						forEach(cell.getState(), function (element) {
+% 							output = executeAction(inner(element));
+% 						});
+% 					}
+% 				});
+% 				injectedFunc.unInject();
+% 			}
+% 		} else if(action.kind==="actionJavascript") {
+% 			// we're dealing with: {kind: "actionJavascript", f: function}
+% 			output = action.f();
+% 		} else {
+% 			// we're dealing with a LINE
+% 			
+% 			//var evaled = evaluateLine(action, env);
+% 			var evaled = evaluate(evaluateLine(action, env));
+% 			if (evaled.kind === "instruction") {
+% 				// the LINE evaluated to an Action
+% 				output = executeAction(evaled);
+% 			} else
+% 				debug.error("non-action expression in an action", action);
+% 		}
+% 		
+% 		if (actionLet.name) {
+% 			if (output === undefined) {
+% 				debug.error("Trying to assign a let action, but the action has no return value", actionLet);
+% 			}
+% 			scope[actionLet.name] = output;
+% 		}
+% 	});
+% 	
+% 	return output;
 % }
-% 
-
-%% Convert a JSON expression to an expression using erlang records in deBruijn format
-parseExpression({struct, [{<<"cons">>, <<"apply">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
-	ast:makeApply(parseExpression(Left, DeBruijnHash), parseExpression(Right, DeBruijnHash));
-parseExpression({struct, [{<<"cons">>, <<"lambda">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
-	NewDeBruijnHash = dict:map(fun(_Key, Value) -> Value + 1 end, DeBruijnHash),
-	VarName = Left,
-	NewerDeBruijnHash = dict:store(VarName, 1, NewDeBruijnHash),
-	ast:makeLambda(parseExpression(Right, NewerDeBruijnHash));
-parseExpression(Binary, DeBruijnHash) when is_binary(Binary) ->
-	case dict:find(Binary, DeBruijnHash) of
-		{ok, Index} ->
-			ast:makeVariable(Index);
-		error ->
-			String = binary_to_list(Binary),
-			case extractPrim(String) of
-				error ->
-					ast:makeUnboundVariable(String);
-				Prim ->
-					ast:makeLiteral(Prim)
-			end
-	end.
-
-%% run MapFunction on anything with name FieldName in JSON
-mapFields({struct, List}, FieldName, MapFunction) -> 
-	ConvertedList = lists:map(fun({Name, Value}) ->
-		case Name of
-			FieldName -> {Name, MapFunction(Value)};
-			_ -> {Name, mapFields(Value, FieldName, MapFunction)}
-		end
-	end, List),
-	{struct, ConvertedList};
-mapFields(NonJSON, _, _) ->
-	NonJSON.
 
 
-
-executeAction() -> ok.
-
-makeActionClosure() -> ok.
+makeActionClosure(LineAction, Scope) ->
+	{instruction, struct:get_value(<<"actions">>, LineAction), Scope}.
 
 
 makeClosure(LineTemplate, ParentScope) ->
@@ -301,6 +363,12 @@ addFun() -> ok.
 
 makeActionErlang() -> ok.
 
+
+
+
+
+
+
 %copied from parse.erl. TODO: put in utility file
 extractPrim(VarOrPrim) ->
 	case VarOrPrim of
@@ -316,3 +384,61 @@ extractPrim(VarOrPrim) ->
 				end
 			end
 	end.
+	
+
+%%	===========================
+%%	JSON to AST/TYPE conversion
+%%
+%%  ===========================
+
+%% Convert a JSON expression to an expression using erlang records in deBruijn format
+convertJSONExpression({struct, [{<<"cons">>, <<"apply">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
+	ast:makeApply(convertJSONExpression(Left, DeBruijnHash), convertJSONExpression(Right, DeBruijnHash));
+convertJSONExpression({struct, [{<<"cons">>, <<"lambda">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
+	NewDeBruijnHash = dict:map(fun(_Key, Value) -> Value + 1 end, DeBruijnHash),
+	VarName = Left,
+	NewerDeBruijnHash = dict:store(VarName, 1, NewDeBruijnHash),
+	ast:makeLambda(convertJSONExpression(Right, NewerDeBruijnHash));
+convertJSONExpression(Binary, DeBruijnHash) when is_binary(Binary) ->
+	case dict:find(Binary, DeBruijnHash) of
+		{ok, Index} ->
+			ast:makeVariable(Index);
+		error ->
+			String = binary_to_list(Binary),
+			case extractPrim(String) of
+				error ->
+					ast:makeUnboundVariable(String);
+				Prim ->
+					ast:makeLiteral(Prim)
+			end
+	end.
+
+
+%% Convert a JSON type to a type using erlang records
+convertJSONType({struct, [{<<"kind">>, <<"typeApply">>}, {<<"left">>, Left}, {<<"right">>, Right}]}) ->
+	type:makeApply(convertJSONType(Left), convertJSONType(Right));
+convertJSONType({struct, [{<<"kind">>, <<"typeLambda">>}, {<<"left">>, Left}, {<<"right">>, Right}]}) ->
+	type:makeLambda(convertJSONType(Left), convertJSONType(Right));
+convertJSONType({struct, [{<<"kind">>, <<"typeVar">>}, {<<"value">>, Value}]}) ->
+	String = binary_to_list(Value),
+	type:makeTypeVar(String);
+convertJSONType({struct, [{<<"kind">>, <<"typeName">>}, {<<"value">>, Value}]}) ->
+	String = binary_to_list(Value),
+	type:makeTypeName(String).
+
+
+%% run MapFunction on anything with name FieldName in JSON
+mapFields({struct, List}, FieldName, MapFunction) -> 
+	ConvertedList = lists:map(fun({Name, Value}) ->
+		case Name of
+			FieldName -> {Name, MapFunction(Value)};
+			_ -> {Name, mapFields(Value, FieldName, MapFunction)}
+		end
+	end, List),
+	{struct, ConvertedList};
+mapFields(List, FieldName, MapFunction) when is_list(List) ->
+	lists:map(fun(Element) ->
+		mapFields(Element, FieldName, MapFunction)
+	end, List);
+mapFields(NonJSON, _, _) ->
+	NonJSON.

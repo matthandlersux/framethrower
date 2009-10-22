@@ -64,12 +64,13 @@ makeClasses(ClassesToMake) ->
 makeClass(Name, Prop) ->
 	gen_server:cast(?MODULE, {makeClass, Name, Prop}).
 
-create(ClassName, InstanceName, Props) ->
-	#object{name = ObjectName} = NewObject = gen_server:call(?MODULE, {create, ClassName, InstanceName, Props}),
+create(ClassName, Props) ->
+	InstanceName = objectStore:getName(),
+	NewObject = gen_server:call(?MODULE, {create, ClassName, InstanceName, Props}),
 	%add this obj to objectStore
-	objectStore:store(ObjectName, NewObject),
+	objectStore:store(InstanceName, NewObject),
 	%return AST object
-	ast:makeObject(ObjectName).
+	ast:makeObject(InstanceName).
 
 getState() ->
 	gen_server:call(?MODULE, getState).
@@ -110,10 +111,9 @@ init([]) ->
 handle_call({create, ClassName, InstanceName, Prop}, _, State) ->
 	Classes = ?this(classes),
 	Class = dict:fetch(ClassName, Classes),
-	ObjectName = objectStore:getName(),
 	Type = #type{type=typeName, value=list_to_atom(ClassName)},
 	NewProp = makeReactiveProps(Prop, Class),
-	NewObject = {name = ObjectName, type = Type, prop = NewProp},
+	NewObject = {name = InstanceName, type = Type, prop = NewProp},
     {reply, NewObject, State};
 handle_call(getState, _, State) ->
 	{reply, State, State};	
