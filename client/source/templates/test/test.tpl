@@ -1,8 +1,8 @@
 template () {
 	xS = state(Unit Number, 100),
 	
-	xfetched = fetch xS,
-	xS2 = unfetch xfetched,
+	xS2 = unfetch (fetch xS),
+	//xS2 = xS,
 	
 	moveIt = action (start, xOffset) {
 		set xS (plus start xOffset)
@@ -11,6 +11,7 @@ template () {
 	
 	<div style-position="absolute" style-left="{xS}">
 		drag me
+		//{xS2}
 		<f:call>
 			// dragger xS moveIt
 			dragger xS2 moveIt
