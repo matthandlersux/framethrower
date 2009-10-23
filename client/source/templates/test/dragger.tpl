@@ -3,6 +3,7 @@ template (init::Unit Number, setValue::Number -> Number -> Action a) {
 	startS = state(Unit Number),
 	<f:wrapper>
 		blah
+		{init}
 		<f:on mousedown>
 			jsaction ()::Void {
 				console.log("mousedown activated");
