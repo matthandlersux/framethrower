@@ -16,7 +16,8 @@
 % AST				:: Tuple Atom ASTData
 % ASTData			:: Literal | Tuple 
 % 					ie 		{CellPointer, BottomExpr} | Function | {AST, List}
-% Function			:: Tuple Atom Number
+% Function			:: Tuple {function, {Atom, Atom, List}, Number}
+% ActionMethod		:: Tuple {actionMethod, {Atom, Atom, List}}
 % AccessorFunction	:: Tuple (Tuple Atom Parameter) Number
 % CellPointer 		:: Tuple String Pid
 
@@ -88,40 +89,44 @@ makeObject(Name) ->
 	{object, Name}.
 
 %% 
-%% makeFunction :: Atom -> Number -> AST
+%% makeFunction :: Atom -> Atom -> Number -> AST
 %% 		
 %%		
 
-makeFunction(Name, 0) ->
-	ast:apply({function, {Name, 0}}, []);
-makeFunction(Name, Arity) ->
-	{function, {Name, Arity}}.
-	
-%% 
-%% makeAccessor :: Atom -> Atom -> AST
-%% 		accessors are always arity 1
-%%		
+makeFunction(Module, Name, 0) ->
+	ast:apply({function, {{Module, Name, []}, 0}}, []);
+makeFunction(Module, Name, Arity) ->
+	{function, {{Module, Name, []}, Arity}}.
 
-makeAccessor(ClassName, FieldName) ->
-	{function, {{accessor, [ClassName, FieldName]}, 1}}.
-	
+
 %% 
 %% makeFamilyFunction :: Atom -> Number -> List a -> AST
 %% 		
 %%		
 
-makeFamilyFunction(Name, Arity, Arguments) ->
-	{function, {{Name, Arguments}, Arity}}.
+makeFamilyFunction(Module, Name, 0, Arguments) ->
+	ast:apply({function, {{Module, Name, Arguments}, 0}}, []);
+makeFamilyFunction(Module, Name, Arity, Arguments) ->
+	{function, {{Module, Name, Arguments}, Arity}}.
+
 
 %% 
-%% makeClosure :: LineTemplate (JSON) -> Scope -> Arity -> AST
+%% makeActionMethod :: Atom -> Atom -> Number -> AST
+%% 		
 %%
-%%		
 
-makeClosure(Params, Output, Scope, 0) ->
-	ast:apply({function, {{closure, [Params, Output, Scope]}, 0}}, []);
-makeClosure(Params, Output, Scope, Arity) ->
-	{function, {{closure, [Params, Output, Scope]}, Arity}}.
+makeActionMethod(Module, Name, Arguments) ->
+	{actionMethod, {Module, Name, Arguments}}.
+
+
+%% 
+%% performActionMethod :: AST -> AST | CellPointer | ObjectPointer | Literal ... etc...
+%%
+%%
+
+performActionMethod({actionMethod, {Module, Name, Arguments}}) ->
+	erlang:apply(Module, Name, Arguments).	
+
 
 %% 
 %% makeVariable :: Number -> AST
@@ -284,19 +289,14 @@ type({Type, _Data}) when is_atom(Type) ->
 
 apply(AST, Parameter) when not is_list(Parameter) ->
 	ast:apply(AST, [Parameter]);
-apply({function, {{Family, Arguments}, _Arity}}, ListOfParameters) ->
-	case Family of
-		accessor ->
-			erlang:apply(objects, accessor, Arguments ++ toTerm(ListOfParameters));
-		closure ->
+apply({function, {{Module, Name, Arguments}, _Arity}}, ListOfParameters) ->
+	case {Module, Name} of
+		{action, closure} ->
 			% closure take the listOfParameters as a List of ASTs so it can run evaluate
 			erlang:apply(action, closureFunction, Arguments ++ [ListOfParameters]);
 		_ ->
-			FamilyFunction = erlang:apply(family, Family, Arguments),
-			lists:foldl(fun(A, F) -> F(A) end, FamilyFunction, toTerm(ListOfParameters))
-	end;
-apply({function, {Name, _Arity}}, ListOfParameters) ->
-	erlang:apply(primFuncs, Name, toTerm(ListOfParameters)).
+			erlang:apply(Module, Name, Arguments ++ toTerm(ListOfParameters))
+	end.
 
 %% 
 %% betaReduce :: AST -> List AST -> AST

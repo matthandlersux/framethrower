@@ -52,11 +52,11 @@ start_link(Parent) ->
 	end.
 
 % GetValue is fun/0 to be run the first time Name is looked up
-addLazyLet(Pid, Name, GetValue) ->
-	gen_server:call(Pid, {addLazyLet, Name, GetValue}).
+addLazyLet(Name, GetValue, ScopePid) ->
+	gen_server:call(ScopePid, {addLazyLet, Name, GetValue}).
 
-addLet(Pid, Name, Value) ->
-	gen_server:call(Pid, {addLet, Name, Value}).
+addLet(Name, Value, ScopePid) ->
+	gen_server:call(ScopePid, {addLet, Name, Value}).
 
 % Lookup will return error if Name is not found in this scope or any parent scope
 lookup(Pid, Name) ->

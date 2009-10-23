@@ -36,12 +36,12 @@ lookup(Name) ->
 			case Name of
 				"mapUnit" ++ N ->
 					FunctionArgs = list_to_integer(N),
-					ast:makeFamilyFunction(mapUnit, FunctionArgs + 1 , [FunctionArgs]);
+					ast:makeFamilyFunction(family, mapUnit, FunctionArgs + 1 , [FunctionArgs]);
 				"makeTuple" ++ N ->
 					Arity = list_to_integer(N),
-					ast:makeFamilyFunction(makeTuple, Arity, [Arity]);
+					ast:makeFamilyFunction(family, makeTuple, Arity, [Arity]);
 				[$t,$u,$p,$l,$e,_N1,$g,$e,$t,N2] ->
-					ast:makeFamilyFunction(tupleGet, 1, [list_to_integer([N2])]);
+					ast:makeFamilyFunction(family, tupleGet, 1, [list_to_integer([N2])]);
 				_ ->
 					notfound
 			end
@@ -68,10 +68,18 @@ init([]) ->
 	process_flag(trap_exit, true),
 	%may want to change globalTable from dict to ETS table
 	ets:new(functionTable, [named_table]),
-	{_, Exports} = lists:keyfind(exports, 1, primFuncs:module_info()),
+	%add the primFuncs to the functionTable
+	{_, PrimFuncExports} = lists:keyfind(exports, 1, primFuncs:module_info()),
 	lists:foreach(fun({Name, Arity}) ->
-		add(atom_to_list(Name), ast:makeFunction(Name, Arity))
-	end, Exports),
+		add(atom_to_list(Name), ast:makeFunction(primFuncs, Name, Arity))
+	end, PrimFuncExports),
+	
+	%add the action functions to the functionTable
+	{_, ActionExports} = lists:keyfind(exports, 1, actions:module_info()),
+	lists:foreach(fun({Name, Arity}) ->
+		add(atom_to_list(Name), ast:makeFunction(actions, Name, Arity))
+	end, ActionExports),
+	
     {ok, nostate}.
 
 handle_call(stop, _, State) ->
