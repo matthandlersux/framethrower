@@ -79,7 +79,7 @@ function makeClosure(lineTemplate, env) {
 		return evaluateLine(lineTemplate.output, envWithLets);
 	};
 	
-	return makeFun(type, f, params.length);
+	return makeFun(type, f, params.length, undefined, undefined, true);
 }
 
 

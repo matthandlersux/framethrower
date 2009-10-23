@@ -1,4 +1,4 @@
-function addFun(name, typeString, fun, numArguments, remote) {
+function addFun(name, typeString, fun, numArguments, remote, lazy) {
 	/*
 	This creates a new Fun object and binds it (by putting it in lookupTable)
 	*/
@@ -9,7 +9,7 @@ function addFun(name, typeString, fun, numArguments, remote) {
 	
 	var args = numArguments === undefined ? fun.length : numArguments;
 	
-	var exprFun = makeFun(type, fun, args, name, remote);
+	var exprFun = makeFun(type, fun, args, name, remote, lazy);
 	
 	base.add(name, exprFun);
 	
