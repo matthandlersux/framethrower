@@ -1,5 +1,5 @@
 simple = action (input::Number) {
 	NumSet <- create(Set Number),
-	add NumSet 4,
+	add NumSet input,
 	return NumSet
 }

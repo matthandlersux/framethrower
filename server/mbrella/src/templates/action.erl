@@ -202,14 +202,14 @@ evaluateLine(Line, Scope) ->
 
 executeAction(ActionClosure) ->
 	{instruction, Instructions, Scope} = ActionClosure,
-	lists:foldr(fun(ActionLet, _) ->
+	lists:foldl(fun(ActionLet, _) ->
 		Action = struct:get_value(<<"action">>, ActionLet),
 		ActionKind = struct:get_value(<<"kind">>, Action),
 		Output = case ActionKind of
 			<<"actionCreate">> ->
 				Type = struct:get_value(<<"type">>, Action),
 				case type:isReactive(Type) of
-					true -> cell:makeCell(type:outerType(Type));
+					true -> ast:makeCell(cell:makeCell(type:outerType(Type)));
 					false -> 
 						Prop = struct:get_value(<<"prop">>, Action),	
 						objects:create(Type, Prop)
@@ -218,17 +218,25 @@ executeAction(ActionClosure) ->
 				ok;
 			<<"actionJavascript">> ->
 				ok;
-			Other ->
-				ok
+			_ ->
+				% this is a Line to be evaluated
+				Evaled = eval:evaluate(evaluateLine(Action, Scope)),
+				% check if Evaled is an action method, if so execute it now to avoid ugly wrapping
+				case ast:type(Evaled) of
+					actionMethod ->
+						ast:performActionMethod(Evaled);
+					_ -> executeAction(Evaled)
+				end
 		end,
-		ActionName = struct:get_value(<<"name">>, Action),
+		
+		ActionName = struct:get_value(<<"name">>, ActionLet),
 		case {ActionName, Output} of
 			{undefined, _} ->
 				nosideeffect;
 			{_, undefined} ->
 				throw(["Trying to assign a let action, but the action has no return value", ActionLet]);
 			{_, _} ->
-				scope:addLet(ActionName, Output, Scope)
+				scope:addLet(binary_to_list(ActionName), Output, Scope)
 		end,
 		Output
 	end, noOutput, Instructions).
@@ -338,12 +346,12 @@ makeClosure(LineTemplate, ParentScope) ->
 		GetValue = fun() -> 
 			evaluateLine(LetValue, Scope)
 		end,
-		scope:addLazyLet(Scope, binary_to_list(LetName), GetValue)
+		scope:addLazyLet(binary_to_list(LetName), GetValue, Scope)
 	end, LetsList),	
 	
 	% the output of the closure
 	Output = struct:get_value(<<"output">>, LineTemplate),
-	ast:makeClosure(Params, Output, Scope, ParamLength).
+	ast:makeFamilyFunction(action, closure, ParamLength, [Params, Output, Scope]).
 
 
 % closureFunction is called by ast:apply
@@ -351,7 +359,7 @@ closureFunction(Params, Output, Scope, Args) ->
 	% add the arguments to the closure to the scope
 	ParamsAndArgs = lists:zip(Params, Args),
 	lists:map(fun({Param, Arg}) -> 
-		scope:addLet(Scope, binary_to_list(Param), Arg)
+		scope:addLet(binary_to_list(Param), Arg, Scope)
 	end, ParamsAndArgs),
 	% evaluate the output of the closure
 	evaluateLine(Output, Scope).
