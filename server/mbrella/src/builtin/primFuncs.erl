@@ -8,7 +8,7 @@
 	bindUnit/2, bindSet/2, bindMap/2,
 	union/2, setDifference/2, unfoldSet/2, unfoldMap/2, invert/1,
 	equal/2, dOr/2, dNot/1, dAnd/2, plus/2, subtract/2,
-	oneTo/1, oneToMap/2, debug/1	
+	oneTo/1, oneToMap/2, factors/1, split/1, debug/1	
 ]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
@@ -218,7 +218,7 @@ unfoldMap(AST, Object) ->
 	InitialSetCellPointer = eval:evaluate( ast:makeApply(AST, ast:termToAST(Object)) ),
 	cell:injectIntercept(OutputCell, unfoldMap, [AST, Object, OutputCell]),
 	cell:addValue( OutputCell, cellElements:createMap(Object, 0) ),
-	cell:injectOutput(InitialSetCellPointer, OutputCell, becomeInformantMap, [OutputCell, 0]),
+	cell:injectOutput(InitialSetCellPointer, OutputCell, becomeInformantMap, [OutputCell, 1]),
 	cell:unleash(OutputCell),
 	OutputCell.
 
@@ -346,6 +346,42 @@ oneTo(Number) ->
 	OutputCell = cell:makeCell(set),
 	cell:addValues(OutputCell, lists:seq(1, Number)),
 	OutputCell.
+
+%% 
+%% factors :: Number -> Set Number
+%% 		
+%%		
+
+factors(Number) ->
+	HalfNumber = Number div 2,
+	OutputCell = cell:makeCell(set),
+	IsFactor = 	fun(Num, Factors) ->
+					if
+						Number div Num == Number/Num -> 
+							[Num] ++ Factors;
+						true ->
+							Factors
+					end
+				end,
+	Factors = lists:foldl(IsFactor, [], lists:seq(1, HalfNumber)),
+	cell:addValues(OutputCell, Factors),
+	OutputCell.
+	
+%% 
+%% split :: Number -> Unit Number	
+%% 		
+%%		
+
+split(Number) ->
+	OutputCell = cell:makeCell(unit),
+	NewNum = Number div 2,
+	if
+		NewNum < 1 ->
+			OutputCell;
+		true ->
+			cell:addValue(OutputCell, NewNum ),
+			OutputCell
+	end.
 
 %% 
 %% oneToMap :: Number -> Number -> Map Number Number
