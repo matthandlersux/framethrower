@@ -187,8 +187,10 @@ function evaluate2(expr) {
 			} else {
 				funArgs = fp.params.splice(0, expectedLength);
 				
-				// evaluate each input
-				funArgs = map(funArgs, evaluate2);
+				// evaluate each input if the fun is strict
+				if (!fp.func.lazy) {
+					funArgs = map(funArgs, evaluate2);					
+				}
 				
 				var result = fp.func.fun.apply(null, funArgs);
 				

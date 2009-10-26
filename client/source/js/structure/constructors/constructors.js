@@ -15,7 +15,7 @@ var localIds = makeGenerator("local.");
 // fun, object, cell
 // =====================================================================
 
-function makeFun(type, fun, argsLength, name, remote) {
+function makeFun(type, fun, argsLength, name, remote, lazy) {
 	if(argsLength === 0)
 		return fun();
 	if (name === undefined) name = localIds();
@@ -27,6 +27,7 @@ function makeFun(type, fun, argsLength, name, remote) {
 		argsLength: argsLength,
 		name: name,
 		remote: remote,
+		lazy: lazy,
 		outsideScope: 0
 	};
 }

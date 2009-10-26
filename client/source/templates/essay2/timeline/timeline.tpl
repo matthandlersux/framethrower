@@ -8,10 +8,20 @@ template () {
 	trStart = fst,
 	trDuration = snd,
 	
-	TimelineLayer := (String, Number, XMLP),
+	//TimelineItem := (TimeRange, XMLP),
+	TimelineItem := (TimeRange, a),
+	tiRange = fst,
+	tiContent = snd,
+	
+	// TimelineLayer := (String, Number, XMLP),
+	// tllLabel = tuple3get1,
+	// tllHeight = tuple3get2,
+	// tllContent = tuple3get3,
+	
+	TimelineLayer := (String, Number, List TimelineItem),
 	tllLabel = tuple3get1,
 	tllHeight = tuple3get2,
-	tllContent = tuple3get3,
+	tllItems = tuple3get3,
 
 
 	// ==========
@@ -64,12 +74,20 @@ template () {
 	
 	layers = state {
 		layers <- create(Map Ord TimelineLayer),
-		layer1 = drawTimelineLayer chapters 100 3,
-		layer2 = drawTimelineLayer cuts 50 1,
-		layer3 = drawBubbles captions,
-		addEntry layers (numToOrd 1) ("Chapters", 106, layer1),
-		//addEntry layers (numToOrd 2) ("Shots", 52, layer2),
-		addEntry layers (numToOrd 3) ("Captions", 24, layer3),
+		
+		addEntry layers (numToOrd 1) ("Chapters", 106, chapters),
+		//addEntry layers (numToOrd 3) ("Captions", 24, captions),
+		
+		
+		
+		
+		// layer1 = drawTimelineLayer chapters 100 3,
+		// layer2 = drawTimelineLayer cuts 50 1,
+		// layer3 = drawBubbles captions,
+		// addEntry layers (numToOrd 1) ("Chapters", 106, layer1),
+		// //addEntry layers (numToOrd 2) ("Shots", 52, layer2),
+		// addEntry layers (numToOrd 3) ("Captions", 24, layer3),
+		
 		return layers
 	},
 	
@@ -285,7 +303,7 @@ template () {
 					<div style-position="absolute" style-top="{rulerHeight}" style-left="0" style-width="100%" style-border-top="1px solid #666">
 						<f:each layers as index, layer>
 							<div style-position="relative" style-width="100%" style-height="{tuple3get2 layer}" style-border-bottom="1px solid #666">
-								<f:call>tllContent layer</f:call>
+								<f:call>drawTimelineLayer (tllItems layer) 100 3</f:call>
 							</div>
 						</f:each>
 					</div>
