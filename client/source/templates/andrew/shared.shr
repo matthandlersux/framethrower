@@ -1,6 +1,5 @@
-simple = action (num::Number, str::String) {
-	TestObject <- create(TestClass),
-	NumCell = TestClass:num TestObject,
-	set NumCell num,
-	return TestObject
+simple = action (input::Number) {
+	TestObject <- create(TestClass, {num:input}),
+	Result = TestClass:num TestObject,
+	return Result
 }

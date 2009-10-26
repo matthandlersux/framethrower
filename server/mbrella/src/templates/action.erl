@@ -57,10 +57,19 @@ testJSON() ->
 	SharedLetStruct = struct:get_value(<<"sharedLet">>, Struct),
 	%convert exprs within sharedLetStruct to use erlang records instead of JSON
 	SharedLetConverted = mapFields(SharedLetStruct, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
-	%convert types within sharedLetStruct to use erlang records instead of JSON
-	SharedLetConverted2 = mapFields(SharedLetConverted, <<"type">>, fun(Type) -> convertJSONType(Type) end),
 	
-	{struct, Lets} = SharedLetConverted2,
+	%convert object creation initial props to be list of erlang records
+	SharedLetConverted2 = mapFields(SharedLetConverted, <<"prop">>, fun(Prop) -> 
+		lists:map(fun({PropName,PropValue}) ->
+			PropValue2 = convertJSONExpression(PropValue, dict:new()),
+			{binary_to_list(PropName), PropValue2}
+		end, struct:to_list(Prop))
+	end),
+	
+	%convert types within sharedLetStruct to use erlang records instead of JSON
+	SharedLetConverted3 = mapFields(SharedLetConverted2, <<"type">>, fun(Type) -> convertJSONType(Type) end),
+	
+	{struct, Lets} = SharedLetConverted3,
 	lists:map(fun(Let) ->
 		{LetName, LetStruct} = Let,
 		LetNameString = binary_to_list(LetName),
@@ -215,7 +224,11 @@ executeAction(ActionClosure) ->
 						ast:makeCell(cell:makeCell(type:outerType(Type)));
 					false -> 
 						Prop = struct:get_value(<<"prop">>, Action),
-						objects:create(Type, Prop)
+						Prop2 = lists:map(fun({PropName,PropValue}) ->
+							PropValue2 = parse:bind(PropValue, Scope),
+							{PropName, PropValue2}
+						end, Prop),
+						objects:create(Type, Prop2)
 				end;
 			<<"extract">> ->
 				ok;

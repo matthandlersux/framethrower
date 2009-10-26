@@ -79,7 +79,7 @@ makeReactiveProps(Props, ClassProps) ->
 				false ->
 					case lists:keyfind(PropName, 1, Props) of
 						false -> throw(["No Value for Object Field", PropName]);
-						{_, PropValue} -> {PropName, binary_to_list(PropValue)}
+						{_, PropValue} -> {PropName, PropValue}
 					end
 			end
 		end, ClassProps).
