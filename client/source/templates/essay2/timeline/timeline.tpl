@@ -22,6 +22,13 @@ template () {
 	tllLabel = tuple3get1,
 	tllHeight = tuple3get2,
 	tllItems = tuple3get3,
+	
+	
+	// ==========
+	// Functions dealing with timeline
+	// ==========
+	
+	//snapTimeline = function (snapLeft::Number, snapRight::Number, )
 
 
 	// ==========
@@ -149,6 +156,21 @@ template () {
 	selectedTimeStart = fetch selectedTimeStartS,
 	selectedTimeDuration = fetch selectedTimeDurationS,
 	
+	setSelectedTimeRight = action (time::Number) {
+		min = selectedTimeStart,
+		max = movieDuration,
+		newDuration = subtract (clamp time min max) selectedTimeStart,
+		set selectedTimeDurationS newDuration
+	},
+	setSelectedTimeLeft = action (time::Number) {
+		min = 0,
+		max = plus selectedTimeStart selectedTimeDuration,
+		newStart <- return (clamp time min max),
+		newDuration <- return (subtract (plus selectedTimeStart selectedTimeDuration) newStart),
+		set selectedTimeStartS newStart,
+		set selectedTimeDurationS newDuration
+	},
+	
 	
 	
 	tmpXMLP = state(Unit XMLP),
@@ -244,31 +266,20 @@ template () {
 			
 			// Main part of timeline
 			<div style-position="absolute" style-top="0" style-left="{layerLabelsWidth}" style-width="{mainTimelineWidth}" style-height="100%" style-overflow="hidden">
+				// pan by dragging the timeline
 				<f:call>
-					dragStart = state(Unit Number),
-					scrollAmountStart = state(Unit Number),
-					<f:wrapper>
-						<f:on mousedown>
-							set dragStart event.mouseX,
-							set scrollAmountStart scrollAmount
-						</f:on>
-						<f:each dragStart as from>
-							start = fetch scrollAmountStart,
-							<f:wrapper>
-								<f:on globalmouseup>
-									unset dragStart
-								</f:on>
-								<f:on globalmousemove>
-									setScrollAmount (subtract start (subtract event.mouseX from))
-								</f:on>
-							</f:wrapper>
-						</f:each>
-						<f:on mousescroll>
-							setZoomFactor (modifyZoom zoomFactor event.wheelDelta) (subtract event.mouseX mainTimelineLeft),
-							set previewTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor)
-						</f:on>
-					</f:wrapper>
+					setScroll = action (start::Number, offsetX::Number) {
+						setScrollAmount (subtract start offsetX)
+					},
+					dragger (unfetch scrollAmount) setScroll
 				</f:call>
+				
+				// zoom with mouse wheel
+				<f:on mousescroll>
+					setZoomFactor (modifyZoom zoomFactor event.wheelDelta) (subtract event.mouseX mainTimelineLeft),
+					set previewTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor)
+				</f:on>
+
 				
 				// The part that scrolls
 				<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}" style-height="100%">
@@ -291,10 +302,20 @@ template () {
 					<div style-position="absolute" style-left="{makePercent (divide selectedTimeStart movieDuration)}" style-width="{makePercent (divide selectedTimeDuration movieDuration)}" style-height="100%" style-background-color="rgba(255, 153, 0, 0.5)">
 						// draggable sliders
 						<div style-position="absolute" style-left="-6" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
-							
+							<f:call>
+								setSelected = action (start::Number, offsetX::Number) {
+									setSelectedTimeLeft (plus start (divide offsetX zoomFactor))
+								},
+								dragger (unfetch selectedTimeStart) setSelected
+							</f:call>
 						</div>
 						<div style-position="absolute" style-right="-6" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
-						
+							<f:call>
+								setSelected = action (start::Number, offsetX::Number) {
+									setSelectedTimeRight (plus start (divide offsetX zoomFactor))
+								},
+								dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected
+							</f:call>
 						</div>
 					</div>
 					
@@ -331,35 +352,8 @@ template () {
 								setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
 							</f:on>
 
-
 							<div style-position="absolute" style-left="{makePercent left}" style-width="{makePercent width}" style-height="100%" style-background-color="#999">
-								// <f:call>
-								// 	dragStart = state(Unit Number),
-								// 	leftStart = state(Unit Number),
-								// 	<f:wrapper>
-								// 		<f:on mousedown>
-								// 			set dragStart event.mouseX,
-								// 			set leftStart left
-								// 		</f:on>
-								// 		<f:each dragStart as from>
-								// 			start = fetch leftStart,
-								// 			<f:wrapper>
-								// 				<f:on globalmouseup>
-								// 					unset dragStart
-								// 				</f:on>
-								// 				<f:on globalmousemove>
-								// 					desiredLeft = plus start (divide (subtract event.mouseX from) scrollbarWidth),
-								// 					setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
-								// 				</f:on>
-								// 			</f:wrapper>
-								// 		</f:each>
-								// 	</f:wrapper>
-								// </f:call>
 								<f:call>
-									// setScroll = action (start::Number, x::Number, y::Number) {
-									// 	desiredLeft = plus start (divide x scrollbarWidth),
-									// 	setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
-									// },
 									setScroll = action (start::Number, x::Number) {
 										desiredLeft = plus start (divide x scrollbarWidth),
 										setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
