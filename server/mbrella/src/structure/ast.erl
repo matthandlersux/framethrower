@@ -294,6 +294,9 @@ apply({function, {{Module, Name, Arguments}, _Arity}}, ListOfParameters) ->
 		{action, closure} ->
 			% closure take the listOfParameters as a List of ASTs so it can run evaluate
 			erlang:apply(action, closureFunction, Arguments ++ [ListOfParameters]);
+		{family, _} ->
+            FamilyFunction = erlang:apply(family, Name, Arguments),
+            lists:foldl(fun(A, F) -> F(A) end, FamilyFunction, toTerm(ListOfParameters));
 		_ ->
 			erlang:apply(Module, Name, Arguments ++ toTerm(ListOfParameters))
 	end.
