@@ -1,14 +1,16 @@
 template() {
 	xS = state(Unit Number, 1),
-	yS = state(Unit Number, 2),
+	doSet = action(s::Unit Number)::Void {
+		extract s as x {
+			set xS x
+		}
+	},
+	doInc = doSet (mapUnit (plus 1) xS),
 	
-	<f:wrapper>
-		<f:each xS as x>
-			<f:each yS as y>
-				<div> {plus x y} </div>
-			</f:each>
-		</f:each>
-		
-		<div> {plus (fetch xS) (fetch yS)} </div>
-	</f:wrapper>
+	<div>
+		<f:on mousedown>
+			doInc
+		</f:on>
+		{xS}
+	</div>
 }
