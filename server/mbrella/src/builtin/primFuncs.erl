@@ -189,7 +189,7 @@ bindMap(AST, CellPointer) ->
 invert(CellPointer) ->
 	OutputCell = cell:makeCellLeashed(map),
 	cell:setFlag(OutputCell, waitForDone, true),
-	cell:injectIntercept(OutputCell, invert, [OutputCell, CellPointer]),
+	cell:injectIntercept(OutputCell, invert, [OutputCell]),
 	cell:injectOutput(CellPointer, OutputCell, invert, [OutputCell]),
 	cell:unleash(OutputCell),
 	OutputCell.
