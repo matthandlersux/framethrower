@@ -1,8 +1,15 @@
 -module (intercepts).
--compile(export_all).
-
--include ("../../include/scaffold.hrl").
-
+-export([
+	call/3,	getArguments/1,	construct/2, construct/1,
+	debug/0, debug/3,
+	reactiveAnd/0, reactiveAnd/5,
+	invert/0, invert/4,
+	setDifference/0, setDifference/5,
+	unfoldSet/0, unfoldSet/6,
+	unfoldMap/0, unfoldMap/6,
+	applyExpr/0, applyExpr/5,
+	gate/0, gate/4
+]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
 -define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
@@ -22,8 +29,9 @@
 %% ====================================================
 
 %% 
-%% callIntercept :: String -> List a -> b -> List Message -> Tuple b (List Element)
-%% 
+%% call :: Intercept -> CellPointer -> List Element -> Tuple InterceptState (List Element)
+%% 		
+%%		
 
 call(Intercept, From, Elements) ->
 	Name = getName(Intercept),
@@ -31,20 +39,11 @@ call(Intercept, From, Elements) ->
 	State = getState(Intercept),
 	callIntercept(Name, Args, State, From, Elements).
 
-callIntercept(_, _, State, _, []) -> {State, []};
-callIntercept(Name, Args, State, From, Elements) ->
-	Process = fun(Element, {OldState, OldElements}) ->
-		{NewState, ProcessedElements} = processMessage(Name, Args, OldState, From, Element),
-		{NewState, ProcessedElements ++ OldElements}
-	end,
-	lists:foldr(Process, {State, []}, Elements).
+%% 
+%% getArguments :: Intercept -> List Argument
+%% 		
+%%		
 
-callIntercept(Name, From, Elements) ->
-	callIntercept(Name, [], [], From, Elements).
-	
-callIntercept(Name, Args, From, Elements) ->
-	callIntercept(Name, Args, [], From, Elements).
-	
 getArguments(Intercept) -> getArgs(Intercept).
 
 %% 
@@ -78,6 +77,18 @@ getName({{Name, _Args}, _State}) -> Name.
 getArgs({{_Name, Args}, _State}) -> Args.
 	
 getState({{_Name, _Args}, State}) -> State.
+
+%% 
+%% callIntercept :: Atom -> List a -> InterceptState -> CellPointer -> List Element -> Tuple InterceptState (List Element)
+%% 
+
+callIntercept(_, _, State, _, []) -> {State, []};
+callIntercept(Name, Args, State, From, Elements) ->
+	Process = fun(Element, {OldState, OldElements}) ->
+		{NewState, ProcessedElements} = processMessage(Name, Args, OldState, From, Element),
+		{NewState, ProcessedElements ++ OldElements}
+	end,
+	lists:foldr(Process, {State, []}, Elements).
 
 %% ====================================================
 %% Intercept Functions

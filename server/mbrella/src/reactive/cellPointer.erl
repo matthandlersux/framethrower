@@ -1,13 +1,14 @@
 -module (cellPointer).
--compile(export_all).
+-export([
+	create/2,
+	new/2,
+	name/1,
+	pid/1,
+	filterList/1,
+	isCellPointer/1
+]).
 
-%-include().
-
--ifdef( debug ).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
--else.
--define( trace(X), void ).
--endif.
 
 %% ====================================================
 %% TYPES
