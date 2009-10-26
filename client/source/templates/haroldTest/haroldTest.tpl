@@ -5,6 +5,9 @@ template() {
 	debug = jsaction(s::String)::Void {
 		console.debug(s);
 	},
+	debugNumber = jsaction(x::Number)::Void {
+		console.debug(x);
+	},
 	Test := [Test2 Number Number],
 	test2 = action(x::Test)::[(Number, Number)] {
 		return x
@@ -28,13 +31,16 @@ template() {
 	list = toList (swap (toTuple [1,2,3,4,5])),
 	
 	<div>
-		<f:on init>
-			
-		</f:on>
 		<f:on mouseup>
 			Test := Unit,
 			x <- create(Test (Test2 Number Number)),
-			debug (head test5)
+			debug (head test5),
+			a0 <~ a,
+			debugNumber a0,
+			set y a0,
+			debugNumber a0,
+			set y a0,
+			debugNumber a0
 		</f:on>
 		
 		<div>{head list} {head test5} {f 5} {test3}</div>

@@ -149,7 +149,18 @@ var semantics = function(){
 					letlist = {letlist: letlist, let: listElement};
 				else if(def(listElement.colonequals))
 					letlist = {letlist: letlist, newtype: listElement};
-			} else {
+
+			} else { // ACTION | IDENTIFIER <- ACTION | IDENTIFIER <~ EXPR
+
+				if (def(listElement.lttilde)) {
+					// 'x <~ y::T' desugars to 'x <- return (y)::Action T':
+					var expr = listElement.expr;
+					expr.exprcode = "return ("+expr.exprcode+")";
+					if(def(expr.type))
+						expr.type = "Action ("+expr.type+")";
+					listElement.action = {expr: expr, debugRef: expr.debugRef};
+				}
+				
 				var output = {
 					action: makeLine(listElement.action),
 					debugRef: listElement.debugRef
