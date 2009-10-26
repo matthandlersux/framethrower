@@ -91,13 +91,10 @@ debug() -> [].
 debug( _, From, Element ) ->
 	io:format("\033[45mRECEIVED FROM: ~p: ~p\033[49m~n", [From, Element]),
 	{[],Element}.
-
-fold( Function, FunctionInverse, InterceptState, From, Element ) ->
-	
-	{todo_NewInterceptState, todo_ElementsToAdd}.
 	
 %% 
-%% reactiveAnd :: 
+%% reactiveAnd :: CellPointer -> CellPointer -> InterceptState -> CellPointer -> Element -> Tuple InterceptState (List Element)
+%%		InterceptState :: Tuple Atom Atom
 %% 
 
 reactiveAnd() -> {remove, remove}.
@@ -129,13 +126,16 @@ reactiveAnd( CellPointer1, CellPointer2, {Cell1Val, Cell2Val}, From, Element ) -
 	end.
 
 %% 
-%% invert :: 
+%% invert :: CellPointer -> CellPointer -> InterceptState -> CellPointer -> Element -> Tuple InterceptState (List Element)
+%%		InterceptState :: Dict
+%%		Uses SelfPointer to send elements to the SetOfDocsForWord, maybe not necessary though
+%%		Uses state to decide whether or not a given word has a cell associate with it already
 %% 
 
 invert() ->
 	dict:new().
 	
-invert(SelfPointer, CellPointerParent, InvertState, From, Element) ->
+invert(SelfPointer, InvertState, From, Element) ->
 	Modifier = cellElements:modifier(Element),
 	{Word, Document} = cellElements:value(Element),
 	if
@@ -169,7 +169,10 @@ invert(SelfPointer, CellPointerParent, InvertState, From, Element) ->
 	end.
 
 %% 
-%% setDifference :: 
+%% setDifference :: CellPointer -> CellPointer -> InterceptState -> CellPointer -> Element -> Tuple InterceptState (List Element)
+%%		InterceptState :: Dict
+%%		Uses two CellPointer's to determine which cell the message came from
+%%		Uses State to decide if an element is blocked by the other cell or not
 %% 
 
 setDifference() ->
@@ -228,7 +231,12 @@ setDifference(CellPointer1, CellPointer2, State, From, Element) ->
 	end.
 	
 %% 
-%% unfoldSet ::
+%% unfoldSet :: AST -> Value -> CellPointer -> InterceptState -> CellPointer -> Element -> Tuple InterceptState (List Element)
+%%		InterceptState :: ElementState
+%%		Uses InterceptState to do a weighted storage of results to make sure loops aren't created
+%%		Uses AST to find new Cells of results by applying it to results from previous cells
+%%		Uses InitialObject to prevent a loop on the initial object
+%%		Uses SelfCellPointer to direct outputs from result cells to itself
 %% 
 
 unfoldSet() -> cellElements:new(set).
@@ -285,8 +293,11 @@ unfoldMap(AST, InitialObject, SelfCellPointer, State, From, Element) ->
 	end.
 	
 %% 
-%% applyExpr :: 
-%% 		used for mapunits
+%% applyExpr :: AST -> List CellPointer -> InterceptState -> CellPointer -> Element -> Tuple InterceptState (List Element)
+%%		InterceptState :: Tuple Atom Dict
+%%		Uses AST to generate a result when all of the parameters are filled by Unit Cells
+%%		
+%% 		Used for mapUnitN
 %%		
 
 applyExpr() -> {undefined, orddict:new()}.
