@@ -165,8 +165,8 @@ template () {
 	setSelectedTimeLeft = action (time::Number) {
 		min = 0,
 		max = plus selectedTimeStart selectedTimeDuration,
-		newStart <- return (clamp time min max),
-		newDuration <- return (subtract (plus selectedTimeStart selectedTimeDuration) newStart),
+		newStart <~ clamp time min max,
+		newDuration <~ subtract (plus selectedTimeStart selectedTimeDuration) newStart,
 		set selectedTimeStartS newStart,
 		set selectedTimeDurationS newDuration
 	},
