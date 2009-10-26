@@ -40,10 +40,12 @@
 	'([\r\n\t\ ])*/([\r\n\t\ ])*'			SLASH
 	'([\r\n\t\ ])*<([\r\n\t\ ])*'			LT
 	'([\r\n\t\ ])*<-([\r\n\t\ ])*'			LTDASH
+	'([\r\n\t\ ])*<~([\r\n\t\ ])*'			LTTILDE
+	'([\r\n\t\ ])*~([\r\n\t\ ])*'			TILDE
 	'([\r\n\t\ ])*>([\r\n\t\ ])*'			GT
 	'([\r\n\t\ ])*-([\r\n\t\ ])*'			DASH
 	'([\r\n\t\ ])*\"([\r\n\t\ ])*'			QUOTE
-	'([\r\n\t\ ])*([^-^\{^\}^\(^\)^\,^\;^\:^\=^\<^\/^\"^\ ^\n^\t^\r^\>^\[^\]]|\\.|\^)+([\r\n\t\ ])*'	IDENTIFIER
+	'([\r\n\t\ ])*([^-^~^\{^\}^\(^\)^\,^\;^\:^\=^\<^\/^\"^\ ^\n^\t^\r^\>^\[^\]]|\\.|\^)+([\r\n\t\ ])*'	IDENTIFIER
 	;
 ##
 
@@ -175,6 +177,7 @@ ACTLINE:
 	IDENTIFIER EQUALS LINE
 	| IDENTIFIER COLONEQUALS TYPE
 	| IDENTIFIER LTDASH ACTION
+	| IDENTIFIER LTTILDE EXPR
 	| ACTION
 	;
 
@@ -370,6 +373,7 @@ NONLTBRACKET:
 	| GT			[* %% = %s; *]
 	| IDENTIFIER	[* %% = %s; *]
 	| DASH			[* %% = %s; *]
+	| TILDE			[* %% = %s; *]
 	;
 
 KEYWORD:
