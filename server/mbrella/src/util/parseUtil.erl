@@ -25,3 +25,23 @@ trimSpace(S) ->	S.
 % toTitle::String -> String
 %
 toTitle([H|T]) -> [string:to_upper(H)|T].
+
+extractPrim([$\"|Rest]) ->
+	case cutOffRightQuote(Rest) of
+		{Ans, []} -> Ans;
+		_ -> error
+	end;
+extractPrim(VarOrPrim) ->
+	case VarOrPrim of
+		"null" -> null;
+		"true" -> true;
+		"false" -> false;
+		_ ->
+			try list_to_integer(VarOrPrim)
+			catch _:_ ->
+				try list_to_float(VarOrPrim)
+				catch _:_ ->
+					error
+				end
+			end
+	end.

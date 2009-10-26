@@ -94,7 +94,7 @@ makeObject(Name) ->
 %%		
 
 makeFunction(Module, Name, 0) ->
-	ast:apply({function, {{Module, Name, []}, 0}}, []);
+	ast:makeApply({function, {{Module, Name, []}, 0}}, []);
 makeFunction(Module, Name, Arity) ->
 	{function, {{Module, Name, []}, Arity}}.
 
@@ -105,7 +105,7 @@ makeFunction(Module, Name, Arity) ->
 %%		
 
 makeFamilyFunction(Module, Name, 0, Arguments) ->
-	ast:apply({function, {{Module, Name, Arguments}, 0}}, []);
+	ast:makeApply({function, {{Module, Name, Arguments}, 0}}, []);
 makeFamilyFunction(Module, Name, Arity, Arguments) ->
 	{function, {{Module, Name, Arguments}, Arity}}.
 
@@ -118,6 +118,14 @@ makeFamilyFunction(Module, Name, Arity, Arguments) ->
 makeActionMethod(Module, Name, Arguments) ->
 	{actionMethod, {Module, Name, Arguments}}.
 
+
+%%
+%% makeInstruction :: List of Action JSON -> Scope -> AST
+%%
+%%
+
+makeInstruction(Actions, Scope) ->
+	{instruction, {Actions, Scope}}.
 
 %% 
 %% performActionMethod :: AST -> AST | CellPointer | ObjectPointer | Literal ... etc...
@@ -208,6 +216,20 @@ getNull(Input) -> getFlatValue(Input).
 %%		
 
 getVariable(Input) -> getFlatValue(Input).
+
+%% 
+%% getInstructionActions :: AST -> List of Action JSON
+%%
+%%
+
+getInstructionActions({_, {Actions, _}}) -> Actions.
+
+%% 
+%% getInstructionScope :: AST -> Scope
+%%
+%%
+
+getInstructionScope({_, {_, Scope}}) -> Scope.
 
 %% 
 %% getCellName :: AST -> CellName

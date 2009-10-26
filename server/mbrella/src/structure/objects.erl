@@ -9,6 +9,7 @@
 -include("../../include/scaffold.hrl").
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+-define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
 -define (this(Field), State#objectsState.Field).
 %% --------------------------------------------------------------------
 %% External exports
@@ -21,20 +22,12 @@
 -compile(export_all).
 
 
-%% ====================================================================
-%% internal data structure records
-%% ====================================================================
--record(objectsState, {classes=dict:new()}).
--record(class, {name, prop=dict:new(),inherit,memoize,memoTable=dict:new(),castUp,castDown,makeMemoEntry}).
-
 %% ====================================================
 %% Types
 %% ====================================================
 
 %% 
-%% Value:: Nat | Bool | String | Cell | {Value, Value}
-%% Cell:: Pid
-%% Pid:: < Nat . Nat . Nat >
+%% Class:: dict of {PropName, PropType}
 %% 
 
 	
@@ -48,23 +41,24 @@ start() ->
 stop() ->
 	gen_server:call(?MODULE, stop).
 
-
+%%
+%% accessor :: String -> String -> String (Object Name) -> Term
+%%
 accessor(_ClassName, PropName, ObjectName) ->
-	objectStore:getField(ObjectName, PropName).
+	{_, _, Props} = objectStore:lookup(ObjectName),
+	{_, Value} = lists:keyfind(PropName, 1, Props),
+	Value.
 
 
-makeClasses(ClassesToMake) ->
-	lists:map(fun (ClassDef) ->
-		#classToMake{name = Name, prop = Prop} = ClassDef,
-		makeClass(Name, Prop)
-	end, ClassesToMake).
+makeClass(ClassType, Prop) ->
+	gen_server:cast(?MODULE, {makeClass, ClassType, Prop}).
 
-makeClass(Name, Prop) ->
-	gen_server:cast(?MODULE, {makeClass, Name, Prop}).
-
-create(ClassName, Props) ->
+%%
+%% create :: Type -> [{Key, Value}, ...]
+%%
+create(ClassType, Props) ->
 	InstanceName = objectStore:getName(),
-	NewObject = gen_server:call(?MODULE, {create, ClassName, InstanceName, Props}),
+	NewObject = gen_server:call(?MODULE, {create, ClassType, InstanceName, Props}),
 	%add this obj to objectStore
 	objectStore:store(InstanceName, NewObject),
 	%return AST object
@@ -76,16 +70,19 @@ getState() ->
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
-makeReactiveProps(Props, Class) ->
-	dict:map(
-		fun (PropName, PropType) ->
+makeReactiveProps(Props, ClassProps) ->
+	lists:map(
+		fun ({PropName, PropType}) ->
 			case type:isReactive(PropType) of
 				true ->
-					cell:makeCell(type:outerType(PropType));
+					{PropName, cell:makeCell(type:outerType(PropType))};
 				false ->
-					dict:fetch(PropName, Props)
+					case lists:keyfind(PropName, 1, Props) of
+						false -> throw(["No Value for Object Field", PropName]);
+						{_, PropValue} -> {PropName, PropValue}
+					end
 			end
-		end, Class#class.prop).
+		end, ClassProps).
 
 
 %% ====================================================================
@@ -94,7 +91,7 @@ makeReactiveProps(Props, Class) ->
 
 init([]) ->
 	process_flag(trap_exit, true),
-    {ok, #objectsState{}}.
+    {ok, dict:new()}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_call/3
@@ -106,17 +103,15 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({create, ClassName, InstanceName, Prop}, _, State) ->
-	Classes = ?this(classes),
-	Class = dict:fetch(ClassName, Classes),
-	Type = type:makeTypeName(list_to_atom(ClassName)),
+handle_call({create, ClassType, InstanceName, Prop}, _, Classes) ->
+	Class = dict:fetch(ClassType, Classes),
 	NewProp = makeReactiveProps(Prop, Class),
-	NewObject = {name = InstanceName, type = Type, prop = NewProp},
-    {reply, NewObject, State};
-handle_call(getState, _, State) ->
-	{reply, State, State};	
-handle_call(stop, _, State) ->
-	{stop, normal, stopped, State}.
+	NewObject = {InstanceName, ClassType, NewProp},
+    {reply, NewObject, Classes};
+handle_call(getState, _, Classes) ->
+	{reply, Classes, Classes};	
+handle_call(stop, _, Classes) ->
+	{stop, normal, stopped, Classes}.
 
 
 
@@ -127,15 +122,9 @@ handle_call(stop, _, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_cast({makeClass, Name, Prop}, State) ->
-	Classes = ?this(classes),
-	NewClass = #class{
-		name = Name,
-		prop = Prop
-	},
-	NewClasses = dict:store(Name, NewClass, Classes),
-	NewState = #objectsState{classes=NewClasses},
-    {noreply, NewState}.
+handle_cast({makeClass, ClassType, Prop}, Classes) ->
+	NewClasses = dict:store(ClassType, Prop, Classes),
+    {noreply, NewClasses}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2
