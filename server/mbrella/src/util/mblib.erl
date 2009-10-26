@@ -193,8 +193,9 @@ createExprLib(ExprLibStruct) ->
 		{BinName, BinExpr} = Anything,
 		Name = binary_to_list(BinName),
 		try 
-			ParsedExpr = parse:parse(binary_to_list(BinExpr)),
-			cellStore:store(Name, {exprLib, ParsedExpr})
+			ParsedExpr = parse:parse(binary_to_list(BinExpr))
+			% cellStore:store(Name, {exprLib, ParsedExpr})
+			%TODO: add expr to functionTable?
 		catch
 			_:_ -> nosideeffect
 		end
@@ -202,16 +203,17 @@ createExprLib(ExprLibStruct) ->
 
 createClasses(ClassesStruct) ->
 	Classes = struct:to_list(ClassesStruct),
-	ClassesToMake = lists:map(fun(Anything) ->
+	lists:map(fun(Anything) ->
 		{Name, Fields} = Anything,
 		BinProp = struct:to_list(struct:get_value(<<"prop">>, Fields)),
 		Prop = lists:map(fun({PropName, PropVal}) ->
-			{binary_to_list(PropName), binary_to_list(PropVal)}
+			PropType = type:parse(binary_to_list(PropVal)),
+			{binary_to_list(PropName), PropType}
 		end, BinProp),
-		#classToMake{ name = binary_to_list(Name), prop = Prop}
-	end, Classes),
-	objects:makeClasses(ClassesToMake).
-
+		ClassType = type:makeTypeName(list_to_atom(string:to_lower(binary_to_list(Name)))),
+		objects:makeClass(ClassType, Prop)
+	end, Classes).
+	
 
 %% 
 %% function to load bootJSON file and run it against the server on bootup to populate objects and cells etc...
@@ -278,5 +280,8 @@ initializeDebugState() ->
 	% Add more here
 	functionTable:create(),
 	mewpile:new(),
+	objects:start(),
+	action:start(),
 	cellStore:start(),
-	objectStore:start().
+	objectStore:start(),
+	bootJsonScript().

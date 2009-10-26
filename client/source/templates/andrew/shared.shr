@@ -1,5 +1,6 @@
-simple = action (input::Number) {
-	NumSet <- create(Set Number),
-	add NumSet input,
-	return NumSet
+simple = action (num::Number, str::String) {
+	TestObject <- create(TestClass),
+	NumCell = TestClass:num TestObject,
+	set NumCell num,
+	return TestObject
 }

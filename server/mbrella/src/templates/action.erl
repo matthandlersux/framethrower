@@ -13,6 +13,7 @@
 -define (ob(Field), mblib:getVal(Ob, Field)).
 % -define (this(Field), State#?MODULE.Field).
 
+-define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 %-define (TABFILE, "data/serialize.ets").
 
@@ -49,7 +50,7 @@ start_link() ->
 testJSON() ->
 	JSONBinary = case file:read_file("priv/bootJSON") of
 		{ok, JSON} -> JSON;
-		{error, Error} -> ?trace("Error"), throw(Error)
+		{error, Error} -> throw(Error)
 	end,
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
 	
@@ -201,7 +202,8 @@ evaluateLine(Line, Scope) ->
 
 
 executeAction(ActionClosure) ->
-	{instruction, Instructions, Scope} = ActionClosure,
+	Instructions = ast:getInstructionActions(ActionClosure),
+	Scope = ast:getInstructionScope(ActionClosure),
 	lists:foldl(fun(ActionLet, _) ->
 		Action = struct:get_value(<<"action">>, ActionLet),
 		ActionKind = struct:get_value(<<"kind">>, Action),
@@ -209,9 +211,10 @@ executeAction(ActionClosure) ->
 			<<"actionCreate">> ->
 				Type = struct:get_value(<<"type">>, Action),
 				case type:isReactive(Type) of
-					true -> ast:makeCell(cell:makeCell(type:outerType(Type)));
+					true -> 
+						ast:makeCell(cell:makeCell(type:outerType(Type)));
 					false -> 
-						Prop = struct:get_value(<<"prop">>, Action),	
+						Prop = struct:get_value(<<"prop">>, Action),
 						objects:create(Type, Prop)
 				end;
 			<<"extract">> ->
@@ -328,8 +331,7 @@ executeAction(ActionClosure) ->
 
 
 makeActionClosure(LineAction, Scope) ->
-	{instruction, struct:get_value(<<"actions">>, LineAction), Scope}.
-
+	ast:makeInstruction(struct:get_value(<<"actions">>, LineAction), Scope).
 
 makeClosure(LineTemplate, ParentScope) ->
 	Params = struct:get_value(<<"params">>, LineTemplate),
@@ -373,27 +375,6 @@ makeActionErlang() -> ok.
 
 
 
-
-
-
-
-%copied from parse.erl. TODO: put in utility file
-extractPrim(VarOrPrim) ->
-	case VarOrPrim of
-		"null" -> null;
-		"true" -> true;
-		"false" -> false;
-		_ ->
-			try list_to_integer(VarOrPrim)
-			catch _:_ ->
-				try list_to_float(VarOrPrim)
-				catch _:_ ->
-					error
-				end
-			end
-	end.
-	
-
 %%	===========================
 %%	JSON to AST/TYPE conversion
 %%
@@ -413,7 +394,7 @@ convertJSONExpression(Binary, DeBruijnHash) when is_binary(Binary) ->
 			ast:makeVariable(Index);
 		error ->
 			String = binary_to_list(Binary),
-			case extractPrim(String) of
+			case parseUtil:extractPrim(String) of
 				error ->
 					ast:makeUnboundVariable(String);
 				Prim ->

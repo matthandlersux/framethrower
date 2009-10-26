@@ -42,8 +42,13 @@ lookup(Name) ->
 					ast:makeFamilyFunction(family, makeTuple, Arity, [Arity]);
 				[$t,$u,$p,$l,$e,_N1,$g,$e,$t,N2] ->
 					ast:makeFamilyFunction(family, tupleGet, 1, [list_to_integer([N2])]);
-				_ ->
-					notfound
+				MaybeAccessor ->
+					case string:chr(MaybeAccessor, $:) of
+						0 -> notfound;
+						ColonIndex -> 
+							{ClassName, [_|FieldName]} = lists:split(ColonIndex-1, MaybeAccessor),
+							ast:makeFamilyFunction(objects, accessor, 1, [ClassName, FieldName])
+					end
 			end
 	end.
 	

@@ -3,6 +3,7 @@
 -include ("../../include/scaffold.hrl").
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -export([makeApply/2, makeLambda/2, makeTypeVar/1, makeTypeName/1]).
+-export([getTypeName/1]).
 -export([parse/1, unparse/1, isReactive/1, outerType/1]).
 
 %% ====================================================
@@ -38,9 +39,11 @@ makeTypeVar(String) ->
 	{typeVar, String}.
 
 % makeTypeName :: Atom -> Type
-makeTypeName(String) ->
-	{typeName, String}.
+makeTypeName(Atom) ->
+	{typeName, Atom}.
 
+% getTypeName :: Type -> Atom
+getTypeName({typeName, Atom}) -> Atom.
 
 
 %% 
@@ -179,7 +182,7 @@ unparse(String, Variables) ->
 
 isReactive(Type) ->
 	case outerType(Type) of
-		false -> false;
+		error -> false;
 		_ -> true
 	end.
 
@@ -191,6 +194,7 @@ isReactive(Type) ->
 outerType({typeApply, {Type, _}}) ->
 	case Type of
 		{typeName, TypeAtom} -> TypeAtom;
+		{typeApply, _} -> outerType(Type);
 		_ -> error
 	end;
 outerType(_) -> error.

@@ -53,7 +53,7 @@ parser(String, LeftAST, Scope) ->
 			parseUtil:cutOffRightQuote(Right);
 		_ -> %string
 			{StringToParse, Rest} = parseUtil:untilSpaceOrRightParen(String),
-			ParsedString = case extractPrim(StringToParse) of
+			ParsedString = case parseUtil:extractPrim(StringToParse) of
 				error ->
 					parseString(StringToParse, Scope);
 				Prim ->
@@ -144,7 +144,7 @@ parseString(String, Scope) ->
 					% TODO: remove the following (added case statement for debugging)
 					case cellStore:lookup(String) of
 						notfound ->
-							exit({bad_word,String});
+							throw({bad_word,String});
 						CellPointer -> 
 							ast:makeCell(CellPointer)						
 					end;
@@ -153,19 +153,4 @@ parseString(String, Scope) ->
 		Found -> Found
 	end.
 
-
-extractPrim(VarOrPrim) ->
-	case VarOrPrim of
-		"null" -> null;
-		"true" -> true;
-		"false" -> false;
-		_ ->
-			try list_to_integer(VarOrPrim)
-			catch _:_ ->
-				try list_to_float(VarOrPrim)
-				catch _:_ ->
-					error
-				end
-			end
-	end.
 
