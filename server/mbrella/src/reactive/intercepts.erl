@@ -340,7 +340,8 @@ applyExpr(AST, ListOfCellPointers, {InnerValue, Params}, From, Element) ->
 			if
 				NumberOfArguments =:= length(ListOfCellPointers) ->
 					ListOfArguments = lists:map( fun({_,V}) -> V end, orddict:to_list(NewParams) ),
-					NewInnerValue = ast:apply(AST, ListOfArguments),
+					NewInnerValueAST = ast:apply(AST, ListOfArguments),
+					NewInnerValue = ast:toTerm(NewInnerValueAST),
 					{{NewInnerValue, NewParams}, [cellElements:createAdd(NewInnerValue)]};
 				true ->
 					{{undefined, NewParams}, []}
