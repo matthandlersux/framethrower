@@ -370,8 +370,12 @@ gate(Value, State, _From, Element) ->
 	end.
 
 %% 
-%% extract :: 
-%% 		
+%% extract :: CellPointer -> AST -> InterceptState -> CellPointer -> Element
+%% 		InterceptState :: Atom
+%%
+%%		extract assumes it will be run only once (or on one list of elements)
+%%		it applies the AST to every element it receives and makes sure that the cell that it hears from
+%%		doesn't send anymore messages, then it passes elements through
 %%		
 
 extract() -> connected.
