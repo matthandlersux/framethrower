@@ -1,22 +1,9 @@
 (function () {
-	var nil = {
-		kind: "list",
-		type: parseType("[a]"),
-		name: "[]",
-		remote: 2,
-		outsideScope: 0,
-		asArray: []
-	};
+	var nil = makeList([]);
 	
 	function cons(head, tail) {
 		var newArray = [head].concat(tail.asArray);
-		return {
-			kind: "list",
-			//type: typeApply(listType, getType(head)),
-			//name: "[" + map(newArray, stringify).join(",") + "]",
-			remote: 2,
-			asArray: newArray
-		};
+		return makeList(newArray);
 	}
 	
 	function head(list) {
@@ -29,21 +16,11 @@
 		if (list.asArray.length === 0) {
 			debug.error("Trying to take tail of empty list");
 		}
-		return {
-			kind: "list",
-			type: list.type,
-			remote: 2,
-			asArray: list.asArray.slice(1)
-		};
+		return makeList(list.asArray.slice(1));
 	}
 	
 	function append(list1, list2) {
-		return {
-			kind: "list",
-			type: list1.type,
-			remote: 2,
-			asArray: list1.asArray.concat(list2.asArray)
-		};
+		return makeList(list1.asArray.concat(list2.asArray));
 	}
 	
 	base.add("nil", nil);

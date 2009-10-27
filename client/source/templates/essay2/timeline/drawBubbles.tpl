@@ -1,4 +1,4 @@
-template (items::List ((Number, Number), a)) {
+template (items::List (TimeRange, a)) {
 	
 	height = 20,
 	

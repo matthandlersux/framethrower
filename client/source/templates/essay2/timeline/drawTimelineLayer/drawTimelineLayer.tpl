@@ -1,4 +1,4 @@
-template (items::List ((Number, Number), a), height::Number, padding::Number) {
+template (items::List (TimeRange, a), height::Number, padding::Number) {
 	
 	// This is a magic constant. Experiment with it to get the best performance.
 	imagesPerDivision = 39,
@@ -19,7 +19,7 @@ template (items::List ((Number, Number), a), height::Number, padding::Number) {
 		return url;
 	},
 	
-	indexList = function (list::List a)::List (Tuple2 Number a) {
+	indexList = function (list::List a)::List (Number, a) {
 		var ret = [];
 		forEach(list.asArray, function (x, i) {
 			ret.push(makeTuple2(i, x));
@@ -35,13 +35,13 @@ template (items::List ((Number, Number), a), height::Number, padding::Number) {
 	
 	<f:each divideStamps divisions items as div>
 		url = getUrl (snd div) width height,
-		shown = fetch (lowPassFilter (unfetch (getShown (fst (fst div)) (snd (fst div)) timelineShownStart timelineShownDuration))),
+		shown = fetch (lowPassFilter (unfetch (getShown (trStart (fst div)) (trDuration (fst div)) timelineShownStart timelineShownDuration))),
 
 		<div style-display="{boolToDisplay shown}">
 			<f:each indexList (snd div) as cut>
 				index = fst cut,
-				start = fst (fst (snd cut)),
-				duration = snd (fst (snd cut)),
+				start = trStart (fst (snd cut)),
+				duration = trDuration (fst (snd cut)),
 				myXMLP = template () {
 					outString = function (s::a)::String {
 						if (typeof s === "string") {
@@ -60,11 +60,17 @@ template (items::List ((Number, Number), a), height::Number, padding::Number) {
 				<div style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide duration movieDuration)}" style-position="absolute">
 					<f:on mouseover>
 						set mouseOveredTimeS (start, duration),
-						set tmpXMLP myXMLP
+						//set tmpXMLP myXMLP
+						//showTooltip event.mouseX event.mouseY 300 100 false myXMLP
 					</f:on>
 					<f:on mouseout>
 						unset mouseOveredTimeS,
-						unset tmpXMLP
+						//unset tmpXMLP
+						//hideTooltip
+					</f:on>
+					<f:on click>
+						set selectedTimeStartS start,
+						set selectedTimeDurationS duration
 					</f:on>
 					<div style-padding="{padding}" style-border-right="1px solid #000" style-background-color="#fff">
 						<div style-height="{height}" style-background-color="#ccc" style-background-image="{url}" style-background-repeat="no-repeat" style-background-position="{getBackgroundPosition index height}" />

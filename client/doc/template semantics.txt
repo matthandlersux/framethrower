@@ -1,5 +1,5 @@
 LINE
-	{kind: "lineExpr", expr: AST, ?type: TYPE} |
+	{kind: "lineExpr", expr: AST, type?: TYPE} |
 	{kind: "lineXML", xml: XML} |
 	{kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
 	{kind: "lineState", action: LINETEMPLATE} | // action takes no parameters |
@@ -10,7 +10,7 @@ LINE
 	LINEACTION
 	
 LINETEMPLATE
-	{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, newtypes?: {VARTOCREATE: TYPE}, output: LINE, type: TYPE}
+	{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, newtype: {VARTOCREATE: TYPE}, output: LINE, type: TYPE}
 
 LINEACTION
 	{kind: "lineAction", actions: [{name?: VARTOCREATE, action: LINE}], type: TYPE}

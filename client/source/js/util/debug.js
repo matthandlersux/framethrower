@@ -52,7 +52,9 @@ var debug = (function () {
 	};
 })();
 
-
+function getStackTrace() {
+	return (new Error()).stack.split("\n");
+}
 
 function testExpr(exprString) {
 	var a = evaluate(parseExpr(exprString));

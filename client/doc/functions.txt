@@ -82,11 +82,12 @@ unfetch		:: a -> Unit a
 	}
 	[Note that 'unfetch' will also work fine on expressions that aren't actually fetched;
 	in that case it desugars to 'mapUnit0' which is equivalent to 'returnUnit'.]
-return		:: a -> Action a
+x <~ y		=> x <- return (y)
 	'return', mentioned earlier, has an interesting use for fetched values within an action.
 	Specifically, since using a fetched value during the execution of an action forces its
 	current value to be extracted, you can get the current value by performing the trivial
 	'return' Action on the fetched value.
+	The '<~' syntax is sugar for this operation.
 	For example, consider the template:
 	template() {
 		xS = state(Unit Number),
@@ -106,7 +107,7 @@ return		:: a -> Action a
 	want, even within an action, but in this instance it is probably better to "fix" the value of midX:
 		...
 		<f:on mousedown>
-			midX <- return (quotient (sum x event.mouseX) 2),
+			midX <~ quotient (sum x event.mouseX) 2, // equivalent to 'midX <- return (quotient (sum x event.mouseX) 2)'
 			set xS midX, // line A
 			set yS midX // line B
 		</f:on>

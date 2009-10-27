@@ -2,18 +2,27 @@ template() {
 	test = template(x::Number)::Number {
 		plus 100 x
 	},
-	Hey := Tuple,
 	debug = jsaction(s::String)::Void {
 		console.debug(s);
 	},
-	test2 = action(x::[(Number, Number)])::[(Number, Number)] {
+	debugNumber = jsaction(x::Number)::Void {
+		console.debug(x);
+	},
+	Test := [Test2 Number Number],
+	test2 = action(x::Test)::[(Number, Number)] {
 		return x
 	},
+	Test2 := Tuple2,
+	apply = f -> x -> f x,
+	plus5 = apply (plus 5),
+	test3 = apply plus5 1,
 	test4 = state(Unit [String], ["yeah!"]),
 	test5 = fetch test4,
-	w = z,
-	z = plus 1 x,
+	a = c,
+	b = fetch y,
+	c = plus b x,
 	x = fetch y,
+	f = x -> plus 50 x,
 	y = state(Unit Number, 10),
 	y = state(Unit Number, 100),
 	swap = tuple -> (snd tuple, fst tuple),
@@ -23,12 +32,19 @@ template() {
 	
 	<div>
 		<f:on mouseup>
-			x <- create(Unit (Number, Number)),
-			debug (head test5)
+			Test := Unit,
+			x <- create(Test (Test2 Number Number)),
+			debug (head test5),
+			a0 <~ a::Number,
+			debugNumber a0,
+			set y a0,
+			debugNumber a0,
+			set y a0,
+			debugNumber a0
 		</f:on>
 		
-		<div>{head list} {head test5}</div>
+		<div>{head list} {head test5} {f 5} {test3}</div>
 		
-		<f:call>test1 (test w)</f:call>
+		<f:call>test1 (test a)</f:call>
 	</div>
 }

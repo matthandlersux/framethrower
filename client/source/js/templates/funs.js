@@ -112,12 +112,7 @@ function arrayToSet(array, type) {
 
 
 function arrayToList(array, type) {
-	return {
-		kind: "list",
-		type: makeTypeApply(parseType("List"), type),
-		remote: 2,
-		asArray: array
-	};
+	return makeList(array);
 }
 
 function makeApplyWith() {

@@ -35,26 +35,6 @@ Proof:
 */
 
 (function () {
-	
-	var ordType = parseType("Ord");
-	function makeOrd(value) {
-		if (value === undefined) value = [true];
-		return {
-			kind: "ord",
-			type: ordType,
-			name: stringifyOrdValue(value),
-			value: value,
-			remote: 2,
-			outsideScope: 0
-		};
-	}
-
-	function stringifyOrdValue(value) {
-		return map(value, function (x) {
-			return x ? "b" : "a";
-		}).join("");
-	}
-
 
 	var ordOrigin = makeOrd();
 	function ordBigger(ref) {

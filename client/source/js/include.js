@@ -27,6 +27,7 @@ var includes = (function () {
 
 			"source/js/structure/evaluate.js",
 			
+			"source/js/structure/newtype.js",
 			"source/js/structure/fetch.js",
 
 			"source/js/reactive/hash.js",
