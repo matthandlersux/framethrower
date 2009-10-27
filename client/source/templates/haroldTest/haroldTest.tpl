@@ -35,7 +35,7 @@ template() {
 			Test := Unit,
 			x <- create(Test (Test2 Number Number)),
 			debug (head test5),
-			a0 <~ a,
+			a0 <~ a::Number,
 			debugNumber a0,
 			set y a0,
 			debugNumber a0,
