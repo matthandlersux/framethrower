@@ -43,7 +43,7 @@ start() ->
 	
 start_link() ->
 	case gen_server:start({local, ?MODULE}, ?MODULE, [], []) of
-		{ok, Pid} -> Pid;
+		{ok, Pid} -> initJSON(), Pid;
 		Else -> Else
 	end.
 
@@ -81,9 +81,6 @@ initJSON() ->
 	ok.
 
 
-addActionsFromJSON(ActionsJSON) ->
-	gen_server:cast(?MODULE, {addActionJSON, ActionsJSON}).
-
 evaluateTemplate(Name, Params) ->
 	gen_server:call(?MODULE, {evaluateTemplate, Name, Params}).
 
@@ -111,7 +108,6 @@ stop() ->
 %% --------------------------------------------------------------------
 init([]) ->
 	process_flag(trap_exit, true),
-	initJSON(),
 	State = dict:new(),
     {ok, State}.
 
