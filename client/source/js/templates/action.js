@@ -9,18 +9,6 @@ ACTIONUNIT
 
 */
 
-function makeActionClosure(lineAction, env) {
-	// var type = lineAction.type; TODO use this type?
-	
-	return {
-		kind: "instruction",
-		instructions: lineAction.actions,
-		env: env,
-		type: actionType,
-		remote: 2
-	};
-}
-
 
 function executeAction(instruction) {
 	var scope = {};
@@ -79,7 +67,7 @@ function executeAction(instruction) {
 				});
 				injectedFunc.unInject();
 			}
-		} else if(action.kind==="actionJavascript") {
+		} else if (action.kind === "actionJavascript") {
 			// we're dealing with: {kind: "actionJavascript", f: function}
 			output = action.f();
 		} else {

@@ -104,6 +104,7 @@ function compileFolder(folderPath, rebuild) {
 	var childDirectories = listDirectories(folder);
 		
 	var lets = {};
+	var newtypes = {};
 	var sharedLets = {};
 	var mainJSON;
 	forEach(childFiles, function(child) {
@@ -122,7 +123,10 @@ function compileFolder(folderPath, rebuild) {
 		} else if (ext === "let") {
 			var includeLets = compileFile(folderPath + "/" + child, rebuild, true);
 			if (includeLets !== undefined) {
-				mergeIntoObject(lets, includeLets);
+				if(includeLets.let !== undefined )
+					mergeIntoObject(lets, includeLets.let);
+				if(includeLets.newtype !== undefined )
+					mergeIntoObject(newtypes, includeLets.newtype);
 			}
 		} else if (ext === "shr") {
 			var includeLets = compileFile(folderPath + "/" + child, rebuild, true);
@@ -138,8 +142,10 @@ function compileFolder(folderPath, rebuild) {
 		}
 	});
 	if (mainJSON.let === undefined) mainJSON.let = {};
-	mergeIntoObject(mainJSON.let, lets);
+	if (mainJSON.newtype === undefined) mainJSON.newtype = {};
 	if (mainJSON.sharedLet === undefined) mainJSON.sharedLet = {};
+	mergeIntoObject(mainJSON.let, lets);
+	mergeIntoObject(mainJSON.newtype, newtypes);
 	mergeIntoObject(mainJSON.sharedLet, sharedLets);
 	return mainJSON;
 }
@@ -308,6 +314,7 @@ try{
 
 		var totalCompiledJSON = compileFolder(arguments[0], rebuild);
 		if(!GLOBAL_ERRORS) {
+			desugarNewtype(totalCompiledJSON);
 			desugarFetch(totalCompiledJSON);
 			var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
 			

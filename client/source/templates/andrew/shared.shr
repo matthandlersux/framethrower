@@ -7,7 +7,6 @@ makeTestClass = action (num::Number, str::String) {
 
 clone = action (input::TestClass) {
 	TestObject <- create(TestClass, {}),
-	Str = TestClass:str TestObject,
 	extract TestClass:str input as name {
 		set (TestClass:str TestObject) name
 	},

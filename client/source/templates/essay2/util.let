@@ -1,0 +1,4 @@
+boolToDisplay = function (x::Bool)::String {
+	if (x) return "block";
+	else return "none";
+},

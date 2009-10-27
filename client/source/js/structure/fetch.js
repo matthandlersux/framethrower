@@ -1,9 +1,10 @@
 
 /************ 'fetch' keyword **********/
+/* see doc/functions.txt for a description of fetching */
+
 
 // the minimal collection of fetched expressions:
 var fetchEnv = envAdd(falseEnv, "fetch", "fetch");
-
 
 function desugarFetch(template, env) {
 	if (!template) return;
@@ -35,7 +36,7 @@ function desugarFetch(template, env) {
 		// lets hide previous bindings:
 		env = envMinus(env, keys(template.let));
 		
-		// repeatedly go through lets, adding fetched ones to env and removing them from lets, until stable:
+		// repeatedly go through lets, desugaring fetched ones into env until stable:
 		// (since lets may refer to each other in unordered, weird ways)
 		var stable;
 		do {
@@ -43,16 +44,27 @@ function desugarFetch(template, env) {
 			for(var v in template.let) {
 				var let = template.let[v];
 			
-				desugarFetch(let, env); // recurse, which makes fetches explicit if let is a lineExpr
-			
-				if(let.kind === "lineExpr" && hasVariable(let.expr, fetchEnv)) { // has a 'fetch'
-						// store the value and get rid of the let, since it is meaningless to anyone else:
+				if(let.kind === "lineExpr") {
+					desugarFetch(let, env); // desugar as much as possible for now
+					
+					if(hasVariable(let.expr, fetchEnv) && env(v)!==let.expr) {
+						// expr is fetched, and either hadn't been stored before or has changed.
 						env = envAdd(env, v, let.expr);
-						delete template.let[v];
 						stable = false; // things are happening
+					}
 				}
 			}
 		} while(!stable);
+		
+		// now get rid of fetched lets, since they are meaningless to anyone else:
+		for(var v in template.let) {
+			if(env(v))
+				delete template.let[v];
+		}
+		
+		// recurse on remaining lets:
+		for(var v in template.let)
+			desugarFetch(template.let[v], env);
 		
 		// recurse on output:
 		var output = template.output;

@@ -13,6 +13,37 @@ function makeApplies(expr, args) {
 
 
 
+/********** type utils ***********/
+
+/*
+* returns type with all names in env replaced by their values.
+* does not modify type.
+*/
+function substituteType(type, env) {
+	// console.log(JSONtoString(type)+"<br/>");
+	var kind = type.kind;
+	
+	if(kind === "typeVar") {
+		if(env(type.value))
+			throw "overridden type also used as type variable: "+JSONtoString(type);
+		return type;
+	}
+	
+	if(kind === "typeName") {
+		var v = env(type.value);
+		return v ? v : type;  // substitute for variable?
+	}
+	
+	// otherwise, this is a lambda or apply, so just recurse:
+	var l = substituteType(type.left, env),
+		r = substituteType(type.right, env);
+	if(l===type.left && r===type.right) // nothing changed
+		return type;
+	return {kind: kind, left: l, right: r};
+}
+
+
+
 /********** AST utils ***********/
 
 /*
@@ -25,7 +56,7 @@ function substitute(ast, env) {
 		return v ? v : ast;  // substitute for variable?
 	}
 
-	if(typeOf(ast) === "lambda" && env(ast.left)) // lambda overrides one of our variables
+	if(ast.cons === "lambda" && env(ast.left)) // lambda overrides one of our variables
 		env = envAdd(env, ast.left, false); // so remove it from env
 
 	var l = substitute(ast.left, env),
@@ -41,7 +72,7 @@ function substitute(ast, env) {
 function hasVariable(ast, env) {
 	if(typeOf(ast) === "string")
 		return (env(ast)!=false);
-	if(typeOf(ast) === "lambda" && env(ast.left)) // lambda overrides one of our variables
+	if(ast.cons === "lambda" && env(ast.left)) // lambda overrides one of our variables
 		return hasVariable(ast.right, envAdd(env, ast.left, false)); // so remove it from env
 	return hasVariable(ast.left, env) || hasVariable(ast.right, env);
 }

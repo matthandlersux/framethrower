@@ -62,20 +62,11 @@ XMLP is XML along with an environment
 */
 
 
-var xmlpType = parseType("XMLP");
-
-function makeXMLP(xml, env) {
-	if (env === undefined) env = emptyEnv;
-	return {kind: "xmlp", type: xmlpType, name: localIds(), remote: 2,
-		xml: xml, env: env};
-}
-
-
 function makeClosure(lineTemplate, env) {
 	var params = lineTemplate.params;
 	var type = lineTemplate.type;
 	
-	var f = curry(function () {
+	var f = function () {
 		var scope = {};
 		var args = arguments;
 		forEach(params, function (param, i) {
@@ -94,13 +85,9 @@ function makeClosure(lineTemplate, env) {
 		
 		
 		return evaluateLine(lineTemplate.output, envWithLets);
-	}, params.length);
+	};
 	
-	if (params.length > 0) {
-		return makeFun(type, f);
-	} else {
-		return f;
-	}
+	return makeFun(type, f, params.length, undefined, undefined, true);
 }
 
 
@@ -144,8 +131,7 @@ function evaluateLine(line, env) {
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line, env);
 	} else if (line.kind === "lineJavascript") {
-		if (line.f.length === 0) return line.f();
-		else return makeFun(line.type, curry(line.f));
+		return makeFun(line.type, line.f, line.f.length);
 		//return makeFun(parseType(line.type), line.f);
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);
@@ -155,11 +141,11 @@ function evaluateLine(line, env) {
 		//return makeCC(line.type);
 		//return makeCC(parseType(line.type));
 	} else if (line.kind === "lineAction") {
-		return makeActionClosure(line, env);
+		return makeInstruction(line, env);
 	} else if(line.kind === "actionCreate") {
 		// TODO actions in a let are possible in actions, but not in templates? may as well be in both.
 		// desugar as a one-action lineAction:
 		var lineAction = {actions: [{action: line}]};
-		return makeActionClosure(lineAction, env);
+		return makeInstruction(lineAction, env);
 	}
 }

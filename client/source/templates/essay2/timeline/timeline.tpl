@@ -1,22 +1,39 @@
 template () {
-
+	
 	// ==========
-	// Utility
+	// Types
 	// ==========
 	
-	boolToDisplay = function (x::Bool)::String {
-		if (x) return "block";
-		else return "none";
-	},
-
+	TimeRange := (Number, Number),
+	trStart = fst,
+	trDuration = snd,
+	
+	//TimelineItem := (TimeRange, XMLP),
+	TimelineItem := (TimeRange, a),
+	tiRange = fst,
+	tiContent = snd,
+	
+	// TimelineLayer := (String, Number, XMLP),
+	// tllLabel = tuple3get1,
+	// tllHeight = tuple3get2,
+	// tllContent = tuple3get3,
+	
+	TimelineLayer := (String, Number, List TimelineItem),
+	tllLabel = tuple3get1,
+	tllHeight = tuple3get2,
+	tllItems = tuple3get3,
+	
+	
+	// ==========
+	// Functions dealing with timeline
+	// ==========
+	
+	//snapTimeline = function (snapLeft::Number, snapRight::Number, )
 
 
 	// ==========
 	// Sizing, constants
 	// ==========
-
-	screenWidth = fetch (UI.ui:screenWidth ui.ui),
-	screenHeight = fetch (UI.ui:screenHeight ui.ui),
 	
 	timelineWidth = screenWidth,
 	movieDuration = 7668.189,
@@ -63,13 +80,21 @@ template () {
 	// ==========
 	
 	layers = state {
-		layers <- create(Map Ord (String, Number, XMLP)),
-		layer1 = drawTimelineLayer chapters 100 3,
-		layer2 = drawTimelineLayer cuts 50 1,
-		layer3 = drawBubbles captions,
-		addEntry layers (numToOrd 1) ("Chapters", 106, layer1),
-		//addEntry layers (numToOrd 2) ("Shots", 52, layer2),
-		addEntry layers (numToOrd 3) ("Captions", 24, layer3),
+		layers <- create(Map Ord TimelineLayer),
+		
+		addEntry layers (numToOrd 1) ("Chapters", 106, chapters),
+		//addEntry layers (numToOrd 3) ("Captions", 24, captions),
+		
+		
+		
+		
+		// layer1 = drawTimelineLayer chapters 100 3,
+		// layer2 = drawTimelineLayer cuts 50 1,
+		// layer3 = drawBubbles captions,
+		// addEntry layers (numToOrd 1) ("Chapters", 106, layer1),
+		// //addEntry layers (numToOrd 2) ("Shots", 52, layer2),
+		// addEntry layers (numToOrd 3) ("Captions", 24, layer3),
+		
 		return layers
 	},
 	
@@ -96,6 +121,14 @@ template () {
 			}
 		}
 	},
+	modifyZoom = function (oldZoom::Number, delta::Number)::Number {
+		var factor = 1.15;
+		if (delta > 0) {
+			return oldZoom * factor;
+		} else {
+			return oldZoom / factor;
+		}
+	},
 	
 	// Scroll
 	// units: pixels
@@ -118,6 +151,27 @@ template () {
 	mouseOveredTime = fetch mouseOveredTimeS,
 	
 	
+	selectedTimeStartS = state(Unit Number),
+	selectedTimeDurationS = state(Unit Number),
+	selectedTimeStart = fetch selectedTimeStartS,
+	selectedTimeDuration = fetch selectedTimeDurationS,
+	
+	setSelectedTimeRight = action (time::Number) {
+		min = selectedTimeStart,
+		max = movieDuration,
+		newDuration = subtract (clamp time min max) selectedTimeStart,
+		set selectedTimeDurationS newDuration
+	},
+	setSelectedTimeLeft = action (time::Number) {
+		min = 0,
+		max = plus selectedTimeStart selectedTimeDuration,
+		newStart <~ clamp time min max,
+		newDuration <~ subtract (plus selectedTimeStart selectedTimeDuration) newStart,
+		set selectedTimeStartS newStart,
+		set selectedTimeDurationS newDuration
+	},
+	
+	
 	
 	tmpXMLP = state(Unit XMLP),
 	
@@ -138,14 +192,7 @@ template () {
 
 	
 	
-	modifyZoom = function (oldZoom::Number, delta::Number)::Number {
-		var factor = 1.15;
-		if (delta > 0) {
-			return oldZoom * factor;
-		} else {
-			return oldZoom / factor;
-		}
-	},
+
 	
 	
 	getFrame = function (time::Number, width::Number, height::Number)::String {
@@ -208,9 +255,9 @@ template () {
 				</div>
 				<div style-position="absolute" style-top="{rulerHeight}" style-left="0" style-width="{layerLabelsWidth}" style-border-top="1px solid #666">
 					<f:each layers as index, layer>
-						<div style-height="{tuple3get2 layer}" style-border-bottom="1px solid #666" style-background-color="#aaa" style-overflow="hidden">
+						<div style-height="{tllHeight layer}" style-border-bottom="1px solid #666" style-background-color="#aaa" style-overflow="hidden">
 							<div style-text-align="right" style-padding="4" style-height="100%" style-border-right="1px solid #666">
-								{tuple3get1 layer}
+								{tllLabel layer}
 							</div>
 						</div>
 					</f:each>
@@ -219,31 +266,20 @@ template () {
 			
 			// Main part of timeline
 			<div style-position="absolute" style-top="0" style-left="{layerLabelsWidth}" style-width="{mainTimelineWidth}" style-height="100%" style-overflow="hidden">
+				// pan by dragging the timeline
 				<f:call>
-					dragStart = state(Unit Number),
-					scrollAmountStart = state(Unit Number),
-					<f:wrapper>
-						<f:on mousedown>
-							set dragStart event.mouseX,
-							set scrollAmountStart scrollAmount
-						</f:on>
-						<f:each dragStart as from>
-							start = fetch scrollAmountStart,
-							<f:wrapper>
-								<f:on globalmouseup>
-									unset dragStart
-								</f:on>
-								<f:on globalmousemove>
-									setScrollAmount (subtract start (subtract event.mouseX from))
-								</f:on>
-							</f:wrapper>
-						</f:each>
-						<f:on mousescroll>
-							setZoomFactor (modifyZoom zoomFactor event.wheelDelta) (subtract event.mouseX mainTimelineLeft),
-							set previewTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor)
-						</f:on>
-					</f:wrapper>
+					setScroll = action (start::Number, offsetX::Number) {
+						setScrollAmount (subtract start offsetX)
+					},
+					dragger (unfetch scrollAmount) setScroll
 				</f:call>
+				
+				// zoom with mouse wheel
+				<f:on mousescroll>
+					setZoomFactor (modifyZoom zoomFactor event.wheelDelta) (subtract event.mouseX mainTimelineLeft),
+					set previewTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor)
+				</f:on>
+
 				
 				// The part that scrolls
 				<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}" style-height="100%">
@@ -256,36 +292,42 @@ template () {
 					
 					
 					// MouseOvered time
-					<div style-position="absolute" style-left="{makePercent (divide (fst mouseOveredTime) movieDuration)}" style-width="{makePercent (divide (snd mouseOveredTime) movieDuration)}" style-height="100%" style-background-color="rgba(255, 153, 0, 0.5)" />
+					<div style-position="absolute" style-left="{makePercent (divide (fst mouseOveredTime) movieDuration)}" style-width="{makePercent (divide (snd mouseOveredTime) movieDuration)}" style-height="100%" style-background-color="rgba(255, 153, 0, 0.1)" />
 					
 					// Preview time orange bar
 					<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid #f90" />
 					
+					
+					// Selected time
+					<div style-position="absolute" style-left="{makePercent (divide selectedTimeStart movieDuration)}" style-width="{makePercent (divide selectedTimeDuration movieDuration)}" style-height="100%" style-background-color="rgba(255, 153, 0, 0.5)">
+						// draggable sliders
+						<div style-position="absolute" style-left="-6" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
+							<f:call>
+								setSelected = action (start::Number, offsetX::Number) {
+									setSelectedTimeLeft (plus start (divide offsetX zoomFactor))
+								},
+								dragger (unfetch selectedTimeStart) setSelected
+							</f:call>
+						</div>
+						<div style-position="absolute" style-right="-6" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
+							<f:call>
+								setSelected = action (start::Number, offsetX::Number) {
+									setSelectedTimeRight (plus start (divide offsetX zoomFactor))
+								},
+								dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected
+							</f:call>
+						</div>
+					</div>
+					
+					
 
 					<div style-position="absolute" style-top="{rulerHeight}" style-left="0" style-width="100%" style-border-top="1px solid #666">
 						<f:each layers as index, layer>
-							//layer = getKey index layers,
-							//<f:each layer as layer>
-								<div style-position="relative" style-width="100%" style-height="{tuple3get2 layer}" style-border-bottom="1px solid #666">
-									<f:call>tuple3get3 layer</f:call>
-								</div>
-							//</f:each>
+							<div style-position="relative" style-width="100%" style-height="{tuple3get2 layer}" style-border-bottom="1px solid #666">
+								<f:call>drawTimelineLayer (tllItems layer) 100 3</f:call>
+							</div>
 						</f:each>
 					</div>
-
-
-
-					
-
-					// <div style-position="absolute" style-top="120" style-left="0" style-width="100%">
-					// 	<f:each captions as caption>
-					// 		start = fst (fst caption),
-					// 		duration = snd (fst caption),
-					// 		<div style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide duration movieDuration)}" style-position="absolute" style-height="10" style-overflow="hidden" style-background-color="#009" class="rounded">
-					// 			
-					// 		</div>
-					// 	</f:each>
-					// </div>
 
 				</div>
 
@@ -306,41 +348,18 @@ template () {
 
 						<div style-position="absolute" style-top="0" style-left="{scrollbarButtonWidth}" style-width="{scrollbarWidth}" style-height="100%">
 							<f:on click>
-								desiredLeft = subtract (divide (subtract event.mouseX scrollbarButtonWidth) scrollbarWidth) (divide width 2),
+								desiredLeft = subtract (divide (subtract (subtract event.mouseX scrollbarButtonWidth) mainTimelineLeft) scrollbarWidth) (divide width 2),
 								setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
 							</f:on>
 
-
 							<div style-position="absolute" style-left="{makePercent left}" style-width="{makePercent width}" style-height="100%" style-background-color="#999">
 								<f:call>
-									dragStart = state(Unit Number),
-									leftStart = state(Unit Number),
-									<f:wrapper>
-										<f:on mousedown>
-											set dragStart event.mouseX,
-											set leftStart left
-										</f:on>
-										<f:each dragStart as from>
-											start = fetch leftStart,
-											<f:wrapper>
-												<f:on globalmouseup>
-													unset dragStart
-												</f:on>
-												<f:on globalmousemove>
-													desiredLeft = plus start (divide (subtract event.mouseX from) scrollbarWidth),
-													setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
-												</f:on>
-											</f:wrapper>
-										</f:each>
-									</f:wrapper>
+									setScroll = action (start::Number, x::Number) {
+										desiredLeft = plus start (divide x scrollbarWidth),
+										setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
+									},
+									dragger (unfetch left) setScroll
 								</f:call>
-								// <f:call>
-								// 	setScroll = action (start::Number, x::Number, y::Number) {
-								// 		desiredLeft = plus start (divide x scrollbarWidth),
-								// 		setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
-								// 	},
-								// 	dragger (unfetch left) setScroll
-								// </f:call>
 							</div>
 						</div>
 					</f:call>

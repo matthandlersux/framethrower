@@ -2,8 +2,15 @@ template (init::Unit Number, setValue::Number -> Number -> Action a) {
 	dragStart = state(Unit Number),
 	startS = state(Unit Number),
 	<f:wrapper>
+		blah
 		<f:on mousedown>
+			jsaction ()::Void {
+				console.log("mousedown activated");
+			},
 			extract init as i {
+				jsaction ()::Void {
+					console.log("this is even being called");
+				},
 				set dragStart event.mouseX,
 				set startS i
 			}
@@ -11,6 +18,7 @@ template (init::Unit Number, setValue::Number -> Number -> Action a) {
 		<f:each dragStart as from>
 			start = fetch startS,
 			<f:wrapper>
+				dragging
 				<f:on globalmouseup>
 					unset dragStart
 				</f:on>
@@ -21,3 +29,4 @@ template (init::Unit Number, setValue::Number -> Number -> Action a) {
 		</f:each>
 	</f:wrapper>
 }
+

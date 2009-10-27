@@ -1,6 +1,26 @@
 var evalCache = {};
 
 
+
+function getFuncAndParams(expr) {
+	var params = [];
+	while (expr.kind === "exprApply") {
+		params.push(expr.right);
+		expr = expr.left;
+	}
+	params.reverse();
+	return {func: expr, params: params};
+}
+
+function fullBetaReduceExpr(expr) {
+	var expr0;
+	do {
+		expr0 = expr;
+		expr = betaReduceExpr(expr);
+	} while(expr!==expr0);
+	return expr;
+}
+
 function betaReduceExpr(expr) {
 	var orig = expr;
 	
@@ -19,14 +39,10 @@ function betaReduceExpr(expr) {
 	// }
 	// var origBetaReplaced = simulate(orig);
 	
+	var fp = getFuncAndParams(expr);
+	var params = fp.params;
+	expr = fp.func;
 	
-	
-	var params = [];
-	while (expr.kind === "exprApply") {
-		params.push(expr.right);
-		expr = expr.left;
-	}
-	params.reverse();
 	
 	var lambdaCount = 0;
 	var paramCount = params.length;
@@ -134,7 +150,8 @@ function evaluate2(expr) {
 	
 	if (expr.kind === "exprApply") {
 		
-		expr = betaReduceExpr(expr);
+		expr = fullBetaReduceExpr(expr);
+		
 		if (expr.kind !== "exprApply") {
 			return expr;
 		}
@@ -158,37 +175,48 @@ function evaluate2(expr) {
 		// }
 		
 		
-		var fun = evaluate2(expr.left);
-		var input = evaluate2(expr.right);
-		
-		if (fun.kind === "exprLambda") {
-			return evaluate2(makeApply(fun, input));
-		} else {
-			// fun wasn't a lambda, and evaluate can't return an apply, so fun must be a Fun, so we can run it
-			
-			var resultType = GLOBAL.typeCheck ? getType(expr) : undefined;
-			
-			var ret = fun.fun(input);
 
-			if (typeof ret === "function") {
-				// if ret is a function, return a Fun and annotate its type and expr
-				return makeFun(resultType, ret, resultExprStringified, expr.remote);
-			} else if (ret.kind === "cell") {
-				// if ret is a cell, memoize the result and annotate its type and expr
-				
-				// annotate
-				ret.type = resultType;
-				ret.name = resultExprStringified;
-				ret.remote = expr.remote;
-				
-				memoizeCell(resultExprStringified, ret);
-				
-				return ret;
+		
+		var fp = getFuncAndParams(expr);
+		if (fp.func.kind === "fun") {
+			var paramsLength = fp.params.length;
+			var expectedLength = fp.func.argsLength;
+			if (paramsLength < expectedLength) {
+				// not ready to be fully evaluated
+				return expr;
 			} else {
-				return evaluate2(ret);
+				funArgs = fp.params.splice(0, expectedLength);
+				
+				// evaluate each input if the fun is strict
+				if (!fp.func.lazy) {
+					funArgs = map(funArgs, evaluate2);					
+				}
+				
+				var result = fp.func.fun.apply(null, funArgs);
+				
+				if (result.kind === "cell") {
+					// if result is a cell, memoize the result and annotate its type and expr
+				
+					// annotate
+					var resultType = GLOBAL.typeCheck ? getType(expr) : undefined;
+					result.type = resultType;
+					result.name = resultExprStringified;
+					result.remote = expr.remote;
+				
+					memoizeCell(resultExprStringified, result);
+				}
+				
+				// apply the result to any remaining args
+				forEach(fp.params, function (remainingParam) {
+					result = makeApply(result, remainingParam);
+				});
+				return evaluate(result);
 			}
-			
+		} else {
+			// this shouldn't happen
+			console.error("trying to apply a non-Fun", expr);
 		}
+		
 	} else {
 		return expr;
 	}

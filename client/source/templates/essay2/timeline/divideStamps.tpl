@@ -1,6 +1,6 @@
-template (divisions::Number, timestamps::List ((Number, Number), d))::List ((Number, Number), (List ((Number, Number), d))) {
+template (divisions::Number, timestamps::List (TimeRange, d))::List (TimeRange, (List (TimeRange, d))) {
 	
-	js = function (divisions::Number, totalDuration::Number, timestamps::List ((Number, Number), d))::List ((Number, Number), (List ((Number, Number), d))) {
+	js = function (divisions::Number, totalDuration::Number, timestamps::List (TimeRange, d))::List (TimeRange, (List (TimeRange, d))) {
 		var ret = [];
 		for (var i = 0; i < divisions; i++) {
 			var stamps = [];
