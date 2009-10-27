@@ -52,7 +52,7 @@ function executeAction(instruction) {
 			// note that output will be the result of the last action:
 			if (select.kind === "list") {
 				forEach(select.asArray, function (element) {
-					output = executeAction(inner(element));
+					executeAction(inner(element));
 				});
 			} else {
 				var done = false;
@@ -61,7 +61,7 @@ function executeAction(instruction) {
 					if (!done) {
 						done = true;
 						forEach(cell.getState(), function (element) {
-							output = executeAction(inner(element));
+							executeAction(inner(element));
 						});
 					}
 				});
