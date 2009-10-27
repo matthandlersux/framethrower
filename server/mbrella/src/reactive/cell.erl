@@ -19,7 +19,7 @@
 	addInformant/2, removeInformant/2,
 	empty/1,
 	kill/1,
-	getState/1
+	getState/1, elementsType/1
 	]).
 	
 %% ====================================================
