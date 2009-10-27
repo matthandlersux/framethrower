@@ -235,25 +235,34 @@ executeAction(ActionClosure) ->
 				Closure = makeClosure(struct:get_value(<<"action">>, Action), Scope),
 				Select = eval:evaluate(parse:bind(struct:get_value(<<"select">>, Action), Scope)),
 				
-				State = cell:getState(Select),
-				%TODO: inject something into Select to run the code below when it's 'done'
-
-				Elements = cellState:getElements(State),
-				% IsDone = cellState:isDone(State),
-				ElementsList = cellElements:toList(Elements),
-				ElementsType = cellElements:type(Elements),
+				SelectType = cell:elementsType(Select),
+				NewCell = cell:makeCell(SelectType),
+				cell:injectIntercept(NewCell, extract, [NewCell, Closure]),
+				cell:injectOutput(Select, NewCell),
 				
-				lists:map(fun(Element) ->
-					case {ElementsType, Element} of
-						{map, {add, {Key, Value}}} -> 
-							AppliedClosure = ast:makeApply(Closure, [ast:termToAST(Key), ast:termToAST(Value)]),
-							executeAction(eval:evaluate(AppliedClosure));
-						{_UnitOrSet, {add, Value}} ->
-							AppliedClosure = ast:makeApply(Closure, ast:termToAST(Value)),
-							executeAction(eval:evaluate(AppliedClosure));
-						_ -> ignoreValue
-					end
-				end, ElementsList);
+				NewCell;
+				
+				% ANDREW: left this stuff in comments in case you needed to reference it, if not, pwease extract
+				% 
+				% State = cell:getState(Select),
+				% %TODO: inject something into Select to run the code below when it's 'done'
+				% 
+				% Elements = cellState:getElements(State),
+				% % IsDone = cellState:isDone(State),
+				% ElementsList = cellElements:toList(Elements),
+				% ElementsType = cellElements:type(Elements),
+				% 
+				% lists:map(fun(Element) ->
+				% 	case {ElementsType, Element} of
+				% 		{map, {add, {Key, Value}}} -> 
+				% 			AppliedClosure = ast:makeApply(Closure, [ast:termToAST(Key), ast:termToAST(Value)]),
+				% 			executeAction(eval:evaluate(AppliedClosure));
+				% 		{_UnitOrSet, {add, Value}} ->
+				% 			AppliedClosure = ast:makeApply(Closure, ast:termToAST(Value)),
+				% 			executeAction(eval:evaluate(AppliedClosure));
+				% 		_ -> ignoreValue
+				% 	end
+				% end, ElementsList);
 				
 			<<"actionJavascript">> ->
 				ignore;
