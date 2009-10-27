@@ -47,39 +47,6 @@ start_link() ->
 		Else -> Else
 	end.
 
-testJSON() ->
-	JSONBinary = case file:read_file("priv/bootJSON") of
-		{ok, JSON} -> JSON;
-		{error, Error} -> throw(Error)
-	end,
-	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
-	
-	SharedLet1 = struct:get_value(<<"sharedLet">>, Struct),
-	%convert fields named 'expr' to be AST from JSON
-	SharedLet2 = mapFields(SharedLet1, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
-
-	%convert fields named 'select' to be AST from JSON
-	SharedLet3 = mapFields(SharedLet2, <<"select">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
-		
-	%convert fields named 'prop' to be list of ASTs from JSON list of JSON expressions
-	SharedLet4 = mapFields(SharedLet3, <<"prop">>, fun(Prop) -> 
-		lists:map(fun({PropName,PropValue}) ->
-			PropValue2 = convertJSONExpression(PropValue, dict:new()),
-			{binary_to_list(PropName), PropValue2}
-		end, struct:to_list(Prop))
-	end),
-	
-	%convert fields named 'type' to be TYPE instead of JSON
-	SharedLet5 = mapFields(SharedLet4, <<"type">>, fun(Type) -> convertJSONType(Type) end),
-	
-	{struct, Lets} = SharedLet5,
-	lists:map(fun(Let) ->
-		{LetName, LetStruct} = Let,
-		LetNameString = binary_to_list(LetName),
-		gen_server:call(?MODULE, {addLet, LetNameString, LetStruct})
-	end, Lets),
-	ok.
-
 
 addActionsFromJSON(ActionsJSON) ->
 	gen_server:cast(?MODULE, {addActionJSON, ActionsJSON}).
@@ -111,6 +78,7 @@ stop() ->
 %% --------------------------------------------------------------------
 init([]) ->
 	process_flag(trap_exit, true),
+	initJSON(),
 	State = dict:new(),
     {ok, State}.
 
@@ -258,35 +226,8 @@ executeAction(ActionClosure) ->
 					end
 				end, ElementsList);
 				
-				% 			
-				% 			var closure = makeClosure(action.action, env);
-				% 			var inner;
-				% 			var isMap = !!closure.type.left.left;
-				% 			if (isMap) {
-				% 				inner = function (o) {
-				% 					return evaluate(makeApply(makeApply(closure, o.key), o.val));
-				% 				};
-				% 			} else {
-				% 				inner = function (key) {
-				% 					return evaluate(makeApply(closure, key));
-				% 				};
-				% 			}
-				% 			
-				% 			var select = evalExpr(action.select);
-				% 			
-				% 			var done = false;
-				% 			var cell = select;
-				% 			var injectedFunc = cell.injectDependency(function () {
-				% 				if (!done) {
-				% 					done = true;
-				% 					forEach(cell.getState(), function (element) {
-				% 						output = executeAction(inner(element));
-				% 					});
-				% 				}
-				% 			});
-				% 			injectedFunc.unInject();
 			<<"actionJavascript">> ->
-				ok;
+				ignore;
 			_ ->
 				% this is a Line to be evaluated
 				Evaled = eval:evaluate(evaluateLine(Action, Scope)),
@@ -312,88 +253,6 @@ executeAction(ActionClosure) ->
 	
 
 
-% function executeAction(instruction) {
-% 	var scope = {};
-% 	var env = extendEnv(instruction.env, scope);
-% 	
-% 	var output;
-% 	
-% 	function evalExpr(expr) {
-% 		return evaluate2(convertJSONExpression(expr, env));
-% 	}
-% 	
-% 	forEach(instruction.instructions, function (actionLet) {
-% 		output = undefined;
-% 		var action = actionLet.action;
-% 		if (action.kind === "actionCreate") {
-% 			// we're dealing with: {kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}}
-% 			
-% 			if (isReactive(action.type)) {
-% 				output = makeCC(action.type);
-% 			} else {
-% 				output = objects.make(action.type.value, map(action.prop, evalExpr));
-% 			}
-% 		} else if (action.kind === "extract") {
-% 			// we're dealing with: {kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
-% 			
-% 			var closure = makeClosure(action.action, env);
-% 			var inner;
-% 			var isMap = !!closure.type.left.left;
-% 			if (isMap) {
-% 				inner = function (o) {
-% 					return evaluate(makeApply(makeApply(closure, o.key), o.val));
-% 				};
-% 			} else {
-% 				inner = function (key) {
-% 					return evaluate(makeApply(closure, key));
-% 				};
-% 			}
-% 			
-% 			var select = evalExpr(action.select);
-% 			
-% 			// note that output will be the result of the last action:
-% 			if (select.kind === "list") {
-% 				forEach(select.asArray, function (element) {
-% 					output = executeAction(inner(element));
-% 				});
-% 			} else {
-% 				var done = false;
-% 				var cell = select;
-% 				var injectedFunc = cell.injectDependency(function () {
-% 					if (!done) {
-% 						done = true;
-% 						forEach(cell.getState(), function (element) {
-% 							output = executeAction(inner(element));
-% 						});
-% 					}
-% 				});
-% 				injectedFunc.unInject();
-% 			}
-% 		} else if(action.kind==="actionJavascript") {
-% 			// we're dealing with: {kind: "actionJavascript", f: function}
-% 			output = action.f();
-% 		} else {
-% 			// we're dealing with a LINE
-% 			
-% 			//var evaled = evaluateLine(action, env);
-% 			var evaled = evaluate(evaluateLine(action, env));
-% 			if (evaled.kind === "instruction") {
-% 				// the LINE evaluated to an Action
-% 				output = executeAction(evaled);
-% 			} else
-% 				debug.error("non-action expression in an action", action);
-% 		}
-% 		
-% 		if (actionLet.name) {
-% 			if (output === undefined) {
-% 				debug.error("Trying to assign a let action, but the action has no return value", actionLet);
-% 			}
-% 			scope[actionLet.name] = output;
-% 		}
-% 	});
-% 	
-% 	return output;
-% }
 
 isInstruction({instruction, _}) -> true;
 isInstruction(_) -> false.
