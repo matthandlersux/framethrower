@@ -108,7 +108,11 @@ init(_) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call(debug, _, ETS) ->
-	{reply, ets:tab2list(ETS), ETS};
+	TableList = ets:tab2list(ETS),
+	Unparse = fun({AST, {cell,{{CellName,_},_}}}) ->
+				io:format("\033[96m~p\033[0m~n~p~n~n", [parse:unparse(AST), CellName] )
+			end,
+	{reply, lists:foreach(Unparse, TableList), ETS};
 handle_call({get, AST}, _From, ETS) ->
 	NormalizedAST = mewpilate(AST),
 	Reply = 	case ets:lookup(ETS, NormalizedAST) of

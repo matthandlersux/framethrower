@@ -259,7 +259,7 @@ getCellPid({_, {{_, Pid}, _}}) -> Pid.
 %% 		
 %%		
 
-getFunctionName({_, {Name, _}}) -> Name.
+getFunctionName({_, {{_Mod, Name, _Arg}, _}}) -> Name.
 
 %% 
 %% getLambdaAST :: AST -> AST
