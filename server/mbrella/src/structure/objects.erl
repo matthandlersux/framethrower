@@ -44,11 +44,15 @@ stop() ->
 %%
 %% accessor :: String -> String -> String (Object Name) -> Term
 %%
-accessor(_ClassName, PropName, ObjectName) ->
-	{_, _, Props} = objectStore:lookup(ObjectName),
+accessor(_ClassName, PropName, ObjectPointer) ->
+	{_, _, Props} = objectStore:lookup(getName(ObjectPointer)),
 	{_, Value} = lists:keyfind(PropName, 1, Props),
 	Value.
 
+getName({objectPointer, Name}) -> Name.
+
+isObjectPointer({objectPointer, _}) -> true;
+isObjectPointer(_) -> false.
 
 makeClass(ClassType, Prop) ->
 	gen_server:cast(?MODULE, {makeClass, ClassType, Prop}).
@@ -62,7 +66,7 @@ create(ClassType, Props) ->
 	%add this obj to objectStore
 	objectStore:store(InstanceName, NewObject),
 	%return AST object
-	ast:makeObject(InstanceName).
+	{objectPointer, InstanceName}.
 
 getState() ->
 	gen_server:call(?MODULE, getState).

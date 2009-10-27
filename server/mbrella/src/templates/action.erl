@@ -54,22 +54,25 @@ testJSON() ->
 	end,
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
 	
-	SharedLetStruct = struct:get_value(<<"sharedLet">>, Struct),
-	%convert exprs within sharedLetStruct to use erlang records instead of JSON
-	SharedLetConverted = mapFields(SharedLetStruct, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
-	
-	%convert object creation initial props to be list of erlang records
-	SharedLetConverted2 = mapFields(SharedLetConverted, <<"prop">>, fun(Prop) -> 
+	SharedLet1 = struct:get_value(<<"sharedLet">>, Struct),
+	%convert fields named 'expr' to be AST from JSON
+	SharedLet2 = mapFields(SharedLet1, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
+
+	%convert fields named 'select' to be AST from JSON
+	SharedLet3 = mapFields(SharedLet2, <<"select">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
+		
+	%convert fields named 'prop' to be list of ASTs from JSON list of JSON expressions
+	SharedLet4 = mapFields(SharedLet3, <<"prop">>, fun(Prop) -> 
 		lists:map(fun({PropName,PropValue}) ->
 			PropValue2 = convertJSONExpression(PropValue, dict:new()),
 			{binary_to_list(PropName), PropValue2}
 		end, struct:to_list(Prop))
 	end),
 	
-	%convert types within sharedLetStruct to use erlang records instead of JSON
-	SharedLetConverted3 = mapFields(SharedLetConverted2, <<"type">>, fun(Type) -> convertJSONType(Type) end),
+	%convert fields named 'type' to be TYPE instead of JSON
+	SharedLet5 = mapFields(SharedLet4, <<"type">>, fun(Type) -> convertJSONType(Type) end),
 	
-	{struct, Lets} = SharedLetConverted3,
+	{struct, Lets} = SharedLet5,
 	lists:map(fun(Let) ->
 		{LetName, LetStruct} = Let,
 		LetNameString = binary_to_list(LetName),
@@ -231,7 +234,57 @@ executeAction(ActionClosure) ->
 						objects:create(Type, Prop2)
 				end;
 			<<"extract">> ->
-				ok;
+				% we're dealing with: {kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
+				Closure = makeClosure(struct:get_value(<<"action">>, Action), Scope),
+				Select = eval:evaluate(parse:bind(struct:get_value(<<"select">>, Action), Scope)),
+				
+				State = cell:getState(Select),
+				%TODO: inject something into Select to run the code below when it's 'done'
+
+				Elements = cellState:getElements(State),
+				% IsDone = cellState:isDone(State),
+				ElementsList = cellElements:toList(Elements),
+				ElementsType = cellElements:type(Elements),
+				
+				lists:map(fun(Element) ->
+					case {ElementsType, Element} of
+						{map, {add, {Key, Value}}} -> 
+							AppliedClosure = ast:makeApply(Closure, [ast:termToAST(Key), ast:termToAST(Value)]),
+							executeAction(eval:evaluate(AppliedClosure));
+						{_UnitOrSet, {add, Value}} ->
+							AppliedClosure = ast:makeApply(Closure, ast:termToAST(Value)),
+							executeAction(eval:evaluate(AppliedClosure));
+						_ -> ignoreValue
+					end
+				end, ElementsList);
+				
+				% 			
+				% 			var closure = makeClosure(action.action, env);
+				% 			var inner;
+				% 			var isMap = !!closure.type.left.left;
+				% 			if (isMap) {
+				% 				inner = function (o) {
+				% 					return evaluate(makeApply(makeApply(closure, o.key), o.val));
+				% 				};
+				% 			} else {
+				% 				inner = function (key) {
+				% 					return evaluate(makeApply(closure, key));
+				% 				};
+				% 			}
+				% 			
+				% 			var select = evalExpr(action.select);
+				% 			
+				% 			var done = false;
+				% 			var cell = select;
+				% 			var injectedFunc = cell.injectDependency(function () {
+				% 				if (!done) {
+				% 					done = true;
+				% 					forEach(cell.getState(), function (element) {
+				% 						output = executeAction(inner(element));
+				% 					});
+				% 				}
+				% 			});
+				% 			injectedFunc.unInject();
 			<<"actionJavascript">> ->
 				ok;
 			_ ->
@@ -342,9 +395,11 @@ executeAction(ActionClosure) ->
 % 	return output;
 % }
 
+isInstruction({instruction, _}) -> true;
+isInstruction(_) -> false.
 
 makeActionClosure(LineAction, Scope) ->
-	ast:makeInstruction(struct:get_value(<<"actions">>, LineAction), Scope).
+	{instruction, {struct:get_value(<<"actions">>, LineAction), Scope}}.
 
 makeClosure(LineTemplate, ParentScope) ->
 	Params = struct:get_value(<<"params">>, LineTemplate),
@@ -378,13 +433,6 @@ closureFunction(Params, Output, Scope, Args) ->
 	end, ParamsAndArgs),
 	% evaluate the output of the closure
 	evaluateLine(Output, Scope).
-
-
-
-
-addFun() -> ok.
-
-makeActionErlang() -> ok.
 
 
 

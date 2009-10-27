@@ -56,14 +56,13 @@ evaluateAST(apply, AST) ->
 						false ->
 							ReducedParameters = evaluateList( Parameters ),
 							ASTResult = ast:apply(FunctionOrLambda, ReducedParameters),
-							case cellPointer:isCellPointer(ASTResult) of
-								true ->
-									CellAST = ast:makeCell(ASTResult),
-									mewpile:store( AST, CellAST ),
-									CellAST;
-								false ->
-									ASTResult
-							end;
+							case ast:type(ASTResult) of
+								cell ->
+									mewpile:store( AST, ASTResult );
+								_ ->
+									nochange
+							end,
+							ASTResult;
 						CellAst ->
 							CellAst
 					end;

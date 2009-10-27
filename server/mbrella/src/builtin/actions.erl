@@ -3,26 +3,32 @@
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
 
+makeActionMethod(Module, Name, Arguments) ->
+	{actionMethod, {Module, Name, Arguments}}.
+
+isActionMethod({actionMethod, _}) -> true;
+isActionMethod(_) -> false.
+
 set(Cell, Value) ->
-	ast:makeActionMethod(actions, performAdd, [Cell, Value]).
+	makeActionMethod(actions, performAdd, [Cell, Value]).
 	
 unset(Cell, Value) ->
-	ast:makeActionMethod(actions, performRemove, [Cell, Value]).
+	makeActionMethod(actions, performRemove, [Cell, Value]).
 
 add(Cell, Value) ->
-	ast:makeActionMethod(actions, performAdd, [Cell, Value]).
+	makeActionMethod(actions, performAdd, [Cell, Value]).
 
 remove(Cell, Value) ->
-	ast:makeActionMethod(actions, performRemove, [Cell, Value]).
+	makeActionMethod(actions, performRemove, [Cell, Value]).
 
 addEntry(Cell, Key, Value) ->
-	ast:makeActionMethod(actions, performAdd, [Cell, cellElements:createMap(Key, Value)]).
+	makeActionMethod(actions, performAdd, [Cell, cellElements:createMap(Key, Value)]).
 
 removeEntry(Cell, Key) ->
-	ast:makeActionMethod(actions, performRemove, [Cell, cellElements:createMap(Key, dummyValue)]).
+	makeActionMethod(actions, performRemove, [Cell, cellElements:createMap(Key, dummyValue)]).
 
 return(Value) ->
-	ast:makeActionMethod(actions, performReturn, [Value]).
+	makeActionMethod(actions, performReturn, [Value]).
 
 
 performAdd(Cell, Value) ->

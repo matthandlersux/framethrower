@@ -178,7 +178,7 @@ mewpilate(lambda, AST) ->
 mewpilate(apply, AST) ->
 	ast:makeApply(
 		mewpilate( ast:getApplyFunction(AST) ),
-		mewpilate( ast:extractApplyParameters(AST) )
+		mewpilate( ast:getApplyParameters(AST) )
 	);
 mewpilate(cell, AST) ->
 	ast:makeCell(

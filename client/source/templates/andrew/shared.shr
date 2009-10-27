@@ -1,5 +1,15 @@
-simple = action (input::Number) {
-	TestObject <- create(TestClass, {num:input}),
-	Result = TestClass:num TestObject,
-	return Result
+makeTestClass = action (num::Number, str::String) {
+	TestObject <- create(TestClass, {}),
+	set (TestClass:num TestObject) num,
+	set (TestClass:str TestObject) str,
+	return TestObject
+},
+
+clone = action (input::TestClass) {
+	TestObject <- create(TestClass, {}),
+	Str = TestClass:str TestObject,
+	extract TestClass:str input as name {
+		set (TestClass:str TestObject) name
+	},
+	return TestObject
 }

@@ -142,11 +142,23 @@ parseString(String, Scope) ->
 				notfound ->
 					% TODO: should only lookup if the word starts with cell or object or whatever... throw error otherwise
 					% TODO: remove the following (added case statement for debugging)
-					case cellStore:lookup(String) of
-						notfound ->
-							throw({bad_word,String});
-						CellPointer -> 
-							ast:makeCell(CellPointer)						
+					case String of
+						"cell." ++ _ ->
+							case cellStore:lookup(String) of
+								notfound ->
+									throw({bad_cell_name, String});
+								CellPointer ->
+									ast:makeCell(CellPointer)						
+							end;
+						"object." ++ _ ->
+							ast:makeObject(String)
+							% case objectStore:lookup(String) of
+							% 	notfound ->
+							% 		throw({bad_object_name, String});
+							% 	_Object ->
+							% 		% ast:makeObject(Object)
+							% 		ast:makeObject(String)
+							% end
 					end;
 				Found -> Found
 			end;

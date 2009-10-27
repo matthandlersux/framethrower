@@ -81,12 +81,14 @@ makeCell(Name, Pid) ->
 	{cell, {{Name, Pid}, undefined}}.
 	
 %% 
-%% makeObject :: String -> AST
+%% makeObject :: (ObjectPointer | String) -> AST
 %% 		
 %%		
 
-makeObject(Name) ->
-	{object, Name}.
+makeObject(ObjectPointer) when is_tuple(ObjectPointer) ->
+	{object, objects:getName(ObjectPointer)};
+makeObject(ObjectName) ->
+	{object, ObjectName}.
 
 %% 
 %% makeFunction :: Atom -> Atom -> Number -> AST
@@ -111,21 +113,21 @@ makeFamilyFunction(Module, Name, Arity, Arguments) ->
 
 
 %% 
-%% makeActionMethod :: Atom -> Atom -> Number -> AST
-%% 		
+%% makeActionMethod :: ActionMethod -> AST
+%% 	(for now they have same representation)
 %%
 
-makeActionMethod(Module, Name, Arguments) ->
-	{actionMethod, {Module, Name, Arguments}}.
+makeActionMethod(ActionMethod) ->
+	ActionMethod.
 
 
 %%
-%% makeInstruction :: List of Action JSON -> Scope -> AST
-%%
+%% makeInstruction :: Instruction -> AST
+%% (for now they have same representation)
 %%
 
-makeInstruction(Actions, Scope) ->
-	{instruction, {Actions, Scope}}.
+makeInstruction(Instruction) ->
+	Instruction.
 
 %% 
 %% performActionMethod :: AST -> AST | CellPointer | ObjectPointer | Literal ... etc...
@@ -169,9 +171,9 @@ makeLambda(AST, NumOfVariables) ->
 
 makeApply({apply, {AST, ListOfParameters}}, Parameters) when is_list(Parameters) ->
 	?colortrace(possible_parameter_mixup),
-	{apply, {AST, Parameters ++ ListOfParameters}};
+	{apply, {AST, ListOfParameters ++ Parameters}};
 makeApply({apply, {AST, ListOfParameters}}, NewParameter) ->
-	{apply, {AST, [NewParameter] ++ ListOfParameters}};
+	{apply, {AST, ListOfParameters ++ [NewParameter]}};
 makeApply(AST, Parameters) when is_list(Parameters) ->
 	{apply, {AST, Parameters}};
 makeApply(AST, Parameter) ->
@@ -278,14 +280,7 @@ getApplyFunction({_, {AST, _}}) -> AST.
 %% 		
 %%		
 
-getApplyParameters({_, {_, ListOfParameters}}) -> lists:reverse( ListOfParameters ).
-
-%% 
-%% extractApplyParameters :: AST -> List AST
-%% 		used when you want to preserve the internal ordering of the list of parameters... mainly because they get reversed
-%%		
-
-extractApplyParameters({_, {_, ListOfParameters}}) -> ListOfParameters.
+getApplyParameters({_, {_, ListOfParameters}}) -> ListOfParameters.
 
 %% 
 %% getArity :: AST -> Number
@@ -305,14 +300,14 @@ type({Type, _Data}) when is_atom(Type) ->
 	Type.
 	
 %% 
-%% apply :: AST -> List AST -> AST | CellPointer | ObjectPointer | Literal ... etc...
+%% apply :: AST -> List AST -> AST
 %% 		takes care of apply for everyone
 %%		
 
 apply(AST, Parameter) when not is_list(Parameter) ->
 	ast:apply(AST, [Parameter]);
 apply({function, {{Module, Name, Arguments}, _Arity}}, ListOfParameters) ->
-	case {Module, Name} of
+	Result = case {Module, Name} of
 		{action, closure} ->
 			% closure take the listOfParameters as a List of ASTs so it can run evaluate
 			erlang:apply(action, closureFunction, Arguments ++ [ListOfParameters]);
@@ -321,7 +316,8 @@ apply({function, {{Module, Name, Arguments}, _Arity}}, ListOfParameters) ->
             lists:foldl(fun(A, F) -> F(A) end, FamilyFunction, toTerm(ListOfParameters));
 		_ ->
 			erlang:apply(Module, Name, Arguments ++ toTerm(ListOfParameters))
-	end.
+	end,
+	termToAST(Result).
 
 %% 
 %% betaReduce :: AST -> List AST -> AST
@@ -347,8 +343,16 @@ termToAST(Term) ->
 	case cellPointer:isCellPointer(Term) of
 		true ->
 			makeCell( Term );
-		false ->
-			exit(not_yet_implemented)
+		false -> case objects:isObjectPointer(Term) of
+			true -> makeObject(Term);
+			_ -> case action:isInstruction(Term) of
+				true -> makeInstruction(Term);
+				_ -> case actions:isActionMethod(Term) of
+					true -> makeActionMethod(Term);
+					_ -> throw([not_yet_implemented, Term])
+				end
+			end
+		end
 	end.
 
 %% ====================================================
@@ -432,10 +436,10 @@ toTerm({bool, Bool}) ->
 	Bool;
 toTerm({null, Null}) ->
 	Null;
-toTerm({object, Name}) ->
-	Name;
 toTerm({cell, {CellPointer, _BottomExpr}}) ->
 	CellPointer;
+toTerm({object, Name}) ->
+	{objectPointer, Name};
 toTerm({function, _} = Function) ->
 	Function;
 toTerm({apply, _} = Apply) ->

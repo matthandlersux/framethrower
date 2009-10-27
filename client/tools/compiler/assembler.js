@@ -153,6 +153,7 @@ function log () {
 }
 
 function compileFile (filePath, rebuild, isLetFile) {
+	
 	var file = "../../source/templates/" + filePath;
 	var binfile = "../../generated/templates/" + filePath + ".ser";
 
@@ -190,11 +191,7 @@ function compileFile (filePath, rebuild, isLetFile) {
 			throw("Parse Error");
 		} else {
 			var filePath;
-			if (file) {
-				//TODO add getCanonicalPath to shell c++
-				// filePath = file.getCanonicalPath();
-				filePath = file;
-			}
+			filePath = getCanonicalPath(file);
 			result = semantics.processTree(parseResult.result, "" + filePath);
 			try {
 				//TODO: add serialize to shell c++
