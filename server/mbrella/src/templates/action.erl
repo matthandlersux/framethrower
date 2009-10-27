@@ -47,6 +47,39 @@ start_link() ->
 		Else -> Else
 	end.
 
+initJSON() ->
+	JSONBinary = case file:read_file("priv/bootJSON") of
+		{ok, JSON} -> JSON;
+		{error, Error} -> throw(Error)
+	end,
+	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
+	
+	SharedLet1 = struct:get_value(<<"sharedLet">>, Struct),
+	%convert fields named 'expr' to be AST from JSON
+	SharedLet2 = mapFields(SharedLet1, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
+
+	%convert fields named 'select' to be AST from JSON
+	SharedLet3 = mapFields(SharedLet2, <<"select">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
+		
+	%convert fields named 'prop' to be list of ASTs from JSON list of JSON expressions
+	SharedLet4 = mapFields(SharedLet3, <<"prop">>, fun(Prop) -> 
+		lists:map(fun({PropName,PropValue}) ->
+			PropValue2 = convertJSONExpression(PropValue, dict:new()),
+			{binary_to_list(PropName), PropValue2}
+		end, struct:to_list(Prop))
+	end),
+	
+	%convert fields named 'type' to be TYPE instead of JSON
+	SharedLet5 = mapFields(SharedLet4, <<"type">>, fun(Type) -> convertJSONType(Type) end),
+	
+	{struct, Lets} = SharedLet5,
+	lists:map(fun(Let) ->
+		{LetName, LetStruct} = Let,
+		LetNameString = binary_to_list(LetName),
+		gen_server:call(?MODULE, {addLet, LetNameString, LetStruct})
+	end, Lets),
+	ok.
+
 
 addActionsFromJSON(ActionsJSON) ->
 	gen_server:cast(?MODULE, {addActionJSON, ActionsJSON}).
