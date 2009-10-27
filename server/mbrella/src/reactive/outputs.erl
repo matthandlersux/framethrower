@@ -404,11 +404,14 @@ applyAndInject(AST, InjectToCellPointer, OutputName, _State, _ElementsState, Ele
 	applyAndInject(AST, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
 
 applyAndInject(AST, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
-	% evaluation should return a special AST, a partially completed apply or lambda
-	NewAST = 	case cellElements:value(Element) of
-					{Key, Value} ->
+	% TODO: THIS WILL BREAK WHEN VALUE IS CELLPOINTER, TUPLE, ETC
+	NewAST = 	case cellElements:isMap(Element) of
+					true ->
+						Key = cellElements:mapKey(Element),
+						Value = cellElements:mapValue(Element),
 						eval:evaluate( ast:makeApply(AST, ast:termToAST(Key) ) );
-					Value ->
+					false ->
+						Value = cellElements:value(Element),
 						AST
 				end,
 	NewCellPointer = eval:evaluate( ast:makeApply(NewAST, ast:termToAST(Value) ) ),
