@@ -404,7 +404,6 @@ applyAndInject(AST, InjectToCellPointer, OutputName, _State, _ElementsState, Ele
 	applyAndInject(AST, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
 
 applyAndInject(AST, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
-	% TODO: THIS WILL BREAK WHEN VALUE IS CELLPOINTER, TUPLE, ETC
 	NewAST = 	case cellElements:isMap(Element) of
 					true ->
 						Key = cellElements:mapKey(Element),
