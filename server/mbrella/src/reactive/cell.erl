@@ -128,6 +128,14 @@ setFlag(CellPointer, Flag, Setting) ->
 
 setBottom(CellPointer, AST) ->
 	gen_server:cast(cellPointer:pid(CellPointer), {setBottom, AST}).
+	
+%% 
+%% elementsType :: CellPointer -> Atom
+%% 		
+%%		
+
+elementsType(CellPointer) ->
+	gen_server:call(cellPointer:pid(CellPointer), elementsType).
 
 %% ====================================================
 %% PrimFun API
@@ -271,6 +279,9 @@ init([Type|Flags]) ->
     {ok, cellState:new(Type, Flags)}.
 
 
+handle_call(elementsType, _From, State) ->
+	CellElements = cellState:getElements(State),
+	{reply, cellElements:type(CellElements), State};
 handle_call(getState, _From, State) ->
 	{reply, State, State};
 handle_call(Msg, From, State) ->
