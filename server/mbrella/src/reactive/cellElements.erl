@@ -74,7 +74,7 @@ create(Modifier, Value) ->
 %%		
 
 createMap(Key, Value) ->
-	{Key, Value}.
+	{map, Key, Value}.
 
 
 %% 
@@ -82,7 +82,7 @@ createMap(Key, Value) ->
 %% 
 
 createMap(Modifier, Key, Value) ->
-	create(Modifier, {Key, Value}).
+	create(Modifier, {map, Key, Value}).
 	
 %% 
 %% createAdd :: Value -> Element
@@ -133,17 +133,25 @@ value({_, Value}) ->
 	Value.
 
 %% 
+%% isMap :: Element -> Bool
+%% 		
+%%		
+
+isMap({_, {map, _, _}}) -> true;
+isMap({_, _}) -> false.
+
+%% 
 %% mapValue :: Element -> MapValue
 %% 
 
-mapValue({_, {_, Value}}) ->
+mapValue({_, {map, _, Value}}) ->
 	Value.
 	
 %% 
 %% mapKey :: Element -> MapKey
 %% 
 
-mapKey({_, {Key, _}}) ->
+mapKey({_, {map, Key, _}}) ->
 	Key.
 	
 %% 
@@ -170,7 +178,7 @@ toList({set, ElementState}) ->
 	lists:flatmap(fun({V,W}) -> valueToElementList(V, W) end, ElementList);
 toList({map, ElementState}) ->
 	ElementList = dict:to_list(ElementState),
-	lists:flatmap(fun({K,{V,W}}) -> valueToElementList({K, V}, W) end, ElementList).
+	lists:flatmap(fun({K,{V,W}}) -> valueToElementList({map, K, V}, W) end, ElementList).
 	
 %% 
 %% toListOfRemoves :: CellElements -> List Element
@@ -193,8 +201,8 @@ toListOfRemoves({set, ElementState}) ->
 toListOfRemoves({map, ElementState}) ->
 	ElementList = dict:to_list(ElementState),
 	lists:flatmap(
-		fun({K, {V,W}}) when W > 0 ->
-			valueToElementList({K, V}, -W);
+		fun({K, {map, V,W}}) when W > 0 ->
+			valueToElementList({map, K, V}, -W);
 		(_) ->
 			[]
 		end, ElementList
@@ -341,10 +349,10 @@ setRemove(SetElements, NewElement) ->
 	end.
 
 %% 
-%% mapAdd :: Dict -> Tuple Value Value -> Tuple Dict (List Element)
+%% mapAdd :: Dict -> Tuple3 Atom Value Value -> Tuple Dict (List Element)
 %% 
 
-mapAdd(MapElements, {NewElementKey, NewElementValue}) ->
+mapAdd(MapElements, {map, NewElementKey, NewElementValue}) ->
 	case dict:is_key(NewElementKey, MapElements) of
 		true ->
 			{OldElementValue, Weight} = dict:fetch(NewElementKey, MapElements),
@@ -353,23 +361,23 @@ mapAdd(MapElements, {NewElementKey, NewElementValue}) ->
 				true -> {dict:store(NewElementKey, {OldElementValue, Weight + 1}, MapElements), []}
 			end;
 		false ->
-			{dict:store(NewElementKey, {NewElementValue, 1}, MapElements), [{add, {NewElementKey, NewElementValue}}]}
+			{dict:store(NewElementKey, {NewElementValue, 1}, MapElements), [{add, {map, NewElementKey, NewElementValue}}]}
 	end.
 
 %% 
 %% mapRemove :: Dict -> Tuple Value Value -> Tuple Dict (List Element)
 %% 
 
-mapRemove(MapElements, {NewElementKey, NewElementValue}) ->
+mapRemove(MapElements, {map, NewElementKey, NewElementValue}) ->
 	case dict:is_key(NewElementKey, MapElements) of
 		true ->
 			{OldElementValue, Weight} = dict:fetch(NewElementKey, MapElements),
 			if
-				Weight =:= 1 -> {dict:erase(NewElementKey, MapElements), [{remove, {NewElementKey, OldElementValue}}]};
+				Weight =:= 1 -> {dict:erase(NewElementKey, MapElements), [{remove, {map, NewElementKey, OldElementValue}}]};
 				true -> {dict:store(NewElementKey, {OldElementValue, Weight - 1}, MapElements), []}
 			end;
 		false ->
-			{dict:store(NewElementKey, {NewElementValue, -1}, MapElements), [{remove, {NewElementKey, NewElementValue}}]}
+			{dict:store(NewElementKey, {NewElementValue, -1}, MapElements), [{remove, {map, NewElementKey, NewElementValue}}]}
 	end.
 	
 	
