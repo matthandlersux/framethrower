@@ -369,7 +369,32 @@ gate(Value, State, _From, Element) ->
 			{empty, []}
 	end.
 
+%% 
+%% extract :: 
+%% 		
+%%		
 
+extract() -> connected.
+
+extract(SelfPointer, ClosureAST, State, From, Element) ->
+	case cellElements:isMap(Element) of
+		true ->
+			Key = cellElements:mapKey(Element),
+			Value = cellElements:mapValue(Element),
+			AppliedClosure = ast:makeApply(ClosureAST, [ast:termToAST(Key), ast:termToAST(Value)]),
+			action:executeAction(eval:evaluate(AppliedClosure));
+		false ->
+			Value = cellElements:value(Element),
+			AppliedClosure = ast:makeApply(ClosureAST, ast:termToAST(Value)),
+			action:executeAction(eval:evaluate(AppliedClosure))
+	end,
+	if
+		State =:= disconnected -> 
+			{disconnected, [Element]};
+		State =:= connected -> 
+			cell:uninjectOutput(From, SelfPointer),
+			{disconnected, [Element]}
+	end.
 
 %% ====================================================
 %% Intercept Function's Utilities
