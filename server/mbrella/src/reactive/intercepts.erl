@@ -1,6 +1,7 @@
 -module (intercepts).
 -export([
 	call/3,	getArguments/1,	construct/2, construct/1,
+	extract/0, extract/5,
 	debug/0, debug/3,
 	reactiveAnd/0, reactiveAnd/5,
 	invert/0, invert/4,

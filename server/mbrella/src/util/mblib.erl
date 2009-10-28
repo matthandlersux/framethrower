@@ -213,16 +213,13 @@ createClasses(ClassesStruct) ->
 		ClassType = type:makeTypeName(list_to_atom(string:to_lower(binary_to_list(Name)))),
 		objects:makeClass(ClassType, Prop)
 	end, Classes).
-	
+
+createActions(SharedLetStruct) ->
+	action:initJSON(SharedLetStruct).
 
 %% 
-%% function to load bootJSON file and run it against the server on bootup to populate objects and cells etc...
-%% 
-
-% bootJsonScript() ->
-% 	spawn( fun() -> bootJsonScriptLoop() end ).
-
-
+%% script that gets executed when the mbrella/pipeline application starts
+%%
 
 startScript(Options) ->
 	spawn( fun() ->
@@ -254,17 +251,19 @@ startScript(Options) ->
 	end).
 
 %% 
-%% script that gets executed when the mbrella/pipeline application starts
-%% 
+%% function to load bootJSON file and run it against the server on bootup to populate objects and cells etc...
+%%
 
 bootJsonScript() ->
 	{ok, JSONBinary} = file:read_file("priv/bootJSON"),
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
 	ClassesStruct = struct:get_value(<<"classes">>, Struct),
 	ExprLibStruct = struct:get_value(<<"exprLib">>, Struct),
+	SharedLetStruct = struct:get_value(<<"sharedLet">>, Struct),
 
 	createClasses(ClassesStruct),
 	createExprLib(ExprLibStruct),
+	createActions(SharedLetStruct),
 
 	bootedJSONScript.
 

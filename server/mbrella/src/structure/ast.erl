@@ -8,18 +8,34 @@
 %% ====================================================
 %% TYPES
 %% ====================================================
-
-% Literal	 		:: String | Number | Bool | Null
-% Null				:: Atom
-% String 			:: List
-% Bool				:: Atom
-% AST				:: Tuple Atom ASTData
-% ASTData			:: Literal | Tuple 
-% 					ie 		{CellPointer, BottomExpr} | Function | {AST, List}
-% Function			:: Tuple {function, {Atom, Atom, List}, Number}
-% ActionMethod		:: Tuple {actionMethod, {Atom, Atom, List}}
-% AccessorFunction	:: Tuple (Tuple Atom Parameter) Number
-% CellPointer 		:: Tuple String Pid
+%
+%		an AST represents an expression that can be evaluated by the eval module
+%
+% AST				:: LiteralAST | CellAST | ObjectAST | FunctionAST | LambdaAST | ApplyAST | VariableAST | UnboundVariableAST | ActionMethodAST | InstructionAST
+%	LiteralAST			:: {LiteralType, Literal}
+%		LiteralType			:: string | number | bool | null | void
+%	CellAST				:: {cell, {CellPointer, undefined}}
+%	ObjectAST			:: {object, String}
+% 	FunctionAST			:: {function, {{Atom, Atom, List}, Number}}
+%	LambdaAST			:: {lambda, {Number, AST}}
+%	ApplyAST			:: {apply, {(FunctionAST | LambdaAST), [AST]}}
+%	ActionMethodAST		:: {actionMethod, {Atom, Atom, List}}
+%	InstructionAST		:: {instruction, {Line, Scope}}
+%	VariableAST			:: {variable, Number}
+%	UnboundVariableAST	:: {unboundVariable, String}
+%
+%
+% 		a DataTerm is a piece of data that can be passed into a FunctionAST as an argument, and passed around inside cells
+%
+% DataTerm			:: Literal | CellPointer | ObjectPointer | Instruction | ActionMethod | ApplyAST | LambdaAST | FunctionAST | ActionMethodAST | InstructionAST
+% 	Literal	 		:: String | Number | Bool | Null | Void
+%	 	String				:: List
+%	 	Number				:: Number
+%	 	Bool				:: Atom	
+%	 	Null				:: Atom
+%	 	Void				:: Atom
+% 	CellPointer 		:: Refer to CellPointer module
+% 	ObjectPointer 		:: Refer to Object module
 
 %% ====================================================
 %% External API
@@ -30,7 +46,7 @@
 %% ---------------------------------------------
 
 %% 
-%% makeLiteral :: Literal -> AST
+%% makeLiteral :: Literal -> LiteralAST
 %% 		
 %%		
 
@@ -44,18 +60,21 @@ makeLiteral(Bool) when is_boolean(Bool) ->
 	{bool, Bool};
 
 makeLiteral(null) ->
-	{null, null}.
+	{null, null};
 
-%% 
-%% makeUnboundVariable :: String -> AST
-%% 		
-%%		
+makeLiteral(void) ->
+	{void, void}.
+
+%%
+%% makeUnboundVariable :: String -> UnboundVariableAST
+%%
+%%
 
 makeUnboundVariable(String) ->
 	{unboundVariable, String}.
 
 %% 
-%% makeCell :: String -> AST
+%% makeCell :: String -> CellAST
 %% 		
 %%		
 
@@ -65,7 +84,7 @@ makeCell(Name) when is_list(Name) ->
 	makeCell(Name, Pid);
 
 %% 
-%% makeCell :: CellPointer -> AST
+%% makeCell :: CellPointer -> CellAST
 %% 		
 %%		
 
@@ -73,7 +92,7 @@ makeCell(CellPointer) when is_tuple(CellPointer) ->
 	makeCell(cellPointer:name(CellPointer), cellPointer:pid(CellPointer)).
 
 %% 
-%% makeCell :: String -> Pid -> AST
+%% makeCell :: String -> Pid -> CellAST
 %% 		
 %%		
 
@@ -81,7 +100,7 @@ makeCell(Name, Pid) ->
 	{cell, {{Name, Pid}, undefined}}.
 	
 %% 
-%% makeObject :: (ObjectPointer | String) -> AST
+%% makeObject :: (ObjectPointer | String) -> ObjectAST
 %% 		
 %%		
 
@@ -91,7 +110,7 @@ makeObject(ObjectName) ->
 	{object, ObjectName}.
 
 %% 
-%% makeFunction :: Atom -> Atom -> Number -> AST
+%% makeFunction :: Atom -> Atom -> Number -> FunctionAST
 %% 		
 %%		
 
@@ -102,7 +121,7 @@ makeFunction(Module, Name, Arity) ->
 
 
 %% 
-%% makeFamilyFunction :: Atom -> Number -> List a -> AST
+%% makeFamilyFunction :: Atom -> Number -> List a -> FunctionAST
 %% 		
 %%		
 
@@ -112,34 +131,34 @@ makeFamilyFunction(Module, Name, Arity, Arguments) ->
 	{function, {{Module, Name, Arguments}, Arity}}.
 
 
-%% 
-%% makeActionMethod :: ActionMethod -> AST
-%% 	(for now they have same representation)
+%%
+%% makeInstruction :: [JSON] -> Scope -> InstructionAST
+%%
 %%
 
-makeActionMethod(ActionMethod) ->
-	ActionMethod.
-
-
-%%
-%% makeInstruction :: Instruction -> AST
-%% (for now they have same representation)
-%%
-
-makeInstruction(Instruction) ->
-	Instruction.
+makeInstruction(Actions, Scope) ->
+	{instruction, {Actions, Scope}}.
 
 %% 
-%% performActionMethod :: AST -> AST | CellPointer | ObjectPointer | Literal ... etc...
+%% makeActionMethod :: Atom -> Atom -> List -> ActionMethodAST
+%%
+%%
+
+makeActionMethod(Module, Name, Arguments) ->
+	{actionMethod, {Module, Name, Arguments}}.
+
+
+%% 
+%% performActionMethod :: ActionMethodAST -> AST
 %%
 %%
 
 performActionMethod({actionMethod, {Module, Name, Arguments}}) ->
-	erlang:apply(Module, Name, Arguments).	
-
+	AM = erlang:apply(Module, Name, Arguments),
+	termToAST(AM).
 
 %% 
-%% makeVariable :: Number -> AST
+%% makeVariable :: Number -> VariableAST
 %% 		
 %%		
 
@@ -147,7 +166,7 @@ makeVariable(Number) ->
 	{variable, Number}.
 
 %% 
-%% makeLambda :: AST -> AST
+%% makeLambda :: AST -> LambdaAST
 %% 		
 %%		
 
@@ -155,7 +174,7 @@ makeLambda(AST) ->
 	makeLambda(AST, 1).
 
 %% 
-%% makeLambda :: AST -> Number -> AST
+%% makeLambda :: AST -> Number -> LambdaAST
 %% 		
 %%		
 
@@ -165,8 +184,8 @@ makeLambda(AST, NumOfVariables) ->
 	{lambda, {NumOfVariables, AST}}.
 
 %% 
-%% makeApply :: AST -> a -> AST
-%% 			:: AST -> List a -> AST
+%% makeApply :: AST -> AST -> ApplyAST
+%% 			:: AST -> List AST -> ApplyAST
 %%		
 
 makeApply({apply, {AST, ListOfParameters}}, Parameters) when is_list(Parameters) ->
@@ -185,105 +204,105 @@ makeApply(AST, Parameter) ->
 %% ---------------------------------------------
 
 %% 
-%% getString :: AST -> String
+%% getString :: LiteralAST -> String
 %% 		
 %%		
 
 getString(Input) -> getFlatValue(Input).
 
 %% 
-%% getNumber :: AST -> Number
+%% getNumber :: LiteralAST -> Number
 %% 		
 %%		
 
 getNumber(Input) -> getFlatValue(Input).
 
 %% 
-%% getBool :: AST -> Bool
+%% getBool :: LiteralAST -> Bool
 %% 		
 %%		
 
 getBool(Input) -> getFlatValue(Input).
 
 %% 
-%% getNull :: AST -> Null
+%% getNull :: LiteralAST -> Null
 %% 		
 %%		
 
 getNull(Input) -> getFlatValue(Input).
 
 %% 
-%% getVariable :: AST -> Variable
+%% getVariable :: LiteralAST -> Variable
 %% 		
 %%		
 
-getVariable(Input) -> getFlatValue(Input).
+getVariable({variable, Value}) -> Value.
 
 %% 
-%% getInstructionActions :: AST -> List of Action JSON
+%% getInstructionActions :: InstructionAST -> List of Action JSON
 %%
 %%
 
 getInstructionActions({_, {Actions, _}}) -> Actions.
 
 %% 
-%% getInstructionScope :: AST -> Scope
+%% getInstructionScope :: InstructionAST -> Scope
 %%
 %%
 
 getInstructionScope({_, {_, Scope}}) -> Scope.
 
 %% 
-%% getCellName :: AST -> CellName
+%% getCellName :: CellAST -> CellName
 %% 		
 %%		
 
 getCellName({_, {{Name, _}, _}}) -> Name.
 
 %% 
-%% getObject :: AST -> String
-%% 		
-%%		
-
-getObject(Object) -> getFlatValue(Object).
-
-%% 
-%% getCellPid :: AST -> Pid
+%% getCellPid :: CellAST -> Pid
 %% 		
 %%		
 
 getCellPid({_, {{_, Pid}, _}}) -> Pid.
 
 %% 
-%% getFunctionName :: AST -> Atom
+%% getObject :: ObjectAST -> String
+%% 		
+%%		
+
+getObject({object, ObjectName}) -> ObjectName.
+
+%% 
+%% getFunctionName :: FunctionAST -> Atom
 %% 		
 %%		
 
 getFunctionName({_, {{_Mod, Name, _Arg}, _}}) -> Name.
 
 %% 
-%% getLambdaAST :: AST -> AST
+%% getLambdaAST :: LambdaAST -> AST
 %% 		
 %%		
 
 getLambdaAST({_, {_, AST}}) -> AST.
 
 %% 
-%% getApplyFunction :: AST -> AST
-%% 		
+%% getApplyFunction :: ApplyAST -> (FunctionAST| LambdaAST)
+%%
 %%		
 
 getApplyFunction({_, {AST, _}}) -> AST.
 
 %% 
-%% getApplyParameters :: AST -> List AST
-%% 		
-%%		
+%% getApplyParameters :: ApplyAST -> List AST
+%%
+%%
 
 getApplyParameters({_, {_, ListOfParameters}}) -> ListOfParameters.
 
 %% 
-%% getArity :: AST -> Number
+%% getArity :: (FunctionAST | LambdaAST | ApplyAST) -> Number
 %% 		takes a function, lambda, or apply
 %%		
 
@@ -291,36 +310,37 @@ getArity({function, {_NameOrTuple, Arity}}) -> Arity;
 getArity({lambda, {NumVars, _AST}}) -> NumVars;
 getArity({apply, { AST , Parameters}}) -> getArity(AST) - length(Parameters).
 
-%% 
+%%
 %% type :: AST -> Atom
-%% 		
-%%		
+%%
+%%
 
 type({Type, _Data}) when is_atom(Type) ->
 	Type.
 	
 %% 
-%% apply :: AST -> List AST -> AST
+%% apply :: FunctionAST -> List AST -> AST
 %% 		takes care of apply for everyone
 %%		
 
 apply(AST, Parameter) when not is_list(Parameter) ->
 	ast:apply(AST, [Parameter]);
 apply({function, {{Module, Name, Arguments}, _Arity}}, ListOfParameters) ->
-	Result = case {Module, Name} of
+	case {Module, Name} of
 		{action, closure} ->
-			% closure take the listOfParameters as a List of ASTs so it can run evaluate
+			% closureFunction :: [AST] -> AST
 			erlang:apply(action, closureFunction, Arguments ++ [ListOfParameters]);
 		{family, _} ->
             FamilyFunction = erlang:apply(family, Name, Arguments),
-            lists:foldl(fun(A, F) -> F(A) end, FamilyFunction, toTerm(ListOfParameters));
+            Result = lists:foldl(fun(A, F) -> F(A) end, FamilyFunction, toTerm(ListOfParameters)),
+			termToAST(Result);
 		_ ->
-			erlang:apply(Module, Name, Arguments ++ toTerm(ListOfParameters))
-	end,
-	termToAST(Result).
+			Result = erlang:apply(Module, Name, Arguments ++ toTerm(ListOfParameters)),
+			termToAST(Result)
+	end.
 
 %% 
-%% betaReduce :: AST -> List AST -> AST
+%% betaReduce :: LambdaAST -> List AST -> AST
 %% 		
 %%		
 	
@@ -333,7 +353,7 @@ betaReduce(Lambda, ListOfReplacements) ->
 	end.
 
 %% 
-%% termToAST :: ErlangTerm -> AST
+%% termToAST :: DataTerm -> AST
 %% 		
 %%		
 
@@ -345,12 +365,9 @@ termToAST(Term) ->
 			makeCell( Term );
 		false -> case objects:isObjectPointer(Term) of
 			true -> makeObject(Term);
-			_ -> case action:isInstruction(Term) of
-				true -> makeInstruction(Term);
-				_ -> case actions:isActionMethod(Term) of
-					true -> makeActionMethod(Term);
-					_ -> throw([not_yet_implemented, Term])
-				end
+			_ -> case Term of
+				{actionMethod, _} = ActionMethod -> ActionMethod;
+				_ -> throw([not_yet_implemented, Term])
 			end
 		end
 	end.
@@ -359,10 +376,10 @@ termToAST(Term) ->
 %% Internal API
 %% ====================================================
 
-%% 
-%% getFlatValue :: AST -> String | Number | Bool | Null
-%% 		
-%%		
+%%
+%% getFlatValue :: LiteralAST -> Literal
+%%
+%%
 
 getFlatValue({_, Value}) -> Value.
 
@@ -397,12 +414,12 @@ betaReduce(AST, _Replacement, _Index) ->
 	AST.
 		
 %% 
-%% mapType :: AstType -> AST -> (String -> AST) -> AST
+%% mapType :: Atom -> AST -> (AST -> AST) -> AST
 %% 
 %%
 	
-mapType(Type, {Type, Value}, MapFunction) ->
-	MapFunction(Value);
+mapType(Type, {Type, _} = AST, MapFunction) ->
+	MapFunction(AST);
 mapType(Type, {lambda, {Num, AST}}, MapFunction) ->
 	makeLambda(
 		mapType(Type, AST, MapFunction),
@@ -420,22 +437,14 @@ mapType(_Type, AST, _MapFunction) ->
 	
 	
 %% 
-%% toTerm :: AST -> ErlangTerm
-%% 		:: List AST -> List Erlang Term
-%%		
+%% toTerm :: AST -> DataTerm
+%% 		:: [AST] -> [DataTerm]
+%%
 
 toTerm([]) -> 
 	[];
 toTerm([H|T]) ->
 	[toTerm(H)|toTerm(T)];
-toTerm({string, String}) ->
-	String;
-toTerm({number, Number}) ->
-	Number;
-toTerm({bool, Bool}) ->
-	Bool;
-toTerm({null, Null}) ->
-	Null;
 toTerm({cell, {CellPointer, _BottomExpr}}) ->
 	CellPointer;
 toTerm({object, Name}) ->
@@ -446,5 +455,11 @@ toTerm({apply, _} = Apply) ->
 	Apply;
 toTerm({lambda, _} = Lambda) ->
 	Lambda;
+toTerm({actionMethod, _} = ActionMethod) ->
+	ActionMethod;
+toTerm({instruction, _} = Instruction) ->
+	Instruction;
+toTerm({_LiteralType, LiteralValue}) ->
+	LiteralValue;
 toTerm(Term) ->
 	Term.

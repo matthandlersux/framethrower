@@ -73,18 +73,18 @@ parser(String, LeftAST, Scope) ->
 
 
 %% 
-%% bind:: AST (without pointers) -> AST (with pointers)
+%% bind:: AST (with UnboundVariableASTs) -> Scope -> AST (without UnboundVariableASTs)
 %%
 
 bind(AST) ->
 	bind(AST, scope:makeScope()).
 
 %% 
-%% bind:: AST (without pointers) -> Scope -> AST (with pointers)
+%% bind:: AST (with UnboundVariableASTs) -> Scope -> AST (without UnboundVariableASTs)
 %%
 
 bind(AST, Scope) ->
-	ast:mapType(unboundVariable, AST, fun(String) -> 
+	ast:mapType(unboundVariable, AST, fun({_, String}) -> 
 		parseString(String, Scope)
 	end).
 
@@ -131,9 +131,9 @@ unparse(AST) ->
 %% Internal Functions
 %% ====================================================
 
-
-
-
+%%
+%% parseString :: String -> Scope -> AST
+%%
 
 parseString(String, Scope) ->
 	case scope:lookup(Scope, String) of

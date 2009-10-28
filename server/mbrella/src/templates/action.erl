@@ -43,20 +43,16 @@ start() ->
 	
 start_link() ->
 	case gen_server:start({local, ?MODULE}, ?MODULE, [], []) of
-		{ok, Pid} -> initJSON(), Pid;
+		{ok, Pid} -> Pid;
 		Else -> Else
 	end.
 
-initJSON() ->
-	JSONBinary = case file:read_file("priv/bootJSON") of
-		{ok, JSON} -> JSON;
-		{error, Error} -> throw(Error)
-	end,
-	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
-	
-	SharedLet1 = struct:get_value(<<"sharedLet">>, Struct),
+%%
+%% initJSON :: JSON -> ok
+%%
+initJSON(SharedLet) ->
 	%convert fields named 'expr' to be AST from JSON
-	SharedLet2 = mapFields(SharedLet1, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
+	SharedLet2 = mapFields(SharedLet, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
 
 	%convert fields named 'select' to be AST from JSON
 	SharedLet3 = mapFields(SharedLet2, <<"select">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
@@ -76,15 +72,15 @@ initJSON() ->
 	lists:map(fun(Let) ->
 		{LetName, LetStruct} = Let,
 		LetNameString = binary_to_list(LetName),
-		gen_server:call(?MODULE, {addLet, LetNameString, LetStruct})
+		gen_server:call(?MODULE, {addAction, LetNameString, LetStruct})
 	end, Lets),
 	ok.
 
-
-evaluateTemplate(Name, Params) ->
-	gen_server:call(?MODULE, {evaluateTemplate, Name, Params}).
-
-
+%%
+%% performAction :: String -> [AST] -> AST
+%%
+performAction(Name, Params) ->
+	gen_server:call(?MODULE, {performAction, Name, Params}).
 
 getState() ->
 	gen_server:call(?MODULE, getState).
@@ -121,17 +117,17 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({addLet, LetName, LetStruct}, _, State) ->
-	Closure = makeClosure(LetStruct, scope:makeScope()),
-	NewState = dict:store(LetName, Closure, State),
+handle_call({addAction, ActionName, ActionStruct}, _, State) ->
+	Closure = makeClosure(ActionStruct, scope:makeScope()),
+	NewState = dict:store(ActionName, Closure, State),
     {reply, ok, NewState};
-handle_call({evaluateTemplate, Name, Params}, _, State) ->
+handle_call({performAction, Name, Params}, _, State) ->
 	Closure = case dict:find(Name, State) of
 		{ok, Found} -> Found;
 		error -> throw("Error finding template: " ++ Name)
 	end,
 	AppliedClosure = ast:makeApply(Closure, Params),
-	Result = eval:evaluate(AppliedClosure),
+	Result = executeAction(eval:evaluate(AppliedClosure)),
     {reply, Result, State};
 handle_call(getState, _, State) ->
 	{reply, State, State};
@@ -181,6 +177,9 @@ code_change(_OldVsn, State, _Extra) ->
 
 %%For Now we'll have all the functions for processing template JSON here. Will want to reorganize this into another file probably
 
+%%
+%% evaluateLine :: Line -> Scope -> AST
+%%
 
 evaluateLine(Line, Scope) ->
 	Kind = binary_to_list(struct:get_value(<<"kind">>, Line)),
@@ -203,12 +202,14 @@ evaluateLine(Line, Scope) ->
 			LineAction = struct:set_value(<<"actions">>, ActionStruct, EmptyStruct),
 			makeActionClosure(LineAction, Scope);
 		"lineJavascript" ->
-			ignore;
+			throw("Not expecting lineJavascript on Server");
 		"lineXML" ->
-			ignore
+			throw("Not expecting lineXML on Server")
 	end.
 
-
+%%
+%% executeAction :: InstructionAST -> AST
+%%
 
 executeAction(ActionClosure) ->
 	Instructions = ast:getInstructionActions(ActionClosure),
@@ -228,7 +229,7 @@ executeAction(ActionClosure) ->
 							PropValue2 = parse:bind(PropValue, Scope),
 							{PropName, PropValue2}
 						end, Prop),
-						objects:create(Type, Prop2)
+						ast:makeObject(objects:create(Type, Prop2))
 				end;
 			<<"extract">> ->
 				% we're dealing with: {kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
@@ -239,41 +240,16 @@ executeAction(ActionClosure) ->
 				NewCell = cell:makeCell(SelectType),
 				cell:injectIntercept(NewCell, extract, [NewCell, Closure]),
 				cell:injectOutput(Select, NewCell),
-				
-				NewCell;
-				
-				% ANDREW: left this stuff in comments in case you needed to reference it, if not, pwease extract
-				% 
-				% State = cell:getState(Select),
-				% %TODO: inject something into Select to run the code below when it's 'done'
-				% 
-				% Elements = cellState:getElements(State),
-				% % IsDone = cellState:isDone(State),
-				% ElementsList = cellElements:toList(Elements),
-				% ElementsType = cellElements:type(Elements),
-				% 
-				% lists:map(fun(Element) ->
-				% 	case {ElementsType, Element} of
-				% 		{map, {add, {Key, Value}}} -> 
-				% 			AppliedClosure = ast:makeApply(Closure, [ast:termToAST(Key), ast:termToAST(Value)]),
-				% 			executeAction(eval:evaluate(AppliedClosure));
-				% 		{_UnitOrSet, {add, Value}} ->
-				% 			AppliedClosure = ast:makeApply(Closure, ast:termToAST(Value)),
-				% 			executeAction(eval:evaluate(AppliedClosure));
-				% 		_ -> ignoreValue
-				% 	end
-				% end, ElementsList);
-				
+				ast:makeLiteral(void);
 			<<"actionJavascript">> ->
-				ignore;
+				ast:makeLiteral(void);
 			_ ->
 				% this is a Line to be evaluated
-				Evaled = eval:evaluate(evaluateLine(Action, Scope)),
+				Evaled = eval:evaluateAST(evaluateLine(Action, Scope)),
 				% check if Evaled is an action method, if so execute it now to avoid ugly wrapping
 				case ast:type(Evaled) of
-					actionMethod ->
-						ast:performActionMethod(Evaled);
-					_ -> executeAction(Evaled)
+					actionMethod -> ast:performActionMethod(Evaled);
+					instruction -> executeAction(Evaled)
 				end
 		end,
 		
@@ -287,16 +263,19 @@ executeAction(ActionClosure) ->
 				scope:addLet(binary_to_list(ActionName), Output, Scope)
 		end,
 		Output
-	end, noOutput, Instructions).
+	end, ast:makeLiteral(void), Instructions).
 	
 
-
-
-isInstruction({instruction, _}) -> true;
-isInstruction(_) -> false.
+%%
+%% makeActionClosure :: Line -> Scope -> InstructionAST
+%%
 
 makeActionClosure(LineAction, Scope) ->
-	{instruction, {struct:get_value(<<"actions">>, LineAction), Scope}}.
+	ast:makeInstruction(struct:get_value(<<"actions">>, LineAction), Scope).
+
+%%
+%% makeClosure :: Line -> Scope -> AST
+%%
 
 makeClosure(LineTemplate, ParentScope) ->
 	Params = struct:get_value(<<"params">>, LineTemplate),
@@ -321,7 +300,11 @@ makeClosure(LineTemplate, ParentScope) ->
 	ast:makeFamilyFunction(action, closure, ParamLength, [Params, Output, Scope]).
 
 
-% closureFunction is called by ast:apply
+%%
+%% closureFunction :: [Binary] -> Line -> Scope -> [AST] -> AST
+%%
+%% closureFunction is called by ast:apply
+
 closureFunction(Params, Output, Scope, Args) -> 
 	% add the arguments to the closure to the scope
 	ParamsAndArgs = lists:zip(Params, Args),

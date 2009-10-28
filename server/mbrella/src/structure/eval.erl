@@ -17,17 +17,17 @@
 %% ====================================================
 
 %% 
-%% eval :: String -> AST | CellPointer | ObjectPointer | Literal ... etc...
+%% eval :: String -> Term a.k.a. (CellPointer | ObjectPointer | Literal ... etc...)
 %% 		
 %%		
 
 eval(String) ->
 	evaluate(parse:parse(String)).
 	
-%% 
-%% evaluate :: AST -> CellPointer | ObjectPointer | Literal | LambdaAST | ApplyAST
-%% 		
-%%		
+%%
+%% evaluate :: AST -> Term a.k.a. (CellPointer | ObjectPointer | Literal | LambdaAST | ApplyAST)
+%%
+%%
 
 evaluate(AST) ->
 	Result = evaluateAST(ast:type(AST), AST),
@@ -37,17 +37,25 @@ evaluate(AST) ->
 %% Internal API
 %% ====================================================
 
-%% 
-%% evaluate :: Atom -> AST -> AST | CellPointer | ObjectPointer | Literal ... etc...
-%% 		
-%%		
+%%
+%% evaluateAST :: AST -> AST
+%%
+%%
+
+evaluateAST(AST) ->
+	evaluateAST(ast:type(AST), AST).
+
+%%
+%% evaluateAST :: Atom -> AST -> AST
+%%
+%%
 
 evaluateAST(apply, AST) ->
 	FunctionOrLambda = ast:getApplyFunction(AST),
 	Parameters = ast:getApplyParameters(AST),
 	case ast:type(FunctionOrLambda) of
 		lambda ->
-			evaluate( ast:betaReduce(FunctionOrLambda, Parameters) );
+			evaluateAST( ast:betaReduce(FunctionOrLambda, Parameters) );
 		function ->
 			Arity = ast:getArity(FunctionOrLambda),
 			if
@@ -80,7 +88,7 @@ evaluateAST(_Type, AST) ->
 
 evaluateList( [] ) -> [];
 evaluateList( [H|T] ) -> 
-	[evaluateAST(ast:type(H), H)|evaluateList(T)].
+	[evaluateAST(H)|evaluateList(T)].
 
 % Evaluate with older memoization strategy
 % evaluate(Expr) when is_record(Expr, exprApply) orelse is_record(Expr, exprLambda) ->
