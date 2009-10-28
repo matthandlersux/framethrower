@@ -139,6 +139,14 @@ function makeInstruction(lineAction, env) {
 	};
 }
 
+// used by builtin actions in functions/actions.js, and also by desugar of jsaction() syntax in semantics.js:
+function makeActionMethod(f) {
+	var action = {kind: "actionMethod", f: f}, // will be interpreted by executeAction()
+		lineAction = {actions: [{action: action}]};
+	
+	return makeInstruction(lineAction, emptyEnv);
+}
+
 // =====================================================================
 // Lambda calculus constructs
 // exprVar, exprApply, exprLambda

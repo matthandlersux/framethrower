@@ -67,8 +67,8 @@ function executeAction(instruction) {
 				});
 				injectedFunc.unInject();
 			}
-		} else if (action.kind === "actionJavascript") {
-			// we're dealing with: {kind: "actionJavascript", f: function}
+		} else if (action.kind === "actionMethod") {
+			// we're dealing with: {kind: "actionMethod", f: function}
 			output = action.f();
 		} else {
 			// we're dealing with a LINE

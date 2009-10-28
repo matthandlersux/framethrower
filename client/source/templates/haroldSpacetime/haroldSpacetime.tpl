@@ -41,29 +41,17 @@ template () {
 	},
 	
 // ** JS timer utils **
-	repeat = function(a::Action Void, dt::Number)::Action JSON {
-		return makeActionJavascript(function() {
-			return setInterval(function() {
-				executeAction(a);
-			}, dt*1000);
-		});
+	repeat = jsaction(a::Action Void, dt::Number)::JSON {
+		return setInterval(function() { executeAction(a); }, dt*1000);
 	},
-	cancelRepeat = function(repeatID::JSON)::Action Void {
-		return makeActionJavascript(function() {
-			clearInterval(repeatID);
-		});
+	cancelRepeat = jsaction(repeatID::JSON)::Void {
+		clearInterval(repeatID);
 	},
-	delay = function(a::Action Void, dt::Number)::Action JSON {
-		return makeActionJavascript(function() {
-			return setTimeout(function() {
-				executeAction(a);
-			}, dt*1000);
-		});
+	delay = jsaction(a::Action Void, dt::Number)::JSON {
+		return setTimeout(function() { executeAction(a); }, dt*1000);
 	},
-	cancelDelay = function(delayID::JSON)::Action Void {
-		return makeActionJavascript(function() {
-			clearTimeout(delayID);
-		});
+	cancelDelay = jsaction(delayID::JSON)::Void {
+		clearTimeout(delayID);
 	},
 
 // ** wind-up clock **
