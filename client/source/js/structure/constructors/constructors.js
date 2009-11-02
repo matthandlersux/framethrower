@@ -15,18 +15,18 @@ var localIds = makeGenerator("local.");
 // fun, object, cell
 // =====================================================================
 
-function makeFun(type, fun, argsLength, name, remote, lazy) {
+function makeFun(type, fun, argsLength, name, remoteLevel, lazy) {
 	if(argsLength === 0)
 		return fun();
 	if (name === undefined) name = localIds();
-	if (remote === undefined) remote = 2;
+	if (remoteLevel === undefined) remoteLevel = remote.shared;
 	return {
 		kind: "fun",
 		type: type,
 		fun: fun,
 		argsLength: argsLength,
 		name: name,
-		remote: remote,
+		remote: remoteLevel,
 		lazy: lazy,
 		outsideScope: 0
 	};
@@ -38,7 +38,7 @@ function makeObject(type) {
 		type: type,
 		name: localIds(),
 		prop: {},
-		remote: 2,
+		remote: remote.localOnly,
 		outsideScope: 0
 	};
 }
@@ -47,7 +47,7 @@ function makeObject(type) {
 function makeStartCap() {
 	return {
 		kind: "cell",
-		remote: 2,
+		remote: remote.localOnly,
 		name: localIds()
 	};
 }
@@ -64,7 +64,7 @@ function makeNullObject() {
 		kind: "null",
 		type: parseType("Null"),
 		name: "null",
-		remote: 2,
+		remote: remote.localOnly,
 		outsideScope: 0
 	};
 }
@@ -81,7 +81,7 @@ function makeOrd(value) {
 		type: parseType("Ord"),
 		name: stringifyOrdValue(value),
 		value: value,
-		remote: 2,
+		remote: remote.localOnly,
 		outsideScope: 0
 	};
 }
@@ -98,7 +98,7 @@ function makeList(asArray) {
 	return {
 		kind: "list",
 		type: parseType("[a]"),
-		remote: 2,
+		remote: remote.localOnly,
 		outsideScope: 0,
 		asArray: asArray
 	};
@@ -109,7 +109,7 @@ function makeTuple() {
     return {
         //kind: "tuple"+n,
         kind: "tuple",
-		remote: 2,
+		remote: remote.localOnly,
         asArray: Array.prototype.slice.call(arguments)
     };
 }
@@ -124,7 +124,7 @@ function makeXMLP(xml, env) {
 	return {
 		kind: "xmlp", 
 		name: localIds(),
-		remote: 2,
+		remote: remote.localOnly,
 		xml: xml,
 		env: env
 	};
@@ -135,7 +135,7 @@ function makeInstruction(lineAction, env) {
 		kind: "instruction",
 		instructions: lineAction.actions,
 		env: env,
-		remote: 2
+		remote: remote.localOnly
 	};
 }
 

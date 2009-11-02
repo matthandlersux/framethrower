@@ -48,23 +48,6 @@ loop(Req, DocRoot) ->
 									Req:ok({"text/html", [], [ "<html>" ++ HTML ++ "</html>"]})
 							end
 					end;
-				"responseTimeSVG" ->
-					Data = Req:parse_qs(),
-					SessionId = proplists:get_value("sessionId", Data),
-					if
-						SessionId =:= undefined -> Req:ok({"text/html", [], [ responseTime:searchPage() ]});
-						true ->
-							case responseTime:get( SessionId ) of
-								responseTime_off ->
-									Req:ok({ "text/plain", [], [ "responseTime server is off" ] });
-								[] ->
-									Req:ok({ "text/plain", [], [ SessionId ++ " has no information." ] });
-								String -> 
-									Req:ok({ "image/svg+xml", [], [ String ] })
-								% InOutList ->
-								% 	Req:ok({ "text/plain", [], [ io_lib:format("~p", [InOutList]) ]})
-							end
-					end;
 				"serialize" ->
 					Data = Req:parse_qs(),
 					{Username, Password} = mblib:pump(["username", "password"], 
@@ -85,8 +68,6 @@ loop(Req, DocRoot) ->
             case Path of
 				"newSession" ->
 					SessionId = sessionManager:newSession(),
-					% responseTime:in(SessionId, newSession, now() ),
-					% responseTime:out(SessionId, newSession, now() ),
 					spit(Req, "sessionId", SessionId);
 				"pipeline" ->
 					Data = Req:parse_post(),
@@ -94,7 +75,6 @@ loop(Req, DocRoot) ->
 					JsonOut = try mochijson2:decode(Json) of Struct ->
 						LastMessageId = struct:get_value(<<"lastMessageId">>, Struct),
 						SessionId = struct:get_value(<<"sessionId">>, Struct),
-						responseTime:in(SessionId, pipeline, null, now() ),
 						case sessionManager:lookup(SessionId) of
 							sessionClosed -> {struct, [{"sessionClosed", true}] };
 							SessionPid ->
@@ -103,7 +83,6 @@ loop(Req, DocRoot) ->
 										TimeoutError = {struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]},
 										{struct, [{"responses", [TimeoutError]},{"lastMessageId", LastMessageId}]};
 									{updates, Updates, LastMessageId2} ->
-										responseTime:updatesOut(SessionId, pipeline, Updates),
 										{struct, [{"responses", Updates},{"lastMessageId", LastMessageId2}]};
 									OtherJson -> OtherJson
 								end
@@ -116,7 +95,6 @@ loop(Req, DocRoot) ->
 					spit(Req, JsonOut);
 				"post" ->
 					Data = Req:parse_post(),
-					% ?trace(iolist_size(term_to_binary(Data))),
 					Json = proplists:get_value("json", Data),
 					Struct = mochijson2:decode(Json),
 					SessionId = struct:get_value(<<"sessionId">>, Struct),
@@ -128,10 +106,8 @@ loop(Req, DocRoot) ->
 							
 							ProcessMessage = fun( Message ) ->
 								case struct:get_first(Message) of
-									{<<"query">>, Query} -> processQuery(Query, SessionId, SessionPid);
-									{<<"action">>, Action} -> processActionJson(Action, SessionPid);
-									{<<"registerTemplate">>, RegisterTemplate} -> processRegisterTemplate(RegisterTemplate, SessionPid);
-									{<<"serverAdviceRequest">>, ServerAdviceRequest} -> processServerAdviceRequest(ServerAdviceRequest, SessionPid)
+									{<<"query">>, Query} -> processQuery(Query, SessionPid);
+									{<<"action">>, Action} -> processActionJson(Action, SessionPid)
 								end
 							end,
 							
@@ -164,249 +140,41 @@ getFromStruct(StringKey, Struct) ->
 
 %% Internal API
 
-processRegisterTemplate ( RegisterTemplate, SessionPid ) ->
-	Name = getFromStruct("name", RegisterTemplate),
-	Template = getFromStruct("template", RegisterTemplate),
-	session:registerTemplate(SessionPid, Name, Template).
-	
-processServerAdviceRequest ( ServerAdviceRequest, SessionPid ) ->
-	session:serverAdviceRequest(SessionPid, ServerAdviceRequest).
-
-processQuery ( Query, SessionId, SessionPid ) ->
+processQuery ( Query, SessionPid ) ->
 	Expr = getFromStruct("expr", Query),
 	QueryId = getFromStruct("queryId", Query),
-	case session:checkQuery(SessionPid, Expr, QueryId) of
-		true ->
-			% responseTime:in(SessionId, 'query', QueryId, now() ),
-			Cell = eval:evaluate( parse:parse(Expr) ),
-			% cell:injectLinked - might be useful so that cell can remove funcs on session close
-			OnRemove = cell:inject(Cell, 
-				fun() ->
-					session:sendUpdate(SessionPid, {done, QueryId})
-				end,
-				fun(Val) ->
-					session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
-					fun() -> 
-						case Val of
-							{pair, Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
-							_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
-						end
-					end
+	Cell = eval:evaluate( parse:parse(Expr) ),
+	% cell:injectLinked - might be useful so that cell can remove funcs on session close
+	OnRemove = cell:inject(Cell, 
+		fun() ->
+			session:sendUpdate(SessionPid, {done, QueryId})
+		end,
+		fun(Val) ->
+			session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
+			fun() -> 
+				case Val of
+					{pair, Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
+					_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
 				end
-			),
-			session:addCleanup(SessionPid, QueryId, OnRemove);
-		false -> nosideeffect
-	end.
+			end
+		end
+	),
+	session:addCleanup(SessionPid, QueryId, OnRemove).
 	
 processActionJson ( Action, SessionPid ) ->
 	ActionId = getFromStruct("actionId", Action),
-	Actions = struct:get_value(<<"actions">>, Action),
-	{Returned, Created} = processActionList(Actions),
-	Success = lists:all(fun(X) -> X =/= error end, Returned),
-	CreatedStruct = {struct, Created},
-	% responseTime:out(SessionId, action, now() ),
+	Action = struct:get_value(<<"action">>, Action),
+
+	%%TODO: perform action based on value of Action. This will include an action name and parameters
+	Name = struct:get_value(<<"name">>, Action),
+	Params = struct:get_value(<<"params">>, Action),
+	Returned = action:performAction(Name, Params),
+	
 	ActionResponse = {struct, [{"actionResponse", 
-		{struct, [{"actionId", list_to_binary(ActionId)}, {"success", Success},{"returned", Returned},{"created", CreatedStruct}] }
+		{struct, [{"actionId", list_to_binary(ActionId)}, {"returned", Returned}] }
 	}]},
 	session:sendUpdate(SessionPid, {actionResponse, ActionResponse}).
 
-
-%% 
-%% processActionList takes a list of actions, runs each eaction on the server, stores results, and returns "server.#" cells
-%% processActionList:: List Action -> List String
-%% 
-
-processActionList(Actions) ->
-	{Results, Variables} = processActionList(Actions, []),
-	JsonResults = lists:map(fun(error) -> error; (ExprElement) ->
-		[mblib:exprElementToJson(ExprElement), mblib:exprElementToJson(type:unparse((cellStore:lookup(ExprElement#objectPointer.name))#object.type))]
-	end, Results),
-	JsonVariables = lists:map(fun({Error,error}) -> {Error,error}; ({Name,ExprElement}) ->
-		{mblib:exprElementToJson(Name),[mblib:exprElementToJson(ExprElement), mblib:exprElementToJson(type:unparse((cellStore:lookup(ExprElement#objectPointer.name))#object.type))]}
-	end, Variables),	
-	{JsonResults, JsonVariables}.
-
-	
-processActionList(Actions, Variables) ->
-	ProcessActions = fun(Action, {UpdatesAccumulator, VariablesAccumulator}) ->
-						{NewUpdates, NewVariables} = processAction(Action, VariablesAccumulator),
-						{NewUpdates ++ UpdatesAccumulator, NewVariables}
-					end,
-	{ActionUpdates, ReturnVariables} = lists:foldl(ProcessActions, {[], Variables}, Actions),
-	{lists:reverse(ActionUpdates), ReturnVariables}.
-
-%%
-%% processAction is called bye processActionList to appropriately deal with an action sent to the server.
-%%	It's result is { [ReturnVariables], [{VariableName, CellName}] } which is made for lists:foldl/3
-%% processAction:: Action -> List Update -> List {String, String} -> { List Update, List {String, String} }
-%% 
-
-processAction({struct, [{<<"block">>, Action}]}, OldVariables) ->
-	BlockVariables = struct:get_value(<<"variables">>, Action),
-	Actions = struct:get_value(<<"actions">>, Action),
-	{Returned,_} = processActionList(Actions, OldVariables),
-	NewVariables = try lists:zip(BlockVariables, Returned)
-		catch 
-			_:_ ->
-				throw({insufficient_returned_variables, {expected, BlockVariables}, {got, Returned}})
-		end,
-	
-	MergedVariables = lists:ukeymerge(1, lists:sort(NewVariables), lists:sort(OldVariables)),
-	{[], MergedVariables};
-% action:create is how variables get bound to objects
-processAction({struct, [{<<"create">>, Action}]}, Variables) ->
-	Type = binary_to_list( struct:get_value(<<"type">>, Action) ),
-	Variable = struct:get_value(<<"variable">>, Action),
-	Prop = struct:get_value(<<"prop">>, Action),
-	% if Variable already exists (we are in a block and it has been declared outside the block), remove it for replacing
-	Variables1 = lists:keydelete(Variable, 1, Variables),
-	PropDict = propToDict(Prop, Variables),
-	case objects:create(Type, PropDict) of
-		{error, Reason} ->
-			throw({objectscreate_returned_error, Reason, PropDict}),
-			{ [], [{Variable, error} | Variables1]};
-		Object ->
-			{ [], [{ Variable, Object } | Variables1] }
-	end;
-% action:return is how bound variables get returned to the client
-processAction({struct, [{<<"returnValue">>, Variable}]}, Variables) ->
-	case lists:keysearch(Variable, 1, Variables) of
-		{value, {_, Binding} } ->
-			{ [Binding], Variables};
-		_ -> 
-			throw({return_variable_unbound, Variable}),
-			{ [error], Variables}
-	end;
-% action:add|remove doesn't affect the state of the response to client unless there is an error
-processAction({struct, [{<<"change">>, Action}]}, Variables) ->
-	ActionType = struct:get_value(<<"kind">>, Action),
-	Variable = struct:get_value(<<"object">>, Action),
-	Object = bindVarOrFormatExprElement( Variable, Variables ),
-	if
-		Object =:= error; Object =:= notfound ->
-			{ [error], Variables };
-		true ->
-			Property = binary_to_list( struct:get_value(<<"property">>, Action) ),
-			KeyName = struct:get_value(<<"key">>, Action),
-			ValueName = struct:get_value(<<"value">>, Action),
-			if
-				KeyName =:= undefined -> Data = undefined; 
-				true ->
-					Key = bindVarOrFormatExprElement(KeyName, Variables),
-					if
-						ValueName =:= undefined -> Data = Key;
-						true -> Data = {pair, Key, bindVarOrFormatExprElement( ValueName, Variables ) }
-					end
-			end,
-
-			case ActionType of 
-				<<"add">> ->
-					case objects:add(Object, Property, Data) of
-						ok ->
-							%catch changes to truth value here, and add history infons when running locally
-							case Property of 
-								"truth" -> % logHistory(Object, true);
-									nosideeffect;
-								_ -> nosideeffect
-							end,
-							{ [], Variables };
-						{error, Reason} ->
-							throw({objectsadd_returned_error, Reason}),
-							{ [error], Variables }
-					end;
-				<<"remove">> ->
-					case objects:remove(Object, Property, Data) of
-						ok ->
-							%catch changes to truth value here, and add history infons when running locally
-							case Property of 
-								"truth" -> % logHistory(Object, false);
-									nosideeffect;
-								_ -> nosideeffect
-							end,							
-							{ [], Variables };
-						{error, Reason} ->
-							throw({objectsadd_returned_error, Reason}),
-							{ [error], Variables }
-					end
-			end
-	end.
-
-%% 
-%% propToDict takes a json struct and returns a dictionary accordingly
-%% propToDict:: Struct -> Dict
-%% 
-
-propToDict(Props, Conversions) ->
-	propToDict(Props, Conversions, dict:new()).
-
-propToDict({struct, []}, _, Dict) -> Dict;
-propToDict({struct, [{BinaryKey, VarOrExprElement}|Props]}, Conversions, Dict) ->
-	Key = binary_to_list(BinaryKey),
-	Value = bindVarOrFormatExprElement(VarOrExprElement, Conversions),	
-	propToDict({struct, Props}, Conversions, dict:store(Key, Value, Dict)).
-
-% propToDict({struct, []}, _, Dict) -> Dict;
-% propToDict({struct, [{Key, Value}|Props]}, Conversions, Dict) ->
-% 	CellName = binaryScopeVarToCellName( Value, Conversions ),
-% 	propToDict({struct, Props}, Conversions, dict:store( binary_to_list(Key), cellStore:lookup(binary_to_list(CellName)), Dict)).
-
-%% 
-%% bindVarOrFormatExprElement:: Variable | ExprEelement -> List {Variable, ExprElement} -> Number | String | Bool | Object
-%% 
-
-bindVarOrFormatExprElement(VariableOrCellName, Conversions) when is_binary(VariableOrCellName) ->
-	% ?trace(binary_to_list(VariableOrCellName)),
-	case binary_to_list(VariableOrCellName) of
-		"server." ++ _ = ObjectName ->
-			Obj = cellStore:lookup(ObjectName),
-			#objectPointer{name = Obj#object.name};
-		"shared." ++ _ = ObjectName ->
-			Obj = cellStore:lookup(ObjectName),
-			#objectPointer{name = Obj#object.name};			
-		"\"" ++ _ = String ->
-			bindVarOrFormatExprElement(String, null);
-		%TODO: this may be a hack
-		"true" -> true;
-		"false" -> false;
-		"null" -> null;
-		"<" ++ _ = XML ->
-			XML;
-		NumberOrVariable ->
-			case lists:keysearch(VariableOrCellName, 1, Conversions) of
-				{value, {_, Object} } -> Object;
-				_ -> 
-					try list_to_integer(NumberOrVariable)
-					catch _:_ ->
-						try list_to_float(NumberOrVariable)
-						catch _:_ ->
-							throw({variable_not_found, binary_to_list(VariableOrCellName)}),
-							error % this will be when we start sending functions
-						end
-					end
-			end
-	end;
-bindVarOrFormatExprElement(NumBool, _) when is_number(NumBool); is_atom(NumBool); is_boolean(NumBool) -> NumBool;
-bindVarOrFormatExprElement([_|String], _) when is_list(String) -> lists:reverse( tl( lists:reverse(String) ) ).
-
-%% 
-%% binaryScopeVarToCellName:: Binary String -> List { Binary String, String } -> String
-%% 
-% 
-% binaryScopeVarToCellName( BinaryVariable, Variables) when is_binary(BinaryVariable) ->
-% 	case binary_to_list( BinaryVariable ) of
-% 		"client." ++ _ ->
-% 			case lists:keysearch(BinaryVariable, 1, Variables) of
-% 				{value, {_, Name} } -> Name;
-% 				_ -> error
-% 			end;
-%  		"block." ++ _ ->
-% 			case lists:keysearch(BinaryVariable, 1, Variables) of
-% 				{value, {_, Name} } -> Name;
-% 				_ -> error
-% 			end;
-% 		ObjectName -> 
-% 			ObjectName
-% 	end.
 
 %% 
 %% spit has the side effect that the Json result is sent to the Request and then forwarded to the client that made the request
@@ -420,12 +188,3 @@ spit(Req, Json) ->
 
 get_option(Option, Options) ->
     {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
-
-% actionUpdate(QueryId) ->
-% 	{struct, [{"queryId", QueryId}, {"success", true}]}.
-% 	
-% actionUpdate(QueryId, Value) ->
-% 	{struct, [{"queryId", QueryId}, {"success", true}, {"value", Value}]}.
-% 
-% actionUpdateError(QueryId) ->
-% 	{struct, [{"queryId", QueryId}, {"success", false}]}.

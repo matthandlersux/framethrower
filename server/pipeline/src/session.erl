@@ -39,12 +39,6 @@ getQueryId (SessionPid) ->
 sendUpdate (SessionPid, Message) ->
 	gen_server:cast(SessionPid, Message).
 
-registerTemplate (SessionPid, Name, Template) ->
-	gen_server:cast(SessionPid, {registerTemplate, {Name, Template}}).
-
-serverAdviceRequest (SessionPid, ServerAdviceRequest) ->
-	gen_server:cast(SessionPid, {serverAdviceRequest, ServerAdviceRequest}).
-
 pipeline(SessionPid, LastMessageId) ->
 	gen_server:cast(SessionPid, {pipeline, self(), LastMessageId}),
 	receive 
@@ -52,15 +46,6 @@ pipeline(SessionPid, LastMessageId) ->
 	after 45000 ->
 		timeout
 	end.
-
-queryDefine(SessionPid, Expr, QueryId) ->
-	gen_server:call(SessionPid, {queryDefine, Expr, QueryId}).
-
-checkQuery(SessionPid, Expr, QueryId) ->
-	gen_server:call(SessionPid, {checkQuery, Expr, QueryId}).
-
-serverAdviceDone(SessionPid) ->
-	gen_server:cast(SessionPid, serverAdviceDone).
 
 %% ====================================================
 %% Internal API
@@ -92,33 +77,12 @@ handle_call(getQueryId, _, State) ->
 	Reply = "server." ++ integer_to_list(NewQueryId),
 	{reply, Reply, State#session{queryIdCount = NewQueryId}, ?this(timeout)};
 handle_call({queryDefine, Expr, QueryId}, _, State) ->
-	Reply = case dict:find(Expr, ?this(serverAdviceHash)) of
-		{ok, _} -> 
-			NewState = State,
-			false;
-		_ -> 
-			sendToOutputTimer(?this(outputTimer), waiting),
-			NewState = State#session{
-				openQueries = dict:store(QueryId, [], ?this(openQueries)),
-				serverAdviceHash = dict:store(Expr, QueryId, ?this(serverAdviceHash)),
-				clientState = waiting
-			},
-			true
-	end,
-	{reply, Reply, NewState, ?this(timeout)};
-handle_call({checkQuery, Expr, QueryId}, _, State) ->
-	OpenQueries = dict:store(QueryId, open, ?this(openQueries)),
-	{Reply, NewState} = case dict:find(Expr, ?this(serverAdviceHash)) of
-		{ok, ReferenceId} ->
-			sendToOutputTimer(?this(outputTimer), waiting),
-			sendUpdate(self(), {queryReference, QueryId, ReferenceId}),
-			{false, State#session{openQueries = OpenQueries, clientState = waiting}};
-		_ ->
-			sendToOutputTimer(?this(outputTimer), waiting),
-			ServerAdviceHash = dict:store(Expr, defined, ?this(serverAdviceHash)),
-			{true, State#session{openQueries = OpenQueries, serverAdviceHash = ServerAdviceHash, clientState = waiting}}
-	end,
-	{reply, Reply, NewState, ?this(timeout)}.
+	sendToOutputTimer(?this(outputTimer), waiting),
+	NewState = State#session{
+		openQueries = dict:store(QueryId, [], ?this(openQueries)),
+		clientState = waiting
+	},
+	{reply, true, NewState, ?this(timeout)}.
 
 
 
@@ -136,18 +100,6 @@ handle_cast({flush, To}, State) ->
 		CurrentState -> CurrentState
 	end,
 	{noreply, State#session{clientState = ClientState}, ?this(timeout)};
-handle_cast({queryDefine, ExprString, QueryId}, State) ->
-	References = dict:fetch(QueryId, ?this(openQueries)),
-	MsgQueue = addToQueue(wellFormedQueryDefine(ExprString, QueryId), ?this(msgQueue)),
-	{MsgQueueWithRefs, OpenQueries} = lists:foldr(fun(QueryIdToReference, {AccQueue, AccOpenQ}) ->
-		NewQueue = addToQueue(wellFormedQueryReference(QueryIdToReference, QueryId), AccQueue),
-		NewOpenQ = dict:erase(QueryIdToReference, AccOpenQ),
-		{NewQueue, NewOpenQ}
-	end, {MsgQueue, ?this(openQueries)}, References),
-	NewOpenQueries = dict:erase(QueryId, OpenQueries),
-	NewState = updateClientState(State#session{openQueries = NewOpenQueries}),	
-	NewerState = NewState#session{msgQueue = MsgQueueWithRefs},
-	{noreply, NewerState, ?this(timeout)};
 handle_cast({data, {QueryId, Action, Data}}, State) ->
 	MsgQueue = addToQueue(wellFormedUpdate(Data, QueryId, Action), ?this(msgQueue)),
 	case(?this(clientState)) of
@@ -161,18 +113,6 @@ handle_cast({done, QueryId}, State) ->
 	NewState = updateClientState(State#session{openQueries = OpenQueries}),
 	NewerState = NewState#session{msgQueue = MsgQueue},
 	{noreply, NewerState, ?this(timeout)};
-handle_cast({queryReference, QueryId, ReferenceId}, State) ->
-	NewerState = case dict:find(ReferenceId, ?this(openQueries)) of
-		{ok, List} ->
-			OpenQueries = dict:store(ReferenceId, [QueryId|List], ?this(openQueries)),
-			State#session{openQueries = OpenQueries};
-		_ ->
-			OpenQueries = dict:erase(QueryId, ?this(openQueries)),
-			NewState = updateClientState(State#session{openQueries = OpenQueries}),	
-			MsgQueue = addToQueue(wellFormedQueryReference(QueryId, ReferenceId), ?this(msgQueue)),
-			NewState#session{msgQueue = MsgQueue}
-	end,
-	{noreply, NewerState, ?this(timeout)};
 handle_cast({addCleanup, QueryId, CleanupFun }, State) ->
 	NewState = State#session{
 		openQueries = dict:store(QueryId, [], ?this(openQueries)),
@@ -183,19 +123,6 @@ handle_cast({actionResponse, ActionResponse}, State) ->
 	MsgQueue = addToQueue(ActionResponse, ?this(msgQueue)),
 	NewState = State#session{msgQueue = MsgQueue, clientState = waiting},
 	sendToOutputTimer(?this(outputTimer), sendNow),
-	{noreply, NewState, ?this(timeout)};
-handle_cast({registerTemplate, {Name, Template}}, State) ->
-	NewState = State#session{
-		templates = dict:store(Name, Template, ?this(templates))
-	},
-	{noreply, NewState, ?this(timeout)};
-handle_cast({serverAdviceRequest, ServerAdviceRequest}, State) ->
-	sendToOutputTimer(?this(outputTimer), waiting),
-	serverAdvice:processServerAdvice(ServerAdviceRequest, ?this(templates), self()),
-	{noreply, State#session{clientState = waiting, serverAdviceCount = ?this(serverAdviceCount) + 1}, ?this(timeout)};
-handle_cast(serverAdviceDone, State) ->
-	ServerAdviceCount = ?this(serverAdviceCount) - 1,
-	NewState = updateClientState(State#session{serverAdviceCount = ServerAdviceCount}),
 	{noreply, NewState, ?this(timeout)}.
 
 handle_info(timeout, State) ->
@@ -257,8 +184,8 @@ stream(To, MsgQueueToSend) ->
 %% ====================================================
 
 updateClientState(State) ->
-	ClientState = case {dict:size(?this(openQueries)), ?this(serverAdviceCount)} of
-		{0,0} -> 
+	ClientState = case dict:size(?this(openQueries)) of
+		0 -> 
 			sendToOutputTimer(?this(outputTimer), allDone),
 			allDone;
 		_ -> 
@@ -302,14 +229,4 @@ wellFormedUpdate(Data, QueryId, Action) ->
 	end,
 	{struct, [{"queryUpdate",
 		{struct, [{"queryId",list_to_binary(QueryId)},{"action", Action}|Data1]}
-	}]}.
-
-wellFormedQueryDefine(DExpr, QueryId) ->
-	{struct, [{"queryDefine",
-		{struct, [{"queryId",list_to_binary(QueryId)},{"expr", list_to_binary(DExpr)}]}
-	}]}.
-
-wellFormedQueryReference(QueryId, ReferenceId) ->
-	{struct, [{"queryReference",
-		{struct, [{"queryId",list_to_binary(QueryId)},{"referenceId", list_to_binary(ReferenceId)}]}
 	}]}.

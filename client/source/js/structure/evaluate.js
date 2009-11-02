@@ -144,7 +144,7 @@ function evaluate2(expr) {
 	
 	
 	
-	
+	console.log(expr);
 
 	
 	

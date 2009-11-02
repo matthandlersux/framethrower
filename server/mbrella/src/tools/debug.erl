@@ -594,3 +594,12 @@ G = primFuncs:gate(K, "larry"),
 cell:injectOutput(G, D, isEmpty),
 cell:injectOutput(G, D).
 
+
+%debug actions
+dActions() ->
+	action:performAction("makeTestClass", [ast:makeLiteral(10), ast:makeLiteral("lol")]),
+	action:performAction("clone", [parse:parse("object.1")]),
+
+	eval:eval("TestClass:str object.2"),
+	eval:eval("debug cell.3"),
+	ok.

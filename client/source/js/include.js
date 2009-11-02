@@ -37,9 +37,15 @@ var includes = (function () {
 			
 			"source/js/builtin/families.js",
 			"source/js/builtin/baseEnv.js",
+
+			"source/js/remote/remote2.js",
+			"source/js/remote/session.js",
+			
 			"source/js/builtin/builtin.js",
+			
 			"source/js/builtin/functions/syntax.js",
 			"source/js/builtin/functions/actions.js",
+			
 			"source/js/builtin/functions/null.js",
 			"source/js/builtin/functions/ord.js",
 			"source/js/builtin/functions/tuple.js",
@@ -50,10 +56,8 @@ var includes = (function () {
 			"source/js/builtin/exprs.js",
 			"source/js/builtin/classes.js",
 
-			"source/js/remote/remote.js",
-
 			"source/js/builtin/rootObjects.js",
-			"source/js/builtin/eventExtras.js",
+			"source/js/builtin/eventExtras.js"
 
 			// "source/js/templates/preparse.js", // might want to do this at compile time?
 		],
