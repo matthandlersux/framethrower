@@ -7,7 +7,7 @@
 -author('author <author@example.com>').
 -include ("../../mbrella/include/scaffold.hrl").
 
--export([start/1, stop/0, loop/2, processActionList/1, processActionList/2]).
+-export([start/1, stop/0, loop/2]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -define (pipelineBufferTime, 50).
