@@ -29,9 +29,9 @@ loop(Req, DocRoot) ->
     case Req:get(method) of
         Method when Method =:= 'GET'; Method =:= 'HEAD' ->
             case Path of
-				"newSession" ->
-					SessionId = session:new(),
-					spit(Req, "sessionId", SessionId);
+				% "newSession" ->
+				% 	SessionId = session:new(),
+				% 	spit(Req, "sessionId", SessionId);
 				"test" ->
 					% spit(Req, "test", list_to_binary(io_lib:format("~p", [catch erlang:error(test) ] )));
 					spit(Req, {struct, [{<<"test">>, value}]});
@@ -143,23 +143,25 @@ getFromStruct(StringKey, Struct) ->
 processQuery ( Query, SessionPid ) ->
 	Expr = getFromStruct("expr", Query),
 	QueryId = getFromStruct("queryId", Query),
-	Cell = eval:evaluate( parse:parse(Expr) ),
-	% cell:injectLinked - might be useful so that cell can remove funcs on session close
-	OnRemove = cell:inject(Cell, 
-		fun() ->
-			session:sendUpdate(SessionPid, {done, QueryId})
-		end,
-		fun(Val) ->
-			session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
-			fun() -> 
-				case Val of
-					{pair, Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
-					_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
-				end
-			end
-		end
-	),
-	session:addCleanup(SessionPid, QueryId, OnRemove).
+	session:connect(SessionPointer, parse:parse(Expr), QueryId).
+	% cell:injectOutput(CellPointer, cellPointer:session(SessionPid), sessionOutput, [QueryId])
+	% Cell = eval:evaluate( parse:parse(Expr) ),
+	% % cell:injectLinked - might be useful so that cell can remove funcs on session close
+	% OnRemove = cell:inject(Cell, 
+	% 	fun() ->
+	% 		session:sendUpdate(SessionPid, {done, QueryId})
+	% 	end,
+	% 	fun(Val) ->
+	% 		session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
+	% 		fun() -> 
+	% 			case Val of
+	% 				{pair, Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
+	% 				_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
+	% 			end
+	% 		end
+	% 	end
+	% ),
+	% session:addCleanup(SessionPid, QueryId, OnRemove).
 	
 processActionJson ( Action, SessionPid ) ->
 	ActionId = getFromStruct("actionId", Action),
