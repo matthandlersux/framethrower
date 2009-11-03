@@ -29,6 +29,9 @@ template() {
 	toTuple = list -> (head list, head (tail list)),
 	toList = tuple -> [fst tuple, snd tuple],
 	list = toList (swap (toTuple [1,2,3,4,5])),
+	templateTest = template(x)::Number {
+		plus 1 x
+	},
 	
 	<div>
 		<f:on mouseup>
@@ -40,7 +43,8 @@ template() {
 			set y a0,
 			debugNumber a0,
 			set y a0,
-			debugNumber a0
+			debugNumber a0,
+			debugNumber (templateTest 5)
 		</f:on>
 		
 		<div>{head list} {head test5} {f 5} {test3}</div>

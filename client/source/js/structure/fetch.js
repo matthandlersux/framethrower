@@ -38,6 +38,7 @@ function desugarFetch(template, env) {
 		
 		// repeatedly go through lets, desugaring fetched ones into env until stable:
 		// (since lets may refer to each other in unordered, weird ways)
+		// [TODO could do this more cleanly with self-referencing environment, as in closure.js:addLets()?]
 		var stable;
 		do {
 			stable = true; // assume nothing is going to happen
