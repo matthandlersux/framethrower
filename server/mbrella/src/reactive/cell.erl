@@ -427,8 +427,13 @@ runOutputs(State, NewElements) ->
 %% 
 
 sendTo(CellPointers, From, Elements) ->
-	Send = 	fun(CellPointer) ->
-				cell:sendElements(CellPointer, From, Elements)
+	Send = 	fun(Pointer) ->
+				case cellPointer:isCellPointer(Pointer) of
+					true ->
+						cell:sendElements(Pointer, From, Elements);
+					_ ->
+						session:sendElements(Pointer, From, Elements)
+				end
 			end,
 	lists:foreach(Send, CellPointers).
 
