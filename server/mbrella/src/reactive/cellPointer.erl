@@ -21,18 +21,18 @@
 
 create(Name, Pid) -> new(Name, Pid).
 new(Name, Pid) ->
-	{Name, Pid}.
+	{cellPointer, Name, Pid}.
 
-name({Name, _Pid}) ->
+name({cellPointer, Name, _Pid}) ->
 	Name.
 
-pid({_Name, Pid}) ->
+pid({cellPointer, _Name, Pid}) ->
 	Pid.
 	
 filterList(ListOfArguments) ->
-	lists:filter(fun({N, P}) -> (is_list(N) andalso is_pid(P)); (_) -> false end, ListOfArguments).
+	lists:filter(fun({cellPointer, N, P}) -> (is_list(N) andalso is_pid(P)); (_) -> false end, ListOfArguments).
 	
-isCellPointer({Name, Pid}) when is_list(Name) andalso is_pid(Pid) -> true;
+isCellPointer({cellPointer, _Name, _Pid}) -> true;
 isCellPointer(_) -> false.
 
 %% ====================================================
