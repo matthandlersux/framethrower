@@ -21,17 +21,23 @@
 -record (state, {
 	name,
 	queries = dict:new(),
-	queryId = 0,
-	lastMessageId = 0,
-	msgQueue
+	queue,
+	openPipe = closed,
+	lastMessageId = 1 % this is the last message as reported by the client
 }).
 
 %% ====================================================
 %% Notes
 %% ====================================================
 
-% session is a hybrid cell that dies if it doesnt hear messages from the client
-% TODO: figure out how to uninject outputs for a queryid
+% TODO: figure out how we are going to uninject outputs for a queryid, and when that happens
+
+%% ====================================================
+%% types
+%% ====================================================
+
+% Queue :: List (Tuple Number (List Struct))
+% Queries :: Dict
 
 %% ====================================================================
 %% External API
@@ -66,11 +72,11 @@ sendElements(SessionPointer, _From, Elements) ->
 %%		
 
 pipeline(SessionPointer, LastMessageId) ->
-	try gen_server:call(sessionPointer:pid(SessionPointer), {pipeline, LastMessageId}, 45000)
-	catch
-		Exit:Reason -> 
-			?colortrace({Exit,Reason}),
-			timeout;
+	gen_server:cast(sessionPointer:pid(SessionPointer), {pipeline, self(), LastMessageId}),
+	receive
+		JSON -> JSON
+	after 45000 ->
+		timeout
 	end.
 
 
@@ -99,6 +105,7 @@ init() ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
+
 handle_call(Msg, From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -110,6 +117,19 @@ handle_call(Msg, From, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
+
+handle_cast({pipeline, From, LastMessageId}, State) ->
+	Queue = getQueue(State),
+	case Queue of
+		[{LastMessageId, _ListOfStructs}|_RestOfQueue] ->
+			State1 = updateLastMessageId(State, LastMessageId),
+			{noreply, updateOpenPipe(State1, From)};
+		_ ->
+			{Queue1, JSONToSend} = processQueue(Queue, LastMessageId),
+			From ! JSONToSend,
+			State1 = closeOpenPipe(State)
+			{noreply, replaceQueue(State1, Queue1)}
+	end;
 handle_cast({connect, AST, QueryId}, State) ->
 	CellPointer = eval:evaluate( parse:parse(AST) ),
 	SessionPointer = sessionPointer(State),
@@ -124,7 +144,9 @@ handle_cast({sendElements, Elements}, State) ->
 							[queryUpdate(QueryId, Modifier, Value)|ListOfQueryUpdates]
 						end,
 	NewQueryUpdates = lists:foldr(UnpackElements, [], Elements),
-	{noreply, updateQueue(State, NewQueryUpdates)};
+	State1 = updateQueue(State, NewQueryUpdates),
+	
+	{noreply, State1};
 handle_cast(Msg, State) ->
     {noreply, State}.
 
@@ -175,6 +197,21 @@ queryUpdate(QueryId, Element) ->
 	{struct, [{"queryUpdate",
 		{struct, [{"queryId", list_to_binary(QueryId)},{"action", Modifier}|Fields]}	
 	}]}.
+	
+%% 
+%% processQueue :: Queue -> Number -> Tuple Queue (List Struct)
+%% 	
+%%		
+
+processQueue(Queue, LastMessageId) ->
+	HasBeenSent = 	fun({MessageId, _ListOfStructs}) when MessageId >= LastMessageId ->
+						true;
+					(_) ->
+						false
+					end,
+	Queue1 = lists:takewhile(HasBeenSent, Queue),
+	{_MessageIds, ListOfListOfStructs} = lists:unzip(Queue1),
+	{Queue1, lists:flatten(ListOfListOfStructs)}.
 
 %% ---------------------------------------------
 %% state functions
@@ -193,16 +230,58 @@ sessionPointer(#state{name = Name}) ->
 %% 		
 %%		
 
-updateQueries(#state{queries = Queries}, QueryId, CellPointer) ->
-	#state{queries = dict:store(QueryId, CellPointer, Queries)}.
+updateQueries(#state{queries = Queries} = State, QueryId, CellPointer) ->
+	State#state{queries = dict:store(QueryId, CellPointer, Queries)}.
 
 %% 
 %% updateQueue :: SessionState -> List Struct -> SessionState
 %% 		places well formed JSON elements into the queue to be sent to the client, returns new state
 %%		
 
-updateQueue(#state{queue = []}, ListOfStructs) ->
-	#state{queue = [{1, ListOfStructs}]};
+updateQueue(#state{queue = []} = State, ListOfStructs) ->
+	State#state{queue = [{1, ListOfStructs}]};
 updateQueue(#state{queue = [{LastMessageId, _ListOfOldStructs}|_RestOfQueue] = Queue}, ListOfStructs) ->
-	#state{queue = [{LastMessageId + 1, ListOfStructs}|Queue]}.
+	State#state{queue = [{LastMessageId + 1, ListOfStructs}|Queue]}.
+
+%% 
+%% getQueue :: SessionState -> Queue
+%% 		
+%%		
+
+getQueue(#state{queue = Queue}) ->
+	Queue.
+	
+%% 
+%% replaceQueue :: SessionState -> Queue -> SessionState
+%% 		
+%%		
+
+replaceQueue(State, Queue) ->
+	State#state{queue = Queue}.
+
+%% 
+%% updateOpenPipe :: SessionState -> Pid -> SessionState
+%% 		openpipe contains the pid of an open pipeline session
+%%		
+
+updateOpenPipe(State, Pid) ->
+	State#state{openPipe = Pid}.
+	
+%% 
+%% closeOpenPipe :: SessionState -> SessionState
+%% 		closes the openpipe session
+%%		
+
+closeOpenPipe(State) ->
+	State#state{openPipe = closed}.
+
+%% 
+%% updateLastMessageId :: SessionState -> Number -> SessionState
+%% 		
+%%		
+
+updateLastMessageId(State, LastMessageId) ->
+	State#state{lastMessageId = LastMessageId}.
+
+
 
