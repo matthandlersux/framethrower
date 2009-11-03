@@ -72,7 +72,7 @@ initJSON(SharedLet) ->
 	lists:map(fun(Let) ->
 		{LetName, LetStruct} = Let,
 		LetNameString = binary_to_list(LetName),
-		gen_server:call(?MODULE, {addAction, LetNameString, LetStruct})
+		gen_server:call(?MODULE, {addLet, LetNameString, LetStruct})
 	end, Lets),
 	ok.
 
@@ -81,6 +81,15 @@ initJSON(SharedLet) ->
 %%
 performAction(Name, Params) ->
 	gen_server:call(?MODULE, {performAction, Name, Params}).
+
+%%
+%% getSharedLets :: [{String, AST}]
+%%
+getSharedLets() ->
+	{Dict, _} = gen_server:call(?MODULE, getState),
+	lists:filter(fun({_Name, Value}) ->
+		not(ast:type(Value) =:= function)
+	end, dict:to_list(Dict)).
 
 getState() ->
 	gen_server:call(?MODULE, getState).
@@ -104,7 +113,7 @@ stop() ->
 %% --------------------------------------------------------------------
 init([]) ->
 	process_flag(trap_exit, true),
-	State = dict:new(),
+	State = {dict:new(), scope:makeScope()},
     {ok, State}.
 
 %% --------------------------------------------------------------------
@@ -117,12 +126,13 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({addAction, ActionName, ActionStruct}, _, State) ->
-	Closure = makeClosure(ActionStruct, scope:makeScope()),
-	NewState = dict:store(ActionName, Closure, State),
-    {reply, ok, NewState};
-handle_call({performAction, Name, Params}, _, State) ->
-	Closure = case dict:find(Name, State) of
+handle_call({addLet, LetName, LetStruct}, _, {Dict, Scope}) ->
+	EvaluatedLine = evaluateLine(LetStruct, Scope),
+	NewDict = dict:store(LetName, EvaluatedLine, Dict),
+	scope:addLet(LetName, EvaluatedLine, Scope),
+    {reply, ok, {NewDict, Scope}};
+handle_call({performAction, Name, Params}, _, {Dict, _Scope} = State) ->
+	Closure = case dict:find(Name, Dict) of
 		{ok, Found} -> Found;
 		error -> throw("Error finding template: " ++ Name)
 	end,
@@ -191,7 +201,7 @@ evaluateLine(Line, Scope) ->
 			makeClosure(Line, Scope);
 		"lineState" ->
 			Action = (struct:get_value(<<"action">>, Line)),
-			executeAction(evaluateLine(Action, Scope));
+			executeAction(eval:evaluate(evaluateLine(Action, Scope)));
 		"lineAction" ->
 			makeActionClosure(Line, Scope);
 		"actionCreate" ->

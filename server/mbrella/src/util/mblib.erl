@@ -150,40 +150,24 @@ curry(Func, Arity, Args) ->
 
 %% 
 %% exprElementToJson:: ExprElement -> JSON
-%%		ExprElement:: Number | Bool | String | ExprCell | Object (later will be adding any evaluated Expr)
+%%		ExprElement:: Number | Bool | Atom | String | CellPointer | ObjectPointer
 %% 
 
-
-exprElementToJson(X) when is_integer(X) -> X1 = integer_to_list(X), list_to_binary(X1);
-exprElementToJson(X) when is_float(X) -> X1 = float_to_list(X), list_to_binary(X1);
-exprElementToJson(X) when is_boolean(X) -> list_to_binary(atom_to_list(X));
-exprElementToJson(X) when is_atom(X) -> list_to_binary(atom_to_list(X));
-exprElementToJson(X) when is_list(X) ->
-	Fun = fun(XX) ->         
-		if XX < 0 -> false;  
-			XX > 255 -> false;
-			true -> true      
-		end                  
-	end,
-	case lists:all(Fun, X) of
-		true -> 
-			case X of
-				[$<|_] -> list_to_binary(X);
-				_ -> list_to_binary([$"] ++ X ++ [$"])
-			end;
-		false -> X
+exprElementToJson(X) when is_list(X) -> list_to_binary(X);
+exprElementToJson(Tuple) when is_tuple(Tuple) ->
+	case cellPointer:isCellPointer(Tuple) of
+		true ->
+			{struct, [{<<"kind">>, cell}, {<<"name">>, list_to_binary(cellPointer:name(Tuple))}]};
+		false -> case objects:isObjectPointer(Tuple) of 
+			true ->
+				{_, _, Props} = objectStore:lookup(objects:getName(Tuple)),
+				PropJson = lists:map(fun({PropName, PropValue}) ->
+					{list_to_binary(PropName), exprElementToJson(PropValue)}
+				end, Props),
+				{struct, [{<<"kind">>, object}, {<<"props">>, {struct, PropJson}}]};
+			false -> throw("error in mblib:exprElementToJson")
+		end
 	end;
-exprElementToJson(X) when is_pid(X) ->
-	#exprCell{name = Name} = cellStore:lookup(X),
-	list_to_binary(Name);
-exprElementToJson(CellPointer) when is_record(CellPointer, cellPointer) ->
-	list_to_binary(CellPointer#cellPointer.name);
-exprElementToJson(ObjectPointer) when is_record(ObjectPointer, objectPointer) ->
-	list_to_binary(ObjectPointer#objectPointer.name);	
-exprElementToJson(X) when is_record(X, exprCell) ->
-	list_to_binary(X#exprCell.name);
-exprElementToJson(X) when is_record(X, object) ->
-	list_to_binary(X#object.name);	
 exprElementToJson(X) -> X.
 
 
@@ -224,10 +208,14 @@ createActions(SharedLetStruct) ->
 startScript(Options) ->
 	spawn( fun() ->
 		sessionManager:start(),
-		memoize:start(),
-		cellStore:start(),
+
+		functionTable:create(),
+		mewpile:new(),
 		objects:start(),
-		mblib:bootJsonScript(),
+		action:start(),
+		cellStore:start(),
+		objectStore:start(),
+		bootJsonScript("pipeline/priv/bootJSON"),
 	
 		case lists:keysearch(serialize, 1, Options) of
 			{value, {_, undefined}} ->
@@ -241,7 +229,9 @@ startScript(Options) ->
 			{value, {_, USFileName}} ->
 				serialize:unserialize(USFileName)
 		end,
-		mblib:prepareStateScript(),
+		% TODO: get serialize working again
+		% mblib:prepareStateScript(),
+
 		case lists:keysearch(responsetime, 1, Options) of
 			{value, {_, true}} ->
 				responseTime:start();
@@ -254,8 +244,8 @@ startScript(Options) ->
 %% function to load bootJSON file and run it against the server on bootup to populate objects and cells etc...
 %%
 
-bootJsonScript() ->
-	{ok, JSONBinary} = file:read_file("priv/bootJSON"),
+bootJsonScript(BootJsonFile) ->
+	{ok, JSONBinary} = file:read_file(BootJsonFile),
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
 	ClassesStruct = struct:get_value(<<"classes">>, Struct),
 	ExprLibStruct = struct:get_value(<<"exprLib">>, Struct),
@@ -283,4 +273,4 @@ initializeDebugState() ->
 	action:start(),
 	cellStore:start(),
 	objectStore:start(),
-	bootJsonScript().
+	bootJsonScript("priv/bootJSON").

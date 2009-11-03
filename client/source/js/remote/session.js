@@ -66,10 +66,17 @@ function parseServerResponse(s, expectedType) {
 	var lit = parseLiteral(s);
 	if (lit !== undefined) {
 		return lit;
-	} else {
-		// TODO test this
-		return makeRemoteObject(s, expectedType);
 	}
+	var object = parseObject(s, expectedType);
+	if (object !== undefined) {
+		return object;
+	}
+	// TODO test this
+	return makeRemoteObject(s, expectedType);
+}
+
+function parseObject(s, expectedType) {
+	//TODO
 }
 
 
@@ -288,6 +295,15 @@ var session = (function () {
 		query: addQuery,
 		addActions: addActions,
 		flush: sendAllMessages,
-		debugCells: cells
+		debugCells: cells,
+		test: function() {
+			xhr(serverBaseUrl+"sharedLets", "", function (response) {
+				response = JSON.parse(response);
+				console.log("response", response);
+			},
+			function () {
+				console.log("Error");
+			});
+		}
 	};
 })();

@@ -1,8 +1,18 @@
 var cell;
 
 function initialize() {
-	// var exprString = "TestClass:num shared.test";
+	// var exprString = "returnUnit (plus 1 2)";
 	// var expr = parseExpr(exprString);
-	// cell = session.query(expr);
+	// var result = evaluate(expr);
+	// console.log("Result", result);
+	// cell = result;
+	
+	
+	// var cell5 = makeRemoteObject("cell.5", parseType("Unit TestObject"));
+	// var result = session.query(cell5);
 	// session.flush();
+	// cell = result;
+	
+	session.test();
+	
 }

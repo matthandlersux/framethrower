@@ -32,9 +32,6 @@ loop(Req, DocRoot) ->
 				"newSession" ->
 					SessionId = session:new(),
 					spit(Req, "sessionId", SessionId);
-				"test" ->
-					% spit(Req, "test", list_to_binary(io_lib:format("~p", [catch erlang:error(test) ] )));
-					spit(Req, {struct, [{<<"test">>, value}]});
 				"debug" ->
 					Data = Req:parse_qs(),
 					Name = proplists:get_value("name", Data),
@@ -69,6 +66,15 @@ loop(Req, DocRoot) ->
 				"newSession" ->
 					SessionId = sessionManager:newSession(),
 					spit(Req, "sessionId", SessionId);
+				"sharedLets" ->
+					SharedLets = action:getSharedLets(),
+					SharedLetsJson = {struct, lists:map(fun({Name, Value}) ->
+						{list_to_binary(Name), mblib:exprElementToJson(ast:toTerm(Value))}
+					end, SharedLets)},
+					spit(Req, SharedLetsJson);
+				"test" ->
+					% spit(Req, "test", list_to_binary(io_lib:format("~p", [catch erlang:error(test) ] )));
+					spit(Req, {struct, [{<<"object.1">>, mblib:exprElementToJson({objectPointer, "object.1"})}]});
 				"pipeline" ->
 					Data = Req:parse_post(),
 					Json = proplists:get_value("json", Data),
@@ -120,7 +126,8 @@ loop(Req, DocRoot) ->
 										{"reason", 
 											list_to_binary(io_lib:format("~p", [{Reason, erlang:get_stacktrace()}]))
 										}
-									] })
+									] }),
+									throw([ErrorType, Reason, erlang:get_stacktrace()])
 							end
 					end;
                 _ ->

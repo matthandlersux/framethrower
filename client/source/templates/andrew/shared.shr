@@ -11,4 +11,14 @@ clone = action (input::TestClass) {
 		set (TestClass:str TestObject) name
 	},
 	return TestObject
+},
+
+TestObject1 = state {makeTestClass 5 "hello"},
+TestObject2 = state {makeTestClass 8 "goodbye"},
+
+TestCell = state {
+	MySet <- create(Set TestClass),
+	add MySet TestObject1,
+	add MySet TestObject2,
+	return MySet
 }
