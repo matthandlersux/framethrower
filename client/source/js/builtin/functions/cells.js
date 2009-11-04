@@ -766,6 +766,18 @@
 					return outputCell;
 				}
 			},
+			values : { // TODO: add this to server
+				type : "Map a b -> Set b",
+				func : function (cell) {
+					var outputCell = makeCell();
+
+					cell.inject(outputCell, function (keyVal) {
+						return outputCell.addLine(keyVal.val);
+					});
+
+					return outputCell;
+				}
+			},
 			// ============================================================================
 			// Range/Sorted functions
 			// ============================================================================

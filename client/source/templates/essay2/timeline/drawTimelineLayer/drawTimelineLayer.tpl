@@ -1,4 +1,4 @@
-template (items::List (TimeRange, a), height::Number, padding::Number) {
+template (height::Number, padding::Number, items::List (TimeRange, a)) {
 	
 	// This is a magic constant. Experiment with it to get the best performance.
 	imagesPerDivision = 39,
@@ -60,12 +60,10 @@ template (items::List (TimeRange, a), height::Number, padding::Number) {
 				<div style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide duration movieDuration)}" style-position="absolute">
 					<f:on mouseover>
 						set mouseOveredTimeS (start, duration),
-						//set tmpXMLP myXMLP
 						//showTooltip event.mouseX event.mouseY 300 100 false myXMLP
 					</f:on>
 					<f:on mouseout>
 						unset mouseOveredTimeS,
-						//unset tmpXMLP
 						//hideTooltip
 					</f:on>
 					<f:on click>
