@@ -144,7 +144,6 @@ function evaluate2(expr) {
 	
 	
 	if (expr.kind === "exprApply") {
-		
 		expr = fullBetaReduceExpr(expr);
 		
 		if (expr.kind !== "exprApply") {
@@ -171,7 +170,6 @@ function evaluate2(expr) {
 				memoizeCell(resultExprStringified, ret);
 				return ret;
 			}
-			
 			var paramsLength = fp.params.length;
 			var expectedLength = fp.func.argsLength;
 			if (paramsLength < expectedLength) {
@@ -184,9 +182,7 @@ function evaluate2(expr) {
 				if (!fp.func.lazy) {
 					funArgs = map(funArgs, evaluate2);					
 				}
-				
 				var result = fp.func.fun.apply(null, funArgs);
-				
 				if (result.kind === "cell") {
 					// if result is a cell, memoize the result and annotate its type and expr
 				

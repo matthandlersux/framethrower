@@ -38,13 +38,16 @@ makeLambda(Left, Right) ->
 makeTypeVar(String) ->
 	{typeVar, String}.
 
-% makeTypeName :: Atom -> Type
-makeTypeName(Atom) ->
+
+
+% makeTypeName :: (Atom | String) -> Type
+makeTypeName(String) when is_list(String) ->
+	{typeName, list_to_atom(parseUtil:toCamel(String))};
+makeTypeName(Atom) when is_atom(Atom) ->
 	{typeName, Atom}.
 
 % getTypeName :: Type -> Atom
 getTypeName({typeName, Atom}) -> Atom.
-
 
 %% 
 %% parse:: String -> Type
@@ -109,7 +112,7 @@ extractTypeName(String) ->
 		_ -> false
 	end,
 	case IsTypeName of
-		true -> list_to_atom(string:to_lower(String));
+		true -> list_to_atom(parseUtil:toCamel(String));
 		false -> error
 	end.
 

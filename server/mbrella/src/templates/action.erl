@@ -364,7 +364,7 @@ convertJSONType({struct, [{<<"kind">>, <<"typeVar">>}, {<<"value">>, Value}]}) -
 	type:makeTypeVar(String);
 convertJSONType({struct, [{<<"kind">>, <<"typeName">>}, {<<"value">>, Value}]}) ->
 	String = binary_to_list(Value),
-	type:makeTypeName(list_to_atom(string:to_lower(String))).
+	type:makeTypeName(String).
 
 
 %% run MapFunction on anything with name FieldName in JSON

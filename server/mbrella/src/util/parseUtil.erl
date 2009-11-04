@@ -26,6 +26,11 @@ trimSpace(S) ->	S.
 %
 toTitle([H|T]) -> [string:to_upper(H)|T].
 
+%
+% toCamel::String -> String
+%
+toCamel([H|T]) -> [string:to_lower(H)|T].
+
 extractPrim([$\"|Rest]) ->
 	case cutOffRightQuote(Rest) of
 		{Ans, []} -> Ans;

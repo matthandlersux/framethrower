@@ -67,11 +67,10 @@ function parseServerResponse(s, expectedType) {
 			// TODO test this
 			return makeRemoteObject(s.name, expectedType);
 		} else if (s.kind === "object") {
-			var obj = makeObject(expectedType);
-			obj.prop = map(s.props, function(Value) {
+			var prop = map(s.props, function(Value) {
 				return parseServerResponse(Value);
 			});
-			return obj;
+			return objects.make(s.type, prop);
 		}
 	} else {
 		return s;
