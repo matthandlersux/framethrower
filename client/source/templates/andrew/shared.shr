@@ -1,5 +1,5 @@
 makeTestClass = action (num::Number, str::String) {
-	TestObject <- create(TestClass, {}),
+	TestObject <- create(TestClass, {staticString: str}),
 	set (TestClass:num TestObject) num,
 	set (TestClass:str TestObject) str,
 	return TestObject

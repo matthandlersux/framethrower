@@ -236,7 +236,7 @@ executeAction(ActionClosure) ->
 					false -> 
 						Prop = struct:get_value(<<"prop">>, Action),
 						Prop2 = lists:map(fun({PropName,PropValue}) ->
-							PropValue2 = parse:bind(PropValue, Scope),
+							PropValue2 = eval:evaluate(parse:bind(PropValue, Scope)),
 							{PropName, PropValue2}
 						end, Prop),
 						ast:makeObject(objects:create(Type, Prop2))

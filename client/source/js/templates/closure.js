@@ -78,7 +78,7 @@ function makeClosure(lineTemplate, env) {
 			forEach(lineTemplate.sharedLet, function(sharedLet, name) {
 				lineTemplate.let[name] = sharedLet;
 			});
-		} else {
+		} else if (lineTemplate.sharedLet !== undefined) {
 			//TODO
 		}
 		var envWithLets = addLets(lineTemplate.let, envWithParams)

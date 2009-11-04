@@ -1,9 +1,10 @@
 template () {
 	
-	theNum = TestClass:num anotherObject,
-	theNum2 = TestClass:num testObject,
+	// theNum = TestClass:num TestObject1,
+	staticString = TestClass:staticString TestObject1,
 	
 	<div>
-		Hello, theNum: {theNum} theNum2: {theNum2}
+		// Hello, theNum2: {theNum} 
+		staticString: {staticString}
 	</div>
 }

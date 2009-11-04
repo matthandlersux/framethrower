@@ -156,23 +156,24 @@ function typeAnalyze(line) {
 				forEach(line.params, function (param, i) {
 					scope[param] = makePlaceholder(typeArray[i]);
 				});
-				
 				var envWithParams = extendEnv(env, scope);
-				
-				if (line.sharedLet !== undefined) {
+				let = {};
+
+				//add shared lets to lets
+				if (line.sharedLet) {
 					forEach(line.sharedLet, function(sharedLet, name) {
 						line.let[name] = sharedLet;
 					});
 				}
-				
+
+				//add lets to env
 				var newEnv = addLets(line.let, envWithParams);
-				
-				let = {};
+
+				//force each let to evaluate
 				forEach(line.let, function (junk, name) {
 					let[name] = newEnv(name);
-					//console.log("did a let", name, unparseType(getType(let[name])));
 				});
-				
+
 				extra.let = let;
 				
 				// check that output matches the output type
