@@ -165,10 +165,10 @@ template () {
 				<div style-position="absolute" style-left="{timeToSpace segmentTime}" style-width="1" style-background="#000" style-height="100%"/>
 			</f:each>
 
-			<f:each moreMarks as markFraction>
-				markTime = scale 1 videoDuration markFraction,
-				<div style-position="absolute" style-left="{timeToSpace markTime}" style-width="1" style-background="#AAA" style-height="50%"/>
-			</f:each>
+			// <f:each moreMarks as markFraction>
+			// 	markTime = scale 1 videoDuration markFraction,
+			// 	<div style-position="absolute" style-left="{timeToSpace markTime}" style-width="1" style-background="#AAA" style-height="50%"/>
+			// </f:each>
 			
 			<div style-position="absolute" style-width="{timeToSpace (fetch loadedTimeS)}" style-top="80%" style-height="20%" style-background="#888"/>
 

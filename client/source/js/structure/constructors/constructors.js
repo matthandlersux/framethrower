@@ -147,6 +147,49 @@ function makeActionMethod(f) {
 	return makeInstruction(lineAction, emptyEnv);
 }
 
+
+// =====================================================================
+// AST constructors
+// apply, lambda
+// =====================================================================
+
+function makeApplyAST(left, right) {
+	return {
+		cons: "apply",
+		left: left,
+		right: right
+	};
+}
+
+function makeLambdaAST(left, right) {
+	return {
+		cons: "lambda",
+		left: left,
+		right: right
+	};
+}
+
+
+// =====================================================================
+// type constructors
+// typeVar, typeName, typeAapply, typeLambda
+// =====================================================================
+
+function makeTypeVar(name) {
+	return {kind: "typeVar", value: name};
+}
+function makeTypeName(name) {
+	return {kind: "typeName", value: name};
+}
+function makeTypeLambda(left, right) {
+	return {kind: "typeLambda", left: left, right: right};
+}
+function makeTypeApply(left, right) {
+	return {kind: "typeApply", left: left, right: right};
+}
+
+
+
 // =====================================================================
 // Lambda calculus constructs
 // exprVar, exprApply, exprLambda

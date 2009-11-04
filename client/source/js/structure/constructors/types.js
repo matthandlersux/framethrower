@@ -21,20 +21,6 @@ A Type is any one of the following:
 */
 
 
-
-
-// constructor functions
-function makeTypeName(name) {
-	return {kind: "typeName", value: name};
-}
-function makeTypeLambda(left, right) {
-	return {kind: "typeLambda", left: left, right: right};
-}
-function makeTypeApply(left, right) {
-	return {kind: "typeApply", left: left, right: right};
-}
-
-
 function parseType(s) {
 	/*
 	Takes in a string and returns a Type.
@@ -65,7 +51,7 @@ function parseType(s) {
 					typeVars[ast] = makeFreshTypeVar();
 				}
 				return typeVars[ast];*/
-				return {kind: "typeVar", value: ast};
+				return makeTypeVar(ast);
 			}
 		} else if (ast.cons === "apply") {
 			return makeTypeApply(helper(ast.left), helper(ast.right));
@@ -82,7 +68,7 @@ function parseType(s) {
 	}
 	function makeListType(elements) {
 		if(elements.length!==1) throw "Type parse error: list type not of form [a]";
-		return {cons: 'apply', left: "List", right: elements[0]};
+		return makeApplyAST("List", elements[0]);
 	}
 	
 	return helper(parseAndDesugar(makeTupleType, makeListType, s));
@@ -93,9 +79,9 @@ function unparseType(type) {
 		if (type.kind === "typeName" || type.kind === "typeVar") {
 			return type.value;
 		} else if (type.kind === "typeApply") {
-			return {cons: "apply", left: helper(type.left), right: helper(type.right)};
+			return makeApplyAST(helper(type.left), helper(type.right));
 		} else if (type.kind === "typeLambda") {
-			return {cons: "lambda", left: helper(type.left), right: helper(type.right)};
+			return makeLambdaAST(helper(type.left), helper(type.right));
 		}
 	}
 	return unparse(helper(type));
@@ -204,7 +190,7 @@ var actionType = makeTypeName("Action");
 
 var typeVarGen = makeGenerator("t");
 function makeFreshTypeVar() {
-	return {kind: "typeVar", value: typeVarGen()};
+	return makeTypeVar(typeVarGen());
 }
 
 
