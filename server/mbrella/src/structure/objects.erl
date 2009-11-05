@@ -68,6 +68,7 @@ create(ClassType, Props) ->
 	%return AST object
 	{objectPointer, InstanceName}.
 
+
 getState() ->
 	gen_server:call(?MODULE, getState).
 

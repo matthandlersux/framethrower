@@ -131,7 +131,10 @@ function compileFolder(folderPath, rebuild) {
 		} else if (ext === "shr") {
 			var includeLets = compileFile(folderPath + "/" + child, rebuild, true);
 			if (includeLets !== undefined) {
-				mergeIntoObject(sharedLets, includeLets);
+				if(includeLets.let !== undefined )
+					mergeIntoObject(sharedLets, includeLets.let);
+				if(includeLets.newtype !== undefined )
+					mergeIntoObject(newtypes, includeLets.newtype);
 			}
 		}
 	});

@@ -62,13 +62,18 @@ function xhr(url, post, callback, failCallback, timeout) {
 
 function parseServerResponse(s, expectedType) {
 	if (!s) return undefined;
-	if (typeOf(s) === "number") return s;
-	var lit = parseLiteral(s);
-	if (lit !== undefined) {
-		return lit;
+	if (typeOf(s) === "object") {
+		if (s.kind === "cell") {
+			// TODO test this
+			return makeRemoteObject(s.name, expectedType);
+		} else if (s.kind === "object") {
+			var prop = map(s.props, function(Value) {
+				return parseServerResponse(Value);
+			});
+			return objects.make(s.type, prop);
+		}
 	} else {
-		// TODO test this
-		return makeRemoteObject(s, expectedType);
+		return s;
 	}
 }
 
@@ -284,10 +289,33 @@ var session = (function () {
 		});
 	}
 	
+	function getSharedLets(callBack) {
+		xhr(serverBaseUrl+"sharedLets", "", function (response) {
+			response = JSON.parse(response);
+			var sharedLets = map(response, function(Value) {
+				return parseServerResponse(Value)
+			});
+			callBack(sharedLets);
+		},
+		function () {
+			console.log("Error getting Shared Lets");
+		});
+	}
+	
 	return {
 		query: addQuery,
 		addActions: addActions,
 		flush: sendAllMessages,
-		debugCells: cells
+		debugCells: cells,
+		getSharedLets: getSharedLets,
+		test: function() {
+			xhr(serverBaseUrl+"sharedLets", "", function (response) {
+				response = JSON.parse(response);
+				console.log("response", response);
+			},
+			function () {
+				console.log("Error");
+			});
+		}
 	};
 })();

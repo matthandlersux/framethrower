@@ -59,6 +59,11 @@ function getRemoteLevel(expr) {
 	}
 }
 
+
+function isServerOnly(remoteLevel) {
+	return (!remoteLevel.local && remoteLevel.server);
+}
+
 // remoteEquals checks if two remoteLevels are the same
 function remoteEquals(remoteLevel1, remoteLevel2) {
 	return ((remoteLevel1.local === remoteLevel2.local) && remoteLevel1.server === remoteLevel2.server);

@@ -16,7 +16,8 @@ var classesToMake = {
 	"TestClass": {
 		prop: {
 			"str": "Unit String",
-			"num": "Unit Number"
+			"num": "Unit Number",
+			"staticString": "String"
 		}
 	},
 	

@@ -143,13 +143,7 @@ function evaluate2(expr) {
 	//console.log("evaluating expression", unparseExpr(expr));
 	
 	
-	
-	console.log(expr);
-
-	
-	
 	if (expr.kind === "exprApply") {
-		
 		expr = fullBetaReduceExpr(expr);
 		
 		if (expr.kind !== "exprApply") {
@@ -158,8 +152,6 @@ function evaluate2(expr) {
 		
 		//getApplyParamsAndFunction(expr);
 		
-		//getRemote(expr); // just to tag the expr's .remote
-
 		// check if it's already memoized
 		var resultExprStringified = stringify(expr);
 		var cached = evalCache[resultExprStringified];
@@ -167,18 +159,17 @@ function evaluate2(expr) {
 			return cached;
 		}
 
-		// if (getRemote(expr) === 1) {
-		// 	//var ret = queryExpr(expr);
-		// 	var ret = session.query(expr);
-		// 	memoizeCell(resultExprStringified, ret);
-		// 	return ret;
-		// }
-		
-		
 
-		
 		var fp = getFuncAndParams(expr);
 		if (fp.func.kind === "fun") {
+			//check for server exprs
+			if (isServerOnly(getRemoteLevel(expr)) && isReactive(fp.func.type)) {
+				//var ret = queryExpr(expr);
+				//TODO: check if expr returns a Cell before querying server
+				var ret = session.query(expr);
+				memoizeCell(resultExprStringified, ret);
+				return ret;
+			}
 			var paramsLength = fp.params.length;
 			var expectedLength = fp.func.argsLength;
 			if (paramsLength < expectedLength) {
@@ -191,9 +182,7 @@ function evaluate2(expr) {
 				if (!fp.func.lazy) {
 					funArgs = map(funArgs, evaluate2);					
 				}
-				
 				var result = fp.func.fun.apply(null, funArgs);
-				
 				if (result.kind === "cell") {
 					// if result is a cell, memoize the result and annotate its type and expr
 				

@@ -3,10 +3,8 @@ function addFun(name, typeString, fun, numArguments, remoteLevel, lazy) {
 	This creates a new Fun object and binds it (by putting it in lookupTable)
 	*/
 	
-	if (!remoteLevel) remoteLevel = remote.shared;
-	
 	var type = parseType(typeString);
-	
+
 	var args = numArguments === undefined ? fun.length : numArguments;
 	
 	var exprFun = makeFun(type, fun, args, name, remoteLevel, lazy);
