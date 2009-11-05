@@ -106,17 +106,17 @@ loop(Req, DocRoot) ->
 					Data = Req:parse_post(),
 					Json = proplists:get_value("json", Data),
 					Struct = mochijson2:decode(Json),
-					SessionId = struct:get_value(<<"sessionId">>, Struct),
-					case sessionManager:lookup(SessionId) of
+					SessionName = struct:get_value(<<"sessionId">>, Struct),
+					case sessionManager:lookup(SessionName) of
 						session_closed ->
 							spit(Req, {struct, [{"sessionClosed", true}] });
-						SessionPid ->
+						SessionPointer ->
 							Messages = struct:get_value(<<"messages">>, Struct),
 							
 							ProcessMessage = fun( Message ) ->
 								case struct:get_first(Message) of
-									{<<"query">>, Query} -> processQuery(Query, SessionPid);
-									{<<"action">>, Action} -> processActionJson(Action, SessionPid)
+									{<<"query">>, Query} -> processQuery(Query, SessionPointer);
+									{<<"action">>, Action} -> processActionJson(Action, SessionPointer)
 								end
 							end,
 							
@@ -150,10 +150,11 @@ getFromStruct(StringKey, Struct) ->
 
 %% Internal API
 
-processQuery ( Query, SessionPointer ) ->
+processQuery( Query, SessionPointer ) ->
 	Expr = getFromStruct("expr", Query),
 	QueryId = getFromStruct("queryId", Query),
-	session:connect(SessionPointer, parse:parse(Expr), QueryId).
+	AST = parse:parse(Expr),
+	session:connect(SessionPointer, AST, QueryId).
 	% cell:injectOutput(CellPointer, cellPointer:session(SessionPid), sessionOutput, [QueryId])
 	% Cell = eval:evaluate( parse:parse(Expr) ),
 	% % cell:injectLinked - might be useful so that cell can remove funcs on session close
@@ -173,7 +174,7 @@ processQuery ( Query, SessionPointer ) ->
 	% ),
 	% session:addCleanup(SessionPid, QueryId, OnRemove).
 	
-processActionJson ( Action, SessionPid ) ->
+processActionJson ( Action, SessionPointer ) ->
 	ActionId = getFromStruct("actionId", Action),
 	Action = struct:get_value(<<"action">>, Action),
 
@@ -185,7 +186,7 @@ processActionJson ( Action, SessionPid ) ->
 	ActionResponse = {struct, [{"actionResponse", 
 		{struct, [{"actionId", list_to_binary(ActionId)}, {"returned", Returned}] }
 	}]},
-	session:sendUpdate(SessionPid, {actionResponse, ActionResponse}).
+	session:sendUpdate(SessionPointer, {actionResponse, ActionResponse}).
 
 
 %% 

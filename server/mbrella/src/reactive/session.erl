@@ -17,7 +17,8 @@
 	new/1,
 	connect/3,
 	sendElements/3,
-	pipeline/2
+	pipeline/2,
+	getState/1
 ]).
 
 %% gen_server callbacks
@@ -84,6 +85,15 @@ pipeline(SessionPointer, LastMessageId) ->
 		timeout
 	end.
 
+%% 
+%% getState :: SessionPointer -> SessionState
+%% 		
+%%		
+
+getState(SessionPointer) ->
+	gen_server:call(sessionPointer:pid(SessionPointer), getState).
+
+
 
 %% ====================================================================
 %% Server functions
@@ -111,6 +121,8 @@ init([Name]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 
+handle_call(getState, _From, State) ->
+	{reply, State, State};
 handle_call(Msg, From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -136,17 +148,18 @@ handle_cast({pipeline, From, LastMessageId}, State) ->
 			{noreply, replaceQueue(State1, Queue1)}
 	end;
 handle_cast({connect, AST, QueryId}, State) ->
-	CellPointer = eval:evaluate( parse:parse(AST) ),
+	CellPointer = eval:evaluate( AST ),
 	SessionPointer = sessionPointer(State),
 	cell:injectOutput(CellPointer, SessionPointer, sessionOutput, [QueryId]),
-	State1 = updateQueries(QueryId, CellPointer, State),
+	State1 = updateQueries(State, QueryId, CellPointer),
 	{noreply, State1};
 handle_cast({sendElements, Elements}, State) ->
+	?colortrace(Elements),
 	UnpackElements = 	fun(PackedElement, ListOfQueryUpdates) ->
 							QueryId = cellElements:mapKey(PackedElement),
 							Value = cellElements:mapValue(PackedElement),
 							Modifier = cellElements:modifier(PackedElement),
-							[queryUpdate(QueryId, Modifier, Value)|ListOfQueryUpdates]
+							[queryUpdate(QueryId, Modifier, cellElements:create(Modifier, Value))|ListOfQueryUpdates]
 						end,
 	NewQueryUpdates = lists:foldr(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),

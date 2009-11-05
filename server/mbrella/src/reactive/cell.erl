@@ -82,7 +82,13 @@ sendElements(CellPointer, Elements) ->
 	sendElements(CellPointer, cellPointer:dummy(), Elements).
 	
 sendElements(CellPointer, From, Elements) ->
-	gen_server:cast(cellPointer:pid(CellPointer), {sendElements, From, Elements}).
+	case cellPointer:isCellPointer(CellPointer) of
+		true ->
+			Pid = cellPointer:pid(CellPointer);
+		_ ->
+			Pid = sessionPointer:pid(CellPointer)
+	end,
+	gen_server:cast(Pid, {sendElements, From, Elements}).
 	
 %% 
 %% addValue :: CellPointer -> Value -> ok
@@ -329,7 +335,12 @@ handle_cast({sendElements, From, Elements}, State) ->
 	end;
 
 handle_cast({injectOutput, OutputTo, OutputFunction}, State) ->
-	link(cellPointer:pid(OutputTo)),
+	case cellPointer:isCellPointer(OutputTo) of
+		true ->
+			link(cellPointer:pid(OutputTo));
+		_ ->
+			link(sessionPointer:pid(OutputTo))
+	end,
 	NewState1 = cellState:injectOutput(State, OutputFunction, OutputTo),
 	Outputs = cellState:getOutputs(NewState1),
 	Output = outputs:getOutput(OutputFunction, Outputs),
@@ -428,14 +439,22 @@ runOutputs(State, NewElements) ->
 
 sendTo(CellPointers, From, Elements) ->
 	Send = 	fun(Pointer) ->
-				case cellPointer:isCellPointer(Pointer) of
-					true ->
-						cell:sendElements(Pointer, From, Elements);
-					_ ->
-						session:sendElements(Pointer, From, Elements)
-				end
+				sendToProcess(Pointer, From, Elements)
 			end,
 	lists:foreach(Send, CellPointers).
+
+%% 
+%% sendToProcess :: Pointer -> Pid -> List Element -> ok
+%% 		
+%%		
+
+sendToProcess(Pointer, From, Elements) ->
+	case cellPointer:isCellPointer(Pointer) of
+		true ->
+			cell:sendElements(Pointer, From, Elements);
+		_ ->
+			session:sendElements(Pointer, From, Elements)
+	end.
 
 %% 
 %% outputAllElements :: CellState -> Output -> CellPointer -> CellState
@@ -458,7 +477,7 @@ outputAllElements(CellState, Output, OutputTo) ->
 		true ->
 			ExtraElements = cellState:getDock(NewCellState, OutputTo),
 			NewCellState1 = cellState:emptyDock(NewCellState, OutputTo),
-			cell:sendElements(OutputTo, ThisCell, NewElements ++ ExtraElements),
+			sendToProcess(OutputTo, ThisCell, NewElements ++ ExtraElements),
 			NewCellState1
 	end.
 

@@ -103,14 +103,14 @@ createRemove(Value) ->
 %% 
 
 createAddMap(Key, Value) ->
-	createAdd({Key, Value}).
+	createAdd({map, Key, Value}).
 
 %% 
 %% createRemoveMap :: Value -> Value -> Element
 %% 
 
 createRemoveMap(Key, Value) ->
-	createRemove({Key, Value}).
+	createRemove({map, Key, Value}).
 %% 
 %% modifier :: Element -> Atom
 %% 
@@ -138,7 +138,7 @@ value({_, Value}) ->
 %%		
 
 isMap({_, {map, _, _}}) -> true;
-isMap({_, _}) -> false.
+isMap(_) -> false.
 
 %% 
 %% mapValue :: Element -> MapValue
