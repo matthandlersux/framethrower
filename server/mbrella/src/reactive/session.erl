@@ -139,13 +139,13 @@ handle_cast({pipeline, From, LastMessageId}, State) ->
 	Queue = getQueue(State),
 	case Queue of
 		[{LastMessageId, _ListOfStructs}|_RestOfQueue] ->
-			State1 = updateLastMessageId(State, LastMessageId),
-			{noreply, updateOpenPipe(State1, From)};
+			{noreply, updateOpenPipe(State, From)};
 		_ ->
-			{Queue1, JSONToSend} = processQueue(Queue, LastMessageId),
-			From ! {updates, JSONToSend, LastMessageId},
+			{[{NewLastMessageId, _ListOfStructs1}|_RestOfQueue1] = Queue1, JSONToSend} = processQueue(Queue, LastMessageId),
+			From ! {updates, JSONToSend, NewLastMessageId},
 			State1 = closeOpenPipe(State),
-			{noreply, replaceQueue(State1, Queue1)}
+			State2 = updateLastMessageId(State, NewLastMessageId),
+			{noreply, replaceQueue(State2, Queue1)}
 	end;
 handle_cast({connect, AST, QueryId}, State) ->
 	CellPointer = eval:evaluate( AST ),
