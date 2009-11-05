@@ -27,7 +27,7 @@
 -record (state, {
 	name,
 	queries = dict:new(),
-	queue,
+	queue = [],
 	openPipe = closed,
 	lastMessageId = 1 % this is the last message as reported by the client
 }).
@@ -168,6 +168,7 @@ handle_cast({sendElements, Elements}, State) ->
 		closed ->
 			{noreply, State1};
 		Pid ->
+			% if is_process_alive(Pid) ->
 			handle_cast({pipeline, Pid, getLastMessageId(State1)}, State1)
 	end;
 handle_cast(Msg, State) ->
@@ -263,7 +264,8 @@ updateQueries(#state{queries = Queries} = State, QueryId, CellPointer) ->
 
 updateQueue(#state{queue = []} = State, ListOfStructs) ->
 	State#state{queue = [{1, ListOfStructs}]};
-updateQueue(#state{queue = [{LastMessageId, _ListOfOldStructs}|_RestOfQueue] = Queue} = State, ListOfStructs) ->
+updateQueue(#state{queue = Queue} = State, ListOfStructs) ->
+	[{LastMessageId, _ListOfOldStructs}|_RestOfQueue] = Queue,
 	State#state{queue = [{LastMessageId + 1, ListOfStructs}|Queue]}.
 
 %% 
