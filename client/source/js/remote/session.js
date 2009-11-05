@@ -193,7 +193,7 @@ var session = (function () {
 			
 			// TODO if text is blank, treat this as session closed
 						
-			// try {
+			try {
 				var o = JSON.parse(text);
 				
 				if (o.sessionClosed) {
@@ -249,12 +249,11 @@ var session = (function () {
 					});
 					refreshScreen();
 				}
-				
-			// } catch (e) {
-			// 	console.log("had an error", e, cells, cells["1"]);
-			// }
+				setTimeout(startUpdater, 1);				
+			} catch (e) {
+			 	console.log("had an error", e, cells, cells["1"]);
+			}
 
-			setTimeout(startUpdater, 1);
 		});
 	}
 	
