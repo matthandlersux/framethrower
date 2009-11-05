@@ -208,8 +208,6 @@ var session = (function () {
 							var update = response.queryUpdate;
 							var cell = cells[update.queryId];
 						
-							console.log("Response", update, "Cell", cell);
-						
 							if (cell !== undefined) { // TODO do i need this?
 								var keyType; // TODO test this
 								var valueType;
@@ -247,9 +245,8 @@ var session = (function () {
 							}
 						}
 					});
-					refreshScreen();
 				}
-				setTimeout(startUpdater, 1);				
+				setTimeout(startUpdater, 1);
 			} catch (e) {
 			 	console.log("had an error", e, cells, cells["1"]);
 			}
