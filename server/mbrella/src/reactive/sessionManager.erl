@@ -34,10 +34,11 @@ start() ->
 %% @spec new() -> pid()
 
 newSession () ->
-	SessionId = sessionId(),	
-	Pid = session:new(),
-	gen_server:cast(?MODULE, {register, {SessionId, Pid}}),
-	SessionId.
+	SessionName = sessionId(),	
+	Pid = session:new(SessionName),
+	SessionPointer = sessionPointer:create(SessionName, Pid),
+	gen_server:cast(?MODULE, {register, SessionPointer}),
+	SessionPointer.
 
 %% 
 %% sessionId:: SessionName
@@ -50,8 +51,8 @@ sessionId () ->
 %% @doc Used to lookup a session's Pid from its name, this is a hack
 %% @spec lookup( string() ) -> pid()
 
-lookup (SessionId) ->
-	gen_server:call(?MODULE, {lookup, SessionId}).
+lookup (SessionName) ->
+	gen_server:call(?MODULE, {lookup, SessionName}).
 
 
 %% ====================================================================
@@ -61,43 +62,47 @@ lookup (SessionId) ->
 init([]) ->
 	process_flag(trap_exit, true),
 	State = ets:new(sessionManagerState, []),
-	ets:insert(State, {sessionIds, 1}),	
+	ets:insert(State, {sessionIds, 0}),	
     {ok, State}.
 
 handle_call(newId, _, State) ->
 	[{_, LastId}] = ets:lookup(State, sessionIds),
-	ets:insert(State, {sessionIds, LastId + 1}),
-	Reply = list_to_binary( "session." ++ integer_to_list(LastId + 1) ),
+	ThisId = LastId + 1,
+	ets:insert(State, {sessionIds, ThisId}),
+	Reply = list_to_binary( "session." ++ integer_to_list(ThisId) ),
 	{reply, Reply, State};
-handle_call({lookup, SessionId}, _, State) ->
-	Reply = case ets:lookup(State, SessionId) of
-		[{_, Pid}] ->
-			Pid;
+handle_call({lookup, SessionName}, _, State) ->
+	Reply = case ets:lookup(State, SessionName) of
+		[{_, SessionPointer}] ->
+			SessionPointer;
 		_ ->
 			session_closed
 	end,
 	{reply, Reply, State}.
 
-handle_cast({register, {Id, Pid}}, State) ->
+handle_cast({register, SessionPointer}, State) ->
+	SessionName = sessionPointer:name(SessionPointer),
+	Pid = sessionPointer:pid(SessionPointer),
 	link(Pid),
-	ets:insert(State, {Id, Pid}),
-	{noreply, State};
-handle_cast({unregister, {Id, Pid}}, State) ->
-	unlink(Pid),
-	ets:delete(State, Id),
+	ets:insert(State, {SessionName, SessionPointer}),
 	{noreply, State}.
+% handle_cast({unregister, {Id, Pid}}, State) ->
+% 	unlink(Pid),
+% 	ets:delete(State, Id),
+% 	{noreply, State}.
 
 % TODO:Verify This Works
-handle_info({'EXIT', From, _Reason}, State) ->
-	case ets:match(State, {'$1', From}) of
-		[[SessionId]] ->
-			% io:format("Exit signal from session: ~p~n~p~n~n", [SessionId, Reason]),
-			unlink(From),
-			ets:delete(State, SessionId);
-		[] ->
-			io:format("Exit signal from random: ~p~n~n", [From])
-	end,
-	{noreply, State};
+
+% handle_info({'EXIT', From, _Reason}, State) ->
+% 	case ets:match(State, {'$1', From}) of
+% 		[[SessionId]] ->
+% 			% io:format("Exit signal from session: ~p~n~p~n~n", [SessionId, Reason]),
+% 			unlink(From),
+% 			ets:delete(State, SessionId);
+% 		[] ->
+% 			io:format("Exit signal from random: ~p~n~n", [From])
+% 	end,
+% 	{noreply, State};
 handle_info(Any, State) ->
 	io:format("Session Manager Received: ~p~n~n", [Any]),
 	{noreply, State}.
