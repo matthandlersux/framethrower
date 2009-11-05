@@ -13,7 +13,12 @@
 
 %% --------------------------------------------------------------------
 %% External exports
--export([]).
+-export([
+	new/1,
+	connect/3,
+	sendElements/3,
+	pipeline/2
+]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -43,9 +48,9 @@
 %% External API
 %% ====================================================================
 
-new() -> start_link().
-start_link() ->
-	case gen_server:start_link(?MODULE, [], []) of
+new(Name) -> start_link(Name).
+start_link(Name) ->
+	case gen_server:start_link(?MODULE, [Name], []) of
 		{ok, Pid} -> Pid;
 		Else -> Else
 	end.
@@ -92,8 +97,8 @@ pipeline(SessionPointer, LastMessageId) ->
 %%          ignore               |
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
-init() ->
-    {ok, #state{}}.
+init([Name]) ->
+    {ok, #state{name = Name}}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_call/3
@@ -127,7 +132,7 @@ handle_cast({pipeline, From, LastMessageId}, State) ->
 		_ ->
 			{Queue1, JSONToSend} = processQueue(Queue, LastMessageId),
 			From ! JSONToSend,
-			State1 = closeOpenPipe(State)
+			State1 = closeOpenPipe(State),
 			{noreply, replaceQueue(State1, Queue1)}
 	end;
 handle_cast({connect, AST, QueryId}, State) ->
@@ -140,13 +145,18 @@ handle_cast({sendElements, Elements}, State) ->
 	UnpackElements = 	fun(PackedElement, ListOfQueryUpdates) ->
 							QueryId = cellElements:mapKey(PackedElement),
 							Value = cellElements:mapValue(PackedElement),
-							Modifer = cellElements:modifier(PackedElement),
+							Modifier = cellElements:modifier(PackedElement),
 							[queryUpdate(QueryId, Modifier, Value)|ListOfQueryUpdates]
 						end,
 	NewQueryUpdates = lists:foldr(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
 	
-	{noreply, State1};
+	case getOpenPipe(State) of
+		closed ->
+			{noreply, State1};
+		Pid ->
+			handle_cast({pipeline, Pid, getLastMessageId(State1)}, State1)
+	end;
 handle_cast(Msg, State) ->
     {noreply, State}.
 
@@ -185,7 +195,7 @@ code_change(OldVsn, State, Extra) ->
 %% 		used to convert an element to a queryupdate
 %%		
 
-queryUpdate(QueryId, Element) ->
+queryUpdate(QueryId, Modifier, Element) ->
 	Fields = 	case cellElements:isMap(Element) of
 					true ->
 						Key = cellElements:mapKey(Element),
@@ -240,7 +250,7 @@ updateQueries(#state{queries = Queries} = State, QueryId, CellPointer) ->
 
 updateQueue(#state{queue = []} = State, ListOfStructs) ->
 	State#state{queue = [{1, ListOfStructs}]};
-updateQueue(#state{queue = [{LastMessageId, _ListOfOldStructs}|_RestOfQueue] = Queue}, ListOfStructs) ->
+updateQueue(#state{queue = [{LastMessageId, _ListOfOldStructs}|_RestOfQueue] = Queue} = State, ListOfStructs) ->
 	State#state{queue = [{LastMessageId + 1, ListOfStructs}|Queue]}.
 
 %% 
@@ -283,5 +293,19 @@ closeOpenPipe(State) ->
 updateLastMessageId(State, LastMessageId) ->
 	State#state{lastMessageId = LastMessageId}.
 
+
+%% 
+%% getOpenPipe :: SessionState -> Pid | Atom
+%% 		
+%%		
+
+getOpenPipe(#state{openPipe = Pipe}) -> Pipe.
+
+%% 
+%% getLastMessageId :: SessionState -> Number
+%% 		
+%%		
+
+getLastMessageId(#state{lastMessageId = Number}) -> Number.
 
 
