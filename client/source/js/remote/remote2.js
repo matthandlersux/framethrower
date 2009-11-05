@@ -70,19 +70,13 @@ function remoteEquals(remoteLevel1, remoteLevel2) {
 }
 
 
-
-var remoteObjectsScope = {};
-var remoteObjectsEnv = extendEnv(base.env, remoteObjectsScope);
-
-function makeRemoteObject(name, type) {
+function makeRemoteCell(name, type) {
 	var o = {
-		kind: "remoteObject",
+		kind: "remoteCell",
 		remote: remote.serverOnly,
 		name: name,
 		type: type,
 		outsideScope: 0
 	};
-	
-	remoteObjectsScope[name] = o;
 	return o;
 }

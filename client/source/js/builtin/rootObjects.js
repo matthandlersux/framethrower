@@ -4,11 +4,7 @@
 	
 	function m(name, className, props) {
 		if (props === undefined) props = {};
-		if (name.indexOf("shared.") == 0) {
-			rootObjects[name] = makeRemoteObject(name, parseType(className));
-		} else {
-			rootObjects[name] = objects.make(className, props);
-		}
+		rootObjects[name] = objects.make(className, props);
 		base.add(name, rootObjects[name]);
 	}
 	

@@ -32,13 +32,16 @@ function makeFun(type, fun, argsLength, name, remoteLevel, lazy) {
 	};
 }
 
-function makeObject(type) {
+function makeObject(type, name, prop, remoteLevel) {
+	if (name === undefined) name = localIds();
+	if (remoteLevel === undefined) remoteLevel = remote.localOnly;
+	if (prop === undefined) prop = {};
 	return {
 		kind: "object",
 		type: type,
-		name: localIds(),
-		prop: {},
-		remote: remote.localOnly,
+		name: name,
+		prop: prop,
+		remote: remoteLevel,
 		outsideScope: 0
 	};
 }
