@@ -110,7 +110,10 @@ init(_) ->
 handle_call(debug, _, ETS) ->
 	TableList = ets:tab2list(ETS),
 	Unparse = fun({AST, {cell,{{CellName,_},_}}}) ->
-				io:format("\033[96m~p\033[0m~n~p~n~n", [parse:unparse(AST), CellName] )
+				try io:format("\033[96m~p\033[0m~n~p~n~n", [parse:unparse(AST), CellName] )
+				catch
+					_:_ -> io:format("\033[96m~p\033[0m~n~p~n~n", [AST, CellName] )
+				end
 			end,
 	{reply, lists:foreach(Unparse, TableList), ETS};
 handle_call({get, AST}, _From, ETS) ->
