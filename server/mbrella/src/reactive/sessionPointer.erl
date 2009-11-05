@@ -32,8 +32,8 @@ pid({sessionPointer, _Name, Pid}) ->
 filterList(ListOfArguments) ->
 	lists:filter(fun({sessionPointer, N, P}) -> (is_list(N) andalso is_pid(P)); (_) -> false end, ListOfArguments).
 	
-isCellPointer({sessionPointer, _Name, _Pid}) -> true;
-isCellPointer(_) -> false.
+isSessionPointer({sessionPointer, _Name, _Pid}) -> true;
+isSessionPointer(_) -> false.
 
 %% ====================================================
 %% Internal API
