@@ -63,7 +63,7 @@ function xhr(url, post, callback, failCallback, timeout) {
 // parseServerResponse :: JSON -> Type -> Expr (RemoteCell | Object | Literal)
 //
 function parseServerResponse(s, expectedType) {
-	if (!s) return undefined;
+	if (s === undefined) return undefined;
 	if (typeOf(s) === "object") {
 		if (s.kind === "cell") {
 			// TODO test this
@@ -77,6 +77,7 @@ function parseServerResponse(s, expectedType) {
 			return obj;
 		}
 	} else {
+		if (s === null) return nullObject;
 		return s;
 	}
 }
