@@ -73,13 +73,12 @@ function makeClosure(lineTemplate, env) {
 			scope[param] = args[i];
 		});
 		var envWithParams = extendEnv(env, scope);
-		
+
+		// add sharedLets to regular lets when running locally
 		if (LOCAL && lineTemplate.sharedLet !== undefined) {
 			forEach(lineTemplate.sharedLet, function(sharedLet, name) {
 				lineTemplate.let[name] = sharedLet;
 			});
-		} else if (lineTemplate.sharedLet !== undefined) {
-			//TODO
 		}
 		var envWithLets = addLets(lineTemplate.let, envWithParams)
 		

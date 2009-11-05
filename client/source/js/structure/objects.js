@@ -1,3 +1,4 @@
+//TODO: make the classDef representation use parsed types instead of type Strings
 
 var objects = (function () {
 
@@ -125,13 +126,18 @@ var objects = (function () {
 	
 	function accessProperty(object, propName) {
 		// This function assumes that all properties have different names, going up the inheritance hierarchy.
-		var ret;
-		forEach(object.as, function (incarnation) {
-			if (incarnation.prop[propName] !== undefined) {
-				ret = incarnation.prop[propName];
+		// also works for objects without 'as' (objects sent from server for now)
+		if (object.as) {
+			forEach(object.as, function (incarnation) {
+				if (incarnation.prop[propName] !== undefined) {
+					return incarnation.prop[propName];
+				}
+			});
+		} else {
+			if (object.prop[propName] !== undefined) {
+				return object.prop[propName];
 			}
-		});
-		return ret;
+		}
 	}
 	
 	function addPropertyAccessorFuns(className) {
@@ -155,6 +161,20 @@ var objects = (function () {
 			
 			ancestor = classDefs[ancestor].inherit;
 		}
+	}
+	
+	// ====================================================
+	// Property Types
+	// ====================================================
+
+	//
+	// getPropTypes :: String -> {String: Type}
+	//
+	function getPropTypes(className) {
+		var props = classDefs[className].prop;
+		return map(props, function(typeString) {
+			return parseType(typeString);
+		});
 	}
 	
 	// ====================================================
@@ -268,6 +288,7 @@ var objects = (function () {
 	return {
 		make: make,
 		addClass: addClass,
+		getPropTypes: getPropTypes,
 		inherits: inherits,
 		isClass: function (className) {
 			return !!classDefs[className];

@@ -59,18 +59,22 @@ function xhr(url, post, callback, failCallback, timeout) {
 	if (post.length > 300) console.log("sending big post, length: "+post.length);
 }
 
-
+//
+// parseServerResponse :: JSON -> Type -> Expr (RemoteCell | Object | Literal)
+//
 function parseServerResponse(s, expectedType) {
 	if (!s) return undefined;
 	if (typeOf(s) === "object") {
 		if (s.kind === "cell") {
 			// TODO test this
-			return makeRemoteObject(s.name, expectedType);
+			return makeRemoteCell(s.name, expectedType);
 		} else if (s.kind === "object") {
-			var prop = map(s.props, function(Value) {
-				return parseServerResponse(Value);
+			var propTypes = objects.getPropTypes(s.type);
+			var prop = map(s.props, function(value, name) {
+				return parseServerResponse(value, propTypes[name]);
 			});
-			return objects.make(s.type, prop);
+			var obj = makeObject(s.type, s.name, prop, remote.both);
+			return obj;
 		}
 	} else {
 		return s;
@@ -111,12 +115,15 @@ var session = (function () {
 	function addQuery(expr) {
 		var queryId = nextQueryId;
 		nextQueryId++;
-		
+
+		console.log("Expr", expr);
 		var type = getType(expr);
+		console.log("Type", type);
 		var cell = makeCC(type);
+		console.log("Made CC", type);
 		cell.remote = 1;
 		cell.name = stringify(expr);
-		
+		console.log("Name", cell.name);
 		cells[queryId] = cell;
 		
 		// if (unparseExpr(getExpr(expr)).indexOf("local.") !== -1) {
@@ -236,29 +243,6 @@ var session = (function () {
 							} else if (!actionResponse.success){
 								debug.log("Action failed, actionId:", actionResponse.actionId);
 							}
-						} else if (response.queryDefine) {
-							try {
-								var queryDefine = response.queryDefine;
-								var expr = parseExpr(queryDefine.expr, remoteObjectsEnv);
-								var type = getType(expr);
-								var cell = makeCC(type);
-								cell.expr = expr;
-							
-								cells[queryDefine.queryId] = cell;
-								//add this expr and cell to local hashtable
-								resultExprStringified = stringify(expr);
-								evalCache[resultExprStringified] = cell;
-							} catch (e) {
-								console.log(e, response.queryDefine);
-							}
-						} else if (response.queryReference) {
-							var queryReference = response.queryReference;
-							var refCell = cells[queryReference.queryId];
-							cells[queryReference.referenceId].inject(refCell,
-								function (val) {
-									return refCell.addLine(val);
-								}
-							);
 						}
 					});
 					refreshScreen();

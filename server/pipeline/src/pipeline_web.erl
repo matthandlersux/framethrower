@@ -151,22 +151,29 @@ processQuery ( Query, SessionPid ) ->
 	Expr = getFromStruct("expr", Query),
 	QueryId = getFromStruct("queryId", Query),
 	Cell = eval:evaluate( parse:parse(Expr) ),
+	
+	%Testing
+	session:sendUpdate(SessionPid, {data, {QueryId, add, "a dataItem"}}),
+
 	% cell:injectLinked - might be useful so that cell can remove funcs on session close
-	OnRemove = cell:inject(Cell, 
-		fun() ->
-			session:sendUpdate(SessionPid, {done, QueryId})
-		end,
-		fun(Val) ->
-			session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
-			fun() -> 
-				case Val of
-					{pair, Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
-					_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
-				end
-			end
-		end
-	),
-	session:addCleanup(SessionPid, QueryId, OnRemove).
+	
+	% OnRemove = cell:inject(Cell, 
+	% 	fun() ->
+	% 		session:sendUpdate(SessionPid, {done, QueryId})
+	% 	end,
+	% 	fun(Val) ->
+	% 		session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
+	% 		fun() -> 
+	% 			case Val of
+	% 				{pair, Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
+	% 				_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
+	% 			end
+	% 		end
+	% 	end
+	% ),
+	% session:addCleanup(SessionPid, QueryId, OnRemove)
+	
+	ok.
 	
 processActionJson ( Action, SessionPid ) ->
 	ActionId = getFromStruct("actionId", Action),

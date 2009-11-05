@@ -73,7 +73,7 @@ function map(list, f) {
 	else ret = {};
 	
 	forEach(list, function (val, key) {
-		ret[key] = f(val);
+		ret[key] = f(val, key);
 	});
 	return ret;
 }

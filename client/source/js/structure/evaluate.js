@@ -139,9 +139,7 @@ function evaluate2(expr) {
 	Another way of looking at it is getting rid of all top-level apply's in an Expr by doing the applications
 	Also, if the expr is a remote cell, this function will create/return the proper surrogate cell
 	*/
-	
-	//console.log("evaluating expression", unparseExpr(expr));
-	
+	// console.log("evaluating expression", unparseExpr(expr));
 	
 	if (expr.kind === "exprApply") {
 		expr = fullBetaReduceExpr(expr);
@@ -159,17 +157,8 @@ function evaluate2(expr) {
 			return cached;
 		}
 
-
 		var fp = getFuncAndParams(expr);
 		if (fp.func.kind === "fun") {
-			//check for server exprs
-			if (isServerOnly(getRemoteLevel(expr)) && isReactive(fp.func.type)) {
-				//var ret = queryExpr(expr);
-				//TODO: check if expr returns a Cell before querying server
-				var ret = session.query(expr);
-				memoizeCell(resultExprStringified, ret);
-				return ret;
-			}
 			var paramsLength = fp.params.length;
 			var expectedLength = fp.func.argsLength;
 			if (paramsLength < expectedLength) {
@@ -177,12 +166,22 @@ function evaluate2(expr) {
 				return expr;
 			} else {
 				funArgs = fp.params.splice(0, expectedLength);
+
+				var result;
 				
-				// evaluate each input if the fun is strict
-				if (!fp.func.lazy) {
-					funArgs = map(funArgs, evaluate2);					
+				//check for server exprs
+				if (isServerOnly(getRemoteLevel(expr)) && isReactive(fp.func.type)) {
+					//var ret = queryExpr(expr);
+					//TODO: check if expr returns a Cell before querying server
+					result = session.query(expr);
+				} else {
+					// evaluate each input if the fun is strict
+					if (!fp.func.lazy) {
+						funArgs = map(funArgs, evaluate2);					
+					}
+					result = fp.func.fun.apply(null, funArgs);	
 				}
-				var result = fp.func.fun.apply(null, funArgs);
+				
 				if (result.kind === "cell") {
 					// if result is a cell, memoize the result and annotate its type and expr
 				
@@ -206,6 +205,20 @@ function evaluate2(expr) {
 			console.error("trying to apply a non-Fun", expr);
 		}
 		
+	} else if (expr.kind === "remoteCell") {
+		console.log("Made it here");
+		// check if it's already memoized
+		var resultExprStringified = stringify(expr);
+		var cached = evalCache[resultExprStringified];
+		if (cached) {
+			return cached;
+		}
+		//query the server for the remote cell by name
+		console.log("About to query", expr.name);
+		var result = session.query(expr);
+		//memoize the result
+		memoizeCell(resultExprStringified, result);
+		return result;
 	} else {
 		return expr;
 	}
