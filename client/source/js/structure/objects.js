@@ -127,17 +127,20 @@ var objects = (function () {
 	function accessProperty(object, propName) {
 		// This function assumes that all properties have different names, going up the inheritance hierarchy.
 		// also works for objects without 'as' (objects sent from server for now)
+		var ret;
 		if (object.as) {
 			forEach(object.as, function (incarnation) {
 				if (incarnation.prop[propName] !== undefined) {
-					return incarnation.prop[propName];
+					//note: cannot return directly from here because we are wrapped in a forEach
+					ret = incarnation.prop[propName];
 				}
 			});
 		} else {
 			if (object.prop[propName] !== undefined) {
-				return object.prop[propName];
+				ret = object.prop[propName];
 			}
 		}
+		return ret;
 	}
 	
 	function addPropertyAccessorFuns(className) {

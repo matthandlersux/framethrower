@@ -113,11 +113,14 @@ var session = (function () {
 	}
 	
 	function addQuery(expr) {
+
 		var queryId = nextQueryId;
 		nextQueryId++;
 
 		var type = getType(expr);
+
 		var cell = makeCC(type);
+
 		cell.remote = 1;
 		cell.name = stringify(expr);
 

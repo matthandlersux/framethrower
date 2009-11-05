@@ -179,7 +179,7 @@ function evaluate2(expr) {
 					if (!fp.func.lazy) {
 						funArgs = map(funArgs, evaluate2);					
 					}
-					result = fp.func.fun.apply(null, funArgs);	
+					result = fp.func.fun.apply(null, funArgs);
 				}
 				
 				if (result.kind === "cell") {

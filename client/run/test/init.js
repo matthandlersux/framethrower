@@ -5,6 +5,15 @@
 
 //var compiledTemplate = makeClosure(mainTemplate, base.env);
 
+var cell;
+
+function send(string) {
+	cell = session.query(parseExpr(string));
+	cell.inject(function(val) {
+		console.log("Got val:", val, " for expr: ", string);
+	});
+}
+
 
 function initialize() {
 	//Get shared lets from server and insert them into the environment
