@@ -2,4 +2,4 @@
 
 S = sessionManager:newSession().
 C = eval:eval("unfoldMap split 23453").
-session:connect(S, parse:parse("unfoldMap split 23453"), 23).
+session:connect(S, parse:parse("unfoldMap split 23453"), "23").
