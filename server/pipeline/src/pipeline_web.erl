@@ -29,9 +29,12 @@ loop(Req, DocRoot) ->
     case Req:get(method) of
         Method when Method =:= 'GET'; Method =:= 'HEAD' ->
             case Path of
-				"newSession" ->
-					SessionId = session:new(),
-					spit(Req, "sessionId", SessionId);
+				% "newSession" ->
+				% 	SessionId = session:new(),
+				% 	spit(Req, "sessionId", SessionId);
+				"test" ->
+					% spit(Req, "test", list_to_binary(io_lib:format("~p", [catch erlang:error(test) ] )));
+					spit(Req, {struct, [{<<"test">>, value}]});
 				"debug" ->
 					Data = Req:parse_qs(),
 					Name = proplists:get_value("name", Data),
@@ -80,11 +83,11 @@ loop(Req, DocRoot) ->
 					Json = proplists:get_value("json", Data),
 					JsonOut = try mochijson2:decode(Json) of Struct ->
 						LastMessageId = struct:get_value(<<"lastMessageId">>, Struct),
-						SessionId = struct:get_value(<<"sessionId">>, Struct),
-						case sessionManager:lookup(SessionId) of
+						SessionName = struct:get_value(<<"sessionId">>, Struct),
+						case sessionManager:lookup(SessionName) of
 							sessionClosed -> {struct, [{"sessionClosed", true}] };
-							SessionPid ->
-								case session:pipeline(SessionPid, LastMessageId) of
+							SessionPointer ->
+								case session:pipeline(SessionPointer, LastMessageId) of
 									timeout ->
 										TimeoutError = {struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]},
 										{struct, [{"responses", [TimeoutError]},{"lastMessageId", LastMessageId}]};
@@ -147,16 +150,13 @@ getFromStruct(StringKey, Struct) ->
 
 %% Internal API
 
-processQuery ( Query, SessionPid ) ->
+processQuery ( Query, SessionPointer ) ->
 	Expr = getFromStruct("expr", Query),
 	QueryId = getFromStruct("queryId", Query),
-	Cell = eval:evaluate( parse:parse(Expr) ),
-	
-	%Testing
-	session:sendUpdate(SessionPid, {data, {QueryId, add, "a dataItem"}}),
-
-	% cell:injectLinked - might be useful so that cell can remove funcs on session close
-	
+	session:connect(SessionPointer, parse:parse(Expr), QueryId).
+	% cell:injectOutput(CellPointer, cellPointer:session(SessionPid), sessionOutput, [QueryId])
+	% Cell = eval:evaluate( parse:parse(Expr) ),
+	% % cell:injectLinked - might be useful so that cell can remove funcs on session close
 	% OnRemove = cell:inject(Cell, 
 	% 	fun() ->
 	% 		session:sendUpdate(SessionPid, {done, QueryId})
@@ -171,9 +171,7 @@ processQuery ( Query, SessionPid ) ->
 	% 		end
 	% 	end
 	% ),
-	% session:addCleanup(SessionPid, QueryId, OnRemove)
-	
-	ok.
+	% session:addCleanup(SessionPid, QueryId, OnRemove).
 	
 processActionJson ( Action, SessionPid ) ->
 	ActionId = getFromStruct("actionId", Action),

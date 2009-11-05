@@ -32,9 +32,11 @@ new () ->
 
 addCleanup (SessionPid, QueryId, Fun) ->
 	gen_server:cast(SessionPid, {addCleanup, QueryId, Fun}).
-	
-getQueryId (SessionPid) ->
-	gen_server:call(SessionPid, getQueryId).
+
+% for serveradvice
+% 	
+% getQueryId (SessionPid) ->
+% 	gen_server:call(SessionPid, getQueryId).
 
 sendUpdate (SessionPid, Message) ->
 	gen_server:cast(SessionPid, Message).

@@ -1,11 +1,11 @@
--module (cellPointer).
+-module (sessionPointer).
 -export([
 	create/2,
 	new/2,
 	name/1,
 	pid/1,
 	filterList/1,
-	isCellPointer/1
+	isSessionPointer/1
 ]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
@@ -21,19 +21,19 @@
 
 create(Name, Pid) -> new(Name, Pid).
 new(Name, Pid) ->
-	{cellPointer, Name, Pid}.
+	{sessionPointer, Name, Pid}.
 
-name({cellPointer, Name, _Pid}) ->
+name({sessionPointer, Name, _Pid}) ->
 	Name.
 
-pid({cellPointer, _Name, Pid}) ->
+pid({sessionPointer, _Name, Pid}) ->
 	Pid.
 	
 filterList(ListOfArguments) ->
-	lists:filter(fun({cellPointer, N, P}) -> (is_list(N) andalso is_pid(P)); (_) -> false end, ListOfArguments).
+	lists:filter(fun({sessionPointer, N, P}) -> (is_list(N) andalso is_pid(P)); (_) -> false end, ListOfArguments).
 	
-isCellPointer({cellPointer, _Name, _Pid}) -> true;
-isCellPointer(_) -> false.
+isSessionPointer({sessionPointer, _Name, _Pid}) -> true;
+isSessionPointer(_) -> false.
 
 %% ====================================================
 %% Internal API

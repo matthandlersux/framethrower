@@ -423,6 +423,19 @@ applyAndInject(AST, InjectToCellPointer, OutputName, OutputArgs, _State, _Elemen
 			cell:uninjectOutput(NewCellPointer, InjectToCellPointer, OutputArgs, OutputArgs)
 	end,
 	{undefined, []}.	
+
+
+%% 
+%% sessionOutput
+%% 		
+%%		
+
+sessionOutput() -> undefined.
+
+sessionOutput(QueryId, _State, _ElementsState, Element)	->
+	Modifer = cellElements:modifier(Element),
+	Value = cellElements:value(Element),
+	{undefined, [cellElements:createMap(Modifer, QueryId, Value)]}.
 			
 %% ====================================================
 %% Utilities
