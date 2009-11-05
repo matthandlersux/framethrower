@@ -74,11 +74,11 @@ loop(Req, DocRoot) ->
 					Json = proplists:get_value("json", Data),
 					JsonOut = try mochijson2:decode(Json) of Struct ->
 						LastMessageId = struct:get_value(<<"lastMessageId">>, Struct),
-						SessionId = struct:get_value(<<"sessionId">>, Struct),
-						case sessionManager:lookup(SessionId) of
+						SessionName = struct:get_value(<<"sessionId">>, Struct),
+						case sessionManager:lookup(SessionName) of
 							sessionClosed -> {struct, [{"sessionClosed", true}] };
-							SessionPid ->
-								case session:pipeline(SessionPid, LastMessageId) of
+							SessionPointer ->
+								case session:pipeline(SessionPointer, LastMessageId) of
 									timeout ->
 										TimeoutError = {struct, [{"errorType", timeout}, {"reason", no_response_for_pipeline}]},
 										{struct, [{"responses", [TimeoutError]},{"lastMessageId", LastMessageId}]};
@@ -140,7 +140,7 @@ getFromStruct(StringKey, Struct) ->
 
 %% Internal API
 
-processQuery ( Query, SessionPid ) ->
+processQuery ( Query, SessionPointer ) ->
 	Expr = getFromStruct("expr", Query),
 	QueryId = getFromStruct("queryId", Query),
 	session:connect(SessionPointer, parse:parse(Expr), QueryId).
