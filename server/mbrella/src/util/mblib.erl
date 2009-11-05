@@ -283,4 +283,5 @@ initializeDebugState() ->
 	action:start(),
 	cellStore:start(),
 	objectStore:start(),
+	sessionManager:start(),
 	bootJsonScript().
