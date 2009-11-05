@@ -143,7 +143,7 @@ handle_cast({pipeline, From, LastMessageId}, State) ->
 			{noreply, updateOpenPipe(State1, From)};
 		_ ->
 			{Queue1, JSONToSend} = processQueue(Queue, LastMessageId),
-			From ! JSONToSend,
+			From ! {updates, JSONToSend, LastMessageId},
 			State1 = closeOpenPipe(State),
 			{noreply, replaceQueue(State1, Queue1)}
 	end;
@@ -154,7 +154,6 @@ handle_cast({connect, AST, QueryId}, State) ->
 	State1 = updateQueries(State, QueryId, CellPointer),
 	{noreply, State1};
 handle_cast({sendElements, Elements}, State) ->
-	?colortrace(Elements),
 	UnpackElements = 	fun(PackedElement, ListOfQueryUpdates) ->
 							QueryId = cellElements:mapKey(PackedElement),
 							Value = cellElements:mapValue(PackedElement),
