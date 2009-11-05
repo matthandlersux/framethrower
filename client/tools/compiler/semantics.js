@@ -223,19 +223,56 @@ var semantics = function(){
 				fullletlist: node.fullletlist2,
 				debugRef: node.debugRef
 			};
-			otherwise = makeLineTemplate(wrappedElseblock);			
 		} else if (def(node.ifblock)) {
 			//if block else if sugar
 			wrappedElseblock = {
 				arglist: {},
 				fullletlist: {
-					list: {},
 					line: makeIfblock(node.ifblock)
 				},
 				debugRef: node.debugRef
 			};
 		}
+		else throw "no else clause!";
 		var otherwise = makeLineTemplate(wrappedElseblock);
+	
+		return {
+			kind: "case", 
+			test: parse(node.expr.exprcode),
+			lineTemplate: template,
+			otherwise: otherwise,
+			debugRef: node.debugRef
+		};
+	}
+	
+	function makeIfaction (node) {
+		var wrappedTemplate = {
+			arglist: makeAskeyval(node.askeyval),
+			fullactlist: node.fullactlist,
+			debugRef: node.debugRef
+		};
+		
+		var template = makeActionTemplate(wrappedTemplate);
+
+		var wrappedElseblock;
+		if (def(node.fullactlist2)) {
+			wrappedElseblock = {
+				arglist: {},
+				fullactlist: node.fullactlist2,
+				debugRef: node.debugRef
+			};
+		} else if (def(node.ifaction)) {
+			//if block else if sugar
+			wrappedElseblock = {
+				arglist: {},
+				fullactlist: {
+					action: makeIfaction(node.ifaction)
+				},
+				debugRef: node.debugRef
+			};
+		}
+		else throw "no else clause!";
+		var otherwise = makeActionTemplate(wrappedElseblock);
 	
 		return {
 			kind: "case", 
@@ -678,6 +715,8 @@ var semantics = function(){
 				return makeLineTemplate(value, true);
 			case 'ifblock':
 				return {kind: "lineXML", xml:makeIfblock(value), debugRef: value.debugRef};
+			case 'ifaction':
+				return makeIfaction(value);
 			case 'xml':
 				return {kind:'lineXML', xml:makeXml(value)};
 			case 'create':

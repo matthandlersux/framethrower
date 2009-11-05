@@ -33,10 +33,10 @@ template() {
 		plus 1 x
 	},
 	ifTest =
-	if y as _ {
-		<div>1</div>
+	if y as x {
+		<div>y={x}</div>
 	} else {
-		<div>2</div>
+		<div>y=empty</div>
 	},
 	mapTest = state{m<-create(Map Number Number), addEntry m 0 1, addEntry m 1 -1, return m},
 	
@@ -60,12 +60,25 @@ template() {
 				debugNumber k,
 				debug "val",
 				debugNumber v
+			},
+			action() {
+				debug "action in action"
+			},
+			if y as x {
+				debug "yes",
+				debugNumber x
+			} else {
+				debug "no"
 			}
 		</f:on>
 		
 		<f:call>
 			ifTest
 		</f:call>
+		
+		<f:each mapTest as k,v>
+			<div>{k} {v}</div>
+		</f:each>
 		
 		<div>{head list} {head test5} {f 5} {test3} {ifTest}</div>
 		

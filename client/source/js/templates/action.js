@@ -67,6 +67,23 @@ function executeAction(instruction) {
 				});
 				injectedFunc.unInject();
 			}
+		} else if (action.kind === "case") {
+			var template = makeClosure(action.lineTemplate, env),
+				otherwise = makeClosure(action.otherwise, env);
+			var cell = evalExpr(action.test);
+			var done = false;
+			var injectedFunc = cell.injectDependency(function () {
+				if (!done) {
+					done = true;
+					var action;
+					if(cell.getState().length>0)
+						action = evaluate( makeApply(template, cell.getState()[0]) );
+					else
+						action = otherwise;
+					output = executeAction(action);
+				}
+			});
+			injectedFunc.unInject();
 		} else if (action.kind === "actionMethod") {
 			// we're dealing with: {kind: "actionMethod", f: function}
 			output = action.f();
