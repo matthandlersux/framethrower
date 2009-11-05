@@ -32,6 +32,13 @@ template() {
 	templateTest = template(x)::Number {
 		plus 1 x
 	},
+	ifTest =
+	if y as _ {
+		<div>1</div>
+	} else {
+		<div>2</div>
+	},
+	mapTest = state{m<-create(Map Number Number), addEntry m 0 1, addEntry m 1 -1, return m},
 	
 	<div>
 		<f:on mouseup>
@@ -44,10 +51,23 @@ template() {
 			debugNumber a0,
 			set y a0,
 			debugNumber a0,
-			debugNumber (templateTest 5)
+			debugNumber (templateTest 5),
+			extract test5 as s {
+				debug s
+			},
+			extract mapTest as k,v {
+				debug "key",
+				debugNumber k,
+				debug "val",
+				debugNumber v
+			}
 		</f:on>
 		
-		<div>{head list} {head test5} {f 5} {test3}</div>
+		<f:call>
+			ifTest
+		</f:call>
+		
+		<div>{head list} {head test5} {f 5} {test3} {ifTest}</div>
 		
 		<f:call>test1 (test a)</f:call>
 	</div>
