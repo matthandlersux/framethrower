@@ -10,6 +10,8 @@
 -export([start/1, stop/0, loop/2]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
+-define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
+
 -define (pipelineBufferTime, 50).
 
 %% External API
@@ -93,7 +95,9 @@ loop(Req, DocRoot) ->
 										{struct, [{"responses", [TimeoutError]},{"lastMessageId", LastMessageId}]};
 									{updates, Updates, LastMessageId2} ->
 										{struct, [{"responses", Updates},{"lastMessageId", LastMessageId2}]};
-									OtherJson -> OtherJson
+									OtherJson -> 
+										?colortrace(wrong_format),
+										OtherJson
 								end
 						end
 					catch _:_ -> 
