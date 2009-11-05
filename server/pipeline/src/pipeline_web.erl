@@ -67,8 +67,8 @@ loop(Req, DocRoot) ->
         'POST' ->
             case Path of
 				"newSession" ->
-					SessionId = sessionManager:newSession(),
-					spit(Req, "sessionId", SessionId);
+					SessionPointer = sessionManager:newSession(),
+					spit(Req, "sessionId", sessionPointer:name(SessionPointer));
 				"sharedLets" ->
 					SharedLets = action:getSharedLets(),
 					SharedLetsJson = {struct, lists:map(fun({Name, Value}) ->

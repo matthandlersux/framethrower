@@ -9,7 +9,8 @@ var cell;
 
 function send(string) {
 	cell = session.query(parseExpr(string));
-	cell.inject(function(val) {
+	session.flush();
+	cell.inject(function() {}, function(val) {
 		console.log("Got val:", val, " for expr: ", string);
 	});
 }
@@ -17,15 +18,15 @@ function send(string) {
 
 function initialize() {
 	//Get shared lets from server and insert them into the environment
-	session.getSharedLets(function (sharedLets) {
-		var sharedEnv = extendEnv(base.env, sharedLets);
-
-		var compiledTemplate = evaluate(makeClosure(mainTemplate, sharedEnv));
-
-		var node = xmlToDOM(compiledTemplate.xml, compiledTemplate.env);
-
-		document.body.appendChild(node.node);
-
-		document.body.focus();		
-	});
+	// session.getSharedLets(function (sharedLets) {
+	// 	var sharedEnv = extendEnv(base.env, sharedLets);
+	// 
+	// 	var compiledTemplate = evaluate(makeClosure(mainTemplate, sharedEnv));
+	// 
+	// 	var node = xmlToDOM(compiledTemplate.xml, compiledTemplate.env);
+	// 
+	// 	document.body.appendChild(node.node);
+	// 
+	// 	document.body.focus();		
+	// });
 }
