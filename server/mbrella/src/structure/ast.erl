@@ -445,8 +445,8 @@ toTerm([]) ->
 	[];
 toTerm([H|T]) ->
 	[toTerm(H)|toTerm(T)];
-toTerm({cell, {CellPointer, _BottomExpr}}) ->
-	CellPointer;
+toTerm({cell, {{Name, Pid}, _BottomExpr}}) ->
+	cellPointer:create(Name, Pid);
 toTerm({object, Name}) ->
 	{objectPointer, Name};
 toTerm({function, _} = Function) ->
