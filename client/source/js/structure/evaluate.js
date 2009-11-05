@@ -206,7 +206,6 @@ function evaluate2(expr) {
 		}
 		
 	} else if (expr.kind === "remoteCell") {
-		console.log("Made it here");
 		// check if it's already memoized
 		var resultExprStringified = stringify(expr);
 		var cached = evalCache[resultExprStringified];
@@ -214,7 +213,6 @@ function evaluate2(expr) {
 			return cached;
 		}
 		//query the server for the remote cell by name
-		console.log("About to query", expr.name);
 		var result = session.query(expr);
 		//memoize the result
 		memoizeCell(resultExprStringified, result);

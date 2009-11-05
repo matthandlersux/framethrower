@@ -116,14 +116,11 @@ var session = (function () {
 		var queryId = nextQueryId;
 		nextQueryId++;
 
-		console.log("Expr", expr);
 		var type = getType(expr);
-		console.log("Type", type);
 		var cell = makeCC(type);
-		console.log("Made CC", type);
 		cell.remote = 1;
 		cell.name = stringify(expr);
-		console.log("Name", cell.name);
+
 		cells[queryId] = cell;
 		
 		// if (unparseExpr(getExpr(expr)).indexOf("local.") !== -1) {
