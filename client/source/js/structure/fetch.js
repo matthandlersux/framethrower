@@ -38,6 +38,7 @@ function desugarFetch(template, env) {
 		
 		// repeatedly go through lets, desugaring fetched ones into env until stable:
 		// (since lets may refer to each other in unordered, weird ways)
+		// [TODO could do this more cleanly with self-referencing environment, as in closure.js:addLets()?]
 		var stable;
 		do {
 			stable = true; // assume nothing is going to happen
@@ -238,7 +239,7 @@ function unfetch(ast) {
 		vals = [];
 	ast = collapseFetches(ast, vars, vals);
 	ast = makeLambdasAST(ast, vars);
-	ast = {cons: "apply", left: "mapUnit"+vals.length, right: ast};
+	ast = makeApplyAST("mapUnit"+vals.length, ast);
 	ast = makeAppliesAST(ast, vals);
 	
 	if(vars.length===0)
@@ -258,7 +259,10 @@ function desugarUnfetch(ast) {
 		r = desugarUnfetch(ast.right);
 	if(l===ast.left && r===ast.right) // nothing changed
 		return ast;
-	return {cons: ast.cons, left: l, right: r};
+	if(ast.cons==="apply")
+		return makeApplyAST(l, r);
+	if(ast.cons==="lambda")
+		return makeLambdaAST(l, r);
 }
 
 /*
@@ -285,5 +289,8 @@ function collapseFetches(ast, vars, vals) {
 		r = collapseFetches(ast.right, vars, vals);
 	if(l===ast.left && r===ast.right) // nothing changed
 		return ast;
-	return {cons: ast.cons, left: l, right: r};
+	if(ast.cons==="apply")
+		return makeApplyAST(l, r);
+	if(ast.cons==="lambda")
+		return makeLambdaAST(l, r);
 }

@@ -36,7 +36,7 @@ function executeAction(instruction) {
 			
 			var closure = makeClosure(action.action, env);
 			var inner;
-			var isMap = !!closure.type.left.left;
+			var isMap = action.action.params.length==2;
 			if (isMap) {
 				inner = function (o) {
 					return evaluate(makeApply(makeApply(closure, o.key), o.val));
@@ -52,7 +52,7 @@ function executeAction(instruction) {
 			// note that output will be the result of the last action:
 			if (select.kind === "list") {
 				forEach(select.asArray, function (element) {
-					output = executeAction(inner(element));
+					executeAction(inner(element));
 				});
 			} else {
 				var done = false;
@@ -61,14 +61,31 @@ function executeAction(instruction) {
 					if (!done) {
 						done = true;
 						forEach(cell.getState(), function (element) {
-							output = executeAction(inner(element));
+							executeAction(inner(element));
 						});
 					}
 				});
 				injectedFunc.unInject();
 			}
-		} else if (action.kind === "actionJavascript") {
-			// we're dealing with: {kind: "actionJavascript", f: function}
+		} else if (action.kind === "case") {
+			var template = makeClosure(action.lineTemplate, env),
+				otherwise = makeClosure(action.otherwise, env);
+			var cell = evalExpr(action.test);
+			var done = false;
+			var injectedFunc = cell.injectDependency(function () {
+				if (!done) {
+					done = true;
+					var action;
+					if(cell.getState().length>0)
+						action = evaluate( makeApply(template, cell.getState()[0]) );
+					else
+						action = otherwise;
+					output = executeAction(action);
+				}
+			});
+			injectedFunc.unInject();
+		} else if (action.kind === "actionMethod") {
+			// we're dealing with: {kind: "actionMethod", f: function}
 			output = action.f();
 		} else {
 			// we're dealing with a LINE

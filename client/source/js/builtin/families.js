@@ -20,6 +20,7 @@ var mapUnitEnv = function (s) {
 	if(!mapUnitMatch)
 		return undefined;
 		
+	// mapUnitN :: (t1 -> ... -> tN) -> Unit t1 -> ... -> Unit tN
 	var n = parseInt(mapUnitMatch[1], 10);
 	var fType = "t0", mapType = "Unit t0";
 	for(var i=1; i<=n; i++) {
@@ -38,6 +39,7 @@ var makeTupleEnv = function (s) {
 	if(!makeTupleMatch)
 		return undefined;
 
+	// makeTupleN :: t1 -> ... -> tN -> TupleN t1 ... tN
 	var n = parseInt(makeTupleMatch[1], 10);
 	var paramsType = "t1", tupleType = "Tuple"+n+" t1";
 	for(var i=2; i<=n; i++) {
@@ -56,6 +58,7 @@ var tupleGetEnv = function (s) {
 	if(!tupleGetMatch)
 		return undefined;
 
+	// tupleNgetI :: TupleN t1 ... tN -> tI
 	var n = parseInt(tupleGetMatch[1], 10),
 		i = parseInt(tupleGetMatch[2], 10);
 	var tupleType = "Tuple"+n;

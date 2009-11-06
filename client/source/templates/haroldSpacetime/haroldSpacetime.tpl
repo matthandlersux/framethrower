@@ -39,35 +39,29 @@ template () {
 		var k = Math.round(255*x);
 		return "rgb("+k+","+k+","+k+")";
 	},
+	range = function(a::Number, b::Number, d::Number)::[Number] {
+		var l = [];
+		for(var x=a; x<b; x+=d)
+			l.push(x);
+		return makeList(l);
+	},
 	
 // ** JS timer utils **
-	repeat = function(a::Action Void, dt::Number)::Action JSON {
-		return makeActionJavascript(function() {
-			return setInterval(function() {
-				executeAction(a);
-			}, dt*1000);
-		});
+	repeat = jsaction(a::Action Void, dt::Number)::JSON {
+		return setInterval(function() { executeAction(a); }, dt*1000);
 	},
-	cancelRepeat = function(repeatID::JSON)::Action Void {
-		return makeActionJavascript(function() {
-			clearInterval(repeatID);
-		});
+	cancelRepeat = jsaction(repeatID::JSON)::Void {
+		clearInterval(repeatID);
 	},
-	delay = function(a::Action Void, dt::Number)::Action JSON {
-		return makeActionJavascript(function() {
-			return setTimeout(function() {
-				executeAction(a);
-			}, dt*1000);
-		});
+	delay = jsaction(a::Action Void, dt::Number)::JSON {
+		return setTimeout(function() { executeAction(a); }, dt*1000);
 	},
-	cancelDelay = function(delayID::JSON)::Action Void {
-		return makeActionJavascript(function() {
-			clearTimeout(delayID);
-		});
+	cancelDelay = jsaction(delayID::JSON)::Void {
+		clearTimeout(delayID);
 	},
 
 // ** wind-up clock **
-	clockDelta = 0.03,
+	clockDelta = 0.1,
 	clockLife = 1,
 	clockUntilS = state(Unit Number, 0),
 	clockUntil = fetch clockUntilS,
@@ -131,15 +125,21 @@ template () {
 	motionLife = 0.1,
 	// time at which user is 'idle':
 	idleClockTime = plus motionClockTime motionLife,
-	// focusTime = binterpolate idleClockTime clockUntil (fetch motionFocusTimeS) (fetch targetTimeS) clockTime,
-	focusTime = fetch targetTimeS,
+	focusTime = binterpolate idleClockTime clockUntil (fetch motionFocusTimeS) (fetch targetTimeS) clockTime,
+	// focusTime = fetch targetTimeS,
  	zoomLevel0 = binterpolate idleClockTime clockUntil (fetch motionZoomLevelS) (fetch targetZoomLevelS) clockTime,
 	zoomLevel = max 1 zoomLevel0,
 	focusFraction = secondsToFraction focusTime,
 	spaceToTime = x -> fractionToSeconds (sigmoid focusFraction zoomLevel (pixelsToFraction x)),
 	timeToSpace = t -> fractionToPixels (sogmiod focusFraction zoomLevel (secondsToFraction t)),
 
-	scrubberSegments = state(Set Number),
+	scrubberSegments = range 0.1 1 0.1,
+	moreMarks = function()::[Number] {
+		var l = [];
+		for(var i=0; i<50; i++)
+			l.push(Math.random());
+		return makeList(l);
+	},
 	
 	<f:wrapper>
 		<div>{motionClockTimeS} {clockTimeS} {clockUntilS}</div>
@@ -149,42 +149,32 @@ template () {
 		<f:call>quicktime videoWidth videoHeight videoURL targetTimeS loadedTimeS</f:call>
 		
 		<div style-position="absolute" style-width="{videoWidth}" style-height="50" style-background="#444">
-			<f:on init>
-				// add scrubberSegments 0,
-				add scrubberSegments 0.1,
-				add scrubberSegments 0.2,
-				add scrubberSegments 0.3,
-				add scrubberSegments 0.4,
-				add scrubberSegments 0.5,
-				add scrubberSegments 0.6,
-				add scrubberSegments 0.7,
-				add scrubberSegments 0.8,
-				add scrubberSegments 0.9
-			</f:on>
-			
 			<f:on mousemove>
 				// compute target time based on current spaceToTime, before it changes:
-				extract unfetch (spaceToTime event.offsetX) as newTargetTime {
-					set motionFocusTimeS focusTime,
-					set motionZoomLevelS (quotient zoomLevel 1.1),
-					// we change motionClockTime and targetTime last since they affect focusTime and zoomLevel:
-					set motionClockTimeS clockTime,
-					set targetTimeS newTargetTime
-				},
+				newTargetTime <~ spaceToTime event.offsetX,
+				set motionFocusTimeS focusTime,
+				set motionZoomLevelS (quotient zoomLevel 1.1),
+				// we change motionClockTime and targetTime last since they affect focusTime and zoomLevel:
+				set motionClockTimeS clockTime,
+				set targetTimeS newTargetTime,
 				windClock
 			</f:on>
 
 			<f:each scrubberSegments as segmentFraction>
 				segmentTime = scale 1 videoDuration segmentFraction,
-				<div style-position="absolute" style-left="{timeToSpace segmentTime}" style-width="1" style-background="#000" style-height="50"/>
+				<div style-position="absolute" style-left="{timeToSpace segmentTime}" style-width="1" style-background="#000" style-height="100%"/>
 			</f:each>
+
+			// <f:each moreMarks as markFraction>
+			// 	markTime = scale 1 videoDuration markFraction,
+			// 	<div style-position="absolute" style-left="{timeToSpace markTime}" style-width="1" style-background="#AAA" style-height="50%"/>
+			// </f:each>
 			
-			<div style-position="absolute" style-width="{timeToSpace (fetch loadedTimeS)}" style-top="40" style-height="10" style-background="#888"/>
+			<div style-position="absolute" style-width="{timeToSpace (fetch loadedTimeS)}" style-top="80%" style-height="20%" style-background="#888"/>
 
 			// <f:each videoCuts as cutFrame>
 			// 	cutTime = framesToSeconds cutFrame,
-			// 	cutSpace = timeToSpace (secondsToUnits cutTime),
-			// 	<div style-position="absolute" style-left="{unitsToPixels cutSpace}" style-width="1" style-height="10" style-background="#ccc"/>
+			// 	<div style-position="absolute" style-left="{timeToSpace cutTime}" style-width="1" style-height="10" style-background="#ccc"/>
 			// </f:each>
 			
 			<div style-position="absolute" style-left="{timeToSpace (fetch targetTimeS)}" style-width="1" style-height="50" style-background="#fff"/>
