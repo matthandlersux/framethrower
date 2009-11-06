@@ -173,7 +173,7 @@ handle_cast({sendElements, Elements}, State) ->
 							Modifier = cellElements:modifier(PackedElement),
 							[queryUpdate(QueryId, Modifier, cellElements:create(Modifier, Value))|ListOfQueryUpdates]
 						end,
-	NewQueryUpdates = lists:foldr(UnpackElements, [], Elements),
+	NewQueryUpdates = lists:foldl(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
 	case getOpenPipe(State1) of
 		closed ->
