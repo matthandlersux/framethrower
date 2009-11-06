@@ -228,7 +228,7 @@ var semantics = function(){
 			wrappedElseblock = {
 				arglist: {},
 				fullletlist: {
-					line: makeIfblock(node.ifblock)
+					line: {ifblock: node.ifblock}
 				},
 				debugRef: node.debugRef
 			};
@@ -266,7 +266,7 @@ var semantics = function(){
 			wrappedElseblock = {
 				arglist: {},
 				fullactlist: {
-					action: makeIfaction(node.ifaction)
+					action: {ifaction: node.ifaction}
 				},
 				debugRef: node.debugRef
 			};

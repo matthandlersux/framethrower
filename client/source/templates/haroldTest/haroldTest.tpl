@@ -25,6 +25,7 @@ template() {
 	f = x -> plus 50 x,
 	y = state(Unit Number, 10),
 	y = state(Unit Number, 100),
+	testEmpty = state(Unit Null),
 	swap = tuple -> (snd tuple, fst tuple),
 	toTuple = list -> (head list, head (tail list)),
 	toList = tuple -> [fst tuple, snd tuple],
@@ -33,7 +34,9 @@ template() {
 		plus 1 x
 	},
 	ifTest =
-	if y as x {
+	if testEmpty as x {
+		<div>empty={x}</div>
+	} else if y as x {
 		<div>y={x}</div>
 	} else {
 		<div>y=empty</div>
@@ -64,12 +67,18 @@ template() {
 			action() {
 				debug "action in action"
 			},
-			if y as x {
+			x <- if testEmpty as x {
+				debug "uh oh",
+				return 0
+			} else if y as y {
 				debug "yes",
-				debugNumber x
+				debugNumber y,
+				return y
 			} else {
-				debug "no"
-			}
+				debug "no",
+				return 1
+			},
+			debugNumber x
 		</f:on>
 		
 		<f:call>
