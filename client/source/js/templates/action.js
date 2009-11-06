@@ -36,7 +36,7 @@ function executeAction(instruction) {
 			
 			var closure = makeClosure(action.action, env);
 			var inner;
-			var isMap = action.action.params.length==2;
+			var isMap = closure.argsLength==2;
 			if (isMap) {
 				inner = function (o) {
 					return evaluate(makeApply(makeApply(closure, o.key), o.val));
