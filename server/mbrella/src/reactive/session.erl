@@ -27,7 +27,7 @@
 -record (state, {
 	name,
 	queries = dict:new(),
-	queue = [],
+	queue = [{0,[]}],
 	openPipe = closed,
 	lastMessageId = 1 % this is the last message as reported by the client
 }).
@@ -153,6 +153,9 @@ handle_cast({connect, AST, QueryId}, State) ->
 	cell:injectOutput(CellPointer, SessionPointer, sessionOutput, [QueryId]),
 	State1 = updateQueries(State, QueryId, CellPointer),
 	{noreply, State1};
+handle_cast({sendElements, []}, State) ->
+	% handle donemessage stuff here
+	{noreply, State};
 handle_cast({sendElements, Elements}, State) ->
 	UnpackElements = 	fun(PackedElement, ListOfQueryUpdates) ->
 							QueryId = cellElements:mapKey(PackedElement),
@@ -162,7 +165,6 @@ handle_cast({sendElements, Elements}, State) ->
 						end,
 	NewQueryUpdates = lists:foldr(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
-	
 	case getOpenPipe(State) of
 		closed ->
 			{noreply, State1};
