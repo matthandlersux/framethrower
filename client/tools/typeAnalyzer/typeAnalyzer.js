@@ -200,7 +200,6 @@ function typeAnalyze(line) {
 			
 			type = makeTypeApply(parseType("Action"), line.type);
 		} else if (line.kind === "extract") {
-			// TODO
 			
 			var selectType = getTypeOfAST(line.select, env);
 			var constructor = getTypeConstructor(selectType);
@@ -222,12 +221,47 @@ function typeAnalyze(line) {
 
 			    hackedLineTemplate.type = makeTypeLambda(keyType, parseType("Action a0"));
 			} else {
-			    staticAnalysisError("Extract select type is not a cell or list.");
+			    staticAnalysisError("Extract select type is not a cell or list. It is: "+unparseType(selectType));
 			}
 			
 			staticTypeAnalysis(hackedLineTemplate, env);
 			
 			type = parseType("Action Void");
+		} else if (line.kind === "case") {
+			// this is a 'case' in an action, since a 'case' not in an action gets wrapped in a 'lineXML'
+			
+			var selectType = getTypeOfAST(line.test, env);
+			var constructor = getTypeConstructor(selectType);
+			
+			if(constructor !== "Unit")
+				staticAnalysisError("'if' test type is not a Unit, it is: "+unparseType(selectType));
+			
+			var hackedLineTemplate = {
+				kind: "lineTemplate",
+				params: line.lineTemplate.params,
+				let: line.lineTemplate.let,
+				output: line.lineTemplate.output
+			},
+			hackedOtherwise = {
+				kind: "lineTemplate",
+				params: line.otherwise.params,
+				let: line.otherwise.let,
+				output: line.otherwise.output
+			};
+			
+			var keyType = selectType.right;
+			hackedLineTemplate.type = makeTypeLambda(keyType, parseType("Action a0"));
+			hackedOtherwise.type = parseType("Action a0");
+			
+			var outputType1 = staticTypeAnalysis(hackedLineTemplate, env).type.right,
+				outputType2 = staticTypeAnalysis(hackedOtherwise, env).type;
+			
+			if(outputType1 && outputType2 && !compareTypes(outputType1, outputType2))
+				staticAnalysisError("'if' output type is ("+unparseType(outputType1)+") but 'else' output type is ("+unparseType(outputType2)+")");
+			
+			if(outputType1) type = outputType1;
+			else if(outputType2) type = outputType2;
+			else type = parseType("Action t");
 		}
 
 		var ret = makePlaceholder(type);
