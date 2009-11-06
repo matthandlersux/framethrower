@@ -44,7 +44,6 @@ function xhr(url, post, callback, failCallback, timeout) {
 				
 				// debugging stuff:
 				//console.log("called: "+url+"\nwith post: "+post+"\ngot response: "+req.responseText);
-				
 				callback(req.responseText);
 			} else {
 				fail();
@@ -94,7 +93,7 @@ var session = (function () {
 	
 	var cells = {};
 	
-	function addActions(actions, callback) {
+	function addAction(actionName, params, callback) {
 		if (!sessionId) {
 			newSession();
 		}
@@ -105,7 +104,8 @@ var session = (function () {
 		messages.push({
 			action: {
 				actionId: '' + actionId,
-				actions: actions
+				actionName: actionName,
+				params: params
 			}
 		});
 
@@ -272,11 +272,15 @@ var session = (function () {
 	
 	function getSharedLets(callBack) {
 		xhr(serverBaseUrl+"sharedLets", "", function (response) {
-			response = JSON.parse(response);
-			var sharedLets = map(response, function(Value) {
-				return parseServerResponse(Value)
-			});
-			callBack(sharedLets);
+			if (!response) {
+				console.log("Error getting Shared Lets, no server response");
+			} else {
+				response = JSON.parse(response);
+				var sharedLets = map(response, function(Value) {
+					return parseServerResponse(Value)
+				});
+				callBack(sharedLets);
+			}
 		},
 		function () {
 			console.log("Error getting Shared Lets");
@@ -285,7 +289,7 @@ var session = (function () {
 	
 	return {
 		query: addQuery,
-		addActions: addActions,
+		perform: addAction,
 		flush: sendAllMessages,
 		debugCells: cells,
 		getSharedLets: getSharedLets

@@ -7,11 +7,8 @@
 
 
 function initialize() {
-	//Get shared lets from server and insert them into the environment
-	function initMainTemplate (sharedLets) {
-		var sharedEnv = extendEnv(base.env, sharedLets);
-
-		var compiledTemplate = evaluate(makeClosure(mainTemplate, sharedEnv));
+	function initMainTemplate (env) {
+		var compiledTemplate = evaluate(makeClosure(mainTemplate, env));
 
 		var node = xmlToDOM(compiledTemplate.xml, compiledTemplate.env);
 
@@ -21,8 +18,15 @@ function initialize() {
 	}
 	
 	if (LOCAL) {
-		initMainTemplate({});
+		initMainTemplate(base.env);
 	} else {
-		session.getSharedLets(initMainTemplate);	
+		//Get shared lets from server and insert them into the environment
+		session.getSharedLets(function(sharedLets) {
+			//add remote actions to sharedLets
+			var remoteActions = getRemoteActions(mainTemplate.sharedLet)
+			var sharedEnv = extendEnv(base.env, remoteActions);
+			sharedEnv = extendEnv(base.env, sharedLets);
+			initMainTemplate(sharedEnv);
+		});
 	}
 }
