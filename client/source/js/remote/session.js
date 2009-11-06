@@ -73,7 +73,7 @@ function parseServerResponse(s, expectedType) {
 			var prop = map(s.props, function(value, name) {
 				return parseServerResponse(value, propTypes[name]);
 			});
-			var obj = makeObject(s.type, s.name, prop, remote.both);
+			var obj = makeObject(parseType(s.type), s.name, prop, remote.serverOnly);
 			return obj;
 		}
 	} else {
@@ -114,15 +114,14 @@ var session = (function () {
 	}
 	
 	function addQuery(expr) {
-
 		var queryId = nextQueryId;
 		nextQueryId++;
 
 		var type = getType(expr);
 
 		var cell = makeCC(type);
-
-		cell.remote = 1;
+		
+		cell.remote = remote.shared;
 		cell.name = stringify(expr);
 
 		cells[queryId] = cell;
@@ -130,7 +129,6 @@ var session = (function () {
 		// if (unparseExpr(getExpr(expr)).indexOf("local.") !== -1) {
 		// 	debug.error("Trying to send a local thing to the server", expr);
 		// }
-
 		var newExpr = stringifyForServer(expr);
 
 		//console.log("Query", queryId, {expr:newExpr});
@@ -290,15 +288,6 @@ var session = (function () {
 		addActions: addActions,
 		flush: sendAllMessages,
 		debugCells: cells,
-		getSharedLets: getSharedLets,
-		test: function() {
-			xhr(serverBaseUrl+"sharedLets", "", function (response) {
-				response = JSON.parse(response);
-				console.log("response", response);
-			},
-			function () {
-				console.log("Error");
-			});
-		}
+		getSharedLets: getSharedLets
 	};
 })();
