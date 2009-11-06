@@ -17,6 +17,7 @@
 	new/1,
 	connect/3,
 	sendElements/3,
+	sendActionUpdate/2,
 	pipeline/2,
 	getState/1
 ]).
@@ -71,7 +72,16 @@ connect(SessionPointer, AST, QueryId) ->
 
 sendElements(SessionPointer, _From, Elements) ->
 	gen_server:cast(sessionPointer:pid(SessionPointer), {sendElements, Elements}).
-	
+
+
+%%
+%% sendActionUpdate :: SessionPointer -> ActionUpdate -> ok
+%%
+%%
+
+sendActionUpdate(SessionPointer, Update) ->
+	gen_server:cast(sessionPointer:pid(SessionPointer), {sendActionUpdate, Update}).
+
 %% 
 %% pipeline :: SessionPointer -> Number -> Response
 %% 		Response :: timeout | Tuple3 updates JSONStruct Number
@@ -165,7 +175,16 @@ handle_cast({sendElements, Elements}, State) ->
 						end,
 	NewQueryUpdates = lists:foldr(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
-	case getOpenPipe(State) of
+	case getOpenPipe(State1) of
+		closed ->
+			{noreply, State1};
+		Pid ->
+			% if is_process_alive(Pid) ->
+			handle_cast({pipeline, Pid, getLastMessageId(State1)}, State1)
+	end;
+handle_cast({sendActionUpdate, Update}, State) ->
+	State1 = updateQueue(State, [Update]),
+	case getOpenPipe(State1) of
 		closed ->
 			{noreply, State1};
 		Pid ->

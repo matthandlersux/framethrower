@@ -1,5 +1,7 @@
 var timeoutDefault = 45 * 1000; // 45 seconds
 
+var globalTest;
+
 try {	//try catch is a hack so this can work in rhino
 	if (!window.serverBaseUrl) {
 		window.serverBaseUrl = "http://clever.eversplosion.com:8000/";
@@ -101,6 +103,8 @@ var session = (function () {
 		var actionId = nextActionId;
 		nextActionId++;
 
+		params = map(params, stringifyForServer);
+
 		messages.push({
 			action: {
 				actionId: '' + actionId,
@@ -149,10 +153,12 @@ var session = (function () {
 				newSession();
 			} else if (sessionId && sessionId !== "initializing") {
 				if (messages.length > 0) {
-					var json = JSON.stringify({
+					globalTest = {
 						sessionId: sessionId,
 						messages: messages
-					});
+					};
+					var json = JSON.stringify(globalTest);
+					console.log("JSON", json);
 					var asking = messages;
 					messages = [];
 					sending = true;
@@ -238,8 +244,8 @@ var session = (function () {
 							var callback = actionsPending[actionResponse.actionId];
 							delete actionsPending[actionResponse.actionId];
 							if (callback && actionResponse.success) {
-								callback(actionResponse.created, actionResponse.returned); 
-							} else if (!actionResponse.success){
+								callback(actionResponse.created, parseServerResponse(actionResponse.returned));
+							} else if (!actionResponse.success) {
 								debug.log("Action failed, actionId:", actionResponse.actionId);
 							}
 						}

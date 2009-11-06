@@ -21,20 +21,22 @@ function perform(string) {
 	var callback = function (result) {
 		console.log("Action Result:", result, "for action: ", string);	
 	};
-	
-	session.perform(parseExpr(string, testSharedEnv), callback);
+	executeAction(evaluate(parseExpr(string, testSharedEnv)), callback);
 }
 
 
 function getRemoteActions (sharedLet) {
-	console.log("sharedLet", sharedLet);
-	
 	var remoteActions = {};
 	
 	forEach(sharedLet, function(let, name) {
 		if (let.kind === "lineTemplate") {
 			//this let is an action
-			remoteActions[name] = makeFun(let.type, undefined, let.params.length, name, remote.serverOnly, false);
+			var actionFunction = function() {
+				//have to convert arguments into another array because arguments is not a real array (javascript quirk)
+				var args = Array.prototype.slice.call(arguments);
+				return makeRemoteInstruction(name, args);
+			}
+			remoteActions[name] = makeFun(let.type, actionFunction, let.params.length, name, remote.localOnly, true);
 		}
 	});
 
@@ -61,7 +63,8 @@ function initialize() {
 			//add remote actions to sharedLets
 			var remoteActions = getRemoteActions(mainTemplate.sharedLet)
 			var sharedEnv = extendEnv(base.env, remoteActions);
-			sharedEnv = extendEnv(base.env, sharedLets);
+			sharedEnv = extendEnv(sharedEnv, sharedLets);
+			testSharedEnv = sharedEnv;
 			initMainTemplate(sharedEnv);
 		});
 	}

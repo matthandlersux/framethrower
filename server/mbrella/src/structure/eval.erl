@@ -33,9 +33,14 @@ evaluate(AST) ->
 	Result = evaluateAST(ast:type(AST), AST),
 	ast:toTerm(Result).
 
-%% ====================================================
-%% Internal API
-%% ====================================================
+
+%% 
+%% eval :: String -> AST
+%% 		
+%%		
+
+evalAST(String) ->
+	evaluateAST(parse:parse(String)).
 
 %%
 %% evaluateAST :: AST -> AST
@@ -44,6 +49,12 @@ evaluate(AST) ->
 
 evaluateAST(AST) ->
 	evaluateAST(ast:type(AST), AST).
+
+
+%% ====================================================
+%% Internal API
+%% ====================================================
+
 
 %%
 %% evaluateAST :: Atom -> AST -> AST

@@ -180,17 +180,22 @@ processQuery( Query, SessionPointer ) ->
 	
 processActionJson ( Action, SessionPointer ) ->
 	ActionId = getFromStruct("actionId", Action),
-	Action = struct:get_value(<<"action">>, Action),
+	ActionName = binary_to_list(struct:get_value(<<"actionName">>, Action)),
+	BinaryParams = struct:get_value(<<"params">>, Action),
 
-	%%TODO: perform action based on value of Action. This will include an action name and parameters
-	Name = struct:get_value(<<"name">>, Action),
-	Params = struct:get_value(<<"params">>, Action),
-	Returned = action:performAction(Name, Params),
+	%Convert Params to ASTs
+
+	Params = lists:map(fun(Param) ->
+		eval:evalAST(binary_to_list(Param))
+	end, BinaryParams),
+
+	Returned = ast:toTerm(action:performAction(ActionName, Params)),
 	
 	ActionResponse = {struct, [{"actionResponse", 
-		{struct, [{"actionId", list_to_binary(ActionId)}, {"returned", Returned}] }
+		{struct, [{"actionId", list_to_binary(ActionId)}, {"success", true}, {"returned", mblib:exprElementToJson(Returned)}] }
 	}]},
-	session:sendUpdate(SessionPointer, {actionResponse, ActionResponse}).
+	
+	session:sendActionUpdate(SessionPointer, ActionResponse).
 
 
 %% 

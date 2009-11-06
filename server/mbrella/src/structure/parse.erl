@@ -50,7 +50,8 @@ parser(String, LeftAST, Scope) ->
 			{ast:makeVariable(Num), Rest};
 		[$\"|Right] ->
 			%quoted string
-			parseUtil:cutOffRightQuote(Right);
+			{StringToMake, Rest} = parseUtil:cutOffRightQuote(Right),
+			{ast:makeLiteral(StringToMake), Rest};
 		_ -> %string
 			{StringToParse, Rest} = parseUtil:untilSpaceOrRightParen(String),
 			ParsedString = case parseUtil:extractPrim(StringToParse) of

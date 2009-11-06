@@ -71,12 +71,22 @@ function remoteEquals(remoteLevel1, remoteLevel2) {
 
 
 function makeRemoteCell(name, type) {
-	var o = {
+	return {
 		kind: "remoteCell",
 		remote: remote.serverOnly,
 		name: name,
 		type: type,
 		outsideScope: 0
 	};
-	return o;
+}
+
+
+function makeRemoteInstruction(name, params) {
+	return {
+		kind: "remoteInstruction",
+		remote: remote.serverOnly,
+		name: name,
+		params: params,
+		outsideScope: 0
+	};
 }
