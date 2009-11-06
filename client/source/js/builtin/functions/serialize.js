@@ -157,7 +157,7 @@
 	}
 
 
-	addFun("serialize", "a -> Unit String", convertHelper(convertStateToString));
+	addFun("serialize", "a -> Unit String", convertHelper(convertStateToString), undefined, remote.localOnly);
 
 	addFun("jsonify", "a -> Unit JSON", function (cell) {
 		var outputCell = makeControlledCell("Unit JSON");
@@ -168,7 +168,7 @@
 		});
 
 		return outputCell;	
-	});
+	}, undefined, remote.localOnly);
 	
 	
 })();

@@ -82,7 +82,6 @@ pipeline(SessionPointer, LastMessageId) ->
 	receive
 		JSON -> JSON
 	after 30000 ->
-		?colortrace({self(), SessionPointer, LastMessageId}),
 		timeout
 	end.
 

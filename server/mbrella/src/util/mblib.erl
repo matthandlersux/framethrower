@@ -160,11 +160,11 @@ exprElementToJson(Tuple) when is_tuple(Tuple) ->
 			{struct, [{<<"kind">>, cell}, {<<"name">>, list_to_binary(cellPointer:name(Tuple))}]};
 		false -> case objects:isObjectPointer(Tuple) of 
 			true ->
-				{_Name, Type, Props} = objectStore:lookup(objects:getName(Tuple)),
+				{Name, Type, Props} = objectStore:lookup(objects:getName(Tuple)),
 				PropJson = lists:map(fun({PropName, PropValue}) ->
 					{list_to_binary(PropName), exprElementToJson(PropValue)}
 				end, Props),
-				{struct, [{<<"kind">>, object}, {<<"type">>, list_to_binary(type:unparse(Type))}, {<<"props">>, {struct, PropJson}}]};
+				{struct, [{<<"kind">>, object}, {<<"name">>, list_to_binary(Name)}, {<<"type">>, list_to_binary(type:unparse(Type))}, {<<"props">>, {struct, PropJson}}]};
 			false -> throw("error in mblib:exprElementToJson")
 		end
 	end;

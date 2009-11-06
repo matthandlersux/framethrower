@@ -168,9 +168,9 @@ function evaluate2(expr) {
 				funArgs = fp.params.splice(0, expectedLength);
 
 				var result;
-				
+
 				//check for server exprs
-				if (isServerOnly(getRemoteLevel(expr)) && isReactive(fp.func.type)) {
+				if (isServerOnly(getRemoteLevel(expr)) && isReactive(getOutputType(fp.func.type))) {
 					//var ret = queryExpr(expr);
 					//TODO: check if expr returns a Cell before querying server
 					result = session.query(expr);
@@ -186,14 +186,12 @@ function evaluate2(expr) {
 					// if result is a cell, memoize the result and annotate its type and expr
 				
 					// annotate
-					var resultType = GLOBAL.typeCheck ? getType(expr) : undefined;
-					result.type = resultType;
+					if (GLOBAL.typeCheck) result.type = getType(expr);
 					result.name = resultExprStringified;
 					result.remote = expr.remote;
 				
 					memoizeCell(resultExprStringified, result);
 				}
-				
 				// apply the result to any remaining args
 				forEach(fp.params, function (remainingParam) {
 					result = makeApply(result, remainingParam);

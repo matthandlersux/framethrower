@@ -1,4 +1,4 @@
-var timeoutDefault = 30 * 1000; // 30 seconds
+var timeoutDefault = 45 * 1000; // 45 seconds
 
 try {	//try catch is a hack so this can work in rhino
 	if (!window.serverBaseUrl) {
@@ -63,7 +63,7 @@ function xhr(url, post, callback, failCallback, timeout) {
 // parseServerResponse :: JSON -> Type -> Expr (RemoteCell | Object | Literal)
 //
 function parseServerResponse(s, expectedType) {
-	if (!s) return undefined;
+	if (s === undefined) return undefined;
 	if (typeOf(s) === "object") {
 		if (s.kind === "cell") {
 			// TODO test this
@@ -73,10 +73,11 @@ function parseServerResponse(s, expectedType) {
 			var prop = map(s.props, function(value, name) {
 				return parseServerResponse(value, propTypes[name]);
 			});
-			var obj = makeObject(s.type, s.name, prop, remote.both);
+			var obj = makeObject(parseType(s.type), s.name, prop, remote.serverOnly);
 			return obj;
 		}
 	} else {
+		if (s === null) return nullObject;
 		return s;
 	}
 }
@@ -113,15 +114,14 @@ var session = (function () {
 	}
 	
 	function addQuery(expr) {
-
 		var queryId = nextQueryId;
 		nextQueryId++;
 
 		var type = getType(expr);
 
 		var cell = makeCC(type);
-
-		cell.remote = 1;
+		
+		cell.remote = remote.shared;
 		cell.name = stringify(expr);
 
 		cells[queryId] = cell;
@@ -129,7 +129,6 @@ var session = (function () {
 		// if (unparseExpr(getExpr(expr)).indexOf("local.") !== -1) {
 		// 	debug.error("Trying to send a local thing to the server", expr);
 		// }
-
 		var newExpr = stringifyForServer(expr);
 
 		//console.log("Query", queryId, {expr:newExpr});
@@ -289,15 +288,6 @@ var session = (function () {
 		addActions: addActions,
 		flush: sendAllMessages,
 		debugCells: cells,
-		getSharedLets: getSharedLets,
-		test: function() {
-			xhr(serverBaseUrl+"sharedLets", "", function (response) {
-				response = JSON.parse(response);
-				console.log("response", response);
-			},
-			function () {
-				console.log("Error");
-			});
-		}
+		getSharedLets: getSharedLets
 	};
 })();

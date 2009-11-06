@@ -86,7 +86,7 @@ function makeClosure(lineTemplate, env) {
 		return evaluateLine(lineTemplate.output, envWithLets);
 	};
 	
-	return makeFun(type, f, params.length, undefined, undefined, true);
+	return makeFun(type, f, params.length, undefined, remote.localOnly, true);
 }
 
 
@@ -130,7 +130,7 @@ function evaluateLine(line, env) {
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line, env);
 	} else if (line.kind === "lineJavascript") {
-		return makeFun(line.type, line.f, line.f.length);
+		return makeFun(line.type, line.f, line.f.length, undefined, remote.localOnly);
 		//return makeFun(parseType(line.type), line.f);
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);

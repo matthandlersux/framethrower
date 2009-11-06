@@ -6,7 +6,7 @@ remoteLevel is one of the 4 entries in this latice:
 		/	\
 serverOnly  localOnly
 		\	/
-    	both
+    	neither
 
 remoteLevel is used on evaluate of expr:
 	if remoteLevel is serverOnly and expr is a cell, query the server for it
@@ -23,12 +23,12 @@ var remote = {};
 remote.shared = {local: true, server: true};
 remote.localOnly = {local: true, server: false};
 remote.serverOnly = {local: false, server: true};
-remote.both = {local: false, server: false};
+remote.neither = {local: false, server: false};
 
 
 //
 // maxRemote returns the most broad remoteLevel that can evaluate r1 and r2
-// remote.shared is the most broad, remote.both is the least broad
+// remote.shared is the most broad, remote.neither is the least broad
 function maxRemoteLevel(r1, r2) {
 	return {local: r1.local && r2.local, server: r1.server && r2.server};
 }
