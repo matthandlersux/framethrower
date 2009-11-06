@@ -1,4 +1,4 @@
-var timeoutDefault = 30 * 1000; // 30 seconds
+var timeoutDefault = 45 * 1000; // 45 seconds
 
 try {	//try catch is a hack so this can work in rhino
 	if (!window.serverBaseUrl) {

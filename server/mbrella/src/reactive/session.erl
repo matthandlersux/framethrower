@@ -81,7 +81,7 @@ pipeline(SessionPointer, LastMessageId) ->
 	gen_server:cast(sessionPointer:pid(SessionPointer), {pipeline, self(), LastMessageId}),
 	receive
 		JSON -> JSON
-	after 45000 ->
+	after 30000 ->
 		timeout
 	end.
 
