@@ -81,7 +81,8 @@ pipeline(SessionPointer, LastMessageId) ->
 	gen_server:cast(sessionPointer:pid(SessionPointer), {pipeline, self(), LastMessageId}),
 	receive
 		JSON -> JSON
-	after 45000 ->
+	after 30000 ->
+		?colortrace({self(), SessionPointer, LastMessageId}),
 		timeout
 	end.
 
@@ -223,18 +224,22 @@ queryUpdate(QueryId, Modifier, Element) ->
 	
 %% 
 %% processQueue :: Queue -> Number -> Tuple Queue (List Struct)
-%% 	
+%% 		there should be at least 2 messages in the queue, ensured by case clause in pipeline
 %%		
 
 processQueue(Queue, LastMessageId) ->
-	HasBeenSent = 	fun({MessageId, _ListOfStructs}) when MessageId >= LastMessageId ->
-						true;
-					(_) ->
-						false
+	HasBeenSent = 	fun({MessageId, ListOfStructs}, NewQueue) when MessageId >= LastMessageId ->
+						[{MessageId, ListOfStructs}|NewQueue];
+					(_, NewQueue) ->
+						throw(NewQueue)
 					end,
-	Queue1 = lists:takewhile(HasBeenSent, Queue),
-	{_MessageIds, ListOfListOfStructs} = lists:unzip(Queue1),
-	{Queue1, lists:flatten(ListOfListOfStructs)}.
+	[OldQueueElement|Queue1] = 	try lists:foldl(HasBeenSent, [], Queue)
+								catch throw:NewQueue -> NewQueue
+								end,
+	QueueToSend = lists:reverse(Queue1),
+	QueueToStore = QueueToSend ++ [OldQueueElement],
+	{_MessageIds, ListOfListOfStructs} = lists:unzip(QueueToSend),
+	{QueueToStore, lists:flatten(ListOfListOfStructs)}.
 
 %% ---------------------------------------------
 %% state functions
