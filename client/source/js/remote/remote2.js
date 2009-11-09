@@ -70,12 +70,12 @@ function remoteEquals(remoteLevel1, remoteLevel2) {
 }
 
 
-function makeRemoteCell(name, type) {
+function makeRemoteCell(name, typeConstructor) {
 	return {
 		kind: "remoteCell",
 		remote: remote.serverOnly,
 		name: name,
-		type: type,
+		type: makeTypeApply(makeTypeName(typeConstructor), makeTypeName("a0")),
 		outsideScope: 0
 	};
 }

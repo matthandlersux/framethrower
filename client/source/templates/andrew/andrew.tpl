@@ -5,12 +5,12 @@ template () {
 	str = TestClass:str TestObject1,
 	
 	<div>
-		// Hello, theNum2: {theNum} 
-		<f:each stringSet as string>
+		<f:each TestCell as TestObject>
 			<div>
-				string: {string}
+				string: {TestClass:str TestObject}
+				<br />
+				<br />
 			</div>
 		</f:each>
-		str: {str}
 	</div>
 }
