@@ -71,10 +71,7 @@ template (videoTimeline::VideoTimeline) {
 	getLinksFromTime = time -> getInfonsAboutRole time ulinkTarget :: Situation -> Set Pipe,
 	
 	// the drawing code common to both the zoom part of the scrubber and the scroll part of the scrubber:
-	// note that passing fetched parameters directly wraps the entire drawState template in <f:each>.
 	drawState = template() {
-		// timeToPixels = t -> durationToWidth (difference t start),
-		// ky = product height,
 
 		<f:wrapper>
 			<f:each bigTicks as tickTime>
@@ -171,7 +168,7 @@ template (videoTimeline::VideoTimeline) {
 				</f:on>
 
 				<svg:rect class="timelineBackground" width="100%" height="100%"/> // background
-				<svg:g> //transform="{svgTranslate (negation (durationToZoomWidth zoomStart)) 0}">
+				<svg:g>
 					<f:each bigTicks as tickTime>
 						<svg:text class="tickLabel" x="{timePercent tickTime}" y="95%">
 							{quotient tickTime 60}m
@@ -184,7 +181,6 @@ template (videoTimeline::VideoTimeline) {
 						</f:each>
 					</f:each>
 				
-					// passing fetched things to templates is ineffecient, so we unfetch:
 					<f:call>drawState</f:call>
 
 					<svg:line class="selectStart" pointer-events="none" x1="{timePercent selectStart}" x2="{timePercent selectStart}" y1="0" y2="100%"/>
@@ -234,7 +230,7 @@ template (videoTimeline::VideoTimeline) {
 					set zoomDurationS newDuration
 				</f:on>
 			
-				<svg:g> // transform="{svgTranslate 0 zoomHeight}">
+				<svg:g>
 					<svg:rect class="timelineBackground" width="100%" height="100%"/> // background
 					<svg:rect class="zoomDuration" x="{timePercent zoomStart}" width="{timePercent zoomDuration}" height="100%"/>
 					// don't allow any pointer events through to the state:

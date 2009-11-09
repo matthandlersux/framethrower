@@ -105,7 +105,7 @@ function parseAndDesugar(makeTuple, makeList, s) {
 
 
 		if(leftAST) // apply accumulated expressions to new one
-			ast = {cons: 'apply', left: leftAST, right:ast};
+			ast = makeApplyAST(leftAST, ast);
 
 		// end of sub-expression?
 		if(tokens.length === 0 || tokens[0] === ',' || tokens[0] === ']' || tokens[0] === ')')
@@ -113,7 +113,7 @@ function parseAndDesugar(makeTuple, makeList, s) {
 
 		if(tokens[0] === "->") { // recurse on lambdas
 			tokens.shift();
-			return {cons: 'lambda', left: ast, right: parseOne(tokens)};
+			return makeLambdaAST(ast, parseOne(tokens));
 		}
 
 		// otherwise, just one expression following another, i.e. an apply,

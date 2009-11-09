@@ -63,7 +63,10 @@ function substitute(ast, env) {
 		r = substitute(ast.right, env);
 	if(l===ast.left && r===ast.right) // nothing changed
 		return ast;
-	return {cons: ast.cons, left: l, right: r};
+	if(ast.cons==="apply")
+		return makeApplyAST(l, r);
+	if(ast.cons==="lambda")
+		return makeLambdaAST(l, r);
 }
 
 /*
@@ -82,9 +85,8 @@ function hasVariable(ast, env) {
 * does not modify ast.
 */
 function makeLambdasAST(ast, vars) {
-	for(var i=vars.length-1; i>=0; i--) {
-		ast = {cons: "lambda", left: vars[i], right: ast};
-	}
+	for(var i=vars.length-1; i>=0; i--)
+		ast = makeLambdaAST(vars[i], ast);
 	return ast;
 }
 
@@ -93,9 +95,8 @@ function makeLambdasAST(ast, vars) {
 * does not modify ast.
 */
 function makeAppliesAST(ast, vals) {
-	for(var i=0; i<vals.length; i++) {
-		ast = {cons: "apply", left: ast, right: vals[i]};
-	}
+	for(var i=0; i<vals.length; i++)
+		ast = makeApplyAST(ast, vals[i]);
 	return ast;
 }
 
@@ -109,8 +110,8 @@ function makeTupleAST(elements) {
 function makeListAST(elements) {
 	if(elements.length===0)
 		return "nil";
-	var cons = {cons: "apply", left: "cons", right: elements.shift()};
-	return {cons: "apply", left: cons, right: makeListAST(elements)};
+	var cons = makeApplyAST("cons", elements.shift());
+	return makeApplyAST(cons, makeListAST(elements));
 }
 
 

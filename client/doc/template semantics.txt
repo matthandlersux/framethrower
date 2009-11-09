@@ -4,7 +4,6 @@ LINE
 	{kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
 	{kind: "lineState", action: LINETEMPLATE} | // action takes no parameters |
 	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
-	{kind: "actionJavascript", f: JAVASCRIPTFUNCTION} |
 	{kind: "extract", select: AST, action: LINETEMPLATE} // this action should take one (or two) parameters. |
 	LINETEMPLATE |
 	LINEACTION
@@ -19,7 +18,7 @@ XML
 	{kind: "for-each", select: AST, lineTemplate: LINETEMPLATE} | // this lineTemplate should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
 	{kind: "call", lineTemplate: LINETEMPLATE} | // this lineTemplate should take zero parameters.
 	{kind: "on", event: EVENT, action: LINETEMPLATE} | // this action should take zero parameters.
-	{kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise?: LINETEMPLATE} |
+	{kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise: LINETEMPLATE} |
 	// test should evaluate to a cell, if it is non-empty then lineTemplate is run as if it were a for-each. If it is empty, otherwise is called.
 	// lineTemplate should take one parameter
 	// otherwise, if it exists, should take zero parameters
