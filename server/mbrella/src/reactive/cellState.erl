@@ -98,8 +98,6 @@ addInformants(CellState, ListOfCellPointers) ->
 %%		
 
 addInformant(#cellState{informants = Informants} = CellState, CellPointer) ->
-	% CellState#cellState{informants = [{CellPointer, false}] ++ Informants}.
-	?colortrace(CellPointer),
 	case lists:keytake(CellPointer, 1, Informants) of
 		{value, {_CellPointer, Done, Weight}, RestOfInformants} ->
 			CellState#cellState{informants = [{CellPointer, Done, Weight + 1}] ++ RestOfInformants};
