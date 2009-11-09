@@ -540,12 +540,12 @@ I = cell:makeCell(map),
 D = cell:makeCell(unit),
 cell:injectIntercept(D, debug),
 
-cell:addValues(M, [{tobydoc, S1}, {mattdoc, S2}, {andrewdoc, S3}]),
+cell:addValues(M, [{map, tobydoc, S1}, {map, mattdoc, S2}, {map, andrewdoc, S3}]),
 cell:addValues(S1, [this,that,other,him,her,belief]),
 cell:addValues(S2, [that,other,him, species, left]),
 cell:addValues(S3, [roy, blimp, him, her, species, clever]),
 
-cell:injectIntercept(I, invert, [I, M]),
+cell:injectIntercept(I, invert, [I]),
 
 cell:injectOutput(M, I, invert, [I]),
 

@@ -19,7 +19,7 @@
 % informants = [CellPointer1, CellPointer2, ...]
 % dock = [{CellPointer, ElementList}]
 
-% optimizations:
+% TODO: optimizations:
 % make connections a dict,
 % make dock keyed on elements/output rather than cellpointer (duplicates element storage),
 % make informants a dict if larger than x (invert has a lot of informants, also unfoldSet etc...)
@@ -36,7 +36,7 @@
 	elements = cellElements:new(),
 	stash = [],
 	outputs = outputs:newState(),
-	flags = [{leashed, false}, {waitForDone, false}, {killOnEmpty, false}],
+	flags = [{leashed, false}, {waitForDone, false}, {killOnEmpty, false}, {killOnNoConnections, true}],
 	informants = [],
 	dock = [],
 	bottom
@@ -98,8 +98,6 @@ addInformants(CellState, ListOfCellPointers) ->
 %%		
 
 addInformant(#cellState{informants = Informants} = CellState, CellPointer) ->
-	% CellState#cellState{informants = [{CellPointer, false}] ++ Informants}.
-	?colortrace(CellPointer),
 	case lists:keytake(CellPointer, 1, Informants) of
 		{value, {_CellPointer, Done, Weight}, RestOfInformants} ->
 			CellState#cellState{informants = [{CellPointer, Done, Weight + 1}] ++ RestOfInformants};

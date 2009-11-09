@@ -15,7 +15,7 @@
 %% External exports
 -export([
 	new/1,
-	connect/3,
+	connect/3, disconnect/2,
 	sendElements/3,
 	sendActionUpdate/2,
 	pipeline/2,
@@ -80,7 +80,6 @@ disconnect(SessionPointer, QueryId) ->
 
 sendElements(SessionPointer, _From, Elements) ->
 	gen_server:cast(sessionPointer:pid(SessionPointer), {sendElements, Elements}).
-
 
 %%
 %% sendActionUpdate :: SessionPointer -> ActionUpdate -> ok

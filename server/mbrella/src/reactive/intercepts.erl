@@ -149,7 +149,8 @@ invert() ->
 	
 invert(SelfPointer, InvertState, From, Element) ->
 	Modifier = cellElements:modifier(Element),
-	{Word, Document} = cellElements:value(Element),
+	Word = cellElements:mapKey(Element),
+	Document = cellElements:mapValue(Element),
 	if
 		Modifier =:= add ->
 			case dict:find(Word, InvertState) of
