@@ -120,7 +120,7 @@ loop(Req, DocRoot) ->
 							ProcessMessage = fun( Message ) ->
 								case struct:get_first(Message) of
 									{<<"query">>, Query} -> processQuery(Query, SessionPointer);
-									{<<"remove">>, Query} -> processQuery(Query, SessionPointer);
+									{<<"remove">>, Query} -> removeQuery(Query, SessionPointer);
 									{<<"action">>, Action} -> processActionJson(Action, SessionPointer)
 								end
 							end,
