@@ -357,6 +357,7 @@ handle_cast({uninjectOutput, OutputTo, OutputFunction}, State) ->
 	Outputs = cellState:getOutputs(State),
 	Output = outputs:getOutput(OutputFunction, Outputs),
 	% NewState = unoutputAllElements(State, Output, OutputTo),
+	% TODO: check if no more outputs and DIE if flag is set
 	State1 = cellState:uninjectOutput(State, OutputFunction, OutputTo),
 	{noreply, State1};
 
