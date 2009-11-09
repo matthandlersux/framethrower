@@ -19,7 +19,7 @@
 % informants = [CellPointer1, CellPointer2, ...]
 % dock = [{CellPointer, ElementList}]
 
-% optimizations:
+% TODO: optimizations:
 % make connections a dict,
 % make dock keyed on elements/output rather than cellpointer (duplicates element storage),
 % make informants a dict if larger than x (invert has a lot of informants, also unfoldSet etc...)
