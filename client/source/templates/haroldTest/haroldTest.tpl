@@ -78,7 +78,12 @@ template() {
 				debug "no",
 				return 1
 			},
-			debugNumber x
+			debugNumber x,
+			extract y as x {
+				extract y as z {
+					debugNumber (plus x z)
+				}
+			}
 		</f:on>
 		
 		<f:call>
