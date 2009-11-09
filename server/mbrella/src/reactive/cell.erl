@@ -348,12 +348,17 @@ handle_cast({injectOutput, OutputTo, OutputFunction}, State) ->
 	{noreply, NewState2};
 
 handle_cast({uninjectOutput, OutputTo, OutputFunction}, State) ->
-	unlink(cellPointer:pid(OutputTo)),
+	case cellPointer:isCellPointer(OutputTo) of
+		true ->
+			unlink(cellPointer:pid(OutputTo));
+		_ ->
+			unlink(sessionPointer:pid(OutputTo))
+	end,
 	Outputs = cellState:getOutputs(State),
 	Output = outputs:getOutput(OutputFunction, Outputs),
-	NewState = unoutputAllElements(State, Output, OutputTo),
-	NewState1 = cellState:uninjectOutput(NewState, OutputFunction, OutputTo),
-	{noreply, NewState1};
+	% NewState = unoutputAllElements(State, Output, OutputTo),
+	State1 = cellState:uninjectOutput(State, OutputFunction, OutputTo),
+	{noreply, State1};
 
 handle_cast({setFlag, Flag, Setting}, State) ->
 	{noreply, cellState:setFlag(State, Flag, Setting)};
