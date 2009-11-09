@@ -13,8 +13,18 @@ template (movie::Movie)::Timeline {
 	scrollbarButtonWidth = 20,
 	rulerHeight = 20,
 	
-	mainTimelineWidth = timelineWidth,
+	// small preview (on the right side of the timeline if the video is not full-screened)
+	fullscreened = bindUnit (reactiveEqual fullscreenXMLP) fullscreenVideo,
+	smallPreviewHeight = timelineHeight,
+	smallPreviewWidth = multiply smallPreviewHeight aspectRatio,
+	
+	
+	mainTimelineWidth = fetch (switch fullscreened timelineWidth (subtract timelineWidth smallPreviewWidth)),
 	mainTimelineLeft = 0,
+	//mainTimelineHeight = subtract timelineHeight (plus scrollbarHeight rulerHeight),
+	mainTimelineHeight = subtract timelineHeight scrollbarHeight,
+	
+	
 	
 	
 	// ==========
@@ -57,15 +67,19 @@ template (movie::Movie)::Timeline {
 		set scrollAmountS (clamp amount min max)
 	},
 	
+	
+	// Mouse Time
+	// units: seconds
+	mouseTimeS = state(Unit Number, 0),
+	mouseTime = fetch mouseTimeS,
+	
 	// Preview Time
 	// units: seconds
 	previewTimeS = state(Unit Number, 0),
 	previewTime = fetch previewTimeS,
 	
-	// Mouseovered Time
-	// units: seconds
-	mouseOveredTimeS = state(Unit (Number, Number)),
-	mouseOveredTime = fetch mouseOveredTimeS,
+	scrubbingS = state(Unit Null),
+	
 	
 	
 	selectedTimeStartS = state(Unit Number),
@@ -157,54 +171,89 @@ template (movie::Movie)::Timeline {
 			
 			
 			// Main part of timeline
-			<div style-position="absolute" style-top="0" style-left="0" style-width="{mainTimelineWidth}" style-height="100%" style-overflow="hidden">
-				// pan by dragging the timeline
-				<f:call>
-					setScroll = action (start::Number, offsetX::Number) {
-						setScrollAmount (subtract start offsetX)
-					},
-					dragger (unfetch scrollAmount) setScroll
-				</f:call>
+			<div style-position="absolute" style-top="0" style-left="0" style-width="{mainTimelineWidth}" style-height="100%">
+				// // pan by dragging the timeline
+				// <f:call>
+				// 	setScroll = action (start::Number, offsetX::Number) {
+				// 		setScrollAmount (subtract start offsetX)
+				// 	},
+				// 	dragger (unfetch scrollAmount) setScroll
+				// </f:call>
 				
 				// zoom with mouse wheel
 				<f:on mousescroll>
 					setZoomFactor (modifyZoom zoomFactor event.wheelDelta) (subtract event.mouseX mainTimelineLeft),
-					set previewTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor)
+					set mouseTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor)
 				</f:on>
+				
+				
 
 				
 				// The part that scrolls
 				<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}" style-height="100%">
+					<f:on mousedown>
+						set scrubbingS null,
+						set previewTimeS mouseTime,
+						unset selectedTimeStartS,
+						unset selectedTimeDurationS
+					</f:on>
+					<f:on globalmouseup>
+						unset scrubbingS,
+						extract reactiveNot selectedTimeStartS as _ {
+							set selectedTimeStartS previewTime,
+							set selectedTimeDurationS 0							
+						},
+						extract selectedTimeStartS as time {
+							set previewTimeS time
+						}
+					</f:on>
+					
 					<f:on mousemove>
-						set previewTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor)
+						set mouseTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor),
+						extract scrubbingS as _ {
+							set previewTimeS mouseTime
+						}
 					</f:on>
 
+					<div style-position="absolute" style-top="0" style-left="0" style-width="100%" style-opacity="0.5">
+						<f:call>chapterImages mainTimelineHeight (movie_chapters movie)</f:call>
+					</div>
+
 					// Ruler
-					<f:call>ruler</f:call>
+					//<f:call>ruler</f:call>
 					
+
+				
 					
-					// MouseOvered time
-					<div style-position="absolute" style-left="{makePercent (divide (fst mouseOveredTime) movieDuration)}" style-width="{makePercent (divide (snd mouseOveredTime) movieDuration)}" style-height="100%" style-background-color="rgba(255, 153, 0, 0.1)" />
+					// Mouse time
+					<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
 					
-					// Preview time orange bar
-					<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid #f90" />
+					// Preview time
+					<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,1.0)">
+						<div style-position="absolute" style-left="-6" style-width="12" style-height="12" style-background-color="#999" style-top="-24" />
+					</div>
 					
+
 					
 					// Selected time
 					<div style-position="absolute" style-left="{makePercent (divide selectedTimeStart movieDuration)}" style-width="{makePercent (divide selectedTimeDuration movieDuration)}" style-height="100%" style-background-color="rgba(255, 153, 0, 0.5)">
 						// draggable sliders
-						<div style-position="absolute" style-left="-6" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
+						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
 							<f:call>
 								setSelected = action (start::Number, offsetX::Number) {
-									setSelectedTimeLeft (plus start (divide offsetX zoomFactor))
+									time = plus start (divide offsetX zoomFactor),
+									setSelectedTimeLeft time,
+									set previewTimeS time
 								},
 								dragger (unfetch selectedTimeStart) setSelected
 							</f:call>
 						</div>
-						<div style-position="absolute" style-right="-6" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
+						<div style-position="absolute" style-right="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
 							<f:call>
 								setSelected = action (start::Number, offsetX::Number) {
-									setSelectedTimeRight (plus start (divide offsetX zoomFactor))
+									time = plus start (divide offsetX zoomFactor),
+									setSelectedTimeRight time,
+									set previewTimeS time
 								},
 								dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected
 							</f:call>
@@ -212,14 +261,6 @@ template (movie::Movie)::Timeline {
 					</div>
 					
 					
-
-					// <div style-position="absolute" style-top="{rulerHeight}" style-left="0" style-width="100%" style-border-top="1px solid #666">
-					// 	<f:each layers as index, layer>
-					// 		<div style-position="relative" style-width="100%" style-height="{tllHeight layer}" style-border-bottom="1px solid #666">
-					// 			<f:call>(tllDisplay layer) (tllItems layer)</f:call>
-					// 		</div>
-					// 	</f:each>
-					// </div>
 
 				</div>
 
@@ -256,12 +297,40 @@ template (movie::Movie)::Timeline {
 						</div>
 					</f:call>
 				</div>
+				
+				// Small Preview
+				<f:each reactiveNot fullscreened as _>
+					<div style-position="absolute" style-top="0" style-left="{mainTimelineWidth}" style-width="{smallPreviewWidth}" style-height="{smallPreviewHeight}" style-background-color="#f00">
+						<div style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">
+							<f:on click>
+								set fullscreenVideo fullscreenXMLP
+							</f:on>
+						</div>
+						Small Preview Video
+					</div>
+				</f:each>
 
 
 			</div>
 			
 			
 	</div>,
+	
+	fullscreenXMLP = template () {
+		
+		videoWidth = clampMax mainScreenWidth (multiply aspectRatio mainScreenHeight),
+		videoHeight = clampMax mainScreenHeight (divide mainScreenWidth aspectRatio),
+		<div>
+			<div style-position="absolute" style-width="{videoWidth}" style-height="{videoHeight}" style-left="{divide (subtract mainScreenWidth videoWidth) 2}" style-top="{divide (subtract mainScreenHeight videoHeight) 2}" style-background-color="#f00">
+				<div style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">
+					<f:on click>
+						unset fullscreenVideo
+					</f:on>
+				</div>
+				Large Preview Video
+			</div>
+		</div>
+	},
 	
 	
 	(movie, xmlp, jumpTo)

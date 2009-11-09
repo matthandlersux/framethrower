@@ -447,6 +447,25 @@
 					return outputCell;
 				}
 			},
+			"switch": {
+				type: "Unit a -> b -> b -> Unit b",
+				func: function (switcher, occupiedVal, unoccupiedVal) {
+					var outputCell = makeCell();
+					var current = unoccupiedVal;
+					outputCell.addLine(current);
+					switcher.inject(outputCell, function (val) {
+						outputCell.removeLine(current);
+						current = occupiedVal;
+						outputCell.addLine(current);
+						return function () {
+							outputCell.removeLine(current);
+							current = unoccupiedVal;
+							outputCell.addLine(current);
+						};
+					});
+					return outputCell;
+				}
+			},
 			reactiveIfThen: {
 				type: "Unit a -> b -> b -> Unit b",
 				func: function (predicate, consequent, alternative) {
