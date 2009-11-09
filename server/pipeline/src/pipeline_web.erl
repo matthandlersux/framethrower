@@ -120,6 +120,7 @@ loop(Req, DocRoot) ->
 							ProcessMessage = fun( Message ) ->
 								case struct:get_first(Message) of
 									{<<"query">>, Query} -> processQuery(Query, SessionPointer);
+									{<<"remove">>, Query} -> processQuery(Query, SessionPointer);
 									{<<"action">>, Action} -> processActionJson(Action, SessionPointer)
 								end
 							end,
@@ -152,31 +153,34 @@ getFromStruct(StringKey, Struct) ->
 		true -> Result
 	end.
 
+%% ====================================================
 %% Internal API
+%% ====================================================
+
+%% 
+%% processQuery :: JSONStruct -> SessionPointer -> ok
+%% 		
+%%		
 
 processQuery( Query, SessionPointer ) ->
 	Expr = getFromStruct("expr", Query),
 	QueryId = getFromStruct("queryId", Query),
 	AST = parse:parse(Expr),
 	session:connect(SessionPointer, AST, QueryId).
-	% cell:injectOutput(CellPointer, cellPointer:session(SessionPid), sessionOutput, [QueryId])
-	% Cell = eval:evaluate( parse:parse(Expr) ),
-	% % cell:injectLinked - might be useful so that cell can remove funcs on session close
-	% OnRemove = cell:inject(Cell, 
-	% 	fun() ->
-	% 		session:sendUpdate(SessionPid, {done, QueryId})
-	% 	end,
-	% 	fun(Val) ->
-	% 		session:sendUpdate(SessionPid, {data, {QueryId, add, Val}}),
-	% 		fun() -> 
-	% 			case Val of
-	% 				{pair, Key,_} -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Key}});
-	% 				_ -> session:sendUpdate(SessionPid, {data, {QueryId, remove, Val}})
-	% 			end
-	% 		end
-	% 	end
-	% ),
-	% session:addCleanup(SessionPid, QueryId, OnRemove).
+
+%% 
+%% removeQuery :: JSONStruct -> SessionPointer -> ok
+%% 		
+%%		
+
+removeQuery( Query, SessionPointer ) ->
+	QueryId = getFromStruct("queryId", Query),
+	session:disconnect(SessionPointer, QueryId).
+
+%% 
+%% processActionJson :: JSONStruct -> SessionPointer -> ok
+%% 		
+%%		
 	
 processActionJson ( Action, SessionPointer ) ->
 	ActionId = getFromStruct("actionId", Action),
@@ -199,14 +203,20 @@ processActionJson ( Action, SessionPointer ) ->
 
 
 %% 
-%% spit has the side effect that the Json result is sent to the Request and then forwarded to the client that made the request
-%% spit:: Request -> JsonKeyName -> JsonKeyValue -> Json
+%% spit :: Request -> JsonKeyName -> JsonKeyValue -> Json
+%% 			spit has the side effect that the Json result is sent to the Request and then forwarded 
+%%			to the client that made the request
 %% 
 
 spit(Req, ObName, ObValue) ->
 	Req:ok({"text/plain", [], [mochijson2:encode({struct, [{ObName, ObValue}] } )] } ).
 spit(Req, Json) ->
 	Req:ok({"text/plain", [], [ mochijson2:encode(Json) ] }).
+
+%% 
+%% get_option :: 
+%% 		
+%%		
 
 get_option(Option, Options) ->
     {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.

@@ -66,6 +66,14 @@ connect(SessionPointer, AST, QueryId) ->
 	gen_server:cast(sessionPointer:pid(SessionPointer), {connect, AST, QueryId}).
 
 %% 
+%% disconnect :: SessionPointer -> QueryId
+%% 		
+%%		
+
+disconnect(SessionPointer, QueryId) ->
+	gen_server:cast(sessionPointer:pid(SessionPointer), {disconnect, QueryId}).
+
+%% 
 %% sendElements :: SessionPointer -> From -> Elements -> ok
 %% 		
 %%		
@@ -162,6 +170,12 @@ handle_cast({connect, AST, QueryId}, State) ->
 	SessionPointer = sessionPointer(State),
 	cell:injectOutput(CellPointer, SessionPointer, sessionOutput, [QueryId]),
 	State1 = updateQueries(State, QueryId, CellPointer),
+	{noreply, State1};
+handle_cast({disconnect, QueryId}, State) ->
+	CellPointer = getQueryCellPointer( State, QueryId ),
+	SessionPointer = sessionPointer(State),
+	cell:uninjectOutput(CellPointer, SessionPointer, sessionOutput, [QueryId]),
+	State1 = removeQuery(State, QueryId),
 	{noreply, State1};
 handle_cast({sendElements, []}, State) ->
 	% handle donemessage stuff here
@@ -280,6 +294,22 @@ sessionPointer(#state{name = Name}) ->
 
 updateQueries(#state{queries = Queries} = State, QueryId, CellPointer) ->
 	State#state{queries = dict:store(QueryId, CellPointer, Queries)}.
+	
+%% 
+%% getQueryCellPointer :: SessionState -> QueryId -> CellPointer
+%% 		
+%%		
+
+getQueryCellPointer( #state{queries = Queries} = State, QueryId ) ->
+	dict:fetch(QueryId, Queries).
+	
+%% 
+%% removeQuery :: SessionState -> QueryId -> SessionState
+%% 		
+%%		
+
+removeQuery(#state{queries = Queries} = State, QueryId) ->
+	State#state{queries = dict:erase(QueryId, Queries)}.
 
 %% 
 %% updateQueue :: SessionState -> List Struct -> SessionState
