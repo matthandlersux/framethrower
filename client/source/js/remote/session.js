@@ -68,7 +68,7 @@ function parseServerResponse(s, expectedType) {
 	if (typeOf(s) === "object") {
 		if (s.kind === "cell") {
 			// TODO test this
-			return makeRemoteCell(s.name, expectedType);
+			return makeRemoteCell(s.name, s.constructorType);
 		} else if (s.kind === "object") {
 			var propTypes = objects.getPropTypes(s.type);
 			var prop = map(s.props, function(value, name) {
@@ -125,11 +125,14 @@ var session = (function () {
 
 		var cell = makeCC(type);
 		
+		//TODO: make this not use controlled cells
+		cell.persist = false;
+		
 		cell.remote = remote.shared;
 		cell.name = stringify(expr);
 
 		cells[queryId] = cell;
-		
+
 		// if (unparseExpr(getExpr(expr)).indexOf("local.") !== -1) {
 		// 	debug.error("Trying to send a local thing to the server", expr);
 		// }
@@ -143,6 +146,18 @@ var session = (function () {
 				queryId: '' + queryId
 			}
 		});
+
+		//add cleanup to tell server when this cell is destroyed
+		cell.addOnRemove(function() {
+			console.log("Cleaning up", queryId);
+			messages.push({
+				remove: {
+					queryId: '' + queryId
+				}
+			});
+			delete cells[queryId];
+		});
+
 		
 		return cell;
 	}
@@ -158,7 +173,6 @@ var session = (function () {
 						messages: messages
 					};
 					var json = JSON.stringify(globalTest);
-					console.log("JSON", json);
 					var asking = messages;
 					messages = [];
 					sending = true;
@@ -276,15 +290,29 @@ var session = (function () {
 		});
 	}
 	
-	function getSharedLets(callBack) {
+	
+	
+	function getSharedLets(sharedLetStruct, callBack) {
 		xhr(serverBaseUrl+"sharedLets", "", function (response) {
 			if (!response) {
 				console.log("Error getting Shared Lets, no server response");
 			} else {
 				response = JSON.parse(response);
-				var sharedLets = map(response, function(Value) {
-					return parseServerResponse(Value)
-				});
+
+				var sharedLets = map(sharedLetStruct, function(let, name) {
+					if (let.kind === "lineTemplate") {
+						//this let is an action
+						var actionFunction = function() {
+							//have to convert arguments into another array because arguments is not a real array (javascript quirk)
+							var args = Array.prototype.slice.call(arguments);
+							return makeRemoteInstruction(name, args);
+						}
+						return makeFun(let.type, actionFunction, let.params.length, name, remote.localOnly, true);
+					} else {
+						//this let will have been delivered from the server
+						return parseServerResponse(response[name]);
+					}
+				});				
 				callBack(sharedLets);
 			}
 		},

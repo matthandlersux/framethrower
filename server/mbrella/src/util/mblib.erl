@@ -157,7 +157,8 @@ exprElementToJson(X) when is_list(X) -> list_to_binary(X);
 exprElementToJson(Tuple) when is_tuple(Tuple) ->
 	case cellPointer:isCellPointer(Tuple) of
 		true ->
-			{struct, [{<<"kind">>, cell}, {<<"name">>, list_to_binary(cellPointer:name(Tuple))}]};
+			ElementsType = parseUtil:toTitle(atom_to_list(cell:elementsType(Tuple))),
+			{struct, [{<<"kind">>, cell}, {<<"name">>, list_to_binary(cellPointer:name(Tuple))}, {<<"constructorType">>, list_to_binary(ElementsType)}]};
 		false -> case objects:isObjectPointer(Tuple) of 
 			true ->
 				{Name, Type, Props} = objectStore:lookup(objects:getName(Tuple)),
