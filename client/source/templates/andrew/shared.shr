@@ -17,7 +17,8 @@ TestObject1 = state {makeTestClass 5 "hello"},
 TestObject2 = state {makeTestClass 8 "goodbye"},
 
 changeString = action (input::String) {
-	set (TestClass:str TestObject1) input
+	set (TestClass:str TestObject1) input,
+	return input
 },
 
 

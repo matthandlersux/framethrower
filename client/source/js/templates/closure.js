@@ -136,7 +136,7 @@ function evaluateLine(line, env) {
 		return makeXMLP(line.xml, env);
 	} else if (line.kind === "lineState") {
 		var ac = evaluateLine(line.action, env);
-		return executeAction(ac);		
+		return executeState(ac);		
 		//return makeCC(line.type);
 		//return makeCC(parseType(line.type));
 	} else if (line.kind === "lineAction") {

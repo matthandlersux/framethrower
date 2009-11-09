@@ -258,7 +258,7 @@ var session = (function () {
 							var callback = actionsPending[actionResponse.actionId];
 							delete actionsPending[actionResponse.actionId];
 							if (callback && actionResponse.success) {
-								callback(actionResponse.created, parseServerResponse(actionResponse.returned));
+								callback(parseServerResponse(actionResponse.returned));
 							} else if (!actionResponse.success) {
 								debug.log("Action failed, actionId:", actionResponse.actionId);
 							}
@@ -293,12 +293,12 @@ var session = (function () {
 	
 	
 	function getSharedLets(sharedLetStruct, callBack) {
+		if (!sharedLetStruct) sharedLetStruct = {};
 		xhr(serverBaseUrl+"sharedLets", "", function (response) {
 			if (!response) {
 				console.log("Error getting Shared Lets, no server response");
 			} else {
 				response = JSON.parse(response);
-
 				var sharedLets = map(sharedLetStruct, function(let, name) {
 					if (let.kind === "lineTemplate") {
 						//this let is an action
@@ -312,7 +312,7 @@ var session = (function () {
 						//this let will have been delivered from the server
 						return parseServerResponse(response[name]);
 					}
-				});				
+				});
 				callBack(sharedLets);
 			}
 		},
