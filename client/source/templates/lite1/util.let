@@ -1,0 +1,10 @@
+boolToDisplay = function (x::Bool)::String {
+	if (x) return "block";
+	else return "none";
+},
+
+getNextOrd = map -> defaultValue ordOrigin (mapUnit ordBigger (takeLastKey map)),
+
+debugAction = jsaction (x::a)::Void {
+	console.log(x);
+},

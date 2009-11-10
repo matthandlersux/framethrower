@@ -68,7 +68,11 @@ function forEachRecursive(o, f) {
 }
 
 // foldAsynchronous(o, init, f)
-// o is list or object
+// foldAsynchronous will perform a fold operation with f over the elements of o, using init as the starting value
+// f is allowed to execute and return a value, or return an asynchronous function ('asyncFunction')
+// when f returns 'asyncFunction', foldAsynchronous will return a function that will run asyncFunction and the continue the fold operation
+//
+// o can be list or object
 //
 // f must return either
 //	 {async:true, asyncFunction: function(aSyncCallback)}  where aSyncCallback(accum) is called with the result of asyncFunction
@@ -78,7 +82,7 @@ function forEachRecursive(o, f) {
 //	 {async:true, asyncFunction: function(aSyncCallback)}  where aSyncCallback(accum) is called with the result of asyncFunction
 // | {async:false, value: value}
 
-function foldAsynchronous(o, init, f, callback) {
+function foldAsynchronous(o, init, f) {
 	function helper (list, begin, length, accum) {
 		var current;
 		var result = {value:accum};
@@ -104,6 +108,8 @@ function foldAsynchronous(o, init, f, callback) {
 	});
 	return helper(list, 0, list.length, init);
 }
+
+
 
 function map(list, f) {
 	var ret;
