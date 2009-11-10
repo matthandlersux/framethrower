@@ -18,6 +18,14 @@ addEventExtra("event.offsetX", "Number", function (extra) {
 addEventExtra("event.offsetY", "Number", function (extra) {
 	return extra.mouseCurrentPos[1] - getPosition(extra.target)[1];
 });
+
+addEventExtra("event.posX", "Number", function (extra) {
+	return getPosition(extra.target)[0];
+});
+addEventExtra("event.posY", "Number", function (extra) {
+	return getPosition(extra.target)[1];
+});
+
 addEventExtra("event.mouseX", "Number", function (extra) {
 	return extra.mouseCurrentPos[0];
 });

@@ -8,12 +8,7 @@ template () {
 	timeRange_start = fst,
 	timeRange_duration = snd,
 	
-	Movie := (String, String, Number, Number, List (TimeRange, String)),
-	movie_id = tuple5get1,
-	movie_title = tuple5get2,
-	movie_duration = tuple5get3,
-	movie_aspectRatio = tuple5get4,
-	movie_chapters = tuple5get5,
+	
 	
 	Timeline := (Movie, XMLP, TimeRange -> Action Void),
 	timeline_movie = tuple3get1,
@@ -30,17 +25,15 @@ template () {
 	fullscreenVideo = state(Unit XMLP),
 	
 	openMovie = action (movie::Movie) {
-		debugAction movie,
 		extract reactiveNot (isOpen movie) as _ {
 			nextOrd = fetch (getNextOrd timelines),
 			addEntry timelines nextOrd (makeTimeline movie)			
 		}
 	},
 	jumpToInMovie = action (movie::Movie, timeRange::TimeRange) {
-		
 		openMovie movie,
 		extract filter (timeline -> reactiveEqual movie (timeline_movie timeline)) (values timelines) as timeline {
-			timeline_jumpTo timeline (5000, 20)
+			timeline_jumpTo timeline timeRange
 		}
 	},
 	
@@ -102,7 +95,7 @@ template () {
 							<div style-width="60" style-height="80" style-background-color="#f0f">
 							
 							</div>
-							{movie_title movie}
+							{Movie:title movie}
 						</div>
 					</f:each>
 					<div style-clear="both" />
@@ -112,13 +105,23 @@ template () {
 			<div>
 				Jump tester
 				<f:on click>
-					openMovie moulinRouge
-					//jumpToInMovie moulinRouge (4000, 100)
+					//openMovie moulinRouge
+					jumpToInMovie moulinRouge (4000, 100)
 				</f:on>
 			</div>
-			<div>
-				{openedMovies}<br />
-				{returnSet moulinRouge}
+			
+			<div style-position="absolute" style-left="20" style-top="100">
+				<f:call>
+					px = state(Unit Number),
+					py = state(Unit Number),
+					<div>
+						<f:on domMove>
+							set px event.posX,
+							set py event.posY
+						</f:on>
+						{px}, {py}
+					</div>
+				</f:call>
 			</div>
 		</div>
 		
@@ -129,7 +132,7 @@ template () {
 					<f:call>timeline_xmlp timeline</f:call>
 					// Movie Title
 					<div style-position="absolute" style-left="0" style-top="-26" style-height="20" style-background-color="#333" style-color="#fff" style-padding="3">
-						{movie_title (timeline_movie timeline)}
+						{Movie:title (timeline_movie timeline)}
 						<span>
 							<f:on click>
 								removeEntry timelines index

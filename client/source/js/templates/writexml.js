@@ -455,12 +455,18 @@ function xmlToDOM(xml, env, context, lastElement) {
 		return xmlToDOM(xmlp.xml, xmlp.env, context, lastElement);
 	} else if (xml.kind === "on") {
 		var node = createEl("f:on");
-		if (xml.event === "init") {
+		if (xml.event === "init" || xml.event === "domMove") {
 			setTimeout(function () {
-				var action = makeClosure(xml.action, env);
+				extraEnv = makeEventExtrasEnv(env, {target:lastElement});
+				var action = makeClosure(xml.action, extraEnv);
 				executeAction(action);
 			}, 0);
 			return {node: node, cleanup: null};
+		} else if (xml.event === "uninit") {
+			return {node: node, cleanup: function () {
+				var action = makeClosure(xml.action, env);
+				executeAction(action);
+			}};
 		} else {
 			var eventName, eventGlobal;
 			if (xml.event.substr(0, 6) === "global") {

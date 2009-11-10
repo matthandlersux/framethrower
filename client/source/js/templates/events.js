@@ -1,6 +1,17 @@
 var globalEventHandlers = {};
 
 
+function makeEventExtrasEnv(env, extra) {
+	return function (s) {
+		if (eventExtras[s]) {
+			return eventExtras[s].f(extra);
+		} else {
+			return env(s);
+		}
+	};
+}
+
+
 (function () {
 	
 	function isDOMAncestor(child, grandparent) {
@@ -39,17 +50,12 @@ var globalEventHandlers = {};
 	// Processing Events
 	// =========================================================
 	
+
+	
 	function processEvent(eventName, e, eventParams) {
 		
 		function trigger(lineAction, actionEnv, extra) {
-			var env = function (s) {
-				if (eventExtras[s]) {
-					//return eventExtras[s].f(e, null, mouseCurrentPos);
-					return eventExtras[s].f(extra);
-				} else {
-					return actionEnv(s);
-				}
-			};
+			var env = makeEventExtrasEnv(actionEnv, extra);
 			
 			var action = makeClosure(lineAction, env);
 

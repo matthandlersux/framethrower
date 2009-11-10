@@ -161,7 +161,11 @@ moulinRougeChapters = function ()::List (TimeRange, String) {
 	return arrayToList(ret);
 },
 
-moulinRouge = ("mr", "Moulin Rouge", 7668.189, 2.222, moulinRougeChapters),
+//moulinRouge = ("mr", "Moulin Rouge", 7668.189, 2.222, moulinRougeChapters),
+
+moulinRouge = state {
+	create(Movie, {id:"mr", title:"Moulin Rouge", duration:7668.189, aspectRatio:2.222, chapters:moulinRougeChapters})
+},
 
 
 movies = state {

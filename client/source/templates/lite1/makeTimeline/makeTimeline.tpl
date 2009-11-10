@@ -5,8 +5,8 @@ template (movie::Movie)::Timeline {
 	// ==========
 	
 	timelineWidth = screenWidth,
-	movieDuration = movie_duration movie,
-	aspectRatio = movie_aspectRatio movie,
+	movieDuration = Movie:duration movie,
+	aspectRatio = Movie:aspectRatio movie,
 	
 	// UI Sizing Constants
 	scrollbarHeight = 14,
@@ -109,7 +109,7 @@ template (movie::Movie)::Timeline {
 	// ==========
 	
 	timelineShownStart = divide scrollAmount zoomFactor,
-	timelineShownDuration = divide timelineWidth zoomFactor,
+	timelineShownDuration = divide mainTimelineWidth zoomFactor,
 	
 	
 	
@@ -141,7 +141,7 @@ template (movie::Movie)::Timeline {
 	
 	
 	jumpTo = action (timeRange::TimeRange) {
-		padding = 0.1,
+		padding = 0.4,
 		maxZoomRatio = 25, // this ensures that the jumped to range is sufficiently zoomed in
 		
 		jumpStart = timeRange_start timeRange,
@@ -150,6 +150,7 @@ template (movie::Movie)::Timeline {
 		
 		set selectedTimeStartS jumpStart,
 		set selectedTimeDurationS jumpDuration,
+		set previewTimeS jumpStart,
 		
 		durationMin = multiply (plus 1 (multiply 2 padding)) jumpDuration,
 		durationMax = multiply maxZoomRatio jumpDuration,
@@ -160,7 +161,7 @@ template (movie::Movie)::Timeline {
 		startMax = subtract jumpStart paddingTime,
 		newStart = clamp timelineShownStart startMin startMax,
 		
-		setZoomFactor (divide timelineWidth newDuration) 0,
+		setZoomFactor (divide mainTimelineWidth newDuration) 0,
 		setScrollAmount (multiply newStart zoomFactor)
 	},
 	
@@ -216,7 +217,7 @@ template (movie::Movie)::Timeline {
 					</f:on>
 
 					<div style-position="absolute" style-top="0" style-left="0" style-width="100%" style-opacity="0.5">
-						<f:call>chapterImages mainTimelineHeight (movie_chapters movie)</f:call>
+						<f:call>chapterImages mainTimelineHeight (Movie:chapters movie)</f:call>
 					</div>
 
 					// Ruler
@@ -317,6 +318,11 @@ template (movie::Movie)::Timeline {
 				<f:on init>
 					extract reactiveNot fullscreenVideo as _ {
 						set fullscreenVideo fullscreenXMLP
+					}
+				</f:on>
+				<f:on uninit>
+					extract mapUnit (reactiveEqual fullscreenXMLP) fullscreenVideo as _ {
+						unset fullscreenVideo
 					}
 				</f:on>
 
