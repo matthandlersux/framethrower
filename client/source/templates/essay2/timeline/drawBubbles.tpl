@@ -37,13 +37,16 @@ template (items::List (TimeRange, a)) {
 				<div style-top="2" style-left="{makePercent (divide start movieDuration)}" style-width="{makePercent (divide duration movieDuration)}" style-height="{height}" style-background-color="#60c" style-position="absolute">
 					<f:on mouseover>
 						set mouseOveredTimeS (start, duration),
-						set tmpXMLP myXMLP
+						//showTooltip event.mouseX event.mouseY 300 100 false myXMLP
 					</f:on>
 					<f:on mouseout>
 						unset mouseOveredTimeS,
-						unset tmpXMLP
+						//hideTooltip
 					</f:on>
-					
+					<f:on click>
+						set selectedTimeStartS start,
+						set selectedTimeDurationS duration
+					</f:on>
 				</div>
 			</f:each>
 		</div>

@@ -36,9 +36,9 @@ template () {
 	myTestContent = <div>hello</div>,
 	
 	<div style-width="100%" style-height="100%">
-		<f:on click>
-			showTooltip 100 100 300 100 false myTestContent
-		</f:on>
+		// <f:on click>
+		// 			showTooltip 100 100 300 100 false myTestContent
+		// 		</f:on>
 		
 		<f:call>timeline</f:call>
 		

@@ -18,10 +18,11 @@ template () {
 	// tllHeight = tuple3get2,
 	// tllContent = tuple3get3,
 	
-	TimelineLayer := (String, Number, List TimelineItem),
-	tllLabel = tuple3get1,
-	tllHeight = tuple3get2,
-	tllItems = tuple3get3,
+	TimelineLayer := (String, Number, List TimelineItem, List TimelineItem -> XMLP),
+	tllLabel = tuple4get1,
+	tllHeight = tuple4get2,
+	tllItems = tuple4get3,
+	tllDisplay = tuple4get4,
 	
 	
 	// ==========
@@ -82,8 +83,8 @@ template () {
 	layers = state {
 		layers <- create(Map Ord TimelineLayer),
 		
-		addEntry layers (numToOrd 1) ("Chapters", 106, chapters),
-		//addEntry layers (numToOrd 3) ("Captions", 24, captions),
+		addEntry layers (numToOrd 1) ("Chapters", 106, chapters, (drawTimelineLayer 100 3)),
+		addEntry layers (numToOrd 3) ("Subtitles", 24, captions, drawBubbles),
 		
 		
 		
@@ -173,10 +174,6 @@ template () {
 	
 	
 	
-	tmpXMLP = state(Unit XMLP),
-	
-	
-	
 	// ==========
 	// Derived State
 	// ==========
@@ -223,7 +220,18 @@ template () {
 	
 	
 	
-	
+	filterTimelineItems = function (start::Number, duration::Number, items::List TimelineItem)::List TimelineItem {
+		var ret = [];
+		forEach(items.asArray, function (item) {
+			var itemStart = item.asArray[0].asArray[0];
+			var itemDuration = item.asArray[0].asArray[1];
+			
+			if (itemStart < start+duration && itemStart+itemDuration > start) {
+				ret.push(item);
+			}
+		});
+		return arrayToList(ret);
+	},
 	
 
 	
@@ -232,13 +240,24 @@ template () {
 	
 	
 	<div>
+		
 		<div>
-			<f:each tmpXMLP as tmp>
-				//<div style-position="absolute" style-background-color="#fff" style-border="1px solid #999" style-left="{subtract (fetch (UI.ui:mouseX ui.ui)) 100}" style-top="{subtract (fetch (UI.ui:mouseY ui.ui)) 300}" style-width="300" style-height="120">
-					<f:call>tmp</f:call>
-				//</div>
+			<f:each layers as index, layer>
+				<div>
+					<b>{tllLabel layer}</b>
+					<div>
+						<f:each filterTimelineItems selectedTimeStart selectedTimeDuration (tllItems layer) as item>
+							<div>
+								{tiContent item}
+							</div>
+						</f:each>
+					</div>
+				</div>
 			</f:each>
 		</div>
+		
+		
+		
 	
 		// Timeline (in total)
 		<div style-width="{timelineWidth}" style-height="{timelineHeight}" style-left="0" style-bottom="0" style-position="absolute" style-background-color="#eee">
@@ -323,8 +342,8 @@ template () {
 
 					<div style-position="absolute" style-top="{rulerHeight}" style-left="0" style-width="100%" style-border-top="1px solid #666">
 						<f:each layers as index, layer>
-							<div style-position="relative" style-width="100%" style-height="{tuple3get2 layer}" style-border-bottom="1px solid #666">
-								<f:call>drawTimelineLayer (tllItems layer) 100 3</f:call>
+							<div style-position="relative" style-width="100%" style-height="{tllHeight layer}" style-border-bottom="1px solid #666">
+								<f:call>(tllDisplay layer) (tllItems layer)</f:call>
 							</div>
 						</f:each>
 					</div>
