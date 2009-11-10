@@ -13,8 +13,9 @@ template () {
 		<div>
 			Click here to change string
 			<f:on click>
-				newString <- changeString "another test",
-				set localCell newString
+				newString <- changeString "testString 1",
+				newString2 <- changeString2 "testString 2",
+				set localCell newString2
 			</f:on>
 		</div>
 	

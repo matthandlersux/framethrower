@@ -111,54 +111,49 @@ function executeState(instruction) {
 	return output;
 }
 
+function executeAction (instruction, callback) {
+	function executeUntilDone(result) {
+		if (result.async) {
+			result.asyncFunction(executeUntilDone);
+		} else if (callback) {
+			callback(result.value);
+		}
+	}
+	executeUntilDone(helpExecuteAction(instruction));
+}
 
 
+function addLetToScope (output, actionLet, scope) {
+	if (actionLet.name) {
+		if (output === undefined) {
+			debug.error("Trying to assign a let action, but the action has no return value", actionLet);
+		}
+		scope[actionLet.name] = output;
+	}
+}
 
-function executeAction(instruction, callback) {
+
+function helpExecuteAction (instruction) {
 	if (instruction.kind === "remoteInstruction") {
-		console.log("Executing remote Instruction!", instruction);
-		session.perform(instruction.name, instruction.params, callback);
-		return {usedCallback:true};
+		return {
+			async:true,
+			asyncFunction:function (callback) {
+				console.log("Executing remote Instruction!", instruction);
+				session.perform(instruction.name, instruction.params, callback);	
+			}
+		};
 	} else {
-	
 		var scope = {};
 		var env = extendEnv(instruction.env, scope);
+		var output;
 	
 		function evalExpr (expr) {
 			return evaluate2(parseExpression(expr, env));
 		}
 
-		function executeInstructions(instructions, output) {
-			if (!output) output = {usedCallback: false};
-			while (!output.usedCallback && instructions.length > 0) {
-				output = executeNextInstruction(instructions);
-				instructions = instructions.slice(1);
-			}
-			return output;
-		}
-
-		function executeNextInstruction (instructions) {
-			var output;
-		
-			var actionLet = instructions[0];
+		return foldAsynchronous(instruction.instructions, undefined, function (actionLet) {
 			var action = actionLet.action;
-		
-			function addLetToScope(output) {
-				if (actionLet.name) {
-					if (output === undefined) {
-						debug.error("Trying to assign a let action, but the action has no return value", actionLet);
-					}
-					scope[actionLet.name] = output;
-				}	
-			}
 
-			function recurseOnOutput (output) {
-				console.log("recurse on output");
-				addLetToScope(output);
-				var restOfInstructions = instructions.slice(1);
-				executeInstructions(restOfInstructions, output);
-			}
-		
 			if (action.kind === "actionCreate") {
 				// we're dealing with: {kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}}
 				var created;
@@ -167,7 +162,7 @@ function executeAction(instruction, callback) {
 				} else {
 					created = objects.make(action.type.value, map(action.prop, evalExpr));
 				}
-				output = {usedCallback: false, value: created};
+				output = {async:false, value:created};
 			} else if (action.kind === "extract") {
 				// we're dealing with: {kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
 
@@ -204,28 +199,28 @@ function executeAction(instruction, callback) {
 					injectedFunc.unInject();
 				}
 				// extract returns undefined
-				output = {usedCallback:false};
+				output = {async:false, value:undefined};
 			} else if (action.kind === "case") {
 				var template = makeClosure(action.lineTemplate, env),
 					otherwise = makeClosure(action.otherwise, env);
 				var cell = evalExpr(action.test);
 				var done = false;
+				var action;
 				var injectedFunc = cell.injectDependency(function () {
 					if (!done) {
 						done = true;
-						var action;
 						if(cell.getState().length>0)
 							action = evaluate( makeApply(template, cell.getState()[0]) );
 						else
 							action = otherwise;
-						output = executeAction(action, recurseOnOutput);
 					}
 				});
 				injectedFunc.unInject();
+				var result = helpExecuteAction(action);
+				output = wrapIfAsync(result, actionLet, scope);
 			} else if (action.kind === "actionMethod") {
 				// we're dealing with: {kind: "actionMethod", f: function}
-				var result = action.f();
-				output = {usedCallback:false, value:result};
+				output = {async:false, value:action.f()};
 			} else {
 				// we're dealing with a LINE
 
@@ -233,17 +228,31 @@ function executeAction(instruction, callback) {
 				var evaled = evaluate(evaluateLine(action, env));
 				if (evaled.kind === "instruction" || evaled.kind === "remoteInstruction") {
 					// the LINE evaluated to an Action
-					output = executeAction(evaled, recurseOnOutput);
+					var result = helpExecuteAction(evaled);
+					output = wrapIfAsync(result, actionLet, scope);
 				} else
 					debug.error("non-action expression in an action", action);
 			}
-			if (!output.usedCallback) {
-				addLetToScope(output.value);
+			if (!output.async) {
+				addLetToScope(output.value, actionLet, scope);
 			}
 			return output;
-		}
+		});
+	}
+}
 
-
-		return executeInstructions(instruction.instructions);
+function wrapIfAsync(result, actionLet, scope) {
+	if (result.async) {
+		return {
+			async:true, 
+			asyncFunction: function (callback) {
+				result.asyncFunction(function(accum) {
+					addLetToScope(accum, actionLet, scope);
+					callback(accum);
+				});
+			}
+		};
+	} else {
+		return result;
 	}
 }
