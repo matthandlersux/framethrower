@@ -19,7 +19,7 @@ template (movie::Movie)::Timeline {
 	smallPreviewWidth = multiply smallPreviewHeight aspectRatio,
 	
 	
-	mainTimelineWidth = fetch (switch fullscreened timelineWidth (subtract timelineWidth smallPreviewWidth)),
+	mainTimelineWidth = fetch (reactiveIfThen fullscreened timelineWidth (subtract timelineWidth smallPreviewWidth)),
 	mainTimelineLeft = 0,
 	//mainTimelineHeight = subtract timelineHeight (plus scrollbarHeight rulerHeight),
 	mainTimelineHeight = subtract timelineHeight scrollbarHeight,
@@ -223,27 +223,19 @@ template (movie::Movie)::Timeline {
 					//<f:call>ruler</f:call>
 					
 
-				
 					
 					// Mouse time
 					<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
-					
-					// Preview time
-					<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,1.0)">
-						<div style-position="absolute" style-left="-6" style-width="12" style-height="12" style-background-color="#999" style-top="-24" />
-					</div>
-					
 
-					
 					// Selected time
-					<div style-position="absolute" style-left="{makePercent (divide selectedTimeStart movieDuration)}" style-width="{makePercent (divide selectedTimeDuration movieDuration)}" style-height="100%" style-background-color="rgba(255, 153, 0, 0.5)">
+					<div style-position="absolute" style-left="{makePercent (divide selectedTimeStart movieDuration)}" style-width="{makePercent (divide selectedTimeDuration movieDuration)}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
 						// draggable sliders
 						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
 							<f:call>
 								setSelected = action (start::Number, offsetX::Number) {
 									time = plus start (divide offsetX zoomFactor),
 									setSelectedTimeLeft time,
-									set previewTimeS time
+									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration))
 								},
 								dragger (unfetch selectedTimeStart) setSelected
 							</f:call>
@@ -253,12 +245,23 @@ template (movie::Movie)::Timeline {
 								setSelected = action (start::Number, offsetX::Number) {
 									time = plus start (divide offsetX zoomFactor),
 									setSelectedTimeRight time,
-									set previewTimeS time
+									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration))
 								},
 								dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected
 							</f:call>
 						</div>
 					</div>
+				
+					
+					// Preview time
+					<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-height="100%">
+						<div style-position="absolute" style-left="-1" style-top="0" style-width="1" style-height="100%" style-border-left="3px solid rgba(255,153,0,1.0)" />
+						//<div style-position="absolute" style-left="-6" style-width="12" style-height="12" style-background-color="#999" style-top="-24" />
+					</div>
+					
+
+					
+
 					
 					
 
@@ -309,6 +312,13 @@ template (movie::Movie)::Timeline {
 						Small Preview Video
 					</div>
 				</f:each>
+				
+				// full screen on opening if nothing is already full screened
+				<f:on init>
+					extract reactiveNot fullscreenVideo as _ {
+						set fullscreenVideo fullscreenXMLP
+					}
+				</f:on>
 
 
 			</div>

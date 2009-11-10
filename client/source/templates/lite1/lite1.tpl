@@ -30,17 +30,27 @@ template () {
 	fullscreenVideo = state(Unit XMLP),
 	
 	openMovie = action (movie::Movie) {
-		
-		// TODO
-		//existingTimeline = takeOne (filter (timeline -> equal movie (timeline_movie timeline)) (values timelines)),
-		
-		nextOrd = fetch (getNextOrd timelines),
-		addEntry timelines nextOrd (makeTimeline movie)
+		debugAction movie,
+		extract reactiveNot (isOpen movie) as _ {
+			nextOrd = fetch (getNextOrd timelines),
+			addEntry timelines nextOrd (makeTimeline movie)			
+		}
 	},
 	jumpToInMovie = action (movie::Movie, timeRange::TimeRange) {
-		// TODO
+		
+		openMovie movie,
+		extract filter (timeline -> reactiveEqual movie (timeline_movie timeline)) (values timelines) as timeline {
+			timeline_jumpTo timeline (5000, 20)
+		}
 	},
 	
+	
+	// =============
+	// Derived State
+	// =============
+	
+	openedMovies = mapSet timeline_movie (values timelines),
+	isOpen = movie -> isNotEmpty (filter (reactiveEqual movie) openedMovies),
 	
 	// =============
 	// UI Constants
@@ -65,9 +75,6 @@ template () {
 	
 	
 	<div>
-		<f:on init>
-			openMovie moulinRouge
-		</f:on>
 		
 
 		
@@ -86,17 +93,33 @@ template () {
 			</f:each>
 			<f:each reactiveNot fullscreenVideo as _>
 				<div>
-					Movies:
 					<f:each movies as movie>
-						<div>
+						
+						<div style-float="left" style-width="100" style-height="120" style-opacity="{reactiveIfThen (isOpen movie) 0.5 1}">
 							<f:on click>
 								openMovie movie
 							</f:on>
+							<div style-width="60" style-height="80" style-background-color="#f0f">
+							
+							</div>
 							{movie_title movie}
 						</div>
 					</f:each>
+					<div style-clear="both" />
 				</div>
 			</f:each>
+			
+			<div>
+				Jump tester
+				<f:on click>
+					openMovie moulinRouge
+					//jumpToInMovie moulinRouge (4000, 100)
+				</f:on>
+			</div>
+			<div>
+				{openedMovies}<br />
+				{returnSet moulinRouge}
+			</div>
 		</div>
 		
 		
@@ -105,7 +128,7 @@ template () {
 				<div style-position="relative" style-width="{screenWidth}" style-height="{timelineHeight}">
 					<f:call>timeline_xmlp timeline</f:call>
 					// Movie Title
-					<div style-position="absolute" style-left="0" style-top="0" style-background-color="rgba(0,0,0,0.5)">
+					<div style-position="absolute" style-left="0" style-top="-26" style-height="20" style-background-color="#333" style-color="#fff" style-padding="3">
 						{movie_title (timeline_movie timeline)}
 						<span>
 							<f:on click>

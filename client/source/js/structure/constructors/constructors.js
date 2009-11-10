@@ -109,6 +109,7 @@ function makeTuple() {
     return {
         //kind: "tuple"+n,
         kind: "tuple",
+		//name: localIds(),
 		remote: 2,
         asArray: Array.prototype.slice.call(arguments)
     };

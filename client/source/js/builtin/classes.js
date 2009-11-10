@@ -14,6 +14,21 @@ An Object looks like:
 var classesToMake = {
 	
 	// ====================================================
+	// For Lite 1
+	// ====================================================
+	
+	"Movie": {
+		prop: {
+			"id": "String",
+			"title": "String",
+			"duration": "Number",
+			"aspectRatio": "Number",
+			"chapters": "List ((Number, Number), String)"
+		}
+	},
+	
+	
+	// ====================================================
 	// New
 	// ====================================================
 	

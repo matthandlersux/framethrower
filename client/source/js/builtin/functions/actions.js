@@ -27,6 +27,8 @@ function updateCC(updateType, target, key, value) {
 	if (target.control === undefined) {
 		debug.error("Trying to do action update on non-controlled cell", target);
 	} else {
+		//if (key !== undefined) key = evaluate(key);
+		//if (value !== undefined) value = evaluate(value);
 		target.control[updateType](key, value);
 	}
 }
