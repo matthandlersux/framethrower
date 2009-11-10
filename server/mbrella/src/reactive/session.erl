@@ -251,9 +251,9 @@ pipelineTimeout(TimeWindow, {updates, JSONStructs, LastMessageId}, Reruns) ->
 		{updates, JSONStructs1, LastMessageId1} ->
 			receive
 				{updates, JSONStructs2, LastMessageId2} when Reruns =< ?MaxReruns -> 
-					pipelineTimeout(TimeWindow, {updates, JSONStructs1 ++ JSONStructs2 ++ JSONStructs, LastMessageId2}, Reruns + 1)
+					pipelineTimeout(TimeWindow, {updates, JSONStructs ++ JSONStructs1 ++ JSONStructs2, LastMessageId2}, Reruns + 1)
 			after TimeWindow ->
-				{updates, JSONStructs1 ++ JSONStructs, LastMessageId1}
+				{updates, JSONStructs ++ JSONStructs1, LastMessageId1}
 			end
 	after ?ServerClientTimeout ->
 		timeout
