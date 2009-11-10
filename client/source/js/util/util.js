@@ -74,11 +74,11 @@ function forEachRecursive(o, f) {
 //	 {async:true, asyncFunction: function(aSyncCallback)}  where aSyncCallback(accum) is called with the result of asyncFunction
 // | {async:false, value: value}
 //
-// foldAsynchronous returns almost same thing as f:
-//	 {async:true, asyncFunction: function()}  difference is asyncFunction doesn't take callback function as argument
+// foldAsynchronous returns same thing as f:
+//	 {async:true, asyncFunction: function(aSyncCallback)}  where aSyncCallback(accum) is called with the result of asyncFunction
 // | {async:false, value: value}
 
-function foldAsynchronous(o, init, f) {
+function foldAsynchronous(o, init, f, callback) {
 	function helper (list, begin, length, accum) {
 		var current;
 		var result = {value:accum};
@@ -88,9 +88,9 @@ function foldAsynchronous(o, init, f) {
 			if (result.async) {
 				return {
 					async: true,
-					asyncFunction:function() {
+					asyncFunction:function(callback) {
 						result.asyncFunction(function (accum) {
-							return helper(list, i+1, length, accum);
+							callback(helper(list, i+1, length, accum));
 						});
 					}
 				};
