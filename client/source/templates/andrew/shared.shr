@@ -21,6 +21,11 @@ changeString = action (input::String) {
 	return input
 },
 
+changeString2 = action (input::String) {
+	set (TestClass:str TestObject2) input,
+	return input
+},
+
 
 TestCell = state {
 	MySet <- create(Set TestClass),
