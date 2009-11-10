@@ -168,7 +168,7 @@ function helpExecuteAction (instruction) {
 			} else if (actionKind === "actionMethod") {
 				// we're dealing with: {kind: "actionMethod", f: function}
 				output = {async:false, value:action.f()};
-			} else if (actionKind === "lineExpr") {
+			} else if (actionKind === "lineExpr" || actionKind === "lineTemplate") {
 				// we're dealing with a LINE
 
 				var evaled = evaluate(evaluateLine(action, env));
@@ -224,7 +224,9 @@ function helpExecuteAction (instruction) {
 				injectedFunc.unInject();
 				output = helpExecuteAction(action);
 			}
-
+			if (output === undefined) {
+				console.log("output undefined", actionLet);
+			}
 			//now wrap the output if needed
 			if (output.async) {
 				return { // return a function to run the asynchronous action, add the result to the scope, and continue with provided callback
