@@ -105,6 +105,7 @@ function compileFolder(folderPath, rebuild) {
 		
 	var lets = {};
 	var newtypes = {};
+	var sharedLets = {};
 	var mainJSON;
 	forEach(childFiles, function(child) {
 		var nameWithExt = child;
@@ -127,6 +128,14 @@ function compileFolder(folderPath, rebuild) {
 				if(includeLets.newtype !== undefined )
 					mergeIntoObject(newtypes, includeLets.newtype);
 			}
+		} else if (ext === "shr") {
+			var includeLets = compileFile(folderPath + "/" + child, rebuild, true);
+			if (includeLets !== undefined) {
+				if(includeLets.let !== undefined )
+					mergeIntoObject(sharedLets, includeLets.let);
+				if(includeLets.newtype !== undefined )
+					mergeIntoObject(newtypes, includeLets.newtype);
+			}
 		}
 	});
 	forEach(childDirectories, function(child) {
@@ -137,8 +146,10 @@ function compileFolder(folderPath, rebuild) {
 	});
 	if (mainJSON.let === undefined) mainJSON.let = {};
 	if (mainJSON.newtype === undefined) mainJSON.newtype = {};
+	if (mainJSON.sharedLet === undefined) mainJSON.sharedLet = {};
 	mergeIntoObject(mainJSON.let, lets);
 	mergeIntoObject(mainJSON.newtype, newtypes);
+	mergeIntoObject(mainJSON.sharedLet, sharedLets);
 	return mainJSON;
 }
 
@@ -151,6 +162,7 @@ function log () {
 }
 
 function compileFile (filePath, rebuild, isLetFile) {
+	
 	var file = "../../source/templates/" + filePath;
 	var binfile = "../../generated/templates/" + filePath + ".ser";
 
@@ -188,11 +200,7 @@ function compileFile (filePath, rebuild, isLetFile) {
 			throw("Parse Error");
 		} else {
 			var filePath;
-			if (file) {
-				//TODO add getCanonicalPath to shell c++
-				// filePath = file.getCanonicalPath();
-				filePath = file;
-			}
+			filePath = getCanonicalPath(file);
 			result = semantics.processTree(parseResult.result, "" + filePath);
 			try {
 				//TODO: add serialize to shell c++

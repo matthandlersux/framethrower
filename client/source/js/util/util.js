@@ -67,13 +67,57 @@ function forEachRecursive(o, f) {
 	});
 }
 
+// foldAsynchronous(o, init, f)
+// foldAsynchronous will perform a fold operation with f over the elements of o, using init as the starting value
+// f is allowed to execute and return a value, or return an asynchronous function ('asyncFunction')
+// when f returns 'asyncFunction', foldAsynchronous will return a function that will run asyncFunction and the continue the fold operation
+//
+// o can be list or object
+//
+// f must return either
+//	 {async:true, asyncFunction: function(aSyncCallback)}  where aSyncCallback(accum) is called with the result of asyncFunction
+// | {async:false, value: value}
+//
+// foldAsynchronous returns same thing as f:
+//	 {async:true, asyncFunction: function(aSyncCallback)}  where aSyncCallback(accum) is called with the result of asyncFunction
+// | {async:false, value: value}
+
+function foldAsynchronous(o, init, f) {
+	function helper (list, begin, length, accum) {
+		var current;
+		var result = {value:accum};
+		for (var i = begin; i < length; i++) {
+			current = list[i];
+			result = f(current.value, current.index, result.value);
+			if (result.async) {
+				return {
+					async: true,
+					asyncFunction:function(callback) {
+						result.asyncFunction(function (accum) {
+							callback(helper(list, i+1, length, accum));
+						});
+					}
+				};
+			}
+		}
+		return {async:false, value:result.value};
+	}
+	var list = [];
+	forEach(o, function(value, index) {
+		list.push({index:index, value:value});
+	});
+	return helper(list, 0, list.length, init);
+}
+
+
+
 function map(list, f) {
 	var ret;
 	if (arrayLike(list)) ret = [];
 	else ret = {};
 	
 	forEach(list, function (val, key) {
-		ret[key] = f(val);
+		ret[key] = f(val, key);
 	});
 	return ret;
 }

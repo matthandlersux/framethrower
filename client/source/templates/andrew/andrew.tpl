@@ -1,9 +1,32 @@
 template () {
 	
-	// theNum = TestClass:num testObject,
-	y=5,
+	// theNum = TestClass:num TestObject1,
+	stringSet = returnUnitSet (TestClass:str TestObject1),
+	str = TestClass:str TestObject1,
+	localCell = state {
+		cell <- create(Unit String),
+		set cell "default",
+		return cell
+	},
 	
 	<div>
-		Hello, theNum: {y}
+		<div>
+			Click here to change string
+			<f:on click>
+				newString <- changeString "testString 1",
+				newString2 <- changeString2 "testString 2",
+				set localCell newString2
+			</f:on>
+		</div>
+	
+		<f:each TestCell as TestObject>
+			<div>
+				string: {TestClass:str TestObject}
+				<br />
+				<br />
+			</div>
+		</f:each>
+		<br />
+		Local Cell: {localCell}
 	</div>
 }

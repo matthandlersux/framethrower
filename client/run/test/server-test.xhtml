@@ -30,7 +30,11 @@ var serverBaseUrl = "http://localhost:8000/";
 <script src="../../source/js/include.js"></script>
 
 <script>
-includes.htmlInclude(["core", "browser"], ["serverTest.js"], "initialize(); initializeGlobalUICells();");
+var templateFile = location.hash.substr(1);
+if (!templateFile) {
+	alert("Place the name of the template after the hash (universal.xhtml#NAMEOFTEMPLATE)");
+}
+includes.htmlInclude(["core", "browser"], [ROOTDIR+"generated/templates/"+templateFile+".js", "init.js"], "initialize(); initializeGlobalUICells();");
 </script>
 
 </head>

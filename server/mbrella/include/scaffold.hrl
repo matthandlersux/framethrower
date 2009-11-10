@@ -99,14 +99,18 @@
 	variables
 }).
 
--record(cellState, {
-	funcs, 
-	dots, 
-	onRemoves=[],
-	dependencies=[],
-	funcColor=0, 
-	intercept, 
-	done=false
+% -record(cellState, {
+% 	funcs, 
+% 	dots, 
+% 	onRemoves=[],
+% 	dependencies=[],
+% 	funcColor=0, 
+% 	intercept, 
+% 	done=false
+% }).
+-record(scopeState, {
+	dict, 
+	parent
 }).
 
 -record(interceptState, {
@@ -121,14 +125,10 @@
 
 -record (session, {
 	msgQueue = [],
-	openQueries = dict:new(),
 	cleanup = [],
 	lastMessageId = 0,
-	templates = dict:new(),
 	queryIdCount = 0,
-	serverAdviceHash = dict:new(),
 	clientState = satisfied,
-	serverAdviceCount = 0,
 	outputTimer,
 	timeout = 300000,
 	debug = 0

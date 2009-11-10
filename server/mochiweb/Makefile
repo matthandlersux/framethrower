@@ -1,5 +1,5 @@
 all:
-	(cd src;$(MAKE) all)
+	@(cd src;$(MAKE) all)
 
 edoc:
 	(cd src;$(MAKE) edoc)

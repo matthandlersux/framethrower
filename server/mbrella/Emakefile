@@ -1,2 +1,0 @@
-{'../lib/*', [nowarn_unused_vars, {outdir, "../lib/"}] }.
-{'src/*', [nowarn_unused_vars, {outdir, "./ebin/"}]}.

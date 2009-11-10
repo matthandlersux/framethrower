@@ -12,6 +12,15 @@ An Object looks like:
 
 
 var classesToMake = {
+	//DEBUG
+	"TestClass": {
+		prop: {
+			"str": "Unit String",
+			"num": "Unit Number",
+			"staticString": "String"
+		}
+	},
+	
 	
 	// ====================================================
 	// For Lite 1

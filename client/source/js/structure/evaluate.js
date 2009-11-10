@@ -139,17 +139,9 @@ function evaluate2(expr) {
 	Another way of looking at it is getting rid of all top-level apply's in an Expr by doing the applications
 	Also, if the expr is a remote cell, this function will create/return the proper surrogate cell
 	*/
-	
-	//console.log("evaluating expression", unparseExpr(expr));
-	
-	
-	
-	
-
-	
+	// console.log("evaluating expression", unparseExpr(expr));
 	
 	if (expr.kind === "exprApply") {
-		
 		expr = fullBetaReduceExpr(expr);
 		
 		if (expr.kind !== "exprApply") {
@@ -158,8 +150,6 @@ function evaluate2(expr) {
 		
 		//getApplyParamsAndFunction(expr);
 		
-		//getRemote(expr); // just to tag the expr's .remote
-
 		// check if it's already memoized
 		var resultExprStringified = stringify(expr);
 		var cached = evalCache[resultExprStringified];
@@ -167,16 +157,6 @@ function evaluate2(expr) {
 			return cached;
 		}
 
-		// if (getRemote(expr) === 1) {
-		// 	//var ret = queryExpr(expr);
-		// 	var ret = session.query(expr);
-		// 	memoizeCell(resultExprStringified, ret);
-		// 	return ret;
-		// }
-		
-		
-
-		
 		var fp = getFuncAndParams(expr);
 		if (fp.func.kind === "fun") {
 			var paramsLength = fp.params.length;
@@ -186,26 +166,32 @@ function evaluate2(expr) {
 				return expr;
 			} else {
 				funArgs = fp.params.splice(0, expectedLength);
-				
-				// evaluate each input if the fun is strict
-				if (!fp.func.lazy) {
-					funArgs = map(funArgs, evaluate2);					
+
+				var result;
+
+				//check for server exprs
+				if (isServerOnly(getRemoteLevel(expr)) && isReactive(getOutputType(fp.func.type))) {
+					//var ret = queryExpr(expr);
+					//TODO: check if expr returns a Cell before querying server
+					result = session.query(expr);
+				} else {
+					// evaluate each input if the fun is strict
+					if (!fp.func.lazy) {
+						funArgs = map(funArgs, evaluate2);					
+					}
+					result = fp.func.fun.apply(null, funArgs);
 				}
-				
-				var result = fp.func.fun.apply(null, funArgs);
 				
 				if (result.kind === "cell") {
 					// if result is a cell, memoize the result and annotate its type and expr
 				
 					// annotate
-					var resultType = GLOBAL.typeCheck ? getType(expr) : undefined;
-					result.type = resultType;
+					if (GLOBAL.typeCheck) result.type = getType(expr);
 					result.name = resultExprStringified;
 					result.remote = expr.remote;
 				
 					memoizeCell(resultExprStringified, result);
 				}
-				
 				// apply the result to any remaining args
 				forEach(fp.params, function (remainingParam) {
 					result = makeApply(result, remainingParam);
@@ -217,6 +203,18 @@ function evaluate2(expr) {
 			console.error("trying to apply a non-Fun", expr);
 		}
 		
+	} else if (expr.kind === "remoteCell") {
+		// check if it's already memoized
+		var resultExprStringified = stringify(expr);
+		var cached = evalCache[resultExprStringified];
+		if (cached) {
+			return cached;
+		}
+		//query the server for the remote cell by name
+		var result = session.query(expr);
+		//memoize the result
+		memoizeCell(resultExprStringified, result);
+		return result;
 	} else {
 		return expr;
 	}

@@ -17,7 +17,7 @@
 
 	m("test.walleVideo", "X.video", {"url": 'http://media.eversplosion.com/tmp/wallefinallow.mp4', "width": 720, "height": 304, "duration": 5894.139, "frameRate": 23.976024627686});
 	
-	
+	m("shared.test", "TestClass");
 	
 	
 	

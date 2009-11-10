@@ -161,8 +161,13 @@ function isReactive(type) {
 	return constructor === "Set" || constructor === "Map" || constructor === "Unit";
 }
 
-
-
+function getOutputType(type) {
+	var outputType = type;
+	while (outputType.kind === "typeLambda") {
+		outputType = outputType.right;
+	}
+	return outputType;
+}
 
 
 

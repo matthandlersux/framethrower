@@ -11,7 +11,8 @@ else
 fi
 sname="-name $webappname@$servername"
 # mbrellaversion="v1.4"
-adddirs="-pa $PWD/$webappname/ebin $PWD/$webappname/deps/*/ebin $PWD/mbrella/ebin $PWD/lib/ebin"
+
+adddirs="-pa $PWD/$webappname/ebin $PWD/$webappname/deps/*/ebin $PWD/mbrella/ebin $PWD/mochiweb/ebin"
 boot="-boot start_sasl"
 serialize="\\\"test.ets\\\""
 unserialize="undefined"
@@ -123,3 +124,4 @@ cd `dirname $0`
 # echo "exec $erl $commonflags\n\n"
 eval "exec $erl +P 1000000 $heart $commonflags"
 # proc_open("eval exec $erl $commonflags", array(), something)
+

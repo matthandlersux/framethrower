@@ -73,13 +73,20 @@ function makeClosure(lineTemplate, env) {
 			scope[param] = args[i];
 		});
 		var envWithParams = extendEnv(env, scope);
+
+		// add sharedLets to regular lets when running locally
+		if (LOCAL && lineTemplate.sharedLet !== undefined) {
+			forEach(lineTemplate.sharedLet, function(sharedLet, name) {
+				lineTemplate.let[name] = sharedLet;
+			});
+		}
+		var envWithLets = addLets(lineTemplate.let, envWithParams)
 		
-		var envWithLets = addLets(lineTemplate.let, envWithParams);
 		
 		return evaluateLine(lineTemplate.output, envWithLets);
 	};
 	
-	return makeFun(type, f, params.length, undefined, undefined, true);
+	return makeFun(type, f, params.length, undefined, remote.localOnly, true);
 }
 
 
@@ -123,14 +130,13 @@ function evaluateLine(line, env) {
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line, env);
 	} else if (line.kind === "lineJavascript") {
-		return makeFun(line.type, line.f, line.f.length);
+		return makeFun(line.type, line.f, line.f.length, undefined, remote.localOnly);
 		//return makeFun(parseType(line.type), line.f);
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);
 	} else if (line.kind === "lineState") {
 		var ac = evaluateLine(line.action, env);
-		return executeAction(ac);
-		
+		return executeState(ac);		
 		//return makeCC(line.type);
 		//return makeCC(parseType(line.type));
 	} else if (line.kind === "lineAction") {

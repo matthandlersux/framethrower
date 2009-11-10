@@ -1,7 +1,11 @@
+//TODO: make the classDef representation use parsed types instead of type Strings
 
 var objects = (function () {
 
 	function isRemoteClass(className) {
+		if (className === "TestClass") {
+			return true;
+		}
 		return inherits(className, "Object");
 	}
 	
@@ -41,8 +45,8 @@ var objects = (function () {
 			}
 			return memoTable[memoString];
 		};
-		var remote = isRemoteClass(className) ? 0 : 2;
-		addFun(funcName, funcType, func, classDef.memoize.length, remote);
+		var remoteLevel = isRemoteClass(className) ? remote.shared : remote.localOnly;
+		addFun(funcName, funcType, func, classDef.memoize.length, remoteLevel);
 	}
 	
 	function getMemoedObject(className, memoString) {
@@ -72,7 +76,7 @@ var objects = (function () {
 	
 	function castObject(object, castToName) {
 		if (object === undefined || object.kind !== "object") return object;
-		if (object.remote === 1) {
+		if (remoteEquals(object.remote, remote.serverOnly)) {
 			debug.error("Trying to cast a remote object, if you see this then we need to fix this...");
 		}
 		if (!object.as[castToName]) {
@@ -98,7 +102,7 @@ var objects = (function () {
 	}
 	
 	function addCastingFuns(className) {
-		var remote = isRemoteClass(className) ? 0 : 2;
+		var remoteLevel = isRemoteClass(className) ? remote.shared : remote.localOnly;
 		// iterate up the inherit property
 		var ancestor = className;
 		while (ancestor = classDefs[ancestor].inherit) {
@@ -106,13 +110,13 @@ var objects = (function () {
 			var castUpFuncName = className + "~" + ancestor;
 			var castUpType = className + " -> " + ancestor;
 			var castUpFunc = makeCastFunc(ancestor);
-			addFun(castUpFuncName, castUpType, castUpFunc, undefined, remote);
+			addFun(castUpFuncName, castUpType, castUpFunc, undefined, remoteLevel);
 			
 			// cast down (ancestor~subject)
 			var castDownFuncName = ancestor + "~" + className;
 			var castDownType = ancestor + " -> Unit " + className;
 			var castDownFunc = makeCastFuncCell(className);
-			addFun(castDownFuncName, castDownType, castDownFunc, undefined, remote);
+			addFun(castDownFuncName, castDownType, castDownFunc, undefined, remoteLevel);
 		}
 	}
 	
@@ -122,17 +126,25 @@ var objects = (function () {
 	
 	function accessProperty(object, propName) {
 		// This function assumes that all properties have different names, going up the inheritance hierarchy.
+		// also works for objects without 'as' (objects sent from server for now)
 		var ret;
-		forEach(object.as, function (incarnation) {
-			if (incarnation.prop[propName] !== undefined) {
-				ret = incarnation.prop[propName];
+		if (object.as) {
+			forEach(object.as, function (incarnation) {
+				if (incarnation.prop[propName] !== undefined) {
+					//note: cannot return directly from here because we are wrapped in a forEach
+					ret = incarnation.prop[propName];
+				}
+			});
+		} else {
+			if (object.prop[propName] !== undefined) {
+				ret = object.prop[propName];
 			}
-		});
+		}
 		return ret;
 	}
 	
 	function addPropertyAccessorFuns(className) {
-		var remote = isRemoteClass(className) ? 0 : 2;
+		var remoteLevel = isRemoteClass(className) ? remote.shared : remote.localOnly;
 		// iterate up the inherit property
 		var ancestor = className;
 		while (ancestor) {
@@ -147,11 +159,25 @@ var objects = (function () {
 					return accessProperty(object, propName);
 				}
 				
-				addFun(funcName, type, func, undefined, remote);
+				addFun(funcName, type, func, undefined, remoteLevel);
 			});
 			
 			ancestor = classDefs[ancestor].inherit;
 		}
+	}
+	
+	// ====================================================
+	// Property Types
+	// ====================================================
+
+	//
+	// getPropTypes :: String -> {String: Type}
+	//
+	function getPropTypes(className) {
+		var props = classDefs[className].prop;
+		return map(props, function(typeString) {
+			return parseType(typeString);
+		});
 	}
 	
 	// ====================================================
@@ -265,6 +291,7 @@ var objects = (function () {
 	return {
 		make: make,
 		addClass: addClass,
+		getPropTypes: getPropTypes,
 		inherits: inherits,
 		isClass: function (className) {
 			return !!classDefs[className];

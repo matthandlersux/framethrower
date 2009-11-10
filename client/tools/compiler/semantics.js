@@ -657,7 +657,7 @@ var semantics = function(){
 			var getKeyVal = function(node) {
 				return {
 					key: node.identifier,
-					val: node.expr.exprcode
+					val: parse(node.expr.exprcode)
 				};
 			};
 			var proplist = makeListObject(node.proplist, 'proplist', 'prop', getKeyVal);

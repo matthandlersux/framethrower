@@ -1,0 +1,5 @@
+## debug new sessions and changing of cellPointers
+
+S = sessionManager:newSession().
+C = eval:eval("unfoldMap split 23453").
+session:connect(S, parse:parse("unfoldMap split 23453"), "23").

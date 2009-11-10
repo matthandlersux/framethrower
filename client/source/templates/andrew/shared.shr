@@ -1,5 +1,35 @@
-testObject = state {
-	theObject <- create(TestClass, {}),
-	set (TestClass:num theObject) 5,
-	return theObject
+makeTestClass = action (num::Number, str::String) {
+	TestObject <- create(TestClass, {staticString: str}),
+	set (TestClass:num TestObject) num,
+	set (TestClass:str TestObject) str,
+	return TestObject
+},
+
+clone = action (input::TestClass) {
+	TestObject <- create(TestClass, {}),
+	extract TestClass:str input as name {
+		set (TestClass:str TestObject) name
+	},
+	return TestObject
+},
+
+TestObject1 = state {makeTestClass 5 "hello"},
+TestObject2 = state {makeTestClass 8 "goodbye"},
+
+changeString = action (input::String) {
+	set (TestClass:str TestObject1) input,
+	return input
+},
+
+changeString2 = action (input::String) {
+	set (TestClass:str TestObject2) input,
+	return input
+},
+
+
+TestCell = state {
+	MySet <- create(Set TestClass),
+	add MySet TestObject1,
+	add MySet TestObject2,
+	return MySet
 }
