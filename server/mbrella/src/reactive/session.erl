@@ -161,7 +161,7 @@ handle_cast({pipeline, From, LastMessageId}, State) ->
 			{[{NewLastMessageId, _ListOfStructs1}|_RestOfQueue1] = Queue1, JSONToSend} = processQueue(Queue, LastMessageId),
 			From ! {updates, JSONToSend, NewLastMessageId},
 			State1 = closeOpenPipe(State),
-			State2 = updateLastMessageId(State, NewLastMessageId),
+			State2 = updateLastMessageId(State, LastMessageId),
 			{noreply, replaceQueue(State2, Queue1)}
 	end;
 handle_cast({connect, AST, QueryId}, State) ->
