@@ -26,6 +26,11 @@ template () {
 				<br />
 			</div>
 		</f:each>
+		
+		<f:call>
+			inputfield localCell
+		</f:call>
+		
 		<br />
 		Local Cell: {localCell}
 	</div>
