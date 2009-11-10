@@ -158,6 +158,7 @@ template () {
 		// </div>
 		<div style="position:absolute; top: 0; left:0; width:600">
 			<div style="font-size:18; color:teal">Search</div>
+			Prefix Input: {PrefixInput}
 			<f:each KeyCode as KeyCode><div>
 				KeyCode: {KeyCode}
 			</div></f:each>
