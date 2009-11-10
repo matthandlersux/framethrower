@@ -147,7 +147,6 @@ function helpExecuteAction (instruction) {
 	} else {
 		var scope = {};
 		var env = extendEnv(instruction.env, scope);
-	
 		return foldAsynchronous(instruction.instructions, undefined, function (actionLet) {
 			var action = actionLet.action;
 			var actionKind = action.kind;
@@ -191,16 +190,19 @@ function helpExecuteAction (instruction) {
 				}
 
 				var select = evaluate(parseExpression(action.select, env));
-
 				if (select.kind === "list") {
 					forEach(select.asArray, function (element) {
 						executeAction(inner(element));
 					});
 				} else { // select is a cell
+					var done = false;
 					var injectedFunc = select.injectDependency(function () { // wait until select cell is 'done', then iterate over its elements
-						forEach(select.getState(), function (element) {
-							executeAction(inner(element));
-						});
+						if (!done) {
+							done = true;
+							forEach(select.getState(), function (element) {
+								executeAction(inner(element));
+							});
+						}
 					});
 					injectedFunc.unInject();
 				}
@@ -224,9 +226,7 @@ function helpExecuteAction (instruction) {
 				injectedFunc.unInject();
 				output = helpExecuteAction(action);
 			}
-			if (output === undefined) {
-				console.log("output undefined", actionLet);
-			}
+
 			//now wrap the output if needed
 			if (output.async) {
 				return { // return a function to run the asynchronous action, add the result to the scope, and continue with provided callback
