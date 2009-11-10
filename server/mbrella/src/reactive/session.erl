@@ -11,10 +11,6 @@
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
 -define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
 
--define( ServerClientTimeout, 30000 ).
--define( MaxReruns, 100 ).
--define( TimeWindow, 30 ).
-
 %% --------------------------------------------------------------------
 %% External exports
 -export([
@@ -100,7 +96,11 @@ sendActionUpdate(SessionPointer, Update) ->
 
 pipeline(SessionPointer, LastMessageId) ->
 	gen_server:cast(sessionPointer:pid(SessionPointer), {pipeline, self(), LastMessageId}),
-	pipelineTimeout(?TimeWindow, LastMessageId).
+	receive
+		JSON -> JSON
+	after 30000 ->
+		timeout
+	end.
 
 %% 
 %% getState :: SessionPointer -> SessionState
@@ -160,7 +160,7 @@ handle_cast({pipeline, From, LastMessageId}, State) ->
 		_ ->
 			{[{NewLastMessageId, _ListOfStructs1}|_RestOfQueue1] = Queue1, JSONToSend} = processQueue(Queue, LastMessageId),
 			From ! {updates, JSONToSend, NewLastMessageId},
-			% State1 = closeOpenPipe(State),
+			State1 = closeOpenPipe(State),
 			State2 = updateLastMessageId(State, LastMessageId),
 			{noreply, replaceQueue(State2, Queue1)}
 	end;
@@ -234,30 +234,8 @@ code_change(OldVsn, State, Extra) ->
     {ok, State}.
 
 %% --------------------------------------------------------------------
-%%% Internal API
+%%% Internal functions
 %% --------------------------------------------------------------------
-
-%% 
-%% pipelineTimeout :: Number -> Number -> Updates | timeout
-%% 		Updates :: Tuple3 updates (List Struct) Number
-%% 		pipelineTimeout keeps the pipeline open for some small amount of time incase there are multiple 
-%%			messages coming in rapid succession.  this way you dont need x pipeline calls from the client for x messages
-%%		
-	
-pipelineTimeout(TimeWindow, LastMessageId) ->
-	pipelineTimeout(TimeWindow, {updates, [], LastMessageId}, 0).
-pipelineTimeout(TimeWindow, {updates, JSONStructs, LastMessageId}, Reruns) ->
-	receive
-		{updates, JSONStructs1, LastMessageId1} ->
-			receive
-				{updates, JSONStructs2, LastMessageId2} when Reruns =< ?MaxReruns -> 
-					pipelineTimeout(TimeWindow, {updates, JSONStructs ++ JSONStructs1 ++ JSONStructs2, LastMessageId2}, Reruns + 1)
-			after TimeWindow ->
-				{updates, JSONStructs ++ JSONStructs1, LastMessageId1}
-			end
-	after ?ServerClientTimeout ->
-		timeout
-	end.
 
 %% 
 %% queryUpdate :: Number -> Element -> JSONStruct
