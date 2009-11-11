@@ -1,13 +1,18 @@
 template () {
 	
-	// theNum = TestClass:num TestObject1,
-	stringSet = returnUnitSet (TestClass:str TestObject1),
-	str = TestClass:str TestObject1,
 	localCell = state {
-		cell <- create(Unit String),
-		set cell "default",
+		cell <- create(Set String),
+		add cell "andrew",
+		add cell "harold",
+		add cell "toby",
+		add cell "matt",
 		return cell
 	},
+	
+	begin = state(Unit String, "c"),
+	end = state(Unit String, "n"),
+	
+	localRanged = rangeByKey begin end localCell,
 	
 	<div>
 		<div>
@@ -15,7 +20,7 @@ template () {
 			<f:on click>
 				newString <- changeString "testString 1",
 				newString2 <- changeString2 "testString 2",
-				set localCell newString2
+				add localCell newString2
 			</f:on>
 		</div>
 	
@@ -26,7 +31,22 @@ template () {
 				<br />
 			</div>
 		</f:each>
+		
+		
+		// <f:call>
+		// 	inputfield localCell
+		// </f:call>
+		
 		<br />
-		Local Cell: {localCell}
+		// Local Cell: {localCell}
+		
+		
+		LocalRanged:
+		<f:each localRanged as element>
+			<div>
+				{element},
+			</div>
+		</f:each>
+		
 	</div>
 }
