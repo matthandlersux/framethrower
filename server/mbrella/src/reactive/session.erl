@@ -19,6 +19,8 @@
 
 %% --------------------------------------------------------------------
 %% External exports
+%% --------------------------------------------------------------------
+
 -export([
 	new/1,
 	connect/3, disconnect/2,
@@ -45,7 +47,15 @@
 %% Notes
 %% ====================================================
 
-% TODO: figure out how we are going to uninject outputs for a queryid, and when that happens
+% ServerClientTimeout: 		time the session waits to hear a message from the client before it dies
+% AdjacentElementDelay: 	time the session waits after hearing a message from a cell just in case 
+% 								there are more on their way
+% AdjacentActionDelay: 		time the session waits after hearing a message from an action just in case 
+% 								more messages are on their way
+% PipelineWaitDelay:		time the session waits after opening a pipeline if there are already queued 
+% 								messages to be sent
+% MaxReruns:				max amount of times that consecutive messages can prevent the pipeline 
+% 								from sending messages to the client
 
 %% ====================================================
 %% types
