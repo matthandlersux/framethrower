@@ -92,7 +92,7 @@ var objects = (function () {
 	
 	function makeCastFuncCell(castToName) {
 		return function (object) {
-			var outputCell = makeCell();
+			var outputCell = makeCellUnit();
 			if (object.as[castToName]) {
 				outputCell.addLine(object.as[castToName]);
 			}

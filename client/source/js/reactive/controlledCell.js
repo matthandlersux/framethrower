@@ -22,7 +22,7 @@ function makeCC(type) {
 	
 	// TODO test these and throw errors on erroneous calls
 	if (constructor === "Unit") {
-		cell = makeCell();
+		cell = makeCellUnit();
 		cell.control = {
 			set: function (k) {
 				try {
@@ -52,7 +52,7 @@ function makeCC(type) {
 		cell.control.add = cell.control.set;
 		cell.control.remove = cell.control.unset;
 	} else if (constructor === "Set") {
-		cell = makeCell();
+		cell = makeCellSet();
 		cell.control = {
 			add: function (k) {
 				typeCheck(k, type.right);
@@ -64,7 +64,7 @@ function makeCC(type) {
 			}
 		};
 	} else if (constructor === "Map") {
-		cell = makeCellMapInput();
+		cell = makeCellMap();
 		cell.control = {
 			add: function (k, v) {
 				typeCheck(k, type.left.right);

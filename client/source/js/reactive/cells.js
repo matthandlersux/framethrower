@@ -1,7 +1,7 @@
 //Cell Common Interface (more detail inline with code)
 //Creation:
 //	makeCell()				cell for Unit and Set
-//  makeCellMapInput()		cell for Map
+//  makeCellMap()		cell for Map
 //Hooking Up:
 //	cell.inject(depender, f)			depender is (cell to be informed when done OR function to be called when done).
 //	cell.injectDependency(depender)		depender is (cell to be informed when done OR function to be called when done).
@@ -318,7 +318,11 @@ function makeBaseCell (toKey) {
 	return cell;
 }
 
-function makeCell() {
+function makeCell(type) {
+	if (type === undefined) {
+		console.log("Missing Type", getStackTrace);
+	}
+	
 	var toKey = function (value) {
 		return value;
 	};
@@ -328,7 +332,7 @@ function makeCell() {
 	return cell;
 }
 
-function makeCellMapInput() {
+function makeCellMap() {
 	var toKey = function (value) {
 		return value.key;
 	};

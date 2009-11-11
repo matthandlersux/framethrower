@@ -9,7 +9,7 @@ function mapUnitJS(f, outputType, numArgs) {
 		var args = arguments;
 		
 		var currentValue;
-		var outputCell = makeCell();
+		var outputCell = makeCellUnit();
 		outputCell.type = makeTypeApply(parseType("Unit"), outputType);
 		
 		var inputs = [];
@@ -58,7 +58,7 @@ function mapUnitJS(f, outputType, numArgs) {
 // 		var args = arguments;
 // 		
 // 		var currentValue = false;
-// 		var outputCell = makeCell();
+// 		var outputCell = makeCellUnit();
 // 		outputCell.type = parseType("Unit Null");
 // 		
 // 		var inputs = [];
@@ -102,7 +102,7 @@ function mapUnitJS(f, outputType, numArgs) {
 
 
 function arrayToSet(array, type) {
-	var outputCell = makeCell();
+	var outputCell = makeCellSet();
 	outputCell.type = makeTypeApply(parseType("Set"), type);
 	forEach(array, function(element) {
 		outputCell.addLine(element);
