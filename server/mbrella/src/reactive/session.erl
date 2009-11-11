@@ -167,11 +167,11 @@ handle_cast({pipeline, From, ClientLastMessageId}, State) ->
 					true ->
 						?ServerClientTimeout
 				end,
-	OutputTimer = outputTimer(sessionPointer(State), WaitTime),
+	% OutputTimer = outputTimer(sessionPointer(State), WaitTime),
 	State1 = updateLastMessageId(State, ClientLastMessageId),
 	State2 = updateOpenPipe(State1, From),
-	State3 = setOutputTimer(State2, OutputTimer),
-	{noreply, State3, ?ServerClientTimeout};
+	% State3 = setOutputTimer(State2, OutputTimer),
+	{noreply, State2, WaitTime};
 	
 handle_cast(flush, State) ->
 	ClientLastMessageId = getLastMessageId(State),
@@ -215,13 +215,23 @@ handle_cast({sendElements, Elements}, State) ->
 						end,
 	NewQueryUpdates = lists:foldl(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
-	updateOutputTimer(State1, ?AdjacentElementDelay),
-	{noreply, State1, ?ServerClientTimeout};
+	% updateOutputTimer(State1, ?AdjacentElementDelay),
+	case getOpenPipe(State1) of
+		closed ->
+			{noreply, State1, ?ServerClientTimeout};
+		_ ->
+			{noreply, State1, ?AdjacentElementDelay}
+	end;
 	
 handle_cast({sendActionUpdate, Update}, State) ->
 	State1 = updateQueue(State, [Update]),
-	updateOutputTimer(State1, ?AdjacentActionDelay),
-	{noreply, State1, ?ServerClientTimeout};
+	% updateOutputTimer(State1, ?AdjacentActionDelay),
+	case getOpenPipe(State1) of
+		closed ->
+			{noreply, State1, ?ServerClientTimeout};
+		_ ->
+			{noreply, State1, ?AdjacentActionDelay}
+	end;
 	
 handle_cast(Msg, State) ->
     {noreply, State, ?ServerClientTimeout}.
@@ -233,6 +243,14 @@ handle_cast(Msg, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
+handle_info(timeout, State) ->
+	case getOpenPipe(State) of
+		closed ->
+			cleanupSession(State),
+			{stop, session_timed_out, State};
+		_ ->
+			handle_cast(flush, State)
+	end;
 handle_info(Info, State) ->
     {noreply, State}.
 
@@ -242,7 +260,8 @@ handle_info(Info, State) ->
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
 terminate(Reason, State) ->
-    ok.
+    cleanupSession(State),
+	ok.
 
 %% --------------------------------------------------------------------
 %% Func: code_change/3
@@ -257,48 +276,59 @@ code_change(OldVsn, State, Extra) ->
 %% --------------------------------------------------------------------
 
 %% 
-%% flush :: SessionPointer -> ok
+%% cleanupSession :: SessionState -> ok
 %% 		
 %%		
 
-flush(SessionPointer) ->
-	gen_server:cast(sessionPointer:pid(SessionPointer), flush).
-
-%% 
-%% startOutputTimer :: SessionPointer -> Number -> Pid
-%% 		starts the output timer which allows session to receive multiple updates before responding to client
-%%		
-
-outputTimer(SessionPointer, WaitTime) ->
-	spawn_link( fun() -> outputTimer(SessionPointer, WaitTime, 1) end).
-
-%% 
-%% outputTimer :: SessionPointer -> Number -> Number -> ok
-%% 		loop that tells session when to flush its messages to the client
-%%		
-
-outputTimer(SessionPointer, WaitTime, Reruns) ->
-	receive
-		NewClientState when Reruns =< ?MaxReruns ->
-			outputTimer(SessionPointer, NewClientState, Reruns + 1)
-	after
-		WaitTime ->
-			flush(SessionPointer)
-	end.
-
-%% 
-%% updateOutputTimer :: SessionState -> Number -> ok
-%% 		sends new wait time to output timer
-%%		
-
-updateOutputTimer(State, WaitTime) ->
-	case getOutputTimer(State) of
-		undefined ->
-			ok;
-		OutputTimer ->
-			OutputTimer ! WaitTime
-	end,
+cleanupSession(State) ->
+	?colortrace(session_timed_out_need_to_die_ughhhh),
+	AllQueryIds = getQueryIds(State),
+	lists:foreach(fun(QueryId) -> handle_cast({disconnect, QueryId}, State) end, AllQueryIds),
 	ok.
+
+% %% 
+% %% flush :: SessionPointer -> ok
+% %% 		
+% %%		
+% 
+% flush(SessionPointer) ->
+% 	gen_server:cast(sessionPointer:pid(SessionPointer), flush).
+% 
+% %% 
+% %% startOutputTimer :: SessionPointer -> Number -> Pid
+% %% 		starts the output timer which allows session to receive multiple updates before responding to client
+% %%		
+% 
+% outputTimer(SessionPointer, WaitTime) ->
+% 	spawn_link( fun() -> outputTimer(SessionPointer, WaitTime, 1) end).
+% 
+% %% 
+% %% outputTimer :: SessionPointer -> Number -> Number -> ok
+% %% 		loop that tells session when to flush its messages to the client
+% %%		
+% 
+% outputTimer(SessionPointer, WaitTime, Reruns) ->
+% 	receive
+% 		NewClientState when Reruns =< ?MaxReruns ->
+% 			outputTimer(SessionPointer, NewClientState, Reruns + 1)
+% 	after
+% 		WaitTime ->
+% 			flush(SessionPointer)
+% 	end.
+% 
+% %% 
+% %% updateOutputTimer :: SessionState -> Number -> ok
+% %% 		sends new wait time to output timer
+% %%		
+% 
+% updateOutputTimer(State, WaitTime) ->
+% 	case getOutputTimer(State) of
+% 		undefined ->
+% 			ok;
+% 		OutputTimer ->
+% 			OutputTimer ! WaitTime
+% 	end,
+% 	ok.
 
 %% 
 %% queryUpdate :: Number -> Element -> JSONStruct
@@ -364,6 +394,14 @@ removeQuery(#state{queries = Queries} = State, QueryId) ->
 
 getQueryCellPointer( #state{queries = Queries} = State, QueryId ) ->
 	dict:fetch(QueryId, Queries).
+	
+%% 
+%% getQueryIds :: SessionState -> List Number
+%% 		
+%%		
+
+getQueryIds(#state{queries = Queries}) ->
+	dict:to_list(Queries).
 
 %% 
 %% getQueue :: SessionState -> Queue
