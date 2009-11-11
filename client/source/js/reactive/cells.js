@@ -34,13 +34,12 @@ var CELLS = {};
 var CELLCOUNT = 0;
 var CELLSCREATED = 0;
 
-function makeBaseCell (toKey) {
+function makeBaseCell (toKey, dots) {
 	CELLCOUNT++;
 	CELLSCREATED++;
 	var cell = makeStartCap();
 	cell.id = CELLSCREATED;
 	CELLS[cell.id] = cell;
-	var dots = makeConSortedSetStringify();
 	var funcs = {};
 	
 	//dependencies are stored as a hash from (string,number) to true
@@ -67,27 +66,27 @@ function makeBaseCell (toKey) {
 	//pull through some range related functions from rangedSet to be used by some primFuncs (TODO: refactor)
 	cell.makeSorted = function () {
 		dots.makeSorted();
+		cell.getIndex = function (key) {
+			return dots.getIndex(key);
+		};
+
+		cell.getNearestIndexRight = function (key) {
+			return dots.getNearestIndexRight(key);
+		};
+
+		cell.getNearestIndexLeft = function (key) {
+			return dots.getNearestIndexLeft(key);
+		};
+
+		cell.getByIndex = function (index) {
+			return dots.getByIndex(index);
+		};
+
+		cell.getKeyByIndex = function (index) {
+			return dots.getKeyByIndex(index);
+		};		
 	};
 
-	cell.getIndex = function (key) {
-		return dots.getIndex(key);
-	};
-	
-	cell.getNearestIndexRight = function (key) {
-		return dots.getNearestIndexRight(key);
-	};
-	
-	cell.getNearestIndexLeft = function (key) {
-		return dots.getNearestIndexLeft(key);
-	};
-	
-	cell.getByIndex = function (index) {
-		return dots.getByIndex(index);
-	};
-	
-	cell.getKeyByIndex = function (index) {
-		return dots.getKeyByIndex(index);
-	};
 	
 	cell.getLength = function () {
 		return dots.getLength();
@@ -318,16 +317,24 @@ function makeBaseCell (toKey) {
 	return cell;
 }
 
-function makeCell(type) {
-	if (type === undefined) {
-		console.log("Missing Type", getStackTrace);
-	}
-	
+function makeCellUnit() {	
+	var toKey = function (value) {
+		return value;
+	};
+	var dots = makeUnitHash();
+	var cell = makeBaseCell(toKey, dots);
+	cell.isMap = false;
+	return cell;
+}
+
+
+function makeCellSet() {	
 	var toKey = function (value) {
 		return value;
 	};
 	
-	var cell = makeBaseCell(toKey);
+	var dots = makeConSortedSetStringify();
+	var cell = makeBaseCell(toKey, dots);
 	cell.isMap = false;
 	return cell;
 }
@@ -337,7 +344,8 @@ function makeCellMap() {
 		return value.key;
 	};
 
-	var cell = makeBaseCell(toKey);
+	var dots = makeConSortedSetStringify();
+	var cell = makeBaseCell(toKey, dots);
 	cell.isMap = true;
 	return cell;
 }
