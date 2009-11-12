@@ -33,7 +33,7 @@ var generateFiles = function () {
 	var bootJSONString = JSON.stringify(bootJSON);
 
 	try {
-		writeStringToFile(ROOTDIR + "../server/pipeline/priv/bootJSON", bootJSONString);
+		write(ROOTDIR + "../server/pipeline/priv/bootJSON", bootJSONString);
 		print('success');
 	} catch (e) {
 		console.log("Running from browser, so not writing bootJSON: ", bootJSON);
@@ -43,7 +43,6 @@ var generateFiles = function () {
 
 function include (bundles, extraFiles) {
 	ROOTDIR = "../../";
-	load(ROOTDIR + "tools/util/java.js");
 	load(ROOTDIR + "source/js/include.js");
 	includes.rhinoInclude(bundles, extraFiles);
 }
