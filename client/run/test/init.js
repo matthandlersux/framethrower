@@ -34,7 +34,8 @@ function sendAndRemove(string) {
 
 function perform(string) {
 	var callback = function (result) {
-		console.log("Action Result:", result, "for action: ", string);	
+		console.log("Action Result:", result, "for action: ", string);
+		session.flush();
 	};
 	executeAction(evaluate(parseExpr(string, testSharedEnv)), callback);
 }

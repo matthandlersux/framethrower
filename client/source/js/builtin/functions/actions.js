@@ -1,3 +1,4 @@
+var tempGlobalDots;
 
 addFun("return", "a -> Action a", function(x) {
 	return makeActionMethod( function() {return x;} );
@@ -7,7 +8,9 @@ addFun("set", "Unit a -> a -> Action Void", function(u, x) {
 	return makeActionMethod( function() { updateCC("add", u, x); } );
 });
 addFun("unset", "Unit a -> Action Void", function(u) {
-	return makeActionMethod( function() { updateCC("remove", u); } );
+	return makeActionMethod( function() { 
+		updateCC("remove", u); 
+	} );
 });
 addFun("add", "Set a -> a -> Action Void", function(s, x) {
 	return makeActionMethod( function() { updateCC("add", s, x); } );

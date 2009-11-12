@@ -55,7 +55,7 @@ var globalEventHandlers = {};
 
 			//console.log("about to execute an action!", action);
 
-			executeAction(action);
+			executeAction(action, function() {session.flush();});
 			
 			if (eventName==="mousedown") dont(e); // we're doing a drag-and-drop so prevent text highlighting
 		}

@@ -1,6 +1,6 @@
-function makeControlledCell(typeString) {
+function makeControlledCell(typeString, persist) {
 	var type = parseType(typeString);
-	return makeCC(type);
+	return makeCC(type, persist);
 }
 
 function typeCheck(expr, type) {
@@ -12,7 +12,7 @@ function typeCheck(expr, type) {
 	}
 }
 
-function makeCC(type) {
+function makeCC(type, persist) {
 	var cell;
 	var constructor = getTypeConstructor(type);
 	
@@ -22,37 +22,24 @@ function makeCC(type) {
 	
 	// TODO test these and throw errors on erroneous calls
 	if (constructor === "Unit") {
-		cell = makeCell();
+		cell = makeCellUnit();
 		cell.control = {
 			set: function (k) {
 				try {
-					typeCheck(k, type.right);
-					var state = cell.getState();
-					if (state.length === 0) {
-						cell.addLine(k);
-					} else {
-						cell.removeLine(state[0]);
-						cell.addLine(k);
-					}
-					
+					cell.addLine(k);
 				} catch (e) {
 					console.log(cell);
 					throw e;
 				}
 			},
 			unset: function () {
-				var state = cell.getState();
-				if (state.length === 0) {
-					
-				} else {
-					cell.removeLine(state[0]);
-				}
+				cell.removeLine();
 			}
 		};
 		cell.control.add = cell.control.set;
 		cell.control.remove = cell.control.unset;
 	} else if (constructor === "Set") {
-		cell = makeCell();
+		cell = makeCellSet();
 		cell.control = {
 			add: function (k) {
 				typeCheck(k, type.right);
@@ -64,7 +51,7 @@ function makeCC(type) {
 			}
 		};
 	} else if (constructor === "Map") {
-		cell = makeCellMapInput();
+		cell = makeCellMap();
 		cell.control = {
 			add: function (k, v) {
 				typeCheck(k, type.left.right);
@@ -91,7 +78,11 @@ function makeCC(type) {
 	}
 	
 	cell.type = type;
-	cell.persist = true;
+	if (persist !== undefined) {
+		cell.persist = persist;
+	} else {
+		cell.persist = true;
+	}
 	
 	cell.outsideScope = 0;
 	cell.remote = remote.localOnly; // this gets overwritten if the cell isn't local
