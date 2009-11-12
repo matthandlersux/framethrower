@@ -458,7 +458,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 		if (xml.event === "init") {
 			setTimeout(function () {
 				var action = makeClosure(xml.action, env);
-				executeAction(action);
+				executeAction(action, function() {session.flush();});
 			}, 0);
 			return {node: node, cleanup: null};
 		} else {
@@ -534,7 +534,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 			var injectedFunc = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
 
 				var action = evaluate(makeApply(actionClosure, val));
-				executeAction(action);
+				executeAction(action, function() {session.flush();});
 			});
 			cleanupFunc = function () {
 				injectedFunc.unInject();

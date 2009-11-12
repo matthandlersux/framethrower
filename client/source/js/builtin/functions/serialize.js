@@ -140,7 +140,7 @@
 
 	function convertHelper(converter) {
 		return function (cell) {
-			var outputCell = makeControlledCell("Unit String");
+			var outputCell = makeControlledCell("Unit String", false);
 
 			var called = false;
 			function callback() {
@@ -160,7 +160,7 @@
 	addFun("serialize", "a -> Unit String", convertHelper(convertStateToString), undefined, remote.localOnly);
 
 	addFun("jsonify", "a -> Unit JSON", function (cell) {
-		var outputCell = makeControlledCell("Unit JSON");
+		var outputCell = makeControlledCell("Unit JSON", false);
 
 		callOnUpdate(cell, outputCell, function () {
 			var s = convertStateToJSON(cell);

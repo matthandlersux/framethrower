@@ -150,10 +150,7 @@ var session = (function () {
 
 		var type = getType(expr);
 
-		var cell = makeCC(type);
-		
-		//TODO: make this not use controlled cells
-		cell.persist = false;
+		var cell = makeCC(type, false);
 		
 		cell.remote = remote.shared;
 		cell.name = stringify(expr);
@@ -284,6 +281,7 @@ var session = (function () {
 							}
 						}
 					});
+					setTimeout(sendAllMessages, 0);
 				}
 				setTimeout(startUpdater, 1);
 			} catch (e) {

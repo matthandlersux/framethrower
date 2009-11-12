@@ -1,6 +1,6 @@
-function makeControlledCell(typeString) {
+function makeControlledCell(typeString, persist) {
 	var type = parseType(typeString);
-	return makeCC(type);
+	return makeCC(type, persist);
 }
 
 function typeCheck(expr, type) {
@@ -12,7 +12,7 @@ function typeCheck(expr, type) {
 	}
 }
 
-function makeCC(type) {
+function makeCC(type, persist) {
 	var cell;
 	var constructor = getTypeConstructor(type);
 	
@@ -78,7 +78,11 @@ function makeCC(type) {
 	}
 	
 	cell.type = type;
-	cell.persist = true;
+	if (persist !== undefined) {
+		cell.persist = persist;
+	} else {
+		cell.persist = true;
+	}
 	
 	cell.outsideScope = 0;
 	cell.remote = remote.localOnly; // this gets overwritten if the cell isn't local

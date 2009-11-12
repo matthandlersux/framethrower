@@ -18,6 +18,7 @@ template () {
 		return cell
 	},
 
+	toggle = state(Unit Null),
 	
 	// begin = state(Unit String, "c"),
 	// end = state(Unit String, "n"),
@@ -35,14 +36,34 @@ template () {
 		// 		add localCell newString2
 		// 	</f:on>
 		// </div>
-	
-		// <f:each TestCell as TestObject>
-		// 	<div>
-		// 		string: {TestClass:str TestObject}
-		// 		<br />
-		// 		<br />
-		// 	</div>
-		// </f:each>
+
+		<f:call>
+			if toggle as _ {
+				<div>
+					<div>
+						Take Away TestCell
+						<f:on click>
+							unset toggle
+						</f:on>
+					</div>
+					<f:each TestCell as TestObject>
+						property = TestClass:str TestObject,
+						<div>
+							string: {property}
+							<br />
+							<br />
+						</div>
+					</f:each>
+				</div>
+			} else {
+				<div>
+					Show Me TestCell
+					<f:on click>
+						set toggle null
+					</f:on>
+				</div>
+			}
+		</f:call>
 		
 		
 		// <f:call>
