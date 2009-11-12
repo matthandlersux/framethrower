@@ -23,7 +23,8 @@
 			};
 
 			var injectedFunc = cell.inject(outputCell, function (val) {
-				return outputCell.addLine(val);
+				outputCell.addLine(val);
+				return function () {outputCell.removeLine(val);};
 			}, initializeRange);
 			rView = injectedFunc.rView;
 
@@ -75,7 +76,8 @@
 				func : function (cell) {
 					var outputCell = makeCellSet();
 					cell.inject(outputCell, function (val) {
-						return outputCell.addLine(val);
+						outputCell.addLine(val);
+						return function () {outputCell.removeLine(val);};
 					});
 					return outputCell;
 				}
@@ -85,7 +87,8 @@
 				func : function (key, cell) {
 					var outputCell = makeCellMap();
 					cell.inject(outputCell, function (val) {
-						return outputCell.addLine({key:key, val:val});
+						outputCell.addLine({key:key, val:val});
+						return function () {outputCell.removeLine({key:key, val:val});};
 					});
 					return outputCell;
 				}
@@ -105,7 +108,8 @@
 						var needToClear = true;
 						injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
 							needToClear = false;
-							clearOutput = outputCell.addLine(innerVal);
+							outputCell.addLine(innerVal);
+							clearOutput = function () {outputCell.removeLine();};
 						});
 						if (needToClear && clearOutput) {
 							clearOutput();
@@ -126,7 +130,8 @@
 					var outputCell = makeCellSet();
 					cell.inject(outputCell, function (val) {
 						var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
-							return outputCell.addLine(innerVal);
+							outputCell.addLine(innerVal);
+							return function () {outputCell.removeLine(innerVal);};
 						});
 						return injectedFunc.unInject;
 					});
@@ -140,7 +145,8 @@
 
 					cell.inject(outputCell, function (keyVal) {
 						var injectedFunc = applyAndInject(applyFunc(f, keyVal.key), keyVal.val, outputCell, function (innerKeyVal) {
-							return outputCell.addLine(innerKeyVal);
+							outputCell.addLine(innerKeyVal);
+							return function () {outputCell.removeLine(innerKeyVal);};
 						});
 						return injectedFunc.unInject;
 					});
@@ -157,10 +163,12 @@
 					var outputCell = makeCellSet();
 					outputCell.leash();
 					cell1.inject(outputCell, function (val) {
-						return outputCell.addLine(val);
+						outputCell.addLine(val);
+						return function () {outputCell.removeLine(val);};
 					});
 					cell2.inject(outputCell, function (val) {
-						return outputCell.addLine(val);
+						outputCell.addLine(val);
+						return function () {outputCell.removeLine(val);};
 					});
 					outputCell.unleash();
 					return outputCell;
@@ -174,7 +182,10 @@
 
 					var add = function (count, value) {
 						count.num++;
-						if (count.num == 1) count.onRemove = outputCell.addLine(value);					
+						if (count.num == 1) {
+							outputCell.addLine(value);
+							count.onRemove = function () {outputCell.removeLine(value);};
+						}
 					};
 
 					var sub = function (count) {
@@ -224,7 +235,7 @@
 								if (cache !== undefined) {
 									outputCell.addLine(cache);
 								} else {
-									outputCell.removeLine(val);
+									outputCell.removeLine();
 								}
 							}
 						};
@@ -267,7 +278,7 @@
 							if (outputValue) {
 								outputCell.addLine(nullObject);
 							} else {
-								outputCell.removeLine(nullObject);
+								outputCell.removeLine();
 							}
 						}
 					});
@@ -284,9 +295,6 @@
 					
 					function update() {
 						if (outputCellValue !== inputCellValue) {
-							if (outputCellValue !== undefined) {
-								outputCell.removeLine(outputCellValue);
-							}
 							outputCellValue = inputCellValue;
 							outputCell.addLine(outputCellValue);
 						}
@@ -309,7 +317,6 @@
 					var outputCell = makeCellUnit();
 					outputCell.addLine(currentValue);
 					cell.inject(outputCell, function (val) {
-						outputCell.removeLine(currentValue);
 						currentValue += 1;
 						outputCell.addLine(currentValue);
 						return function () {
@@ -352,7 +359,9 @@
 				func : function (cell, input) {
 					var outputCell = makeCellUnit();
 					cell.inject(outputCell, function (val) {
-						return outputCell.addLine(applyFunc(val, input));
+						var resultVal = applyFunc(val, input);
+						outputCell.addLine(resultVal);
+						return function () {outputCell.removeLine(resultVal);};
 					});
 					return outputCell;
 				}
@@ -367,7 +376,7 @@
 					var outputCell = makeCellUnit();
 					outputCell.addLine(nullObject);
 					cell.inject(outputCell, function (val) {
-						outputCell.removeLine(nullObject);
+						outputCell.removeLine();
 						return function() {
 							outputCell.addLine(nullObject);
 						};
@@ -388,7 +397,7 @@
 							outputCell.addLine(nullObject);
 							isSet = true;
 						} else if (isSet) {
-							outputCell.removeLine(nullObject);
+							outputCell.removeLine();
 							isSet = false;
 						}
 					}
@@ -426,7 +435,7 @@
 							outputCell.addLine(nullObject);
 							isSet = true;
 						} else if (!bool1 && !bool2 && isSet) {
-							outputCell.removeLine(nullObject);
+							outputCell.removeLine();
 							isSet = false;
 						}
 					}
@@ -501,7 +510,7 @@
 					outputCell.addLine(nullObject);
 
 					cell.inject(outputCell, function (val) {
-						if (count === 0) outputCell.removeLine(nullObject);
+						if (count === 0) outputCell.removeLine();
 						count++;
 						return function() {
 							count--;
@@ -525,7 +534,7 @@
 								if (a !== undefined) {
 									outputCell.addLine(a);
 								} else {
-									outputCell.removeLine(current);
+									outputCell.removeLine();
 								}
 								current = a;
 							}
@@ -557,7 +566,7 @@
 								if (a !== undefined) {
 									outputCell.addLine(a);
 								} else {
-									outputCell.removeLine(current);
+									outputCell.removeLine();
 								}
 								current = a;
 							}
@@ -588,7 +597,7 @@
 							outputCell.addLine(passer);
 							isSet = true;
 						} else if (!bool1 && isSet) {
-							outputCell.removeLine(passer);
+							outputCell.removeLine();
 							isSet = false;
 						}
 					}
@@ -635,7 +644,8 @@
 					//TODO: make this inject more like the erlang version
 					outputCell.inject(function(){}, function (val) {
 						var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
-							return outputCell.addLine(innerVal);
+							outputCell.addLine(innerVal);
+							return function () {outputCell.removeLine(innerVal);};
 						});
 						return injectedFunc.unInject;
 					});
@@ -652,7 +662,9 @@
 					//TODO: make this inject more like the erlang version
 					outputCell.inject(function(){}, function (keyVal) {
 						var injectedFunc = applyAndInject(f, keyVal.key, outputCell, function (val) {
-							return outputCell.addLine({key:val, val:keyVal.val+1});
+							var keyValToAdd = {key:val, val:keyVal.val+1};
+							outputCell.addLine(keyValToAdd);
+							return function () {outputCell.removeLine(keyValToAdd);};
 						});
 						return injectedFunc.unInject;
 					});
@@ -670,7 +682,8 @@
 
 					cell.inject(outputCell, function (val) {
 						var result = applyFunc(f, val);
-						return outputCell.addLine({key:val, val:result});
+						outputCell.addLine({key:val, val:result});
+						return function () {outputCell.removeLine({key:val, val:result});};
 					});
 
 					return outputCell;
@@ -699,21 +712,21 @@
 							var newCell = makeCellSet();
 							newCell.type = setType;
 							bHash[bValue] = newCell;
-							var onRemove = outputCell.addLine({key:bValue, val:newCell});
+							outputCell.addLine({key:bValue, val:newCell});
 							return function () {
 								delete bHash[bValue];
-								onRemove();
+								return function () {outputCell.removeLine({key:bValue, val:newCell});};
 							};
 						}
 					);
 
 					cell.inject(outputCell, function (keyVal) {
 						var injectedFunc = keyVal.val.inject(bHashCell, function (innerVal) {
-							var onRemove1 = bHashCell.addLine(innerVal);
-							var onRemove2 = bHash[innerVal].addLine(keyVal.key);
+							bHashCell.addLine(innerVal);
+							bHash[innerVal].addLine(keyVal.key);
 							return function () {
-								onRemove2();
-								onRemove1();
+								bHash[innerVal].removeLine(keyVal.key);
+								bHashCell.removeLine(innerVal);
 							};
 						});
 						return injectedFunc.unInject;
@@ -729,7 +742,8 @@
 
 					cell.inject(outputCell, function (keyVal) {
 						var result = applyFunc(f, keyVal.val);
-						return outputCell.addLine({key:keyVal.key, val:result});
+						outputCell.addLine({key:keyVal.key, val:result});
+						return function () {outputCell.removeLine({key:keyVal.key, val:result});};
 					});
 
 					return outputCell;
@@ -742,7 +756,8 @@
 
 					cell.inject(outputCell, function (keyVal) {
 						if (keyVal.key == key) {
-							return outputCell.addLine(keyVal.val);
+							outputCell.addLine(keyVal.val);
+							return function () {outputCell.removeLine(keyVal.val);};
 						}
 					});
 
@@ -755,7 +770,8 @@
 					var outputCell = makeCellSet();
 
 					cell.inject(outputCell, function (keyVal) {
-						return outputCell.addLine(keyVal.key);
+						outputCell.addLine(keyVal.key);
+						return function () {outputCell.removeLine(keyVal.key);};
 					});
 
 					return outputCell;
@@ -767,7 +783,8 @@
 					var outputCell = makeCellSet();
 
 					cell.inject(outputCell, function (keyVal) {
-						return outputCell.addLine(keyVal.val);
+						outputCell.addLine(keyVal.val);
+						return function () {outputCell.removeLine(keyVal.val);};
 					});
 
 					return outputCell;

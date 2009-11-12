@@ -33,12 +33,7 @@ function makeCC(type) {
 				}
 			},
 			unset: function () {
-				var state = cell.getState();
-				if (state.length === 0) {
-					
-				} else {
-					cell.removeLine(state[0]);
-				}
+				cell.removeLine();
 			}
 		};
 		cell.control.add = cell.control.set;

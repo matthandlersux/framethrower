@@ -20,9 +20,9 @@ function makeUnitHash() {
 		hash = {occupied:true, skey:stringified, key:key, value:value};
 	};
 	
-	uhash.remove = function (key) {
-		if (hash.occupied && stringify(key) === hash.skey) {
-			hash = {occupied:false, key:undefined, value:undefined}
+	uhash.remove = function () {
+		if (hash.occupied) {
+			hash = {occupied:false}
 		}
 	};
 	
@@ -38,7 +38,7 @@ function makeUnitHash() {
 	};
 	
 	uhash.getCurrent = function () {
-		if (hash.occupied) return {key:hash.key, value:hash.value};
+		if (hash.occupied) return hash.value;
 		return undefined;
 	};
 	

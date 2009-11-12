@@ -8,7 +8,6 @@ function mapUnitJS(f, outputType, numArgs) {
 	return function () {
 		var args = arguments;
 		
-		var currentValue;
 		var outputCell = makeCellUnit();
 		outputCell.type = makeTypeApply(parseType("Unit"), outputType);
 		
@@ -19,13 +18,9 @@ function mapUnitJS(f, outputType, numArgs) {
 				return inputs[i] !== undefined; 
 			});
 			if (allDone) {
-				currentValue = f.apply(null, inputs);
-				outputCell.addLine(currentValue);
+				outputCell.addLine(f.apply(null, inputs));
 			} else {
-				if (currentValue !== undefined) {
-					outputCell.removeLine(currentValue);
-					currentValue = undefined;
-				}
+				outputCell.removeLine();
 			}
 		}
 		

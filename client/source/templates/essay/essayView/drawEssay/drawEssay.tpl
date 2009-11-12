@@ -57,7 +57,6 @@ template () {
 					return "url(http:/"+"/media.eversplosion.com/crop.php?file="+id+"-scrub&time="+time+"&width="+width+"&height="+height+")";
 				},
 				class = reactiveIfThen (bindUnit (reactiveEqual infon) hoveredInfon) "#fc0" "transparent",
-				
 				<div style-float="left" style-padding="5" style-border="1px solid #ccc" style-margin="5" style-backgroundColor="{class}">
 					<div style-width="150" style-height="{imageHeight}" style-backgroundImage="{getThumbnailURL (ExtVideo:id video) (fetch (myReactiveOr time intervalStart)) imageWidth imageHeight}" />
 					<f:call>hoveredInfonEvents infon 0</f:call>

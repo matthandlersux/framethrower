@@ -37,13 +37,13 @@ var CELLSCREATED = 0;
 
 function addUnitOnlyFunctions(cell, dots, funcs) {
 	cell.addDot = function(key, dot) {
-		var currentState = dots.getCurrent();
+		var current = dots.getCurrent();
 
 		// remove the current state, only 'undoing' its output for functions without 'gentleRemove'
-		if(currentState !== undefined) {
+		if(current !== undefined) {
 			forEach(funcs, function (func, id) {
-				if (!func.gentleRemove && func.rView.inRange(currentState.key)) {
-					undoFunOnDot(currentState.value, id);
+				if (!func.gentleRemove) {
+					undoFunOnDot(current, id);
 				}
 			});
 		}
@@ -52,11 +52,23 @@ function addUnitOnlyFunctions(cell, dots, funcs) {
 	}
 	
 	cell.makeSorted = function() {};
+	cell.addSameDot = function() {};
+	cell.getDotToRemove = function () {
+		return dots.getCurrent();
+	}
 }
 
 function addSetMapOnlyFunctions(cell, dots) {
-	cell.addDot = function(key, dot) {
+	cell.addDot = function (key, dot) {
 		dots.set(key, dot);
+	}
+	
+	cell.addSameDot = function (dot) {
+		dot.num++;	
+	}
+	
+	cell.getDotToRemove = function (key) {
+		return dots.get(key);
 	}
 	
 	//pull through some range related functions from rangedSet to be used by some primFuncs (TODO: refactor)
@@ -100,7 +112,6 @@ function makeBaseCell (toKey, dots, funcs) {
 	var isDone = false;
 	
 	//temp debug functions
-	cell.getFuncs = function(){return funcs;};
 
 	//GetState for DEBUG (and for convertExprXML.js)
 	cell.getState = function () {
@@ -229,7 +240,7 @@ function makeBaseCell (toKey, dots, funcs) {
 		var key = toKey(value);
 		var dot = dots.get(key);
 		if (dot !== undefined && dot.num != 0) {
-			dot.num++;
+			cell.addSameDot(dot);
 		} else {
 			dot = {val:value, num:1, lines:{}};
 			cell.addDot(key, dot);
@@ -239,15 +250,12 @@ function makeBaseCell (toKey, dots, funcs) {
 				}
 			});
 		}
-		return function () {
-			cell.removeLine(key);
-		};
 	};
 
 	//remove a line from an element of the cell
 	//if this was the last line going to this element, it will be removed from the cell
 	cell.removeLine = function (key) {
-		var dot = dots.get(key);
+		var dot = cell.getDotToRemove(key);
 		if(dot != undefined) {
 			dot.num--;
 			if(dot.num == 0) {
@@ -281,7 +289,7 @@ function makeBaseCell (toKey, dots, funcs) {
 	cell.done = function (doneCell, id) {
 		delete dependencies[doneCell.name + "," + id];
 		checkDone();
-	};	
+	};
 
 	//tells a cell that it cannot be 'done' until cell.done(depCell, id) is called
 	cell.addDependency = function (depCell, id) {
