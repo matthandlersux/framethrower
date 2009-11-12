@@ -43,7 +43,7 @@ template () {
 	EnteredInput = state(Unit String, ""),
 	FreshInputValue = state(Unit String, ""),
 	SelectedIndex = state(Unit Number),
-	KeyCode = state(Unit String, ""),
+	KeyCode = state(Unit Number),
 	
 	// ==============================================================
 	// Build Indices
@@ -73,7 +73,9 @@ template () {
 	// ==============================================================
 	
 	nextWord = function (word::String)::String {
-		return word + "z";
+		if (word !== "") {
+			return word + "z";
+		} else return word;
 	},
 	
 	PrefixInput = mapUnit ProcessWord RawPrefixInput,
@@ -105,7 +107,7 @@ template () {
 				</f:each>
 			</div>
 		</f:each>
-	},	
+	},
 	
 	DrawSearchResults = template (Results::Set String, Input::String) {
 		<f:each Results as Result>
@@ -127,11 +129,11 @@ template () {
 		
 			if bindUnit boolToUnit MyUnitBool as _ {
 				<div style="position:relative; padding-top:10; padding-left:5; background-color:teal">
-					{Match}, Position: {MyPosition}
+					{Match}
 				</div>
 			} else {
 				<div style="position:relative; padding-top:10; padding-left:5">
-					{Match}, Position: {MyPosition}
+					{Match}
 				</div>
 			}
 		</f:each>
@@ -158,15 +160,14 @@ template () {
 		// </div>
 		<div style="position:absolute; top: 0; left:0; width:600">
 			<div style="font-size:18; color:teal">Search</div>
-			Prefix Input: {PrefixInput}
-			<f:each KeyCode as KeyCode><div>
-				KeyCode: {KeyCode}
-			</div></f:each>
-			<f:each SelectedIndex as SelectedIndex>
-				<div>
-					SelectedIndex: {SelectedIndex}
-				</div>
-			</f:each>
+			// Prefix Input: {PrefixInput}
+			// <br />
+			// SelectedIndex: {SelectedIndex}
+			// <br />
+			// KeyCode: {KeyCode}
+			// <br />
+			// SelectedIndex: {SelectedIndex}
+			// <br />
 			<input type="text" value="{FreshInputValue}">
 				<f:on blur>
 					set RawPrefixInput ""
@@ -179,9 +180,9 @@ template () {
 				</f:on>
 				<f:on keydown>
 					extract boolToUnit (equal event.keyCode 40) as _ {
-						currentIndex = fetch SelectedIndex,
-						set SelectedIndex (plus currentIndex 1),
-						extract reactiveNot SelectedIndex as _ {
+						if SelectedIndex as currentIndex {
+							set SelectedIndex (plus currentIndex 1)
+						} else {
 							set SelectedIndex 0
 						}
 					},

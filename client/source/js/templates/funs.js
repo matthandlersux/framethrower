@@ -19,7 +19,6 @@ function mapUnitJS(f, outputType, numArgs) {
 				return inputs[i] !== undefined; 
 			});
 			if (allDone) {
-				if (currentValue !== undefined) outputCell.removeLine(currentValue);
 				currentValue = f.apply(null, inputs);
 				outputCell.addLine(currentValue);
 			} else {
@@ -38,7 +37,7 @@ function mapUnitJS(f, outputType, numArgs) {
 					inputs[i] = undefined;
 					update();
 				};
-			});
+			}, undefined, true);
 		});
 		
 		if (numArgs === 0) {

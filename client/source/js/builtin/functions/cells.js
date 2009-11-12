@@ -10,15 +10,6 @@
 			return evaluateAndInject(makeApply(func, input), depender, inject);
 		}	
 
-		var bindUnitOrSetHelper = function (outputCell, f, cell) {
-			cell.inject(outputCell, function (val) {
-				var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
-					return outputCell.addLine(innerVal);
-				});
-				return injectedFunc.unInject;
-			});
-		};
-
 		function rangeHelper (outputCell, setRangeFunc, startCell, endCell, cell) {
 			cell.makeSorted();
 			var start;
@@ -52,7 +43,7 @@
 					start = undefined;
 					updateRange(rView);
 				};
-			});
+			}, undefined, true);
 			endCell.inject(outputCell, function(val) {
 				end = val;
 				updateRange(rView);
@@ -60,7 +51,7 @@
 					end = undefined;
 					updateRange(rView);
 				};
-			});
+			}, undefined, true);
 			
 			outputCell.unleash();
 			return outputCell;
@@ -100,10 +91,32 @@
 				}
 			},
 		 	bindUnit : {
+			// this is hacked for the output to not flicker as long as there are no asynchronous calls
 				type : "(a -> Unit b) -> Unit a -> Unit b",
 				func : function (f, cell) {
 					var outputCell = makeCellUnit();
-					bindUnitOrSetHelper(outputCell, f, cell);
+					var uninjectDone = true;
+					var injectedFunc;
+					var clearOutput;
+					cell.inject(outputCell, function (val) {
+						if (!uninjectDone) {
+							injectedFunc.unInject;
+						}
+						var needToClear = true;
+						injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
+							needToClear = false;
+							clearOutput = outputCell.addLine(innerVal);
+						});
+						if (needToClear && clearOutput) {
+							clearOutput();
+						}
+						uninjectDone = false;
+						return function () {
+							injectedFunc.unInject;
+							if (clearOutput) clearOutput();
+							uninjectDone = true;
+						}
+					}, undefined, true);
 					return outputCell;
 				}
 			},
@@ -111,7 +124,12 @@
 				type : "(a -> Set b) -> Set a -> Set b",
 				func : function (f, cell) {
 					var outputCell = makeCellSet();
-					bindUnitOrSetHelper(outputCell, f, cell);
+					cell.inject(outputCell, function (val) {
+						var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
+							return outputCell.addLine(innerVal);
+						});
+						return injectedFunc.unInject;
+					});
 					return outputCell;
 				}
 			},
@@ -202,10 +220,11 @@
 						}
 						return function () {
 							if (cache === val) {
-								outputCell.removeLine(val);
 								cache = cell.getState()[0];
 								if (cache !== undefined) {
 									outputCell.addLine(cache);
+								} else {
+									outputCell.removeLine(val);
 								}
 							}
 						};
@@ -352,7 +371,7 @@
 						return function() {
 							outputCell.addLine(nullObject);
 						};
-					});
+					}, undefined, true);
 					return outputCell;
 				}
 			},
@@ -381,7 +400,7 @@
 							bool1 = false;
 							updateOutputCell();
 						};
-					});
+					}, undefined, true);
 					cell2.inject(outputCell, function (val) {
 						bool2 = true;
 						updateOutputCell();
@@ -389,7 +408,7 @@
 							bool2 = false;
 							updateOutputCell();
 						};
-					});
+					}, undefined, true);
 					outputCell.unleash();
 					return outputCell;
 				}
@@ -419,7 +438,7 @@
 							bool1 = false;
 							updateOutputCell();
 						};
-					});
+					}, undefined, true);
 					cell2.inject(outputCell, function (val) {
 						bool2 = true;
 						updateOutputCell();
@@ -427,7 +446,7 @@
 							bool2 = false;
 							updateOutputCell();
 						};
-					});
+					}, undefined, true);
 					outputCell.unleash();
 					return outputCell;				
 				}
@@ -436,18 +455,13 @@
 				type: "a -> Unit a -> Unit a",
 				func: function (defaultValue, cell) {
 					var outputCell = makeCellUnit();
-					var current = defaultValue;
 					outputCell.addLine(defaultValue);
 					cell.inject(outputCell, function (val) {
-						outputCell.removeLine(current);
-						current = val;
-						outputCell.addLine(current);
+						outputCell.addLine(val);
 						return function () {
-							outputCell.removeLine(current);
-							current = defaultValue;
-							outputCell.addLine(current);
+							outputCell.addLine(defaultValue);
 						};
-					});
+					}, undefined, true);
 					return outputCell;
 				}
 			},
@@ -455,18 +469,13 @@
 				type: "Unit a -> b -> b -> Unit b",
 				func: function (switcher, occupiedVal, unoccupiedVal) {
 					var outputCell = makeCellUnit();
-					var current = unoccupiedVal;
-					outputCell.addLine(current);
+					outputCell.addLine(unoccupiedVal);
 					switcher.inject(outputCell, function (val) {
-						outputCell.removeLine(current);
-						current = occupiedVal;
-						outputCell.addLine(current);
+						outputCell.addLine(occupiedVal);
 						return function () {
-							outputCell.removeLine(current);
-							current = unoccupiedVal;
-							outputCell.addLine(current);
+							outputCell.addLine(unoccupiedVal);
 						};
-					});
+					}, undefined, true);
 					return outputCell;
 				}
 			},
@@ -476,13 +485,11 @@
 					var outputCell = makeCellUnit();
 					outputCell.addLine(alternative);
 					predicate.inject(outputCell, function (val) {
-						outputCell.removeLine(alternative);
 						outputCell.addLine(consequent);
 						return function () {
-							outputCell.removeLine(consequent);
 							outputCell.addLine(alternative);
 						};
-					});
+					}, undefined, true);
 					return outputCell;
 				}
 			},
@@ -515,11 +522,10 @@
 						if (active) {
 							var a = cell.getKeyByIndex(index);
 							if (current !== a) {
-								if (current !== undefined) {
-									outputCell.removeLine(current);						
-								}
 								if (a !== undefined) {
 									outputCell.addLine(a);
+								} else {
+									outputCell.removeLine(current);
 								}
 								current = a;
 							}
@@ -548,11 +554,10 @@
 						if(active) {
 							var a = cell.getIndex(element);
 							if (current !== a) {
-								if (current !== undefined) {
-									outputCell.removeLine(current);						
-								}
 								if (a !== undefined) {
 									outputCell.addLine(a);
+								} else {
+									outputCell.removeLine(current);
 								}
 								current = a;
 							}
@@ -595,7 +600,7 @@
 							bool1 = false;
 							updateOutputCell();
 						};
-					});
+					}, undefined, true);
 
 					return outputCell;
 				}
@@ -610,12 +615,9 @@
 					outputCell.addLine(cache);
 
 					cell.inject(outputCell, function (val) {
-						outputCell.removeLine(cache);
 						cache = applyFunc(applyFunc(f, val), cache);
 						outputCell.addLine(cache);
 						return function () {
-							outputCell.removeLine(cache);
-							//cache = applyFunc(applyFunc(finv, cache), val);
 							cache = applyFunc(applyFunc(finv, val), cache);
 							outputCell.addLine(cache);
 						};
@@ -812,7 +814,6 @@
 						var state = cell.getState();
 						var last = state[state.length-1];
 						if(cache !== last) {
-							if (cache !== undefined) outputCell.removeLine(cache);
 							cache = last;
 							outputCell.addLine(cache);
 						}					

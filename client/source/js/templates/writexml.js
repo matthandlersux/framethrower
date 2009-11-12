@@ -437,7 +437,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 			return function () {
 				printOtherwise();
 			};
-		});
+		}, undefined, true);
 		
 		function cleanupCase() {
 			injectedFunc.unInject();

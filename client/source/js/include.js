@@ -31,6 +31,7 @@ var includes = (function () {
 			"source/js/structure/fetch.js",
 
 			"source/js/reactive/hash.js",
+			"source/js/reactive/unitHash.js",
 			"source/js/reactive/cells.js",
 			"source/js/reactive/ranges.js",
 			"source/js/reactive/controlledCell.js",

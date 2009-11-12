@@ -26,15 +26,7 @@ function makeCC(type) {
 		cell.control = {
 			set: function (k) {
 				try {
-					typeCheck(k, type.right);
-					var state = cell.getState();
-					if (state.length === 0) {
-						cell.addLine(k);
-					} else {
-						cell.removeLine(state[0]);
-						cell.addLine(k);
-					}
-					
+					cell.addLine(k);
 				} catch (e) {
 					console.log(cell);
 					throw e;
