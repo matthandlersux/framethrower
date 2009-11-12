@@ -1,3 +1,8 @@
 template () {
-	<f:call>content</f:call>
+	<div>
+		Matt's Testing Ground
+		<br />
+		Matt's Cell: {MattsCell}
+		<br />
+	</div>
 }

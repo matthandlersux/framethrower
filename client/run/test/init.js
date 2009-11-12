@@ -17,6 +17,11 @@ function send(string) {
 	});
 }
 
+function sendDebug(string) {
+	session.debugQuery(string);
+	session.flush();
+}
+
 function sendAndRemove(string) {
 	cell = session.query(parseExpr(string));
 	session.flush();
