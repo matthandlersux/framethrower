@@ -178,10 +178,8 @@ handle_cast({pipeline, From, ClientLastMessageId}, State) ->
 					true ->
 						?ServerClientTimeout
 				end,
-	% OutputTimer = outputTimer(sessionPointer(State), WaitTime),
 	State1 = updateLastMessageId(State, ClientLastMessageId),
 	State2 = updateOpenPipe(State1, From),
-	% State3 = setOutputTimer(State2, OutputTimer),
 	{noreply, State2, WaitTime};
 	
 handle_cast({connect, AST, QueryId}, State) ->
@@ -211,33 +209,11 @@ handle_cast({sendElements, Elements}, State) ->
 						end,
 	NewQueryUpdates = lists:foldl(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
-	% updateOutputTimer(State1, ?AdjacentElementDelay),
-	Reruns = getReruns(State1),
-	case getOpenPipe(State1) of
-		closed ->
-			{noreply, State1, ?ServerClientTimeout};
-		_ when Reruns >= ?MaxReruns ->
-			State2 = flush(State1),
-			{noreply, State2, ?ServerClientTimeout};
-		_ ->
-			State2 = incrementReruns(State1),
-			{noreply, State2, ?AdjacentElementDelay}
-	end;
+	flushOrWait(State1, ?AdjacentElementDelay);
 	
 handle_cast({sendActionUpdate, Update}, State) ->
 	State1 = updateQueue(State, [Update]),
-	% updateOutputTimer(State1, ?AdjacentActionDelay),
-	Reruns = getReruns(State1),
-	case getOpenPipe(State1) of
-		closed ->
-			{noreply, State1, ?ServerClientTimeout};
-		_ when Reruns >= ?MaxReruns ->
-			State2 = flush(State1),
-			{noreply, State2, ?ServerClientTimeout};
-		_ ->
-			State2 = incrementReruns(State1),
-			{noreply, State2, ?AdjacentActionDelay}
-	end;
+	flushOrWait(State1, ?AdjacentActionDelay);
 	
 handle_cast(Msg, State) ->
     {noreply, State, ?ServerClientTimeout}.
@@ -277,9 +253,28 @@ terminate(Reason, State) ->
 code_change(OldVsn, State, Extra) ->
     {ok, State}.
 
-%% --------------------------------------------------------------------
-%%% Internal API
-%% --------------------------------------------------------------------
+%% ====================================================
+%% Internal API
+%% ====================================================
+
+%% 
+%% flushOrWait :: SessionState -> Number -> GenServerResponse
+%%		GenServerResponse :: Tuple3 noreply SessionState Number
+%% 		either flushes data to the client or sets the session to wait the right amount
+%%		
+
+flushOrWait(State, Delay) ->
+	Reruns = getReruns(State),
+	case getOpenPipe(State) of
+		closed ->
+			{noreply, State, ?ServerClientTimeout};
+		_ when Reruns >= ?MaxReruns ->
+			State1 = flush(State),
+			{noreply, State1, ?ServerClientTimeout};
+		_ ->
+			State1 = incrementReruns(State),
+			{noreply, State1, Delay}
+	end.
 
 %% 
 %% cleanupSession :: SessionState -> ok
@@ -305,13 +300,14 @@ flush(State) ->
 	Queue = getQueue(State),
 	case Queue of
 		[{ClientLastMessageId, _ListOfStructs}|_RestOfQueue] ->
-			resetReruns(State1);
+			State2 = replaceQueue(State1, [{ClientLastMessageId, []}]);
 		_ ->
 			{[{NewLastMessageId, _ListOfStructs1}|_RestOfQueue1] = Queue1, JSONToSend} = processQueue(Queue, ClientLastMessageId),
 			OpenPipe ! {updates, JSONToSend, NewLastMessageId},
-			State2 = replaceQueue(State1, Queue1),
-			resetReruns(State2)
-	end.
+			State2 = replaceQueue(State1, Queue1)
+	end,
+	
+	resetReruns(State2).
 
 %% 
 %% queryUpdate :: Number -> Element -> JSONStruct

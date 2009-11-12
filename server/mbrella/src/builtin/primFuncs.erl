@@ -8,7 +8,7 @@
 	bindUnit/2, bindSet/2, bindMap/2,
 	union/2, setDifference/2, unfoldSet/2, unfoldMap/2, invert/1,
 	equal/2, dOr/2, dNot/1, dAnd/2, plus/2, subtract/2,
-	oneTo/1, oneToMap/2, factors/1, split/1, debug/1	
+	oneTo/1, oneToMap/2, factors/1, split/1, debug/1, floodUntil/1, floodPump/2	
 ]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
@@ -366,7 +366,32 @@ factors(Number) ->
 	Factors = lists:foldl(IsFactor, [], lists:seq(1, HalfNumber)),
 	cell:addValues(OutputCell, Factors),
 	OutputCell.
-	
+
+%% 
+%% floodUntil :: Number -> Set Number
+%% 		
+%%		
+
+floodUntil(Number) ->
+	OutputCell = cell:makeCell(set),
+	spawn(primFuncs, floodPump, [OutputCell, Number]),
+	OutputCell.
+
+%% 
+%% floodPump :: 
+%% 		sends X messages to floodUntil and then dies
+%%		
+
+floodPump(_, 0) -> ok;
+floodPump(OutputCell, Number) ->
+	receive
+		_ -> ok
+	after
+		10 ->
+			cell:addValue(OutputCell, Number),
+			floodPump(OutputCell, Number - 1)
+	end.
+
 %% 
 %% split :: Number -> Unit Number	
 %% 		
