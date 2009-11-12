@@ -28,8 +28,10 @@ function executeState(instruction) {
 			// we're dealing with: {kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}}
 			
 			if (isReactive(action.type)) {
+				//TODO: want these cells to be garbage collected, but they won't if they are in memo table
 				output = makeCC(action.type);
 			} else {
+				//TODO: same as above applies to these objects' reactive fields
 				output = objects.make(action.type.value, map(action.prop, evalExpr));
 			}
 		} else if (action.kind === "extract") {
