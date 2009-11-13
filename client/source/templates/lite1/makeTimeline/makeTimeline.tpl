@@ -80,6 +80,8 @@ template (movie::Movie)::Timeline {
 	
 	scrubbingS = state(Unit Null),
 	
+	playingS = state(Unit Null),
+	
 	
 	
 	selectedTimeStartS = state(Unit Number),
@@ -251,6 +253,18 @@ template (movie::Movie)::Timeline {
 								dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected
 							</f:call>
 						</div>
+						
+						<f:call>
+							px = state(Unit Number),
+							py = state(Unit Number),
+							<div>
+								<f:on domMove>
+									set px event.posX,
+									set py event.posY
+								</f:on>
+								{px}, {py}
+							</div>
+						</f:call>
 					</div>
 				
 					

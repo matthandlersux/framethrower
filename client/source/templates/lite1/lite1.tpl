@@ -25,10 +25,11 @@ template () {
 	fullscreenVideo = state(Unit XMLP),
 	
 	openMovie = action (movie::Movie) {
-		extract reactiveNot (isOpen movie) as _ {
-			nextOrd = fetch (getNextOrd timelines),
-			addEntry timelines nextOrd (makeTimeline movie)			
-		}
+		// extract reactiveNot (isOpen movie) as _ {
+		// 			nextOrd = fetch (getNextOrd timelines),
+		// 			addEntry timelines nextOrd (makeTimeline movie)			
+		// 		}
+		addEntry timelines ordOrigin (makeTimeline movie)
 	},
 	jumpToInMovie = action (movie::Movie, timeRange::TimeRange) {
 		openMovie movie,
