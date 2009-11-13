@@ -11,12 +11,16 @@
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
 -define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
 
--define( ServerClientTimeout, 30000 ).
--define( MaxReruns, 100 ).
--define( TimeWindow, 30 ).
+-define (ServerClientTimeout, 30000).
+-define (AdjacentElementDelay, 30).
+-define (AdjacentActionDelay, 30).
+-define (PipelineWaitDelay, 30).
+-define (MaxReruns, 20).
 
 %% --------------------------------------------------------------------
 %% External exports
+%% --------------------------------------------------------------------
+
 -export([
 	new/1,
 	connect/3, disconnect/2,
@@ -34,14 +38,24 @@
 	queries = dict:new(),
 	queue = [{0,[]}],
 	openPipe = closed,
-	lastMessageId = 1 % this is the last message as reported by the client
+	clientLastMessageId = 1, % this is the last message as reported by the client
+	outputTimer,
+	reruns = 0
 }).
 
 %% ====================================================
 %% Notes
 %% ====================================================
 
-% TODO: figure out how we are going to uninject outputs for a queryid, and when that happens
+% ServerClientTimeout: 		time the session waits to hear a message from the client before it dies
+% AdjacentElementDelay: 	time the session waits after hearing a message from a cell just in case 
+% 								there are more on their way
+% AdjacentActionDelay: 		time the session waits after hearing a message from an action just in case 
+% 								more messages are on their way
+% PipelineWaitDelay:		time the session waits after opening a pipeline if there are already queued 
+% 								messages to be sent
+% MaxReruns:				max amount of times that consecutive messages can prevent the pipeline 
+% 								from sending messages to the client
 
 %% ====================================================
 %% types
@@ -98,9 +112,13 @@ sendActionUpdate(SessionPointer, Update) ->
 %% 		Response :: timeout | Tuple3 updates JSONStruct Number
 %%		
 
-pipeline(SessionPointer, LastMessageId) ->
-	gen_server:cast(sessionPointer:pid(SessionPointer), {pipeline, self(), LastMessageId}),
-	pipelineTimeout(?TimeWindow, LastMessageId).
+pipeline(SessionPointer, ClientLastMessageId) ->
+	gen_server:cast(sessionPointer:pid(SessionPointer), {pipeline, self(), ClientLastMessageId}),
+	receive
+		JSON -> JSON
+	after 30000 ->
+		timeout
+	end.
 
 %% 
 %% getState :: SessionPointer -> SessionState
@@ -152,33 +170,36 @@ handle_call(Msg, From, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 
-handle_cast({pipeline, From, LastMessageId}, State) ->
-	Queue = getQueue(State),
-	case Queue of
-		[{LastMessageId, _ListOfStructs}|_RestOfQueue] ->
-			{noreply, updateOpenPipe(State, From)};
-		_ ->
-			{[{NewLastMessageId, _ListOfStructs1}|_RestOfQueue1] = Queue1, JSONToSend} = processQueue(Queue, LastMessageId),
-			From ! {updates, JSONToSend, NewLastMessageId},
-			% State1 = closeOpenPipe(State),
-			State2 = updateLastMessageId(State, LastMessageId),
-			{noreply, replaceQueue(State2, Queue1)}
-	end;
+handle_cast({pipeline, From, ClientLastMessageId}, State) ->
+	QueueLastMessageId = getQueueLastMessageId(State),
+	WaitTime = 	if
+					QueueLastMessageId > ClientLastMessageId ->
+						?PipelineWaitDelay;
+					true ->
+						?ServerClientTimeout
+				end,
+	State1 = updateLastMessageId(State, ClientLastMessageId),
+	State2 = updateOpenPipe(State1, From),
+	{noreply, State2, WaitTime};
+	
 handle_cast({connect, AST, QueryId}, State) ->
 	CellPointer = eval:evaluate( AST ),
 	SessionPointer = sessionPointer(State),
 	cell:injectOutput(CellPointer, SessionPointer, sessionOutput, [QueryId]),
 	State1 = updateQueries(State, QueryId, CellPointer),
-	{noreply, State1};
+	{noreply, State1, ?ServerClientTimeout};
+	
 handle_cast({disconnect, QueryId}, State) ->
 	CellPointer = getQueryCellPointer( State, QueryId ),
 	SessionPointer = sessionPointer(State),
 	cell:uninjectOutput(CellPointer, SessionPointer, sessionOutput, [QueryId]),
 	State1 = removeQuery(State, QueryId),
-	{noreply, State1};
+	{noreply, State1, ?ServerClientTimeout};
+	
 handle_cast({sendElements, []}, State) ->
 	% handle donemessage stuff here
-	{noreply, State};
+	{noreply, State, ?ServerClientTimeout};
+	
 handle_cast({sendElements, Elements}, State) ->
 	UnpackElements = 	fun(PackedElement, ListOfQueryUpdates) ->
 							QueryId = cellElements:mapKey(PackedElement),
@@ -188,24 +209,14 @@ handle_cast({sendElements, Elements}, State) ->
 						end,
 	NewQueryUpdates = lists:foldl(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
-	case getOpenPipe(State1) of
-		closed ->
-			{noreply, State1};
-		Pid ->
-			% if is_process_alive(Pid) ->
-			handle_cast({pipeline, Pid, getLastMessageId(State1)}, State1)
-	end;
+	flushOrWait(State1, ?AdjacentElementDelay);
+	
 handle_cast({sendActionUpdate, Update}, State) ->
 	State1 = updateQueue(State, [Update]),
-	case getOpenPipe(State1) of
-		closed ->
-			{noreply, State1};
-		Pid ->
-			% if is_process_alive(Pid) ->
-			handle_cast({pipeline, Pid, getLastMessageId(State1)}, State1)
-	end;
+	flushOrWait(State1, ?AdjacentActionDelay);
+	
 handle_cast(Msg, State) ->
-    {noreply, State}.
+    {noreply, State, ?ServerClientTimeout}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2
@@ -214,6 +225,14 @@ handle_cast(Msg, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
+handle_info(timeout, State) ->
+	case getOpenPipe(State) of
+		closed ->
+			{stop, session_timed_out, State};
+		_ ->
+			State1 = flush(State),
+			{noreply, State1, ?ServerClientTimeout}
+	end;
 handle_info(Info, State) ->
     {noreply, State}.
 
@@ -223,7 +242,8 @@ handle_info(Info, State) ->
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
 terminate(Reason, State) ->
-    ok.
+    cleanupSession(State),
+	ok.
 
 %% --------------------------------------------------------------------
 %% Func: code_change/3
@@ -233,31 +253,61 @@ terminate(Reason, State) ->
 code_change(OldVsn, State, Extra) ->
     {ok, State}.
 
-%% --------------------------------------------------------------------
-%%% Internal API
-%% --------------------------------------------------------------------
+%% ====================================================
+%% Internal API
+%% ====================================================
 
 %% 
-%% pipelineTimeout :: Number -> Number -> Updates | timeout
-%% 		Updates :: Tuple3 updates (List Struct) Number
-%% 		pipelineTimeout keeps the pipeline open for some small amount of time incase there are multiple 
-%%			messages coming in rapid succession.  this way you dont need x pipeline calls from the client for x messages
+%% flushOrWait :: SessionState -> Number -> GenServerResponse
+%%		GenServerResponse :: Tuple3 noreply SessionState Number
+%% 		either flushes data to the client or sets the session to wait the right amount
 %%		
-	
-pipelineTimeout(TimeWindow, LastMessageId) ->
-	pipelineTimeout(TimeWindow, {updates, [], LastMessageId}, 0).
-pipelineTimeout(TimeWindow, {updates, JSONStructs, LastMessageId}, Reruns) ->
-	receive
-		{updates, JSONStructs1, LastMessageId1} ->
-			receive
-				{updates, JSONStructs2, LastMessageId2} when Reruns =< ?MaxReruns -> 
-					pipelineTimeout(TimeWindow, {updates, JSONStructs ++ JSONStructs1 ++ JSONStructs2, LastMessageId2}, Reruns + 1)
-			after TimeWindow ->
-				{updates, JSONStructs ++ JSONStructs1, LastMessageId1}
-			end
-	after ?ServerClientTimeout ->
-		timeout
+
+flushOrWait(State, Delay) ->
+	Reruns = getReruns(State),
+	case getOpenPipe(State) of
+		closed ->
+			{noreply, State, ?ServerClientTimeout};
+		_ when Reruns >= ?MaxReruns ->
+			State1 = flush(State),
+			{noreply, State1, ?ServerClientTimeout};
+		_ ->
+			State1 = incrementReruns(State),
+			{noreply, State1, Delay}
 	end.
+
+%% 
+%% cleanupSession :: SessionState -> ok
+%% 		
+%%		
+
+cleanupSession(State) ->
+	?colortrace(session_timed_out_need_to_die_ughhhh),
+	AllQueryIds = getQueryIds(State),
+	lists:foreach(fun(QueryId) -> handle_cast({disconnect, QueryId}, State) end, AllQueryIds),
+	ok.
+
+%% 
+%% flush :: SessionState -> SessionState
+%% 		
+%%		
+
+flush(State) ->
+	ClientLastMessageId = getLastMessageId(State),
+	OpenPipe = getOpenPipe(State),
+	State1 = closeOpenPipe(State),
+	
+	Queue = getQueue(State),
+	case Queue of
+		[{ClientLastMessageId, _ListOfStructs}|_RestOfQueue] ->
+			State2 = replaceQueue(State1, [{ClientLastMessageId, []}]);
+		_ ->
+			{[{NewLastMessageId, _ListOfStructs1}|_RestOfQueue1] = Queue1, JSONToSend} = processQueue(Queue, ClientLastMessageId),
+			OpenPipe ! {updates, JSONToSend, NewLastMessageId},
+			State2 = replaceQueue(State1, Queue1)
+	end,
+	
+	resetReruns(State2).
 
 %% 
 %% queryUpdate :: Number -> Element -> JSONStruct
@@ -307,15 +357,15 @@ processQueue(Queue, LastMessageId) ->
 
 sessionPointer(#state{name = Name}) ->
 	sessionPointer:create(Name, self()).
-	
+
 %% 
-%% updateQueries :: SessionState -> QueryId -> CellPointer -> SessionState
+%% removeQuery :: SessionState -> QueryId -> SessionState
 %% 		
 %%		
 
-updateQueries(#state{queries = Queries} = State, QueryId, CellPointer) ->
-	State#state{queries = dict:store(QueryId, CellPointer, Queries)}.
-	
+removeQuery(#state{queries = Queries} = State, QueryId) ->
+	State#state{queries = dict:erase(QueryId, Queries)}.
+
 %% 
 %% getQueryCellPointer :: SessionState -> QueryId -> CellPointer
 %% 		
@@ -325,12 +375,108 @@ getQueryCellPointer( #state{queries = Queries} = State, QueryId ) ->
 	dict:fetch(QueryId, Queries).
 	
 %% 
-%% removeQuery :: SessionState -> QueryId -> SessionState
+%% getQueryIds :: SessionState -> List Number
 %% 		
 %%		
 
-removeQuery(#state{queries = Queries} = State, QueryId) ->
-	State#state{queries = dict:erase(QueryId, Queries)}.
+getQueryIds(#state{queries = Queries}) ->
+	{Ids, _CellPointers} = lists:unzip( dict:to_list(Queries) ),
+	Ids.
+
+%% 
+%% getReruns :: SessionState -> Number
+%% 		
+%%		
+
+getReruns(#state{reruns = Reruns}) ->
+	Reruns.
+
+%% 
+%% incrementReruns :: SessionState -> SessionState
+%% 		
+%%		
+
+incrementReruns(#state{reruns = Reruns} = State) ->
+	State#state{reruns = Reruns + 1}.
+
+%% 
+%% resetReruns :: SessionState -> SessionState
+%% 		
+%%		
+
+resetReruns(#state{reruns = Reruns} = State) ->
+	State#state{reruns = 0}.
+
+%% 
+%% getQueue :: SessionState -> Queue
+%% 		
+%%		
+
+getQueue(#state{queue = Queue}) ->
+	Queue.
+	
+%% 
+%% getName :: SessionState -> String
+%% 		
+%%		
+
+getName(#state{name = Name}) -> 
+	Name.
+
+%% 
+%% getOutputTimer :: SessionState -> Pid
+%% 		
+%%		
+
+getOutputTimer(#state{outputTimer = OutputTimer}) ->
+	OutputTimer.
+
+%% 
+%% getQueueLastMessageId :: SessionState -> Number
+%% 		
+%%		
+
+getQueueLastMessageId(#state{queue = [{LastMessageId, _ListOfStructs1}|_RestOfQueue1]}) ->
+	LastMessageId.
+
+%% 
+%% getOpenPipe :: State
+%% 		
+%%		
+
+getOpenPipe(#state{openPipe = OpenPipe}) -> OpenPipe.
+
+
+%% 
+%% getLastMessageId :: SessionState -> Number
+%% 		
+%%		
+
+getLastMessageId(#state{clientLastMessageId = Number}) -> Number.
+
+%% 
+%% replaceQueue :: SessionState -> Queue -> SessionState
+%% 		
+%%		
+
+replaceQueue(State, Queue) ->
+	State#state{queue = Queue}.
+
+%% 
+%% updateLastMessageId :: SessionState -> Number -> SessionState
+%% 		
+%%		
+
+updateLastMessageId(State, LastMessageId) ->
+	State#state{clientLastMessageId = LastMessageId}.
+	
+%% 
+%% updateQueries :: SessionState -> QueryId -> CellPointer -> SessionState
+%% 		
+%%		
+
+updateQueries(#state{queries = Queries} = State, QueryId, CellPointer) ->
+	State#state{queries = dict:store(QueryId, CellPointer, Queries)}.
 
 %% 
 %% updateQueue :: SessionState -> List Struct -> SessionState
@@ -342,60 +488,27 @@ updateQueue(#state{queue = []} = State, ListOfStructs) ->
 updateQueue(#state{queue = Queue} = State, ListOfStructs) ->
 	[{LastMessageId, _ListOfOldStructs}|_RestOfQueue] = Queue,
 	State#state{queue = [{LastMessageId + 1, ListOfStructs}|Queue]}.
-
-%% 
-%% getQueue :: SessionState -> Queue
-%% 		
-%%		
-
-getQueue(#state{queue = Queue}) ->
-	Queue.
 	
 %% 
-%% replaceQueue :: SessionState -> Queue -> SessionState
-%% 		
-%%		
-
-replaceQueue(State, Queue) ->
-	State#state{queue = Queue}.
-
-%% 
 %% updateOpenPipe :: SessionState -> Pid -> SessionState
-%% 		openpipe contains the pid of an open pipeline session
+%% 		
 %%		
 
 updateOpenPipe(State, Pid) ->
 	State#state{openPipe = Pid}.
-	
+
 %% 
 %% closeOpenPipe :: SessionState -> SessionState
-%% 		closes the openpipe session
+%% 		
 %%		
 
 closeOpenPipe(State) ->
 	State#state{openPipe = closed}.
 
 %% 
-%% updateLastMessageId :: SessionState -> Number -> SessionState
+%% setOutputTimer :: SessionState -> Pid -> SessionState
 %% 		
 %%		
 
-updateLastMessageId(State, LastMessageId) ->
-	State#state{lastMessageId = LastMessageId}.
-
-
-%% 
-%% getOpenPipe :: SessionState -> Pid | Atom
-%% 		
-%%		
-
-getOpenPipe(#state{openPipe = Pipe}) -> Pipe.
-
-%% 
-%% getLastMessageId :: SessionState -> Number
-%% 		
-%%		
-
-getLastMessageId(#state{lastMessageId = Number}) -> Number.
-
-
+setOutputTimer(State, OutputTimer) ->
+	State#state{outputTimer = OutputTimer}.

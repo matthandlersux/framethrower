@@ -298,8 +298,8 @@ function countLines (wholeString, position) {
 //MAIN
 //COMPILE COMMAND: rhino jscc.js -o tplparser.js fttemplate.par
 //java -jar ../util/js.jar jscc.js -o tplparser.js fttemplate.par
-//RUN COMMAND: rhino assembler.js <root folder>
-//java -jar ../util/js.jar -opt -1 assembler.js <root folder> rebuild
+//RUN COMMAND:
+//./shell assembler.js <root folder>
 
 try{
 	if( arguments.length > 0 ) { 		

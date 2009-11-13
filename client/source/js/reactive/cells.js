@@ -1,7 +1,7 @@
 //Cell Common Interface (more detail inline with code)
 //Creation:
 //	makeCell()				cell for Unit and Set
-//  makeCellMapInput()		cell for Map
+//  makeCellMap()		cell for Map
 //Hooking Up:
 //	cell.inject(depender, f)			depender is (cell to be informed when done OR function to be called when done).
 //	cell.injectDependency(depender)		depender is (cell to be informed when done OR function to be called when done).
@@ -34,15 +34,75 @@ var CELLS = {};
 var CELLCOUNT = 0;
 var CELLSCREATED = 0;
 
-function makeBaseCell (toKey) {
+
+function addUnitOnlyFunctions(cell, dots, funcs) {
+	cell.addDot = function(key, dot) {
+		var current = dots.getCurrent();
+
+		// remove the current state, only 'undoing' its output for functions without 'gentleRemove'
+		if(current !== undefined) {
+			forEach(funcs, function (func, id) {
+				if (!func.gentleRemove) {
+					undoFunOnDot(current, id);
+				}
+			});
+		}
+
+		dots.set(key, dot);
+	}
+	
+	cell.makeSorted = function() {};
+	cell.addSameDot = function() {};
+	cell.getDotToRemove = function () {
+		return dots.getCurrent();
+	}
+}
+
+function addSetMapOnlyFunctions(cell, dots) {
+	cell.addDot = function (key, dot) {
+		dots.set(key, dot);
+	}
+	
+	cell.addSameDot = function (dot) {
+		dot.num++;	
+	}
+	
+	cell.getDotToRemove = function (key) {
+		return dots.get(key);
+	}
+	
+	//pull through some range related functions from rangedSet to be used by some primFuncs (TODO: refactor)
+	cell.makeSorted = function () {
+		dots.makeSorted();
+		cell.getIndex = function (key) {
+			return dots.getIndex(key);
+		};
+
+		cell.getNearestIndexRight = function (key) {
+			return dots.getNearestIndexRight(key);
+		};
+
+		cell.getNearestIndexLeft = function (key) {
+			return dots.getNearestIndexLeft(key);
+		};
+
+		cell.getByIndex = function (index) {
+			return dots.getByIndex(index);
+		};
+
+		cell.getKeyByIndex = function (index) {
+			return dots.getKeyByIndex(index);
+		};		
+	};
+}
+
+function makeBaseCell (toKey, dots, funcs) {
 	CELLCOUNT++;
 	CELLSCREATED++;
 	var cell = makeStartCap();
 	cell.id = CELLSCREATED;
 	CELLS[cell.id] = cell;
-	var dots = makeConSortedSetStringify();
-	var funcs = {};
-	
+
 	//dependencies are stored as a hash from (string,number) to true
 	//the (string,number) is usually (cell name, id of the function within that cell that informs this cell)
 	//but can also be (leash, 1) for the special case of the leash function
@@ -51,9 +111,7 @@ function makeBaseCell (toKey) {
 	var funcColor = 0; //counter for coloring injected functions
 	var isDone = false;
 	
-
 	//temp debug functions
-	cell.getFuncs = function(){return funcs;};
 
 	//GetState for DEBUG (and for convertExprXML.js)
 	cell.getState = function () {
@@ -62,31 +120,6 @@ function makeBaseCell (toKey) {
 	
 	cell.getDependencies = function() {
 		return dependencies;
-	};
-	
-	//pull through some range related functions from rangedSet to be used by some primFuncs (TODO: refactor)
-	cell.makeSorted = function () {
-		dots.makeSorted();
-	};
-
-	cell.getIndex = function (key) {
-		return dots.getIndex(key);
-	};
-	
-	cell.getNearestIndexRight = function (key) {
-		return dots.getNearestIndexRight(key);
-	};
-	
-	cell.getNearestIndexLeft = function (key) {
-		return dots.getNearestIndexLeft(key);
-	};
-	
-	cell.getByIndex = function (index) {
-		return dots.getByIndex(index);
-	};
-	
-	cell.getKeyByIndex = function (index) {
-		return dots.getKeyByIndex(index);
 	};
 	
 	cell.getLength = function () {
@@ -104,12 +137,13 @@ function makeBaseCell (toKey) {
 	//  Args: Depender is cell | function (use an empty function if there is no dependency behavior))
 	//		  f is the function being injected
 	//		  initializeRange is an optional function to be run on the rangedView after it is created (to set the range)
+	//		  gentleRemove is an optional boolean flag, if true for Units, undo functions will not be called when setting a new value
 	//  Returns: An object {rView: rangedView, unInject: function to remove this injected function}
 	// ----------------------------------------------------------------------	
 	//if cell is of type Unit a or Set a, f is a function that takes one argument key::a
 	//if cell is of type Map a b, f is a function that takes one javascript object: {key::a, val::b}
 	//f(k) or f({key=k,val=v}) returns a callback function that will be called when k is removed from the Unit/Set/Map
-	cell.inject = function (depender, f, initializeRange) {
+	cell.inject = function (depender, f, initializeRange, gentleRemove) {
 		var id = funcColor++;
 		if (depender.addDependency) {
 			depender.addDependency(cell, id);
@@ -125,7 +159,7 @@ function makeBaseCell (toKey) {
 		if (initializeRange !== undefined) {
 			initializeRange(rView);
 		}
-		funcs[id] = {func:f, depender:depender, rView:rView};
+		funcs[id] = {func:f, depender:depender, rView:rView, gentleRemove:gentleRemove};
 		if (f !== undefined) {
 			rView.forRange(function (dot, key) {
 				if(dot.num > 0) {
@@ -206,25 +240,22 @@ function makeBaseCell (toKey) {
 		var key = toKey(value);
 		var dot = dots.get(key);
 		if (dot !== undefined && dot.num != 0) {
-			dot.num++;
+			cell.addSameDot(dot);
 		} else {
 			dot = {val:value, num:1, lines:{}};
-			dots.set(key, dot);
+			cell.addDot(key, dot);
 			forEach(funcs, function (func, id) {
 				if (func.rView.inRange(key)) {
 					runFunOnDot(dot, func.func, id);
 				}
 			});
 		}
-		return function () {
-			cell.removeLine(key);
-		};
 	};
 
 	//remove a line from an element of the cell
 	//if this was the last line going to this element, it will be removed from the cell
 	cell.removeLine = function (key) {
-		var dot = dots.get(key);
+		var dot = cell.getDotToRemove(key);
 		if(dot != undefined) {
 			dot.num--;
 			if(dot.num == 0) {
@@ -258,7 +289,7 @@ function makeBaseCell (toKey) {
 	cell.done = function (doneCell, id) {
 		delete dependencies[doneCell.name + "," + id];
 		checkDone();
-	};	
+	};
 
 	//tells a cell that it cannot be 'done' until cell.done(depCell, id) is called
 	cell.addDependency = function (depCell, id) {
@@ -292,48 +323,67 @@ function makeBaseCell (toKey) {
 	};
 	
 	
-	function runFunOnDot (dot, func, id) {
-		var value = dot.val;
-		var onRemove = func(value);
-		if (onRemove !== undefined) {
-			if (onRemove.func) {
-				dots.get(toKey(value)).lines[id] = onRemove.func;
-			} else {
-				var temp = dots.get(toKey(value));
-				temp.lines[id] = onRemove;
-			}
-		}
-	};
-	
-	function undoFunOnDot (dot, id) {
-		if (dot !== undefined) {
-			var removeFunc = dot.lines[id];
-			if (removeFunc) {
-				removeFunc();
-			}
-			delete dot.lines[id];
-		}
-	};
-	
 	return cell;
 }
 
-function makeCell() {
+function undoFunOnDot (dot, id) {
+	if (dot !== undefined) {
+		var removeFunc = dot.lines[id];
+		if (removeFunc) {
+			removeFunc();
+		}
+		delete dot.lines[id];
+	}
+};
+
+function runFunOnDot (dot, func, id) {
+	var value = dot.val;
+	var onRemove = func(value);
+	if (onRemove !== undefined) {
+		if (onRemove.func) {
+			dot.lines[id] = onRemove.func;
+		} else {
+			dot.lines[id] = onRemove;
+		}
+	}
+};
+
+
+function makeCellUnit() {	
+	var toKey = function (value) {
+		return value;
+	};
+	var dots = makeUnitHash();
+	var funcs = {};
+	var cell = makeBaseCell(toKey, dots, funcs);
+	cell.isMap = false;
+	addUnitOnlyFunctions(cell, dots, funcs);
+	return cell;
+}
+
+function makeCellSet() {	
 	var toKey = function (value) {
 		return value;
 	};
 	
-	var cell = makeBaseCell(toKey);
+	var dots = makeConSortedSetStringify();
+	var cell = makeBaseCell(toKey, dots, {});
+	addSetMapOnlyFunctions(cell, dots);
+	
 	cell.isMap = false;
 	return cell;
 }
 
-function makeCellMapInput() {
+function makeCellMap() {
 	var toKey = function (value) {
 		return value.key;
 	};
 
-	var cell = makeBaseCell(toKey);
+	var dots = makeConSortedSetStringify();
+	var funcs = {};
+	var cell = makeBaseCell(toKey, dots, {});
+	addSetMapOnlyFunctions(cell, dots);
+	
 	cell.isMap = true;
 	return cell;
 }

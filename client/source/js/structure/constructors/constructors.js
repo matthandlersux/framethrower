@@ -207,12 +207,13 @@ function makeVar(deBruijn) {
 		outsideScope: deBruijn
 	};
 }
+
 function makeApply(left, right) {
 	return {
 		kind: "exprApply",
 		left: left,
 		right: right,
-		outsideScope: Math.max(getOutsideScope(left), getOutsideScope(right))
+		outsideScope: maximum(getOutsideScope(left), getOutsideScope(right))
 	};
 }
 function makeLambda(varName, expr) {
@@ -220,7 +221,7 @@ function makeLambda(varName, expr) {
 		kind: "exprLambda",
 		varName: varName,
 		expr: expr,
-		outsideScope: Math.max(0, getOutsideScope(expr) - 1)
+		outsideScope: maximum(0, getOutsideScope(expr) - 1)
 	};
 }
 

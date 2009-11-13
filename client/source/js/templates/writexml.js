@@ -437,7 +437,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 			return function () {
 				printOtherwise();
 			};
-		});
+		}, undefined, true);
 		
 		function cleanupCase() {
 			injectedFunc.unInject();
@@ -459,7 +459,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 			setTimeout(function () {
 				extraEnv = makeEventExtrasEnv(env, {target:lastElement});
 				var action = makeClosure(xml.action, extraEnv);
-				executeAction(action);
+				executeAction(action, function() {session.flush();});
 			}, 0);
 			return {node: node, cleanup: null};
 		} else if (xml.event === "uninit") {
@@ -540,7 +540,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 			var injectedFunc = evaluateAndInject(expr, emptyFunction, function (val) { // TODO: maybe we should be doing key/val for Map's...
 
 				var action = evaluate(makeApply(actionClosure, val));
-				executeAction(action);
+				executeAction(action, function() {session.flush();});
 			});
 			cleanupFunc = function () {
 				injectedFunc.unInject();

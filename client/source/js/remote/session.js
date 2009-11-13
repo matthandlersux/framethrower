@@ -61,18 +61,17 @@ function xhr(url, post, callback, failCallback, timeout) {
 }
 
 //
-// parseServerResponse :: JSON -> Type -> Expr (RemoteCell | Object | Literal)
+// parseServerResponse :: JSON -> Expr (RemoteCell | Object | Literal)
 //
-function parseServerResponse(s, expectedType) {
+function parseServerResponse(s) {
 	if (s === undefined) return undefined;
 	if (typeOf(s) === "object") {
 		if (s.kind === "cell") {
 			// TODO test this
 			return makeRemoteCell(s.name, s.constructorType);
 		} else if (s.kind === "object") {
-			var propTypes = objects.getPropTypes(s.type);
 			var prop = map(s.props, function(value, name) {
-				return parseServerResponse(value, propTypes[name]);
+				return parseServerResponse(value);
 			});
 			var obj = makeObject(parseType(s.type), s.name, prop, remote.serverOnly);
 			return obj;
@@ -117,16 +116,41 @@ var session = (function () {
 		sendAllMessages();
 	}
 	
+	function addDebugQuery(string) {
+		var queryId = nextQueryId;
+		nextQueryId++;
+
+		var fakeCell = {};
+		fakeCell.control = {
+			add: function(key, val) {
+				if (val !== undefined) {
+					console.log("Adding key/val:", key, "/", val, " to query: ", string);
+				} else {
+					console.log("Adding val:", key, "to query: ", string);
+				}
+			},
+			remove: function(val) {
+				console.log("Removing val:", val, "from query: ", string);
+			}
+		};
+
+		cells[queryId] = fakeCell;
+
+		messages.push({
+			query: {
+				expr: string,
+				queryId: '' + queryId
+			}
+		});
+	}
+	
 	function addQuery(expr) {
 		var queryId = nextQueryId;
 		nextQueryId++;
 
 		var type = getType(expr);
 
-		var cell = makeCC(type);
-		
-		//TODO: make this not use controlled cells
-		cell.persist = false;
+		var cell = makeCC(type, false);
 		
 		cell.remote = remote.shared;
 		cell.name = stringify(expr);
@@ -230,25 +254,18 @@ var session = (function () {
 							if (cell !== undefined) { // TODO do i need this?
 								var keyType; // TODO test this
 								var valueType;
-								var cellType = getType(cell);
-								if (cellType.left.kind === "typeApply") {
-									keyType = cellType.left.right;
-									valueType = cellType.right;
-								} else {
-									keyType = cellType.right;
-								}
 
 								if (update.action == "done") {
 									cell.setDone();
 								} else {
-									var key = parseServerResponse(update.key, keyType);
-									var value = parseServerResponse(update.value, valueType);
+									var key = parseServerResponse(update.key);
+									var value = parseServerResponse(update.value);
 									//console.log("Update:", update.key, update.value);
 									cell.control[update.action](key, value);
 								}
 							} else {
-								var key = parseServerResponse(update.key, keyType);
-								var value = parseServerResponse(update.value, valueType);
+								var key = parseServerResponse(update.key);
+								var value = parseServerResponse(update.value);
 								//console.log("Update:", update.key, update.value);
 							}
 						} else if (response.actionResponse) {
@@ -264,6 +281,7 @@ var session = (function () {
 							}
 						}
 					});
+					setTimeout(sendAllMessages, 0);
 				}
 				setTimeout(startUpdater, 1);
 			} catch (e) {
@@ -323,6 +341,7 @@ var session = (function () {
 	
 	return {
 		query: addQuery,
+		debugQuery: addDebugQuery,
 		perform: addAction,
 		flush: sendAllMessages,
 		debugCells: cells,

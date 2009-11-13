@@ -313,6 +313,7 @@ handle_cast({injectElements, Elements}, CellState) ->
 	{noreply, CellState1};
 	
 handle_cast({sendElements, From, Elements}, State) ->
+	% TODO: if elements list is too long, send in chunks
 	if
 		Elements =:= [] ->
 			{noreply, cellState:setDone(State, From)};
@@ -344,6 +345,7 @@ handle_cast({injectOutput, OutputTo, OutputFunction}, State) ->
 	NewState1 = cellState:injectOutput(State, OutputFunction, OutputTo),
 	Outputs = cellState:getOutputs(NewState1),
 	Output = outputs:getOutput(OutputFunction, Outputs),
+	% TODO: if elements list is too long, send in chunks
 	NewState2 = outputAllElements(NewState1, Output, OutputTo),
 	{noreply, NewState2};
 

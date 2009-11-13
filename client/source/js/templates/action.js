@@ -28,8 +28,10 @@ function executeState(instruction) {
 			// we're dealing with: {kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}}
 			
 			if (isReactive(action.type)) {
+				//TODO: want these cells to be garbage collected, but they won't if they are in memo table
 				output = makeCC(action.type);
 			} else {
+				//TODO: same as above applies to these objects' reactive fields
 				output = objects.make(action.type.value, map(action.prop, evalExpr));
 			}
 		} else if (action.kind === "extract") {
@@ -119,9 +121,12 @@ function executeAction (instruction, callback) {
 	
 	function executeUntilDone(result) {
 		if (result.async) {
-			result.asyncFunction(executeUntilDone);
-		} else if (callback) {
-			callback(result.value);
+			var rest = result.asyncFunction(executeUntilDone);
+			setTimeout(rest, 0); //this prevents stack from growing from too many recursive calls
+		} else {
+			if (callback) {
+				callback(result.value);
+			}
 		}
 	}
 	executeUntilDone(helpExecuteAction(instruction));
@@ -147,7 +152,6 @@ function helpExecuteAction (instruction) {
 	} else {
 		var scope = {};
 		var env = extendEnv(instruction.env, scope);
-	
 		return foldAsynchronous(instruction.instructions, undefined, function (actionLet) {
 			var action = actionLet.action;
 			var actionKind = action.kind;
@@ -191,16 +195,19 @@ function helpExecuteAction (instruction) {
 				}
 
 				var select = evaluate(parseExpression(action.select, env));
-
 				if (select.kind === "list") {
 					forEach(select.asArray, function (element) {
 						executeAction(inner(element));
 					});
 				} else { // select is a cell
+					var done = false;
 					var injectedFunc = select.injectDependency(function () { // wait until select cell is 'done', then iterate over its elements
-						forEach(select.getState(), function (element) {
-							executeAction(inner(element));
-						});
+						if (!done) {
+							done = true;
+							forEach(select.getState(), function (element) {
+								executeAction(inner(element));
+							});
+						}
 					});
 					injectedFunc.unInject();
 				}
@@ -224,9 +231,7 @@ function helpExecuteAction (instruction) {
 				injectedFunc.unInject();
 				output = helpExecuteAction(action);
 			}
-			if (output === undefined) {
-				console.log("output undefined", actionLet);
-			}
+
 			//now wrap the output if needed
 			if (output.async) {
 				return { // return a function to run the asynchronous action, add the result to the scope, and continue with provided callback

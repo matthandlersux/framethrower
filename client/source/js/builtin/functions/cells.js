@@ -10,19 +10,6 @@
 			return evaluateAndInject(makeApply(func, input), depender, inject);
 		}	
 
-		var bindUnitOrSetHelper = function (f, cell) {
-			var outputCell = makeCell();
-
-			cell.inject(outputCell, function (val) {
-				var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
-					return outputCell.addLine(innerVal);
-				});
-				return injectedFunc.unInject;
-			});
-
-			return outputCell;
-		};
-
 		function rangeHelper (outputCell, setRangeFunc, startCell, endCell, cell) {
 			cell.makeSorted();
 			var start;
@@ -31,8 +18,13 @@
 
 			var rView;
 
+			var initializeRange = function (rView) {
+				rView.clearRange();
+			};
+
 			var injectedFunc = cell.inject(outputCell, function (val) {
-				return outputCell.addLine(val);
+				outputCell.addLine(val);
+				return function () {outputCell.removeLine(val);};
 			}, initializeRange);
 			rView = injectedFunc.rView;
 
@@ -52,7 +44,7 @@
 					start = undefined;
 					updateRange(rView);
 				};
-			});
+			}, undefined, true);
 			endCell.inject(outputCell, function(val) {
 				end = val;
 				updateRange(rView);
@@ -60,11 +52,7 @@
 					end = undefined;
 					updateRange(rView);
 				};
-			});
-
-			var initializeRange = function (rView) {
-				rView.clearRange();
-			};
+			}, undefined, true);
 			
 			outputCell.unleash();
 			return outputCell;
@@ -77,7 +65,7 @@
 		 	returnUnit : {
 				type : "a -> Unit a",
 				func : function (val) {
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					outputCell.addLine(val);
 					outputCell.setDone();
 					return outputCell;
@@ -86,9 +74,10 @@
 		 	returnUnitSet : {
 				type : "Unit a -> Set a",
 				func : function (cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellSet();
 					cell.inject(outputCell, function (val) {
-						return outputCell.addLine(val);
+						outputCell.addLine(val);
+						return function () {outputCell.removeLine(val);};
 					});
 					return outputCell;
 				}
@@ -96,29 +85,68 @@
 			returnUnitMap : {
 				type : "a -> Unit b -> Map a b",
 				func : function (key, cell) {
-					var outputCell = makeCellMapInput();
+					var outputCell = makeCellMap();
 					cell.inject(outputCell, function (val) {
-						return outputCell.addLine({key:key, val:val});
+						outputCell.addLine({key:key, val:val});
+						return function () {outputCell.removeLine({key:key, val:val});};
 					});
 					return outputCell;
 				}
 			},
 		 	bindUnit : {
+			// this is hacked for the output to not flicker as long as there are no asynchronous calls
 				type : "(a -> Unit b) -> Unit a -> Unit b",
-				func : bindUnitOrSetHelper
+				func : function (f, cell) {
+					var outputCell = makeCellUnit();
+					var uninjectDone = true;
+					var injectedFunc;
+					var clearOutput;
+					cell.inject(outputCell, function (val) {
+						if (!uninjectDone) {
+							injectedFunc.unInject;
+						}
+						var needToClear = true;
+						injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
+							needToClear = false;
+							outputCell.addLine(innerVal);
+							clearOutput = function () {outputCell.removeLine();};
+						});
+						if (needToClear && clearOutput) {
+							clearOutput();
+						}
+						uninjectDone = false;
+						return function () {
+							injectedFunc.unInject;
+							if (clearOutput) clearOutput();
+							uninjectDone = true;
+						}
+					}, undefined, true);
+					return outputCell;
+				}
 			},
 		 	bindSet : {
 				type : "(a -> Set b) -> Set a -> Set b",
-				func : bindUnitOrSetHelper
+				func : function (f, cell) {
+					var outputCell = makeCellSet();
+					cell.inject(outputCell, function (val) {
+						var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
+							outputCell.addLine(innerVal);
+							return function () {outputCell.removeLine(innerVal);};
+						});
+						return injectedFunc.unInject;
+					});
+					return outputCell;
+				}
 			},
 		 	bindMap : {
 				type : "(a -> b -> Map a c) -> Map a b -> Map a c",
 				func : function (f, cell) {
-					var outputCell = makeCellMapInput();
+					var outputCell = makeCellMap();
 
 					cell.inject(outputCell, function (keyVal) {
 						var injectedFunc = applyAndInject(applyFunc(f, keyVal.key), keyVal.val, outputCell, function (innerKeyVal) {
-							return outputCell.addLine(innerKeyVal);
+							outputCell.addLine(innerKeyVal);
+							return function () {outputCell.removeLine(innerKeyVal);};
 						});
 						return injectedFunc.unInject;
 					});
@@ -132,13 +160,15 @@
 			union : {
 				type : "Set a -> Set a -> Set a",
 				func : function (cell1, cell2) {
-					var outputCell = makeCell();
+					var outputCell = makeCellSet();
 					outputCell.leash();
 					cell1.inject(outputCell, function (val) {
-						return outputCell.addLine(val);
+						outputCell.addLine(val);
+						return function () {outputCell.removeLine(val);};
 					});
 					cell2.inject(outputCell, function (val) {
-						return outputCell.addLine(val);
+						outputCell.addLine(val);
+						return function () {outputCell.removeLine(val);};
 					});
 					outputCell.unleash();
 					return outputCell;
@@ -147,12 +177,15 @@
 			setDifference : {
 				type : "Set a -> Set a -> Set a",
 				func : function (cell1, cell2) {
-					var outputCell = makeCell();
+					var outputCell = makeCellSet();
 					var countHash = {};
 
 					var add = function (count, value) {
 						count.num++;
-						if (count.num == 1) count.onRemove = outputCell.addLine(value);					
+						if (count.num == 1) {
+							outputCell.addLine(value);
+							count.onRemove = function () {outputCell.removeLine(value);};
+						}
 					};
 
 					var sub = function (count) {
@@ -188,7 +221,7 @@
 			takeOne : {
 				type : "Set a -> Unit a",
 				func : function (cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					var cache;
 
 					cell.inject(outputCell, function (val) {
@@ -198,10 +231,11 @@
 						}
 						return function () {
 							if (cache === val) {
-								outputCell.removeLine(val);
 								cache = cell.getState()[0];
 								if (cache !== undefined) {
 									outputCell.addLine(cache);
+								} else {
+									outputCell.removeLine();
 								}
 							}
 						};
@@ -218,7 +252,7 @@
 			boolToUnit : {
 				type : "Bool -> Unit Null",
 				func : function (val) {
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					if (val) {
 						outputCell.addLine(nullObject);
 						outputCell.setDone();
@@ -231,7 +265,7 @@
 				func: function (cell) {
 					var currentValue = false;
 					var outputValue = false;
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					cell.inject(outputCell, function (val) {
 						currentValue = true;
 						return function () {
@@ -244,7 +278,7 @@
 							if (outputValue) {
 								outputCell.addLine(nullObject);
 							} else {
-								outputCell.removeLine(nullObject);
+								outputCell.removeLine();
 							}
 						}
 					});
@@ -257,13 +291,10 @@
 					var inputCellValue;
 					var outputCellValue;
 					
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					
 					function update() {
 						if (outputCellValue !== inputCellValue) {
-							if (outputCellValue !== undefined) {
-								outputCell.removeLine(outputCellValue);
-							}
 							outputCellValue = inputCellValue;
 							outputCell.addLine(outputCellValue);
 						}
@@ -283,10 +314,9 @@
 				type: "Unit a -> Unit Number",
 				func: function (cell) {
 					var currentValue = 0;
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					outputCell.addLine(currentValue);
 					cell.inject(outputCell, function (val) {
-						outputCell.removeLine(currentValue);
 						currentValue += 1;
 						outputCell.addLine(currentValue);
 						return function () {
@@ -305,7 +335,7 @@
 			oneTo : {
 				type : "Number -> Set Number",
 				func : function (val1) {
-					var outputCell = makeCell();
+					var outputCell = makeCellSet();
 					for(var i=1; i<= val1; i++) {
 						outputCell.addLine(i);
 					}
@@ -316,7 +346,7 @@
 			oneToMap : {
 				type : "Number -> Number -> Map Number Number",
 				func : function (val1, val2) {
-					var outputCell = makeCellMapInput();
+					var outputCell = makeCellMap();
 					for(var i=1; i<= val1; i++) {
 						outputCell.addLine({key:i, val:val2});
 					}
@@ -327,9 +357,11 @@
 		 	reactiveApply : {
 				type : "Unit (a -> b) -> a -> Unit b",
 				func : function (cell, input) {
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					cell.inject(outputCell, function (val) {
-						return outputCell.addLine(applyFunc(val, input));
+						var resultVal = applyFunc(val, input);
+						outputCell.addLine(resultVal);
+						return function () {outputCell.removeLine(resultVal);};
 					});
 					return outputCell;
 				}
@@ -341,14 +373,14 @@
 			reactiveNot: {
 				type: "Unit a -> Unit Null", // TODO: change this type (from Unit Null -> Unit Null) server-side...
 				func: function (cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					outputCell.addLine(nullObject);
 					cell.inject(outputCell, function (val) {
-						outputCell.removeLine(nullObject);
+						outputCell.removeLine();
 						return function() {
 							outputCell.addLine(nullObject);
 						};
-					});
+					}, undefined, true);
 					return outputCell;
 				}
 			},
@@ -358,14 +390,14 @@
 					var bool1 = false;
 					var bool2 = false;
 					var isSet = false;
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 
 					function updateOutputCell() {
 						if (bool1 && bool2 && !isSet) {
 							outputCell.addLine(nullObject);
 							isSet = true;
 						} else if (isSet) {
-							outputCell.removeLine(nullObject);
+							outputCell.removeLine();
 							isSet = false;
 						}
 					}
@@ -377,7 +409,7 @@
 							bool1 = false;
 							updateOutputCell();
 						};
-					});
+					}, undefined, true);
 					cell2.inject(outputCell, function (val) {
 						bool2 = true;
 						updateOutputCell();
@@ -385,7 +417,7 @@
 							bool2 = false;
 							updateOutputCell();
 						};
-					});
+					}, undefined, true);
 					outputCell.unleash();
 					return outputCell;
 				}
@@ -396,14 +428,14 @@
 					var bool1 = false;
 					var bool2 = false;
 					var isSet = false;
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 
 					function updateOutputCell() {
 						if ((bool1 || bool2) && !isSet) {
 							outputCell.addLine(nullObject);
 							isSet = true;
 						} else if (!bool1 && !bool2 && isSet) {
-							outputCell.removeLine(nullObject);
+							outputCell.removeLine();
 							isSet = false;
 						}
 					}
@@ -415,7 +447,7 @@
 							bool1 = false;
 							updateOutputCell();
 						};
-					});
+					}, undefined, true);
 					cell2.inject(outputCell, function (val) {
 						bool2 = true;
 						updateOutputCell();
@@ -423,7 +455,7 @@
 							bool2 = false;
 							updateOutputCell();
 						};
-					});
+					}, undefined, true);
 					outputCell.unleash();
 					return outputCell;				
 				}
@@ -431,66 +463,54 @@
 			defaultValue: {
 				type: "a -> Unit a -> Unit a",
 				func: function (defaultValue, cell) {
-					var outputCell = makeCell();
-					var current = defaultValue;
+					var outputCell = makeCellUnit();
 					outputCell.addLine(defaultValue);
 					cell.inject(outputCell, function (val) {
-						outputCell.removeLine(current);
-						current = val;
-						outputCell.addLine(current);
+						outputCell.addLine(val);
 						return function () {
-							outputCell.removeLine(current);
-							current = defaultValue;
-							outputCell.addLine(current);
+							outputCell.addLine(defaultValue);
 						};
-					});
+					}, undefined, true);
 					return outputCell;
 				}
 			},
 			"switch": {
 				type: "Unit a -> b -> b -> Unit b",
 				func: function (switcher, occupiedVal, unoccupiedVal) {
-					var outputCell = makeCell();
-					var current = unoccupiedVal;
-					outputCell.addLine(current);
+					var outputCell = makeCellUnit();
+					outputCell.addLine(unoccupiedVal);
 					switcher.inject(outputCell, function (val) {
-						outputCell.removeLine(current);
-						current = occupiedVal;
-						outputCell.addLine(current);
+						outputCell.addLine(occupiedVal);
 						return function () {
-							outputCell.removeLine(current);
-							current = unoccupiedVal;
-							outputCell.addLine(current);
+							outputCell.addLine(unoccupiedVal);
 						};
-					});
+					}, undefined, true);
 					return outputCell;
 				}
 			},
 			reactiveIfThen: {
 				type: "Unit a -> b -> b -> Unit b",
 				func: function (predicate, consequent, alternative) {
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					outputCell.addLine(alternative);
 					predicate.inject(outputCell, function (val) {
-						outputCell.removeLine(alternative);
 						outputCell.addLine(consequent);
 						return function () {
-							outputCell.removeLine(consequent);
 							outputCell.addLine(alternative);
 						};
-					});
+					}, undefined, true);
 					return outputCell;
 				}
 			},
 			isEmpty: {
 				type: "Set a -> Unit Null",
 				func: function (cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					var count = 0;
 					outputCell.addLine(nullObject);
 
 					cell.inject(outputCell, function (val) {
-						if (count === 0) outputCell.removeLine(nullObject);
+						if (count === 0) outputCell.removeLine();
 						count++;
 						return function() {
 							count--;
@@ -503,7 +523,7 @@
 			getByPosition: {
 				type: "Number -> Set a -> Unit a",
 				func: function (index, cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					cell.makeSorted();
 					var current;
 					var active = false;
@@ -511,11 +531,10 @@
 						if (active) {
 							var a = cell.getKeyByIndex(index);
 							if (current !== a) {
-								if (current !== undefined) {
-									outputCell.removeLine(current);						
-								}
 								if (a !== undefined) {
 									outputCell.addLine(a);
+								} else {
+									outputCell.removeLine();
 								}
 								current = a;
 							}
@@ -535,7 +554,7 @@
 			getPosition: {
 				type: "a -> Set a -> Unit Number", // TODO: add to server
 				func: function (element, cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					cell.makeSorted();
 					var current;
 					var active = false;
@@ -544,11 +563,10 @@
 						if(active) {
 							var a = cell.getIndex(element);
 							if (current !== a) {
-								if (current !== undefined) {
-									outputCell.removeLine(current);						
-								}
 								if (a !== undefined) {
 									outputCell.addLine(a);
+								} else {
+									outputCell.removeLine();
 								}
 								current = a;
 							}
@@ -572,14 +590,14 @@
 					// if gatekeeper is empty, output is empty
 					var bool1 = false;
 					var isSet = false;
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 
 					function updateOutputCell() {
 						if (bool1 && !isSet) {
 							outputCell.addLine(passer);
 							isSet = true;
 						} else if (!bool1 && isSet) {
-							outputCell.removeLine(passer);
+							outputCell.removeLine();
 							isSet = false;
 						}
 					}
@@ -591,57 +609,24 @@
 							bool1 = false;
 							updateOutputCell();
 						};
-					});
+					}, undefined, true);
 
 					return outputCell;
 				}
 			},
 
-			// 	 	any : {
-			// 	type : "(a -> Unit Bool) -> Set a -> Unit Bool",
-			// 	func : function (f, cell) {
-			// 		var outputCell = makeCell();
-			// 		var count = 0;
-			// 		outputCell.addLine(false);
-			// 
-			// 		cell.inject(outputCell, function (val) {
-			// 			var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
-			// 				if (innerVal) {
-			// 					if (count == 0) {
-			// 						outputCell.removeLine(false);
-			// 						outputCell.addLine(true);
-			// 					}
-			// 					count++;
-			// 					return function () {
-			// 						count--;
-			// 						if (count == 0) {
-			// 							outputCell.removeLine(true);
-			// 							outputCell.addLine(false);
-			// 						}
-			// 					};
-			// 				}
-			// 			});
-			//			return injectedFunc.unInject;
-			// 		});
-			// 		
-			// 		return outputCell;
-			// 	}
-			// },
 			fold : {
 				//type : "(a -> b -> b) -> (b -> a -> a) -> b -> Set a -> Unit b",
 				type : "(a -> b -> b) -> (a -> b -> b) -> b -> Set a -> Unit b",
 				func : function (f, finv, init, cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					var cache = init;
 					outputCell.addLine(cache);
 
 					cell.inject(outputCell, function (val) {
-						outputCell.removeLine(cache);
 						cache = applyFunc(applyFunc(f, val), cache);
 						outputCell.addLine(cache);
 						return function () {
-							outputCell.removeLine(cache);
-							//cache = applyFunc(applyFunc(finv, cache), val);
 							cache = applyFunc(applyFunc(finv, val), cache);
 							outputCell.addLine(cache);
 						};
@@ -653,13 +638,14 @@
 			unfoldSet : {
 				type : "(a -> Set a) -> a -> Set a",
 				func : function (f, init) {
-					var outputCell = makeCell();
+					var outputCell = makeCellSet();
 
 					outputCell.addLine(init);
 					//TODO: make this inject more like the erlang version
 					outputCell.inject(function(){}, function (val) {
 						var injectedFunc = applyAndInject(f, val, outputCell, function (innerVal) {
-							return outputCell.addLine(innerVal);
+							outputCell.addLine(innerVal);
+							return function () {outputCell.removeLine(innerVal);};
 						});
 						return injectedFunc.unInject;
 					});
@@ -670,13 +656,15 @@
 			unfoldMap : {
 				type : "(a -> Set a) -> a -> Map a Number",
 				func : function (f, init) {
-					var outputCell = makeCellMapInput();
+					var outputCell = makeCellMap();
 
 					outputCell.addLine({key:init, val:0});
 					//TODO: make this inject more like the erlang version
 					outputCell.inject(function(){}, function (keyVal) {
 						var injectedFunc = applyAndInject(f, keyVal.key, outputCell, function (val) {
-							return outputCell.addLine({key:val, val:keyVal.val+1});
+							var keyValToAdd = {key:val, val:keyVal.val+1};
+							outputCell.addLine(keyValToAdd);
+							return function () {outputCell.removeLine(keyValToAdd);};
 						});
 						return injectedFunc.unInject;
 					});
@@ -690,11 +678,12 @@
 			buildMap : {
 				type : "(a -> b) -> Set a -> Map a b",
 				func : function (f, cell) {
-					var outputCell = makeCellMapInput();
+					var outputCell = makeCellMap();
 
 					cell.inject(outputCell, function (val) {
 						var result = applyFunc(f, val);
-						return outputCell.addLine({key:val, val:result});
+						outputCell.addLine({key:val, val:result});
+						return function () {outputCell.removeLine({key:val, val:result});};
 					});
 
 					return outputCell;
@@ -705,10 +694,10 @@
 				func : function (cell) {
 					var setType = GLOBAL.typeCheck ? buildType(getType(cell), "Map a (Set b)", "Set a") : undefined;
 
-					var outputCell = makeCellMapInput();
+					var outputCell = makeCellMap();
 					var bHash = {};
 
-					var bHashCell = makeCell();
+					var bHashCell = makeCellSet();
 
 					//this is to make outputCell depend on BHashCell for being 'done' 
 					bHashCell.inject(outputCell, function (bValue) {});
@@ -720,24 +709,24 @@
 							});
 						},
 						function (bValue) {
-							var newCell = makeCell();
+							var newCell = makeCellSet();
 							newCell.type = setType;
 							bHash[bValue] = newCell;
-							var onRemove = outputCell.addLine({key:bValue, val:newCell});
+							outputCell.addLine({key:bValue, val:newCell});
 							return function () {
 								delete bHash[bValue];
-								onRemove();
+								return function () {outputCell.removeLine({key:bValue, val:newCell});};
 							};
 						}
 					);
 
 					cell.inject(outputCell, function (keyVal) {
 						var injectedFunc = keyVal.val.inject(bHashCell, function (innerVal) {
-							var onRemove1 = bHashCell.addLine(innerVal);
-							var onRemove2 = bHash[innerVal].addLine(keyVal.key);
+							bHashCell.addLine(innerVal);
+							bHash[innerVal].addLine(keyVal.key);
 							return function () {
-								onRemove2();
-								onRemove1();
+								bHash[innerVal].removeLine(keyVal.key);
+								bHashCell.removeLine(innerVal);
 							};
 						});
 						return injectedFunc.unInject;
@@ -749,11 +738,12 @@
 			mapMapValue : {
 				type : "(a -> b) -> Map c a -> Map c b",
 				func : function (f, cell) {
-					var outputCell = makeCellMapInput();
+					var outputCell = makeCellMap();
 
 					cell.inject(outputCell, function (keyVal) {
 						var result = applyFunc(f, keyVal.val);
-						return outputCell.addLine({key:keyVal.key, val:result});
+						outputCell.addLine({key:keyVal.key, val:result});
+						return function () {outputCell.removeLine({key:keyVal.key, val:result});};
 					});
 
 					return outputCell;
@@ -762,11 +752,12 @@
 			getKey : {
 				type : "a -> Map a b -> Unit b",
 				func : function (key, cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 
 					cell.inject(outputCell, function (keyVal) {
 						if (keyVal.key == key) {
-							return outputCell.addLine(keyVal.val);
+							outputCell.addLine(keyVal.val);
+							return function () {outputCell.removeLine(keyVal.val);};
 						}
 					});
 
@@ -776,10 +767,11 @@
 			keys : {
 				type : "Map a b -> Set a",
 				func : function (cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellSet();
 
 					cell.inject(outputCell, function (keyVal) {
-						return outputCell.addLine(keyVal.key);
+						outputCell.addLine(keyVal.key);
+						return function () {outputCell.removeLine(keyVal.key);};
 					});
 
 					return outputCell;
@@ -788,10 +780,11 @@
 			values : { // TODO: add this to server
 				type : "Map a b -> Set b",
 				func : function (cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellSet();
 
 					cell.inject(outputCell, function (keyVal) {
-						return outputCell.addLine(keyVal.val);
+						outputCell.addLine(keyVal.val);
+						return function () {outputCell.removeLine(keyVal.val);};
 					});
 
 					return outputCell;
@@ -803,28 +796,28 @@
 			rangeByKey : {
 				type : "Unit a -> Unit a -> Set a -> Set a",
 				func : function (startCell, endCell, cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellSet();
 					return rangeHelper(outputCell, 'setKeyRange', startCell, endCell, cell);
 				}
 			},
 			rangeByPos : {
 				type : "Unit Number -> Unit Number -> Set a -> Set a",
 				func : function (startCell, endCell, cell) {
-					var outputCell = makeCell();
+					var outputCell = makeCellSet();
 					return rangeHelper(outputCell, 'setPosRange', startCell, endCell, cell);
 				}
 			},
 			rangeMapByKey : {
 				type : "Unit Number -> Unit Number -> Map a b -> Map a b",
 				func : function (startCell, endCell, cell) {
-					var outputCell = makeCellAssocInput();
+					var outputCell = makeCellMap();
 					return rangeHelper(outputCell, 'setKeyRange', startCell, endCell, cell);
 				}
 			},
 			rangeMapByPos : {
 				type : "Unit Number -> Unit Number -> Map a b -> Map a b",
 				func : function (startCell, endCell, cell) {
-					var outputCell = makeCellAssocInput();
+					var outputCell = makeCellMap();
 					return rangeHelper(outputCell, 'setPosRange', startCell, endCell, cell);
 				}
 			},
@@ -832,13 +825,12 @@
 				type : "Set a -> Unit a",
 				func : function (cell) {
 					cell.makeSorted();
-					var outputCell = makeCell();
+					var outputCell = makeCellUnit();
 					var cache;
 					function update() {
 						var state = cell.getState();
 						var last = state[state.length-1];
 						if(cache !== last) {
-							if (cache !== undefined) outputCell.removeLine(cache);
 							cache = last;
 							outputCell.addLine(cache);
 						}					
