@@ -12,7 +12,7 @@
 <title>WM - Template Test (universal)</title>
 
 <!-- <link rel="stylesheet" href="../../source/design/style.css" type="text/css" media="screen" title="no title" charset="utf-8" /> -->
-<link rel="stylesheet" href="../../source/css/style.css" type="text/css" media="screen" title="no title" charset="utf-8" />
+<!-- <link rel="stylesheet" href="javascript:stylesheet" type="text/css" media="screen" title="no title" charset="utf-8" /> -->
 
 <script>
 var ROOTDIR = "../../";
@@ -34,6 +34,11 @@ var templateFile = location.hash.substr(1);
 if (!templateFile) {
 	alert("Place the name of the template after the hash (universal.xhtml#NAMEOFTEMPLATE)");
 }
+
+
+var stylesheet = "../../source/templates/" + templateFile + "/css/" + templateFile + ".css";
+includes.cssInclude(stylesheet);
+
 includes.htmlInclude(["core", "browser"], [ROOTDIR+"generated/templates/"+templateFile+".js", "init.js"], "initialize(); initializeGlobalUICells();");
 </script>
 
