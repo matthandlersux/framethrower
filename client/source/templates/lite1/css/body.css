@@ -1,0 +1,7 @@
+body {
+	overflow: hidden;
+}
+
+.rounded {
+	-moz-border-radius: 2px;
+}

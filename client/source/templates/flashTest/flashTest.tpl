@@ -22,5 +22,8 @@ template () {
 			pause
 			<f:on click>unset play</f:on>
 		</div>
+		<div>
+			{playTime}
+		</div>
 	</div>
 }
