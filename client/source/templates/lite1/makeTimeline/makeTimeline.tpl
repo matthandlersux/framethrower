@@ -139,6 +139,8 @@ template (movie::Movie)::Timeline {
 		return (100*fraction)+"%";
 	},
 	
+	offscreen = "-100",
+	
 	
 	
 	
@@ -232,7 +234,7 @@ template (movie::Movie)::Timeline {
 					<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
 
 					// Selected time
-					<div style-position="absolute" style-left="{makePercent (divide selectedTimeStart movieDuration)}" style-width="{makePercent (divide selectedTimeDuration movieDuration)}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
+					<div style-position="absolute" style-left="{defaultValue offscreen (unfetch (makePercent (divide selectedTimeStart movieDuration)))}" style-width="{makePercent (divide selectedTimeDuration movieDuration)}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
 						// draggable sliders
 						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
 							<f:call>
