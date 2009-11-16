@@ -51,6 +51,10 @@ JAVASCRIPT
 	function (PARAMS)::TYPE {
 		JSCODE
 	}
+	
+note that in both JAVASCRIPT and JSACTION,
+the variable 'env' is a function which takes a string and returns the value in the template environment,
+so Javascript can access the surrounding template closure.
 
 JSACTION
 	jsaction (PARAMS)::TYPE {

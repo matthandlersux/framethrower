@@ -126,6 +126,9 @@ var includes = (function () {
 		getFileList: function (bundles, extraFiles) {
 			var includes = prepareIncludes(bundles, extraFiles);
 			return includes;
+		},
+		cssInclude: function (stylesheet) {
+			YAHOO.util.Get.css([stylesheet]);
 		}
 	};
 })();

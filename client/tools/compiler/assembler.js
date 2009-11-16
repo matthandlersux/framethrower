@@ -96,10 +96,6 @@ function compileFolder(folderPath, rebuild) {
 		folderName = folder;
 	}
 	
-	var binfolder = "../../generated/templates/" + folderPath;
-	
-	makeDirectory(binfolder);
-	
 	var childFiles = listFiles(folder);
 	var childDirectories = listDirectories(folder);
 		
@@ -139,9 +135,13 @@ function compileFolder(folderPath, rebuild) {
 		}
 	});
 	forEach(childDirectories, function(child) {
-		var let = compileFolder(folderPath + "/" + child, rebuild);
-		if (let !== undefined) {
-			lets[child] = let;
+		if (child === "css") {
+			//ignore css folder
+		} else {
+			var let = compileFolder(folderPath + "/" + child, rebuild);
+			if (let !== undefined) {
+				lets[child] = let;
+			}
 		}
 	});
 	if (mainJSON.let === undefined) mainJSON.let = {};
@@ -162,52 +162,38 @@ function log () {
 }
 
 function compileFile (filePath, rebuild, isLetFile) {
-	
 	var file = "../../source/templates/" + filePath;
-	var binfile = "../../generated/templates/" + filePath + ".ser";
 
-
-//TODO add functions for lastModified to shell c++
-	if (false) {
-	// if (!rebuild && binfile && binfile.exists() && (binfile.lastModified() > file.lastModified())) {
-	// 	return deserialize(binfile.getAbsolutePath());
+	var str;
+	try {
+		str = read(file);
+	} catch (e) {
+		str = loadTextNow("../../source/templates/" + filePath);
+		console.log("loadTextNow: " + str);
+	}
+			
+	if (isLetFile) {
+		str = "includefile " + str;
+	}
+	str = removeComments(str);
+	var error_cnt = 0; 
+	var error_off = new Array(); 
+	var error_la = new Array();
+	var parseResult = fttemplate.parse( str, error_off, error_la );
+	if( !parseResult.success ) {
+		error_cnt = parseResult.result;
+		GLOBAL_ERRORS = true;
+		log("<b>Parse errors, File: " + file + "</b><br />");
+		for( i = 0; i < error_cnt; i++ ) {
+			var lineInfo = countLines(str, error_off[i]);
+			var escapedLine= lineInfo.line.split("&").join("&amp;").split( "<").join("&lt;").split(">").join("&gt;")				
+			log("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + getCanonicalPath(file) + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
+		}
+		throw("Parse Error");
 	} else {
-		var str;
-		try {
-			str = read(file);
-		} catch (e) {
-			str = loadTextNow("../../source/templates/" + filePath);
-			console.log("Str: " + str);
-		}
-				
-		if (isLetFile) {
-			str = "includefile " + str;
-		}
-		str = removeComments(str);
-		var error_cnt = 0; 
-		var error_off = new Array(); 
-		var error_la = new Array();
-		var parseResult = fttemplate.parse( str, error_off, error_la );
-		if( !parseResult.success ) {
-			error_cnt = parseResult.result;
-			GLOBAL_ERRORS = true;
-			log("<b>Parse errors, File: " + file + "</b><br />");
-			for( i = 0; i < error_cnt; i++ ) {
-				var lineInfo = countLines(str, error_off[i]);
-				var escapedLine= lineInfo.line.split("&").join("&amp;").split( "<").join("&lt;").split(">").join("&gt;")				
-				log("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + getCanonicalPath(file) + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
-			}
-			throw("Parse Error");
-		} else {
-			var filePath;
-			filePath = getCanonicalPath(file);
-			result = semantics.processTree(parseResult.result, "" + filePath);
-			try {
-				//TODO: add serialize to shell c++
-				serialize(result, binfile);
-			} catch (e) {}
-			return result;
-		}
+		var filePath;
+		filePath = getCanonicalPath(file);
+		return semantics.processTree(parseResult.result, "" + filePath);
 	}
 }
 

@@ -330,6 +330,9 @@ var semantics = function(){
 		} else {
 			typeString += "t" + typeCounter;
 		}
+
+		// environment will be passed to function, so JS code can access it as 'env' variable
+		funcString = "function(env) {return " + funcString + ";}";
 		
 		return {
 			kind: "lineJavascript",
