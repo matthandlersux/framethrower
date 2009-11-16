@@ -13,10 +13,7 @@ function (width::Number, height::Number, src::String, playTime::Unit Number, pla
 		setAtt("height", height);
 		
 		setAtt("src", "main.swf");
-		setAtt("name", "dummyName");
-		setAtt("id", "dummyName");
 		setAtt("quality", "high");
-		setAtt("play", "true");
 		
 		setAtt("type", "application/x-shockwave-flash");
 		setAtt("pluginspage", "http:/"+"/www.adobe.com/go/getflashplayer");
@@ -29,51 +26,40 @@ function (width::Number, height::Number, src::String, playTime::Unit Number, pla
 	
 	var cleanupFuncs = [];
 	
+	
+	var playing = false;
+	var playingPoller;
+	
 	var playTimeInject = evaluateAndInject(playTime, emptyFunction, function (time) {
-		mov.setPlayTime(time);
+		if (!playing) {
+			mov.setPlayTime(time);
+		}
 	});
 	cleanupFuncs.push(playTimeInject.unInject);
 	
+	
 	var playInject = evaluateAndInject(play, emptyFunction, function () {
-		mov.setPlay(true);
-		return function () {
+		function pause() {
+			clearInterval(playingPoller);
 			mov.setPlay(false);
+			playing = false;
+		}
+		
+		mov.setPlay(true);
+		playing = true;
+		playingPoller = setInterval(function () {
+			if (!mov.getPlay()) {
+				pause();
+			}
+			playTime.control.set(mov.getPlayTime());
+		}, 250);
+		return function () {
+			pause();
 		}
 	});
+	cleanupFuncs.push(playInject.unInject);
 	
 	
-	
-	
-	// // this just caches mov.GetTimeScale()
-	// var timeScale;
-	// function getTimeScale() {
-	// 	// if (timeScale === undefined) {
-	// 	// 	try {
-	// 	// 		timescale = mov.GetTimeScale();
-	// 	// 	} catch (e) {
-	// 	// 		
-	// 	// 	}
-	// 	// }
-	// 	// return timeScale;
-	// 	return mov.GetTimeScale();
-	// }
-	// 
-	// var injectedFunc = evaluateAndInject(gotoTime, emptyFunction, function (time) {
-	// 	try {
-	// 		mov.SetTime(time * getTimeScale());
-	// 	} catch (e) {
-	// 		
-	// 	}
-	// });
-	// 
-	// cleanupFuncs.push(injectedFunc.unInject);
-	// 
-	// // mov.addEventListener("qt_progress", function () {
-	// // 	var ts = getTimeScale();
-	// // 	if (ts) {
-	// // 		timeLoaded.control.add(mov.GetMaxTimeLoaded() / ts);			
-	// // 	}
-	// // }, true);
 	
 	
 	function cleanup() {

@@ -1,4 +1,4 @@
-template (init::Unit Number, setValue::Number -> Number -> Action a) {
+template (init::Unit Number, setValue::Number -> Number -> Action a, doneAction::Action a) {
 	dragStart = state(Unit Number),
 	startS = state(Unit Number),
 	<f:wrapper>
@@ -12,7 +12,8 @@ template (init::Unit Number, setValue::Number -> Number -> Action a) {
 			start = fetch startS,
 			<f:wrapper>
 				<f:on globalmouseup>
-					unset dragStart
+					unset dragStart,
+					doneAction
 				</f:on>
 				<f:on globalmousemove>
 					setValue start (subtract event.mouseX from)

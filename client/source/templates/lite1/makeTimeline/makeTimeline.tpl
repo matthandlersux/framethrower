@@ -80,7 +80,10 @@ template (movie::Movie)::Timeline {
 	
 	scrubbingS = state(Unit Null),
 	
-	playingS = state(Unit Null),
+	// is occupied if the player is playing currently
+	// controlled by the play/pause button in the center of the video
+	// automatically set to pause when the timeline is mousedown'ed
+	playingS = state(Unit Number, 0),
 	
 	
 	
@@ -196,6 +199,7 @@ template (movie::Movie)::Timeline {
 				<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}" style-height="100%">
 					<f:on mousedown>
 						set scrubbingS null,
+						set playingS 0,
 						set previewTimeS mouseTime,
 						unset selectedTimeStartS,
 						unset selectedTimeDurationS
@@ -205,9 +209,6 @@ template (movie::Movie)::Timeline {
 						extract reactiveNot selectedTimeStartS as _ {
 							set selectedTimeStartS previewTime,
 							set selectedTimeDurationS 0							
-						},
-						extract selectedTimeStartS as time {
-							set previewTimeS time
 						}
 					</f:on>
 					
@@ -235,36 +236,54 @@ template (movie::Movie)::Timeline {
 						// draggable sliders
 						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
 							<f:call>
+								oldTimeS = state(Unit Number),
 								setSelected = action (start::Number, offsetX::Number) {
+									extract reactiveNot oldTimeS as _ {
+										set oldTimeS previewTime
+									},
 									time = plus start (divide offsetX zoomFactor),
 									setSelectedTimeLeft time,
+									set playingS 0,
 									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration))
 								},
-								dragger (unfetch selectedTimeStart) setSelected
+								doneAction = action () {
+									set previewTimeS (fetch oldTimeS),
+									unset oldTimeS
+								},
+								dragger (unfetch selectedTimeStart) setSelected doneAction
 							</f:call>
 						</div>
 						<div style-position="absolute" style-right="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
 							<f:call>
+								oldTimeS = state(Unit Number),
 								setSelected = action (start::Number, offsetX::Number) {
+									extract reactiveNot oldTimeS as _ {
+										set oldTimeS previewTime
+									},
 									time = plus start (divide offsetX zoomFactor),
 									setSelectedTimeRight time,
+									set playingS 0,
 									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration))
 								},
-								dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected
+								doneAction = action () {
+									set previewTimeS (fetch oldTimeS),
+									unset oldTimeS
+								},
+								dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected doneAction
 							</f:call>
 						</div>
 						
-						<f:call>
-							px = state(Unit Number),
-							py = state(Unit Number),
-							<div>
-								<f:on domMove>
-									set px event.posX,
-									set py event.posY
-								</f:on>
-								{px}, {py}
-							</div>
-						</f:call>
+						// <f:call>
+						// 	px = state(Unit Number),
+						// 	py = state(Unit Number),
+						// 	<div>
+						// 		<f:on domMove>
+						// 			set px event.posX,
+						// 			set py event.posY
+						// 		</f:on>
+						// 		{px}, {py}
+						// 	</div>
+						// </f:call>
 					</div>
 				
 					
@@ -272,6 +291,7 @@ template (movie::Movie)::Timeline {
 					<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-height="100%">
 						<div style-position="absolute" style-left="-1" style-top="0" style-width="1" style-height="100%" style-border-left="3px solid rgba(255,153,0,1.0)" />
 						//<div style-position="absolute" style-left="-6" style-width="12" style-height="12" style-background-color="#999" style-top="-24" />
+						
 					</div>
 					
 
@@ -309,7 +329,7 @@ template (movie::Movie)::Timeline {
 										desiredLeft = plus start (divide x scrollbarWidth),
 										setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
 									},
-									dragger (unfetch left) setScroll
+									dragger (unfetch left) setScroll emptyAction
 								</f:call>
 							</div>
 						</div>
@@ -352,12 +372,52 @@ template (movie::Movie)::Timeline {
 		videoHeight = clampMax mainScreenHeight (divide mainScreenWidth aspectRatio),
 		<div>
 			<div style-position="absolute" style-width="{videoWidth}" style-height="{videoHeight}" style-left="{divide (subtract mainScreenWidth videoWidth) 2}" style-top="{divide (subtract mainScreenHeight videoHeight) 2}" style-background-color="#f00">
+				
+				<f:call>flashVideo "moulinRouge" previewTimeS playingS</f:call>
+				
 				<div style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">
 					<f:on click>
 						unset fullscreenVideo
 					</f:on>
 				</div>
-				Large Preview Video
+				<div style-position="absolute" style-left="50%" style-top="50%" style-width="50" style-height="50" style-background-color="#aaa" style-margin-left="-25" style-margin-top="-25">
+					<f:each bindUnit (reactiveEqual 0) playingS as _>
+						<f:wrapper>
+							<f:on click>
+								set playingS 1,
+								extract bindUnit (reactiveEqual 0) selectedTimeDurationS as _ {
+									unset selectedTimeStartS,
+									unset selectedTimeDurationS
+								}
+							</f:on>
+							play button
+						</f:wrapper>
+					</f:each>
+					<f:each bindUnit (reactiveEqual 1) playingS as _>
+						<f:wrapper>
+							<f:on click>
+								set playingS 0,
+								extract reactiveNot selectedTimeStartS as _ {
+									set selectedTimeStartS previewTime,
+									set selectedTimeDurationS 0							
+								}
+							</f:on>
+							loading icon
+						</f:wrapper>
+					</f:each>
+					<f:each bindUnit (reactiveEqual 2) playingS as _>
+						<f:wrapper>
+							<f:on click>
+								set playingS 0,
+								extract reactiveNot selectedTimeStartS as _ {
+									set selectedTimeStartS previewTime,
+									set selectedTimeDurationS 0							
+								}
+							</f:on>
+							pause button
+						</f:wrapper>
+					</f:each>
+				</div>
 			</div>
 		</div>
 	},
