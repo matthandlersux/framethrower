@@ -12,7 +12,7 @@
 <title>WM - Template Test (universal)</title>
 
 <!-- <link rel="stylesheet" href="../../source/design/style.css" type="text/css" media="screen" title="no title" charset="utf-8" /> -->
-<link rel="stylesheet" href="../../source/css/style.css" type="text/css" media="screen" title="no title" charset="utf-8" />
+<!-- <link rel="stylesheet" href="../../source/css/style.css" type="text/css" media="screen" title="no title" charset="utf-8" /> -->
 
 <script>
 var GLOBAL = {
@@ -29,9 +29,28 @@ var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
 
 </script>
 
+<!-- temporary>
+</!-->
+<script type="text/javascript" src="../../source/js/external/yuiloader-min.js"></script>
+<script src="../../source/js/include.js"></script>
+<script>
+var templateFile = location.hash.substr(1);
+if (!templateFile) {
+	alert("Place the name of the template after the hash (universal.xhtml#NAMEOFTEMPLATE)");
+}
+
+//this is temporary until we get css minified
+var stylesheet = "../../source/templates/" + templateFile + "/css/" + templateFile + ".css";
+console.log(stylesheet);
+includes.cssInclude(stylesheet);
+
+</script>
+<!-- done temporary>
+</!-->
+
+
 <script type="text/javascript" src="../../generated/minified/alljs-min.js"></script>
 <script type="text/javascript" src="init.js"></script>
-
 </head>
 
 <body onload="initialize(); initializeGlobalUICells();">

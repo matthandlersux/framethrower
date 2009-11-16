@@ -3,13 +3,20 @@
 
 var ROOTDIR = "../../";
 
-load("../../source/js/util/util.js");
-load("../../source/js/include.js");
+function include (bundles, extraFiles) {
+	try {
+		load(ROOTDIR + "source/js/include.js");
+		includes.rhinoInclude(bundles, extraFiles);
+	} catch (e) {}
+}
+include(["core"], []);
+
+
 
 var concatted = "";
 var fileList = includes.getFileList(["core", "browser"], ["../../generated/templates/" + arguments[0] + ".js"]);
 forEach(fileList, function(fileName) {
-	concatted += readFile(fileName) + "\n";
+	concatted += read(fileName) + "\n";
 });
 
 // args.push(">../../generated/minified/alljs.js");
@@ -18,13 +25,9 @@ forEach(fileList, function(fileName) {
 // 
 // runCommand("cat", opt);
 
-//write output
-var fw = new java.io.FileWriter("../../generated/minified/alljs.js");
-var bw = new java.io.BufferedWriter(fw);
+makeDirectory("../../generated/minified");
+write("../../generated/minified/alljs.js", concatted);
 
-bw.write(concatted);
-bw.close();
-fw.close();
-
-//run YUI minifier
-runCommand("java", "-jar", "yuicompressor-2.4.2.jar", "-o", "../../generated/minified/alljs-min.js", "../../generated/minified/alljs.js");
+//run YUI minifier (this will be done by bundle script)
+// java -jar yuicompressor-2.4.2.jar -o ../../generated/minified/alljs-min.js ../../generated/minified/alljs.js
+console.log("success");
