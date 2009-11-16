@@ -121,8 +121,9 @@ function executeAction (instruction, callback) {
 	
 	function executeUntilDone(result) {
 		if (result.async) {
-			var rest = result.asyncFunction(executeUntilDone);
-			setTimeout(rest, 0); //this prevents stack from growing from too many recursive calls
+			setTimeout(function() {
+				result.asyncFunction(executeUntilDone);
+			}, 0); //this prevents stack from growing from too many recursive calls
 		} else {
 			if (callback) {
 				callback(result.value);

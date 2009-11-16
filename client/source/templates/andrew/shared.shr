@@ -32,4 +32,15 @@ TestCell = state {
 	add MySet TestObject1,
 	add MySet TestObject2,
 	return MySet
+},
+
+root = state(OutlineNode),
+
+addNewChild = action (children::Set OutlineNode) {
+	newChild <- create(OutlineNode),
+	add children newChild	
+},
+
+setName = action (stringContainer::Unit String, value::String) {
+	set stringContainer value
 }

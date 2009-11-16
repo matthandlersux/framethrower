@@ -21,6 +21,13 @@ var classesToMake = {
 		}
 	},
 	
+	"OutlineNode": {
+		prop: {
+			"string": "Unit String",
+			"children": "Set OutlineNode"
+		}
+	},
+	
 	
 	// ====================================================
 	// For Lite 1
