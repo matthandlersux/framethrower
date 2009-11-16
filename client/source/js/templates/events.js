@@ -39,7 +39,7 @@ var globalEventHandlers = {};
 	// Processing Events
 	// =========================================================
 	
-	function processEvent(eventName, e, eventParams) {
+	function processEvent(eventName, e) {
 		
 		function trigger(lineAction, actionEnv, extra) {
 			var env = function (s) {
@@ -132,8 +132,8 @@ var globalEventHandlers = {};
 	function mousedown(e) {
 		mouseIsDown = copyEvent(e);
 		mouseDownPos = [e.clientX, e.clientY];
-		processEvent("mousedown", e, {clientX: e.clientX, clientY: e.clientY});
-		if (currentFocus && currentFocus.blur) {
+		processEvent("mousedown", e);
+		if (currentFocus && currentFocus.blur && currentFocus !== e.target) {
 			var tmp = currentFocus;
 			currentFocus=false;
 			tmp.blur();
@@ -148,7 +148,7 @@ var globalEventHandlers = {};
 		if (mouseIsDragging) {
 			processEvent("dragend", e);
 		} else {
-			processEvent("click", mouseIsDown, {clientX: mouseIsDown.clientX, clientY: mouseIsDown.clientY});
+			processEvent("click", mouseIsDown);
 		}
 		mouseIsDown = false;
 		mouseIsDragging = false;
@@ -159,7 +159,7 @@ var globalEventHandlers = {};
 	function mousemove(e) {
 		mouseCurrentPos[0] = e.clientX;
 		mouseCurrentPos[1] = e.clientY;
-		processEvent("mousemove", e, {clientX: e.clientX, clientY: e.clientY});
+		processEvent("mousemove", e);
 		if (mouseIsDown && !mouseIsDragging) {
 			var xdiff=mouseDownPos[0]-e.clientX;
 			var ydiff=mouseDownPos[1]-e.clientY;
@@ -171,7 +171,7 @@ var globalEventHandlers = {};
 			}
 		}
 		if (mouseIsDragging) {
-			processEvent("mousedrag", e, {clientX: e.clientX, clientY: e.clientY});
+			processEvent("mousedrag", e);
 		}
 	}
 	function mouseover(e) {
@@ -196,11 +196,11 @@ var globalEventHandlers = {};
 		processEvent("focus", e);
 	}
 	function blur(e) {
-		processEvent("blur", e, {value:e.target.value});
+		processEvent("blur", e);
 		if (!currentFocus) processEvent("manualblur", e);
 	}	
 	function change(e) {
-		processEvent("change", e, {value:e.target.value});
+		processEvent("change", e);
 	}
 	function submit(e) {
 		var tmp = currentFocus;
