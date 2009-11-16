@@ -36,7 +36,7 @@ function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
 			} catch (e) {};
 		}
 		return emptyFunction;
-	}));
+	}).unInject);
 	
 	cleanupFuncs.push(evaluateAndInject(play, emptyFunction, function (status) {
 		playStatus = status;
@@ -61,7 +61,7 @@ function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
 			}, 250);
 		}
 		return emptyFunction;
-	}));
+	}).unInject);
 	
 	
 	
