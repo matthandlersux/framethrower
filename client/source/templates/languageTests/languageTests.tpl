@@ -48,6 +48,28 @@ template() {
 		click to see in the console:<br/>x<br/>x
 		</div>
 	},
+	
+	// unitTest
+	
+	// setTest
+	
+	// mapTest
+	
+	// fetchTest
+	
+	// ifTest
+	
+	// actionIfTest
+	
+	// fonTest
+	
+	// feachTest
+	
+	// extractTest
+	
+	// svgTest
+	
+	// subTemplateTest
 
 	<f:wrapper>
 		<f:call>expressionTest</f:call>
