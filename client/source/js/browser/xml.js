@@ -167,6 +167,14 @@ function createTextNode(s) {
 }
 
 
+function checkAttributes(attributes, node) {		
+	if (attributes.focus) {
+		setTimeout(function() {
+			node.focus();
+		}, 0);
+	}
+}
+
 function getAttr(node, attName) {
 	var n = attName.split(":");
 	if (n.length > 1) {

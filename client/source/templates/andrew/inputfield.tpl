@@ -1,13 +1,7 @@
 template (stringContainer::Unit String) {
 	toggle = state(Unit Null),
-	myAct = jsaction() {
-		document.getElementById('andrewtest').focus();
-	},
 	if toggle as x {
-		<input value="{stringContainer}" id="andrewtest">
-			<f:on init>
-				myAct
-			</f:on>
+		<input value="{stringContainer}" focus="true">
 			<f:on change>
 				set stringContainer event.value,
 				unset toggle

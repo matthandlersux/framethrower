@@ -257,6 +257,9 @@ function xmlToDOM(xml, env, context, lastElement) {
 		
 		var newContext = (xml.nodeName.substring(0,4) === "svg:") ? "svg" : context;
 		
+		//process special attributes like focus
+		checkAttributes(xml.attributes, node);
+		
 		forEach(xml.attributes, function (att, attName) {
 			pushCleanup(evaluateXMLInsert(att, env, function (value) {
 				setNodeAttribute(node, attName, value);
