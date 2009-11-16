@@ -130,7 +130,8 @@ function evaluateLine(line, env) {
 	} else if (line.kind === "lineTemplate") {
 		return makeClosure(line, env);
 	} else if (line.kind === "lineJavascript") {
-		return makeFun(line.type, line.f, line.f.length, undefined, remote.localOnly);
+		var f = line.f(env); // allows JS code to access env; see semantics.js:makeFunction()
+		return makeFun(line.type, f, f.length, undefined, remote.localOnly);
 		//return makeFun(parseType(line.type), line.f);
 	} else if (line.kind === "lineXML") {
 		return makeXMLP(line.xml, env);

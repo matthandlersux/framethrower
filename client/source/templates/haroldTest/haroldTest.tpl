@@ -42,6 +42,12 @@ template() {
 		<div>y=empty</div>
 	},
 	mapTest = state{m<-create(Map Number Number), addEntry m 0 1, addEntry m 1 -1, return m},
+	jsClosureTest1 = function()::Unit Number {
+		return env("y");
+	},
+	jsClosureTest2 = jsaction()::Unit Number {
+		return env("y");
+	},
 	
 	<div>
 		<f:on mouseup>
@@ -83,6 +89,11 @@ template() {
 				extract y as z {
 					debugNumber (plus x z)
 				}
+			},
+			y = 50,
+			y <- jsClosureTest2,
+			extract y as y {
+				debugNumber y
 			}
 		</f:on>
 		
@@ -94,7 +105,7 @@ template() {
 			<div>{k} {v}</div>
 		</f:each>
 		
-		<div>{head list} {head test5} {f 5} {test3} {ifTest}</div>
+		<div>{head list} {head test5} {f 5} {test3} {ifTest} {jsClosureTest1}</div>
 		
 		<f:call>test1 (test a)</f:call>
 	</div>
