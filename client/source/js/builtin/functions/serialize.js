@@ -125,12 +125,11 @@
 					};
 				}
 			});
-			var removeFunc = injectedFunc.unInject;
 			return function () {
 				forEach(childRemovers, function (childRemover) {
 					if (childRemover) childRemover();
 				});
-				removeFunc.func();
+				injectedFunc.unInject();
 			};
 		}
 
@@ -149,7 +148,8 @@
 				outputCell.control.add(s);
 			}
 
-			callOnUpdate(cell, outputCell, callback);
+			var undoCallOnUpdate = callOnUpdate(cell, outputCell, callback);
+			outputCell.addOnRemove(undoCallOnUpdate);
 			if (!called) callback(); // so that it's at least called once
 
 			return outputCell;	
