@@ -189,7 +189,6 @@ makeLambda(AST, NumOfVariables) ->
 %%		
 
 makeApply({apply, {AST, ListOfParameters}}, Parameters) when is_list(Parameters) ->
-	?colortrace(possible_parameter_mixup),
 	{apply, {AST, ListOfParameters ++ Parameters}};
 makeApply({apply, {AST, ListOfParameters}}, NewParameter) ->
 	{apply, {AST, ListOfParameters ++ [NewParameter]}};

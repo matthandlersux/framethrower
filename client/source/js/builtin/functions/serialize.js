@@ -125,12 +125,11 @@
 					};
 				}
 			});
-			var removeFunc = injectedFunc.unInject;
 			return function () {
 				forEach(childRemovers, function (childRemover) {
 					if (childRemover) childRemover();
 				});
-				removeFunc.func();
+				injectedFunc.unInject();
 			};
 		}
 
@@ -149,7 +148,8 @@
 				outputCell.control.add(s);
 			}
 
-			callOnUpdate(cell, outputCell, callback);
+			var undoCallOnUpdate = callOnUpdate(cell, outputCell, callback);
+			outputCell.addOnRemove(undoCallOnUpdate);
 			if (!called) callback(); // so that it's at least called once
 
 			return outputCell;	
@@ -162,10 +162,11 @@
 	addFun("jsonify", "a -> Unit JSON", function (cell) {
 		var outputCell = makeControlledCell("Unit JSON", false);
 
-		callOnUpdate(cell, outputCell, function () {
+		var undoCallOnUpdate = callOnUpdate(cell, outputCell, function () {
 			var s = convertStateToJSON(cell);
 			outputCell.control.add(s);
 		});
+		outputCell.addOnRemove(undoCallOnUpdate);
 
 		return outputCell;	
 	}, undefined, remote.localOnly);

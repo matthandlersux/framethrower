@@ -32,4 +32,54 @@ TestCell = state {
 	add MySet TestObject1,
 	add MySet TestObject2,
 	return MySet
+},
+
+
+
+
+
+
+
+addNewChild = action (children::Set OutlineNode) {
+	newChild <- create(OutlineNode),
+	add children newChild	
+},
+
+setName = action (stringContainer::Unit String, value::String) {
+	set stringContainer value
+},
+
+makeNode = action (string::String) {
+	node <- create(OutlineNode),
+	set (OutlineNode:string node) string,
+	return node
+},
+
+makeChild = action (string::String, parent::OutlineNode) {
+	child <- makeNode string,
+	add (OutlineNode:children parent) child,
+	return child
+},
+
+removeChild = action (node::OutlineNode, child::OutlineNode) {
+	children = OutlineNode:children node,
+	remove children child
+},
+
+root = state {
+	Grandparents <- makeNode "Grandparents",
+	Dad <- makeChild "Dad" Grandparents,
+	Aunt <- makeChild "Aunt Kathy" Grandparents,
+	Uncle <- makeChild "Uncle Doug" Grandparents,
+	
+	makeChild "Me" Dad,
+	makeChild "Sara" Aunt,
+	makeChild "Rachel" Aunt,
+	makeChild "Michelle" Aunt,
+	
+	makeChild "Sean" Uncle,
+	makeChild "James" Uncle,
+	makeChild "Daniel" Uncle,
+	
+	return Grandparents
 }

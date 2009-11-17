@@ -1,29 +1,26 @@
 template () {
 	
-	localCell1 = state {
-		cell <- create(Unit String),
-		set cell "andrew",
-		return cell
-	},
+	// localCell1 = state {
+	// 	cell <- create(Unit String),
+	// 	set cell "andrew",
+	// 	return cell
+	// },
+	// 
+	// localCell2 = state {
+	// 	cell <- create(Unit String),
+	// 	return cell
+	// },
 
-	localCell2 = state {
-		cell <- create(Unit String),
-		return cell
-	},
-
-	toggle = state(Unit Null),
 	
-	<div>
 
+
+	dummyDelete = action() {
+		//ignore
+	},
+
+	<div>
 		<f:call>
-			inputfield localCell1
+			drawOutline root dummyDelete
 		</f:call>
-		
-		<br />
-		<f:call>
-			inputfield localCell2
-		</f:call>
-		
-		
 	</div>
 }

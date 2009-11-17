@@ -474,20 +474,6 @@
 					return outputCell;
 				}
 			},
-			"switch": {
-				type: "Unit a -> b -> b -> Unit b",
-				func: function (switcher, occupiedVal, unoccupiedVal) {
-					var outputCell = makeCellUnit();
-					outputCell.addLine(unoccupiedVal);
-					switcher.inject(outputCell, function (val) {
-						outputCell.addLine(occupiedVal);
-						return function () {
-							outputCell.addLine(unoccupiedVal);
-						};
-					}, undefined, true);
-					return outputCell;
-				}
-			},
 			reactiveIfThen: {
 				type: "Unit a -> b -> b -> Unit b",
 				func: function (predicate, consequent, alternative) {

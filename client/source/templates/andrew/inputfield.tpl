@@ -1,9 +1,10 @@
 template (stringContainer::Unit String) {
 	toggle = state(Unit Null),
+	stringOrEmpty = defaultValue "empty" stringContainer,
 	if toggle as x {
 		<input value="{stringContainer}" focus="true">
 			<f:on change>
-				set stringContainer event.value,
+				setName stringContainer event.value,
 				unset toggle
 			</f:on>
 			<f:on blur>
@@ -11,11 +12,11 @@ template (stringContainer::Unit String) {
 			</f:on>
 		</input>
 	} else {
-		<div>
-			{stringContainer}
+		<f:wrapper>
+			{stringOrEmpty}
 			<f:on click>
 				set toggle null
 			</f:on>
-		</div>
+		</f:wrapper>
 	}
 }

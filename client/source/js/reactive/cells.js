@@ -340,11 +340,7 @@ function runFunOnDot (dot, func, id) {
 	var value = dot.val;
 	var onRemove = func(value);
 	if (onRemove !== undefined) {
-		if (onRemove.func) {
-			dot.lines[id] = onRemove.func;
-		} else {
-			dot.lines[id] = onRemove;
-		}
+		dot.lines[id] = onRemove;
 	}
 };
 

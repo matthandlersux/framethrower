@@ -39,7 +39,7 @@ var includes = (function () {
 			"source/js/builtin/families.js",
 			"source/js/builtin/baseEnv.js",
 
-			"source/js/remote/remote2.js",
+			"source/js/remote/remote.js",
 			"source/js/remote/session.js",
 			
 			"source/js/builtin/builtin.js",

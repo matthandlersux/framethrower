@@ -310,28 +310,34 @@ var session = (function () {
 	
 	
 	
-	function getSharedLets(sharedLetStruct, callBack) {
-		if (!sharedLetStruct) sharedLetStruct = {};
+	function getSharedLets(mainTemplate, callBack) {
+		if (!mainTemplate.sharedLet) mainTemplate.sharedLet = {};
 		xhr(serverBaseUrl+"sharedLets", "", function (response) {
 			if (!response) {
 				console.log("Error getting Shared Lets, no server response");
 			} else {
 				response = JSON.parse(response);
-				var sharedLets = map(sharedLetStruct, function(let, name) {
-					if (let.kind === "lineTemplate") {
+				var remoteSharedLets = {};
+				
+				forEach(mainTemplate.sharedLet, function(let, name) {
+					if (let.kind === "lineExpr") {
+						//this should be treated like a regular local expression
+						mainTemplate.let[name] = let;
+					} else if (let.kind === "lineTemplate") {
 						//this let is an action
 						var actionFunction = function() {
 							//have to convert arguments into another array because arguments is not a real array (javascript quirk)
 							var args = Array.prototype.slice.call(arguments);
 							return makeRemoteInstruction(name, args);
 						}
-						return makeFun(let.type, actionFunction, let.params.length, name, remote.localOnly, true);
+						var result = makeFun(let.type, actionFunction, let.params.length, name, remote.localOnly, true);
+						remoteSharedLets[name] = result;
 					} else {
 						//this let will have been delivered from the server
-						return parseServerResponse(response[name]);
+						remoteSharedLets[name] = parseServerResponse(response[name]);
 					}
 				});
-				callBack(sharedLets);
+				callBack(remoteSharedLets);
 			}
 		},
 		function () {

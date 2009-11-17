@@ -53,10 +53,18 @@ function initialize() {
 	}
 	
 	if (LOCAL) {
+		// add sharedLets to regular lets
+		console.log('mainTemplate', mainTemplate);
+		if (mainTemplate.sharedLet !== undefined) {
+			forEach(mainTemplate.sharedLet, function(sharedLet, name) {
+				console.log(name, sharedLet);
+				mainTemplate.let[name] = sharedLet;
+			});
+		}
 		initMainTemplate(base.env);
 	} else {
 		//Get shared lets from server and insert them into the environment
-		session.getSharedLets(mainTemplate.sharedLet, function(sharedLets) {
+		session.getSharedLets(mainTemplate, function(sharedLets) {
 			var sharedEnv = extendEnv(base.env, sharedLets);
 			testSharedEnv = sharedEnv;
 			initMainTemplate(sharedEnv);
