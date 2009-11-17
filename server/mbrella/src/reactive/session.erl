@@ -198,7 +198,7 @@ handle_cast({disconnect, QueryId}, State) ->
 	
 handle_cast({sendElements, []}, State) ->
 	% handle donemessage stuff here
-	{noreply, State, ?ServerClientTimeout};
+	flushOrWait(State, ?AdjacentElementDelay);
 	
 handle_cast({sendElements, Elements}, State) ->
 	UnpackElements = 	fun(PackedElement, ListOfQueryUpdates) ->
@@ -210,11 +210,9 @@ handle_cast({sendElements, Elements}, State) ->
 	NewQueryUpdates = lists:foldl(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
 	flushOrWait(State1, ?AdjacentElementDelay);
-	
 handle_cast({sendActionUpdate, Update}, State) ->
 	State1 = updateQueue(State, [Update]),
 	flushOrWait(State1, ?AdjacentActionDelay);
-	
 handle_cast(Msg, State) ->
     {noreply, State, ?ServerClientTimeout}.
 
@@ -295,16 +293,15 @@ cleanupSession(State) ->
 flush(State) ->
 	ClientLastMessageId = getLastMessageId(State),
 	OpenPipe = getOpenPipe(State),
-	State1 = closeOpenPipe(State),
 	
 	Queue = getQueue(State),
 	case Queue of
 		[{ClientLastMessageId, _ListOfStructs}|_RestOfQueue] ->
-			State2 = replaceQueue(State1, [{ClientLastMessageId, []}]);
+			State2 = replaceQueue(State, [{ClientLastMessageId, []}]);
 		_ ->
 			{[{NewLastMessageId, _ListOfStructs1}|_RestOfQueue1] = Queue1, JSONToSend} = processQueue(Queue, ClientLastMessageId),
 			OpenPipe ! {updates, JSONToSend, NewLastMessageId},
-			State2 = replaceQueue(State1, Queue1)
+			State2 = closeOpenPipe(replaceQueue(State, Queue1))
 	end,
 	
 	resetReruns(State2).

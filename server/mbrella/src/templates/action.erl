@@ -259,7 +259,6 @@ executeAction(ActionClosure) ->
 				% check if Evaled is an action method, if so execute it now to avoid ugly wrapping
 				case ast:type(Evaled) of
 					actionMethod -> 
-						?trace(["Performing action method", Evaled]),
 						ast:performActionMethod(Evaled);
 					instruction -> executeAction(Evaled)
 				end
