@@ -15,14 +15,31 @@ function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
 		setAtt("src", "flashplayer/main.swf");
 		setAtt("quality", "high");
 		
+		setAtt("flashvars", "server=192.168.1.115&source=moulinrouge");
+		
 		setAtt("type", "application/x-shockwave-flash");
 		setAtt("pluginspage", "http:/"+"/www.adobe.com/go/getflashplayer");
+		
+		
 		
 		return mov;
 	}
 	
 	
 	var mov = makeFlashMovie(src);
+	
+	function trySetPlayTime(time) {
+		try {
+			mov.setPlayTime(time);
+		} catch (e) {
+			setTimeout(function () {trySetPlayTime(time);}, 250);
+		}
+	}
+	
+	
+	
+	
+	
 	var cleanupFuncs = [];
 	
 	var playStatus = 0;
@@ -31,9 +48,7 @@ function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
 	
 	cleanupFuncs.push(evaluateAndInject(playTime, emptyFunction, function (time) {
 		if (playStatus === 0) {
-			try {
-				mov.setPlayTime(time);
-			} catch (e) {};
+			trySetPlayTime(time);
 		}
 		return emptyFunction;
 	}).unInject);

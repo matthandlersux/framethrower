@@ -1,4 +1,19 @@
-@import url(../../../css/style.css);
-/*@import url(reset.css);
+
+@import url(reset.css);
 @import url(body.css);
-@import url(typography.css);*/
+@import url(typography.css);
+
+
+.video .button {
+	display: none;
+}
+.video:hover .button {
+	display: block;
+}
+
+.timeline .titlebar {
+	display: none;
+}
+.timeline:hover .titlebar {
+	display: block;
+}

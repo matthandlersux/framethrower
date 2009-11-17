@@ -139,6 +139,8 @@ template (movie::Movie)::Timeline {
 		return (100*fraction)+"%";
 	},
 	
+	offscreen = "-100",
+	
 	
 	
 	
@@ -218,13 +220,16 @@ template (movie::Movie)::Timeline {
 							set previewTimeS mouseTime
 						}
 					</f:on>
+					<f:on mouseout>
+						unset mouseTimeS
+					</f:on>
 
 					<div style-position="absolute" style-top="0" style-left="0" style-width="100%" style-opacity="0.5">
 						<f:call>chapterImages mainTimelineHeight (Movie:chapters movie)</f:call>
 					</div>
 
 					// Ruler
-					//<f:call>ruler</f:call>
+					<f:call>ruler</f:call>
 					
 
 					
@@ -232,7 +237,7 @@ template (movie::Movie)::Timeline {
 					<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
 
 					// Selected time
-					<div style-position="absolute" style-left="{makePercent (divide selectedTimeStart movieDuration)}" style-width="{makePercent (divide selectedTimeDuration movieDuration)}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
+					<div style-position="absolute" style-left="{defaultValue offscreen (unfetch (makePercent (divide selectedTimeStart movieDuration)))}" style-width="{makePercent (divide selectedTimeDuration movieDuration)}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
 						// draggable sliders
 						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
 							<f:call>
@@ -272,18 +277,6 @@ template (movie::Movie)::Timeline {
 								dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected doneAction
 							</f:call>
 						</div>
-						
-						// <f:call>
-						// 	px = state(Unit Number),
-						// 	py = state(Unit Number),
-						// 	<div>
-						// 		<f:on domMove>
-						// 			set px event.posX,
-						// 			set py event.posY
-						// 		</f:on>
-						// 		{px}, {py}
-						// 	</div>
-						// </f:call>
 					</div>
 				
 					
@@ -354,6 +347,8 @@ template (movie::Movie)::Timeline {
 						set fullscreenVideo fullscreenXMLP
 					}
 				</f:on>
+				
+				// if full screened, remove full screen on close (that is, uninit)
 				<f:on uninit>
 					extract mapUnit (reactiveEqual fullscreenXMLP) fullscreenVideo as _ {
 						unset fullscreenVideo
@@ -370,19 +365,19 @@ template (movie::Movie)::Timeline {
 		
 		videoWidth = clampMax mainScreenWidth (multiply aspectRatio mainScreenHeight),
 		videoHeight = clampMax mainScreenHeight (divide mainScreenWidth aspectRatio),
-		<div>
+		<div class="video">
 			<div style-position="absolute" style-width="{videoWidth}" style-height="{videoHeight}" style-left="{divide (subtract mainScreenWidth videoWidth) 2}" style-top="{divide (subtract mainScreenHeight videoHeight) 2}" style-background-color="#f00">
 				
 				<f:call>flashVideo "moulinRouge" previewTimeS playingS</f:call>
 				
-				<div style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">
+				<div class="button" style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">
 					<f:on click>
 						unset fullscreenVideo
 					</f:on>
 				</div>
-				<div style-position="absolute" style-left="50%" style-top="50%" style-width="50" style-height="50" style-background-color="#aaa" style-margin-left="-25" style-margin-top="-25">
+				<div style-position="absolute" style-left="50%" style-top="50%" style-width="50" style-height="50" style-margin-left="-25" style-margin-top="-25">
 					<f:each bindUnit (reactiveEqual 0) playingS as _>
-						<f:wrapper>
+						<div style-background-color="#aaa" style-width="50" style-height="50" class="button">
 							<f:on click>
 								set playingS 1,
 								extract bindUnit (reactiveEqual 0) selectedTimeDurationS as _ {
@@ -391,10 +386,10 @@ template (movie::Movie)::Timeline {
 								}
 							</f:on>
 							play button
-						</f:wrapper>
+						</div>
 					</f:each>
 					<f:each bindUnit (reactiveEqual 1) playingS as _>
-						<f:wrapper>
+						<div style-background-color="#888" style-width="50" style-height="50">
 							<f:on click>
 								set playingS 0,
 								extract reactiveNot selectedTimeStartS as _ {
@@ -403,10 +398,10 @@ template (movie::Movie)::Timeline {
 								}
 							</f:on>
 							loading icon
-						</f:wrapper>
+						</div>
 					</f:each>
 					<f:each bindUnit (reactiveEqual 2) playingS as _>
-						<f:wrapper>
+						<div style-background-color="#aaa" style-width="50" style-height="50" class="button">
 							<f:on click>
 								set playingS 0,
 								extract reactiveNot selectedTimeStartS as _ {
@@ -415,7 +410,7 @@ template (movie::Movie)::Timeline {
 								}
 							</f:on>
 							pause button
-						</f:wrapper>
+						</div>
 					</f:each>
 				</div>
 			</div>
