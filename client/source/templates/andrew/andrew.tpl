@@ -11,9 +11,16 @@ template () {
 	// 	return cell
 	// },
 
+	
+
+
+	dummyDelete = action() {
+		//ignore
+	},
+
 	<div>
 		<f:call>
-			drawOutline root
+			drawOutline root dummyDelete
 		</f:call>
 	</div>
 }

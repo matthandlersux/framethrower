@@ -292,7 +292,7 @@ var stringifyForServer = memoizeF("stringifyForServer", function (expr) {
 	} else if (expr.kind === "exprLambda") {
 		return "(\\ " + stringifyForServer(expr.expr) + ")";
 	} else {
-		return stringify(expr);
+		return "" + stringify(expr); //addition necessary because of optimization hack in unparseLiteral
 	}
 });
 

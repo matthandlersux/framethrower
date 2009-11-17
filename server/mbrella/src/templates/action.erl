@@ -291,23 +291,12 @@ makeClosure(LineTemplate, ParentScope) ->
 	Params = struct:get_value(<<"params">>, LineTemplate),
 	ParamLength = length(Params),
 
-	%make a new scope for this closure
-	Scope = scope:makeScope(ParentScope),
-
-	% add the lets in the closure to the scope lazily
 	Lets = struct:get_value(<<"let">>, LineTemplate),
 	LetsList = struct:to_list(Lets),
-	
-	lists:map(fun({LetName, LetValue}) -> 
-		GetValue = fun() -> 
-			evaluateLine(LetValue, Scope)
-		end,
-		scope:addLazyLet(binary_to_list(LetName), GetValue, Scope)
-	end, LetsList),	
-	
+
 	% the output of the closure
 	Output = struct:get_value(<<"output">>, LineTemplate),
-	ast:makeFamilyFunction(action, closure, ParamLength, [Params, Output, Scope]).
+	ast:makeFamilyFunction(action, closure, ParamLength, [Params, LetsList, Output, ParentScope]).
 
 
 %%
@@ -315,7 +304,18 @@ makeClosure(LineTemplate, ParentScope) ->
 %%
 %% closureFunction is called by ast:apply
 
-closureFunction(Params, Output, Scope, Args) -> 
+closureFunction(Params, LetsList, Output, ParentScope, Args) -> 
+	%make a new scope for this closure
+	Scope = scope:makeScope(ParentScope),
+
+	% add the lets in the closure to the scope lazily	
+	lists:map(fun({LetName, LetValue}) -> 
+		GetValue = fun() -> 
+			evaluateLine(LetValue, Scope)
+		end,
+		scope:addLazyLet(binary_to_list(LetName), GetValue, Scope)
+	end, LetsList),
+
 	% add the arguments to the closure to the scope
 	ParamsAndArgs = lists:zip(Params, Args),
 	lists:map(fun({Param, Arg}) -> 

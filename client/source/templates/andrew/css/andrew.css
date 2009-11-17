@@ -14,6 +14,7 @@
 	top:2pt;
 	font-size: 16pt;
 	padding-right: 1pt;
+	text-shadow: #6F3C23 1px 1px 2px;
 	font-weight: bold;
 }
 
@@ -21,6 +22,12 @@
 	font-size: 8pt;
 	padding-left: 2pt;
 	color: gray;
+}
+
+.delete {
+	font-size: 8pt;
+	padding-left: 2pt;
+	color: #C75549;
 }
 
 .childrenSize {
