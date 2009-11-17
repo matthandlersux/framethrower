@@ -15,8 +15,12 @@ function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
 		setAtt("src", "flashplayer/main.swf");
 		setAtt("quality", "high");
 		
+		setAtt("flashvars", "server=192.168.1.115&source=moulinrouge");
+		
 		setAtt("type", "application/x-shockwave-flash");
 		setAtt("pluginspage", "http:/"+"/www.adobe.com/go/getflashplayer");
+		
+		
 		
 		return mov;
 	}
