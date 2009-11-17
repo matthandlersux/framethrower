@@ -21,6 +21,22 @@ template() {
 		return s.substr(start,duration);
 	},
 	
+	
+	// convenience:
+
+	// textrange_text :: Textrange -> Unit String
+	textrange_text = compose note_text textrange_note,
+	// textrange_start :: Textrange -> Unit Number
+	textrange_start = compose range_start textrange_range,
+	// textrange_duration :: Textrange -> Unit Number
+	textrange_duration = compose range_duration textrange_range,
+
+	// timerange_start :: Timerange -> Unit Number
+	timerange_start = compose range_start timerange_range,
+	// timerange_duration :: Timerange -> Unit Number
+	timerange_duration = compose range_duration timerange_range,
+	
+	
 	findSelectedRange = action(note::Note)::Range {
 		if note_text note as text {
 			selected <- getSelection,
