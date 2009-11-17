@@ -23,6 +23,19 @@ function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
 	
 	
 	var mov = makeFlashMovie(src);
+	
+	function trySetPlayTime(time) {
+		try {
+			mov.setPlayTime(time);
+		} catch (e) {
+			setTimeout(function () {trySetPlayTime(time);}, 250);
+		}
+	}
+	
+	
+	
+	
+	
 	var cleanupFuncs = [];
 	
 	var playStatus = 0;
@@ -31,9 +44,7 @@ function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
 	
 	cleanupFuncs.push(evaluateAndInject(playTime, emptyFunction, function (time) {
 		if (playStatus === 0) {
-			try {
-				mov.setPlayTime(time);
-			} catch (e) {};
+			trySetPlayTime(time);
 		}
 		return emptyFunction;
 	}).unInject);
