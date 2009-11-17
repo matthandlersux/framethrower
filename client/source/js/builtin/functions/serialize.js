@@ -162,10 +162,11 @@
 	addFun("jsonify", "a -> Unit JSON", function (cell) {
 		var outputCell = makeControlledCell("Unit JSON", false);
 
-		callOnUpdate(cell, outputCell, function () {
+		var undoCallOnUpdate = callOnUpdate(cell, outputCell, function () {
 			var s = convertStateToJSON(cell);
 			outputCell.control.add(s);
 		});
+		outputCell.addOnRemove(undoCallOnUpdate);
 
 		return outputCell;	
 	}, undefined, remote.localOnly);
