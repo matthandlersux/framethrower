@@ -1,0 +1,106 @@
+
+fst = tuple2get1,
+snd = tuple2get2,
+
+// ====================================================
+// State
+// ====================================================
+
+allMovies = state(Set Movie),
+
+allNotes = state(Set Note),
+
+
+// ====================================================
+// Types
+// ====================================================
+
+Range := Unit (Number, Number),
+// range_start :: Range -> Unit Number
+range_start = mapUnit1 fst,
+// range_duration :: Range -> Unit Number
+range_duration = mapUnit1 snd,
+
+Textrange := (Note, Range),
+// textrange_note :: Textrange -> Note
+textrange_note = fst,
+// textrange_range :: Textrange -> Range
+textrange_range = snd,
+
+Timerange := (Movie, Range),
+// timerange_movie :: Timerange -> Movie
+timerange_movie = fst,
+// timerange_range :: Timerange -> Range
+timerange_range = snd,
+
+
+// ====================================================
+// Functions
+// ====================================================
+
+// movie_linksFromNotes :: Movie -> Map Textrange Range
+movie_linksFromNotes = Movie:_fromNotes,
+
+// note_text :: Note -> Unit String
+note_text = Note:_text,
+// note_linksToNotes :: Note -> Map Range Textrange
+note_linksToNotes = Note:_toNotes,
+// note_linksToMovies :: Note -> Map Range Timerange
+note_linksToMovies = Note:_toMovies,
+// note_linksFromNotes :: Note -> Map Textrange Range
+note_linksFromNotes = Note:_fromNotes,
+
+
+// ====================================================
+// Actions
+// ====================================================
+
+// createNote :: Action Note
+createNote = action() {
+	note <- create(Note, {_owner: ""}),
+	set (Note:_text note) "",
+	add allNotes note,
+	return note
+},
+
+// note_setText :: Note -> String -> Action Void
+note_setText = action(note::Note, newText::String) {
+	extract note_text note as oldText {
+		// ... update Ranges based on text change
+	},
+	set (Note:_text note) newText
+},
+
+// note_linkToNote :: Note -> Range -> Textrange -> Action Void
+note_linkToNote = action(note::Note, range::Range, textrange::Textrange) {
+	// record incoming link in destination Note:
+	addEntry (Note:_fromNotes (textrange_note textrange)) (note, range) (textrange_range textrange),
+	// record outgoing link in source Note:
+	addEntry (Note:_toNotes note) range textrange
+},
+
+// note_unlinkFromNote :: Note -> Range -> Action Void
+note_unlinkFromNote = action(note::Note, range::Range) {
+	// remove outgoing link in source Note:
+	removeEntry (Note:_toNotes note) range,
+	// remove incoming link in destination Note:
+	textrange = fetch (getKey range (note_linksToNotes note)),
+	removeEntry (Note:_fromNotes (textrange_note textrange)) (note, range)
+},
+
+// note_linkToMovie :: Note -> Range -> Timerange -> Action Void
+note_linkToMovie = action(note::Note, range::Range, timerange::Timerange) {
+	// record incoming link in destination Movie:
+	addEntry (Movie:_fromNotes (timerange_movie timerange)) (note, range) (timerange_range timerange),
+	// record outgoing link in source Note:
+	addEntry (Note:_toMovies note) range timerange
+},
+
+// note_unlinkFromMovie :: Note -> Range -> Action Void
+note_unlinkFromMovie = action(note::Note, range::Range) {
+	// remove outgoing link in source Note:
+	removeEntry (Note:_toMovies note) range,
+	// remove incoming link in destination Movie:
+	timerange = fetch (getKey range (note_linksToMovies note)),
+	removeEntry (Movie:_fromNotes (timerange_movie timerange)) (note, range)
+}

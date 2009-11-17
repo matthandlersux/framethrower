@@ -33,13 +33,25 @@ var classesToMake = {
 	// For Lite 1
 	// ====================================================
 	
+	// TODO split into Movie and MovieData
 	"Movie": {
 		prop: {
 			"id": "String",
 			"title": "String",
 			"duration": "Number",
 			"aspectRatio": "Number",
-			"chapters": "List ((Number, Number), String)"
+			"chapters": "List ((Number, Number), String)",
+			"_fromNotes": "Map (Note, Unit (Number, Number)) (Unit (Number, Number))" // Map Textrange Range
+		}
+	},
+	
+	"Note": {
+		prop: {
+			"_owner": "String",
+			"_text": "Unit String",
+			"_toNotes": "Map (Unit (Number, Number)) (Note, Unit (Number, Number))", // Map Range Textrange
+			"_toMovies": "Map (Unit (Number, Number)) (Movie, Unit (Number, Number))", // Map Range Timerange
+			"_fromNotes": "Map (Note, Unit (Number, Number)) (Unit (Number, Number))" // Map Textrange Range
 		}
 	},
 	
