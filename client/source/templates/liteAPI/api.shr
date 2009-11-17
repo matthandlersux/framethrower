@@ -55,6 +55,12 @@ note_linksFromNotes = Note:_fromNotes,
 // Actions
 // ====================================================
 
+// createRange :: Action Range
+createRange = action() {
+	range <- create(Range),
+	return range
+},
+
 // createNote :: Action Note
 createNote = action() {
 	note <- create(Note, {_owner: ""}),
