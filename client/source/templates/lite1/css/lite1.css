@@ -4,6 +4,10 @@
 @import url(typography.css);
 
 
+.button {
+	cursor: pointer;
+}
+
 .video .button {
 	display: none;
 }

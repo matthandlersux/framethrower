@@ -1,4 +1,4 @@
-function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
+function (src::String, playTime::Unit Number, stopTime::Unit Number, play::Unit Number)::XMLP {
 	
 	function makeFlashMovie(src) {
 		var mov = createEl("embed");
@@ -35,13 +35,25 @@ function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
 			setTimeout(function () {trySetPlayTime(time);}, 250);
 		}
 	}
+	function trySetStopTime(time) {
+		try {
+			mov.setStopTime(time);
+		} catch (e) {
+			setTimeout(function () {trySetStopTime(time);}, 250);
+		}
+	}
 	
 	
 	
 	
 	
 	var cleanupFuncs = [];
+	// Sooo... this function works, but doesn't work when firebug is enabled! So I'm kinda not using it, but ideally I would. -Toby
+	function addInject(cell, f) {
+		cleanupFuncs.push(evaluateAndInject(cell, emptyFunction, f).unInject);
+	}
 	
+
 	var playStatus = 0;
 	var poller;
 	
@@ -78,7 +90,12 @@ function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
 		return emptyFunction;
 	}).unInject);
 	
-	
+	cleanupFuncs.push(evaluateAndInject(stopTime, emptyFunction, function (time) {
+		trySetStopTime(time);
+		return function () {
+			trySetStopTime(-1);
+		};
+	}).unInject);
 	
 	
 	

@@ -368,7 +368,7 @@ template (movie::Movie)::Timeline {
 		<div class="video">
 			<div style-position="absolute" style-width="{videoWidth}" style-height="{videoHeight}" style-left="{divide (subtract mainScreenWidth videoWidth) 2}" style-top="{divide (subtract mainScreenHeight videoHeight) 2}" style-background-color="#f00">
 				
-				<f:call>flashVideo "moulinRouge" previewTimeS playingS</f:call>
+				<f:call>flashVideo "moulinRouge" previewTimeS (unfetch (plus selectedTimeStart selectedTimeDuration)) playingS</f:call>
 				
 				<div class="button" style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">
 					<f:on click>
