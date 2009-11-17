@@ -88,7 +88,7 @@ performAction(Name, Params) ->
 getSharedLets() ->
 	{Dict, _} = gen_server:call(?MODULE, getState),
 	lists:filter(fun({_Name, Value}) ->
-		not(ast:type(Value) =:= function)
+		(ast:type(Value) =:= cell) orelse (ast:type(Value) =:= object)
 	end, dict:to_list(Dict)).
 
 getState() ->
@@ -258,7 +258,9 @@ executeAction(ActionClosure) ->
 				Evaled = eval:evaluateAST(evaluateLine(Action, Scope)),
 				% check if Evaled is an action method, if so execute it now to avoid ugly wrapping
 				case ast:type(Evaled) of
-					actionMethod -> ast:performActionMethod(Evaled);
+					actionMethod -> 
+						?trace(["Performing action method", Evaled]),
+						ast:performActionMethod(Evaled);
 					instruction -> executeAction(Evaled)
 				end
 		end,

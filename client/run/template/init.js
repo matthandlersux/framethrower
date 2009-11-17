@@ -18,15 +18,20 @@ function initialize() {
 	}
 	
 	if (LOCAL) {
+		// add sharedLets to regular lets
+		if (mainTemplate.sharedLet !== undefined) {
+			forEach(mainTemplate.sharedLet, function(sharedLet, name) {
+				mainTemplate.let[name] = sharedLet;
+			});
+		}
 		initMainTemplate(base.env);
 	} else {
 		//Get shared lets from server and insert them into the environment
-		session.getSharedLets(function(sharedLets) {
-			//add remote actions to sharedLets
-			var remoteActions = getRemoteActions(mainTemplate.sharedLet)
-			var sharedEnv = extendEnv(base.env, remoteActions);
-			sharedEnv = extendEnv(base.env, sharedLets);
+		session.getSharedLets(mainTemplate, function(sharedLets) {
+			var sharedEnv = extendEnv(base.env, sharedLets);
+			testSharedEnv = sharedEnv;
 			initMainTemplate(sharedEnv);
+			setTimeout(session.flush,0);
 		});
 	}
 }
