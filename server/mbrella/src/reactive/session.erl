@@ -199,7 +199,7 @@ handle_cast({disconnect, QueryId}, State) ->
 handle_cast({sendElements, []}, State) ->
 	% handle donemessage stuff here
 	% have to assume there were updates before this, so we use AdjacentElementDelay
-	{noreply, State, ?AdjacentElementDelay};
+	flushOrWait(State, ?AdjacentElementDelay);
 handle_cast({sendElements, Elements}, State) ->
 	UnpackElements = 	fun(PackedElement, ListOfQueryUpdates) ->
 							QueryId = cellElements:mapKey(PackedElement),
@@ -210,11 +210,9 @@ handle_cast({sendElements, Elements}, State) ->
 	NewQueryUpdates = lists:foldl(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
 	flushOrWait(State1, ?AdjacentElementDelay);
-	
 handle_cast({sendActionUpdate, Update}, State) ->
 	State1 = updateQueue(State, [Update]),
 	flushOrWait(State1, ?AdjacentActionDelay);
-	
 handle_cast(Msg, State) ->
     {noreply, State, ?ServerClientTimeout}.
 
