@@ -1,4 +1,4 @@
-template (node::OutlineNode) {
+template (node::OutlineNode, delete::Action Void) {
 	children = OutlineNode:children node,
 	childrenSize = length children,
 	toggle = state(Unit Null),
@@ -29,11 +29,20 @@ template (node::OutlineNode) {
 					addNewChild children
 				</f:on>
 			</div>
+			<div class="delete">
+				<i>Delete [X]</i>
+				<f:on click>
+					delete
+				</f:on>
+			</div>
 		</div>
 		
 		<f:each toggle as _>
 			<f:each children as child>
-				drawOutline child
+				deleteChild = removeChild node child,
+				<f:call>
+					drawOutline child deleteChild
+				</f:call>
 			</f:each>
 		</f:each>
 	</div>
