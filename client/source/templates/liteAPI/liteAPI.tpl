@@ -43,7 +43,7 @@ template() {
 			i = indexOf text selected,
 			range <- createRange,
 			extract boolToUnit (not (or (equal selected "") (equal i -1))) as _ {
-				set range (i, strlen selected)
+				setRange range (i, strlen selected)
 			},
 			return range
 		} else {

@@ -188,7 +188,7 @@ function evaluate2(expr) {
 					// annotate
 					if (GLOBAL.typeCheck) result.type = getType(expr);
 					result.name = resultExprStringified;
-					result.remote = expr.remote;
+					//result.remote = expr.remote;
 				
 					memoizeCell(resultExprStringified, result);
 				}

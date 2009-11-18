@@ -75,7 +75,7 @@ function parseServerResponse(s) {
 			return obj;
 		} else if (s.kind === "tuple") {
 			var asArray = map(s.asArray, parseServerResponse);
-			return makeTuple.apply(asArray);
+			return makeTuple.apply(undefined, asArray);
 		}
 	} else {
 		if (s === null) return nullObject;
@@ -154,7 +154,7 @@ var session = (function () {
 		var cell = makeCC(type, false);
 		
 		cell.remote = remote.shared;
-		cell.name = stringify(expr);
+		cell.stringifyForServer = stringifyForServer(expr);
 
 		cells[queryId] = cell;
 
