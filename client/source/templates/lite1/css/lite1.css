@@ -4,6 +4,12 @@
 @import url(typography.css);
 
 
+.separator {
+	background-color: #666;
+	border-bottom: 1px solid #222;
+	border-top: 1px solid #888;
+}
+
 .button {
 	cursor: pointer;
 }
@@ -20,4 +26,51 @@
 }
 .timeline:hover .titlebar {
 	display: block;
+}
+
+.timeline-container {
+	background-color: #111;
+/*	background-image: url(images/timeline-background.png);*/
+}
+
+.chapter {
+	border-right: 1px solid #000;
+	background-color: #666;
+}
+
+.chapter-inside {
+	background-color: #333;
+}
+
+.scrollbar {
+	background-color: #111;
+}
+.scrollbar .button {
+	background-color: #333;
+}
+.scrollbar .scroller {
+	background-color: #22222c;
+	-moz-border-radius: 4px;
+}
+
+
+.timeline-region {
+	margin-left: -8px;
+}
+.timeline-region .inside {
+	padding-right: 16px;
+}
+
+.timeline-region .inside {
+	width: 100%;
+	-moz-border-radius: 8px;
+	height: 14px;
+	border: 1px solid #36c;
+	background-color: rgba(51, 102, 204, 0.7);
+	cursor: pointer;
+	
+}
+
+.timeline-region .inside:hover {
+	background-color: rgba(51, 102, 204, 1.0);
 }
