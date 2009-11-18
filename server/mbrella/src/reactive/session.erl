@@ -16,6 +16,7 @@
 -define (AdjacentActionDelay, 30).
 -define (PipelineWaitDelay, 30).
 -define (MaxReruns, 20).
+-define (AfterConnectDelay, 500).
 
 %% --------------------------------------------------------------------
 %% External exports
@@ -115,8 +116,9 @@ sendActionUpdate(SessionPointer, Update) ->
 pipeline(SessionPointer, ClientLastMessageId) ->
 	gen_server:cast(sessionPointer:pid(SessionPointer), {pipeline, self(), ClientLastMessageId}),
 	receive
+		timeout -> timeout;
 		JSON -> JSON
-	after 30000 ->
+	after ?ServerClientTimeout ->
 		timeout
 	end.
 
@@ -187,14 +189,14 @@ handle_cast({connect, AST, QueryId}, State) ->
 	SessionPointer = sessionPointer(State),
 	cell:injectOutput(CellPointer, SessionPointer, sessionOutput, [QueryId]),
 	State1 = updateQueries(State, QueryId, CellPointer),
-	{noreply, State1, ?ServerClientTimeout};
+	flushOrWait(State1, ?AfterConnectDelay);
 	
 handle_cast({disconnect, QueryId}, State) ->
 	CellPointer = getQueryCellPointer( State, QueryId ),
 	SessionPointer = sessionPointer(State),
 	cell:uninjectOutput(CellPointer, SessionPointer, sessionOutput, [QueryId]),
 	State1 = removeQuery(State, QueryId),
-	{noreply, State1, ?ServerClientTimeout};
+	flushOrWait(State1, ?AfterConnectDelay);
 	
 handle_cast({sendElements, []}, State) ->
 	% handle donemessage stuff here
@@ -293,15 +295,16 @@ cleanupSession(State) ->
 flush(State) ->
 	ClientLastMessageId = getLastMessageId(State),
 	OpenPipe = getOpenPipe(State),
-	
+	State1 = closeOpenPipe(State),
 	Queue = getQueue(State),
-	case Queue of
+	State2 = case Queue of
 		[{ClientLastMessageId, _ListOfStructs}|_RestOfQueue] ->
-			State2 = replaceQueue(State, [{ClientLastMessageId, []}]);
+			OpenPipe ! timeout,
+			replaceQueue(State1, [{ClientLastMessageId, []}]);
 		_ ->
 			{[{NewLastMessageId, _ListOfStructs1}|_RestOfQueue1] = Queue1, JSONToSend} = processQueue(Queue, ClientLastMessageId),
 			OpenPipe ! {updates, lists:reverse(JSONToSend), NewLastMessageId},
-			State2 = closeOpenPipe(replaceQueue(State, Queue1))
+			replaceQueue(State1, Queue1)
 	end,
 	
 	resetReruns(State2).
