@@ -1,5 +1,23 @@
 -module (cellState).
--compile(export_all).
+
+-export([
+	new/1, new/2,
+	injectOutput/3, uninjectOutput/3,
+	injectIntercept/2,
+	updateBottom/2,
+	addInformants/2, addInformant/2, removeInformant/2,
+	setDone/2,
+	getElements/1,
+	getOutputs/1,
+	cellPointer/1,
+	getIntercept/1,
+	updateOutputStates/2, updateOutputState/3, updateInterceptState/2,
+	getFlag/2, setFlag/3,
+	updateStash/2, getStash/1, emptyStash/1,
+	updateDock/3, getDock/2, getDock/1, emptyDock/2, emptyDock/1,
+	emptyElements/1, injectElements/2,
+	isDone/1
+]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
 -define( colortrace(X), io:format("\033[40mTRACE \033[31m~p\033[39m:\033[95m~p\033[39m ~p\033[0m~n~n", [?MODULE, ?LINE, X])).
@@ -152,6 +170,13 @@ setDone(#cellState{informants = Informants, done = Done} = State, CellPointer) -
 %% 
 
 getElements(#cellState{elements = CellElements} = State) -> CellElements.
+
+%% 
+%% getBottom :: CellState -> AST
+%% 		
+%%		
+
+getBottom(#cellState{bottom = Bottom}) -> Bottom.
 
 %% 
 %% getOutputs :: CellState -> List Output
