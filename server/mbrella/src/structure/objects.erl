@@ -28,6 +28,7 @@
 
 %% 
 %% Class:: dict of {PropName, PropType}
+%% Props :: List (Tuple String Term)
 %% 
 
 	
@@ -42,24 +43,41 @@ stop() ->
 	gen_server:call(?MODULE, stop).
 
 %%
-%% accessor :: String -> String -> String (Object Name) -> Term
+%% accessor :: String -> String -> Tuple Atom String -> Term
 %%
+
 accessor(_ClassName, PropName, ObjectPointer) ->
 	{_, _, Props} = objectStore:lookup(getName(ObjectPointer)),
 	{_, Value} = lists:keyfind(PropName, 1, Props),
 	Value.
 
+%% 
+%% getName :: Object | ObjectPointer -> String
+%% 		
+%%		
+
 getName({objectPointer, Name}) -> Name.
+
+%% 
+%% isObjectPointer :: Object -> Bool
+%% 		
+%%		
 
 isObjectPointer({objectPointer, _}) -> true;
 isObjectPointer(_) -> false.
+
+%% 
+%% makeClass :: String -> String -> ok
+%% 		
+%%		
 
 makeClass(ClassType, Prop) ->
 	gen_server:cast(?MODULE, {makeClass, ClassType, Prop}).
 
 %%
-%% create :: Type -> [{Key, Value}, ...]
+%% create :: Type -> List (Tuple String a) -> ObjectPointer
 %%
+
 create(ClassType, Props) ->
 	InstanceName = objectStore:getName(),
 	NewObject = gen_server:call(?MODULE, {create, ClassType, InstanceName, Props}),
@@ -68,27 +86,13 @@ create(ClassType, Props) ->
 	%return AST object
 	{objectPointer, InstanceName}.
 
+%% 
+%% getState :: Dict
+%% 		
+%%		
 
 getState() ->
 	gen_server:call(?MODULE, getState).
-
-%% ====================================================================
-%% Internal functions
-%% ====================================================================
-makeReactiveProps(Props, ClassProps) ->
-	lists:map(
-		fun ({PropName, PropType}) ->
-			case type:isReactive(PropType) of
-				true ->
-					{PropName, cell:makeCell(type:outerType(PropType))};
-				false ->
-					case lists:keyfind(PropName, 1, Props) of
-						false -> throw(["No Value for Object Field", PropName]);
-						{_, PropValue} -> {PropName, PropValue}
-					end
-			end
-		end, ClassProps).
-
 
 %% ====================================================================
 %% Server functions
@@ -159,3 +163,34 @@ terminate(_Reason, _State) ->
 %% --------------------------------------------------------------------
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
+
+%% ====================================================================
+%% Internal API
+%% ====================================================================
+
+%% 
+%% makeReactiveProps :: Props...
+%% 		
+%%		
+
+makeReactiveProps(Props, ClassProps) ->
+	lists:map(
+		fun ({PropName, PropType}) ->
+			case type:isReactive(PropType) of
+				true ->
+					{PropName, cell:makeCell(type:outerType(PropType))};
+				false ->
+					case lists:keyfind(PropName, 1, Props) of
+						false -> throw(["No Value for Object Field", PropName]);
+						{_, PropValue} -> {PropName, PropValue}
+					end
+			end
+		end, ClassProps).
+		
+%% 
+%% getProps :: Object -> Props
+%% 		
+%%		
+
+getProps({_Name, _Class, Props}) ->
+	Props.
