@@ -41,7 +41,7 @@ var classesToMake = {
 			"duration": "Number",
 			"aspectRatio": "Number",
 			"chapters": "List ((Number, Number), String)",
-			"_fromNotes": "Map (Note, Unit (Number, Number)) (Unit (Number, Number))" // Map Textrange Range
+			"_fromNotes": "Set ((Note, Unit (Number, Number)), (Movie, Unit (Number, Number)))" // Set TimeLink
 		}
 	},
 	
@@ -49,9 +49,9 @@ var classesToMake = {
 		prop: {
 			"_owner": "String",
 			"_text": "Unit String",
-			"_toNotes": "Map (Unit (Number, Number)) (Note, Unit (Number, Number))", // Map Range Textrange
-			"_toMovies": "Map (Unit (Number, Number)) (Movie, Unit (Number, Number))", // Map Range Timerange
-			"_fromNotes": "Map (Note, Unit (Number, Number)) (Unit (Number, Number))" // Map Textrange Range
+			"_toNotes": "Set ((Note, Unit (Number, Number)), (Note, Unit (Number, Number)))", // Set TextLink
+			"_toMovies": "Set ((Note, Unit (Number, Number)), (Movie, Unit (Number, Number)))", // Set TimeLink
+			"_fromNotes": "Set ((Note, Unit (Number, Number)), (Note, Unit (Number, Number)))" // Set TextLink
 		}
 	},
 	

@@ -1,9 +1,59 @@
 template() {
+	
+	// ====================================================
+	// State
+	// ====================================================
+	
+	sourceTextRangeS = state(Unit TextRange),
+	sourceTextRange = fetch sourceTextRangeS,
+	
+	targetTextRangeS = state(Unit TextRange),
+	targetTextRange = fetch targetTextRangeS,
+	
+	
+	// ====================================================
+	// UI and Ontology
+	// ====================================================
+	
 	getText = jsaction()::String {
 		return document.getElementById("text").value;
 	},
+	
 	getSelection = jsaction()::String {
 		return document.getSelection();
+	},
+	
+	createSelectedTextRange = action(note::Note)::TextRange {
+		textRange <- createTextRange note,
+		extract note_text note as text {
+			selected <- getSelection,
+			i = indexOf text selected,
+			extract boolToUnit (not (or (equal selected "") (equal i -1))) as _ {
+				textRange_setRange textRange (makeRange i (strlen selected))
+			}
+		},
+		return textRange
+	},
+	
+	linkRanges = action()::Void {
+		linkText (makeTextLink sourceTextRange targetTextRange),
+		unset sourceTextRangeS,
+		unset targetTextRangeS
+	},
+
+
+	// ====================================================
+	// Utility
+	// ====================================================
+	
+	indexOf = function(s::String, sub::String)::Number {
+		return s.indexOf(sub);
+	},
+	strlen = function(s::String)::Number {
+		return s.length;
+	},
+	substr = function(s::String, start::Number, length::Number)::String {
+		return s.substr(start,length);
 	},
 	debugNumber = jsaction(x::Number)::Void {
 		console.debug(x);
@@ -11,62 +61,17 @@ template() {
 	debugString = jsaction(s::String)::Void {
 		console.debug(s);
 	},
-	indexOf = function(s::String, sub::String)::Number {
-		return s.indexOf(sub);
-	},
-	strlen = function(s::String)::Number {
-		return s.length;
-	},
-	substr = function(s::String, start::Number, duration::Number)::String {
-		return s.substr(start,duration);
-	},
-	
-	
-	// convenience:
 
-	// textrange_text :: Textrange -> Unit String
-	textrange_text = compose note_text textrange_note,
-	// textrange_start :: Textrange -> Unit Number
-	textrange_start = compose range_start textrange_range,
-	// textrange_duration :: Textrange -> Unit Number
-	textrange_duration = compose range_duration textrange_range,
+	textRange_text = compose note_text textRange_note,
+	textRange_start = textRange -> mapUnit range_start (textRange_range textRange),
+	textRange_length = textRange -> mapUnit range_length (textRange_range textRange),
 
-	// timerange_start :: Timerange -> Unit Number
-	timerange_start = compose range_start timerange_range,
-	// timerange_duration :: Timerange -> Unit Number
-	timerange_duration = compose range_duration timerange_range,
+	textRangeString0 = textRange -> mapUnit3 substr (textRange_text textRange) (textRange_start textRange) (textRange_length textRange),
+	textRangeString = textRange -> reactiveIfThen (textRangeString0 textRange) (textRangeString0 textRange) (textRange_text textRange),
 	
-	
-	findSelectedRange = action(note::Note)::Range {
-		if note_text note as text {
-			selected <- getSelection,
-			i = indexOf text selected,
-			range <- createRange,
-			extract boolToUnit (not (or (equal selected "") (equal i -1))) as _ {
-				set range (i, strlen selected)
-			},
-			return range
-		} else {
-			createRange
-		}
-	},
-	
-	linkRanges = action()::Void {
-		note = textrange_note sourceTextrange,
-		range = textrange_range sourceTextrange,
-		note_linkToNote note range destinationTextrange,
-		unset sourceTextrangeS,
-		unset destinationTextrangeS
-	},
-	
-	sourceTextrangeS = state(Unit Textrange),
-	sourceTextrange = fetch sourceTextrangeS,
-	destinationTextrangeS = state(Unit Textrange),
-	destinationTextrange = fetch destinationTextrangeS,
-	
-	textrangeString0 = textrange -> mapUnit3 substr (textrange_text textrange) (textrange_start textrange) (textrange_duration textrange),
-	textrangeString = textrange -> reactiveIfThen (textrangeString0 textrange) (textrangeString0 textrange) (textrange_text textrange),
-	
+
+
+
 	<div>
 		<textarea id="text" />
 		<span style-background="#ffa">
@@ -81,45 +86,45 @@ template() {
 		<f:each allNotes as note>
 		
 			<div style-border="solid 1px">
-				<f:each boolToUnit (equal note (textrange_note sourceTextrange)) as _>
-					<div style-background="#faa">source: {textrangeString sourceTextrange}</div>
+				<f:each boolToUnit (equal note (textRange_note sourceTextRange)) as _>
+					<div style-background="#faa">source: {textRangeString sourceTextRange}</div>
 				</f:each>
-				<f:each boolToUnit (equal note (textrange_note destinationTextrange)) as _>
-					<div style-background="#afa">destination: {textrangeString destinationTextrange}</div>
+				<f:each boolToUnit (equal note (textRange_note targetTextRange)) as _>
+					<div style-background="#afa">target: {textRangeString targetTextRange}</div>
 				</f:each>
 				<div style-background="#ffc">
 					{note_text note}
 				</div>
 				<span style-background="#faa">
 					<f:on mousedown>
-						range <- findSelectedRange note,
-						set sourceTextrangeS (note, range),
+						textRange <- createSelectedTextRange note,
+						set sourceTextRangeS textRange,
 						linkRanges
 					</f:on>
 					Set source.
 				</span>
 				<span style-background="#afa">
 					<f:on mousedown>
-						range <- findSelectedRange note,
-						set destinationTextrangeS (note, range),
+						textRange <- createSelectedTextRange note,
+						set targetTextRangeS textRange,
 						linkRanges
 					</f:on>
-					Set destination.
+					Set target.
 				</span>
 			
-				<f:each note_linksToNotes note as range, textrange>
+				<f:each note_linksToNotes note as link>
 					<div>
-						<span style-background="#fcc">{textrangeString (note, range)}</span>
+						<span style-background="#fcc">{textRangeString (textLink_source link)}</span>
 						:-
-						<span style-background="#cfc">{textrangeString textrange}</span>
+						<span style-background="#cfc">{textRangeString (textLink_target link)}</span>
 					</div>
 				</f:each>
 
-				<f:each note_linksFromNotes note as textrange, range>
+				<f:each note_linksFromNotes note as link>
 					<div>
-						<span style-background="#cfc">{textrangeString (note, range)}</span>
+						<span style-background="#cfc">{textRangeString (textLink_target link)}</span>
 						-:
-						<span style-background="#fcc">{textrangeString textrange}</span>
+						<span style-background="#fcc">{textRangeString (textLink_source link)}</span>
 					</div>
 				</f:each>
 			</div>
