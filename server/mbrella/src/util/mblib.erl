@@ -168,7 +168,8 @@ exprElementToJson(Tuple) when is_tuple(Tuple) ->
 				{struct, [{<<"kind">>, object}, {<<"name">>, list_to_binary(Name)}, {<<"type">>, list_to_binary(type:unparse(Type))}, {<<"props">>, {struct, PropJson}}]};
 			false -> 
 				%Tuple
-				{struct, [{<<"kind">>, tuple}, {<<"asArray">>, tuple_to_list(Tuple)}]}
+				TupleList = lists:map(fun exprElementToJson/1, tuple_to_list(Tuple)),
+				{struct, [{<<"kind">>, tuple}, {<<"asArray">>, TupleList}]}
 		end
 	end;
 exprElementToJson(X) -> X.
