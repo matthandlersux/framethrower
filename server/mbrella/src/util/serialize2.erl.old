@@ -4,7 +4,7 @@
 %%%
 %%% Created : Fri Dec 19 13:24:05 EST 2008
 %%% -------------------------------------------------------------------
--module(serialize).
+-module(serialize2).
 
 -behaviour(gen_server).
 
