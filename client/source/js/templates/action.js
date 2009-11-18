@@ -147,7 +147,10 @@ function helpExecuteAction (instruction) {
 			async:true,
 			asyncFunction:function (callback) {
 				console.log("Executing remote Instruction!", instruction);
-				session.perform(instruction.name, instruction.params, callback);	
+				var wrappedCallback = function(result) {
+					callback({async:false, value:result});
+				};
+				session.perform(instruction.name, instruction.params, wrappedCallback);
 			}
 		};
 	} else {
@@ -232,15 +235,14 @@ function helpExecuteAction (instruction) {
 				injectedFunc.unInject();
 				output = helpExecuteAction(action);
 			}
-
 			//now wrap the output if needed
 			if (output.async) {
 				return { // return a function to run the asynchronous action, add the result to the scope, and continue with provided callback
 					async:true, 
 					asyncFunction: function (continuation) {
 						output.asyncFunction(function(accum) {
-							addLetToScope(accum, actionLet, scope);
-							continuation(accum);
+							addLetToScope(accum.value, actionLet, scope);
+							return continuation(accum);
 						});
 					}
 				};

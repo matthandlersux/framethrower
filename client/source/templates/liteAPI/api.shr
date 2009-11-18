@@ -110,4 +110,13 @@ note_unlinkFromMovie = action(note::Note, range::Range) {
 	// remove incoming link in destination Movie:
 	timerange = fetch (getKey range (note_linksToMovies note)),
 	removeEntry (Movie:_fromNotes (timerange_movie timerange)) (note, range)
+},
+
+
+
+//
+// Andrew adding this to test:
+//
+setRange = action(range::Range, tuple::Tuple2 Number Number) {
+	set range tuple
 }

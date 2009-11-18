@@ -70,11 +70,12 @@ function parseServerResponse(s) {
 			// TODO test this
 			return makeRemoteCell(s.name, s.constructorType);
 		} else if (s.kind === "object") {
-			var prop = map(s.props, function(value, name) {
-				return parseServerResponse(value);
-			});
+			var prop = map(s.props, parseServerResponse);
 			var obj = makeObject(parseType(s.type), s.name, prop, remote.serverOnly);
 			return obj;
+		} else if (s.kind === "tuple") {
+			var asArray = map(s.asArray, parseServerResponse);
+			return makeTuple.apply(asArray);
 		}
 	} else {
 		if (s === null) return nullObject;
@@ -330,7 +331,7 @@ var session = (function () {
 							var args = Array.prototype.slice.call(arguments);
 							return makeRemoteInstruction(name, args);
 						}
-						var result = makeFun(let.type, actionFunction, let.params.length, name, remote.localOnly, true);
+						var result = makeFun(let.type, actionFunction, let.params.length, name, remote.localOnly, false);
 						remoteSharedLets[name] = result;
 					} else {
 						//this let will have been delivered from the server

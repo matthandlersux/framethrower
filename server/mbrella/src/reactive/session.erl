@@ -207,7 +207,7 @@ handle_cast({sendElements, Elements}, State) ->
 							Modifier = cellElements:modifier(PackedElement),
 							[queryUpdate(QueryId, Modifier, cellElements:create(Modifier, Value))|ListOfQueryUpdates]
 						end,
-	NewQueryUpdates = lists:foldl(UnpackElements, [], Elements),
+	NewQueryUpdates = lists:foldr(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
 	flushOrWait(State1, ?AdjacentElementDelay);
 handle_cast({sendActionUpdate, Update}, State) ->
@@ -300,7 +300,7 @@ flush(State) ->
 			State2 = replaceQueue(State, [{ClientLastMessageId, []}]);
 		_ ->
 			{[{NewLastMessageId, _ListOfStructs1}|_RestOfQueue1] = Queue1, JSONToSend} = processQueue(Queue, ClientLastMessageId),
-			OpenPipe ! {updates, JSONToSend, NewLastMessageId},
+			OpenPipe ! {updates, lists:reverse(JSONToSend), NewLastMessageId},
 			State2 = closeOpenPipe(replaceQueue(State, Queue1))
 	end,
 	
