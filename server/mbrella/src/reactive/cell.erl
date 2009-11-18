@@ -360,6 +360,7 @@ handle_cast({uninjectOutput, OutputTo, OutputFunction}, State) ->
 	Output = outputs:getOutput(OutputFunction, Outputs),
 	% NewState = unoutputAllElements(State, Output, OutputTo),
 	% TODO: check if no more outputs and DIE if flag is set
+	?colortrace(need_to_die_maybe),
 	State1 = cellState:uninjectOutput(State, OutputFunction, OutputTo),
 	{noreply, State1};
 
