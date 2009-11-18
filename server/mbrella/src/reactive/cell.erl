@@ -404,7 +404,8 @@ terminate(normal, State) ->
 										end,
 						lists:foreach(SendUnOutput, Connections)
 					end,
-	lists:foreach(UnOutputAll, Outputs);
+	lists:foreach(UnOutputAll, Outputs),
+	mewpile:remove(cellState:getBottom(State));
 	% tell all informants to remove you maybe?
 terminate(Reason, State) ->
 	Reason.
