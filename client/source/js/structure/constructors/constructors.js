@@ -291,6 +291,11 @@ var stringifyForServer = memoizeF("stringifyForServer", function (expr) {
 		return "(" + stringifyForServer(expr.left) + " " + stringifyForServer(expr.right) + ")";
 	} else if (expr.kind === "exprLambda") {
 		return "(\\ " + stringifyForServer(expr.expr) + ")";
+	} else if (expr.kind === "tuple") {
+		var tupleArray = expr.asArray;
+		var arity = tupleArray.length;
+		var stringifiedArray = map(tupleArray, stringifyForServer);
+		return "makeTuple" + arity + " " + stringifiedArray.join(" ");
 	} else {
 		return "" + stringify(expr); //addition necessary because of optimization hack in unparseLiteral
 	}

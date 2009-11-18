@@ -166,7 +166,9 @@ exprElementToJson(Tuple) when is_tuple(Tuple) ->
 					{list_to_binary(PropName), exprElementToJson(PropValue)}
 				end, Props),
 				{struct, [{<<"kind">>, object}, {<<"name">>, list_to_binary(Name)}, {<<"type">>, list_to_binary(type:unparse(Type))}, {<<"props">>, {struct, PropJson}}]};
-			false -> throw("error in mblib:exprElementToJson")
+			false -> 
+				%Tuple
+				{struct, [{<<"kind">>, tuple}, {<<"asArray">>, tuple_to_list(Tuple)}]}
 		end
 	end;
 exprElementToJson(X) -> X.

@@ -85,7 +85,7 @@ function forEachRecursive(o, f) {
 function foldAsynchronous(o, init, f) {
 	function helper (list, begin, length, accum) {
 		var current;
-		var result = {value:accum};
+		var result = accum;
 		for (var i = begin; i < length; i++) {
 			current = list[i];
 			result = f(current.value, current.index, result.value);
@@ -94,7 +94,7 @@ function foldAsynchronous(o, init, f) {
 					async: true,
 					asyncFunction:function(callback) {
 						result.asyncFunction(function (accum) {
-							callback(helper(list, i+1, length, accum));
+							return callback(helper(list, i+1, length, accum));
 						});
 					}
 				};
@@ -106,7 +106,7 @@ function foldAsynchronous(o, init, f) {
 	forEach(o, function(value, index) {
 		list.push({index:index, value:value});
 	});
-	return helper(list, 0, list.length, init);
+	return helper(list, 0, list.length, {value:init});
 }
 
 

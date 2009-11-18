@@ -452,7 +452,7 @@ sendTo(CellPointers, From, Elements) ->
 	lists:foreach(Send, CellPointers).
 
 %% 
-%% sendToProcess :: Pointer -> Pid -> List Element -> ok
+%% sendToProcess :: Pointer -> CellPointer -> List Element -> ok
 %% 		
 %%		
 

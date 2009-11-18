@@ -111,3 +111,4 @@ note_unlinkFromMovie = action(note::Note, range::Range) {
 	timerange = fetch (getKey range (note_linksToMovies note)),
 	removeEntry (Movie:_fromNotes (timerange_movie timerange)) (note, range)
 }
+
