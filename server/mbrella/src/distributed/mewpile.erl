@@ -17,7 +17,7 @@
 
 %% --------------------------------------------------------------------
 %% External exports
--export([mewpilate/1, new/0, store/2, get/1, debug/0, reset/0]).
+-export([mewpilate/1, new/0, store/2, remove/1, get/1, debug/0, reset/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -46,6 +46,14 @@ start() ->
 
 store(AST, CellAST) ->
 	gen_server:cast(?MODULE, {store, AST, CellAST}).
+	
+%% 
+%% remove :: AST -> AST -> ok
+%% 		
+%%		
+
+remove(AST) ->
+	gen_server:cast(?MODULE, {remove, AST}).
 
 %% 
 %% get :: AST -> CellPointer
@@ -137,6 +145,10 @@ handle_cast({store, AST, CellAST}, ETS) ->
 	NormalizedAST = mewpilate(AST),
 	cell:setBottom(ast:toTerm(CellAST), NormalizedAST),
 	ets:insert(ETS, {NormalizedAST, CellAST}),
+    {noreply, ETS};
+handle_cast({remove, AST}, ETS) ->
+	?colortrace({cell_died, AST}),
+	ets:delete(ETS, AST),
     {noreply, ETS};
 handle_cast(reset, ETS) ->
 	ets:delete_all_objects(ETS),
