@@ -116,6 +116,10 @@ template (movie::Movie)::Timeline {
 	timelineShownStart = divide scrollAmount zoomFactor,
 	timelineShownDuration = divide mainTimelineWidth zoomFactor,
 	
+	selectedTimeStartPercent = defaultValue offscreen (unfetch (makePercent (divide selectedTimeStart movieDuration))),
+	selectedTimeDurationPercent = makePercent (divide selectedTimeDuration movieDuration),
+	
+	
 	
 	
 	
@@ -237,9 +241,19 @@ template (movie::Movie)::Timeline {
 					
 					// Mouse time
 					<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
+					
+					// Notes (time region bubbles)
+					<div style-position="absolute" style-top="40" style-width="100%">
+						<div style-position="absolute" class="timeline-region" style-left="5%" style-width="5%" style-top="0">
+							<div class="inside" />
+						</div>
+						<div style-position="absolute" class="timeline-region" style-left="12%" style-width="0%" style-top="0">
+							<div class="inside" />
+						</div>
+					</div>
 
 					// Selected time
-					<div style-position="absolute" style-left="{defaultValue offscreen (unfetch (makePercent (divide selectedTimeStart movieDuration)))}" style-width="{makePercent (divide selectedTimeDuration movieDuration)}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
+					<div style-position="absolute" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
 						// draggable sliders
 						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
 							<f:call>
@@ -289,15 +303,14 @@ template (movie::Movie)::Timeline {
 						
 					</div>
 					
+					// Add my own notes
+					<div style-position="absolute" style-top="20" style-width="100%">
+						<div style-position="absolute" class="timeline-region mine" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-top="0">
+							<div class="inside">+</div>
+						</div>
+					</div>
+					
 
-					
-					
-					<div style-position="absolute" class="timeline-region" style-left="5%" style-width="5%" style-top="20">
-						<div class="inside" />
-					</div>
-					<div style-position="absolute" class="timeline-region" style-left="12%" style-width="0%" style-top="20">
-						<div class="inside" />
-					</div>
 
 					
 					
