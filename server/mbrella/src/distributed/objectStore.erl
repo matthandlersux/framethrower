@@ -2,7 +2,7 @@
 
 -behaviour(gen_server).
 -include ("../../include/scaffold.hrl").
--export([start/0, stop/0, getName/0, store/2, lookup/1, getState/0, getStateDict/0]).
+-export([start/0, stop/0, getName/0, store/2, lookup/1, getState/0, getStateDict/0, fold/2]).
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -36,6 +36,9 @@ getStateDict() ->
 lookup(Name) ->
 	gen_server:call(?MODULE, {lookup, Name}).
 
+fold(Fun, Acc) ->
+	gen_server:cast(?MODULE, {fold, Fun, Acc}).
+
 %% ====================================================================
 %% Server functions
 %% ====================================================================
@@ -64,7 +67,9 @@ handle_call(getState, _, State) ->
 handle_call(stop, _, State) ->
 	{stop, normal, stopped, State}.
 
-
+handle_cast({fold, Fun, Acc}, State) ->
+	ets:foldl(Fun, Acc, ?this(globalTable)),
+	{noreply, State};
 handle_cast({store, Name, Cell}, State) ->
 	ets:insert(?this(globalTable), {Name, Cell}),
     {noreply, State}.
