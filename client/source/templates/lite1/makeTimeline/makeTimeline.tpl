@@ -9,7 +9,7 @@ template (movie::Movie)::Timeline {
 	aspectRatio = Movie:aspectRatio movie,
 	
 	// UI Sizing Constants
-	scrollbarHeight = 14,
+	scrollbarHeight = 16,
 	scrollbarButtonWidth = 20,
 	rulerHeight = 20,
 	
@@ -172,7 +172,7 @@ template (movie::Movie)::Timeline {
 		setScrollAmount (multiply newStart zoomFactor)
 	},
 	
-	xmlp = <div style-width="{timelineWidth}" style-height="{timelineHeight}" style-position="relative" style-background-color="#eee">
+	xmlp = <div style-width="{timelineWidth}" style-height="{timelineHeight}" style-position="relative" class="timeline-container">
 			
 			// Zoomer
 			// TODO
@@ -207,10 +207,12 @@ template (movie::Movie)::Timeline {
 						unset selectedTimeDurationS
 					</f:on>
 					<f:on globalmouseup>
-						unset scrubbingS,
-						extract reactiveNot selectedTimeStartS as _ {
-							set selectedTimeStartS previewTime,
-							set selectedTimeDurationS 0							
+						extract scrubbingS as _ {
+							unset scrubbingS,
+							extract reactiveNot selectedTimeStartS as _ {
+								set selectedTimeStartS previewTime,
+								set selectedTimeDurationS 0							
+							}							
 						}
 					</f:on>
 					
@@ -229,7 +231,7 @@ template (movie::Movie)::Timeline {
 					</div>
 
 					// Ruler
-					<f:call>ruler</f:call>
+					//<f:call>ruler</f:call>
 					
 
 					
@@ -289,6 +291,13 @@ template (movie::Movie)::Timeline {
 					
 
 					
+					
+					<div style-position="absolute" class="timeline-region" style-left="5%" style-width="5%" style-top="20">
+						<div class="inside" />
+					</div>
+					<div style-position="absolute" class="timeline-region" style-left="12%" style-width="0%" style-top="20">
+						<div class="inside" />
+					</div>
 
 					
 					
@@ -296,11 +305,11 @@ template (movie::Movie)::Timeline {
 				</div>
 
 				// Scrollbar
-				<div style-position="absolute" style-bottom="0" style-width="100%" style-height="{scrollbarHeight}" style-background-color="#ccc">
-					<div style-position="absolute" style-top="0" style-left="0" style-width="{scrollbarButtonWidth}" style-height="100%" style-background-color="#555">
+				<div style-position="absolute" style-bottom="0" style-width="100%" style-height="{scrollbarHeight}" class="scrollbar">
+					<div style-position="absolute" style-top="0" style-left="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
 						L
 					</div>
-					<div style-position="absolute" style-top="0" style-right="0" style-width="{scrollbarButtonWidth}" style-height="100%" style-background-color="#555">
+					<div style-position="absolute" style-top="0" style-right="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
 						R
 					</div>
 					<f:call>
@@ -316,7 +325,7 @@ template (movie::Movie)::Timeline {
 								setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
 							</f:on>
 
-							<div style-position="absolute" style-left="{makePercent left}" style-width="{makePercent width}" style-height="100%" style-background-color="#999">
+							<div style-position="absolute" style-left="{makePercent left}" style-width="{makePercent width}" style-height="100%" class="scroller">
 								<f:call>
 									setScroll = action (start::Number, x::Number) {
 										desiredLeft = plus start (divide x scrollbarWidth),
@@ -379,11 +388,11 @@ template (movie::Movie)::Timeline {
 					<f:each bindUnit (reactiveEqual 0) playingS as _>
 						<div style-background-color="#aaa" style-width="50" style-height="50" class="button">
 							<f:on click>
-								set playingS 1,
 								extract bindUnit (reactiveEqual 0) selectedTimeDurationS as _ {
 									unset selectedTimeStartS,
 									unset selectedTimeDurationS
-								}
+								},
+								set playingS 1
 							</f:on>
 							play button
 						</div>
