@@ -17,14 +17,18 @@
 
 %% --------------------------------------------------------------------
 %% External exports
--export([]).
+-export([
+	start/0,
+	serialize/0,
+	unserialize/0
+]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record (state, {
-	fileName = "../../data/serialize",
-	ets = ets:new(serialize, [named_table])	
+	filename = "../../data/serialize",
+	ets	
 }).
 
 %% ====================================================================
@@ -36,9 +40,8 @@
 %% 		
 %%		
 
-new() -> start_link().
-start_link() ->
-	case gen_server:start_link(?MODULE, [], []) of
+start() -> 
+	case gen_server:start_link({local, ?MODULE}, ?MODULE, [], []) of
 		{ok, Pid} -> Pid;
 		Else -> Else
 	end,
@@ -72,8 +75,8 @@ unserialize() ->
 %%          ignore               |
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
-init() ->
-    {ok, #state{}}.
+init([]) ->
+    {ok, #state{ets = ets:new(serialize, [named_table])}}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_call/3
@@ -97,11 +100,34 @@ handle_call(Msg, From, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast(unserialize, State) ->
+	case ets:file2tab(getFilename(State)) of
+		{error, Reason} ->
+			?colortrace({serialize_file_error, Reason}),
+			{stop, Reason, State};
+		{ok, ETS} ->
+			State1 = replaceETS(ETS, State),			
+			{noreply, State1}
+	end;
 	
-	;
 handle_cast(serialize, State) ->
+	ETS = getEts(State),
 	
-	;
+	SerializeAllCells = 	fun(CellPointer) ->
+								ets:insert(ETS, {cellPointer:name(CellPointer), cellToData(CellPointer)})
+							end,
+	
+	SerializeAllObjects = 	fun({ObjectName, Object}, _Acc) ->
+								ets:insert(ETS, {ObjectName, objectToData(Object)}),
+								ListOfCellPointers = getCellsFromObject(Object),
+								lists:foreach(SerializeAllCells, ListOfCellPointers)
+							end,
+								
+	objectStore:fold(SerializeAllObjects, []),
+
+	Res = ets:tab2file(ETS, getFilename(State)),
+	?colortrace(Res),
+	{noreply, State};
+
 handle_cast(Msg, State) ->
     {noreply, State}.
 
@@ -135,4 +161,66 @@ code_change(OldVsn, State, Extra) ->
 %% Internal API
 %% ====================================================
 
-serializeObject()
+%% 
+%% objectToData :: Object -> a
+%% 		
+%%		
+
+objectToData(Object) ->
+	Object.
+
+%% 
+%% cellToData :: CellPointer -> a
+%% 		
+%%		
+
+cellToData(CellPointer) ->
+	cell:getState(CellPointer).
+
+%% 
+%% getCellsFromObject :: Object -> List CellPointer
+%% 		
+%%		
+
+getCellsFromObject(Object) ->
+	Props = object:getProps(Object),
+	GetCellPointers = 	fun({_Str, MaybeCellPointer}, ListOfCellPointers) ->
+							case cellPointer:isCellPointer(MaybeCellPointer) of
+								true ->
+									[MaybeCellPointer] ++ ListOfCellPointers;
+								_ ->
+									ListOfCellPointers
+							end
+						end,
+	lists:foldl(GetCellPointers, [], Props).
+	
+%% ---------------------------------------------
+%% State Functions
+%% ---------------------------------------------
+
+%% 
+%% getFilename :: SerializeState -> String
+%% 		
+%%		
+
+getFilename(#state{filename = FileName}) -> 
+	FileName.
+
+%% 
+%% getEts :: SerializeState -> ETS
+%% 		
+%%		
+
+getEts(#state{ets = ETS}) ->
+	ETS.
+
+%% 
+%% replaceETS :: ETS -> SerializeState -> SerializeState
+%% 		
+%%		
+
+replaceETS(ETS, State) ->
+	State#state{ets = ETS}.
+
+
+
