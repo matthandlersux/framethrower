@@ -209,7 +209,7 @@ handle_cast({sendElements, Elements}, State) ->
 							Modifier = cellElements:modifier(PackedElement),
 							[queryUpdate(QueryId, Modifier, cellElements:create(Modifier, Value))|ListOfQueryUpdates]
 						end,
-	NewQueryUpdates = lists:foldl(UnpackElements, [], Elements),
+	NewQueryUpdates = lists:foldr(UnpackElements, [], Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
 	flushOrWait(State1, ?AdjacentElementDelay);
 handle_cast({sendActionUpdate, Update}, State) ->
@@ -295,16 +295,16 @@ cleanupSession(State) ->
 flush(State) ->
 	ClientLastMessageId = getLastMessageId(State),
 	OpenPipe = getOpenPipe(State),
-	
+	State1 = closeOpenPipe(State),
 	Queue = getQueue(State),
-	case Queue of
+	State2 = case Queue of
 		[{ClientLastMessageId, _ListOfStructs}|_RestOfQueue] ->
 			OpenPipe ! timeout,
-			State2 = replaceQueue(State, [{ClientLastMessageId, []}]);
+			replaceQueue(State1, [{ClientLastMessageId, []}]);
 		_ ->
 			{[{NewLastMessageId, _ListOfStructs1}|_RestOfQueue1] = Queue1, JSONToSend} = processQueue(Queue, ClientLastMessageId),
-			OpenPipe ! {updates, JSONToSend, NewLastMessageId},
-			State2 = closeOpenPipe(replaceQueue(State, Queue1))
+			OpenPipe ! {updates, lists:reverse(JSONToSend), NewLastMessageId},
+			replaceQueue(State1, Queue1)
 	end,
 	
 	resetReruns(State2).

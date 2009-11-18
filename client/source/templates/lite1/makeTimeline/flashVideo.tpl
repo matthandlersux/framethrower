@@ -1,4 +1,4 @@
-function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
+function (src::String, playTime::Unit Number, stopTime::Unit Number, play::Unit Number)::XMLP {
 	
 	function makeFlashMovie(src) {
 		var mov = createEl("embed");
@@ -15,25 +15,52 @@ function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
 		setAtt("src", "flashplayer/main.swf");
 		setAtt("quality", "high");
 		
+		setAtt("flashvars", "server=192.168.1.115&source=moulinrouge");
+		
 		setAtt("type", "application/x-shockwave-flash");
 		setAtt("pluginspage", "http:/"+"/www.adobe.com/go/getflashplayer");
+		
+		
 		
 		return mov;
 	}
 	
 	
 	var mov = makeFlashMovie(src);
-	var cleanupFuncs = [];
 	
+	function trySetPlayTime(time) {
+		try {
+			mov.setPlayTime(time);
+		} catch (e) {
+			setTimeout(function () {trySetPlayTime(time);}, 250);
+		}
+	}
+	function trySetStopTime(time) {
+		try {
+			mov.setStopTime(time);
+		} catch (e) {
+			setTimeout(function () {trySetStopTime(time);}, 250);
+		}
+	}
+	
+	
+	
+	
+	
+	var cleanupFuncs = [];
+	// Sooo... this function works, but doesn't work when firebug is enabled! So I'm kinda not using it, but ideally I would. -Toby
+	function addInject(cell, f) {
+		cleanupFuncs.push(evaluateAndInject(cell, emptyFunction, f).unInject);
+	}
+	
+
 	var playStatus = 0;
 	var poller;
 	
 	
 	cleanupFuncs.push(evaluateAndInject(playTime, emptyFunction, function (time) {
 		if (playStatus === 0) {
-			try {
-				mov.setPlayTime(time);
-			} catch (e) {};
+			trySetPlayTime(time);
 		}
 		return emptyFunction;
 	}).unInject);
@@ -63,7 +90,12 @@ function (src::String, playTime::Unit Number, play::Unit Number)::XMLP {
 		return emptyFunction;
 	}).unInject);
 	
-	
+	cleanupFuncs.push(evaluateAndInject(stopTime, emptyFunction, function (time) {
+		trySetStopTime(time);
+		return function () {
+			trySetStopTime(-1);
+		};
+	}).unInject);
 	
 	
 	

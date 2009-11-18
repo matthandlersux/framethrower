@@ -17,6 +17,25 @@ template() {
 	strlen = function(s::String)::Number {
 		return s.length;
 	},
+	substr = function(s::String, start::Number, duration::Number)::String {
+		return s.substr(start,duration);
+	},
+	
+	
+	// convenience:
+
+	// textrange_text :: Textrange -> Unit String
+	textrange_text = compose note_text textrange_note,
+	// textrange_start :: Textrange -> Unit Number
+	textrange_start = compose range_start textrange_range,
+	// textrange_duration :: Textrange -> Unit Number
+	textrange_duration = compose range_duration textrange_range,
+
+	// timerange_start :: Timerange -> Unit Number
+	timerange_start = compose range_start timerange_range,
+	// timerange_duration :: Timerange -> Unit Number
+	timerange_duration = compose range_duration timerange_range,
+	
 	
 	findSelectedRange = action(note::Note)::Range {
 		if note_text note as text {
@@ -45,9 +64,12 @@ template() {
 	destinationTextrangeS = state(Unit Textrange),
 	destinationTextrange = fetch destinationTextrangeS,
 	
+	textrangeString0 = textrange -> mapUnit3 substr (textrange_text textrange) (textrange_start textrange) (textrange_duration textrange),
+	textrangeString = textrange -> reactiveIfThen (textrangeString0 textrange) (textrangeString0 textrange) (textrange_text textrange),
+	
 	<div>
 		<textarea id="text" />
-		<span style-background="#ccc">
+		<span style-background="#ffa">
 			<f:on mousedown>
 				note <- createNote,
 				text <- getText,
@@ -56,27 +78,19 @@ template() {
 			Where's note!
 		</span>
 		
-		<div>
-			{range_start (textrange_range sourceTextrange)}
-			{range_duration (textrange_range sourceTextrange)}
-			{range_start (textrange_range destinationTextrange)}
-			{range_duration (textrange_range destinationTextrange)}
-			{sourceTextrange}
-		</div>
-		
 		<f:each allNotes as note>
 		
 			<div style-border="solid 1px">
 				<f:each boolToUnit (equal note (textrange_note sourceTextrange)) as _>
-					<div>source</div>
+					<div style-background="#faa">source: {textrangeString sourceTextrange}</div>
 				</f:each>
 				<f:each boolToUnit (equal note (textrange_note destinationTextrange)) as _>
-					<div>destination</div>
+					<div style-background="#afa">destination: {textrangeString destinationTextrange}</div>
 				</f:each>
-				<div>
+				<div style-background="#ffc">
 					{note_text note}
 				</div>
-				<span style-background="#ccc">
+				<span style-background="#faa">
 					<f:on mousedown>
 						range <- findSelectedRange note,
 						set sourceTextrangeS (note, range),
@@ -84,7 +98,7 @@ template() {
 					</f:on>
 					Set source.
 				</span>
-				<span style-background="#ccc">
+				<span style-background="#afa">
 					<f:on mousedown>
 						range <- findSelectedRange note,
 						set destinationTextrangeS (note, range),
@@ -94,7 +108,19 @@ template() {
 				</span>
 			
 				<f:each note_linksToNotes note as range, textrange>
-					<div>1</div>
+					<div>
+						<span style-background="#fcc">{textrangeString (note, range)}</span>
+						:-
+						<span style-background="#cfc">{textrangeString textrange}</span>
+					</div>
+				</f:each>
+
+				<f:each note_linksFromNotes note as textrange, range>
+					<div>
+						<span style-background="#cfc">{textrangeString (note, range)}</span>
+						-:
+						<span style-background="#fcc">{textrangeString textrange}</span>
+					</div>
 				</f:each>
 			</div>
 		</f:each>

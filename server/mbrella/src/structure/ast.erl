@@ -11,9 +11,10 @@
 %
 %		an AST represents an expression that can be evaluated by the eval module
 %
-% AST				:: LiteralAST | CellAST | ObjectAST | FunctionAST | LambdaAST | ApplyAST | VariableAST | UnboundVariableAST | ActionMethodAST | InstructionAST
+% AST				:: LiteralAST | TupleAST| CellAST | ObjectAST | FunctionAST | LambdaAST | ApplyAST | VariableAST | UnboundVariableAST | ActionMethodAST | InstructionAST
 %	LiteralAST			:: {LiteralType, Literal}
 %		LiteralType			:: string | number | bool | null | void
+%	TupleAST			:: {tuple, Tuple}
 %	CellAST				:: {cell, {CellPointer, undefined}}
 %	ObjectAST			:: {object, String}
 % 	FunctionAST			:: {function, {{Atom, Atom, List}, Number}}
@@ -34,6 +35,7 @@
 %	 	Bool				:: Atom	
 %	 	Null				:: Atom
 %	 	Void				:: Atom
+%	Tuple				:: Erlang Tuple
 % 	CellPointer 		:: Refer to CellPointer module
 % 	ObjectPointer 		:: Refer to Object module
 
@@ -64,6 +66,17 @@ makeLiteral(null) ->
 
 makeLiteral(void) ->
 	{void, void}.
+
+
+%% 
+%% makeTuple :: Tuple -> TupleAST
+%% 		
+%%		
+
+makeTuple(Tuple) when is_tuple(Tuple) ->
+	{tuple, Tuple}.
+
+
 
 %%
 %% makeUnboundVariable :: String -> UnboundVariableAST
@@ -366,6 +379,7 @@ termToAST(Term) ->
 			true -> makeObject(Term);
 			_ -> case Term of
 				{actionMethod, _} = ActionMethod -> ActionMethod;
+				Tuple when is_tuple(Tuple) -> makeTuple(Tuple);
 				_ -> throw([not_yet_implemented, Term])
 			end
 		end
