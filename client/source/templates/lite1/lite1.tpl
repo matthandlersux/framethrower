@@ -102,45 +102,35 @@ template () {
 				</div>
 			</f:each>
 			
-			<div>
-				Jump tester
-				<f:on click>
-					//openMovie moulinRouge
-					jumpToInMovie moulinRouge (4000, 100)
-				</f:on>
-			</div>
+			// <div>
+			// 	Jump tester
+			// 	<f:on click>
+			// 		//openMovie moulinRouge
+			// 		jumpToInMovie moulinRouge (4000, 100)
+			// 	</f:on>
+			// </div>
 			
-			<div style-position="absolute" style-left="20" style-top="100">
-				<f:call>
-					px = state(Unit Number),
-					py = state(Unit Number),
-					<div>
-						<f:on domMove>
-							set px event.posX,
-							set py event.posY
-						</f:on>
-						{px}, {py}
-					</div>
-				</f:call>
-			</div>
 		</div>
 		
 		
 		<div style-position="absolute" style-bottom="0">
 			<f:each timelines as index, timeline>
-				<div style-position="relative" style-width="{screenWidth}" style-height="{timelineHeight}" class="timeline">
-					<f:call>timeline_xmlp timeline</f:call>
-					// Movie Title
-					<div class="titlebar" style-position="absolute" style-left="0" style-top="-26" style-height="20" style-background-color="#333" style-color="#fff" style-padding="3">
-						{Movie:title (timeline_movie timeline)}
-						<span>
-							<f:on click>
-								removeEntry timelines index
-							</f:on>
-							(x)
-						</span>
+				<f:wrapper>
+					<div style-width="{screenWidth}" style-height="4" class="separator" />
+					<div style-position="relative" style-width="{screenWidth}" style-height="{timelineHeight}" class="timeline">
+						<f:call>timeline_xmlp timeline</f:call>
+						// Movie Title
+						<div class="titlebar" style-position="absolute" style-left="0" style-top="-26" style-height="20" style-background-color="#333" style-color="#fff" style-padding="3">
+							{Movie:title (timeline_movie timeline)}
+							<span>
+								<f:on click>
+									removeEntry timelines index
+								</f:on>
+								(x)
+							</span>
+						</div>
 					</div>
-				</div>
+				</f:wrapper>
 			</f:each>
 		</div>
 	</div>

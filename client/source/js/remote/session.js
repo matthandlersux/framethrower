@@ -75,7 +75,10 @@ function parseServerResponse(s) {
 			return obj;
 		} else if (s.kind === "tuple") {
 			var asArray = map(s.asArray, parseServerResponse);
-			return makeTuple.apply(undefined, asArray);
+			var tuple = makeTuple.apply(undefined, asArray);
+			tuple.type = parseType(makeTupleType(asArray.length));
+			tuple.remote = remote.shared;
+			return tuple;
 		}
 	} else {
 		if (s === null) return nullObject;

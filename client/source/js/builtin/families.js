@@ -41,10 +41,10 @@ var makeTupleEnv = function (s) {
 
 	// makeTupleN :: t1 -> ... -> tN -> TupleN t1 ... tN
 	var n = parseInt(makeTupleMatch[1], 10);
-	var paramsType = "t1", tupleType = "Tuple"+n+" t1";
+	var tupleType = makeTupleType(n);
+	var paramsType = "t1";
 	for(var i=2; i<=n; i++) {
 		paramsType += " -> t"+i;
-		tupleType += " t"+i;
 	}
 	var type = parseType( paramsType+" -> "+tupleType );
 
