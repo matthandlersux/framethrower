@@ -48,6 +48,7 @@ var classesToMake = {
 	"Note": {
 		prop: {
 			"_owner": "String",
+			"_isPublic": "Unit Null",
 			"_text": "Unit String",
 			"_toNotes": "Set ((Note, Unit (Number, Number)), (Note, Unit (Number, Number)))", // Set TextLink
 			"_toMovies": "Set ((Note, Unit (Number, Number)), (Movie, Unit (Number, Number)))", // Set TimeLink

@@ -21,6 +21,8 @@ movie_linksFromNotes = Movie:_fromNotes,
 
 //==== Note ====//
 
+//	note_isPublic			::	Note -> Unit Null
+
 //	note_text				::	Note -> Unit String
 
 //	note_linksToNotes		::	Note -> Set TextLink
@@ -33,6 +35,7 @@ movie_linksFromNotes = Movie:_fromNotes,
 
 //	note_setText			::	Note -> String -> Action Void
 
+note_isPublic = Note:_isPublic,
 note_text = Note:_text,
 note_linksToNotes = Note:_toNotes,
 note_linksToMovies = Note:_toMovies,
