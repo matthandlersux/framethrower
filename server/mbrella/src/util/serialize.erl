@@ -27,8 +27,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record (state, {
-	filename = "../../data/serialize",
-	ets	
+	filename = "mbrella/data/serialize.ets"
 }).
 
 %% ====================================================================
@@ -76,7 +75,7 @@ unserialize() ->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
-    {ok, #state{ets = ets:new(serialize, [named_table])}}.
+    {ok, #state{}}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_call/3
@@ -105,12 +104,14 @@ handle_cast(unserialize, State) ->
 			?colortrace({serialize_file_error, Reason}),
 			{stop, Reason, State};
 		{ok, ETS} ->
-			State1 = replaceETS(ETS, State),			
-			{noreply, State1}
+			
+			?colortrace(ets:tab2list(ETS)),
+			ets:delete(ETS),
+			{noreply, State}
 	end;
 	
 handle_cast(serialize, State) ->
-	ETS = getEts(State),
+	ETS = ets:new(serialize, [public]),
 	
 	SerializeAllCells = 	fun(CellPointer) ->
 								ets:insert(ETS, {cellPointer:name(CellPointer), cellToData(CellPointer)})
@@ -124,8 +125,8 @@ handle_cast(serialize, State) ->
 								
 	objectStore:fold(SerializeAllObjects, []),
 
-	Res = ets:tab2file(ETS, getFilename(State)),
-	?colortrace(Res),
+	ets:tab2file(ETS, getFilename(State)),
+	ets:delete(ETS),
 	{noreply, State};
 
 handle_cast(Msg, State) ->
@@ -183,7 +184,7 @@ cellToData(CellPointer) ->
 %%		
 
 getCellsFromObject(Object) ->
-	Props = object:getProps(Object),
+	Props = objects:getProps(Object),
 	GetCellPointers = 	fun({_Str, MaybeCellPointer}, ListOfCellPointers) ->
 							case cellPointer:isCellPointer(MaybeCellPointer) of
 								true ->
@@ -205,22 +206,4 @@ getCellsFromObject(Object) ->
 
 getFilename(#state{filename = FileName}) -> 
 	FileName.
-
-%% 
-%% getEts :: SerializeState -> ETS
-%% 		
-%%		
-
-getEts(#state{ets = ETS}) ->
-	ETS.
-
-%% 
-%% replaceETS :: ETS -> SerializeState -> SerializeState
-%% 		
-%%		
-
-replaceETS(ETS, State) ->
-	State#state{ets = ETS}.
-
-
-
+	
