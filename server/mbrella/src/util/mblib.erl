@@ -218,18 +218,18 @@ startScript(Options) ->
 		objectStore:start(),
 		bootJsonScript("pipeline/priv/bootJSON"),
 	
-		case lists:keysearch(serialize, 1, Options) of
-			{value, {_, undefined}} ->
-				serialize:start();
-			{value, {_, SFileName}} ->
-				serialize:start(SFileName)
-		end,
-		case lists:keysearch(unserialize, 1, Options) of
-			{value, {_, undefined}} ->
-				nosideeffect;
-			{value, {_, USFileName}} ->
-				serialize:unserialize(USFileName)
-		end,
+		% case lists:keysearch(serialize, 1, Options) of
+		% 	{value, {_, undefined}} ->
+		% 		serialize:start();
+		% 	{value, {_, SFileName}} ->
+		% 		serialize:start(SFileName)
+		% end,
+		% case lists:keysearch(unserialize, 1, Options) of
+		% 	{value, {_, undefined}} ->
+		% 		nosideeffect;
+		% 	{value, {_, USFileName}} ->
+		% 		serialize:unserialize(USFileName)
+		% end,
 		% TODO: get serialize working again
 		% mblib:prepareStateScript(),
 
