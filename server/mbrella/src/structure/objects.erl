@@ -60,6 +60,22 @@ getName({objectPointer, Name}) -> Name;
 getName({Name, _Type, _Props}) -> Name.
 
 %% 
+%% getProps :: Object -> Props
+%% 		
+%%		
+
+getProps({_Name, _Class, Props}) ->
+	Props.
+	
+%% 
+%% getClass :: Object -> Type
+%% 		
+%%		
+
+getClass({_Name, Class, _Props}) ->
+	Class.
+	
+%% 
 %% isObjectPointer :: Object -> Bool
 %% 		
 %%		
@@ -86,6 +102,18 @@ create(ClassType, Props) ->
 	objectStore:store(InstanceName, NewObject),
 	%return AST object
 	{objectPointer, InstanceName}.
+	
+%% 
+%% respawn :: Object -> ok
+%% 		takes the data of a serialized object, recreates it (incase there are new properties), puts it in objectstore
+%%		
+
+respawn(Object) ->
+	Name = getName(Object),
+	Class = getClass(Object),
+	Props = getProps(Object),
+	NewObject = gen_server:call(?MODULE, {create, Class, Name, Props}),
+	objectStore:store(Name, NewObject).
 
 %% 
 %% getState :: Dict
@@ -187,11 +215,3 @@ makeReactiveProps(Props, ClassProps) ->
 					end
 			end
 		end, ClassProps).
-		
-%% 
-%% getProps :: Object -> Props
-%% 		
-%%		
-
-getProps({_Name, _Class, Props}) ->
-	Props.
