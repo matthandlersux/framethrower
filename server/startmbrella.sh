@@ -108,7 +108,7 @@ while [ $# -gt 0 ]
 	esac
 done
 
-eval='-eval "mblib:startScript([{serialize, '${serialize}'},{unserialize, '${unserialize}'},{responsetime, '${responsetime}'}])."'
+eval='-eval "mblib:startScript([{serialize, undefined},{unserialize, '${unserialize}'},{responsetime, '${responsetime}'}])."'
 
 # eval='-eval "memoize:start()."'
 commonflags="$heartenv $daemon $conf $sname $adddirs $boot $startapp $eval"

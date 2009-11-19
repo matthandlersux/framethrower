@@ -247,18 +247,16 @@ startScript(Options) ->
 		objectStore:start(),
 
 	
-		% case lists:keysearch(serialize, 1, Options) of
-		% 		{value, {_, undefined}} ->
-		% 			serialize:start();
-		% 		{value, {_, SFileName}} ->
-		% 			serialize:start(SFileName)
-		% 	end,
+		case lists:keysearch(serialize, 1, Options) of
+				{value, {_, undefined}} ->
+					serialize:start()
+		end,
 		case lists:keysearch(unserialize, 1, Options) of
 			{value, {_, undefined}} ->
 				bootJsonScript("pipeline/priv/bootJSON", false);
 			{value, {_, USFileName}} ->
-				serialize:unserialize(),
-				bootJsonScript("pipeline/priv/bootJSON", true)
+				bootJsonScript("pipeline/priv/bootJSON", true),
+				serialize:unserialize()
 		end,
 		
 		% TODO: get serialize working again
