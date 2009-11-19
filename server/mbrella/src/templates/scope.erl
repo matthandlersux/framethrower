@@ -79,8 +79,8 @@ lookup(Name, {Pid, Pointer}) ->
 respawn(ScopeState) ->
 	case gen_server:start(?MODULE, [], []) of
 		{ok, Pid} -> 
-			Pointer = gen_server:call(Pid, {respawn, ScopeState}),
-			{Pid, Pointer};
+			gen_server:call(Pid, {respawn, ScopeState}),
+			{Pid, 0};
 		Else -> Else
 	end.
 
