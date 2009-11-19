@@ -203,22 +203,7 @@ template (movie::Movie)::Timeline {
 				
 				// The part that scrolls
 				<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}" style-height="100%">
-					<f:on mousedown>
-						set scrubbingS null,
-						set playingS 0,
-						set previewTimeS mouseTime,
-						unset selectedTimeStartS,
-						unset selectedTimeDurationS
-					</f:on>
-					<f:on globalmouseup>
-						extract scrubbingS as _ {
-							unset scrubbingS,
-							extract reactiveNot selectedTimeStartS as _ {
-								set selectedTimeStartS previewTime,
-								set selectedTimeDurationS 0							
-							}							
-						}
-					</f:on>
+
 					
 					<f:on mousemove>
 						set mouseTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor),
@@ -230,8 +215,28 @@ template (movie::Movie)::Timeline {
 						unset mouseTimeS
 					</f:on>
 
-					<div style-position="absolute" style-top="0" style-left="0" style-width="100%" style-opacity="0.5">
+					<div style-position="absolute" style-top="0" style-left="0" style-width="100%" style-height="100%" style-opacity="0.5">
+						<f:on mousedown>
+							set scrubbingS null,
+							set playingS 0,
+							set previewTimeS mouseTime,
+							unset selectedTimeStartS,
+							unset selectedTimeDurationS
+						</f:on>
+						<f:on globalmouseup>
+							extract scrubbingS as _ {
+								unset scrubbingS,
+								extract reactiveNot selectedTimeStartS as _ {
+									set selectedTimeStartS previewTime,
+									set selectedTimeDurationS 0							
+								}							
+							}
+						</f:on>
 						<f:call>chapterImages mainTimelineHeight (Movie:chapters movie)</f:call>
+						
+						// Mouse time
+						<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
+						
 					</div>
 
 					// Ruler
@@ -239,8 +244,6 @@ template (movie::Movie)::Timeline {
 					
 
 					
-					// Mouse time
-					<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
 					
 					// Notes (time region bubbles)
 					<div style-position="absolute" style-top="40" style-width="100%">
@@ -288,7 +291,8 @@ template (movie::Movie)::Timeline {
 									time = plus start (divide offsetX zoomFactor),
 									setSelectedTimeLeft time,
 									set playingS 0,
-									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration))
+									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
+									unset mouseTimeS
 								},
 								doneAction = action () {
 									set previewTimeS (fetch oldTimeS),
@@ -307,7 +311,8 @@ template (movie::Movie)::Timeline {
 									time = plus start (divide offsetX zoomFactor),
 									setSelectedTimeRight time,
 									set playingS 0,
-									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration))
+									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
+									unset mouseTimeS
 								},
 								doneAction = action () {
 									set previewTimeS (fetch oldTimeS),
