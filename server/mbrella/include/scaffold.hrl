@@ -110,7 +110,7 @@
 % }).
 -record(scopeState, {
 	dict, 
-	parent
+	pointerCount
 }).
 
 -record(interceptState, {

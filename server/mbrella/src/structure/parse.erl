@@ -137,7 +137,7 @@ unparse(AST) ->
 %%
 
 parseString(String, Scope) ->
-	case scope:lookup(Scope, String) of
+	case scope:lookup(String, Scope) of
 		notfound -> 
 			case functionTable:lookup(String) of
 				notfound ->

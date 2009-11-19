@@ -5,18 +5,12 @@
 %%% Created : Sep 23 2009
 %%% -------------------------------------------------------------------
 
-
-% This Module implements a Lazy Extendable Scope.
-
 -module(scope).
 
 -behaviour(gen_server).
 
 -define(d(Msg, Var), io:format("Error in ~s (~p):~n~s ~p~n~n", [?MODULE, self(), Msg, Var])).
-% syntactic sugar babbbyyy
-% -define (ob(Field), mblib:getVal(Ob, Field)).
 -define(this(Field), State#scopeState.Field).
-
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 
 %% --------------------------------------------------------------------
@@ -27,10 +21,24 @@
 
 %% --------------------------------------------------------------------
 %% External exports
--export([makeScope/0, makeScope/1, lookup/2, addLazyLet/3, addLet/3, getState/1, stop/1]).
+-export([makeScope/0, extendScope/1, lookup/2, addLazyLet/3, addLet/3, getState/1, getStateDict/1, respawn/1, stop/1]).
+
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+
+%% ====================================================
+%% TYPES
+%% ====================================================
+%
+%		a Scope is a Lazy Extendable Scope.
+%
+% Scope	:: PID
+%
+
+
+
+
 
 
 %% ====================================================================
@@ -39,28 +47,27 @@
 
 % Makes a root scope
 makeScope() ->
-	start_link(noParent).
-
-% Extends a parent scope
-makeScope(Parent) -> 
-	start_link(Parent).
-
-start_link(Parent) ->
-	case gen_server:start(?MODULE, [Parent], []) of
-		{ok, Pid} -> Pid;
+	case gen_server:start(?MODULE, [], []) of
+		{ok, Pid} -> 
+			Pointer = gen_server:call(Pid, {extendScope, noParent}),
+			{Pid, Pointer};
 		Else -> Else
 	end.
 
-% GetValue is fun/0 to be run the first time Name is looked up
-addLazyLet(Name, GetValue, ScopePid) ->
-	gen_server:call(ScopePid, {addLazyLet, Name, GetValue}).
+% Extends a parent scope
+extendScope({Pid, Parent}) -> 
+	{Pid, gen_server:call(Pid, {extendScope, Parent})}.
 
-addLet(Name, Value, ScopePid) ->
-	gen_server:call(ScopePid, {addLet, Name, Value}).
+% GetValue is fun/0 to be run the first time Name is looked up
+addLazyLet(Name, GetValue, {Pid, Pointer}) ->
+	gen_server:call(Pid, {addLazyLet, Name, GetValue, Pointer}).
+
+addLet(Name, Value, {Pid, Pointer}) ->
+	gen_server:call(Pid, {addLet, Name, Value, Pointer}).
 
 % Lookup will return error if Name is not found in this scope or any parent scope
-lookup(Pid, Name) ->
-	Response = gen_server:call(Pid, {lookup, Name, self(), Pid}),
+lookup(Name, {Pid, Pointer}) ->
+	Response = gen_server:call(Pid, {lookup, Name, self(), {Pid, Pointer}}),
 	case Response of
 		waitForResponse ->			
 			receive
@@ -69,10 +76,24 @@ lookup(Pid, Name) ->
 		Value -> Value
 	end.
 
-getState(Pid) ->
+respawn(ScopeState) ->
+	case gen_server:start(?MODULE, [], []) of
+		{ok, Pid} -> 
+			Pointer = gen_server:call(Pid, {respawn, ScopeState}),
+			{Pid, Pointer};
+		Else -> Else
+	end.
+
+getStateDict({Pid, Pointer}) ->
+	Dict = gen_server:call(Pid, {getStateDict, Pointer}),
+	dict:map(fun(_, {_, Value}) ->
+		Value
+	end, Dict).
+	
+getState({Pid, _}) ->
 	gen_server:call(Pid, getState).
 
-stop(Pid) ->
+stop({Pid, _Pointer}) ->
 	gen_server:call(Pid, stop).
 
 
@@ -89,9 +110,9 @@ stop(Pid) ->
 %%          ignore               |
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
-init([Parent]) ->
+init([]) ->
 	process_flag(trap_exit, true),
-	State = #scopeState{dict=dict:new(), parent=Parent},
+	State = #scopeState{dict=dict:new(), pointerCount=0},
     {ok, State}.
 
 %% --------------------------------------------------------------------
@@ -104,22 +125,57 @@ init([Parent]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({addLazyLet, Name, GetValue}, _, State) ->
-	NewDict = dict:store(Name, {notEvaluated, GetValue}, ?this(dict)),
-	NewState = State#scopeState{dict=NewDict},
+handle_call({extendScope, Pointer}, _, State) ->
+	NewPointer = ?this(pointerCount),
+	Dict1 = dict:store(NewPointer, {dict:new(), Pointer}, ?this(dict)),
+	NewState = #scopeState{dict=Dict1, pointerCount = NewPointer+1},
+	{reply, NewPointer, NewState};
+handle_call({addLazyLet, Name, GetValue, Pointer}, _, State) ->
+	{Scope, Parent} = case dict:find(Pointer, ?this(dict)) of
+		{ok, Found} -> Found;
+		_ -> throw(["Error finding scope pointer: ", Pointer])
+	end,
+	Scope1 = dict:store(Name, {notEvaluated, GetValue}, Scope),
+	Dict1 = dict:store(Pointer, {Scope1, Parent}, ?this(dict)),
+	NewState = State#scopeState{dict=Dict1},
     {reply, ok, NewState};
-handle_call({addLet, Name, Value}, _, State) ->
-	NewDict = dict:store(Name, {evaluated, Value}, ?this(dict)),
-	NewState = State#scopeState{dict=NewDict},
+handle_call({addLet, Name, Value, Pointer}, _, State) ->
+	{Scope, Parent} = case dict:find(Pointer, ?this(dict)) of
+		{ok, Found} -> Found;
+		_ -> throw(["Error finding scope pointer: ", Pointer])
+	end,
+	Scope1 = dict:store(Name, {evaluated, Value}, Scope),
+	Dict1 = dict:store(Pointer, {Scope1, Parent}, ?this(dict)),
+	NewState = State#scopeState{dict=Dict1},
     {reply, ok, NewState};
 handle_call({lookup, Name, From, ThisScope}, _, State) ->
+	GlobalResponse = lookupHelper(Name, From, ThisScope, State),
+    {reply, GlobalResponse, State};
+handle_call({respawn, State}, _, _) ->
+	{reply, ok, State};
+handle_call(getState, _, State) ->
+	{reply, State, State};
+handle_call({getStateDict, Pointer}, _, State) ->
+	{Scope, _Parent} = case dict:find(Pointer, ?this(dict)) of
+		{ok, Found} -> Found;
+		_ -> throw(["Error finding scope pointer: ", Pointer])
+	end,
+	{reply, Scope, State};
+handle_call(stop, _, State) ->
+	{stop, normal, stopped, State}.
+
+lookupHelper(Name, From, {Pid, Pointer}, State) ->
 	%look for Name within the local Scope, evaluating it if necessary and updating the scope
-	Response = case dict:find(Name, ?this(dict)) of
+	{Scope, Parent} = case dict:find(Pointer, ?this(dict)) of
+		{ok, Found} -> Found;
+		_ -> throw(["Error finding scope pointer: ", Pointer])
+	end,
+	Response = case dict:find(Name, Scope) of
 		{ok, {notEvaluated, GetValue}} -> 
 			%spawn a new process to evaluate GetValue
 			spawn(fun() ->
 				Value = GetValue(),
-				updateLet(ThisScope, Name, Value),
+				addLet(Name, Value, {Pid, Pointer}),
 				From ! {lookupResult, Value}
 			end),
 			waitForResponse;
@@ -127,15 +183,15 @@ handle_call({lookup, Name, From, ThisScope}, _, State) ->
 		error -> error
 	end,
 	%now look for Name in the parent Scope in case it was not found locally
-	GlobalResponse = case Response of
-		error -> lookupInParent(Name, ?this(parent));
+	case Response of
+		error -> 
+			case Parent of
+				noParent -> notfound;
+				_ -> lookupHelper(Name, From, {Pid, Parent}, State)
+			end;
 		_ -> Response
-	end,
-    {reply, GlobalResponse, State};
-handle_call(getState, _, State) ->
-	{reply, State, State};
-handle_call(stop, _, State) ->
-	{stop, normal, stopped, State}.
+	end.
+
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -144,10 +200,8 @@ handle_call(stop, _, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_cast({updateLet, Name, Value}, State) ->
-	DictWithVal = dict:store(Name, {evaluated, Value}, ?this(dict)),
-	NewState = State#scopeState{dict=DictWithVal},
-	{noreply, NewState};
+
+	
 handle_cast({terminate, Reason}, State) ->
 	{stop, Reason, State}.
 
@@ -181,13 +235,3 @@ code_change(OldVsn, State, Extra) ->
 %% --------------------------------------------------------------------
 %%% Internal functions
 %% --------------------------------------------------------------------
-
-
-updateLet(Pid, Name, Value) ->
-	gen_server:cast(Pid, {updateLet, Name, Value}).
-
-lookupInParent(Name, Parent) ->
-	case Parent of
-		noParent -> notfound;
-		Pid -> lookup(Pid, Name)
-	end.

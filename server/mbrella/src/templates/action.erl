@@ -86,10 +86,20 @@ performAction(Name, Params) ->
 %% getSharedLets :: [{String, AST}]
 %%
 getSharedLets() ->
-	{Dict, _} = gen_server:call(?MODULE, getState),
+	Scope = gen_server:call(?MODULE, getState),
+	Dict = scope:getStateDict(Scope),
 	lists:filter(fun({_Name, Value}) ->
 		(ast:type(Value) =:= cell) orelse (ast:type(Value) =:= object)
 	end, dict:to_list(Dict)).
+
+
+getScopeState() ->
+	Scope = gen_server:call(?MODULE, getState),
+	scope:getState(Scope).
+	
+respawnScopeState(ScopeState) ->
+	Scope = scope:respawn(ScopeState),
+	gen_server:call(?MODULE, {respawnScopeState, Scope}).
 
 getState() ->
 	gen_server:call(?MODULE, getState).
@@ -113,7 +123,7 @@ stop() ->
 %% --------------------------------------------------------------------
 init([]) ->
 	process_flag(trap_exit, true),
-	State = {dict:new(), scope:makeScope()},
+	State = scope:makeScope(),
     {ok, State}.
 
 %% --------------------------------------------------------------------
@@ -126,19 +136,20 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call({addLet, LetName, LetStruct}, _, {Dict, Scope}) ->
+handle_call({addLet, LetName, LetStruct}, _, Scope) ->
 	EvaluatedLine = evaluateLine(LetStruct, Scope),
-	NewDict = dict:store(LetName, EvaluatedLine, Dict),
 	scope:addLet(LetName, EvaluatedLine, Scope),
-    {reply, ok, {NewDict, Scope}};
-handle_call({performAction, Name, Params}, _, {Dict, _Scope} = State) ->
-	Closure = case dict:find(Name, Dict) of
-		{ok, Found} -> Found;
-		error -> throw("Error finding template: " ++ Name)
+    {reply, ok, Scope};
+handle_call({performAction, Name, Params}, _, Scope) ->
+	Closure = case scope:lookup(Name, Scope) of 
+		notfound -> throw("Error finding template: " ++ Name);
+		Found -> Found
 	end,
 	AppliedClosure = ast:makeApply(Closure, Params),
 	Result = executeAction(eval:evaluate(AppliedClosure)),
-    {reply, Result, State};
+    {reply, Result, Scope};
+handle_call({respawnScopeState, Scope}, _, _) ->
+	{reply, ok, Scope};
 handle_call(getState, _, State) ->
 	{reply, State, State};
 handle_call(stop, _, State) ->
@@ -307,7 +318,7 @@ makeClosure(LineTemplate, ParentScope) ->
 
 closureFunction(Params, LetsList, Output, ParentScope, Args) -> 
 	%make a new scope for this closure
-	Scope = scope:makeScope(ParentScope),
+	Scope = scope:extendScope(ParentScope),
 
 	% add the lets in the closure to the scope lazily	
 	lists:map(fun({LetName, LetValue}) -> 
