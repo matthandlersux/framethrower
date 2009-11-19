@@ -230,7 +230,7 @@ respawnScopeState(ScopeState, ETS) ->
 
 respawnObject(Object, ETS) ->
 	Object1 = mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, Object),
-	objects:respawn(Object).
+	objects:respawn(Object1).
 	
 %% 
 %% objectToData :: Object -> a
