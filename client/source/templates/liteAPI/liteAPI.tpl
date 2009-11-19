@@ -20,13 +20,14 @@ template() {
 	},
 	
 	getSelection = jsaction()::String {
-		return document.getSelection();
+		return document.getSelection()+"";
 	},
 	
 	createSelectedTextRange = action(note::Note)::TextRange {
 		textRange <- createTextRange note,
 		extract note_text note as text {
 			selected <- getSelection,
+			debugString selected,
 			i = indexOf text selected,
 			extract boolToUnit (not (or (equal selected "") (equal i -1))) as _ {
 				textRange_setRange textRange (makeRange i (strlen selected))
