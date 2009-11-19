@@ -41,6 +41,12 @@
 %% create cells
 %% 
 
+respawn(State) ->
+	Name = cellState:getName(State),
+	{ok, Pid} = gen_server:start(?MODULE, [{respawn, State}], []),
+	cellStore:store(Name, Pid),
+	cellPointer:new(Name, Pid).
+
 makeCell() -> makeCell(unit).
 
 makeCell(CellType) ->
@@ -277,6 +283,9 @@ getState(CellPointer) ->
 init([]) ->
 	process_flag(trap_exit, true),
     {ok, cellState:new()};
+init([{respawn, State}]) ->
+	process_flag(trap_exit, true),
+	{ok, State};
 init([Type]) when is_atom(Type) ->
 	process_flag(trap_exit, true),
 	{ok, cellState:new(Type)};
