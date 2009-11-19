@@ -59,8 +59,8 @@ template (height::Number, items::List (TimeRange, a)) {
 			// 	set selectedTimeStartS start,
 			// 	set selectedTimeDurationS duration
 			// </f:on>
-			<div style-padding="{padding}" style-border-right="1px solid #000" style-background-color="#fff">
-				<div style-position="relative" style-overflow="hidden" style-height="{subtract height (multiply 2 padding)}" style-background-color="#ccc" style-background-image="{url}" style-background-repeat="no-repeat" style-background-position="{getBackgroundPosition index height}">
+			<div style-padding="{padding}" class="chapter">
+				<div class="chapter-inside" style-position="relative" style-overflow="hidden" style-height="{subtract height (multiply 2 padding)}" style-background-image="{url}" style-background-repeat="no-repeat" style-background-position="{getBackgroundPosition index height}">
 					// <div style-position="absolute" style-bottom="0" style-z-index="4">
 					// 	<div style-background-color="#000" style-color="#fff" style-white-space="nowrap" style-text-overflow="ellipsis" style-padding-right="2" style-opacity="0.5">
 					// 		{content}

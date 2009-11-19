@@ -75,7 +75,7 @@ function makeRemoteCell(name, typeConstructor) {
 		kind: "remoteCell",
 		remote: remote.serverOnly,
 		name: name,
-		type: makeTypeApply(makeTypeName(typeConstructor), makeTypeName("a0")),
+		type: makeTypeApply(makeTypeName(typeConstructor), makeTypeVar("a0")),
 		outsideScope: 0
 	};
 }

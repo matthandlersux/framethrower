@@ -29,7 +29,7 @@ var mapUnitEnv = function (s) {
 	}
 	var type = parseType( "("+fType+") -> "+mapType );
 	
-	return makeFun(type, mapUnit, n+1);
+	return makeFun(type, mapUnit, n+1, s);
 };
 familyEnv = extendEnv(familyEnv, mapUnitEnv);
 
@@ -41,14 +41,14 @@ var makeTupleEnv = function (s) {
 
 	// makeTupleN :: t1 -> ... -> tN -> TupleN t1 ... tN
 	var n = parseInt(makeTupleMatch[1], 10);
-	var paramsType = "t1", tupleType = "Tuple"+n+" t1";
+	var tupleType = makeTupleType(n);
+	var paramsType = "t1";
 	for(var i=2; i<=n; i++) {
 		paramsType += " -> t"+i;
-		tupleType += " t"+i;
 	}
 	var type = parseType( paramsType+" -> "+tupleType );
 
-	return makeFun(type, makeTuple, n);
+	return makeFun(type, makeTuple, n, s);
 };
 familyEnv = extendEnv(familyEnv, makeTupleEnv);
 
@@ -66,7 +66,7 @@ var tupleGetEnv = function (s) {
 		tupleType += " t"+j;
 	var type = parseType( tupleType+" -> t"+i );
 
-	return makeFun(type, function(tuple) { return tuple.asArray[i-1]; }, 1);
+	return makeFun(type, function(tuple) { return tuple.asArray[i-1];}, 1, s);
 };
 familyEnv = extendEnv(familyEnv, tupleGetEnv);
 

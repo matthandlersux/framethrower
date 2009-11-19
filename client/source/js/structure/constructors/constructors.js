@@ -107,6 +107,14 @@ function makeList(asArray) {
 	};
 }
 
+function makeTupleType(n) {
+	var tupleType = "Tuple"+n+" t1";
+	for(var i=2; i<=n; i++) {
+		tupleType += " t"+i;
+	}
+	return tupleType;
+}
+
 function makeTuple() {
 	//var n = arguments.length;
     return {
@@ -295,7 +303,7 @@ var stringifyForServer = memoizeF("stringifyForServer", function (expr) {
 		var tupleArray = expr.asArray;
 		var arity = tupleArray.length;
 		var stringifiedArray = map(tupleArray, stringifyForServer);
-		return "makeTuple" + arity + " " + stringifiedArray.join(" ");
+		return "(makeTuple" + arity + " " + stringifiedArray.join(" ") + ")";
 	} else {
 		return "" + stringify(expr); //addition necessary because of optimization hack in unparseLiteral
 	}
