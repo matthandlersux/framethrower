@@ -118,6 +118,7 @@ handle_cast(unserialize, State) ->
 			{ObjectMax, CellMax} = ets:foldl(RespawnObjects, {0,0}, ETS),
 			objectStore:setCounter(ObjectMax),
 			cellStore:setCounter(CellMax),
+
 			ets:delete(ETS),
 			{noreply, State}
 	end;
@@ -183,7 +184,7 @@ code_change(OldVsn, State, Extra) ->
 %% ====================================================
 
 %% 
-%% respawnCell :: CellPointer | CellState -> ETS -> CellPointer
+%% respawnCell :: CellPointer -> ETS -> CellPointer
 %% 		takes a cellpointer and respawns its state from serialized data
 %%		
 
@@ -194,8 +195,10 @@ respawnCell(CellPointer, ETS) ->
 			case ets:lookup(ETS, CellName) of
 				[{_Name, CellState}] ->
 					CellState1 = dataToCell(CellState),
-					CellState2 = respawnCellState(CellState1, ETS),
-					cell:respawn(CellState2);
+					CellState2 = cellState:removeSessionOutputs(CellState1),
+					CellState3 = respawnCellState(CellState2, ETS),
+					% remove session pointers
+					cell:respawn(CellState3);
 				[] ->
 					exit(cell_not_in_serialized_data)
 			end;
@@ -206,6 +209,7 @@ respawnCell(CellPointer, ETS) ->
 %% 
 %% respawnCellState :: CellState -> ETS -> CellState
 %% 		looks for cellpointers in the cellstate, respawns and replaces those cells, returns updated state
+%%		also removes session pointers
 %%		
 
 respawnCellState(CellState, ETS) ->
