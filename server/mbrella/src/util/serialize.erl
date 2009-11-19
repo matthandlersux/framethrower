@@ -189,8 +189,8 @@ respawnCell(CellPointer, ETS) ->
 				[] ->
 					exit(cell_not_in_serialized_data)
 			end;
-		CellPointer ->
-			CellPointer
+		FoundCellPointer ->
+			FoundCellPointer
 	end.
 
 %% 
