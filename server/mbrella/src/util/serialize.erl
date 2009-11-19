@@ -108,8 +108,7 @@ handle_cast(unserialize, State) ->
 									Object = dataToObject(ObjectData),
 									respawnObject(Object, ETS);									
 								({"cell" ++ _Rest = Name, CellStateData}, _Acc) ->
-									CellState = dataToCell(CellStateData),
-									respawnCell(CellState, ETS)
+									do_nothing
 								end,
 			ets:foldl(RespawnObjects, []),
 			?colortrace(ets:tab2list(ETS)),
@@ -170,14 +169,15 @@ code_change(OldVsn, State, Extra) ->
 %% ====================================================
 
 %% 
-%% respawnCell :: CellPointer -> ETS -> CellPointer
+%% respawnCell :: CellPointer | CellState -> ETS -> CellPointer
 %% 		takes a cellpointer and respawns its state from serialized data
 %%		
 
 respawnCell(CellPointer, ETS) ->
-	case cellStore:lookup(cellPointer:name(CellPointer)) of
+	CellName = cellPointer:name(CellPointer),	
+	case cellStore:lookup(CellName) of
 		notfound ->
-			case ets:lookup(ETS, cellPointer:name(CellPointer)) of
+			case ets:lookup(ETS, CellName) of
 				[{_Name, CellState}] ->
 					CellState1 = respawnCellState(CellState, ETS),
 					cell:respawn(CellState1);
@@ -202,7 +202,7 @@ respawnCellState(CellState, ETS) ->
 %%		
 
 respawnObject(Object, ETS) ->
-	todo.
+	mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, Object).
 	
 %% 
 %% objectToData :: Object -> a
