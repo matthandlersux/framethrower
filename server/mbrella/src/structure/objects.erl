@@ -205,13 +205,14 @@ code_change(_OldVsn, State, _Extra) ->
 makeReactiveProps(Props, ClassProps) ->
 	lists:map(
 		fun ({PropName, PropType}) ->
-			case type:isReactive(PropType) of
-				true ->
-					{PropName, cell:makeCell(type:outerType(PropType))};
-				false ->
-					case lists:keyfind(PropName, 1, Props) of
-						false -> throw(["No Value for Object Field", PropName]);
-						{_, PropValue} -> {PropName, PropValue}
-					end
+			case lists:keyfind(PropName, 1, Props) of
+				false -> 
+					case type:isReactive(PropType) of
+						true ->
+							{PropName, cell:makeCell(type:outerType(PropType))};
+						false ->
+							throw(["No Value for Object Field", PropName])
+					end;
+				{_, PropValue} -> {PropName, PropValue}
 			end
 		end, ClassProps).
