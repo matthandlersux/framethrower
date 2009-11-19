@@ -104,13 +104,14 @@ handle_cast(unserialize, State) ->
 			?colortrace({serialize_file_error, Reason}),
 			{stop, Reason, State};
 		{ok, ETS} ->
-			RespawnObjects = 	fun({"object" ++ _Rest = Name, ObjectData}, _Acc) ->
+			RespawnObjects = 	fun({"object." ++ NumString = Name, ObjectData}, {ObjectMax, CellMax}) ->
 									Object = dataToObject(ObjectData),
-									respawnObject(Object, ETS);									
-								({"cell" ++ _Rest = Name, CellStateData}, _Acc) ->
-									do_nothing
+									respawnObject(Object, ETS),
+									{ erlang:max(list_to_integer(NumString),ObjectMax), CellMax};									
+								({"cell." ++ NumString = Name, CellStateData}, {ObjectMax, CellMax}) ->
+									{ObjectMax, erlang:max(list_to_integer(NumString), CellMax)}
 								end,
-			ets:foldl(RespawnObjects, [], ETS),
+			{ObjectMax, CellMax} = ets:foldl(RespawnObjects, {0,0}, ETS),
 			ets:delete(ETS),
 			{noreply, State}
 	end;
@@ -178,8 +179,9 @@ respawnCell(CellPointer, ETS) ->
 		notfound ->
 			case ets:lookup(ETS, CellName) of
 				[{_Name, CellState}] ->
-					CellState1 = respawnCellState(CellState, ETS),
-					cell:respawn(CellState1);
+					CellState1 = dataToCell(CellState),
+					CellState2 = respawnCellState(CellState1, ETS),
+					cell:respawn(CellState2);
 				[] ->
 					exit(cell_not_in_serialized_data)
 			end;
