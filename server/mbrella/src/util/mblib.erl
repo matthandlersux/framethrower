@@ -11,6 +11,32 @@
 %% ====================================================
 
 %% 
+%% scour :: (a -> Bool) -> (b -> b) -> c -> c
+%% 		basically will traverse any erlang term through lists and tuples to find elements that need to be converted
+%%			and will return the whole structure with conversions made... similar to my old traverse function
+%%		
+
+scour(IsConvertable, Convert, Structure) ->
+	case IsConvertable(Structure) of
+		true ->
+			Convert(Structure);
+		false ->
+			scourInto(IsConvertable, Convert, Structure)
+	end.
+
+%% 
+%% scourInto :: (a -> Bool) -> (b -> b) -> c -> c
+%% 		helper function for scour
+%%		
+
+scourInto(IsConvertable, Convert, [H|T]) ->
+	[scour(IsConvertable, Convert, H)|scourInto(IsConvertable, Convert, T)];
+scourInto(IsConvertable, Convert, Structure) when is_tuple(Structure) ->
+	list_to_tuple(scourInto(IsConvertable, Convert, tuple_to_list(Structure)));
+scourInto(_IsConvertable, _Convert, Structure) ->
+	Structure.
+
+%% 
 %% traverse:: Tuple -> Fun -> Tuple
 %%		takes any tuple and applies Fun to every element, Fun should be strictly defined
 %%		to only process what it's looking for so that try/catch can do the right thing 
