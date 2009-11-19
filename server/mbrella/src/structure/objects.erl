@@ -56,7 +56,8 @@ accessor(_ClassName, PropName, ObjectPointer) ->
 %% 		
 %%		
 
-getName({objectPointer, Name}) -> Name.
+getName({objectPointer, Name}) -> Name;
+getName({Name, _Type, _Props}) -> Name.
 
 %% 
 %% isObjectPointer :: Object -> Bool
