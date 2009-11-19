@@ -135,7 +135,15 @@ handle_cast(serialize, State) ->
 							end,
 	objectStore:fold(SerializeAllObjects, []),
 	
-	ets:insert(ETS, {scope, action:getScopeState()}),
+	ScopeState = action:getScopeState(),
+	mblib:scour(
+		fun cellPointer:isCellPointer/1,
+		fun(CellPointer) ->
+			ets:insert(ETS, {cellPointer:name(CellPointer), cellToData(CellPointer)})
+		end,
+		ScopeState
+	),
+	ets:insert(ETS, {scope, ScopeState}),
 	
 	ets:tab2file(ETS, getFilename(State)),
 	ets:delete(ETS),
