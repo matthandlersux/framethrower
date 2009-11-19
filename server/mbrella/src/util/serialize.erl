@@ -104,13 +104,18 @@ handle_cast(unserialize, State) ->
 			?colortrace({serialize_file_error, Reason}),
 			{stop, Reason, State};
 		{ok, ETS} ->
-			RespawnObjects = 	fun({"object" ++ _Rest = Name, ObjectData}, _Acc) ->
+			RespawnObjects = 	fun({"object." ++ NumString = Name, ObjectData}, {ObjectMax, CellMax}) ->
 									Object = dataToObject(ObjectData),
-									respawnObject(Object, ETS);									
-								({"cell" ++ _Rest = Name, CellStateData}, _Acc) ->
-									do_nothing
+									respawnObject(Object, ETS),
+									{ erlang:max(list_to_integer(NumString),ObjectMax), CellMax};									
+								({"cell." ++ NumString = Name, CellStateData}, {ObjectMax, CellMax}) ->
+									{ObjectMax, erlang:max(list_to_integer(NumString), CellMax)};
+								({scope, ScopeState}, Acc) ->
+									ScopeState1 = respawnScopeState(ScopeState, ETS),
+									action:respawnScopeState(ScopeState1),
+									Acc 
 								end,
-			ets:foldl(RespawnObjects, [], ETS),
+			{ObjectMax, CellMax} = ets:foldl(RespawnObjects, {0,0}, ETS),
 			ets:delete(ETS),
 			{noreply, State}
 	end;
@@ -121,15 +126,15 @@ handle_cast(serialize, State) ->
 	SerializeAllCells = 	fun(CellPointer) ->
 								ets:insert(ETS, {cellPointer:name(CellPointer), cellToData(CellPointer)})
 							end,
-	
 	SerializeAllObjects = 	fun({ObjectName, Object}, _Acc) ->
 								ets:insert(ETS, {ObjectName, objectToData(Object)}),
 								ListOfCellPointers = getCellsFromObject(Object),
 								lists:foreach(SerializeAllCells, ListOfCellPointers)
 							end,
-								
 	objectStore:fold(SerializeAllObjects, []),
-
+	
+	ets:insert(ETS, {scope, action:getScopeState()}),
+	
 	ets:tab2file(ETS, getFilename(State)),
 	ets:delete(ETS),
 	{noreply, State};
@@ -178,8 +183,9 @@ respawnCell(CellPointer, ETS) ->
 		notfound ->
 			case ets:lookup(ETS, CellName) of
 				[{_Name, CellState}] ->
-					CellState1 = respawnCellState(CellState, ETS),
-					cell:respawn(CellState1);
+					CellState1 = dataToCell(CellState),
+					CellState2 = respawnCellState(CellState1, ETS),
+					cell:respawn(CellState2);
 				[] ->
 					exit(cell_not_in_serialized_data)
 			end;
@@ -194,7 +200,15 @@ respawnCell(CellPointer, ETS) ->
 
 respawnCellState(CellState, ETS) ->
 	mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, CellState).
-	
+
+%% 
+%% respawnScopeState :: ScopeState -> ETS -> ScopeState
+%% 		takes the state of the scope and respawns and replaces any cellpointers
+%%		
+
+respawnScopeState(ScopeState, ETS) ->
+	mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, ScopeState).
+
 %% 
 %% respawnObject :: Object -> ok
 %% 		
@@ -202,8 +216,7 @@ respawnCellState(CellState, ETS) ->
 
 respawnObject(Object, ETS) ->
 	Object1 = mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, Object),
-	Name = objects:getName(Object1),
-	objectStore:store(Name, Object1).
+	objects:respawn(Object).
 	
 %% 
 %% objectToData :: Object -> a

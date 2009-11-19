@@ -2,7 +2,7 @@
 
 -behaviour(gen_server).
 -include ("../../include/scaffold.hrl").
--export([start/0, stop/0, getName/0, store/2, lookup/1, getState/0, getStateDict/0, fold/2]).
+-export([start/0, stop/0, getName/0, store/2, lookup/1, getState/0, getStateDict/0, fold/2, setCounter/1]).
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -23,6 +23,9 @@ stop() ->
 
 getName() ->
 	gen_server:call(?MODULE, getName).
+
+setCounter(Num) ->
+	gen_server:cast(?MODULE, {setCounter, Num}).
 
 store(Name, Obj) ->
 	gen_server:cast(?MODULE, {store, Name, Obj}).
@@ -67,6 +70,8 @@ handle_call(getState, _, State) ->
 handle_call(stop, _, State) ->
 	{stop, normal, stopped, State}.
 
+handle_cast({setCounter, Num}, State) ->
+	{noreply, State#objectStoreState{nameCounter = Num}};
 handle_cast({fold, Fun, Acc}, State) ->
 	ets:foldl(Fun, Acc, ?this(globalTable)),
 	{noreply, State};
