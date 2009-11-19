@@ -99,7 +99,7 @@ handle_call(Msg, From, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast(unserialize, State) ->
-	case ets:file2tab(getFilename(State), [public]) of
+	case ets:file2tab(getFilename(State)) of
 		{error, Reason} ->
 			?colortrace({serialize_file_error, Reason}),
 			{stop, Reason, State};
@@ -110,8 +110,7 @@ handle_cast(unserialize, State) ->
 								({"cell" ++ _Rest = Name, CellStateData}, _Acc) ->
 									do_nothing
 								end,
-			ets:foldl(RespawnObjects, []),
-			?colortrace(ets:tab2list(ETS)),
+			ets:foldl(RespawnObjects, [], ETS),
 			ets:delete(ETS),
 			{noreply, State}
 	end;
@@ -202,7 +201,9 @@ respawnCellState(CellState, ETS) ->
 %%		
 
 respawnObject(Object, ETS) ->
-	mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, Object).
+	Object1 = mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, Object),
+	Name = objects:getName(Object1),
+	objectStore:store(Name, Object1).
 	
 %% 
 %% objectToData :: Object -> a
