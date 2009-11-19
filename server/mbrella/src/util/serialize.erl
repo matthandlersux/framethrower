@@ -99,12 +99,19 @@ handle_call(Msg, From, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast(unserialize, State) ->
-	case ets:file2tab(getFilename(State)) of
+	case ets:file2tab(getFilename(State), [public]) of
 		{error, Reason} ->
 			?colortrace({serialize_file_error, Reason}),
 			{stop, Reason, State};
 		{ok, ETS} ->
-			
+			RespawnObjects = 	fun({"object" ++ _Rest = Name, ObjectData}, _Acc) ->
+									Object = dataToObject(ObjectData),
+									respawnObject(Object, ETS);									
+								({"cell" ++ _Rest = Name, CellStateData}, _Acc) ->
+									CellState = dataToCell(CellStateData),
+									respawnCell(CellState, ETS)
+								end,
+			ets:foldl(RespawnObjects, []),
 			?colortrace(ets:tab2list(ETS)),
 			ets:delete(ETS),
 			{noreply, State}
@@ -163,6 +170,41 @@ code_change(OldVsn, State, Extra) ->
 %% ====================================================
 
 %% 
+%% respawnCell :: CellPointer -> ETS -> CellPointer
+%% 		takes a cellpointer and respawns its state from serialized data
+%%		
+
+respawnCell(CellPointer, ETS) ->
+	case cellStore:lookup(cellPointer:name(CellPointer)) of
+		notfound ->
+			case ets:lookup(ETS, cellPointer:name(CellPointer)) of
+				[{_Name, CellState}] ->
+					CellState1 = respawnCellState(CellState, ETS),
+					cell:respawn(CellState1);
+				[] ->
+					exit(cell_not_in_serialized_data)
+			end;
+		CellPointer ->
+			CellPointer
+	end.
+
+%% 
+%% respawnCellState :: CellState -> ETS -> CellState
+%% 		looks for cellpointers in the cellstate, respawns and replaces those cells, returns updated state
+%%		
+
+respawnCellState(CellState, ETS) ->
+	mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, CellState).
+	
+%% 
+%% respawnObject :: Object -> ok
+%% 		
+%%		
+
+respawnObject(Object, ETS) ->
+	todo.
+	
+%% 
 %% objectToData :: Object -> a
 %% 		
 %%		
@@ -177,6 +219,22 @@ objectToData(Object) ->
 
 cellToData(CellPointer) ->
 	cell:getState(CellPointer).
+	
+%% 
+%% dataToCell :: a -> CellState
+%% 		
+%%		
+
+dataToCell(CellState) ->
+	CellState.
+	
+%% 
+%% dataToObject :: a -> Object
+%% 		
+%%		
+
+dataToObject(Object) ->
+	Object.
 
 %% 
 %% getCellsFromObject :: Object -> List CellPointer
@@ -206,4 +264,7 @@ getCellsFromObject(Object) ->
 
 getFilename(#state{filename = FileName}) -> 
 	FileName.
-	
+
+%% ====================================================
+%% utilities
+%% ====================================================
