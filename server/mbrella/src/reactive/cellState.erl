@@ -224,8 +224,6 @@ updateOutputState( #cellState{outputs = Outputs} = CellState, OutputFunction, Ne
 updateInterceptState(#cellState{intercept = Intercept} = CellState, InterceptState) ->
 	CellState#cellState{intercept = setelement(2, Intercept, InterceptState)}.
 
-%updateIntercept(Cell)
-
 %% 
 %% getFlag :: CellState -> Atom -> Bool
 %% 
