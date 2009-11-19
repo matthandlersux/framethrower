@@ -245,19 +245,20 @@ startScript(Options) ->
 		action:start(),
 		cellStore:start(),
 		objectStore:start(),
-		bootJsonScript("pipeline/priv/bootJSON"),
+
 	
-		case lists:keysearch(serialize, 1, Options) of
-			{value, {_, undefined}} ->
-				serialize:start();
-			{value, {_, SFileName}} ->
-				serialize:start(SFileName)
-		end,
+		% case lists:keysearch(serialize, 1, Options) of
+		% 		{value, {_, undefined}} ->
+		% 			serialize:start();
+		% 		{value, {_, SFileName}} ->
+		% 			serialize:start(SFileName)
+		% 	end,
 		case lists:keysearch(unserialize, 1, Options) of
 			{value, {_, undefined}} ->
-				nosideeffect;
+				bootJsonScript("pipeline/priv/bootJSON", false);
 			{value, {_, USFileName}} ->
-				serialize:unserialize(USFileName)
+				serialize:unserialize(),
+				bootJsonScript("pipeline/priv/bootJSON", true)
 		end,
 		
 		% TODO: get serialize working again
@@ -275,17 +276,21 @@ startScript(Options) ->
 %% function to load bootJSON file and run it against the server on bootup to populate objects and cells etc...
 %%
 
-bootJsonScript(BootJsonFile) ->
+bootJsonScript(BootJsonFile, IgnoreSharedLets) ->
 	{ok, JSONBinary} = file:read_file(BootJsonFile),
 	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
 	ClassesStruct = struct:get_value(<<"classes">>, Struct),
 	ExprLibStruct = struct:get_value(<<"exprLib">>, Struct),
-	SharedLetStruct = struct:get_value(<<"sharedLet">>, Struct),
 
 	createClasses(ClassesStruct),
 	createExprLib(ExprLibStruct),
-	createActions(SharedLetStruct),
-
+	
+	case IgnoreSharedLets of
+		false -> 
+			SharedLetStruct = struct:get_value(<<"sharedLet">>, Struct),
+			createActions(SharedLetStruct);
+		true -> ignored
+	end,
 	bootedJSONScript.
 
 prepareStateScript() ->
@@ -305,4 +310,4 @@ initializeDebugState() ->
 	cellStore:start(),
 	objectStore:start(),
 	sessionManager:start(),
-	bootJsonScript("priv/bootJSON").
+	bootJsonScript("priv/bootJSON", false).
