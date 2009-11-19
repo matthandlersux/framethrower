@@ -110,7 +110,7 @@ makeCell(CellPointer) when is_tuple(CellPointer) ->
 %%		
 
 makeCell(Name, Pid) ->
-	{cell, {{Name, Pid}, undefined}}.
+	{cell, {cellPointer:create(Name, Pid), undefined}}.
 	
 %% 
 %% makeObject :: (ObjectPointer | String) -> ObjectAST
@@ -269,14 +269,14 @@ getInstructionScope({_, {_, Scope}}) -> Scope.
 %% 		
 %%		
 
-getCellName({_, {{Name, _}, _}}) -> Name.
+getCellName({_, {CellPointer, _}}) -> cellPointer:name(CellPointer).
 
 %% 
 %% getCellPid :: CellAST -> Pid
 %% 		
 %%		
 
-getCellPid({_, {{_, Pid}, _}}) -> Pid.
+getCellPid({_, {CellPointer, _}}) -> cellPointer:pid(CellPointer).
 
 %% 
 %% getObject :: ObjectAST -> String
@@ -459,8 +459,8 @@ toTerm([]) ->
 	[];
 toTerm([H|T]) ->
 	[toTerm(H)|toTerm(T)];
-toTerm({cell, {{Name, Pid}, _BottomExpr}}) ->
-	cellPointer:create(Name, Pid);
+toTerm({cell, {CellPointer, _BottomExpr}}) ->
+	CellPointer;
 toTerm({object, Name}) ->
 	{objectPointer, Name};
 toTerm({function, _} = Function) ->
