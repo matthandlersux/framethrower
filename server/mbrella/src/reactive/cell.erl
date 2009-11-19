@@ -7,7 +7,7 @@
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export ([
-	makeCell/0, makeCell/1, makeLinkedCell/0, makeLinkedCell/1, makeCellLeashed/0, 
+	respawn/1, makeCell/0, makeCell/1, makeLinkedCell/0, makeLinkedCell/1, makeCellLeashed/0, 
 		makeCellLeashed/1, makeLinkedCellLeashed/0, makeLinkedCellLeashed/1,
 	addValue/2, addValues/2, removeValue/2, removeValues/2,
 	sendElements/2, sendElements/3,
