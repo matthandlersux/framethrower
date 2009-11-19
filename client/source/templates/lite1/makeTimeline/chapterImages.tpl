@@ -1,4 +1,4 @@
-template (height::Number, items::List (TimeRange, a)) {
+template (height::Number, items::List (Range, a)) {
 	
 	padding = 2,
 
@@ -28,8 +28,8 @@ template (height::Number, items::List (TimeRange, a)) {
 
 	<f:each indexList items as cut>
 		index = fst cut,
-		start = timeRange_start (fst (snd cut)),
-		duration = timeRange_duration (fst (snd cut)),
+		start = range_start (fst (snd cut)),
+		duration = range_duration (fst (snd cut)),
 		content = snd (snd cut),
 		myXMLP = template () {
 			outString = function (s::a)::String {

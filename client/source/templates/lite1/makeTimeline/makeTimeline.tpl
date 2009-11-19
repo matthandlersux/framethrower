@@ -151,12 +151,12 @@ template (movie::Movie)::Timeline {
 	
 	
 	
-	jumpTo = action (timeRange::TimeRange) {
+	jumpTo = action (timeRange::Range) {
 		padding = 0.4,
 		maxZoomRatio = 25, // this ensures that the jumped to range is sufficiently zoomed in
 		
-		jumpStart = timeRange_start timeRange,
-		jumpDuration = timeRange_duration timeRange,
+		jumpStart = range_start timeRange,
+		jumpDuration = range_duration timeRange,
 		
 		
 		set selectedTimeStartS jumpStart,
@@ -244,12 +244,38 @@ template (movie::Movie)::Timeline {
 					
 					// Notes (time region bubbles)
 					<div style-position="absolute" style-top="40" style-width="100%">
-						<div style-position="absolute" class="timeline-region" style-left="5%" style-width="5%" style-top="0">
-							<div class="inside" />
-						</div>
-						<div style-position="absolute" class="timeline-region" style-left="12%" style-width="0%" style-top="0">
-							<div class="inside" />
-						</div>
+						// <div style-position="absolute" class="timeline-region" style-left="5%" style-width="5%" style-top="0">
+						// 	<div class="inside" />
+						// 	<f:call>
+						// 		px = state(Unit Number),
+						// 		py = state(Unit Number),
+						// 		<div>
+						// 			<f:on domMove>
+						// 				set px event.posX,
+						// 				set py event.posY
+						// 			</f:on>
+						// 			{px}, {py}
+						// 		</div>
+						// 	</f:call>
+						// </div>
+						// <div style-position="absolute" class="timeline-region" style-left="12%" style-width="0%" style-top="0">
+						// 	<div class="inside" />
+						// </div>
+						<f:each movie_linksFromNotes movie as timeLink>
+							<f:each timeRange_range (timeLink_target timeLink) as range>
+								<div style-position="absolute" class="timeline-region" style-left="{makePercent (divide (range_start range) movieDuration)}" style-width="{makePercent (divide (range_duration range) movieDuration)}" style-top="0">
+									<div class="inside">
+										<f:on click>
+											note = textRange_note (timeLink_source timeLink),
+											xml = <div>
+												{note_text note}
+											</div>,
+											addEntry notePops ordOrigin xml
+										</f:on>
+									</div>
+								</div>
+							</f:each>
+						</f:each>
 					</div>
 
 					// Selected time

@@ -4,17 +4,19 @@ template () {
 	// Types
 	// =============
 	
-	TimeRange := (Number, Number),
-	timeRange_start = fst,
-	timeRange_duration = snd,
+	Range := (Number, Number),
+	range_start = fst,
+	range_duration = snd,
 	
 	
 	
-	Timeline := (Movie, XMLP, TimeRange -> Action Void),
+	Timeline := (Movie, XMLP, Range -> Action Void),
 	timeline_movie = tuple3get1,
 	timeline_xmlp = tuple3get2,
 	timeline_jumpTo = tuple3get3,
 	
+	
+	NotePop := XMLP,
 	
 	// =============
 	// State
@@ -30,12 +32,15 @@ template () {
 			addEntry timelines nextOrd (makeTimeline movie)			
 		}
 	},
-	jumpToInMovie = action (movie::Movie, timeRange::TimeRange) {
+	jumpToInMovie = action (movie::Movie, timeRange::Range) {
 		openMovie movie,
 		extract filter (timeline -> reactiveEqual movie (timeline_movie timeline)) (values timelines) as timeline {
 			timeline_jumpTo timeline timeRange
 		}
 	},
+	
+	
+	notePops = state(Map Ord NotePop),
 	
 	
 	// =============
@@ -50,6 +55,7 @@ template () {
 	// =============
 	
 	timelineHeight = 140,
+	separatorHeight = 6,
 	
 	
 	// =============
@@ -62,13 +68,17 @@ template () {
 	numTimelines = fetch (length (keys timelines)),
 	
 	mainScreenWidth = screenWidth,
-	mainScreenHeight = subtract screenHeight (multiply numTimelines timelineHeight),
+	mainScreenHeight = subtract screenHeight (multiply numTimelines (plus timelineHeight separatorHeight)),
 	
 	
 	
 	
 	<div>
-		
+		// for reals
+		<f:on init>
+			initDummyData
+		</f:on>
+	
 
 		
 		// <f:each timelines as index, timeline>
@@ -80,13 +90,14 @@ template () {
 		// 	</div>
 		// </f:each>
 		
+		// Workspace area
 		<div style-position="absolute" style-left="0" style-top="0" style-width="{mainScreenWidth}" style-height="{mainScreenHeight}">
 			<f:each fullscreenVideo as xmlp>
 				<f:call>xmlp</f:call>
 			</f:each>
 			<f:each reactiveNot fullscreenVideo as _>
 				<div>
-					<f:each movies as movie>
+					<f:each allMovies as movie>
 						
 						<div style-float="left" style-width="100" style-height="120" style-opacity="{reactiveIfThen (isOpen movie) 0.5 1}">
 							<f:on click>
@@ -110,28 +121,50 @@ template () {
 			// 	</f:on>
 			// </div>
 			
+			<div style-position="absolute" style-bottom="0">
+				<f:each notePops as index, notePop>
+					<div style-width="260" style-height="180" style-margin="16" style-float="left" style-background-color="#333">
+						<div style-text-align="right">
+							<span class="button">
+								(x)
+								<f:on click>
+									removeEntry notePops index
+								</f:on>
+							</span>
+						</div>
+						<f:call>notePop</f:call>
+					</div>
+				</f:each>
+			</div>
+			
 		</div>
 		
 		
+		// Timelines
 		<div style-position="absolute" style-bottom="0">
-			<f:each timelines as index, timeline>
-				<f:wrapper>
-					<div style-width="{screenWidth}" style-height="4" class="separator" />
-					<div style-position="relative" style-width="{screenWidth}" style-height="{timelineHeight}" class="timeline">
-						<f:call>timeline_xmlp timeline</f:call>
-						// Movie Title
-						<div class="titlebar" style-position="absolute" style-left="0" style-top="-26" style-height="20" style-background-color="#333" style-color="#fff" style-padding="3">
-							{Movie:title (timeline_movie timeline)}
-							<span>
-								<f:on click>
-									removeEntry timelines index
-								</f:on>
-								(x)
-							</span>
+			
+
+			
+			<div style-clear="both">
+				<f:each timelines as index, timeline>
+					<f:wrapper>
+						<div style-width="{screenWidth}" style-height="4" class="separator" />
+						<div style-position="relative" style-width="{screenWidth}" style-height="{timelineHeight}" class="timeline">
+							<f:call>timeline_xmlp timeline</f:call>
+							// Movie Title
+							<div class="titlebar" style-position="absolute" style-left="0" style-top="-26" style-height="20" style-background-color="#333" style-color="#fff" style-padding="3">
+								{Movie:title (timeline_movie timeline)}
+								<span>
+									<f:on click>
+										removeEntry timelines index
+									</f:on>
+									(x)
+								</span>
+							</div>
 						</div>
-					</div>
-				</f:wrapper>
-			</f:each>
+					</f:wrapper>
+				</f:each>
+			</div>
 		</div>
 	</div>
 }
