@@ -379,7 +379,8 @@ termToAST(Term) ->
 			true -> makeObject(Term);
 			_ -> case Term of
 				{actionMethod, _} = ActionMethod -> ActionMethod;
-				Tuple when is_tuple(Tuple) -> makeTuple(Tuple);
+				Tuple when is_tuple(Tuple) -> 
+					makeTuple(list_to_tuple(lists:map(fun termToAST/1, tuple_to_list(Tuple))));
 				_ -> throw([not_yet_implemented, Term])
 			end
 		end
@@ -472,6 +473,8 @@ toTerm({actionMethod, _} = ActionMethod) ->
 	ActionMethod;
 toTerm({instruction, _} = Instruction) ->
 	Instruction;
+toTerm({tuple, Tuple}) ->
+	list_to_tuple(lists:map(fun toTerm/1, tuple_to_list(Tuple)));
 toTerm({_LiteralType, LiteralValue}) ->
 	LiteralValue;
 toTerm(Term) ->
