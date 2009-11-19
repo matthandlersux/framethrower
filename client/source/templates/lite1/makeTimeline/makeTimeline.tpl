@@ -267,10 +267,7 @@ template (movie::Movie)::Timeline {
 									<div class="inside">
 										<f:on click>
 											note = textRange_note (timeLink_source timeLink),
-											xml = <div>
-												{note_text note}
-											</div>,
-											addEntry notePops ordOrigin xml
+											openNote note
 										</f:on>
 									</div>
 								</div>

@@ -42,6 +42,11 @@ template () {
 	
 	notePops = state(Map Ord NotePop),
 	
+	openNote = action (note::Note) {
+		nextOrd = fetch (getNextOrd notePops),
+		addEntry notePops nextOrd (displayNote note)
+	},
+	
 	
 	// =============
 	// Derived State
@@ -121,9 +126,9 @@ template () {
 			// 	</f:on>
 			// </div>
 			
-			<div style-position="absolute" style-bottom="0">
+			<div style-position="absolute" style-bottom="16">
 				<f:each notePops as index, notePop>
-					<div style-width="260" style-height="180" style-margin="16" style-float="left" style-background-color="#333">
+					<div style-width="260" style-height="190" style-margin="16" style-float="left" style-background-color="#333">
 						<div style-text-align="right">
 							<span class="button">
 								(x)
