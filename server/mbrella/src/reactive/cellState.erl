@@ -9,6 +9,7 @@
 	setDone/2,
 	getElements/1,
 	getOutputs/1,
+	removeSessionOutputs/1,
 	cellPointer/1,
 	getIntercept/1,
 	getName/1,
@@ -84,6 +85,17 @@ injectOutput(#cellState{outputs = Outputs} = State, OutputFunction, OutputTo) ->
 uninjectOutput(#cellState{outputs = Outputs} = State, OutputFunction, OutputTo) ->
 	State#cellState{outputs = outputs:removeOutput(OutputFunction, OutputTo, Outputs)}.
 
+%% 
+%% removeSessionOutputs :: CellState -> CellState
+%% 		
+%%		
+
+removeSessionOutputs(#cellState{outputs = Outputs} = State) ->
+	FindOutput = 	fun({_Connections, {sessionOutput, _Args}, _State}) -> false;
+					(_) -> true
+					end,
+	State#cellState{outputs = lists:filter(FindOutput, Outputs)}.
+		
 %% 
 %% injectIntercept :: CellState -> Intercept -> CellState
 %% 
