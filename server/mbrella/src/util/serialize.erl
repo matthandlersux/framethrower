@@ -116,6 +116,8 @@ handle_cast(unserialize, State) ->
 									Acc 
 								end,
 			{ObjectMax, CellMax} = ets:foldl(RespawnObjects, {0,0}, ETS),
+			objectStore:setCounter(ObjectMax),
+			cellStore:setCounter(CellMax),
 			ets:delete(ETS),
 			{noreply, State}
 	end;
