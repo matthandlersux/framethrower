@@ -11,6 +11,7 @@
 	getOutputs/1,
 	cellPointer/1,
 	getIntercept/1,
+	getName/1,
 	updateOutputStates/2, updateOutputState/3, updateInterceptState/2,
 	getFlag/2, setFlag/3,
 	updateStash/2, getStash/1, emptyStash/1,
@@ -27,7 +28,6 @@
 %% ====================================================
 
 % name = string
-% options = [{output_before_done, true}, ...],
 % intercept = {invert, [CellPointer1, CellPointer2], {last_message, X}},
 % heard from (for checking when done on multiple informants)
 % elements = ___,
@@ -48,7 +48,6 @@
 
 -record (cellState, {
 	name,
-	options = [],
 	intercept = undefined, %intercepts:standard(),
 	done = false,
 	elements = cellElements:new(),
@@ -198,6 +197,14 @@ cellPointer(#cellState{name = Name} = State) ->
 
 getIntercept(#cellState{intercept = Intercept} = State) ->
 	Intercept.
+
+%% 
+%% getName :: CellState -> String
+%% 		
+%%		
+
+getName(#cellState{name = Name}) ->
+	Name.
 
 %% 
 %% updateOutputStates :: List OutputStates -> CellState -> CellState
