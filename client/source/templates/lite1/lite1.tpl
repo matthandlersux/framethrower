@@ -101,21 +101,7 @@ template () {
 				<f:call>xmlp</f:call>
 			</f:each>
 			<f:each reactiveNot fullscreenVideo as _>
-				<div>
-					<f:each allMovies as movie>
-						
-						<div style-float="left" style-width="100" style-height="120" style-opacity="{reactiveIfThen (isOpen movie) 0.5 1}">
-							<f:on click>
-								openMovie movie
-							</f:on>
-							<div style-width="60" style-height="80" style-background-color="#f0f">
-							
-							</div>
-							{Movie:title movie}
-						</div>
-					</f:each>
-					<div style-clear="both" />
-				</div>
+				<f:call>movieSelector</f:call>
 			</f:each>
 			
 			// <div>

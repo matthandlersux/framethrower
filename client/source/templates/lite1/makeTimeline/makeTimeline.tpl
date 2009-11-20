@@ -337,7 +337,10 @@ template (movie::Movie)::Timeline {
 					// Add my own notes
 					<div style-position="absolute" style-top="20" style-width="100%">
 						<div style-position="absolute" class="timeline-region mine" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-top="0">
-							<div class="inside">+</div>
+							<div class="inside">
+								+
+								<f:on click>notYetImplemented</f:on>
+							</div>
 						</div>
 					</div>
 					
@@ -352,9 +355,11 @@ template (movie::Movie)::Timeline {
 				<div style-position="absolute" style-bottom="0" style-width="100%" style-height="{scrollbarHeight}" class="scrollbar">
 					<div style-position="absolute" style-top="0" style-left="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
 						L
+						<f:on click>notYetImplemented</f:on>
 					</div>
 					<div style-position="absolute" style-top="0" style-right="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
 						R
+						<f:on click>notYetImplemented</f:on>
 					</div>
 					<f:call>
 						scrollbarWidth = subtract mainTimelineWidth (multiply 2 scrollbarButtonWidth),
@@ -390,7 +395,7 @@ template (movie::Movie)::Timeline {
 								set fullscreenVideo fullscreenXMLP
 							</f:on>
 						</div>
-						Small Preview Video
+						Small Preview Video (not yet implemented)
 					</div>
 				</f:each>
 				

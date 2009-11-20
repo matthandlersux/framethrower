@@ -12,3 +12,7 @@ debugAction = jsaction (x::a)::Void {
 emptyAction = action () {
 	
 },
+
+notYetImplemented = jsaction ()::Void {
+	alert("Not yet implemented");
+}
