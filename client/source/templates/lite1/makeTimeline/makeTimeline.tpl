@@ -242,7 +242,58 @@ template (movie::Movie)::Timeline {
 					// Ruler
 					//<f:call>ruler</f:call>
 					
-
+					
+					// Selected time
+					<div style-position="absolute" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
+						// draggable sliders
+						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa" style-cursor="w-resize">
+							<f:call>
+								oldTimeS = state(Unit Number),
+								setSelected = action (start::Number, offsetX::Number) {
+									extract reactiveNot oldTimeS as _ {
+										set oldTimeS previewTime
+									},
+									time = plus start (divide offsetX zoomFactor),
+									setSelectedTimeLeft time,
+									set playingS 0,
+									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
+									unset mouseTimeS
+								},
+								doneAction = action () {
+									set previewTimeS (fetch oldTimeS),
+									unset oldTimeS
+								},
+								dragger (unfetch selectedTimeStart) setSelected doneAction
+							</f:call>
+						</div>
+						<div style-position="absolute" style-right="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa" style-cursor="e-resize">
+							<f:call>
+								oldTimeS = state(Unit Number),
+								setSelected = action (start::Number, offsetX::Number) {
+									extract reactiveNot oldTimeS as _ {
+										set oldTimeS previewTime
+									},
+									time = plus start (divide offsetX zoomFactor),
+									setSelectedTimeRight time,
+									set playingS 0,
+									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
+									unset mouseTimeS
+								},
+								doneAction = action () {
+									set previewTimeS (fetch oldTimeS),
+									unset oldTimeS
+								},
+								dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected doneAction
+							</f:call>
+						</div>
+					</div>
+					
+					// Preview time
+					<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-height="100%">
+						<div style-position="absolute" style-left="-1" style-top="0" style-width="1" style-height="100%" style-border-left="3px solid rgba(255,153,0,1.0)" />
+						//<div style-position="absolute" style-left="-6" style-width="12" style-height="12" style-background-color="#999" style-top="-24" />
+						
+					</div>
 					
 					
 					// Notes (time region bubbles)
@@ -278,58 +329,10 @@ template (movie::Movie)::Timeline {
 						</f:each>
 					</div>
 
-					// Selected time
-					<div style-position="absolute" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
-						// draggable sliders
-						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
-							<f:call>
-								oldTimeS = state(Unit Number),
-								setSelected = action (start::Number, offsetX::Number) {
-									extract reactiveNot oldTimeS as _ {
-										set oldTimeS previewTime
-									},
-									time = plus start (divide offsetX zoomFactor),
-									setSelectedTimeLeft time,
-									set playingS 0,
-									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
-									unset mouseTimeS
-								},
-								doneAction = action () {
-									set previewTimeS (fetch oldTimeS),
-									unset oldTimeS
-								},
-								dragger (unfetch selectedTimeStart) setSelected doneAction
-							</f:call>
-						</div>
-						<div style-position="absolute" style-right="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
-							<f:call>
-								oldTimeS = state(Unit Number),
-								setSelected = action (start::Number, offsetX::Number) {
-									extract reactiveNot oldTimeS as _ {
-										set oldTimeS previewTime
-									},
-									time = plus start (divide offsetX zoomFactor),
-									setSelectedTimeRight time,
-									set playingS 0,
-									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
-									unset mouseTimeS
-								},
-								doneAction = action () {
-									set previewTimeS (fetch oldTimeS),
-									unset oldTimeS
-								},
-								dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected doneAction
-							</f:call>
-						</div>
-					</div>
+
 				
 					
-					// Preview time
-					<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-height="100%">
-						<div style-position="absolute" style-left="-1" style-top="0" style-width="1" style-height="100%" style-border-left="3px solid rgba(255,153,0,1.0)" />
-						//<div style-position="absolute" style-left="-6" style-width="12" style-height="12" style-background-color="#999" style-top="-24" />
-						
-					</div>
+
 					
 					// Add my own notes
 					<div style-position="absolute" style-top="20" style-width="100%">

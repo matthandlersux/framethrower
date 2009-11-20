@@ -157,7 +157,7 @@ template () {
 						<div style-position="relative" style-width="{screenWidth}" style-height="{timelineHeight}" class="timeline">
 							<f:call>timeline_xmlp timeline</f:call>
 							// Movie Title
-							<div class="titlebar" style-position="absolute" style-left="0" style-top="-26" style-height="20" style-background-color="#333" style-color="#fff" style-padding="3">
+							<div class="titlebar" style-position="absolute" style-left="0" style-top="-26" style-height="20">
 								{Movie:title (timeline_movie timeline)}
 								<span>
 									<f:on click>
