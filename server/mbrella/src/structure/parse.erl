@@ -20,7 +20,7 @@
 %%
 
 parse(S) ->
-	parse(S, scope:makeScope()).
+	parse(S, scope:emptyScope()).
 
 %% 
 %% parse:: String (deBruijn style) -> Scope -> AST
@@ -78,7 +78,7 @@ parser(String, LeftAST, Scope) ->
 %%
 
 bind(AST) ->
-	bind(AST, scope:makeScope()).
+	bind(AST, scope:emptyScope()).
 
 %% 
 %% bind:: AST (with UnboundVariableASTs) -> Scope -> AST (without UnboundVariableASTs)

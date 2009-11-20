@@ -94,8 +94,7 @@ getSharedLets() ->
 
 
 getScopeState() ->
-	Scope = gen_server:call(?MODULE, getState),
-	scope:getState(Scope).
+	scope:getState().
 	
 respawnScopeState(ScopeState) ->
 	Scope = scope:respawn(ScopeState),
