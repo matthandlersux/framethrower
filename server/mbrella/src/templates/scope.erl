@@ -21,7 +21,7 @@
 
 %% --------------------------------------------------------------------
 %% External exports
--export([makeScope/0, extendScope/1, lookup/2, addLazyLet/3, addLet/3, getState/1, getStateDict/1, respawn/1, stop/1]).
+-export([start/0, makeScope/0, extendScope/1, emptyScope/0, lookup/2, addLazyLet/3, addLet/3, getState/0, getStateDict/1, respawn/1, stop/0]).
 
 
 %% gen_server callbacks
@@ -45,29 +45,32 @@
 %% External functions
 %% ====================================================================
 
+start() ->
+	gen_server:start({local, ?MODULE}, ?MODULE, [], []).
+
 % Makes a root scope
 makeScope() ->
-	case gen_server:start(?MODULE, [], []) of
-		{ok, Pid} -> 
-			Pointer = gen_server:call(Pid, {extendScope, noParent}),
-			{Pid, Pointer};
-		Else -> Else
-	end.
+	extendScope(noParent).
 
 % Extends a parent scope
-extendScope({Pid, Parent}) -> 
-	{Pid, gen_server:call(Pid, {extendScope, Parent})}.
+extendScope(Parent) -> 
+	gen_server:call(?MODULE, {extendScope, Parent}).
+
+% returns an empty scope
+emptyScope() ->
+	noParent.
 
 % GetValue is fun/0 to be run the first time Name is looked up
-addLazyLet(Name, GetValue, {Pid, Pointer}) ->
-	gen_server:call(Pid, {addLazyLet, Name, GetValue, Pointer}).
+addLazyLet(Name, GetValue, Pointer) ->
+	gen_server:call(?MODULE, {addLazyLet, Name, GetValue, Pointer}).
 
-addLet(Name, Value, {Pid, Pointer}) ->
-	gen_server:call(Pid, {addLet, Name, Value, Pointer}).
+addLet(Name, Value, Pointer) ->
+	gen_server:call(?MODULE, {addLet, Name, Value, Pointer}).
 
-% Lookup will return error if Name is not found in this scope or any parent scope
-lookup(Name, {Pid, Pointer}) ->
-	Response = gen_server:call(Pid, {lookup, Name, self(), {Pid, Pointer}}),
+% Lookup will return notfound if Name is not found in this scope or any parent scope
+lookup(_, noParent) -> notfound;
+lookup(Name, Pointer) ->
+	Response = gen_server:call(?MODULE, {lookup, Name, self(), Pointer}),
 	case Response of
 		waitForResponse ->			
 			receive
@@ -79,22 +82,22 @@ lookup(Name, {Pid, Pointer}) ->
 respawn(ScopeState) ->
 	case gen_server:start(?MODULE, [], []) of
 		{ok, Pid} -> 
-			gen_server:call(Pid, {respawn, ScopeState}),
-			{Pid, 0};
+			gen_server:call(?MODULE, {respawn, ScopeState}),
+			0;
 		Else -> Else
 	end.
 
-getStateDict({Pid, Pointer}) ->
-	Dict = gen_server:call(Pid, {getStateDict, Pointer}),
+getStateDict(Pointer) ->
+	Dict = gen_server:call(?MODULE, {getStateDict, Pointer}),
 	dict:map(fun(_, {_, Value}) ->
 		Value
 	end, Dict).
 	
-getState({Pid, _}) ->
-	gen_server:call(Pid, getState).
+getState() ->
+	gen_server:call(?MODULE, getState).
 
-stop({Pid, _Pointer}) ->
-	gen_server:call(Pid, stop).
+stop() ->
+	gen_server:call(?MODULE, stop).
 
 
 
@@ -164,7 +167,7 @@ handle_call({getStateDict, Pointer}, _, State) ->
 handle_call(stop, _, State) ->
 	{stop, normal, stopped, State}.
 
-lookupHelper(Name, From, {Pid, Pointer}, State) ->
+lookupHelper(Name, From, Pointer, State) ->
 	%look for Name within the local Scope, evaluating it if necessary and updating the scope
 	{Scope, Parent} = case dict:find(Pointer, ?this(dict)) of
 		{ok, Found} -> Found;
@@ -175,7 +178,7 @@ lookupHelper(Name, From, {Pid, Pointer}, State) ->
 			%spawn a new process to evaluate GetValue
 			spawn(fun() ->
 				Value = GetValue(),
-				addLet(Name, Value, {Pid, Pointer}),
+				addLet(Name, Value, Pointer),
 				From ! {lookupResult, Value}
 			end),
 			waitForResponse;
@@ -187,7 +190,7 @@ lookupHelper(Name, From, {Pid, Pointer}, State) ->
 		error -> 
 			case Parent of
 				noParent -> notfound;
-				_ -> lookupHelper(Name, From, {Pid, Parent}, State)
+				_ -> lookupHelper(Name, From, Parent, State)
 			end;
 		_ -> Response
 	end.
