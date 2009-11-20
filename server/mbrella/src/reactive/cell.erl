@@ -383,7 +383,7 @@ handle_cast({uninjectOutput, OutputTo, OutputFunction}, State) ->
 		false ->
 			case cellState:countConnections(State1) of
 				0 ->
-					{stop, no_more_connections, State1};
+					{stop, normal, State1};
 				_ ->
 					{noreply, State1}
 			end
@@ -419,23 +419,10 @@ handle_cast(unleash, CellState) ->
 	CellState5 = runOutputs(CellState4, Elements1),
 	{noreply, CellState5}.
 
-terminate(no_more_connections, State) ->
-	?colortrace(killed_because_not_persistent),
-	terminate(normal, State);
 terminate(normal, State) ->
-	?trace(killed),
-	% TODO: remove from mewpile and 
-    Outputs = cellState:getOutputs(State),
-	UnOutputAll = 	fun(Output) ->
-						Connections = outputs:getConnections(Output),
-						SendUnOutput = 	fun(Connection) ->
-											unoutputAllElements(State, Output, Connection)
-										end,
-						lists:foreach(SendUnOutput, Connections)
-					end,
-	lists:foreach(UnOutputAll, Outputs),
+	% TODO: cleanup all output functions like intercept needs to kill its children
+	% TODO: maybe tell all informants to remove you
 	mewpile:remove(cellState:getBottom(State));
-	% tell all informants to remove you maybe?
 terminate(Reason, State) ->
 	Reason.
 
