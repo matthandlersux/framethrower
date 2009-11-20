@@ -322,6 +322,14 @@ getArity({function, {_NameOrTuple, Arity}}) -> Arity;
 getArity({lambda, {NumVars, _AST}}) -> NumVars;
 getArity({apply, { AST , Parameters}}) -> getArity(AST) - length(Parameters).
 
+%% 
+%% getTuple :: TupleAST -> ErlangTuple
+%% 		
+%%		
+
+getTuple({tuple, Tuple}) ->
+	Tuple.
+
 %%
 %% type :: AST -> Atom
 %%
