@@ -199,6 +199,10 @@ mewpilate(apply, AST) ->
 		mewpilate( ast:getApplyFunction(AST) ),
 		mewpilate( ast:getApplyParameters(AST) )
 	);
+mewpilate(tuple, AST) ->
+	ast:makeTuple(
+		list_to_tuple( mewpilate( tuple_to_list( ast:getTuple(AST) ) ) )
+	);
 mewpilate(cell, AST) ->
 	ast:makeCell(
 		ast:getCellName(AST),
