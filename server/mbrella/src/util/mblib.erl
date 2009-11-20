@@ -11,7 +11,7 @@
 %% ====================================================
 
 %% 
-%% scour :: (a -> Bool) -> (b -> b) -> c -> c
+%% scour :: (a -> Bool) -> (b -> c) -> d -> d
 %% 		basically will traverse any erlang term through lists and tuples to find elements that need to be converted
 %%			and will return the whole structure with conversions made... similar to my old traverse function
 %%		
