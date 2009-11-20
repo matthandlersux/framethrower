@@ -25,6 +25,12 @@ addEventExtra("event.posX", "Number", function (extra) {
 addEventExtra("event.posY", "Number", function (extra) {
 	return getPosition(extra.target)[1];
 });
+addEventExtra("event.targetWidth", "Number", function (extra) {
+	return extra.target.offsetWidth;
+});
+addEventExtra("event.targetHeight", "Number", function (extra) {
+	return extra.target.offsetHeight;
+});
 
 addEventExtra("event.mouseX", "Number", function (extra) {
 	return extra.mouseCurrentPos[0];
