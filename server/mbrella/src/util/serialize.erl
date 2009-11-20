@@ -197,7 +197,7 @@ respawnCell(CellPointer, ETS) ->
 					CellState1 = dataToCell(CellState),
 					CellState2 = cellState:removeSessionOutputs(CellState1),
 					CellState3 = respawnCellState(CellState2, ETS),
-					% remove session pointers
+					% TODO: LOOK FOR SELF REFERENCES OR MAKE RESPAWN CELL STATE SMARTER
 					cell:respawn(CellState3);
 				[] ->
 					exit(cell_not_in_serialized_data)
