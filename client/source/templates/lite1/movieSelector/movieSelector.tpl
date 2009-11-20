@@ -1,5 +1,5 @@
 template () {
-	<div style-padding="40">
+	<div style-padding="40" class="zForeground" style-position="absolute">
 		<f:each allMovies as movie>
 			
 			<div style-float="left" style-width="120" style-height="180" style-opacity="{reactiveIfThen (isOpen movie) 0.5 1}" style-cursor="pointer">

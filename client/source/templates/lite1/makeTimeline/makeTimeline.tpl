@@ -202,9 +202,7 @@ template (movie::Movie)::Timeline {
 
 				
 				// The part that scrolls
-				<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}" style-height="100%">
-
-					
+				<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}" style-height="{mainTimelineHeight}">
 					<f:on mousemove>
 						set mouseTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor),
 						extract scrubbingS as _ {
@@ -214,7 +212,8 @@ template (movie::Movie)::Timeline {
 					<f:on mouseout>
 						unset mouseTimeS
 					</f:on>
-
+					
+					// Chapter backgrounds, mouse time
 					<div style-position="absolute" style-top="0" style-left="0" style-width="100%" style-height="100%" style-opacity="0.5">
 						<f:on mousedown>
 							set scrubbingS null,
@@ -232,7 +231,9 @@ template (movie::Movie)::Timeline {
 								}							
 							}
 						</f:on>
-						<f:call>chapterImages mainTimelineHeight (Movie:chapters movie)</f:call>
+						<div style-position="absolute" class="zBackground" style-width="100%" style-height="100%">
+							<f:call>chapterImages mainTimelineHeight (Movie:chapters movie)</f:call>
+						</div>
 						
 						// Mouse time
 						<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
@@ -244,7 +245,7 @@ template (movie::Movie)::Timeline {
 					
 					
 					// Selected time
-					<div style-position="absolute" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
+					<div class="zForeground" style-position="absolute" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
 						// draggable sliders
 						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa" style-cursor="w-resize">
 							<f:call>
@@ -289,7 +290,7 @@ template (movie::Movie)::Timeline {
 					</div>
 					
 					// Preview time
-					<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-height="100%">
+					<div class="zForeground" style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-height="100%">
 						<div style-position="absolute" style-left="-1" style-top="0" style-width="1" style-height="100%" style-border-left="3px solid rgba(255,153,0,1.0)" />
 						//<div style-position="absolute" style-left="-6" style-width="12" style-height="12" style-background-color="#999" style-top="-24" />
 						
@@ -317,7 +318,7 @@ template (movie::Movie)::Timeline {
 						// </div>
 						<f:each movie_linksFromNotes movie as timeLink>
 							<f:each timeRange_range (timeLink_target timeLink) as range>
-								<div style-position="absolute" class="timeline-region" style-left="{makePercent (divide (range_start range) movieDuration)}" style-width="{makePercent (divide (range_duration range) movieDuration)}" style-top="0">
+								<div class="zForeground" style-position="absolute" class="timeline-region" style-left="{makePercent (divide (range_start range) movieDuration)}" style-width="{makePercent (divide (range_duration range) movieDuration)}" style-top="0">
 									<div class="inside">
 										<f:on click>
 											note = textRange_note (timeLink_source timeLink),
@@ -335,7 +336,7 @@ template (movie::Movie)::Timeline {
 
 					
 					// Add my own notes
-					<div style-position="absolute" style-top="20" style-width="100%">
+					<div class="zForeground" style-position="absolute" style-top="20" style-width="100%">
 						<div style-position="absolute" class="timeline-region mine" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-top="0">
 							<div class="inside">
 								+
@@ -353,11 +354,11 @@ template (movie::Movie)::Timeline {
 
 				// Scrollbar
 				<div style-position="absolute" style-bottom="0" style-width="100%" style-height="{scrollbarHeight}" class="scrollbar">
-					<div style-position="absolute" style-top="0" style-left="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
+					<div class="zForeground" style-position="absolute" style-top="0" style-left="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
 						L
 						<f:on click>notYetImplemented</f:on>
 					</div>
-					<div style-position="absolute" style-top="0" style-right="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
+					<div class="zForeground" style-position="absolute" style-top="0" style-right="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
 						R
 						<f:on click>notYetImplemented</f:on>
 					</div>
@@ -374,7 +375,7 @@ template (movie::Movie)::Timeline {
 								setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
 							</f:on>
 
-							<div style-position="absolute" style-left="{makePercent left}" style-width="{makePercent width}" style-height="100%" class="scroller">
+							<div class="zForeground" style-position="absolute" style-left="{makePercent left}" style-width="{makePercent width}" style-height="100%" class="scroller">
 								<f:call>
 									setScroll = action (start::Number, x::Number) {
 										desiredLeft = plus start (divide x scrollbarWidth),

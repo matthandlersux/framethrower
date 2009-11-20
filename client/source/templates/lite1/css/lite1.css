@@ -3,6 +3,9 @@
 @import url(body.css);
 @import url(typography.css);
 
+@import url(timeline.css);
+@import url(zIndex.css);
+
 
 .separator {
 	background-color: #666;
@@ -21,42 +24,7 @@
 	display: block;
 }
 
-.timeline .titlebar {
-	display: none;
-	background-color: #334;
-	color: #fff;
-	padding: 3px;
-/*	border: 1px solid #222;
-	border-size: 1px 1px 0px 0px;*/
-}
-.timeline:hover .titlebar {
-	display: block;
-}
 
-.timeline-container {
-	background-color: #111;
-/*	background-image: url(images/timeline-background.png);*/
-}
-
-.chapter {
-	border-right: 1px solid #000;
-	background-color: #666;
-}
-
-.chapter-inside {
-	background-color: #333;
-}
-
-.scrollbar {
-	background-color: #111;
-}
-.scrollbar .button {
-	background-color: #333;
-}
-.scrollbar .scroller {
-	background-color: #22222c;
-	-moz-border-radius: 4px;
-}
 
 
 .timeline-region {

@@ -17,6 +17,8 @@ function (src::String, playTime::Unit Number, stopTime::Unit Number, play::Unit 
 		setAtt("src", "flashplayer/main.swf");
 		setAtt("quality", "high");
 		
+		setAtt("wmode", "opaque");
+		
 		setAtt("flashvars", "server="+server+"&source=moulinrouge");
 		
 		setAtt("type", "application/x-shockwave-flash");

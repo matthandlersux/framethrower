@@ -40,11 +40,13 @@ template () {
 	},
 	
 	
-	notePops = state(Map Ord NotePop),
+	notePops = state(Map Ord Note),
 	
 	openNote = action (note::Note) {
-		nextOrd = fetch (getNextOrd notePops),
-		addEntry notePops nextOrd (displayNote note)
+		extract reactiveNot (isNoteOpen note) as _ {
+			nextOrd = fetch (getNextOrd notePops),
+			addEntry notePops nextOrd note			
+		}
 	},
 	
 	
@@ -54,6 +56,8 @@ template () {
 	
 	openedMovies = mapSet timeline_movie (values timelines),
 	isOpen = movie -> isNotEmpty (filter (reactiveEqual movie) openedMovies),
+	openedNotes = values notePops,
+	isNoteOpen = note -> isNotEmpty (filter (reactiveEqual note) openedNotes),
 	
 	// =============
 	// UI Constants
@@ -95,6 +99,11 @@ template () {
 		// 	</div>
 		// </f:each>
 		
+		<div class="zLines" style-background-color="rgba(0,255,0,0.2)" style-position="absolute" style-left="0" style-top="0" style-width="100%" style-height="100%">
+		
+		</div>
+		
+		
 		// Workspace area
 		<div style-position="absolute" style-left="0" style-top="0" style-width="{mainScreenWidth}" style-height="{mainScreenHeight}">
 			<f:each fullscreenVideo as xmlp>
@@ -113,7 +122,7 @@ template () {
 			// </div>
 			
 			<div style-position="absolute" style-bottom="16">
-				<f:each notePops as index, notePop>
+				<f:each notePops as index, note>
 					<div style-width="260" style-height="190" style-margin="16" style-float="left" style-background-color="#333">
 						<div style-text-align="right">
 							<span class="button">
@@ -123,7 +132,7 @@ template () {
 								</f:on>
 							</span>
 						</div>
-						<f:call>notePop</f:call>
+						<f:call>displayNote note</f:call>
 					</div>
 				</f:each>
 			</div>
@@ -139,7 +148,7 @@ template () {
 			<div style-clear="both">
 				<f:each timelines as index, timeline>
 					<f:wrapper>
-						<div style-width="{screenWidth}" style-height="4" class="separator" />
+						<div style-position="relative" style-width="{screenWidth}" style-height="4" class="separator zBackground" />
 						<div style-position="relative" style-width="{screenWidth}" style-height="{timelineHeight}" class="timeline">
 							<f:call>timeline_xmlp timeline</f:call>
 							// Movie Title
