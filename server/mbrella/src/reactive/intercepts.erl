@@ -156,7 +156,7 @@ invert(SelfPointer, InvertState, From, Element) ->
 			case dict:find(Word, InvertState) of
 				error ->
 					% need to be make linked cell
-					SetOfDocsForWord = cell:makeCell(set),
+					SetOfDocsForWord = cell:makePersistentCell(set),
 					% no informants needed
 					cell:sendElements(SetOfDocsForWord, SelfPointer, [cellElements:createAdd(Document)]),
 					% could also do cell:addValues, not sure if it matters
