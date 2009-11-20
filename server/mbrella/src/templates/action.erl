@@ -242,7 +242,7 @@ executeAction(ActionClosure) ->
 				Type = struct:get_value(<<"type">>, Action),
 				case type:isReactive(Type) of
 					true -> 
-						ast:makeCell(cell:makeCell(type:outerType(Type)));
+						ast:makeCell(cell:makePersistentCell(type:outerType(Type)));
 					false -> 
 						Prop = struct:get_value(<<"prop">>, Action),
 						Prop2 = lists:map(fun({PropName,PropValue}) ->

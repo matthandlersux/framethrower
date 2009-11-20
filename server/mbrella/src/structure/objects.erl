@@ -209,7 +209,7 @@ makeReactiveProps(Props, ClassProps) ->
 				false -> 
 					case type:isReactive(PropType) of
 						true ->
-							{PropName, cell:makeCell(type:outerType(PropType))};
+							{PropName, cell:makePersistentCell(type:outerType(PropType))};
 						false ->
 							throw(["No Value for Object Field", PropName])
 					end;
