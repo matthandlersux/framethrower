@@ -23,6 +23,11 @@
 
 .timeline .titlebar {
 	display: none;
+	background-color: #334;
+	color: #fff;
+	padding: 3px;
+/*	border: 1px solid #222;
+	border-size: 1px 1px 0px 0px;*/
 }
 .timeline:hover .titlebar {
 	display: block;
@@ -68,9 +73,18 @@
 	border: 1px solid #36c;
 	background-color: rgba(51, 102, 204, 0.7);
 	cursor: pointer;
-	
+	text-align: center;
 }
 
 .timeline-region .inside:hover {
 	background-color: rgba(51, 102, 204, 1.0);
+}
+
+.mine .inside {
+	background-color: rgba(204,0,0,0.7);
+	border-color: rgba(204,0,0,1.0);
+	border-style: dashed;
+}
+.mine .inside:hover {
+	background-color: rgba(204,0,0,1.0);
 }

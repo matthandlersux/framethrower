@@ -1,4 +1,4 @@
-moulinRougeChapters = function ()::List (TimeRange, String) {
+moulinRougeChapters = function ()::List (Range, String) {
 	
 	var timestamps = [
 		{
@@ -168,10 +168,14 @@ moulinRouge = state {
 },
 
 
-movies = state {
-	movies <- create(Set Movie),
-	add movies moulinRouge,
-	return movies
+
+
+initDummyData = action ()::Void {
+	add allMovies moulinRouge,
+	myFirstNote <- createNote,
+	note_setText myFirstNote "This is my first note",
+	wholeThing <- createTextRange myFirstNote,
+	tr <- createTimeRange moulinRouge,
+	timeRange_setRange tr (makeRange 1000 100),
+	linkTime (makeTimeLink wholeThing tr)
 }
-
-

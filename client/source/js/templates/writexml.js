@@ -458,10 +458,9 @@ function xmlToDOM(xml, env, context, lastElement) {
 		return xmlToDOM(xmlp.xml, xmlp.env, context, lastElement);
 	} else if (xml.kind === "on") {
 		var node = createEl("f:on");
-		if (xml.event === "init" || xml.event === "domMove") {
+		if (xml.event === "init") {
 			setTimeout(function () {
-				extraEnv = makeEventExtrasEnv(env, {target:lastElement});
-				var action = makeClosure(xml.action, extraEnv);
+				var action = makeClosure(xml.action, env);
 				executeAction(action, function() {session.flush();});
 			}, 0);
 			return {node: node, cleanup: null};
@@ -506,6 +505,13 @@ function xmlToDOM(xml, env, context, lastElement) {
 				} else {
 					lastElement.appendChild(fonNode);
 					attachEventStyle(lastElement, eventName);
+					if (eventName === "domMove") {
+						setTimeout(function () {
+							extraEnv = makeEventExtrasEnv(env, {target:lastElement});
+							var action = makeClosure(xml.action, extraEnv);
+							executeAction(action, function() {session.flush();});
+						}, 0);
+					}
 				}
 				function cleanupOn() {
 					lastElement.removeChild(fonNode);

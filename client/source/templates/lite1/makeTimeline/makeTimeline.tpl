@@ -116,6 +116,10 @@ template (movie::Movie)::Timeline {
 	timelineShownStart = divide scrollAmount zoomFactor,
 	timelineShownDuration = divide mainTimelineWidth zoomFactor,
 	
+	selectedTimeStartPercent = defaultValue offscreen (unfetch (makePercent (divide selectedTimeStart movieDuration))),
+	selectedTimeDurationPercent = makePercent (divide selectedTimeDuration movieDuration),
+	
+	
 	
 	
 	
@@ -147,12 +151,12 @@ template (movie::Movie)::Timeline {
 	
 	
 	
-	jumpTo = action (timeRange::TimeRange) {
+	jumpTo = action (timeRange::Range) {
 		padding = 0.4,
 		maxZoomRatio = 25, // this ensures that the jumped to range is sufficiently zoomed in
 		
-		jumpStart = timeRange_start timeRange,
-		jumpDuration = timeRange_duration timeRange,
+		jumpStart = range_start timeRange,
+		jumpDuration = range_duration timeRange,
 		
 		
 		set selectedTimeStartS jumpStart,
@@ -199,22 +203,7 @@ template (movie::Movie)::Timeline {
 				
 				// The part that scrolls
 				<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}" style-height="100%">
-					<f:on mousedown>
-						set scrubbingS null,
-						set playingS 0,
-						set previewTimeS mouseTime,
-						unset selectedTimeStartS,
-						unset selectedTimeDurationS
-					</f:on>
-					<f:on globalmouseup>
-						extract scrubbingS as _ {
-							unset scrubbingS,
-							extract reactiveNot selectedTimeStartS as _ {
-								set selectedTimeStartS previewTime,
-								set selectedTimeDurationS 0							
-							}							
-						}
-					</f:on>
+
 					
 					<f:on mousemove>
 						set mouseTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor),
@@ -226,22 +215,38 @@ template (movie::Movie)::Timeline {
 						unset mouseTimeS
 					</f:on>
 
-					<div style-position="absolute" style-top="0" style-left="0" style-width="100%" style-opacity="0.5">
+					<div style-position="absolute" style-top="0" style-left="0" style-width="100%" style-height="100%" style-opacity="0.5">
+						<f:on mousedown>
+							set scrubbingS null,
+							set playingS 0,
+							set previewTimeS mouseTime,
+							unset selectedTimeStartS,
+							unset selectedTimeDurationS
+						</f:on>
+						<f:on globalmouseup>
+							extract scrubbingS as _ {
+								unset scrubbingS,
+								extract reactiveNot selectedTimeStartS as _ {
+									set selectedTimeStartS previewTime,
+									set selectedTimeDurationS 0							
+								}							
+							}
+						</f:on>
 						<f:call>chapterImages mainTimelineHeight (Movie:chapters movie)</f:call>
+						
+						// Mouse time
+						<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
+						
 					</div>
 
 					// Ruler
 					//<f:call>ruler</f:call>
 					
-
 					
-					// Mouse time
-					<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
-
 					// Selected time
-					<div style-position="absolute" style-left="{defaultValue offscreen (unfetch (makePercent (divide selectedTimeStart movieDuration)))}" style-width="{makePercent (divide selectedTimeDuration movieDuration)}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
+					<div style-position="absolute" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
 						// draggable sliders
-						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
+						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa" style-cursor="w-resize">
 							<f:call>
 								oldTimeS = state(Unit Number),
 								setSelected = action (start::Number, offsetX::Number) {
@@ -251,7 +256,8 @@ template (movie::Movie)::Timeline {
 									time = plus start (divide offsetX zoomFactor),
 									setSelectedTimeLeft time,
 									set playingS 0,
-									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration))
+									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
+									unset mouseTimeS
 								},
 								doneAction = action () {
 									set previewTimeS (fetch oldTimeS),
@@ -260,7 +266,7 @@ template (movie::Movie)::Timeline {
 								dragger (unfetch selectedTimeStart) setSelected doneAction
 							</f:call>
 						</div>
-						<div style-position="absolute" style-right="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa">
+						<div style-position="absolute" style-right="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa" style-cursor="e-resize">
 							<f:call>
 								oldTimeS = state(Unit Number),
 								setSelected = action (start::Number, offsetX::Number) {
@@ -270,7 +276,8 @@ template (movie::Movie)::Timeline {
 									time = plus start (divide offsetX zoomFactor),
 									setSelectedTimeRight time,
 									set playingS 0,
-									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration))
+									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
+									unset mouseTimeS
 								},
 								doneAction = action () {
 									set previewTimeS (fetch oldTimeS),
@@ -280,7 +287,6 @@ template (movie::Movie)::Timeline {
 							</f:call>
 						</div>
 					</div>
-				
 					
 					// Preview time
 					<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-height="100%">
@@ -289,15 +295,53 @@ template (movie::Movie)::Timeline {
 						
 					</div>
 					
+					
+					// Notes (time region bubbles)
+					<div style-position="absolute" style-top="40" style-width="100%">
+						// <div style-position="absolute" class="timeline-region" style-left="5%" style-width="5%" style-top="0">
+						// 	<div class="inside" />
+						// 	<f:call>
+						// 		px = state(Unit Number),
+						// 		py = state(Unit Number),
+						// 		<div>
+						// 			<f:on domMove>
+						// 				set px event.posX,
+						// 				set py event.posY
+						// 			</f:on>
+						// 			{px}, {py}
+						// 		</div>
+						// 	</f:call>
+						// </div>
+						// <div style-position="absolute" class="timeline-region" style-left="12%" style-width="0%" style-top="0">
+						// 	<div class="inside" />
+						// </div>
+						<f:each movie_linksFromNotes movie as timeLink>
+							<f:each timeRange_range (timeLink_target timeLink) as range>
+								<div style-position="absolute" class="timeline-region" style-left="{makePercent (divide (range_start range) movieDuration)}" style-width="{makePercent (divide (range_duration range) movieDuration)}" style-top="0">
+									<div class="inside">
+										<f:on click>
+											note = textRange_note (timeLink_source timeLink),
+											openNote note
+										</f:on>
+									</div>
+								</div>
+							</f:each>
+						</f:each>
+					</div>
+
+
+				
+					
 
 					
+					// Add my own notes
+					<div style-position="absolute" style-top="20" style-width="100%">
+						<div style-position="absolute" class="timeline-region mine" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-top="0">
+							<div class="inside">+</div>
+						</div>
+					</div>
 					
-					<div style-position="absolute" class="timeline-region" style-left="5%" style-width="5%" style-top="20">
-						<div class="inside" />
-					</div>
-					<div style-position="absolute" class="timeline-region" style-left="12%" style-width="0%" style-top="20">
-						<div class="inside" />
-					</div>
+
 
 					
 					
