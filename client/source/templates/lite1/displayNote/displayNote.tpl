@@ -20,6 +20,7 @@ template (note::Note) {
 							<f:on click>
 								jumpToInMovie movie range
 							</f:on>
+							<f:call>svgEvents (timeLink_target timeLink) false</f:call>
 						</div>
 					</f:each>
 				</div>

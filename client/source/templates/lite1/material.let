@@ -170,12 +170,24 @@ moulinRouge = state {
 
 
 
-initDummyData = action ()::Void {
+createSimpleNoteWithLink = action (movie::Movie, start::Number, duration::Number)::Note {
+	note <- createNote,
+	note_setText note "this will be editable soon...",
+	wholeNote <- createTextRange note,
+	timeRange <- createTimeRange movie,
+	timeRange_setRange timeRange (makeRange start duration),
+	linkTime (makeTimeLink wholeNote timeRange),
+	return note
+},
+
+
+initDummyData = action () {
 	add allMovies moulinRouge,
-	myFirstNote <- createNote,
-	note_setText myFirstNote "This is my first note",
-	wholeThing <- createTextRange myFirstNote,
-	tr <- createTimeRange moulinRouge,
-	timeRange_setRange tr (makeRange 1000 100),
-	linkTime (makeTimeLink wholeThing tr)
+	createSimpleNoteWithLink moulinRouge 1000 100
+	// myFirstNote <- createNote,
+	// note_setText myFirstNote "This is my first note",
+	// wholeThing <- createTextRange myFirstNote,
+	// tr <- createTimeRange moulinRouge,
+	// timeRange_setRange tr (makeRange 1000 100),
+	// linkTime (makeTimeLink wholeThing tr)
 }
