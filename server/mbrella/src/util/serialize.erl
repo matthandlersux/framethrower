@@ -60,7 +60,8 @@ serialize() ->
 %%		
 
 unserialize() ->
-	gen_server:cast(?MODULE, unserialize).
+	?trace("Calling Unserialize"),
+	gen_server:call(?MODULE, unserialize, 15000).
 
 %% ====================================================================
 %% Server functions
@@ -87,18 +88,7 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_call(Msg, From, State) ->
-    Reply = ok,
-    {reply, Reply, State}.
-
-%% --------------------------------------------------------------------
-%% Function: handle_cast/2
-%% Description: Handling cast messages
-%% Returns: {noreply, State}          |
-%%          {noreply, State, Timeout} |
-%%          {stop, Reason, State}            (terminate/2 is called)
-%% --------------------------------------------------------------------
-handle_cast(unserialize, State) ->
+handle_call(unserialize, _From, State) ->
 	case ets:file2tab(getFilename(State)) of
 		{error, Reason} ->
 			?colortrace({serialize_file_error, Reason}),
@@ -120,9 +110,20 @@ handle_cast(unserialize, State) ->
 			cellStore:setCounter(CellMax),
 
 			ets:delete(ETS),
-			{noreply, State}
+			{reply, ok, State}
 	end;
-	
+handle_call(Msg, From, State) ->
+    Reply = ok,
+    {reply, Reply, State}.
+
+
+%% --------------------------------------------------------------------
+%% Function: handle_cast/2
+%% Description: Handling cast messages
+%% Returns: {noreply, State}          |
+%%          {noreply, State, Timeout} |
+%%          {stop, Reason, State}            (terminate/2 is called)
+%% --------------------------------------------------------------------
 handle_cast(serialize, State) ->
 	ETS = ets:new(serialize, [public]),
 	
@@ -161,6 +162,7 @@ handle_cast(Msg, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_info(Info, State) ->
+	?trace(Info),
     {noreply, State}.
 
 %% --------------------------------------------------------------------
