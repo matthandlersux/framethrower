@@ -97,24 +97,6 @@ var semantics = function(){
 		return hyphenatedString.replace(/\-./g, cnvrt);
 	}
 
-	// function printObj(obj) {
-	// 	function helper(obj) {
-	// 		var output = "";
-	// 		if(objectLike(obj)) {
-	// 			output += "{";
-	// 			forEach(obj, function(value, name) {
-	// 				output += name + ":";
-	// 				output += helper(value) + ",";
-	// 			});
-	// 			output += "}";
-	// 		} else {
-	// 			output += obj;
-	// 		}
-	// 		return output;
-	// 	}
-	// 	print(helper(obj));
-	// }
-
 
 	// ====================================================
 	// Make Functions
@@ -205,7 +187,6 @@ var semantics = function(){
 		}
 		return arglist;
 	}
-
 
 	function makeIfblock (node) {
 		var wrappedTemplate = {
@@ -360,7 +341,6 @@ var semantics = function(){
 		};
 	}
 	
-	
 	function makeLineTemplate(node, isBlock) {
 		var params = makeList(node.arglist, 'arglist', 'variable');
 		var lets = makeListObject(node.fullletlist.letlist, 'letlist', 'let', getLetKeyVal);
@@ -428,8 +408,7 @@ var semantics = function(){
 					type:node.type
 				}
 			};
-			//state(TYPE, EXPR) sugar
-			if(def(node.expr)) {
+			if(def(node.expr)) { //state(TYPE, EXPR) sugar
 				var actlist = {
 					actlist: {
 						actline: {
@@ -449,13 +428,13 @@ var semantics = function(){
 					expr: {exprcode:"return x"}
 				};
 				fullactlist = {actlist:actlist, action:action, type: node.type};
-			} else {
+			} else { //state(TYPE, {Prop:Expr...}) sugar
+				if (def(node.proplist)) {
+					createAction.create.proplist = node.proplist;
+				}
 				fullactlist = {actlist:{}, action:createAction, type: node.type};
 			}
 			addDebugRef(fullactlist, node.debugRef);
-		} else if (def(node.fullactlist)) {
-			fullactlist = node.fullactlist;
-			fullactlist.type = "a0";
 		}
 
 		var lineTemplate = makeActionTemplate({arglist:{}, fullactlist:fullactlist, debugRef: node.debugRef, type:fullactlist.type});
@@ -643,6 +622,54 @@ var semantics = function(){
 		});
 		return result;
 	}
+
+	function makeIncludeblock (node) {
+		var lets = makeListObject(node.letlist, 'letlist', 'let', getLetKeyVal);
+		var newtypes = makeListObject(node.letlist, 'letlist', 'newtype', getNewtypeKeyVal);
+		if (def(node.let)) {
+			var lastLet = getLetKeyVal(node.let);
+			lets[lastLet.key] = lastLet.val;
+		}
+		if (def(node.newtype)) {
+			var lastNewtype = getNewtypeKeyVal(node.newtype);
+			newtypes[lastNewtype.key] = lastNewtype.val;
+		}
+		return {let: lets, newtype: newtypes};
+	}
+
+
+	function makeCreate (node) {
+		var getKeyVal = function(node) {
+			return {
+				key: node.identifier,
+				val: parse(node.expr.exprcode)
+			};
+		};
+		var proplist = makeListObject(node.proplist, 'proplist', 'prop', getKeyVal);
+		return {
+			kind: "actionCreate",
+			type: parseType(node.type),
+			prop: proplist,
+			debugRef: node.debugRef
+		};
+	}
+
+	function makeExtract (node) {
+		var wrappedActiontpl = {
+			arglist: makeAskeyval(node.askeyval),
+			fullactlist: node.fullactlist,
+			debugRef: node.debugRef
+		};
+
+		var lineTemplate = makeActionTemplate(wrappedActiontpl);
+		return {
+			kind: "extract",
+			select: parse(node.expr.exprcode),
+			action: lineTemplate,
+			debugRef: node.debugRef
+		};
+	}
+
 	
 	function makeLine (node) {
 		var name, value;
@@ -655,38 +682,6 @@ var semantics = function(){
 			return false;
 		});
 
-
-		function makeCreate (node) {
-			var getKeyVal = function(node) {
-				return {
-					key: node.identifier,
-					val: parse(node.expr.exprcode)
-				};
-			};
-			var proplist = makeListObject(node.proplist, 'proplist', 'prop', getKeyVal);
-			return {
-				kind: "actionCreate",
-				type: parseType(node.type),
-				prop: proplist,
-				debugRef: node.debugRef
-			};
-		}
-
-		function makeExtract (node) {
-			var wrappedActiontpl = {
-				arglist: makeAskeyval(node.askeyval),
-				fullactlist: node.fullactlist,
-				debugRef: node.debugRef
-			};
-
-			var lineTemplate = makeActionTemplate(wrappedActiontpl);
-			return {
-				kind: "extract",
-				select: parse(node.expr.exprcode),
-				action: lineTemplate,
-				debugRef: node.debugRef
-			};
-		}
 		switch (name) {
 			case 'function':
 				var lineFunc = makeFunction(value);
@@ -729,68 +724,60 @@ var semantics = function(){
 		}
 	}
 
-	function lineBreakCount(str){
-		/* counts \n */
-		var match = str.match(/\n/gi);
-		if (match !== null) {
-			return match.length;
-		} else {
-			return 0;
+	// ====================================================
+	// PreProcessing Functions (whitespace, line counting)
+	// ====================================================
+
+	function preProcessTree(tree) {
+		function lineBreakCount(str){
+			/* counts \n */
+			var match = str.match(/\n/gi);
+			if (match !== null) {
+				return match.length;
+			} else {
+				return 0;
+			}
 		}
-	}
-
-	var lineNum;
-
-	function handleWhiteSpace(tree) {
+		
 		function stripSpaces(string) {
 			string = string.replace(/\/\/[^\n]*\n/g, "");
 			return string.replace(/^\s+|\s+$/g,"");
 		}
-		
-		var startLine = lineNum;
-		forEach(tree, function(value, nodeName) {
-			function startsWith (string) {
-				return nodeName.indexOf(string) == 0;
-			}
-			
-			if(objectLike(value)) {
-				handleWhiteSpace(value);
-			} else {
-				lineNum += lineBreakCount(value);
-				if (nodeName === "string") {
-					value = value.replace(/\"/g, "");
-					value = value.replace(/\n/g, "\\n");
+
+		var lineNum = 1;
+
+		function handleWhiteSpace(tree) {
+			var startLine = lineNum;
+			forEach(tree, function(value, nodeName) {
+				function startsWith (string) {
+					return nodeName.indexOf(string) == 0;
 				}
-				tree[nodeName] = stripSpaces(value);
-			}
-		});
-		tree.debugRef = {lineNumber: startLine, file: filename};
-	}
-	
-	function makeIncludeblock (node) {
-		var lets = makeListObject(node.letlist, 'letlist', 'let', getLetKeyVal);
-		var newtypes = makeListObject(node.letlist, 'letlist', 'newtype', getNewtypeKeyVal);
-		if (def(node.let)) {
-			var lastLet = getLetKeyVal(node.let);
-			lets[lastLet.key] = lastLet.val;
+
+				if(objectLike(value)) {
+					handleWhiteSpace(value);
+				} else {
+					lineNum += lineBreakCount(value);
+					if (nodeName === "string") {
+						value = value.replace(/\"/g, "");
+						value = value.replace(/\n/g, "\\n");
+					}
+					tree[nodeName] = stripSpaces(value);
+				}
+			});
+			tree.debugRef = {lineNumber: startLine, file: filename};
 		}
-		if (def(node.newtype)) {
-			var lastNewtype = getNewtypeKeyVal(node.newtype);
-			newtypes[lastNewtype.key] = lastNewtype.val;
-		}
-		return {let: lets, newtype: newtypes};
+		
+		handleWhiteSpace(tree);
 	}
-	
 	
 	return {
 		processTree: function(tree, inFilename) {
 			filename = inFilename;
-			lineNum = 1;
-			handleWhiteSpace(tree);
-			if (def(tree.line)) {
+			preProcessTree(tree);
+			if (def(tree.line)) { //tpl files have top level Line
 				var ret = makeLine(tree.line);
 				return ret;
-			} else if (def(tree.includeblock)) {
+			} else if (def(tree.includeblock)) { //let files have top level includeblock
 				var ret = makeIncludeblock(tree.includeblock);
 				return ret;
 			}
