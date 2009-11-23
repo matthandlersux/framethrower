@@ -226,9 +226,9 @@ template () {
 			// 	</f:on>
 			// </div>
 			
-			<div style-position="absolute" style-bottom="16">
+			<div style-position="absolute" style-bottom="16" style-right="0">
 				<f:each notePops as index, note>
-					<div style-position="relative" style-width="260" style-height="190" style-margin="16" style-float="left">
+					<div style-position="relative" style-width="260" style-height="190" style-margin="16" style-float="right">
 						<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground" style-background-color="#333" />
 						<div style-text-align="right">
 							<span class="button">
