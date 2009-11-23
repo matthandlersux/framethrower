@@ -7,7 +7,7 @@
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export ([
-	respawn/1, makeCell/0, makeCell/1, makeLinkedCell/0, makeLinkedCell/1, makeCellLeashed/0, 
+	respawn/1, makeCell/0, makePersistentCell/1, makeCell/1, makeLinkedCell/0, makeLinkedCell/1, makeCellLeashed/0, 
 		makeCellLeashed/1, makeLinkedCellLeashed/0, makeLinkedCellLeashed/1,
 	addValue/2, addValues/2, removeValue/2, removeValues/2,
 	sendElements/2, sendElements/3,
@@ -44,6 +44,12 @@
 respawn(State) ->
 	Name = cellState:getName(State),
 	{ok, Pid} = gen_server:start(?MODULE, [{respawn, State}], []),
+	cellStore:store(Name, Pid),
+	cellPointer:new(Name, Pid).
+
+makePersistentCell(CellType) ->
+	Name = cellStore:getName(),
+	{ok, Pid} = gen_server:start(?MODULE, [CellType, {name, Name}, {persistent, true}], []),
 	cellStore:store(Name, Pid),
 	cellPointer:new(Name, Pid).
 
@@ -368,10 +374,20 @@ handle_cast({uninjectOutput, OutputTo, OutputFunction}, State) ->
 	Outputs = cellState:getOutputs(State),
 	Output = outputs:getOutput(OutputFunction, Outputs),
 	% NewState = unoutputAllElements(State, Output, OutputTo),
-	% TODO: check if no more outputs and DIE if flag is set
-	?colortrace(need_to_die_maybe),
 	State1 = cellState:uninjectOutput(State, OutputFunction, OutputTo),
-	{noreply, State1};
+	
+	% check if no more outputs and DIE if not persistent is set
+	case cellState:getFlag(State1, persistent) of
+		true ->
+			{noreply, State1};
+		false ->
+			case cellState:countConnections(State1) of
+				0 ->
+					{stop, normal, State1};
+				_ ->
+					{noreply, State1}
+			end
+	end;
 
 handle_cast({setFlag, Flag, Setting}, State) ->
 	{noreply, cellState:setFlag(State, Flag, Setting)};
@@ -404,19 +420,9 @@ handle_cast(unleash, CellState) ->
 	{noreply, CellState5}.
 
 terminate(normal, State) ->
-	?trace(killed),
-	% TODO: remove from mewpile and 
-    Outputs = cellState:getOutputs(State),
-	UnOutputAll = 	fun(Output) ->
-						Connections = outputs:getConnections(Output),
-						SendUnOutput = 	fun(Connection) ->
-											unoutputAllElements(State, Output, Connection)
-										end,
-						lists:foreach(SendUnOutput, Connections)
-					end,
-	lists:foreach(UnOutputAll, Outputs),
+	% TODO: cleanup all output functions like intercept needs to kill its children
+	% TODO: maybe tell all informants to remove you
 	mewpile:remove(cellState:getBottom(State));
-	% tell all informants to remove you maybe?
 terminate(Reason, State) ->
 	Reason.
 
