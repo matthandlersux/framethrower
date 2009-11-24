@@ -238,14 +238,6 @@ template () {
 				<f:call>movieSelector</f:call>
 			</f:each>
 			
-			// <div>
-			// 	Jump tester
-			// 	<f:on click>
-			// 		//openMovie moulinRouge
-			// 		jumpToInMovie moulinRouge (4000, 100)
-			// 	</f:on>
-			// </div>
-			
 			<div style-position="absolute" style-bottom="16" style-right="0">
 				<f:each notePops as index, note>
 					<div style-position="relative" style-width="260" style-height="190" style-margin="16" style-float="right">

@@ -7,6 +7,7 @@ template (movie::Movie)::Timeline {
 	timelineWidth = screenWidth,
 	movieDuration = Movie:duration movie,
 	aspectRatio = Movie:aspectRatio movie,
+	movieId = Movie:id movie,
 	
 	// UI Sizing Constants
 	scrollbarHeight = 16,
@@ -431,7 +432,7 @@ template (movie::Movie)::Timeline {
 			<div style-position="absolute" style-width="{videoWidth}" style-height="{videoHeight}" style-left="{divide (subtract mainScreenWidth videoWidth) 2}" style-top="{divide (subtract mainScreenHeight videoHeight) 2}">
 				
 				<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground">
-					<f:call>flashVideo "moulinRouge" previewTimeS (unfetch (plus selectedTimeStart selectedTimeDuration)) playingS</f:call>
+					<f:call>flashVideo movieId previewTimeS (unfetch (plus selectedTimeStart selectedTimeDuration)) playingS</f:call>
 				</div>
 				
 				<div class="button" style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">

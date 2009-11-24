@@ -1,6 +1,6 @@
 template (note::Note) {
 	getThumbnailURL = function (id::String, time::Number, width::Number, height::Number) {
-		return "url(http:/"+"/media.eversplosion.com/mrtesting/frame.php?time="+time+"&width="+width+"&height="+height+")";
+		return "url(http:/"+"/media.eversplosion.com/frame.php?id="+id+"&time="+time+"&width="+width+"&height="+height+")";
 	},
 	colorStyle = defaultColorStyle,
 	<div>
@@ -13,7 +13,7 @@ template (note::Note) {
 				aspectRatio = Movie:aspectRatio movie,
 				height = 50,
 				width = multiply height aspectRatio,
-				movieId = "moulinrouge",
+				movieId = Movie:id movie,
 				<div style-float="left">
 					<f:each timeRange_range (timeLink_target timeLink) as range>
 						startTime = range_start range,

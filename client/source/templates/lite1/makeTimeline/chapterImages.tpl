@@ -4,12 +4,12 @@ template (height::Number, items::List (Range, a)) {
 
 	width = round (multiply height aspectRatio),
 
-	getUrl = function (frames::List a, width::Number, height::Number)::String {
+	getUrl = function (frames::List a, width::Number, height::Number, id::String)::String {
 		var times = [];
 		forEach(frames.asArray, function (pair) {
 			times.push(pair.asArray[0].asArray[0]);
 		});
-		var url = "url(http:/"+"/media.eversplosion.com/mrtesting/frames.php?width="+width+"&height="+height+"&time=" + times.join(",") + ")";
+		var url = "url(http:/"+"/media.eversplosion.com/frames.php?id="+id+"&width="+width+"&height="+height+"&time=" + times.join(",") + ")";
 		return url;
 	},
 
@@ -24,7 +24,7 @@ template (height::Number, items::List (Range, a)) {
 		return "0px -"+(index*height)+"px";
 	},
 
-	url = getUrl items width height,
+	url = getUrl items width height movieId,
 
 	<f:each indexList items as cut>
 		index = fst cut,
