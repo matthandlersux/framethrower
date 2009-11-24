@@ -25,12 +25,13 @@
 }
 
 .scrollbar {
-	background-color: #111;
+/*	background-color: #111;*/
 }
 .scrollbar .button {
 	background-color: #333;
 }
 .scrollbar .scroller {
-	background-color: #22222c;
+	background-color: rgba(68, 68, 88, 0.8);
+/*	background-color: #22222c;*/
 	-moz-border-radius: 4px;
 }

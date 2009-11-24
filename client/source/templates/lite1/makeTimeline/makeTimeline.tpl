@@ -358,6 +358,7 @@ template (movie::Movie)::Timeline {
 
 				// Scrollbar
 				<div style-position="absolute" style-bottom="0" style-width="100%" style-height="{scrollbarHeight}" class="scrollbar">
+					<div class="zBackground" style-position="absolute" style-width="100%" style-height="100%" style-background-color="#111" />
 					<div class="zForeground" style-position="absolute" style-top="0" style-left="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
 						L
 						<f:on click>notYetImplemented</f:on>
@@ -404,12 +405,12 @@ template (movie::Movie)::Timeline {
 					</div>
 				</f:each>
 				
-				// full screen on opening if nothing is already full screened
-				<f:on init>
-					extract reactiveNot fullscreenVideo as _ {
-						set fullscreenVideo fullscreenXMLP
-					}
-				</f:on>
+				// // full screen on opening if nothing is already full screened
+				// <f:on init>
+				// 	extract reactiveNot fullscreenVideo as _ {
+				// 		set fullscreenVideo fullscreenXMLP
+				// 	}
+				// </f:on>
 				
 				// if full screened, remove full screen on close (that is, uninit)
 				<f:on uninit>
