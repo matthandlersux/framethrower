@@ -26,13 +26,14 @@ function initialize() {
 		}
 		
 		//add action in initMrg as <f:on init> in main template
-		var fon = {
-			kind: "on",
-			event: "init",
-			action: mainTemplate.initMrg
-		};
-		mainTemplate.output.xml.children.push(fon);
-		
+		if (mainTemplate.initMrg !== undefined) {
+			var fon = {
+				kind: "on",
+				event: "init",
+				action: mainTemplate.initMrg
+			};
+			mainTemplate.output.xml.children.push(fon);
+		}
 		initMainTemplate(base.env);
 		
 	} else {
