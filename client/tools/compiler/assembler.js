@@ -10,17 +10,6 @@ function include (bundles, extraFiles) {
 }
 include(["core"], ["tplparser.js", "semantics.js", "../typeAnalyzer/typeAnalyzer.js"]);
 
-function loadTextNow(url) {
-	try {
-		var req = new XMLHttpRequest();
-		req.open("GET", url, false);
-		req.send(null);
-	} catch (e) {
-		console.log("loadXMLNow failed: " + url);
-	}
-	return req.responseText;
-}
-
 function outputJSON(object, tabs) {
 	if(object !== undefined) {
 		if(arrayLike(object)) {
@@ -98,11 +87,16 @@ function getFolderName(folderPath) {
 function compileShared(folderPath) {
 	var folder = "../../source/templates/" + folderPath;
 	var folderName = getFolderName(folderPath);
-	
-	//process <template name>.shr file
-	var sharedJSON = compileFile(folderPath + "/shared/" + folderName + ".shr", true);
-	//process <template name>.mrg file
-	sharedJSON.initMrg = compileFile(folderPath + "/shared/" + folderName + ".mrg", false);
+	var sharedJSON = {};
+
+	try {
+		//process <template name>.shr file
+		sharedJSON = compileFile(folderPath + "/shared/" + folderName + ".shr", true);
+	} catch (e) {}
+	try {
+		//process <template name>.mrg file
+		sharedJSON.initMrg = compileFile(folderPath + "/shared/" + folderName + ".mrg", false);
+	} catch (e) {}
 	
 	return sharedJSON;
 }
@@ -116,14 +110,14 @@ function compileFolder(folderPath) {
 	var childFiles = listFiles(folder);
 	var childDirectories = listDirectories(folder);
 		
-	var mainJSON = {let: {}, newtype: {}};
+	var mainJSON = compileFile(folderPath + "/" + folderName + ".tpl", false);
 	forEach(childFiles, function(child) {
 		var nameWithExt = child;
 		var name = nameWithExt.substr(0, nameWithExt.length - 4);
 		var ext = nameWithExt.substr(nameWithExt.length - 3);
 		if (ext === "tpl") {
 			if(name == folderName) {
-				mainJSON = compileFile(folderPath + "/" + child, false);
+				//ignore, this is taken care of above
 			} else {
 				var let = compileFile(folderPath + "/" + child, false);
 				if (let !== undefined) {
@@ -157,12 +151,7 @@ function compileFile (filePath, isLetFile) {
 	var file = "../../source/templates/" + filePath;
 
 	var str;
-	try {
-		str = read(file);
-	} catch (e) {
-		str = loadTextNow("../../source/templates/" + filePath);
-		console.log("loadTextNow: " + str);
-	}
+	str = read(file);
 			
 	if (isLetFile) {
 		str = "includefile " + str;
@@ -293,7 +282,7 @@ try{
 		var totalCompiledJSON = compileFolder(arguments[0]);
 		totalCompiledJSON.sharedLet = sharedCompiledJSON.let;
 		totalCompiledJSON.initMrg = sharedCompiledJSON.initMrg;
-		mergeIntoObject(totalCompiledJSON.newtype, sharedCompiledJSON.newtype);
+		if (sharedCompiledJSON.newtype) mergeIntoObject(totalCompiledJSON.newtype, sharedCompiledJSON.newtype);
 		if(!GLOBAL_ERRORS) {
 			desugarNewtype(totalCompiledJSON);
 			desugarFetch(totalCompiledJSON);
