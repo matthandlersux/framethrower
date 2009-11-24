@@ -283,6 +283,11 @@ var stringify = memoizeF("name", function (expr) {
 		return "(\\ " + stringify(expr.expr) + ")";
 	// } else if (expr.kind === "exprVar") {
 	// 	return "/" + expr.deBruijn;
+	} else if (expr.kind === "tuple") {
+		var tupleArray = expr.asArray;
+		var arity = tupleArray.length;
+		var stringifiedArray = map(tupleArray, stringify);
+		return "(makeTuple" + arity + " " + stringifiedArray.join(" ") + ")";
 	} else {
 		var lit = unparseLiteral(expr);
 		if (lit !== undefined) {

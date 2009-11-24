@@ -283,12 +283,16 @@ function xmlToDOM(xml, env, context, lastElement) {
 			
 			pushCleanup(childNodeCleanup.cleanup);
 		});
+		
+		refreshWhenDone();
 	} else if (xml.kind === "textElement") {
 		node = createTextNode();
 		
 		pushCleanup(evaluateXMLInsert(xml.nodeValue, env, function (value) {
 			node.nodeValue = value;
 		}));
+		
+		refreshWhenDone();
 	} else if (xml.kind === "for-each") {
 		//var select = parseExpression(parse(xml.select), env);
 		var select = parseExpression(xml.select, env);
@@ -361,6 +365,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 					// put it before the one that comes immediately afterwards
 					wrapper.insertBefore(newNode.node, entries[place].node);
 				}
+				refreshWhenDone();
 
 				entries[keyString] = newNode;
 
@@ -370,6 +375,7 @@ function xmlToDOM(xml, env, context, lastElement) {
 						newNode.cleanup();
 					}
 					wrapper.removeChild(newNode.node);
+					refreshWhenDone();
 
 					delete entries[keyString];
 				};
@@ -616,3 +622,12 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 
 
 
+var refreshingWhenDone;
+function refreshWhenDone() {
+	if (!refreshingWhenDone) {
+		refreshingWhenDone = setTimeout(function () {
+			checkForDomMoves(document.body);
+			refreshingWhenDone = false;
+		}, 0);
+	}
+}
