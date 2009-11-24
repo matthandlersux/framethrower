@@ -28,15 +28,19 @@ function setNodeStyle(node, styleName, styleValue) {
 	node.style[styleName] = styleValue;
 	
 	if (styleNamesThatTakePx[styleName]) {
-		var xpathExp = "descendant-or-self::f:on[@event='domMove']";
-		
-		var fonEls = xpath(xpathExp, node);
-		forEach(fonEls, function (fonEl) {
-			extraEnv = makeEventExtrasEnv(fonEl.custom.env, {target: fonEl.parentNode});
-			var action = makeClosure(fonEl.custom.action, extraEnv);
-			executeAction(action, function() {session.flush();});
-		});
+		checkForDomMoves(node);
 	}
+}
+
+function checkForDomMoves(ancestorNode) {
+	var xpathExp = "descendant-or-self::f:on[@event='domMove']";
+	
+	var fonEls = xpath(xpathExp, ancestorNode);
+	forEach(fonEls, function (fonEl) {
+		extraEnv = makeEventExtrasEnv(fonEl.custom.env, {target: fonEl.parentNode});
+		var action = makeClosure(fonEl.custom.action, extraEnv);
+		executeAction(action, function() {session.flush();});
+	});
 }
 
 

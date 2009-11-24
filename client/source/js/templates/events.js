@@ -261,6 +261,7 @@ var initializeGlobalUICells = function () {
 		var screenHeight = window.innerHeight;
 		ui["screenWidth"].control.add(screenWidth);
 		ui["screenHeight"].control.add(screenHeight);
+		refreshWhenDone();
 	}
 	
 	function mousemove(e) {
