@@ -47,18 +47,16 @@ start_link() ->
 		Else -> Else
 	end.
 
-%%
-%% initJSON :: JSON -> ok
-%%
-initJSON(SharedLet) ->
+
+preprocessJSON(Struct) ->
 	%convert fields named 'expr' to be AST from JSON
-	SharedLet2 = mapFields(SharedLet, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
+	Struct2 = mapFields(Struct, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
 
 	%convert fields named 'select' to be AST from JSON
-	SharedLet3 = mapFields(SharedLet2, <<"select">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
+	Struct3 = mapFields(Struct2, <<"select">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
 		
 	%convert fields named 'prop' to be list of ASTs from JSON list of JSON expressions
-	SharedLet4 = mapFields(SharedLet3, <<"prop">>, fun(Prop) -> 
+	Struct4 = mapFields(Struct3, <<"prop">>, fun(Prop) -> 
 		lists:map(fun({PropName,PropValue}) ->
 			PropValue2 = convertJSONExpression(PropValue, dict:new()),
 			{binary_to_list(PropName), PropValue2}
@@ -66,9 +64,16 @@ initJSON(SharedLet) ->
 	end),
 	
 	%convert fields named 'type' to be TYPE instead of JSON
-	SharedLet5 = mapFields(SharedLet4, <<"type">>, fun(Type) -> convertJSONType(Type) end),
+	Struct5 = mapFields(Struct4, <<"type">>, fun(Type) -> convertJSONType(Type) end),
+	Struct5.
 	
-	{struct, Lets} = SharedLet5,
+
+%%
+%% initJSON :: JSON -> ok
+%%
+initJSON(SharedLet) ->
+	SharedLet2 = preprocessJSON(SharedLet),
+	{struct, Lets} = SharedLet2,
 	lists:map(fun(Let) ->
 		{LetName, LetStruct} = Let,
 		LetNameString = binary_to_list(LetName),
@@ -81,6 +86,15 @@ initJSON(SharedLet) ->
 %%
 performAction(Name, Params) ->
 	gen_server:call(?MODULE, {performAction, Name, Params}).
+
+%%
+%% applyMrg :: JSON -> ok
+%%
+applyMrg(Struct) ->
+	Struct2 = preprocessJSON(Struct),
+	gen_server:call(?MODULE, {applyMrg, Struct2}),
+	ok.
+
 
 %%
 %% getSharedLets :: [{String, AST}]
@@ -136,8 +150,34 @@ init([]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call({addLet, LetName, LetStruct}, _, Scope) ->
-	EvaluatedLine = evaluateLine(LetStruct, Scope),
-	scope:addLet(LetName, EvaluatedLine, Scope),
+	Kind = struct:get_value(<<"kind">>, LetStruct),
+	IsNew = case Kind of
+		<<"lineState">> ->
+			case scope:lookup(LetName, Scope) of
+				notfound -> % not currently in the scope so always add it
+					true;
+				Found -> % already in the scope, so only update if type has changed
+					ActionType = struct:get_value(<<"type">>, struct:get_value(<<"action">>, LetStruct)),
+					ActionOutputType = type:getApplyParam(ActionType),
+					case ast:type(Found) of
+						object ->
+							ObjectName = objects:getName(ast:toTerm(Found)),
+							StateType = objects:getClass(objectStore:lookup(ObjectName)),
+							not(ActionOutputType =:= StateType);
+						cell ->
+							StateOuterType = cell:elementsType(ast:toTerm(Found)),
+							not(type:outerType(ActionOutputType) =:= StateOuterType)
+					end
+			end;
+		_ -> % make any action or template or EXPR get updated each time
+			true
+	end,
+	case IsNew of
+		true ->
+			EvaluatedLine = evaluateLine(LetStruct, Scope),
+			scope:addLet(LetName, EvaluatedLine, Scope);
+		false -> ignore
+	end,
     {reply, ok, Scope};
 handle_call({performAction, Name, Params}, _, Scope) ->
 	Closure = case scope:lookup(Name, Scope) of 
@@ -146,6 +186,10 @@ handle_call({performAction, Name, Params}, _, Scope) ->
 	end,
 	AppliedClosure = ast:makeApply(Closure, Params),
 	Result = executeAction(eval:evaluate(AppliedClosure)),
+    {reply, Result, Scope};
+handle_call({applyMrg, Struct}, _, Scope) ->
+	Action = eval:evaluate(evaluateLine(Struct, Scope)),
+	Result = executeAction(Action),
     {reply, Result, Scope};
 handle_call({respawnScopeState, Scope}, _, _) ->
 	{reply, ok, Scope};

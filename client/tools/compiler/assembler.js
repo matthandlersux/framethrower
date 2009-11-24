@@ -306,7 +306,7 @@ try{
 			}
 		}
 	} else {
-		console.log( 'usage: rhino assembler.js <root folder>' );
+		console.log( 'usage: ./shell assembler.js <root folder>' );
 	}
 } catch (e) {
 	console.log(e.stack);

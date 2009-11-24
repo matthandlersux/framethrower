@@ -89,7 +89,7 @@ isObjectPointer(_) -> false.
 %%		
 
 makeClass(ClassType, Prop) ->
-	gen_server:cast(?MODULE, {makeClass, ClassType, Prop}).
+	gen_server:call(?MODULE, {makeClass, ClassType, Prop}).
 
 %%
 %% create :: Type -> List (Tuple String a) -> ObjectPointer
@@ -146,6 +146,9 @@ handle_call({create, ClassType, InstanceName, Prop}, _, Classes) ->
 	NewProp = makeReactiveProps(Prop, Class),
 	NewObject = {InstanceName, ClassType, NewProp},
     {reply, NewObject, Classes};
+handle_call({makeClass, ClassType, Prop}, _, Classes) ->
+	NewClasses = dict:store(ClassType, Prop, Classes),
+    {reply, ok, NewClasses};
 handle_call(getState, _, Classes) ->
 	{reply, Classes, Classes};	
 handle_call(stop, _, Classes) ->
@@ -160,9 +163,8 @@ handle_call(stop, _, Classes) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-handle_cast({makeClass, ClassType, Prop}, Classes) ->
-	NewClasses = dict:store(ClassType, Prop, Classes),
-    {noreply, NewClasses}.
+handle_cast(_, Classes) ->
+    {noreply, Classes}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2

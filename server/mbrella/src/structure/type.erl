@@ -3,6 +3,7 @@
 -include ("../../include/scaffold.hrl").
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X])).
 -export([makeApply/2, makeLambda/2, makeTypeVar/1, makeTypeName/1]).
+-export([getApplyParam/1]).
 -export([getTypeName/1]).
 -export([parse/1, unparse/1, isReactive/1, outerType/1]).
 
@@ -48,6 +49,11 @@ makeTypeName(Atom) when is_atom(Atom) ->
 
 % getTypeName :: Type -> Atom
 getTypeName({typeName, Atom}) -> Atom.
+
+
+% getApplyParam :: Type -> Type
+getApplyParam({typeApply, {Left, Right}}) ->
+	Right.
 
 %% 
 %% parse:: String -> Type
