@@ -1,7 +1,7 @@
 function (src::String, playTime::Unit Number, stopTime::Unit Number, play::Unit Number)::XMLP {
 	
 	function makeFlashMovie(src) {
-		var server = "67.250.56.225";
+		var server = "media.eversplosion.com";
 		
 		var mov = createEl("embed");
 		
@@ -17,7 +17,9 @@ function (src::String, playTime::Unit Number, stopTime::Unit Number, play::Unit 
 		setAtt("src", "flashplayer/main.swf");
 		setAtt("quality", "high");
 		
-		setAtt("flashvars", "server="+server+"&source=moulinrouge");
+		setAtt("wmode", "opaque");
+		
+		setAtt("flashvars", "server="+server+"&source="+src);
 		
 		setAtt("type", "application/x-shockwave-flash");
 		setAtt("pluginspage", "http:/"+"/www.adobe.com/go/getflashplayer");

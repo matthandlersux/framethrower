@@ -1,0 +1,13 @@
+ColorStyle := (String, String, String, String),
+
+colorStyle_border = tuple4get1,
+colorStyle_inner = tuple4get2,
+colorStyle_highlightBorder = tuple4get3,
+colorStyle_highlightInner = tuple4get4,
+
+
+
+colorStyle_getBorder = colorStyle -> isHighlighted -> reactiveIfThen isHighlighted (colorStyle_highlightBorder colorStyle) (colorStyle_border colorStyle),
+colorStyle_getInner = colorStyle -> isHighlighted -> reactiveIfThen isHighlighted (colorStyle_highlightInner colorStyle) (colorStyle_inner colorStyle),
+
+defaultColorStyle = ("#36c", "#47b", "#c63", "#b74")

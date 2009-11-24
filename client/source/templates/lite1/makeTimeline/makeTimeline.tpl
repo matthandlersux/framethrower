@@ -7,6 +7,7 @@ template (movie::Movie)::Timeline {
 	timelineWidth = screenWidth,
 	movieDuration = Movie:duration movie,
 	aspectRatio = Movie:aspectRatio movie,
+	movieId = Movie:id movie,
 	
 	// UI Sizing Constants
 	scrollbarHeight = 16,
@@ -163,9 +164,14 @@ template (movie::Movie)::Timeline {
 		set selectedTimeDurationS jumpDuration,
 		set previewTimeS jumpStart,
 		
+		
+		
+		
+		
 		durationMin = multiply (plus 1 (multiply 2 padding)) jumpDuration,
-		durationMax = multiply maxZoomRatio jumpDuration,
-		newDuration = clamp timelineShownDuration durationMin durationMax,
+		//durationMax = multiply maxZoomRatio jumpDuration,
+		//newDuration = clamp timelineShownDuration durationMin durationMax,
+		newDuration = clampMin timelineShownDuration durationMin, 
 		
 		paddingTime = multiply padding jumpDuration,
 		startMin = subtract (plus (plus jumpStart jumpDuration) paddingTime) newDuration,
@@ -174,6 +180,8 @@ template (movie::Movie)::Timeline {
 		
 		setZoomFactor (divide mainTimelineWidth newDuration) 0,
 		setScrollAmount (multiply newStart zoomFactor)
+		
+		
 	},
 	
 	xmlp = <div style-width="{timelineWidth}" style-height="{timelineHeight}" style-position="relative" class="timeline-container">
@@ -200,161 +208,164 @@ template (movie::Movie)::Timeline {
 				
 				
 
+				// Scroll container
+				<div style-position="absolute" style-width="{mainTimelineWidth}" style-height="{mainTimelineHeight}" style-overflow="hidden">
 				
-				// The part that scrolls
-				<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}" style-height="100%">
-
-					
-					<f:on mousemove>
-						set mouseTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor),
-						extract scrubbingS as _ {
-							set previewTimeS mouseTime
-						}
-					</f:on>
-					<f:on mouseout>
-						unset mouseTimeS
-					</f:on>
-
-					<div style-position="absolute" style-top="0" style-left="0" style-width="100%" style-height="100%" style-opacity="0.5">
-						<f:on mousedown>
-							set scrubbingS null,
-							set playingS 0,
-							set previewTimeS mouseTime,
-							unset selectedTimeStartS,
-							unset selectedTimeDurationS
-						</f:on>
-						<f:on globalmouseup>
+					// The part that scrolls
+					<div style-position="absolute" style-left="{subtract 0 scrollAmount}" style-top="0" style-width="{multiply movieDuration zoomFactor}" style-height="{mainTimelineHeight}">
+						<f:on mousemove>
+							set mouseTimeS (divide (plus (subtract event.mouseX mainTimelineLeft) scrollAmount) zoomFactor),
 							extract scrubbingS as _ {
-								unset scrubbingS,
-								extract reactiveNot selectedTimeStartS as _ {
-									set selectedTimeStartS previewTime,
-									set selectedTimeDurationS 0							
-								}							
+								set previewTimeS mouseTime
 							}
 						</f:on>
-						<f:call>chapterImages mainTimelineHeight (Movie:chapters movie)</f:call>
+						<f:on mouseout>
+							unset mouseTimeS
+						</f:on>
+					
+						// Chapter backgrounds, mouse time
+						<div style-position="absolute" style-top="0" style-left="0" style-width="100%" style-height="100%">
+							<f:on mousedown>
+								set scrubbingS null,
+								set playingS 0,
+								set previewTimeS mouseTime,
+								unset selectedTimeStartS,
+								unset selectedTimeDurationS
+							</f:on>
+							<f:on globalmouseup>
+								extract scrubbingS as _ {
+									unset scrubbingS,
+									extract reactiveNot selectedTimeStartS as _ {
+										set selectedTimeStartS previewTime,
+										set selectedTimeDurationS 0							
+									}							
+								}
+							</f:on>
+							<div style-position="absolute" class="zBackground" style-width="100%" style-height="100%">
+								<f:call>chapterImages mainTimelineHeight (Movie:chapters movie)</f:call>
+							</div>
 						
-						// Mouse time
-						<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
+							// Mouse time
+							<div style-position="absolute" style-left="{makePercent (divide mouseTime movieDuration)}" style-width="1" style-height="100%" style-border-left="1px solid rgba(255,153,0,0.3)" />
 						
-					</div>
+						</div>
 
-					// Ruler
-					//<f:call>ruler</f:call>
+						// Ruler
+						//<f:call>ruler</f:call>
 					
 					
-					// Selected time
-					<div style-position="absolute" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
-						// draggable sliders
-						<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa" style-cursor="w-resize">
-							<f:call>
-								oldTimeS = state(Unit Number),
-								setSelected = action (start::Number, offsetX::Number) {
-									extract reactiveNot oldTimeS as _ {
-										set oldTimeS previewTime
+						// Selected time
+						<div class="zForeground" style-position="absolute" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
+							// draggable sliders
+							<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa" style-cursor="w-resize">
+								<f:call>
+									oldTimeS = state(Unit Number),
+									setSelected = action (start::Number, offsetX::Number) {
+										extract reactiveNot oldTimeS as _ {
+											set oldTimeS previewTime
+										},
+										time = plus start (divide offsetX zoomFactor),
+										setSelectedTimeLeft time,
+										set playingS 0,
+										set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
+										unset mouseTimeS
 									},
-									time = plus start (divide offsetX zoomFactor),
-									setSelectedTimeLeft time,
-									set playingS 0,
-									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
-									unset mouseTimeS
-								},
-								doneAction = action () {
-									set previewTimeS (fetch oldTimeS),
-									unset oldTimeS
-								},
-								dragger (unfetch selectedTimeStart) setSelected doneAction
-							</f:call>
-						</div>
-						<div style-position="absolute" style-right="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa" style-cursor="e-resize">
-							<f:call>
-								oldTimeS = state(Unit Number),
-								setSelected = action (start::Number, offsetX::Number) {
-									extract reactiveNot oldTimeS as _ {
-										set oldTimeS previewTime
+									doneAction = action () {
+										set previewTimeS (fetch oldTimeS),
+										unset oldTimeS
 									},
-									time = plus start (divide offsetX zoomFactor),
-									setSelectedTimeRight time,
-									set playingS 0,
-									set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
-									unset mouseTimeS
-								},
-								doneAction = action () {
-									set previewTimeS (fetch oldTimeS),
-									unset oldTimeS
-								},
-								dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected doneAction
-							</f:call>
+									dragger (unfetch selectedTimeStart) setSelected doneAction
+								</f:call>
+							</div>
+							<div style-position="absolute" style-right="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa" style-cursor="e-resize">
+								<f:call>
+									oldTimeS = state(Unit Number),
+									setSelected = action (start::Number, offsetX::Number) {
+										extract reactiveNot oldTimeS as _ {
+											set oldTimeS previewTime
+										},
+										time = plus start (divide offsetX zoomFactor),
+										setSelectedTimeRight time,
+										set playingS 0,
+										set previewTimeS (clamp time selectedTimeStart (plus selectedTimeStart selectedTimeDuration)),
+										unset mouseTimeS
+									},
+									doneAction = action () {
+										set previewTimeS (fetch oldTimeS),
+										unset oldTimeS
+									},
+									dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected doneAction
+								</f:call>
+							</div>
 						</div>
-					</div>
 					
-					// Preview time
-					<div style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-height="100%">
-						<div style-position="absolute" style-left="-1" style-top="0" style-width="1" style-height="100%" style-border-left="3px solid rgba(255,153,0,1.0)" />
-						//<div style-position="absolute" style-left="-6" style-width="12" style-height="12" style-background-color="#999" style-top="-24" />
+						// Preview time
+						<div class="zForeground" style-position="absolute" style-left="{makePercent (divide previewTime movieDuration)}" style-height="100%">
+							<div style-position="absolute" style-left="-1" style-top="0" style-width="1" style-height="100%" style-border-left="3px solid rgba(255,153,0,1.0)" />
+							//<div style-position="absolute" style-left="-6" style-width="12" style-height="12" style-background-color="#999" style-top="-24" />
 						
-					</div>
+						</div>
 					
 					
-					// Notes (time region bubbles)
-					<div style-position="absolute" style-top="40" style-width="100%">
-						// <div style-position="absolute" class="timeline-region" style-left="5%" style-width="5%" style-top="0">
-						// 	<div class="inside" />
-						// 	<f:call>
-						// 		px = state(Unit Number),
-						// 		py = state(Unit Number),
-						// 		<div>
-						// 			<f:on domMove>
-						// 				set px event.posX,
-						// 				set py event.posY
-						// 			</f:on>
-						// 			{px}, {py}
-						// 		</div>
-						// 	</f:call>
-						// </div>
-						// <div style-position="absolute" class="timeline-region" style-left="12%" style-width="0%" style-top="0">
-						// 	<div class="inside" />
-						// </div>
-						<f:each movie_linksFromNotes movie as timeLink>
-							<f:each timeRange_range (timeLink_target timeLink) as range>
-								<div style-position="absolute" class="timeline-region" style-left="{makePercent (divide (range_start range) movieDuration)}" style-width="{makePercent (divide (range_duration range) movieDuration)}" style-top="0">
-									<div class="inside">
-										<f:on click>
-											note = textRange_note (timeLink_source timeLink),
-											openNote note
-										</f:on>
+						// Notes (time region bubbles)
+						<div style-position="absolute" style-top="40" style-width="100%">
+							<f:each movie_linksFromNotes movie as timeLink>
+								<f:each timeRange_range (timeLink_target timeLink) as range>
+									regionLeft = makePercent (divide (range_start range) movieDuration),
+									regionWidth = makePercent (divide (range_duration range) movieDuration),
+									colorStyle = defaultColorStyle,
+									isHighlighted = bindUnit (reactiveEqual (timeLink_target timeLink)) mouseOverLink,
+									<div class="zForeground timeline-region" style-position="absolute" style-left="{regionLeft}" style-width="{regionWidth}" style-top="0">
+										<div class="inside" style-border-color="{colorStyle_getBorder colorStyle isHighlighted}" style-background-color="{colorStyle_getInner colorStyle isHighlighted}">
+											<f:on click>
+												note = textRange_note (timeLink_source timeLink),
+												openNote note
+											</f:on>
+											<f:call>svgEvents (timeLink_target timeLink) false defaultColorStyle</f:call>
+										</div>
 									</div>
-								</div>
+								</f:each>
 							</f:each>
-						</f:each>
-					</div>
+						</div>
 
 
 				
 					
 
 					
-					// Add my own notes
-					<div style-position="absolute" style-top="20" style-width="100%">
-						<div style-position="absolute" class="timeline-region mine" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-top="0">
-							<div class="inside">+</div>
+						// Add my own notes
+						<div class="zForeground" style-position="absolute" style-top="20" style-width="100%">
+							<div style-position="absolute" class="timeline-region mine" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-top="0">
+								<div class="inside">
+									+
+									<f:on click>
+										createSimpleNoteWithLink movie selectedTimeStart selectedTimeDuration,
+										unset selectedTimeStartS,
+										unset selectedTimeDurationS,
+									</f:on>
+								</div>
+							</div>
 						</div>
+					
+
+
+					
+					
+
 					</div>
-					
-
-
-					
-					
 
 				</div>
 
 				// Scrollbar
 				<div style-position="absolute" style-bottom="0" style-width="100%" style-height="{scrollbarHeight}" class="scrollbar">
-					<div style-position="absolute" style-top="0" style-left="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
+					<div class="zBackground" style-position="absolute" style-width="100%" style-height="100%" style-background-color="#111" />
+					<div class="zForeground" style-position="absolute" style-top="0" style-left="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
 						L
+						<f:on click>notYetImplemented</f:on>
 					</div>
-					<div style-position="absolute" style-top="0" style-right="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
+					<div class="zForeground" style-position="absolute" style-top="0" style-right="0" style-width="{scrollbarButtonWidth}" style-height="100%" class="button">
 						R
+						<f:on click>notYetImplemented</f:on>
 					</div>
 					<f:call>
 						scrollbarWidth = subtract mainTimelineWidth (multiply 2 scrollbarButtonWidth),
@@ -369,7 +380,7 @@ template (movie::Movie)::Timeline {
 								setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
 							</f:on>
 
-							<div style-position="absolute" style-left="{makePercent left}" style-width="{makePercent width}" style-height="100%" class="scroller">
+							<div class="zForeground" style-position="absolute" style-left="{makePercent left}" style-width="{makePercent width}" style-height="100%" class="scroller">
 								<f:call>
 									setScroll = action (start::Number, x::Number) {
 										desiredLeft = plus start (divide x scrollbarWidth),
@@ -390,16 +401,16 @@ template (movie::Movie)::Timeline {
 								set fullscreenVideo fullscreenXMLP
 							</f:on>
 						</div>
-						Small Preview Video
+						Small Preview Video (not yet implemented)
 					</div>
 				</f:each>
 				
-				// full screen on opening if nothing is already full screened
-				<f:on init>
-					extract reactiveNot fullscreenVideo as _ {
-						set fullscreenVideo fullscreenXMLP
-					}
-				</f:on>
+				// // full screen on opening if nothing is already full screened
+				// <f:on init>
+				// 	extract reactiveNot fullscreenVideo as _ {
+				// 		set fullscreenVideo fullscreenXMLP
+				// 	}
+				// </f:on>
 				
 				// if full screened, remove full screen on close (that is, uninit)
 				<f:on uninit>
@@ -419,9 +430,11 @@ template (movie::Movie)::Timeline {
 		videoWidth = clampMax mainScreenWidth (multiply aspectRatio mainScreenHeight),
 		videoHeight = clampMax mainScreenHeight (divide mainScreenWidth aspectRatio),
 		<div class="video">
-			<div style-position="absolute" style-width="{videoWidth}" style-height="{videoHeight}" style-left="{divide (subtract mainScreenWidth videoWidth) 2}" style-top="{divide (subtract mainScreenHeight videoHeight) 2}" style-background-color="#f00">
+			<div style-position="absolute" style-width="{videoWidth}" style-height="{videoHeight}" style-left="{divide (subtract mainScreenWidth videoWidth) 2}" style-top="{divide (subtract mainScreenHeight videoHeight) 2}">
 				
-				<f:call>flashVideo "moulinRouge" previewTimeS (unfetch (plus selectedTimeStart selectedTimeDuration)) playingS</f:call>
+				<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground">
+					<f:call>flashVideo movieId previewTimeS (unfetch (plus selectedTimeStart selectedTimeDuration)) playingS</f:call>
+				</div>
 				
 				<div class="button" style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">
 					<f:on click>
