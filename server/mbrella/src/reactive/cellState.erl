@@ -11,7 +11,9 @@
 	getOutputs/1,
 	removeSessionOutputs/1,
 	cellPointer/1,
+	countConnections/1,
 	getIntercept/1,
+	getBottom/1,
 	getName/1,
 	updateOutputStates/2, updateOutputState/3, updateInterceptState/2,
 	getFlag/2, setFlag/3,
@@ -54,7 +56,7 @@
 	elements = cellElements:new(),
 	stash = [],
 	outputs = outputs:newState(),
-	flags = [{leashed, false}, {waitForDone, false}, {killOnEmpty, false}, {killOnNoConnections, true}],
+	flags = [{leashed, false}, {waitForDone, false}, {killOnEmpty, false}, {persistent, false}],
 	informants = [],
 	dock = [],
 	bottom
@@ -195,6 +197,18 @@ getBottom(#cellState{bottom = Bottom}) -> Bottom.
 
 getOutputs(#cellState{outputs = Outputs} = State) ->
 	outputs:toList(Outputs).
+	
+%% 
+%% countConnections :: CellState -> Bool
+%% 		
+%%		
+
+countConnections(#cellState{outputs = Outputs}) ->
+	Outputs1 = outputs:toList(Outputs),
+	Count = 	fun(Output, Num) ->
+					length( outputs:getConnections(Output) ) + Num
+				end,
+	lists:foldl(Count, 0, Outputs1).
 
 %% 
 %% cellPointer :: CellState -> CellPointer

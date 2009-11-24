@@ -29,6 +29,7 @@ var generateFiles = function () {
 
 	bootJSON.exprLib = rootExprs;
 	bootJSON.sharedLet = mainTemplate.sharedLet;
+	bootJSON.initMrg = mainTemplate.initMrg;
 
 	var bootJSONString = JSON.stringify(bootJSON);
 

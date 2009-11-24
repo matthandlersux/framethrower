@@ -32,7 +32,7 @@ pid({cellPointer, _Name, Pid}) ->
 filterList(ListOfArguments) ->
 	lists:filter(fun({cellPointer, N, P}) -> (is_list(N) andalso is_pid(P)); (_) -> false end, ListOfArguments).
 	
-isCellPointer({cellPointer, _Name, _Pid}) -> true;
+isCellPointer({cellPointer, _Name, Pid}) when is_pid(Pid) -> true;
 isCellPointer(_) -> false.
 
 %% ====================================================

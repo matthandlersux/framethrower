@@ -1,0 +1,17 @@
+action () {
+	Grandparents = root,
+	set (OutlineNode:string Grandparents) "Grandparents",
+	
+	Dad <- makeChild "Dad" Grandparents,
+	Aunt <- makeChild "Aunt Kathy" Grandparents,
+	Uncle <- makeChild "Uncle Doug" Grandparents,
+
+	makeChild "Me" Dad,
+	makeChild "Sara" Aunt,
+	makeChild "Rachel" Aunt,
+	makeChild "Michelle" Aunt,
+
+	makeChild "Sean" Uncle,
+	makeChild "James" Uncle,
+	makeChild "Daniel" Uncle
+}

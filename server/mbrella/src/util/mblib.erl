@@ -11,7 +11,7 @@
 %% ====================================================
 
 %% 
-%% scour :: (a -> Bool) -> (b -> b) -> c -> c
+%% scour :: (a -> Bool) -> (b -> c) -> d -> d
 %% 		basically will traverse any erlang term through lists and tuples to find elements that need to be converted
 %%			and will return the whole structure with conversions made... similar to my old traverse function
 %%		
@@ -231,81 +231,76 @@ createClasses(ClassesStruct) ->
 createActions(SharedLetStruct) ->
 	action:initJSON(SharedLetStruct).
 
+
+%% applyMrg will execute the JSON action in FileName within the action root scope
+%% FileName is relative to server folder
+applyMrg(FileName) ->
+	{ok, JSONBinary} = file:read_file(FileName),
+	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
+	action:applyMrg(Struct).
+
+%% applyShr will update the root action scope with any changes in bootJSON
+applyShr() ->
+	{ok, JSONBinary} = file:read_file("pipeline/priv/bootJSON"),
+	BootJSON = mochijson2:decode( binary_to_list( JSONBinary ) ),
+	SharedLetStruct = struct:get_value(<<"sharedLet">>, BootJSON),
+	createActions(SharedLetStruct).
+
+
 %% 
 %% script that gets executed when the mbrella/pipeline application starts
 %%
 
 startScript(Options) ->
 	spawn( fun() ->
-		sessionManager:start(),
-
-		functionTable:create(),
-		mewpile:new(),
-		objects:start(),
-		action:start(),
-		cellStore:start(),
-		objectStore:start(),
-
-	
-		case lists:keysearch(serialize, 1, Options) of
-				{value, {_, undefined}} ->
-					serialize:start()
+		startGenServers(),
+		Unserialize = case lists:keysearch(unserialize, 1, Options) of
+			{value, {_, undefined}} -> false;
+			{value, {_, USFileName}} -> true
 		end,
-		case lists:keysearch(unserialize, 1, Options) of
-			{value, {_, undefined}} ->
-				bootJsonScript("pipeline/priv/bootJSON", false);
-			{value, {_, USFileName}} ->
-				bootJsonScript("pipeline/priv/bootJSON", true),
-				serialize:unserialize()
-		end,
-		
-		% TODO: get serialize working again
-		% mblib:prepareStateScript(),
-
-		case lists:keysearch(responsetime, 1, Options) of
-			{value, {_, true}} ->
-				responseTime:start();
-			_ ->
-				nosideeffect
-		end
+		initBootJSON(Unserialize)		
 	end).
 
-%% 
-%% function to load bootJSON file and run it against the server on bootup to populate objects and cells etc...
-%%
 
-bootJsonScript(BootJsonFile, IgnoreSharedLets) ->
-	{ok, JSONBinary} = file:read_file(BootJsonFile),
-	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),
-	ClassesStruct = struct:get_value(<<"classes">>, Struct),
-	ExprLibStruct = struct:get_value(<<"exprLib">>, Struct),
+initBootJSON(Unserialize) ->
+	%read bootJSON file
+	{ok, JSONBinary} = file:read_file("pipeline/priv/bootJSON"),
+	BootJSON = mochijson2:decode( binary_to_list( JSONBinary ) ),
+	ClassesStruct = struct:get_value(<<"classes">>, BootJSON),
+	ExprLibStruct = struct:get_value(<<"exprLib">>, BootJSON),
+	SharedLetStruct = struct:get_value(<<"sharedLet">>, BootJSON),
 
+	%initialize classes and exprLib
 	createClasses(ClassesStruct),
 	createExprLib(ExprLibStruct),
-	
-	case IgnoreSharedLets of
-		false -> 
-			SharedLetStruct = struct:get_value(<<"sharedLet">>, Struct),
-			createActions(SharedLetStruct);
-		true -> ignored
-	end,
-	bootedJSONScript.
 
-prepareStateScript() ->
-	{ok, JSONBinary} = file:read_file("lib/bootJSON"),
-	Struct = mochijson2:decode( binary_to_list( JSONBinary ) ),	
-	PrepareStateStruct = struct:get_value(<<"prepareState">>, Struct),
-	serialize:updatePrepareState(PrepareStateStruct),
-	preparedState.
+	case Unserialize of
+		false ->
+			%starting server from scratch, applying initMrg
+			createActions(SharedLetStruct),
+			InitMrg = struct:get_value(<<"initMrg">>, BootJSON),
+			action:applyMrg(InitMrg);
+		true ->
+			%starting server using serialized state
+			serialize:unserialize(),
+			createActions(SharedLetStruct)
+	end.
 
 
-initializeDebugState() ->
-	% Add more here
+startGenServers() ->
+	sessionManager:start(),
 	functionTable:create(),
 	mewpile:new(),
 	objects:start(),
+	scope:start(),
 	action:start(),
 	cellStore:start(),
 	objectStore:start(),
-	sessionManager:start(),
-	bootJsonScript("priv/bootJSON", false).
+	serialize:start().
+	
+	
+initializeDebugState() ->
+	spawn( fun() ->
+		startGenServers(),
+		initBootJSON(false)
+	end).

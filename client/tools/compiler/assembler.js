@@ -10,17 +10,6 @@ function include (bundles, extraFiles) {
 }
 include(["core"], ["tplparser.js", "semantics.js", "../typeAnalyzer/typeAnalyzer.js"]);
 
-function loadTextNow(url) {
-	try {
-		var req = new XMLHttpRequest();
-		req.open("GET", url, false);
-		req.send(null);
-	} catch (e) {
-		console.log("loadXMLNow failed: " + url);
-	}
-	return req.responseText;
-}
-
 function outputJSON(object, tabs) {
 	if(object !== undefined) {
 		if(arrayLike(object)) {
@@ -85,92 +74,84 @@ function mergeIntoObject(sink, source) {
 	});
 }
 
-
-function compileFolder(folderPath, rebuild) {
-	var folder = "../../source/templates/" + folderPath;
-	var folderName;
-	var slashIndex = folder.lastIndexOf("/");
+function getFolderName(folderPath) {
+	var slashIndex = folderPath.lastIndexOf("/");
 	if (slashIndex !== -1) {
-		folderName = folder.substr(slashIndex+1);
+		return folderPath.substr(slashIndex+1);
 	} else {
-		folderName = folder;
-	}
+		return folderPath;
+	}	
+}
+
+
+function compileShared(folderPath) {
+	var folder = "../../source/templates/" + folderPath;
+	var folderName = getFolderName(folderPath);
+	var sharedJSON = {};
+
+	try {
+		//process <template name>.shr file
+		sharedJSON = compileFile(folderPath + "/shared/" + folderName + ".shr", true);
+	} catch (e) {}
+	try {
+		//process <template name>.mrg file
+		sharedJSON.initMrg = compileFile(folderPath + "/shared/" + folderName + ".mrg", false);
+	} catch (e) {}
+	
+	return sharedJSON;
+}
+
+	
+
+function compileFolder(folderPath) {
+	var folder = "../../source/templates/" + folderPath;
+	var folderName = getFolderName(folderPath);
 	
 	var childFiles = listFiles(folder);
 	var childDirectories = listDirectories(folder);
 		
-	var lets = {};
-	var newtypes = {};
-	var sharedLets = {};
-	var mainJSON;
+	var mainJSON = compileFile(folderPath + "/" + folderName + ".tpl", false);
 	forEach(childFiles, function(child) {
 		var nameWithExt = child;
 		var name = nameWithExt.substr(0, nameWithExt.length - 4);
 		var ext = nameWithExt.substr(nameWithExt.length - 3);
 		if (ext === "tpl") {
 			if(name == folderName) {
-				mainJSON = compileFile(folderPath + "/" + child, rebuild, false);
+				//ignore, this is taken care of above
 			} else {
-				var let = compileFile(folderPath + "/" + child, rebuild, false);
+				var let = compileFile(folderPath + "/" + child, false);
 				if (let !== undefined) {
-					lets[name] = let;
+					mainJSON.let[name] = let;
 				}
 			}
 		} else if (ext === "let") {
-			var includeLets = compileFile(folderPath + "/" + child, rebuild, true);
+			var includeLets = compileFile(folderPath + "/" + child, true);
 			if (includeLets !== undefined) {
 				if(includeLets.let !== undefined )
-					mergeIntoObject(lets, includeLets.let);
+					mergeIntoObject(mainJSON.let, includeLets.let);
 				if(includeLets.newtype !== undefined )
-					mergeIntoObject(newtypes, includeLets.newtype);
-			}
-		} else if (ext === "shr") {
-			var includeLets = compileFile(folderPath + "/" + child, rebuild, true);
-			if (includeLets !== undefined) {
-				if(includeLets.let !== undefined )
-					mergeIntoObject(sharedLets, includeLets.let);
-				if(includeLets.newtype !== undefined )
-					mergeIntoObject(newtypes, includeLets.newtype);
+					mergeIntoObject(mainJSON.newtype, includeLets.newtype);
 			}
 		}
 	});
 	forEach(childDirectories, function(child) {
-		if (child === "css") {
-			//ignore css folder
+		if (child === "css" || child === "shared") {
+			//ignore css folder and shared folder
 		} else {
-			var let = compileFolder(folderPath + "/" + child, rebuild);
+			var let = compileFolder(folderPath + "/" + child);
 			if (let !== undefined) {
-				lets[child] = let;
+				mainJSON.let[child] = let;
 			}
 		}
 	});
-	if (mainJSON.let === undefined) mainJSON.let = {};
-	if (mainJSON.newtype === undefined) mainJSON.newtype = {};
-	if (mainJSON.sharedLet === undefined) mainJSON.sharedLet = {};
-	mergeIntoObject(mainJSON.let, lets);
-	mergeIntoObject(mainJSON.newtype, newtypes);
-	mergeIntoObject(mainJSON.sharedLet, sharedLets);
 	return mainJSON;
 }
 
-function log () {
-	try {
-		console.log.apply(undefined, arguments);
-	} catch (e) {
-		print.apply(undefined, arguments);
-	}
-}
-
-function compileFile (filePath, rebuild, isLetFile) {
+function compileFile (filePath, isLetFile) {
 	var file = "../../source/templates/" + filePath;
 
 	var str;
-	try {
-		str = read(file);
-	} catch (e) {
-		str = loadTextNow("../../source/templates/" + filePath);
-		console.log("loadTextNow: " + str);
-	}
+	str = read(file);
 			
 	if (isLetFile) {
 		str = "includefile " + str;
@@ -183,11 +164,11 @@ function compileFile (filePath, rebuild, isLetFile) {
 	if( !parseResult.success ) {
 		error_cnt = parseResult.result;
 		GLOBAL_ERRORS = true;
-		log("<b>Parse errors, File: " + file + "</b><br />");
+		console.log("<b>Parse errors, File: " + file + "</b><br />");
 		for( i = 0; i < error_cnt; i++ ) {
 			var lineInfo = countLines(str, error_off[i]);
 			var escapedLine= lineInfo.line.split("&").join("&amp;").split( "<").join("&lt;").split(">").join("&gt;")				
-			log("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + getCanonicalPath(file) + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
+			console.log("<div style=\"margin-left:15px;font:8px\"><a href=\"txmt://open/?url=file://" + getCanonicalPath(file) + "&line=" + lineInfo.lines + "&column=" + lineInfo.column + "\">error on line", lineInfo.lines + ", column:", lineInfo.columnWithTabs, "</a> <br />expecting \"" + error_la[i].join() + "\" <br />near:", "\n" + escapedLine + "</div><br />");
 		}
 		throw("Parse Error");
 	} else {
@@ -289,10 +270,6 @@ function countLines (wholeString, position) {
 
 try{
 	if( arguments.length > 0 ) { 		
-		var rebuild = false;
-		if (arguments[1] == "rebuild") {
-			rebuild = true;
-		}
 	
 		//create bin folder if it doesn't exist
 		var binfolder1 = "../../generated";
@@ -301,7 +278,11 @@ try{
 		makeDirectory(binfolder1);
 		makeDirectory(binfolder);
 
-		var totalCompiledJSON = compileFolder(arguments[0], rebuild);
+		var sharedCompiledJSON = compileShared(arguments[0]);
+		var totalCompiledJSON = compileFolder(arguments[0]);
+		totalCompiledJSON.sharedLet = sharedCompiledJSON.let;
+		totalCompiledJSON.initMrg = sharedCompiledJSON.initMrg;
+		if (sharedCompiledJSON.newtype) mergeIntoObject(totalCompiledJSON.newtype, sharedCompiledJSON.newtype);
 		if(!GLOBAL_ERRORS) {
 			desugarNewtype(totalCompiledJSON);
 			desugarFetch(totalCompiledJSON);
@@ -314,8 +295,8 @@ try{
 			}
 		}
 	} else {
-		log( 'usage: rhino assembler.js <root folder> [rebuild]' );
+		console.log( 'usage: ./shell assembler.js <root folder>' );
 	}
 } catch (e) {
-	log(e.stack);
+	console.log(e.stack);
 }

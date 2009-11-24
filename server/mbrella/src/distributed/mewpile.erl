@@ -52,6 +52,8 @@ store(AST, CellAST) ->
 %% 		
 %%		
 
+remove([]) ->
+	ok;
 remove(AST) ->
 	gen_server:cast(?MODULE, {remove, AST}).
 
@@ -147,7 +149,6 @@ handle_cast({store, AST, CellAST}, ETS) ->
 	ets:insert(ETS, {NormalizedAST, CellAST}),
     {noreply, ETS};
 handle_cast({remove, AST}, ETS) ->
-	?colortrace({cell_died, AST}),
 	ets:delete(ETS, AST),
     {noreply, ETS};
 handle_cast(reset, ETS) ->
@@ -198,6 +199,10 @@ mewpilate(apply, AST) ->
 	ast:makeApply(
 		mewpilate( ast:getApplyFunction(AST) ),
 		mewpilate( ast:getApplyParameters(AST) )
+	);
+mewpilate(tuple, AST) ->
+	ast:makeTuple(
+		list_to_tuple( mewpilate( tuple_to_list( ast:getTuple(AST) ) ) )
 	);
 mewpilate(cell, AST) ->
 	ast:makeCell(

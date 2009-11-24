@@ -1,0 +1,27 @@
+addNewChild = action (children::Set OutlineNode) {
+	newChild <- create(OutlineNode),
+	add children newChild	
+},
+
+setName = action (stringContainer::Unit String, value::String) {
+	set stringContainer value
+},
+
+makeNode = action (string::String) {
+	node <- create(OutlineNode),
+	set (OutlineNode:string node) string,
+	return node
+},
+
+makeChild = action (string::String, parent::OutlineNode) {
+	child <- makeNode string,
+	add (OutlineNode:children parent) child,
+	return child
+},
+
+removeChild = action (node::OutlineNode, child::OutlineNode) {
+	children = OutlineNode:children node,
+	remove children child
+},
+
+root = state(OutlineNode)

@@ -54,14 +54,22 @@ function initialize() {
 	
 	if (LOCAL) {
 		// add sharedLets to regular lets
-		console.log('mainTemplate', mainTemplate);
 		if (mainTemplate.sharedLet !== undefined) {
 			forEach(mainTemplate.sharedLet, function(sharedLet, name) {
-				console.log(name, sharedLet);
 				mainTemplate.let[name] = sharedLet;
 			});
 		}
+		
+		//add action in initMrg as <f:on init> in main template
+		var fon = {
+			kind: "on",
+			event: "init",
+			action: mainTemplate.initMrg
+		};
+		mainTemplate.output.xml.children.push(fon);
+		
 		initMainTemplate(base.env);
+		
 	} else {
 		//Get shared lets from server and insert them into the environment
 		session.getSharedLets(mainTemplate, function(sharedLets) {

@@ -24,7 +24,18 @@ function initialize() {
 				mainTemplate.let[name] = sharedLet;
 			});
 		}
+		
+		//add action in initMrg as <f:on init> in main template
+		if (mainTemplate.initMrg !== undefined) {
+			var fon = {
+				kind: "on",
+				event: "init",
+				action: mainTemplate.initMrg
+			};
+			mainTemplate.output.xml.children.push(fon);
+		}
 		initMainTemplate(base.env);
+		
 	} else {
 		//Get shared lets from server and insert them into the environment
 		session.getSharedLets(mainTemplate, function(sharedLets) {
