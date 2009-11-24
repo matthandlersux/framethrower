@@ -10,30 +10,103 @@ template() {
 	targetTextRangeS = state(Unit TextRange),
 	targetTextRange = fetch targetTextRangeS,
 	
+	selectedNoteS = state(Unit Note),
+	selectedNote = fetch selectedNoteS,
+	
 	
 	// ====================================================
 	// UI and Ontology
 	// ====================================================
 	
-	getText = jsaction()::String {
-		return document.getElementById("text").value;
+	// returns (success, noteIndex, start, length)
+	getSelection = jsaction()::(Bool, Number, Number, Number) {
+		var range = window.getSelection().getRangeAt(0);
+
+		// make sure that selection is (entirely) within a note:
+		var note = range.startContainer.parentNode;
+		if (!def(note) || note.className!=='note' || range.endContainer.parentNode!==note)
+			return makeTuple(false, 0, 0, 0);
+
+		var k = 0, start, end;
+		for (var i=0; i<note.childNodes.length; i++) {
+			var child = note.childNodes[i];
+			if (child===range.startContainer)
+				start = k + range.startOffset;
+			if (child===range.endContainer)
+				end = k + range.endOffset;
+			if (child.nodeType === Node.TEXT_NODE)
+				k += child.length;
+			// else if (child.tagName === 'br')
+			// 	k += 1;
+		}
+		return makeTuple(true, parseInt(note.id), start, end-start);
 	},
 	
-	getSelection = jsaction()::String {
-		return document.getSelection()+"";
+	setText = jsaction(noteIndex::Number, text::String)::Void {
+		var note = document.getElementById(noteIndex+"");
+		
+		// clear note:
+		while(note.lastChild)
+			note.removeChild(note.lastChild);
+		
+		// insert text, one character/marker pair at a time:
+		for (var i=0; i<text.length; i++) {
+			var mark = document.createElement('span');
+			mark.setUserData('mark',i,null);
+			note.appendChild(mark);
+			var c = document.createTextNode(text.charAt(i));
+			note.appendChild(c);
+		}
 	},
 	
-	createSelectedTextRange = action(note::Note)::TextRange {
-		textRange <- createTextRange note,
-		extract note_text note as text {
-			selected <- getSelection,
-			debugString selected,
-			i = indexOf text selected,
-			extract boolToUnit (not (or (equal selected "") (equal i -1))) as _ {
-				textRange_setRange textRange (makeRange i (strlen selected))
+	updateText = jsaction(noteIndex::Number)::(String, [(Number, Number)]) {
+		console.log("updateText");
+		console.log(noteIndex);
+		
+		var note = document.getElementById(noteIndex+"");
+		
+		var text = "", d = 0;
+		var shifts = [];
+		for (var i = 0; i < note.childNodes.length; i++) {
+			var child = note.childNodes[i];
+			if (child.nodeType === Node.TEXT_NODE)
+				text += child.textContent;
+			else if(child.tagName === 'span' && child.getUserData('mark')) {
+				var mark = parseInt(child.getUserData('mark'));
+				var newD = text.length-mark;
+				if (newD !== d) {
+					d = newD;
+					shifts.push(makeTuple(mark, d));
+					console.log(mark);
+					console.log(d);
+				}
 			}
+		}
+		return makeTuple(text, makeList(shifts));
+	},
+	
+	initText = action(note::Note) {
+		setText (fetch (getPosition note allNotes)) (fetch (note_text note))
+	},
+	
+	updateNote = action(note::Note) {
+		textShifts <- updateText (fetch (getPosition note allNotes)),
+		text = fst textShifts,
+		shifts = snd textShifts,
+		note_setText note text shifts
+	},
+	
+	createSelectedTextRange = action()::Unit TextRange {
+		maybeRange <- create(Unit TextRange),
+		sel <- getSelection,
+		success = tuple4get1 sel,
+		extract boolToUnit success as _ {
+			note = fetch (getByPosition (tuple4get2 sel) allNotes), 
+			textRange <- createTextRange note,
+			textRange_setRange textRange (makeRange (tuple4get3 sel) (tuple4get4 sel)),
+			set maybeRange textRange
 		},
-		return textRange
+		return maybeRange
 	},
 	
 	linkRanges = action()::Void {
@@ -69,49 +142,59 @@ template() {
 
 	textRangeString0 = textRange -> mapUnit3 substr (textRange_text textRange) (textRange_start textRange) (textRange_length textRange),
 	textRangeString = textRange -> reactiveIfThen (textRangeString0 textRange) (textRangeString0 textRange) (textRange_text textRange),
-	
 
 
 
 	<div>
-		<textarea id="text" />
-		<span style-background="#ffa">
-			<f:on mousedown>
+		<div style-background="#ffa">
+			<f:on click>
 				note <- createNote,
-				text <- getText,
-				note_setText note text
+				note_setText note "Type note here." nil
 			</f:on>
 			Where's note!
-		</span>
+		</div>	
+		<div style-background="#faa">
+			<f:on mousedown>
+				maybeRange <- createSelectedTextRange,
+				set sourceTextRangeS (fetch maybeRange),
+				linkRanges
+			</f:on>
+			Set source.
+		</div>	
+		<div style-background="#afa">
+			<f:on mousedown>
+				maybeRange <- createSelectedTextRange,
+				set targetTextRangeS (fetch maybeRange),
+				linkRanges
+			</f:on>
+			Set target.
+		</div>
 		
 		<f:each allNotes as note>
 		
 			<div style-border="solid 1px">
+				
 				<f:each boolToUnit (equal note (textRange_note sourceTextRange)) as _>
 					<div style-background="#faa">source: {textRangeString sourceTextRange}</div>
 				</f:each>
 				<f:each boolToUnit (equal note (textRange_note targetTextRange)) as _>
 					<div style-background="#afa">target: {textRangeString targetTextRange}</div>
 				</f:each>
-				<div style-background="#ffc">
-					{note_text note}
-				</div>
-				<span style-background="#faa">
-					<f:on mousedown>
-						textRange <- createSelectedTextRange note,
-						set sourceTextRangeS textRange,
-						linkRanges
-					</f:on>
-					Set source.
-				</span>
-				<span style-background="#afa">
-					<f:on mousedown>
-						textRange <- createSelectedTextRange note,
-						set targetTextRangeS textRange,
-						linkRanges
-					</f:on>
-					Set target.
-				</span>
+				
+				<f:each note_text note as _>
+					<f:wrapper>
+						<f:on init>
+							initText note
+						</f:on>
+						<f:on mouseup>
+							updateNote note
+						</f:on>
+						<f:on keyup>
+							updateNote note
+						</f:on>
+						<div class="note" id="{getPosition note allNotes}" style-background="#ffc" contentEditable="true" />
+					</f:wrapper>
+				</f:each>
 			
 				<f:each note_linksToNotes note as link>
 					<div>
