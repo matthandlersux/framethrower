@@ -85,27 +85,37 @@ template () {
 	// State and actions for registering svg line info
 	// =============
 	
-	ScreenLocation := (Number, Number, Number, Number, Bool), // (x, y, width, height, isHorizontal)
-	svgInfo = state(Map a (Set (Unit ScreenLocation))),
+	Link := a, // this will either be a TextLink or TimeLink
 	
-	registerSVG = action (identifier::a, loc::Unit ScreenLocation) {
-		extract reactiveNot (contains (keys svgInfo) identifier) as _ {
-			newSet <- create(Set (Unit ScreenLocation)),
-			addEntry svgInfo identifier newSet
-		},
-		extract getKey identifier svgInfo as mySet {
-			add mySet loc
-		}
-	},
-	unregisterSVG = action (identifier::a, loc::Unit ScreenLocation) {
-		extract getKey identifier svgInfo as mySet {
-			remove mySet loc,
-			extract isEmpty mySet as _ {
-				removeEntry svgInfo identifier
+	SVGStyle := (String, String), // for now, just a color string
+	
+	ScreenLocation := (Number, Number, Number, Number, Bool), // (x, y, width, height, isHorizontal)
+	svgInfo = state(Map Link (ColorStyle, Set (Unit ScreenLocation))),
+	
+	
+	
+	mouseOverLink = state(Unit Link),
+
+	svgEvents = template (identifier::a, isHorizontal::Bool, colorStyle::ColorStyle) {
+		registerSVG = action (identifier::Link, loc::Unit ScreenLocation) {
+			extract reactiveNot (contains (keys svgInfo) identifier) as _ {
+				newSet <- create(Set (Unit ScreenLocation)),
+				addEntry svgInfo identifier (colorStyle, newSet)
+			},
+			extract getKey identifier svgInfo as pair {
+				mySet = snd pair,
+				add mySet loc
 			}
-		}
-	},
-	svgEvents = template (identifier::a, isHorizontal::Bool) {
+		},
+		unregisterSVG = action (identifier::Link, loc::Unit ScreenLocation) {
+			extract getKey identifier svgInfo as pair {
+				mySet = snd pair,
+				remove mySet loc,
+				extract isEmpty mySet as _ {
+					removeEntry svgInfo identifier
+				}
+			}
+		},
 		myPos = state(Unit ScreenLocation),
 		<f:wrapper>
 			<f:on init>
@@ -116,6 +126,12 @@ template () {
 			</f:on>
 			<f:on domMove>
 				set myPos (event.posX, event.posY, event.targetWidth, event.targetHeight, isHorizontal)
+			</f:on>
+			<f:on mouseover>
+				set mouseOverLink identifier
+			</f:on>
+			<f:on mouseout>
+				unset mouseOverLink
 			</f:on>
 		</f:wrapper>
 	},
@@ -141,7 +157,9 @@ template () {
 		// style-background-color="rgba(0,255,0,0.2)"
 		<div class="zLines" style-position="absolute" style-left="0" style-top="0" style-width="100%" style-height="100%">
 			<svg:svg version="1.1" width="{screenWidth}" height="{screenHeight}">
-				<f:each svgInfo as identifier, locSet>
+				<f:each svgInfo as identifier, pair>
+					locSet = snd pair,
+					colorStyle = fst pair,
 					<f:each getByPosition 0 locSet as loc1>
 						<f:each getByPosition 1 locSet as loc2>
 							// x1 = tuple5get1 (fetch loc1),
@@ -199,7 +217,9 @@ template () {
 								return "M "+pv1.point.x+" "+pv1.point.y+" C "+pv1.vel.x+" "+pv1.vel.y+" "+pv2.vel.x+" "+pv2.vel.y+" "+pv2.point.x+" "+pv2.point.y;
 							},
 							
-							<svg:path fill="none" stroke-width="2" stroke="#00f" d="{dAtt (fetch loc1) (fetch loc2)}" />
+							isHighlighted = bindUnit (reactiveEqual identifier) mouseOverLink,
+							
+							<svg:path fill="none" stroke-width="{reactiveIfThen isHighlighted 3 2}" stroke="{colorStyle_getBorder colorStyle isHighlighted}" d="{dAtt (fetch loc1) (fetch loc2)}" />
 							
 							// <div>{loc1} to {loc2}</div>
 						</f:each>

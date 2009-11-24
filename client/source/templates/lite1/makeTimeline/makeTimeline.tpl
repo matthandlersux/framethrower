@@ -312,13 +312,15 @@ template (movie::Movie)::Timeline {
 								<f:each timeRange_range (timeLink_target timeLink) as range>
 									regionLeft = makePercent (divide (range_start range) movieDuration),
 									regionWidth = makePercent (divide (range_duration range) movieDuration),
+									colorStyle = defaultColorStyle,
+									isHighlighted = bindUnit (reactiveEqual (timeLink_target timeLink)) mouseOverLink,
 									<div class="zForeground timeline-region" style-position="absolute" style-left="{regionLeft}" style-width="{regionWidth}" style-top="0">
-										<div class="inside">
+										<div class="inside" style-border-color="{colorStyle_getBorder colorStyle isHighlighted}" style-background-color="{colorStyle_getInner colorStyle isHighlighted}">
 											<f:on click>
 												note = textRange_note (timeLink_source timeLink),
 												openNote note
 											</f:on>
-											<f:call>svgEvents (timeLink_target timeLink) false</f:call>
+											<f:call>svgEvents (timeLink_target timeLink) false defaultColorStyle</f:call>
 										</div>
 									</div>
 								</f:each>

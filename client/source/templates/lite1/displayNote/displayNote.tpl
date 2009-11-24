@@ -2,6 +2,7 @@ template (note::Note) {
 	getThumbnailURL = function (id::String, time::Number, width::Number, height::Number) {
 		return "url(http:/"+"/media.eversplosion.com/mrtesting/frame.php?time="+time+"&width="+width+"&height="+height+")";
 	},
+	colorStyle = defaultColorStyle,
 	<div>
 		<div class="zForeground" style-border="1px solid #000" style-margin="4" style-padding="4" style-background-color="#bbb" style-color="#000" style-height="100" style-overflow="auto">
 			{note_text note}
@@ -16,11 +17,11 @@ template (note::Note) {
 				<div style-float="left">
 					<f:each timeRange_range (timeLink_target timeLink) as range>
 						startTime = range_start range,
-						<div style-cursor="pointer" style-border="1px solid blue" style-width="{width}" style-height="{height}" style-background-image="{getThumbnailURL movieId startTime width height}">
+						<div style-cursor="pointer" style-border="1px solid" style-border-color="{colorStyle_getBorder colorStyle (bindUnit (reactiveEqual (timeLink_target timeLink)) mouseOverLink)}" style-width="{width}" style-height="{height}" style-background-image="{getThumbnailURL movieId startTime width height}">
 							<f:on click>
 								jumpToInMovie movie range
 							</f:on>
-							<f:call>svgEvents (timeLink_target timeLink) false</f:call>
+							<f:call>svgEvents (timeLink_target timeLink) false colorStyle</f:call>
 						</div>
 					</f:each>
 				</div>

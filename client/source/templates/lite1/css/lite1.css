@@ -38,8 +38,7 @@
 	width: 100%;
 	-moz-border-radius: 8px;
 	height: 14px;
-	border: 1px solid #36c;
-	background-color: rgba(51, 102, 204, 0.7);
+	border: 1px solid;
 	cursor: pointer;
 	text-align: center;
 }
