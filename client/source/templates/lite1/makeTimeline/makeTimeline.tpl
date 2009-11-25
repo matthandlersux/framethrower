@@ -343,6 +343,18 @@ template (movie::Movie)::Timeline {
 										unset selectedTimeStartS,
 										unset selectedTimeDurationS,
 									</f:on>
+									<f:call>
+										myDragLink = movie,
+										<f:wrapper>
+											<f:on dragstart>
+												set draggingLink myDragLink,
+												set draggingTimeRange (selectedTimeStart, selectedTimeDuration)
+											</f:on>
+											<f:on mousedown>
+											</f:on>
+											<f:call>svgEvents myDragLink false draggingColorStyle</f:call>
+										</f:wrapper>
+									</f:call>
 								</div>
 							</div>
 						</div>
@@ -395,13 +407,13 @@ template (movie::Movie)::Timeline {
 				
 				// Small Preview
 				<f:each reactiveNot fullscreened as _>
-					<div style-position="absolute" style-top="0" style-left="{mainTimelineWidth}" style-width="{smallPreviewWidth}" style-height="{smallPreviewHeight}" style-background-color="#f00">
-						<div style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">
-							<f:on click>
+					<div class="video" style-position="absolute" style-top="0" style-left="{mainTimelineWidth}" style-width="{smallPreviewWidth}" style-height="{smallPreviewHeight}">
+						<f:call>
+							fullscreenAction = <f:on click>
 								set fullscreenVideo fullscreenXMLP
-							</f:on>
-						</div>
-						Small Preview Video (not yet implemented)
+							</f:on>,
+							displayFlashVideo fullscreenAction
+						</f:call>
 					</div>
 				</f:each>
 				
@@ -425,60 +437,69 @@ template (movie::Movie)::Timeline {
 			
 	</div>,
 	
+	displayFlashVideo = template (fullscreenAction::XMLP) {
+		<f:wrapper>
+			<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground">
+				<f:call>flashVideo movieId previewTimeS (unfetch (plus selectedTimeStart selectedTimeDuration)) playingS</f:call>
+			</div>
+		
+			<div class="button" style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">
+				<f:call>fullscreenAction</f:call>
+			</div>
+			<div style-position="absolute" style-left="50%" style-top="50%" style-width="50" style-height="50" style-margin-left="-25" style-margin-top="-25">
+				<f:each bindUnit (reactiveEqual 0) playingS as _>
+					<div style-background-color="#aaa" style-width="50" style-height="50" class="button">
+						<f:on click>
+							extract bindUnit (reactiveEqual 0) selectedTimeDurationS as _ {
+								unset selectedTimeStartS,
+								unset selectedTimeDurationS
+							},
+							set playingS 1
+						</f:on>
+						play button
+					</div>
+				</f:each>
+				<f:each bindUnit (reactiveEqual 1) playingS as _>
+					<div style-background-color="#888" style-width="50" style-height="50">
+						<f:on click>
+							set playingS 0,
+							extract reactiveNot selectedTimeStartS as _ {
+								set selectedTimeStartS previewTime,
+								set selectedTimeDurationS 0							
+							}
+						</f:on>
+						loading icon
+					</div>
+				</f:each>
+				<f:each bindUnit (reactiveEqual 2) playingS as _>
+					<div style-background-color="#aaa" style-width="50" style-height="50" class="button">
+						<f:on click>
+							set playingS 0,
+							extract reactiveNot selectedTimeStartS as _ {
+								set selectedTimeStartS previewTime,
+								set selectedTimeDurationS 0							
+							}
+						</f:on>
+						pause button
+					</div>
+				</f:each>
+			</div>
+		</f:wrapper>
+	},
+	
 	fullscreenXMLP = template () {
 		
 		videoWidth = clampMax mainScreenWidth (multiply aspectRatio mainScreenHeight),
 		videoHeight = clampMax mainScreenHeight (divide mainScreenWidth aspectRatio),
 		<div class="video">
 			<div style-position="absolute" style-width="{videoWidth}" style-height="{videoHeight}" style-left="{divide (subtract mainScreenWidth videoWidth) 2}" style-top="{divide (subtract mainScreenHeight videoHeight) 2}">
-				
-				<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground">
-					<f:call>flashVideo movieId previewTimeS (unfetch (plus selectedTimeStart selectedTimeDuration)) playingS</f:call>
-				</div>
-				
-				<div class="button" style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">
-					<f:on click>
+				<f:call>
+					fullscreenAction = <f:on click>
 						unset fullscreenVideo
-					</f:on>
-				</div>
-				<div style-position="absolute" style-left="50%" style-top="50%" style-width="50" style-height="50" style-margin-left="-25" style-margin-top="-25">
-					<f:each bindUnit (reactiveEqual 0) playingS as _>
-						<div style-background-color="#aaa" style-width="50" style-height="50" class="button">
-							<f:on click>
-								extract bindUnit (reactiveEqual 0) selectedTimeDurationS as _ {
-									unset selectedTimeStartS,
-									unset selectedTimeDurationS
-								},
-								set playingS 1
-							</f:on>
-							play button
-						</div>
-					</f:each>
-					<f:each bindUnit (reactiveEqual 1) playingS as _>
-						<div style-background-color="#888" style-width="50" style-height="50">
-							<f:on click>
-								set playingS 0,
-								extract reactiveNot selectedTimeStartS as _ {
-									set selectedTimeStartS previewTime,
-									set selectedTimeDurationS 0							
-								}
-							</f:on>
-							loading icon
-						</div>
-					</f:each>
-					<f:each bindUnit (reactiveEqual 2) playingS as _>
-						<div style-background-color="#aaa" style-width="50" style-height="50" class="button">
-							<f:on click>
-								set playingS 0,
-								extract reactiveNot selectedTimeStartS as _ {
-									set selectedTimeStartS previewTime,
-									set selectedTimeDurationS 0							
-								}
-							</f:on>
-							pause button
-						</div>
-					</f:each>
-				</div>
+					</f:on>,
+					displayFlashVideo fullscreenAction
+				</f:call>
+
 			</div>
 		</div>
 	},

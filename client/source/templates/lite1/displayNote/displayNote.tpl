@@ -8,6 +8,19 @@ template (note::Note) {
 			{note_text note}
 		</div>
 		<div class="zForeground" style-height="50" style-margin="4">
+			<f:on dragend>
+				debugAction "got a mouseup",
+				extract draggingLink as movie {
+					debugAction "got here",
+					extract draggingTimeRange as range {
+						
+						timeRange <- createTimeRange movie,
+						timeRange_setRange timeRange range,
+						textRange <- createTextRange note,
+						linkTime (makeTimeLink textRange timeRange)
+					}
+				}
+			</f:on>
 			<f:each note_linksToMovies note as timeLink>
 				movie = timeRange_movie (timeLink_target timeLink),
 				aspectRatio = Movie:aspectRatio movie,
