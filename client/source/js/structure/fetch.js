@@ -29,43 +29,15 @@ function desugarFetch(template, env) {
 	else if(kind === "lineState")
 		desugarFetch(template.action, env);
 	
-	else if (kind === "lineTemplate") {
+	else if (kind === "lineTemplate") {	
+		
+		desugarFetch(template.initMrg);
+		desugarFetchLets(template.sharedLet, fetchEnv);
+		
 		// params hide previous bindings:
 		env = envMinus(env, template.params);
-
-		// lets hide previous bindings:
-		env = envMinus(env, keys(template.let));
 		
-		// repeatedly go through lets, desugaring fetched ones into env until stable:
-		// (since lets may refer to each other in unordered, weird ways)
-		// [TODO could do this more cleanly with self-referencing environment, as in closure.js:addLets()?]
-		var stable;
-		do {
-			stable = true; // assume nothing is going to happen
-			for(var v in template.let) {
-				var let = template.let[v];
-			
-				if(let.kind === "lineExpr") {
-					desugarFetch(let, env); // desugar as much as possible for now
-					
-					if(hasVariable(let.expr, fetchEnv) && env(v)!==let.expr) {
-						// expr is fetched, and either hadn't been stored before or has changed.
-						env = envAdd(env, v, let.expr);
-						stable = false; // things are happening
-					}
-				}
-			}
-		} while(!stable);
-		
-		// now get rid of fetched lets, since they are meaningless to anyone else:
-		for(var v in template.let) {
-			if(env(v))
-				delete template.let[v];
-		}
-		
-		// recurse on remaining lets:
-		for(var v in template.let)
-			desugarFetch(template.let[v], env);
+		env = desugarFetchLets(template.let, env);
 		
 		// recurse on output:
 		var output = template.output;
@@ -131,6 +103,48 @@ function desugarFetch(template, env) {
 			template.actions[i] = lineAction.actions[0];
 		}
 	}
+}
+
+
+function desugarFetchLets(lets, env)
+{
+	if(!lets) return;
+
+	// lets hide previous bindings:
+	env = envMinus(env, keys(lets));
+	
+	// repeatedly go through lets, desugaring fetched ones into env until stable:
+	// (since lets may refer to each other in unordered, weird ways)
+	// [TODO could do this more cleanly with self-referencing environment, as in closure.js:addLets()?]
+	var stable;
+	do {
+		stable = true; // assume nothing is going to happen
+		for(var v in lets) {
+			var let = lets[v];
+	
+			if(let.kind === "lineExpr") {
+				desugarFetch(let, env); // desugar as much as possible for now
+			
+				if(hasVariable(let.expr, fetchEnv) && env(v)!==let.expr) {
+					// expr is fetched, and either hadn't been stored before or has changed.
+					env = envAdd(env, v, let.expr);
+					stable = false; // things are happening
+				}
+			}
+		}
+	} while(!stable);
+
+	// now get rid of fetched lets, since they are meaningless to anyone else:
+	for(var v in lets) {
+		if(env(v))
+			delete lets[v];
+	}
+
+	// recurse on remaining lets:
+	for(var v in lets)
+		desugarFetch(lets[v], env);
+	
+	return env;
 }
 
 

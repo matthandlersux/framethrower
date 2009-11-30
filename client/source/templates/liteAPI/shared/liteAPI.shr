@@ -1,4 +1,8 @@
 
+debugString = jsaction(s::String)::Void {
+	console.log(s);
+},
+
 // ====================================================
 // State
 // ====================================================
@@ -46,11 +50,22 @@ createNote = action() {
 	add allNotes note,
 	return note
 },
-note_setText = action(note::Note, newText::String) {
-	extract note_text note as oldText {
-		// ... update Ranges based on text change
+note_setText = action(note::Note, newText::String, shifts::[(Number, Number)]) {
+	debugString "A",
+	extract note_linksToNotes note as textLink {
+		textRange_update (textLink_source textLink) shifts
 	},
-	set (Note:_text note) newText
+	debugString "B",
+	extract note_linksToMovies note as timeLink {
+		textRange_update (timeLink_source timeLink) shifts
+	},
+	debugString "C",
+	extract note_linksFromNotes note as textLink {
+		textRange_update (textLink_source textLink) shifts
+	},
+	debugString "D",
+	set (Note:_text note) newText,
+	debugString "E"
 },
 
 
@@ -146,6 +161,32 @@ textRange_setRange = action(textRange::TextRange, range::Range) {
 },
 textRange_unsetRange = action(textRange::TextRange) {
 	unset (textRange_range textRange)
+},
+textRange_update = action(textRange::TextRange, shifts::[(Number,Number)]) {
+	range = fetch (textRange_range textRange),
+	newStart <- shift_index (range_start range) shifts,
+	debugString "K",
+	newEnd <- shift_index (plus (range_start range) (range_length range)) shifts,
+	debugString "H",
+	textRange_setRange textRange (makeRange newStart (subtract newEnd newStart))
+},
+shift_index = action(i::Number, shifts::[(Number,Number)])::Number {
+	theShiftS <- create(Unit Number),
+	debugString "F",
+	extract shifts as shift {
+		j = fst shift,
+		extract boolToUnit (or (equal i j) (greaterThan i j)) as _ {
+			set theShiftS (snd shift)
+		}
+	},
+	debugString "G",
+	if theShiftS as theShift {
+		debugString "I",
+		return (plus i theShift)
+	} else {
+		debugString "J",
+		return i
+	}
 },
 
 
