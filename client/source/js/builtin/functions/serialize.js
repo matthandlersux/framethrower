@@ -1,40 +1,44 @@
-(function () {
-	
-	/*
-	uses cell.getState() recursively to generate a string representation for the cell
-	*/
-	function convertStateToString(cell) {
-		var lit = unparseLiteral(cell);
-		if (lit !== undefined) {
-			if (typeOf(cell) === "string") return cell;
-			else return lit;
-		} else {
-			if (cell.kind === "cell") {
-				
-				cell.makeSorted();
-				var state = cell.getState();
-				
-				if (cell.isMap) {
-					var ret = [];
-					forEach(state, function (entry) {
-						ret.push(convertStateToString(entry.key) + ": " + convertStateToString(entry.val));
-					});
-					return "{" + ret.join(", ") + "}";
-				} else if (state.length === 0) return "";
-				else if (state.length === 1) return convertStateToString(state[0]);
-				else {
-					var ret = [];
-					forEach(state, function (entry) {
-						ret.push(convertStateToString(entry));
-					});
-					return "[" + ret.join(", ") + "]";
-				}
-			} else {
-				//console.log("stringifying (shouldn't need to?)", cell);
-				return stringify(cell);
+/*
+uses cell.getState() recursively to generate a string representation for the cell
+*/
+function convertStateToString(cell) {
+	var lit = unparseLiteral(cell);
+	if (lit !== undefined) {
+		if (typeOf(cell) === "string") return cell;
+		else return lit;
+	} else {
+		if (cell.kind === "cell") {
+			
+			cell.makeSorted();
+			var state = cell.getState();
+			
+			if (cell.isMap) {
+				var ret = [];
+				forEach(state, function (entry) {
+					ret.push(convertStateToString(entry.key) + ": " + convertStateToString(entry.val));
+				});
+				return "{" + ret.join(", ") + "}";
+			} else if (state.length === 0) return "";
+			else if (state.length === 1) return convertStateToString(state[0]);
+			else {
+				var ret = [];
+				forEach(state, function (entry) {
+					ret.push(convertStateToString(entry));
+				});
+				return "[" + ret.join(", ") + "]";
 			}
+		} else {
+			//console.log("stringifying (shouldn't need to?)", cell);
+			return stringify(cell);
 		}
 	}
+}
+
+
+
+(function () {
+	
+
 
 
 	/*

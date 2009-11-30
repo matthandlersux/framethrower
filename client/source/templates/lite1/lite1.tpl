@@ -95,8 +95,10 @@ template () {
 	
 	
 	mouseOverLink = state(Unit Link),
+	draggingLink = state(Unit Link),
+	draggingTimeRange = state(Unit Range), // this is temporary until I figure out bug with equality
 
-	svgEvents = template (identifier::a, isHorizontal::Bool, colorStyle::ColorStyle) {
+	svgEvents = template (identifier::Link, isHorizontal::Bool, colorStyle::ColorStyle) {
 		registerSVG = action (identifier::Link, loc::Unit ScreenLocation) {
 			extract reactiveNot (contains (keys svgInfo) identifier) as _ {
 				newSet <- create(Set (Unit ScreenLocation)),
@@ -142,6 +144,15 @@ template () {
 		<f:on init>
 			initDummyData
 		</f:on>
+		
+		<f:each draggingLink as link>
+			<div class="zBackground" style-position="absolute" style-width="1" style-height="1" style-left="{UI.ui:mouseX ui.ui}" style-top="{UI.ui:mouseY ui.ui}">
+				<f:call>svgEvents link false draggingColorStyle</f:call>
+				<f:on globalmouseup>
+					unset draggingLink
+				</f:on>
+			</div>
+		</f:each>
 	
 
 		
@@ -237,6 +248,21 @@ template () {
 			<f:each reactiveNot fullscreenVideo as _>
 				<f:call>movieSelector</f:call>
 			</f:each>
+			
+			// // for debug:
+			// <div>
+			// 	<f:each svgInfo as identifier, pair>
+			// 		<div>
+			// 			{identifier}
+			// 			<div style-margin="5">
+			// 				<f:each snd pair as loc>
+			// 					<div>{loc}</div>
+			// 				</f:each>
+			// 			</div>
+			// 		</div>
+			// 	</f:each>
+			// 	{setGlobalDebugVar draggingLink}
+			// </div>
 			
 			<div style-position="absolute" style-bottom="16" style-right="0">
 				<f:each notePops as index, note>
