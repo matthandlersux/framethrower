@@ -12,6 +12,10 @@ debug = function (x::a)::Number {
 	console.log(x);
 	return 0;
 },
+setGlobalDebugVar = function (x::a)::Number {
+	globalDebugVar = x;
+	return 0;
+},
 
 emptyAction = action () {
 	

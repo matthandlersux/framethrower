@@ -261,6 +261,7 @@ template () {
 			// 			</div>
 			// 		</div>
 			// 	</f:each>
+			// 	{setGlobalDebugVar draggingLink}
 			// </div>
 			
 			<div style-position="absolute" style-bottom="16" style-right="0">

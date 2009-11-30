@@ -1,4 +1,5 @@
-addFun("equal", "a -> a -> Bool", function (x, y) {return x === y;});
+//addFun("equal", "a -> a -> Bool", function (x, y) {return x === y;});
+addFun("equal", "a -> a -> Bool", function (x, y) {return stringify(x) === stringify(y);});
 
 addFun("greaterThan", "a -> a -> Bool", function (x, y) {return x > y;});
 addFun("lessThan", "a -> a -> Bool", function (x, y) {return x < y;});

@@ -344,7 +344,7 @@ template (movie::Movie)::Timeline {
 										unset selectedTimeDurationS,
 									</f:on>
 									<f:call>
-										myDragLink = movie,
+										myDragLink = (movie, selectedTimeStartS, selectedTimeDurationS),
 										<f:wrapper>
 											<f:on dragstart>
 												set draggingLink myDragLink,

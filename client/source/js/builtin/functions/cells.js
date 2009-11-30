@@ -119,7 +119,7 @@
 							injectedFunc.unInject;
 							if (clearOutput) clearOutput();
 							uninjectDone = true;
-						}
+						};
 					}, undefined, true);
 					return outputCell;
 				}
@@ -741,7 +741,8 @@
 					var outputCell = makeCellUnit();
 
 					cell.inject(outputCell, function (keyVal) {
-						if (keyVal.key == key) {
+						//if (keyVal.key === key) {
+						if (stringify(keyVal.key) === stringify(key)) {
 							outputCell.addLine(keyVal.val);
 							return function () {outputCell.removeLine(keyVal.val);};
 						}
