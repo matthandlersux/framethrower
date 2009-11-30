@@ -94,6 +94,14 @@ newState() ->
 standard() -> {send, []}.
 
 %% 
+%% makeFunction :: Atom -> List a -> OutputFunction
+%% 		
+%%		
+
+makeFunction(OutputName, Args) ->
+	{OutputName, Arguments}.
+
+%% 
 %% newConnections :: SendTo
 %% 
 
