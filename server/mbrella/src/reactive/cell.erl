@@ -186,12 +186,20 @@ injectOutput(CellPointer, OutputToCellPointer, OutputName) ->
 %% 
 	
 injectOutput(CellPointer, OutputToCellPointer, OutputName, Arguments) ->
-	OutputFunction = {OutputName, Arguments},
+	OutputFunction = outputs:makeFunction(OutputName, Arguments),
 	gen_server:cast(
 		cellPointer:pid(CellPointer),
 		{injectOutput, OutputToCellPointer, OutputFunction}
 	).
 	
+%% 
+%% updateOutputState :: CellPointer -> OutputFunction -> ____ -> ok
+%% 		
+%%		
+
+updateOutputState(CellPointer, OutputFunction, StateMessage) ->
+	gen_server:cast(cellPointer:pid(CellPointer), {updateOutputState, OutputFunction, StateMessage}).
+
 %% 
 %% uninjectOutput :: CellPointer -> CellPointer -> ok
 %% 		
@@ -387,6 +395,39 @@ handle_cast({uninjectOutput, OutputTo, OutputFunction}, State) ->
 				_ ->
 					{noreply, State1}
 			end
+	end;
+	
+handle_cast({updateOutputState, OutputFunction, StateMessage}, CellState) ->
+	% TODO: tidy this code, it is almost an exact copy of the function outputAllElements/3
+	% the difference is that we send StateMessage instead of list off all elements, and dock all Connections
+	
+	Outputs = cellState:getOutputs(CellState),
+	Output = outputs:getOutput(OutputFunction, Outputs),
+	ListOfConnections = outputs:getConnections(Output),
+
+	ThisCell = cellState:cellPointer(CellState),
+	AllElements = cellState:getElements(CellState),
+	IsDone = cellState:isDone(CellState),
+	WaitForDone = cellState:getFlag(CellState, waitForDone),
+	IsLeashed = cellState:getFlag(CellState, leashed),
+	
+	{OutputState, ResponseElements} = outputs:call(Output, AllElements, [StateMessage]),
+	NewCellState = cellState:updateOutputState(CellState, Output, OutputState),
+	
+	if
+		IsLeashed orelse (WaitForDone andalso (not IsDone)) ->
+			UpdateDock = 	fun(CellPointer, FoldedCellState) ->
+								cellState:updateDock(FoldedCellState, CellPointer, NewElements)
+							end,
+			lists:foldl(UpdateDock, NewCellState, ListOfConnections);
+		true ->
+			OutputDockAndElements = 	fun(CellPointer, FoldedCellState) ->
+											ExtraElements = cellState:getDock(FoldedCellState, OutputTo),
+											FoldedCellState1 = cellState:emptyDock(FoldedCellState, OutputTo),
+											sendToProcess(CellPointer, ThisCell, ResponseElements ++ ExtraElements),
+											FoldedCellState1
+										end,
+			lists:foldl(OutputDockAndElements, NewCellState, ListOfConnections)
 	end;
 
 handle_cast({setFlag, Flag, Setting}, State) ->
