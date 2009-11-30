@@ -445,6 +445,36 @@ sessionOutput(QueryId, _State, _ElementsState, Element)	->
 	Modifer = cellElements:modifier(Element),
 	Value = cellElements:value(Element),
 	{undefined, [cellElements:createMap(Modifer, QueryId, Value)]}.
+	
+%% 
+%% setRangeKey :: Atom -> 
+%% 		
+%%		
+
+setRangeKeys() -> undefined.
+
+setRangeKeys(CellToManipulate, OutputFunction, _State, _ElementsState, Element) ->
+	case cellElements:modifier(Element) of
+		remove ->
+			{undefined, []};
+		_ ->
+			cell:updateOutputState(CellToManipulate, OutputFunction, {changeRange, cellElements:value(Element)}),
+			{undefined, []}
+	end;
+	
+
+%% 
+%% rangeByKeys :: 
+%% 		
+%%		
+
+rangeByKeys() -> {undefined, undefined}.
+
+rangeByKeys(_Identifier, {Beginning, End}, ElementsState, {changeRange, {NewBeginning, NewEnd}}) ->
+	% call data structure
+rangeByKeys(_Identifier, {Beginning, End}, _ElementsState, Element) ->
+	% check if Element is within range or not and output
+	todo.
 			
 %% ====================================================
 %% Utilities
