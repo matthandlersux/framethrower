@@ -81,6 +81,11 @@ function desugarFetch(template, env) {
 			else if (action.kind === "extract") {
 				desugarFetch(action.action, env);
 				action.select = processFetch(action.select, env, "_fetchExtractSelect", vars, vals);
+			} 
+			else if (action.kind === "case") {
+				desugarFetch(action.lineTemplate, env);
+				desugarFetch(action.otherwise, env);
+				action.test = processFetch(action.test, env, "_fetchCaseSelect", vars, vals);
 			}
 
 			if(v && env(v)) // new binding overrides a fetched binding

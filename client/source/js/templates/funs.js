@@ -19,8 +19,6 @@ function mapUnitJS(f, outputType, numArgs) {
 			});
 			if (allDone) {
 				outputCell.addLine(f.apply(null, inputs));
-			} else {
-				outputCell.removeLine();
 			}
 		}
 		
@@ -30,7 +28,7 @@ function mapUnitJS(f, outputType, numArgs) {
 				update();
 				return function () {
 					inputs[i] = undefined;
-					update();
+					outputCell.removeLine();
 				};
 			}, undefined, true);
 		});
