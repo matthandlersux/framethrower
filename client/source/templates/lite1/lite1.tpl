@@ -267,15 +267,13 @@ template () {
 			<div style-position="absolute" style-bottom="16" style-right="0">
 				<f:each notePops as index, note>
 					<div style-position="relative" style-width="260" style-height="190" style-margin="16" style-float="right">
-						<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground" style-background-color="#333" />
-						<div style-text-align="right">
-							<span class="button">
-								(x)
-								<f:on click>
-									removeEntry notePops index
-								</f:on>
-							</span>
+						<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground" style-background-color="#333" />						
+						<div class="button close-button" style-float="right">
+							<f:on click>
+								removeEntry notePops index
+							</f:on>
 						</div>
+						<div style-clear="both" />
 						<f:call>displayNote note</f:call>
 					</div>
 				</f:each>
@@ -296,14 +294,14 @@ template () {
 						<div style-position="relative" style-width="{screenWidth}" style-height="{timelineHeight}" class="timeline">
 							<f:call>timeline_xmlp timeline</f:call>
 							// Movie Title
-							<div class="titlebar" style-position="absolute" style-left="0" style-top="-26" style-height="20">
-								{Movie:title (timeline_movie timeline)}
-								<span>
+							<div class="titlebar zForeground1" style-position="absolute" style-left="0" style-top="-26" style-height="20">
+								<div class="button close-button" style-float="right" style-margin-left="8">
 									<f:on click>
 										removeEntry timelines index
 									</f:on>
-									(x)
-								</span>
+								</div>
+								{Movie:title (timeline_movie timeline)}
+
 							</div>
 						</div>
 					</f:wrapper>
