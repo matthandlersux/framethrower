@@ -202,14 +202,17 @@ handle_cast({sendElements, []}, State) ->
 	% handle donemessage stuff here
 	flushOrWait(State, ?AdjacentElementDelay);
 	
-handle_cast({sendElements, Elements}, State) ->
-	UnpackElements = 	fun(PackedElement, ListOfQueryUpdates) ->
-							QueryId = cellElements:mapKey(PackedElement),
-							Value = cellElements:mapValue(PackedElement),
-							Modifier = cellElements:modifier(PackedElement),
-							[queryUpdate(QueryId, Modifier, cellElements:create(Modifier, Value))|ListOfQueryUpdates]
-						end,
-	NewQueryUpdates = lists:foldr(UnpackElements, [], Elements),
+handle_cast({sendElements, PackedElements}, State) ->
+	%elements = list {add, queryid, [Elements]}
+	QueryId = cellElements:mapKey(PackedElements),
+	Elements = cellElements:mapValue(PackedElements),
+	% UnpackElements = 	fun(PackedElement, ListOfQueryUpdates) ->
+	% 						QueryId = cellElements:mapKey(PackedElement),
+	% 						Value = cellElements:mapValue(PackedElement),
+	% 						Modifier = cellElements:modifier(PackedElement),
+	% 						[queryUpdate(QueryId, Modifier, cellElements:create(Modifier, Value))|ListOfQueryUpdates]
+	% 					end,
+	NewQueryUpdates = queryUpdate(QueryId, Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
 	flushOrWait(State1, ?AdjacentElementDelay);
 handle_cast({sendActionUpdate, Update}, State) ->
@@ -310,21 +313,26 @@ flush(State) ->
 	resetReruns(State2).
 
 %% 
-%% queryUpdate :: Number -> Element -> JSONStruct
+%% queryUpdate :: Number -> List Element -> JSONStruct
 %% 		used to convert an element to a queryupdate
 %%		
 
-queryUpdate(QueryId, Modifier, Element) ->
-	Fields = 	case cellElements:isMap(Element) of
-					true ->
-						Key = cellElements:mapKey(Element),
-						Value = cellElements:mapValue(Element),
-						[{"key", mblib:exprElementToJson(Key)}, {"value", mblib:exprElementToJson(Value)}];
-					_ ->
-						[{"key", mblib:exprElementToJson( cellElements:value(Element) ) }]
-				end,
+queryUpdate(QueryId, Elements) ->
+	ElementToUpdate = 	fun(Element, Updates) ->
+							Modifier = cellElements:modifier(Element),
+							Fields = 	case cellElements:isMap(Element) of
+											true ->
+												Key = cellElements:mapKey(Element),
+												Value = cellElements:mapValue(Element),
+												[{"key", mblib:exprElementToJson(Key)}, {"value", mblib:exprElementToJson(Value)}];
+											_ ->
+												[{"key", mblib:exprElementToJson( cellElements:value(Element) ) }]
+										end,
+							[{struct, [{"action", Modifier}|Fields]}] ++ Updates
+						end,
+	ListOfUpdates = lists:foldr(ElementToUpdate, [], Elements),
 	{struct, [{"queryUpdate",
-		{struct, [{"queryId", list_to_binary(QueryId)},{"action", Modifier}|Fields]}	
+		{struct, [{"queryId", list_to_binary(QueryId)},{"updates", {struct, ListOfUpdates}}]}	
 	}]}.
 	
 %% 
