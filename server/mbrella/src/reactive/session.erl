@@ -203,15 +203,8 @@ handle_cast({sendElements, []}, State) ->
 	flushOrWait(State, ?AdjacentElementDelay);
 	
 handle_cast({sendElements, [PackedElements]}, State) ->
-	%elements = list {add, queryid, [Elements]}
 	QueryId = cellElements:mapKey(PackedElements),
 	Elements = cellElements:mapValue(PackedElements),
-	% UnpackElements = 	fun(PackedElement, ListOfQueryUpdates) ->
-	% 						QueryId = cellElements:mapKey(PackedElement),
-	% 						Value = cellElements:mapValue(PackedElement),
-	% 						Modifier = cellElements:modifier(PackedElement),
-	% 						[queryUpdate(QueryId, Modifier, cellElements:create(Modifier, Value))|ListOfQueryUpdates]
-	% 					end,
 	NewQueryUpdates = queryUpdate(QueryId, Elements),
 	State1 = updateQueue(State, NewQueryUpdates),
 	flushOrWait(State1, ?AdjacentElementDelay);
