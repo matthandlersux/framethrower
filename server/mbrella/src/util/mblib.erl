@@ -180,6 +180,7 @@ curry(Func, Arity, Args) ->
 %% 
 
 exprElementToJson(X) when is_list(X) -> list_to_binary(X);
+exprElementToJson({list, List}) -> lists:map(fun exprElementToJson/1, List);
 exprElementToJson(Tuple) when is_tuple(Tuple) ->
 	case cellPointer:isCellPointer(Tuple) of
 		true ->
@@ -207,9 +208,8 @@ createExprLib(ExprLibStruct) ->
 		{BinName, BinExpr} = Anything,
 		Name = binary_to_list(BinName),
 		try 
-			ParsedExpr = parse:parse(binary_to_list(BinExpr))
-			% cellStore:store(Name, {exprLib, ParsedExpr})
-			%TODO: add expr to functionTable?
+			ParsedExpr = parse:parse(binary_to_list(BinExpr)),
+			functionTable:add(Name, ParsedExpr)
 		catch
 			_:_ -> nosideeffect
 		end

@@ -48,7 +48,12 @@ var makeTupleEnv = function (s) {
 	}
 	var type = parseType( paramsType+" -> "+tupleType );
 
-	return makeFun(type, makeTuple, n, s);
+	makeTupleFun = function() {
+		var asArray = Array.prototype.slice.call(arguments);
+		return makeTuple(asArray);
+	};
+
+	return makeFun(type, makeTupleFun, n, s);
 };
 familyEnv = extendEnv(familyEnv, makeTupleEnv);
 

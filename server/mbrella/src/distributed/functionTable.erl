@@ -23,8 +23,7 @@ create() ->
 % add:: String -> AST -> ok
 % Add a Name, Value pair to the table
 add(Name, Value) ->
-	ets:insert(functionTable, {Name, Value}),
-	ok.
+	gen_server:call(?MODULE, {add, Name, Value}).
 
 % lookup:: String -> AST
 % Lookup a function by Name.
@@ -76,17 +75,20 @@ init([]) ->
 	%add the primFuncs to the functionTable
 	{_, PrimFuncExports} = lists:keyfind(exports, 1, primFuncs:module_info()),
 	lists:foreach(fun({Name, Arity}) ->
-		add(atom_to_list(Name), ast:makeFunction(primFuncs, Name, Arity))
+		insert(atom_to_list(Name), ast:makeFunction(primFuncs, Name, Arity))
 	end, PrimFuncExports),
 	
 	%add the action functions to the functionTable
 	{_, ActionExports} = lists:keyfind(exports, 1, actions:module_info()),
 	lists:foreach(fun({Name, Arity}) ->
-		add(atom_to_list(Name), ast:makeFunction(actions, Name, Arity))
+		insert(atom_to_list(Name), ast:makeFunction(actions, Name, Arity))
 	end, ActionExports),
 	
     {ok, nostate}.
 
+handle_call({add, Name, Value}, _, State) ->
+	insert(Name, Value),
+	{reply, ok, State};
 handle_call(stop, _, State) ->
 	{stop, normal, stopped, State}.
 
@@ -96,3 +98,8 @@ handle_cast(_, State) ->
 handle_info(_, State) -> {noreply, State}.
 terminate(_, _) -> ok.
 code_change(_, State, _) -> {ok, State}.
+
+
+insert(Name, Value) ->
+	ets:insert(functionTable, {Name, Value}),
+	ok.

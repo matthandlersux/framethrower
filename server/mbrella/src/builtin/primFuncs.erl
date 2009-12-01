@@ -8,6 +8,7 @@
 	bindUnit/2, bindSet/2, bindMap/2,
 	union/2, setDifference/2, unfoldSet/2, unfoldMap/2, invert/1,
 	equal/2, dOr/2, dNot/1, dAnd/2, plus/2, subtract/2,
+	nil/0, cons/2, append/2, head/1, tail/1,
 	oneTo/1, oneToMap/2, factors/1, split/1, debug/1, floodUntil/1, floodPump/2	
 ]).
 
@@ -266,7 +267,10 @@ setDifference(CellPointer1, CellPointer2) ->
 %%		
 
 equal(A, B) ->
-	A =:= B.
+	?trace(["Equal", A, B]),
+	Ans = A =:= B,
+	?trace(Ans),
+	Ans.
 
 %% 
 %% dNot :: Bool -> Bool
@@ -307,6 +311,27 @@ plus(Number1, Number2) ->
 
 subtract(Number1, Number2) ->
 	Number1 - Number2.
+
+
+%% ---------------------------------------------
+%% list functions
+%% ---------------------------------------------
+
+nil() ->
+	{list, []}.
+
+cons(Item, {list, List}) ->
+	{list, [Item | List]}.
+
+append({list, List1}, {list, List2}) ->
+	{list, List1 ++ List2}.
+	
+head({list, List}) ->
+	hd(List).
+	
+tail({list, List}) ->
+	tl(List).
+
 
 %% ---------------------------------------------
 %% other functions

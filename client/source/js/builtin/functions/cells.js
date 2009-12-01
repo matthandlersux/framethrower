@@ -735,6 +735,20 @@
 					return outputCell;
 				}
 			},
+			mapMapKeyValue : {
+				type : "(c -> a -> b) -> Map c a -> Map c b",
+				func : function (f, cell) {
+					var outputCell = makeCellMap();
+
+					cell.inject(outputCell, function (keyVal) {
+						var result = applyFunc(applyFunc(f, keyVal.key), keyVal.val);
+						outputCell.addLine({key:keyVal.key, val:result});
+						return function () {outputCell.removeLine({key:keyVal.key, val:result});};
+					});
+
+					return outputCell;
+				}
+			},			
 			getKey : {
 				type : "a -> Map a b -> Unit b",
 				func : function (key, cell) {

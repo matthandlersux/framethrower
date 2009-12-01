@@ -77,6 +77,14 @@ makeTuple(Tuple) when is_tuple(Tuple) ->
 	{tuple, Tuple}.
 
 
+%%
+%% makeList :: List -> ListAST
+%%
+%%
+
+makeList({list, List}) when is_list(List) ->
+	{list, List}.
+
 
 %%
 %% makeUnboundVariable :: String -> UnboundVariableAST
@@ -330,6 +338,14 @@ getArity({apply, { AST , Parameters}}) -> getArity(AST) - length(Parameters).
 getTuple({tuple, Tuple}) ->
 	Tuple.
 
+%% 
+%% getList :: ListAST -> ErlangList
+%% 		
+%%		
+
+getList({list, List}) ->
+	List.
+
 %%
 %% type :: AST -> Atom
 %%
@@ -387,6 +403,7 @@ termToAST(Term) ->
 			true -> makeObject(Term);
 			_ -> case Term of
 				{actionMethod, _} = ActionMethod -> ActionMethod;
+				{list, List} -> makeList({list, lists:map(fun termToAST/1, List)});
 				Tuple when is_tuple(Tuple) -> 
 					makeTuple(list_to_tuple(lists:map(fun termToAST/1, tuple_to_list(Tuple))));
 				_ -> throw([not_yet_implemented, Term])
@@ -483,6 +500,8 @@ toTerm({instruction, _} = Instruction) ->
 	Instruction;
 toTerm({tuple, Tuple}) ->
 	list_to_tuple(lists:map(fun toTerm/1, tuple_to_list(Tuple)));
+toTerm({list, List}) ->
+	{list, lists:map(fun toTerm/1, List)};
 toTerm({_LiteralType, LiteralValue}) ->
 	LiteralValue;
 toTerm(Term) ->

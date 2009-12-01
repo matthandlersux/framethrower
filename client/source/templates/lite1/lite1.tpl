@@ -140,11 +140,6 @@ template () {
 	
 	
 	<div>
-		// for reals
-		<f:on init>
-			initDummyData
-		</f:on>
-		
 		<f:each draggingLink as link>
 			<div class="zBackground" style-position="absolute" style-width="1" style-height="1" style-left="{UI.ui:mouseX ui.ui}" style-top="{UI.ui:mouseY ui.ui}">
 				<f:call>svgEvents link false draggingColorStyle</f:call>

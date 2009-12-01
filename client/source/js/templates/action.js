@@ -204,16 +204,22 @@ function helpExecuteAction (instruction) {
 						executeAction(inner(element));
 					});
 				} else { // select is a cell
-					var done = false;
+					var done = false; uninjected = false;
 					var injectedFunc = select.injectDependency(function () { // wait until select cell is 'done', then iterate over its elements
 						if (!done) {
 							done = true;
 							forEach(select.getState(), function (element) {
 								executeAction(inner(element));
 							});
+							if (injectedFunc !== undefined) {
+								injectedFunc.unInject();
+								uninjected = true;
+							}
 						}
 					});
-					injectedFunc.unInject();
+					if (done && !uninjected) {
+						injectedFunc.unInject();
+					}
 				}
 				// extract returns undefined, so even if it is asynchronous we don't need to wait for it
 				output = {async:false, value:undefined};
