@@ -3,6 +3,7 @@
 	call/3,	getArguments/1,	construct/2, construct/1,
 	extract/0, extract/5,
 	debug/0, debug/3,
+	reactiveNot/0, reactiveNot/3,
 	reactiveAnd/0, reactiveAnd/5,
 	invert/0, invert/4,
 	setDifference/0, setDifference/5,
@@ -103,6 +104,25 @@ debug() -> [].
 debug( _, From, Element ) ->
 	io:format("\033[45mRECEIVED FROM: ~p: ~p\033[49m~n", [From, Element]),
 	{[],Element}.
+
+%% 
+%% reactiveNot :: InterceptState -> CellPointer -> Element -> Tuple InterceptState (List Element)
+%% 		
+%%		
+
+reactiveNot() -> undefined.
+
+reactiveNot( NullState, _From, Element ) ->
+	case cellElements:modifier(Element) of
+		add when NullState =:= undefined ->
+			{ null, [cellElements:createRemove(null)] };
+		add ->
+			{ NullState, [] };
+		remove when NullState =:= null ->
+			{ undefined, [cellElements:createAdd(null)] };
+		_ ->
+			{ undefined, [] }
+	end.
 	
 %% 
 %% reactiveAnd :: CellPointer -> CellPointer -> InterceptState -> CellPointer -> Element -> Tuple InterceptState (List Element)
