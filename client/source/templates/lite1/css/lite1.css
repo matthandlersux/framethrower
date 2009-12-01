@@ -6,6 +6,8 @@
 @import url(timeline.css);
 @import url(zIndex.css);
 
+@import url(buttons.css);
+
 
 .separator {
 	background-color: #666;
