@@ -1,0 +1,45 @@
+
+/*these are all 50x50 currently*/
+.play-button {
+	background-color:#aaa;
+}
+.pause-button {
+	background-color:#aaa;
+}
+.loading-icon {
+	background-color:#aaa;
+}
+
+
+/*20x16*/
+.scroll-button-left {
+	
+}
+.scroll-button-right {
+	
+}
+
+
+/*change these sizes if you like*/
+.fullscreen-button {
+	top: 5px;
+	right: 5px;
+	width: 20px;
+	height: 20px;
+	background-color: #aaa;	
+}
+.unfullscreen-button {
+	top: 10px;
+	right: 10px;
+	width: 50px;
+	height: 50px;
+	background-color: #aaa;
+}
+
+
+.close-button {
+	width: 12px;
+	height: 12px;
+	background-color: #f0f;
+}
+
