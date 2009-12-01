@@ -142,3 +142,6 @@ function makeExtract(output, varName, value) {
 		params: [varName], let: {}, output: output, type: makeTypeLambda(makeFreshTypeVar(),output.type)};
 	return {kind: "extract", select: value, action: lineTemplate};
 }
+
+
+var globalDebugVar;

@@ -119,7 +119,7 @@
 							injectedFunc.unInject;
 							if (clearOutput) clearOutput();
 							uninjectDone = true;
-						}
+						};
 					}, undefined, true);
 					return outputCell;
 				}
@@ -735,13 +735,28 @@
 					return outputCell;
 				}
 			},
+			mapMapKeyValue : {
+				type : "(c -> a -> b) -> Map c a -> Map c b",
+				func : function (f, cell) {
+					var outputCell = makeCellMap();
+
+					cell.inject(outputCell, function (keyVal) {
+						var result = applyFunc(applyFunc(f, keyVal.key), keyVal.val);
+						outputCell.addLine({key:keyVal.key, val:result});
+						return function () {outputCell.removeLine({key:keyVal.key, val:result});};
+					});
+
+					return outputCell;
+				}
+			},			
 			getKey : {
 				type : "a -> Map a b -> Unit b",
 				func : function (key, cell) {
 					var outputCell = makeCellUnit();
 
 					cell.inject(outputCell, function (keyVal) {
-						if (keyVal.key == key) {
+						//if (keyVal.key === key) {
+						if (stringify(keyVal.key) === stringify(key)) {
 							outputCell.addLine(keyVal.val);
 							return function () {outputCell.removeLine(keyVal.val);};
 						}

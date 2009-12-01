@@ -34,4 +34,5 @@
 	background-color: rgba(68, 68, 88, 0.8);
 /*	background-color: #22222c;*/
 	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
 }

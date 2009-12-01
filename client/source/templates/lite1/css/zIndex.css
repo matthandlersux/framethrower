@@ -9,6 +9,9 @@
 .zForeground {
 	z-index: 30;
 }
+.zForeground1 {
+	z-index: 31;
+}
 
 .zTarget {
 	z-index: 40;

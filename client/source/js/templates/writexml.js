@@ -613,7 +613,7 @@ function evaluateXMLInsert(xmlInsert, env, callback) {
 			var injectedFunc = evaluateAndInject(serialized, emptyFunction, callback); // NOTE: might want to wrap callback so that it returns an empty function?
 			return injectedFunc.unInject;
 		} else {
-			callback(result);
+			callback(convertStateToString(result));
 			return null;
 		}
 	}

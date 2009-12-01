@@ -1,10 +1,20 @@
 -module (parseUtil).
 -compile( export_all).
 
-cutOffRightQuote([$\"|R]) ->
+% cutOffRightQuote must ignore backslash quote
+
+cutOffRightQuote(String) -> cutOffRightQuote(String, unescaped).
+
+cutOffRightQuote([L|R], escaped) ->
+	{Ans, Rest} = cutOffRightQuote(R, unescaped),
+	{[L|Ans], Rest};
+cutOffRightQuote([$\"|R], unescaped) ->
 	{[], R};
-cutOffRightQuote([L|R]) ->
-	{Ans, Rest} = cutOffRightQuote(R),
+cutOffRightQuote([$\\|R], unescaped) ->
+	{Ans, Rest} = cutOffRightQuote(R, escaped),
+	{[$\\|Ans], Rest};
+cutOffRightQuote([L|R], unescaped) ->
+	{Ans, Rest} = cutOffRightQuote(R, unescaped),
 	{[L|Ans], Rest}.
 
 untilSpaceOrRightParen([]) ->

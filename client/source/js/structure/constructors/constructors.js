@@ -97,11 +97,12 @@ function makeOrd(value) {
 // list, tuple
 // =====================================================================
 
-function makeList(asArray) {
+function makeList(asArray, remoteLevel) {
+	if (remoteLevel === undefined) remoteLevel = remote.localOnly;
 	return {
 		kind: "list",
 		type: parseType("[a]"),
-		remote: remote.localOnly,
+		remote: remoteLevel,
 		outsideScope: 0,
 		asArray: asArray
 	};
@@ -115,14 +116,15 @@ function makeTupleType(n) {
 	return tupleType;
 }
 
-function makeTuple() {
+function makeTuple(asArray, remoteLevel) {
+	if (remoteLevel === undefined) remoteLevel = remote.localOnly;
 	//var n = arguments.length;
     return {
         //kind: "tuple"+n,
         kind: "tuple",
 		//name: localIds(),
-		remote: remote.localOnly,
-        asArray: Array.prototype.slice.call(arguments)
+		remote: remoteLevel,
+        asArray: asArray
     };
 }
 
@@ -309,6 +311,8 @@ var stringifyForServer = memoizeF("stringifyForServer", function (expr) {
 		var arity = tupleArray.length;
 		var stringifiedArray = map(tupleArray, stringifyForServer);
 		return "(makeTuple" + arity + " " + stringifiedArray.join(" ") + ")";
+	} else if (expr.kind === "list") {
+		console.log("LIST!!! in stringifyForServer");
 	} else {
 		return "" + stringify(expr); //addition necessary because of optimization hack in unparseLiteral
 	}

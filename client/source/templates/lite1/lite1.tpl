@@ -95,8 +95,10 @@ template () {
 	
 	
 	mouseOverLink = state(Unit Link),
+	draggingLink = state(Unit Link),
+	draggingTimeRange = state(Unit Range), // this is temporary until I figure out bug with equality
 
-	svgEvents = template (identifier::a, isHorizontal::Bool, colorStyle::ColorStyle) {
+	svgEvents = template (identifier::Link, isHorizontal::Bool, colorStyle::ColorStyle) {
 		registerSVG = action (identifier::Link, loc::Unit ScreenLocation) {
 			extract reactiveNot (contains (keys svgInfo) identifier) as _ {
 				newSet <- create(Set (Unit ScreenLocation)),
@@ -138,10 +140,14 @@ template () {
 	
 	
 	<div>
-		// for reals
-		<f:on init>
-			initDummyData
-		</f:on>
+		<f:each draggingLink as link>
+			<div class="zBackground" style-position="absolute" style-width="1" style-height="1" style-left="{UI.ui:mouseX ui.ui}" style-top="{UI.ui:mouseY ui.ui}">
+				<f:call>svgEvents link false draggingColorStyle</f:call>
+				<f:on globalmouseup>
+					unset draggingLink
+				</f:on>
+			</div>
+		</f:each>
 	
 
 		
@@ -238,18 +244,31 @@ template () {
 				<f:call>movieSelector</f:call>
 			</f:each>
 			
+			// // for debug:
+			// <div>
+			// 	<f:each svgInfo as identifier, pair>
+			// 		<div>
+			// 			{identifier}
+			// 			<div style-margin="5">
+			// 				<f:each snd pair as loc>
+			// 					<div>{loc}</div>
+			// 				</f:each>
+			// 			</div>
+			// 		</div>
+			// 	</f:each>
+			// 	{setGlobalDebugVar draggingLink}
+			// </div>
+			
 			<div style-position="absolute" style-bottom="16" style-right="0">
 				<f:each notePops as index, note>
 					<div style-position="relative" style-width="260" style-height="190" style-margin="16" style-float="right">
-						<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground" style-background-color="#333" />
-						<div style-text-align="right">
-							<span class="button">
-								(x)
-								<f:on click>
-									removeEntry notePops index
-								</f:on>
-							</span>
+						<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground" style-background-color="#333" />						
+						<div class="button close-button" style-float="right">
+							<f:on click>
+								removeEntry notePops index
+							</f:on>
 						</div>
+						<div style-clear="both" />
 						<f:call>displayNote note</f:call>
 					</div>
 				</f:each>
@@ -270,14 +289,14 @@ template () {
 						<div style-position="relative" style-width="{screenWidth}" style-height="{timelineHeight}" class="timeline">
 							<f:call>timeline_xmlp timeline</f:call>
 							// Movie Title
-							<div class="titlebar" style-position="absolute" style-left="0" style-top="-26" style-height="20">
-								{Movie:title (timeline_movie timeline)}
-								<span>
+							<div class="titlebar zForeground1" style-position="absolute" style-left="0" style-top="-26" style-height="20">
+								<div class="button close-button" style-float="right" style-margin-left="8">
 									<f:on click>
 										removeEntry timelines index
 									</f:on>
-									(x)
-								</span>
+								</div>
+								{Movie:title (timeline_movie timeline)}
+
 							</div>
 						</div>
 					</f:wrapper>

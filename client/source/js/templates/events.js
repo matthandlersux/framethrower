@@ -148,12 +148,13 @@ function makeEventExtrasEnv(env, extra) {
 		// }
 	}
 	function mouseup(e) {
-		processEvent("mouseup", e);
+		
 		if (mouseIsDragging) {
 			processEvent("dragend", e);
 		} else {
 			processEvent("click", mouseIsDown);
 		}
+		processEvent("mouseup", e);
 		mouseIsDown = false;
 		mouseIsDragging = false;
 	}

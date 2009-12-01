@@ -51,7 +51,7 @@ call(OutputFunction, OutputState, Elements, ElementsToAdd) ->
 %% 
 
 callOutput(Name, Args, State, ElementsState, []) ->
-	try processElement(Name, Args, State, ElementsState, [])
+	try processElement(Name, Args, State, ElementsState, [], [])
 	catch
 		throw:NewStateAndElements ->
 			NewStateAndElements;
@@ -60,7 +60,7 @@ callOutput(Name, Args, State, ElementsState, []) ->
 	end;
 callOutput(Name, Args, State, ElementsState, Elements) ->
 	Process = fun(Element, {OldState, OldElements}) ->
-		{NewState, NewElements} = processElement(Name, Args, OldState, ElementsState, Element),
+		{NewState, NewElements} = processElement(Name, Args, OldState, ElementsState, Elements, Element),
 		{NewState, NewElements ++ OldElements}
 	end,
 	try lists:foldr(Process, {State, []}, Elements)
@@ -197,12 +197,12 @@ toFunction(OutputFunction) when is_tuple(OutputFunction) -> OutputFunction;
 toFunction(Name) when is_atom(Name) -> {Name, []}.
 
 %% 
-%% processElement :: Atom -> List Value -> OutputState -> ElementState -> Element -> 
+%% processElement :: Atom -> List Value -> OutputState -> ElementState -> List Element -> Element -> 
 %%					Tuple OutputState (List Element) | Tuple3 Atom OutputState (List Element)
 %% 
 
-processElement(Name, Args, OutputState, ElementsState, Element) ->
-	case erlang:apply(outputs, Name, Args ++ [OutputState] ++ [ElementsState] ++ [Element]) of
+processElement(Name, Args, OutputState, ElementsState, Elements, Element) ->
+	case erlang:apply(outputs, Name, Args ++ [OutputState] ++ [ElementsState] ++ [Elements] ++ [Element]) of
 		{NewState, Elements} when is_list(Elements) ->
 			{NewState, Elements};
 		{NewState, Elements} when is_tuple(Elements) ->
@@ -258,14 +258,14 @@ construct({Name, Args}) ->
 isEmpty() -> 
 	empty.
 	
-isEmpty(null, ElementsState, _Element) ->
+isEmpty(null, ElementsState, _Elements, _Element) ->
 	case cellElements:isEmpty(ElementsState) of
 		true ->
 			throw({null, []});
 		false ->
 			throw({empty, [cellElements:createRemove(null)]})
 	end;
-isEmpty(empty, ElementsState, _Element) ->
+isEmpty(empty, ElementsState, _Elements, _Element) ->
 	case cellElements:isEmpty(ElementsState) of
 		true ->
 			throw({null, [cellElements:createAdd(null)]});
@@ -279,12 +279,12 @@ isEmpty(empty, ElementsState, _Element) ->
 
 takeOne() -> undefined.
 
-takeOne(undefined, _, Element) ->
+takeOne(undefined, _, _Elements, Element) ->
 	case cellElements:modifier(Element) of
 		add -> {cellElements:value(Element), Element};
 		remove -> {undefined, []}
 	end;
-takeOne(OneElement, ElementsState, Element) ->
+takeOne(OneElement, ElementsState, _Elements, Element) ->
 	Value = cellElements:value(Element),
 	case cellElements:modifier(Element) of
 		add -> {OneElement, []};
@@ -311,7 +311,7 @@ takeOne(OneElement, ElementsState, Element) ->
 
 invert() -> undefined.
 
-invert(CellPointer, _State, _ElementsState, Element) ->
+invert(CellPointer, _State, _ElementsState, _Elements, Element) ->
 	Modifier = cellElements:modifier(Element),
 	SetOfBCellPointer = cellElements:mapValue(Element),
 	ATag = cellElements:mapKey(Element),
@@ -332,7 +332,7 @@ invert(CellPointer, _State, _ElementsState, Element) ->
 
 sendMap() -> undefined.
 
-sendMap(Key, _State, _ElementsState, Element) ->
+sendMap(Key, _State, _ElementsState, _Elements, Element) ->
 	Modifier = cellElements:modifier(Element),
 	Value = cellElements:value(Element),
 	{undefined, cellElements:createMap(Modifier, Key, Value)}.
@@ -344,7 +344,7 @@ sendMap(Key, _State, _ElementsState, Element) ->
 
 sendMapValueAsKey() -> undefined.
 
-sendMapValueAsKey(Key, _State, _ElementsState, Element) ->
+sendMapValueAsKey(Key, _State, _ElementsState, _Elements, Element) ->
 	Modifier = cellElements:modifier(Element),
 	Value = cellElements:value(Element),
 	{undefined, cellElements:createMap(Modifier, Value, Key)}.
@@ -357,7 +357,7 @@ sendMapValueAsKey(Key, _State, _ElementsState, Element) ->
 
 becomeInformant() -> undefined.
 
-becomeInformant(InformToCellPointer, _IsInformant, _ElementsState, Element) ->
+becomeInformant(InformToCellPointer, _IsInformant, _ElementsState, _Elements, Element) ->
 	Value = cellElements:value(Element),
 	Modifier = cellElements:modifier(Element),
 	case cellPointer:isCellPointer(Value) of
@@ -382,7 +382,7 @@ becomeInformant(InformToCellPointer, _IsInformant, _ElementsState, Element) ->
 
 becomeInformantMap() -> undefined.
 
-becomeInformantMap(InformToCellPointer, MapValue, _IsInformant, _ElementsState, Element) ->
+becomeInformantMap(InformToCellPointer, MapValue, _IsInformant, _ElementsState, _Elements, Element) ->
 	MapKey = cellElements:value(Element),
 	Modifier = cellElements:modifier(Element),
 	case cellPointer:isCellPointer(MapKey) of
@@ -406,13 +406,13 @@ becomeInformantMap(InformToCellPointer, MapValue, _IsInformant, _ElementsState, 
 
 applyAndInject() -> undefined.
 
-applyAndInject(AST, InjectToCellPointer, _State, _ElementsState, Element) ->
+applyAndInject(AST, InjectToCellPointer, _State, _ElementsState, _Elements, Element) ->
 	applyAndInject(AST, InjectToCellPointer, send, [], undefined, undefined, Element).
 	
-applyAndInject(AST, InjectToCellPointer, OutputName, _State, _ElementsState, Element) ->
+applyAndInject(AST, InjectToCellPointer, OutputName, _State, _ElementsState, _Elements, Element) ->
 	applyAndInject(AST, InjectToCellPointer, OutputName, [], undefined, undefined, Element).
 
-applyAndInject(AST, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, Element) ->
+applyAndInject(AST, InjectToCellPointer, OutputName, OutputArgs, _State, _ElementsState, _Elements, Element) ->
 	NewAST = 	case cellElements:isMap(Element) of
 					true ->
 						Key = cellElements:mapKey(Element),
@@ -441,10 +441,12 @@ applyAndInject(AST, InjectToCellPointer, OutputName, OutputArgs, _State, _Elemen
 
 sessionOutput() -> undefined.
 
-sessionOutput(QueryId, _State, _ElementsState, Element)	->
-	Modifer = cellElements:modifier(Element),
-	Value = cellElements:value(Element),
-	{undefined, [cellElements:createMap(Modifer, QueryId, Value)]}.
+sessionOutput(QueryId, _State, _ElementsState) ->
+	?colortrace(call_worked),
+	{undefined, []}.
+	
+sessionOutput(QueryId, _State, _ElementsState, Elements, Element)	->
+	throw({undefined, [cellElements:createAddMap(QueryId, Elements)]}).
 	
 %% 
 %% setRangeKey :: Atom -> 
@@ -474,8 +476,7 @@ rangeByKeys(_Identifier, {Beginning, End}, ElementsState, {changeRange, {NewBegi
 	% call data structure
 rangeByKeys(_Identifier, {Beginning, End}, _ElementsState, Element) ->
 	% check if Element is within range or not and output
-	todo.
-			
+	todo.	
 %% ====================================================
 %% Utilities
 %% ====================================================

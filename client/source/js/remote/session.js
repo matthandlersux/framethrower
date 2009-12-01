@@ -65,7 +65,9 @@ function xhr(url, post, callback, failCallback, timeout) {
 //
 function parseServerResponse(s) {
 	if (s === undefined) return undefined;
-	if (typeOf(s) === "object") {
+	if (typeOf(s) === "array") {
+		return makeList(map(s, parseServerResponse), remote.shared);
+	} else if (typeOf(s) === "object") {
 		if (s.kind === "cell") {
 			// TODO test this
 			return makeRemoteCell(s.name, s.constructorType);
@@ -75,9 +77,8 @@ function parseServerResponse(s) {
 			return obj;
 		} else if (s.kind === "tuple") {
 			var asArray = map(s.asArray, parseServerResponse);
-			var tuple = makeTuple.apply(undefined, asArray);
+			var tuple = makeTuple(asArray, remote.shared);
 			tuple.type = parseType(makeTupleType(asArray.length));
-			tuple.remote = remote.shared;
 			return tuple;
 		}
 	} else {
@@ -252,25 +253,20 @@ var session = (function () {
 					forEach(o.responses, function (response) {
 						//console.log("doing update", update, o.updates);
 						if (response.queryUpdate) {
-							var update = response.queryUpdate;
-							var cell = cells[update.queryId];
+							var queryUpdate = response.queryUpdate;
+							var cell = cells[queryUpdate.queryId];
 						
 							if (cell !== undefined) { // TODO do i need this?
 								var keyType; // TODO test this
 								var valueType;
 
-								if (update.action == "done") {
-									cell.setDone();
-								} else {
+								forEach(queryUpdate.updates, function(update) {
 									var key = parseServerResponse(update.key);
 									var value = parseServerResponse(update.value);
 									//console.log("Update:", update.key, update.value);
-									cell.control[update.action](key, value);
-								}
-							} else {
-								var key = parseServerResponse(update.key);
-								var value = parseServerResponse(update.value);
-								//console.log("Update:", update.key, update.value);
+									cell.control[update.action](key, value);	
+								});
+								cell.setDone();
 							}
 						} else if (response.actionResponse) {
 							var actionResponse = response.actionResponse;
@@ -333,7 +329,7 @@ var session = (function () {
 							//have to convert arguments into another array because arguments is not a real array (javascript quirk)
 							var args = Array.prototype.slice.call(arguments);
 							return makeRemoteInstruction(name, args);
-						}
+						};
 						var result = makeFun(let.type, actionFunction, let.params.length, name, remote.localOnly, false);
 						remoteSharedLets[name] = result;
 					} else {

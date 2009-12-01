@@ -8,6 +8,17 @@ template (note::Note) {
 			{note_text note}
 		</div>
 		<div class="zForeground" style-height="50" style-margin="4">
+			<f:on dragend>
+				extract draggingLink as triple {
+					range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
+					movie = tuple3get1 triple,
+
+					timeRange <- createTimeRange movie,
+					timeRange_setRange timeRange range,
+					textRange <- createTextRange note,
+					linkTime (makeTimeLink textRange timeRange)
+				}
+			</f:on>
 			<f:each note_linksToMovies note as timeLink>
 				movie = timeRange_movie (timeLink_target timeLink),
 				aspectRatio = Movie:aspectRatio movie,
