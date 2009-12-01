@@ -37,6 +37,7 @@
 .timeline-region .inside {
 	width: 100%;
 	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
 	height: 14px;
 	border: 1px solid;
 	cursor: pointer;
