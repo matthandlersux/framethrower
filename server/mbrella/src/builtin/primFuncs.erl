@@ -271,7 +271,7 @@ rangeByKey(CellPointerKeys, CellPointerSet) ->
 	OutputCell = cell:makeCell(set),
 	cell:leash(CellPointerSet),
 	RangeIdentifier = erlang:make_ref(),
-	OutputFunction = outputs:makeFunction(rangeByKeys, [RangeIdentifier])
+	OutputFunction = outputs:makeFunction(rangeByKeys, [RangeIdentifier]),
 	cell:injectOutput(CellPointerKeys, CellPointerSet, setRangeKeys, [CellPointerSet, OutputFunction]),
 	cell:convertToRange(CellPointerSet),
 	cell:injectOutput(CellPointerSet, OutputCell, rangeByKeys, [RangeIdentifier]),
