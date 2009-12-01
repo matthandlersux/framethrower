@@ -202,7 +202,7 @@ handle_cast({sendElements, []}, State) ->
 	% handle donemessage stuff here
 	flushOrWait(State, ?AdjacentElementDelay);
 	
-handle_cast({sendElements, PackedElements}, State) ->
+handle_cast({sendElements, [PackedElements]}, State) ->
 	%elements = list {add, queryid, [Elements]}
 	QueryId = cellElements:mapKey(PackedElements),
 	Elements = cellElements:mapValue(PackedElements),
@@ -332,7 +332,7 @@ queryUpdate(QueryId, Elements) ->
 						end,
 	ListOfUpdates = lists:foldr(ElementToUpdate, [], Elements),
 	{struct, [{"queryUpdate",
-		{struct, [{"queryId", list_to_binary(QueryId)},{"updates", {struct, ListOfUpdates}}]}	
+		{struct, [{"queryId", list_to_binary(QueryId)},{"updates", ListOfUpdates}]}	
 	}]}.
 	
 %% 
