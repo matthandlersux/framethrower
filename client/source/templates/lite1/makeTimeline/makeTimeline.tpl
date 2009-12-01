@@ -14,6 +14,9 @@ template (movie::Movie)::Timeline {
 	scrollbarButtonWidth = 20,
 	rulerHeight = 20,
 	
+	scrubImageHeight = 100,
+	scrubImageWidth = multiply scrubImageHeight aspectRatio,
+	
 	// small preview (on the right side of the timeline if the video is not full-screened)
 	fullscreened = bindUnit (reactiveEqual fullscreenXMLP) fullscreenVideo,
 	smallPreviewHeight = timelineHeight,
@@ -446,6 +449,11 @@ template (movie::Movie)::Timeline {
 			<div class="button" style-position="absolute" style-top="5" style-right="5" style-width="12" style-height="12" style-background-color="#aaa">
 				<f:call>fullscreenAction</f:call>
 			</div>
+			
+			// <div style-position="absolute" style-left="50%" style-top="50%" style-width="{scrubImageWidth}" style-height="{scrubImageHeight}" style-margin-left="{multiply -0.5 scrubImageWidth}" style-margin-top="{multiply -0.5 scrubImageHeight}">
+			// 	<f:call>scrubImages</f:call>
+			// </div>
+			
 			<div style-position="absolute" style-left="50%" style-top="50%" style-width="50" style-height="50" style-margin-left="-25" style-margin-top="-25">
 				<f:each bindUnit (reactiveEqual 0) playingS as _>
 					<div style-background-color="#aaa" style-width="50" style-height="50" class="button">
