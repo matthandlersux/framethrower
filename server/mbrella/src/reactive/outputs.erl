@@ -98,7 +98,7 @@ standard() -> {send, []}.
 %% 		
 %%		
 
-makeFunction(OutputName, Args) ->
+makeFunction(OutputName, Arguments) ->
 	{OutputName, Arguments}.
 
 %% 
@@ -443,7 +443,7 @@ sessionOutput() -> undefined.
 
 sessionOutput(QueryId, _State, _ElementsState) ->
 	?colortrace(call_worked),
-	{undefined, []}.
+	throw({undefined, [cellElements:createAddMap(QueryId, [])]}).
 	
 sessionOutput(QueryId, _State, _ElementsState, Elements, Element)	->
 	throw({undefined, [cellElements:createAddMap(QueryId, Elements)]}).
@@ -462,7 +462,7 @@ setRangeKeys(CellToManipulate, OutputFunction, _State, _ElementsState, Element) 
 		_ ->
 			cell:updateOutputState(CellToManipulate, OutputFunction, {changeRange, cellElements:value(Element)}),
 			{undefined, []}
-	end;
+	end.
 	
 
 %% 
@@ -474,6 +474,7 @@ rangeByKeys() -> {undefined, undefined}.
 
 rangeByKeys(_Identifier, {Beginning, End}, ElementsState, {changeRange, {NewBeginning, NewEnd}}) ->
 	% call data structure
+	todo;
 rangeByKeys(_Identifier, {Beginning, End}, _ElementsState, Element) ->
 	% check if Element is within range or not and output
 	todo.	
