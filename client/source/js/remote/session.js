@@ -156,6 +156,7 @@ var session = (function () {
 		var type = getType(expr);
 
 		var cell = makeCC(type, false);
+		cell.leash(); //will be unleashed when it gets first update from server
 		
 		cell.remote = remote.shared;
 		cell.stringifyForServer = stringifyForServer(expr);
@@ -266,7 +267,7 @@ var session = (function () {
 									//console.log("Update:", update.key, update.value);
 									cell.control[update.action](key, value);	
 								});
-								cell.setDone();
+								cell.unleash();
 							}
 						} else if (response.actionResponse) {
 							var actionResponse = response.actionResponse;
