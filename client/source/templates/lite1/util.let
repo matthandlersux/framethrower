@@ -23,4 +23,19 @@ emptyAction = action () {
 
 notYetImplemented = jsaction ()::Void {
 	alert("Not yet implemented");
+},
+
+mouseClickSwitch = template (StyleElement::Unit String, NewValue::String) {
+	OldValue = state(Unit String),
+	<f:wrapper>
+		<f:on init>
+			set OldValue (fetch StyleElement)
+		</f:on>
+		<f:on mousedown>
+			set StyleElement NewValue
+		</f:on>
+		<f:on globalmouseup>
+			set StyleElement (fetch OldValue)
+		</f:on>
+	</f:wrapper>
 }

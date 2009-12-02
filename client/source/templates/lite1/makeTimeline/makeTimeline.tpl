@@ -398,12 +398,9 @@ template (movie::Movie)::Timeline {
 							</f:on>
 
 							<div class="zForeground" style-position="absolute" style-background-color="{scrollbarBackground}" style-left="{makePercent left}" style-width="{makePercent width}" style-height="72%" class="scroller">
-								<f:on mousedown>
-									set scrollbarBackground "rgba(68, 68, 88, 0.9)"
-								</f:on>
-								<f:on globalmouseup>
-									set scrollbarBackground "rgba(68, 68, 88, 0.8)"
-								</f:on>
+								<f:call>
+									mouseClickSwitch scrollbarBackground "rgba(68, 68, 88, 0.9)"
+								</f:call>
 								<f:call>
 									setScroll = action (start::Number, x::Number) {
 										desiredLeft = plus start (divide x scrollbarWidth),
