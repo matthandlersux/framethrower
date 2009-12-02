@@ -1,11 +1,11 @@
 
-/*these are all 50x50 currently*/
 .play-button, .pause-button, .scroll-button-left, .scroll-button-right,
 	.fullscreen-button, .unfullscreen-button, .close-button {
 		background-image: url(./images/ft.lite.icons.png);
 		background-repeat: no-repeat;
 }
-	
+
+/*these are all 50x50 currently*/	
 .play-button {
 	background-position: -21px -16px;
 }
