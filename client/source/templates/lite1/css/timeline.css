@@ -28,10 +28,10 @@
 /*	background-color: #111;*/
 }
 .scrollbar .button {
-	background-color: #333;
+	background-color: #000;
 }
 .scrollbar .scroller {
-	background-color: rgba(68, 68, 88, 0.8);
+	/*background-color: rgba(68, 68, 88, 0.8);*/
 	border: 1px solid rgba(68,68,88,.9);
 	top: 1px;
 /*	background-color: #22222c;*/
