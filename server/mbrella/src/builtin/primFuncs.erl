@@ -288,10 +288,7 @@ rangeByKey(CellPointerKeys, CellPointerSet) ->
 %%		
 
 equal(A, B) ->
-	?trace(["Equal", A, B]),
-	Ans = A =:= B,
-	?trace(Ans),
-	Ans.
+	A =:= B.
 
 %% 
 %% dNot :: Bool -> Bool
