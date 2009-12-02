@@ -3,6 +3,12 @@
 	.fullscreen-button, .unfullscreen-button, .close-button, .comment-button {
 		background-image: url(./images/ft.lite.icons.png);
 		background-repeat: no-repeat;
+		opacity: .5;
+}
+
+.play-button:hover, .pause-button:hover, .scroll-button-left:hover, .scroll-button-right:hover,
+	.fullscreen-button:hover, .unfullscreen-button:hover, .close-button:hover, .comment-button:hover {
+		opacity: .7;
 }
 
 /*these are all 50x50 currently*/	
@@ -44,9 +50,9 @@
 
 
 .close-button {
-	width: 12px;
+	width: 16px;
 	height: 12px;
-	background-position: -172px -13px;
+	background-position: -170px -13px;
 }
 
 .comment-button {
