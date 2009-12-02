@@ -7,7 +7,7 @@ template (note::Note) {
 		<div class="zForeground" style-border="1px solid #000" style-margin="4" style-padding="4" style-background-color="#bbb" style-color="#000" style-height="100" style-overflow="auto">
 			{note_text note}
 		</div>
-		<div class="zForeground" style-height="50" style-margin="4">
+		<div class="zForeground" style-height="60">
 			<f:on dragend>
 				extract draggingLink as triple {
 					range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
@@ -25,7 +25,7 @@ template (note::Note) {
 				height = 50,
 				width = multiply height aspectRatio,
 				movieId = Movie:id movie,
-				<div style-float="left">
+				<div style-float="left" style-margin="4" style-position="relative">
 					<f:each timeRange_range (timeLink_target timeLink) as range>
 						startTime = range_start range,
 						<div style-cursor="pointer" style-border="1px solid" style-border-color="{colorStyle_getBorder colorStyle (bindUnit (reactiveEqual (timeLink_target timeLink)) mouseOverLink)}" style-width="{width}" style-height="{height}" style-background-image="{getThumbnailURL movieId startTime width height}">
@@ -33,6 +33,12 @@ template (note::Note) {
 								jumpToInMovie movie range
 							</f:on>
 							<f:call>svgEvents (timeLink_target timeLink) false colorStyle</f:call>
+							<div class="button delete-button" style-position="absolute" style-top="0" style-right="0">
+								<f:on click>
+									// prompt to delete this link
+									unlinkTime timeLink
+								</f:on>
+							</div>
 						</div>
 					</f:each>
 				</div>
