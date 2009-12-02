@@ -396,7 +396,7 @@ template (movie::Movie)::Timeline {
 								setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
 							</f:on>
 
-							<div class="zForeground" style-position="absolute" style-left="{makePercent left}" style-width="{makePercent width}" style-height="100%" class="scroller">
+							<div class="zForeground" style-position="absolute" style-left="{makePercent left}" style-width="{makePercent width}" style-height="72%" class="scroller">
 								<f:call>
 									setScroll = action (start::Number, x::Number) {
 										desiredLeft = plus start (divide x scrollbarWidth),
