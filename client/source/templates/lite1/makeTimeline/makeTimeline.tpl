@@ -340,6 +340,8 @@ template (movie::Movie)::Timeline {
 						<div class="zForeground" style-position="absolute" style-top="20" style-width="100%">
 							<div style-position="absolute" class="timeline-region mine" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-top="0">
 								<div class="inside">
+									<div class="comment-button">
+									</div>
 									<f:on click>
 										createSimpleNoteWithLink movie selectedTimeStart selectedTimeDuration,
 										unset selectedTimeStartS,

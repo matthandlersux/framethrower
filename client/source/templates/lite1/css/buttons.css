@@ -1,6 +1,6 @@
 
 .play-button, .pause-button, .scroll-button-left, .scroll-button-right,
-	.fullscreen-button, .unfullscreen-button, .close-button {
+	.fullscreen-button, .unfullscreen-button, .close-button, .comment-button {
 		background-image: url(./images/ft.lite.icons.png);
 		background-repeat: no-repeat;
 }
@@ -49,3 +49,11 @@
 	background-position: -172px -13px;
 }
 
+.comment-button {
+	width: 16px;
+	height: 12px;
+	background-position: -188px -13px;
+	position: absolute;
+	top: 2px;
+	left: 50%;
+}
