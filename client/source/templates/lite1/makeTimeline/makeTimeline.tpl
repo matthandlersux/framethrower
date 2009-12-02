@@ -456,7 +456,7 @@ template (movie::Movie)::Timeline {
 			
 			<div style-position="absolute" style-left="50%" style-top="50%" style-width="50" style-height="50" style-margin-left="-25" style-margin-top="-25">
 				<f:each bindUnit (reactiveEqual 0) playingS as _>
-					<div style-width="50" style-height="50" class="button play-button">
+					<div style-width="60" style-height="60" class="button play-button">
 						<f:on click>
 							extract bindUnit (reactiveEqual 0) selectedTimeDurationS as _ {
 								unset selectedTimeStartS,
@@ -468,7 +468,7 @@ template (movie::Movie)::Timeline {
 					</div>
 				</f:each>
 				<f:each bindUnit (reactiveEqual 1) playingS as _>
-					<div style-width="50" style-height="50" style-class="loading-icon">
+					<div style-width="78" style-height="22" class="loading-icon">
 						<f:on click>
 							set playingS 0,
 							extract reactiveNot selectedTimeStartS as _ {
@@ -480,7 +480,7 @@ template (movie::Movie)::Timeline {
 					</div>
 				</f:each>
 				<f:each bindUnit (reactiveEqual 2) playingS as _>
-					<div style-width="50" style-height="50" class="button pause-button">
+					<div style-width="60" style-height="60" class="button pause-button">
 						<f:on click>
 							set playingS 0,
 							extract reactiveNot selectedTimeStartS as _ {
