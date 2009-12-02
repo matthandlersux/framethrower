@@ -7,14 +7,13 @@
 
 /*these are all 50x50 currently*/	
 .play-button {
-	background-position: -21px -16px;
+	background-position: -16px -11px;
 }
 .pause-button {
-	background-position: -102px -18px;
+	background-position: -96px -11px;
 }
 .loading-icon {
-	background-color: #fff;
-	background-image: url(./images/loading.gif);
+	background-image: url(./images/loading.png);
 }
 
 
