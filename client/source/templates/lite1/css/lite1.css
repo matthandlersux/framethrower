@@ -54,8 +54,9 @@
 	background-color: rgba(204,0,0,0.7);
 	border-color: rgba(204,0,0,1.0);
 	border-style: dashed;
-	background-image: url(./images/ft.lite.icons.png);
+/*	background-image: url(./images/ft.lite.icons.png);
 	background-position: -185px -12px;
+	background-repeat: no-repeat;*/
 }
 .mine .inside:hover {
 	background-color: rgba(204,0,0,1.0);
