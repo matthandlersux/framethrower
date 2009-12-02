@@ -67,7 +67,6 @@
 				func : function (val) {
 					var outputCell = makeCellUnit();
 					outputCell.addLine(val);
-					outputCell.setDone();
 					return outputCell;
 				}
 			},
@@ -255,7 +254,6 @@
 					var outputCell = makeCellUnit();
 					if (val) {
 						outputCell.addLine(nullObject);
-						outputCell.setDone();
 					}
 					return outputCell;
 				}
@@ -336,10 +334,11 @@
 				type : "Number -> Set Number",
 				func : function (val1) {
 					var outputCell = makeCellSet();
+					outputCell.leash();
 					for(var i=1; i<= val1; i++) {
 						outputCell.addLine(i);
 					}
-					outputCell.setDone();
+					outputCell.unleash();
 					return outputCell;
 				}
 			},
@@ -347,10 +346,11 @@
 				type : "Number -> Number -> Map Number Number",
 				func : function (val1, val2) {
 					var outputCell = makeCellMap();
+					outputCell.leash();
 					for(var i=1; i<= val1; i++) {
 						outputCell.addLine({key:i, val:val2});
 					}
-					outputCell.setDone();
+					outputCell.unleash();
 					return outputCell;
 				}
 			},
@@ -685,16 +685,7 @@
 
 					var bHashCell = makeCellSet();
 
-					//this is to make outputCell depend on BHashCell for being 'done' 
-					bHashCell.inject(outputCell, function (bValue) {});
-					
-					bHashCell.inject(
-						function() {
-							forEach(bHash, function(bCell) {
-								bCell.setDone();
-							});
-						},
-						function (bValue) {
+					bHashCell.inject(outputCell, function (bValue) {
 							var newCell = makeCellSet();
 							newCell.type = setType;
 							bHash[bValue] = newCell;

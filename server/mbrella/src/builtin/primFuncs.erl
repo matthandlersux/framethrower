@@ -255,7 +255,28 @@ setDifference(CellPointer1, CellPointer2) ->
 %% map unit functions
 %% ---------------------------------------------
 
-% moved to family.erl
+% sorry, we have moved!
+% ------> family.erl
+
+%% ---------------------------------------------
+%% range functions
+%% ---------------------------------------------
+
+%% 
+%% rangeByKey :: Unit Tuple2 -> Set a -> Set a
+%% 		
+%%		
+
+rangeByKey(CellPointerKeys, CellPointerSet) ->
+	OutputCell = cell:makeCell(set),
+	cell:leash(CellPointerSet),
+	RangeIdentifier = erlang:make_ref(),
+	OutputFunction = outputs:makeFunction(rangeByKeys, [RangeIdentifier]),
+	cell:injectOutput(CellPointerKeys, CellPointerSet, setRangeKeys, [CellPointerSet, OutputFunction]),
+	cell:convertToRange(CellPointerSet),
+	cell:injectOutput(CellPointerSet, OutputCell, rangeByKeys, [RangeIdentifier]),
+	cell:unleash(CellPointerSet),
+	OutputCell.
 	
 %% ---------------------------------------------
 %% non reactive functions
@@ -267,10 +288,7 @@ setDifference(CellPointer1, CellPointer2) ->
 %%		
 
 equal(A, B) ->
-	?trace(["Equal", A, B]),
-	Ans = A =:= B,
-	?trace(Ans),
-	Ans.
+	A =:= B.
 
 %% 
 %% dNot :: Bool -> Bool

@@ -24,7 +24,6 @@ var objects = (function () {
 	
 	function makeMemoBroadcaster(className) {
 		var broadcaster = makeCC(parseType("Unit " + className));
-		broadcaster.setDone();
 		return broadcaster;
 	}
 	
@@ -96,7 +95,6 @@ var objects = (function () {
 			if (object.as[castToName]) {
 				outputCell.addLine(object.as[castToName]);
 			}
-			outputCell.setDone();
 			return outputCell;
 		};
 	}
@@ -254,7 +252,6 @@ var objects = (function () {
 				if (isReactive(propType) && instanceValue === undefined) {
 					// fill in with an empty controlled cell
 					obj.prop[propName] = makeCC(propType);
-					obj.prop[propName].setDone();
 				} else {
 					instanceValue = castObject(instanceValue, propTypeString);
 					

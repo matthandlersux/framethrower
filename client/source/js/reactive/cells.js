@@ -10,7 +10,6 @@
 //Controlling:
 //	cell.addLine()
 //	cell.removeLine()
-//	cell.setDone()
 
 function graphCells() {
 	console.log("digraph {");
@@ -109,7 +108,7 @@ function makeBaseCell (toKey, dots, funcs) {
 	var dependencies = {};
 	var onRemoves = []; //onRemoves is a list of functions to call when this cell is destroyed
 	var funcColor = 0; //counter for coloring injected functions
-	var isDone = false;
+	var isDone = true;
 	
 	//temp debug functions
 
@@ -167,7 +166,10 @@ function makeBaseCell (toKey, dots, funcs) {
 				}
 			});
 		}
-		informDepender(depender, cell, id);
+		
+		if (isDone) {
+			informDepender(depender, cell, id);
+		}
 
 		//return callback to remove the injected function
 		var unInject = function () {
@@ -269,17 +271,6 @@ function makeBaseCell (toKey, dots, funcs) {
 		}
 	};
 
-	//tell a cell that it is done
-	//this should be used for cells with no dependencies, such as a start cap, or a manually controlled cell within a primfunc
-	cell.setDone = function () {
-		if (!isDone) {
-			isDone = true;
-			forEach(funcs, function(func, funcId) {
-				informDepender(func.depender, cell, funcId);
-			});
-		}
-	};
-
 	//==================================
 	// Inter-Cell Functions
 	//==================================	
@@ -287,12 +278,17 @@ function makeBaseCell (toKey, dots, funcs) {
 	//tells a cell that one of its dependencies is done
 	//dependencies are stored by cell name and the id of the function within that cell
 	cell.done = function (doneCell, id) {
-		delete dependencies[doneCell.name + "," + id];
+		if(doneCell.name !== undefined) {
+			delete dependencies[doneCell.name + "," + id];
+		} else {
+			delete dependencies[doneCell + "," + id];
+		}
 		checkDone();
 	};
 
 	//tells a cell that it cannot be 'done' until cell.done(depCell, id) is called
 	cell.addDependency = function (depCell, id) {
+		isDone = false;
 		if(depCell.name !== undefined) {
 			dependencies[depCell.name + "," + id] = true;
 		} else {

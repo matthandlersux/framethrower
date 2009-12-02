@@ -94,6 +94,14 @@ newState() ->
 standard() -> {send, []}.
 
 %% 
+%% makeFunction :: Atom -> List a -> OutputFunction
+%% 		
+%%		
+
+makeFunction(OutputName, Arguments) ->
+	{OutputName, Arguments}.
+
+%% 
 %% newConnections :: SendTo
 %% 
 
@@ -435,12 +443,41 @@ sessionOutput() -> undefined.
 
 sessionOutput(QueryId, _State, _ElementsState) ->
 	?colortrace(call_worked),
-	{undefined, []}.
+	throw({undefined, [cellElements:createAddMap(QueryId, [])]}).
 	
 sessionOutput(QueryId, _State, _ElementsState, Elements, Element)	->
-	Modifer = cellElements:modifier(Element),
 	throw({undefined, [cellElements:createAddMap(QueryId, Elements)]}).
-			
+	
+%% 
+%% setRangeKey :: Atom -> 
+%% 		
+%%		
+
+setRangeKeys() -> undefined.
+
+setRangeKeys(CellToManipulate, OutputFunction, _State, _ElementsState, Element) ->
+	case cellElements:modifier(Element) of
+		remove ->
+			{undefined, []};
+		_ ->
+			cell:updateOutputState(CellToManipulate, OutputFunction, {changeRange, cellElements:value(Element)}),
+			{undefined, []}
+	end.
+	
+
+%% 
+%% rangeByKeys :: 
+%% 		
+%%		
+
+rangeByKeys() -> {undefined, undefined}.
+
+rangeByKeys(_Identifier, {Beginning, End}, ElementsState, {changeRange, {NewBeginning, NewEnd}}) ->
+	% call data structure
+	todo;
+rangeByKeys(_Identifier, {Beginning, End}, _ElementsState, Element) ->
+	% check if Element is within range or not and output
+	todo.	
 %% ====================================================
 %% Utilities
 %% ====================================================
