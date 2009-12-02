@@ -7,18 +7,7 @@ template (note::Note) {
 		<div class="zForeground" style-border="1px solid #000" style-margin="4" style-padding="4" style-background-color="#bbb" style-color="#000" style-height="100" style-overflow="auto">
 			{note_text note}
 		</div>
-		<div class="zForeground" style-height="60">
-			<f:on dragend>
-				extract draggingLink as triple {
-					range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
-					movie = tuple3get1 triple,
-
-					timeRange <- createTimeRange movie,
-					timeRange_setRange timeRange range,
-					textRange <- createTextRange note,
-					linkTime (makeTimeLink textRange timeRange)
-				}
-			</f:on>
+		<div class="zForeground">
 			<f:each note_linksToMovies note as timeLink>
 				movie = timeRange_movie (timeLink_target timeLink),
 				aspectRatio = Movie:aspectRatio movie,
@@ -41,6 +30,22 @@ template (note::Note) {
 							</div>
 						</div>
 					</f:each>
+				</div>
+			</f:each>
+			<f:each reactiveOr draggingLink draggingLinkTentative as _>
+				<div class="drag-new-link" style-float="left" style-margin="4" style-width="44" style-height="44" style-font-size="11" style-padding="3">
+					drag here to create link
+					<f:on dragend>
+						extract draggingLink as triple {
+							range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
+							movie = tuple3get1 triple,
+
+							timeRange <- createTimeRange movie,
+							timeRange_setRange timeRange range,
+							textRange <- createTextRange note,
+							linkTime (makeTimeLink textRange timeRange)
+						}
+					</f:on>
 				</div>
 			</f:each>
 			<div style-clear="both" />

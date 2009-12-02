@@ -144,10 +144,15 @@ template () {
 	// CSS Class thing based on global UI state
 	// =============
 	
+	// cssClass = {
+	// 	dl = reactiveIfThen draggingLink "dragging-link" "",
+	// 	dl
+	// },
+	draggingLinkTentative = state(Unit Null),
+	cssClass = bindUnit (reactiveIfThen draggingLink "dragging-link") (reactiveIfThen draggingLinkTentative "dragging-link-tentative" "none"),
 	
 	
-	
-	<div>
+	<div class="{cssClass}">
 		<f:each draggingLink as link>
 			<div class="zBackground" style-position="absolute" style-width="1" style-height="1" style-left="{UI.ui:mouseX ui.ui}" style-top="{UI.ui:mouseY ui.ui}">
 				<f:call>svgEvents link false draggingColorStyle</f:call>
@@ -270,14 +275,16 @@ template () {
 			<div style-position="absolute" style-bottom="16" style-right="0">
 				<f:each notePops as index, note>
 					<div style-position="relative" style-width="260" style-margin="16" style-float="right">
-						<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground" style-background-color="#333" />						
-						<div class="button close-button" style-float="right">
-							<f:on click>
-								removeEntry notePops index
-							</f:on>
+						<div style-position="absolute" style-bottom="0" style-width="260">
+							<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground" style-background-color="#333" />						
+							<div class="button close-button" style-float="right">
+								<f:on click>
+									removeEntry notePops index
+								</f:on>
+							</div>
+							<div style-clear="both" />
+							<f:call>displayNote note</f:call>
 						</div>
-						<div style-clear="both" />
-						<f:call>displayNote note</f:call>
 					</div>
 				</f:each>
 			</div>
