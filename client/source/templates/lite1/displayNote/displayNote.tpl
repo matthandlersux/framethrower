@@ -3,9 +3,34 @@ template (note::Note) {
 		return "url(http:/"+"/media.eversplosion.com/frame.php?id="+id+"&time="+time+"&width="+width+"&height="+height+")";
 	},
 	colorStyle = defaultColorStyle,
+	
+	
 	<div>
 		<div class="zForeground" style-border="1px solid #000" style-margin="4" style-padding="4" style-background-color="#bbb" style-color="#000" style-height="100" style-overflow="auto">
-			{note_text note}
+			<f:on focus>
+				debug "focus"
+			</f:on>
+			<f:on blur>
+				debug "blur",
+				x <- getDivSelection,
+				text <- getDivText,
+				debug text,
+				note_setText note text
+			</f:on>
+			<f:on globalmouseup>
+				debug "selection changed? (mouseup)"
+			</f:on>
+			<f:on globalkeyup>
+				debug "selection changed? (keyup)"
+			</f:on>
+			<f:each note_text note as text>
+				<f:wrapper>
+					<f:on init>
+						initDiv
+					</f:on>
+					<div class="note" id="{noteId}" contentEditable="true"/>
+				</f:wrapper>
+			</f:each>
 		</div>
 		<div class="zForeground" style-height="50" style-margin="4">
 			<f:on dragend>

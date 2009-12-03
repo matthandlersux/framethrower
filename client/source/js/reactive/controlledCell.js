@@ -28,7 +28,8 @@ function makeCC(type, persist) {
 				try {
 					cell.addLine(k);
 				} catch (e) {
-					console.log(cell);
+					console.debug(cell);
+					console.debug(e);
 					throw e;
 				}
 			},

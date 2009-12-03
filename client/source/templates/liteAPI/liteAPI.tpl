@@ -1,5 +1,29 @@
 template() {
 	
+	debug = action() {
+		extract allNotes as note {
+			debugNote (fetch (getPosition note allNotes))
+		}
+	},
+	
+	debugNote = jsaction(noteIndex::Number)::Void {
+		var note = document.getElementById(noteIndex+"");
+		
+		var s = "";
+		for(var i=0; i<note.childNodes.length; i++) {
+			var child = note.childNodes[i];
+			
+			var k = child.getUserData('mark');
+			if(k || k===0)
+				s += k;
+			
+			s += '<';
+			s += child.textContent;
+			s += '>';
+		}
+		console.debug(s);
+	},
+	
 	// ====================================================
 	// State
 	// ====================================================
@@ -22,9 +46,12 @@ template() {
 	getSelection = jsaction()::(Bool, Number, Number, Number) {
 		var range = window.getSelection().getRangeAt(0);
 
-		// make sure that selection is (entirely) within a note:
-		var note = range.startContainer.parentNode;
-		if (!def(note) || note.className!=='note' || range.endContainer.parentNode!==note)
+		// find common ancestor note, if there is one:
+		var note = range.commonAncestorContainer;
+		while(def(note) && note.className!=='note')
+			note = note.parentNode;
+
+		if(!def(note))
 			return makeTuple(false, 0, 0, 0);
 
 		var k = 0, start, end;
@@ -51,36 +78,38 @@ template() {
 		
 		// insert text, one character/marker pair at a time:
 		for (var i=0; i<text.length; i++) {
-			var mark = document.createElement('span');
+			// var mark = document.createElement('span');
+			// mark.className = 'mark';
+			var mark = document.createTextNode(text.charAt(i));
 			mark.setUserData('mark',i,null);
+			// mark.title = ""+i;
+			// mark.appendChild(document.createTextNode(text.charAt(i)));
+			// mark.textContent = text.charAt(i);
 			note.appendChild(mark);
-			var c = document.createTextNode(text.charAt(i));
-			note.appendChild(c);
 		}
 	},
 	
 	updateText = jsaction(noteIndex::Number)::(String, [(Number, Number)]) {
-		console.log("updateText");
-		console.log(noteIndex);
-		
 		var note = document.getElementById(noteIndex+"");
 		
 		var text = "", d = 0;
 		var shifts = [];
 		for (var i = 0; i < note.childNodes.length; i++) {
 			var child = note.childNodes[i];
-			if (child.nodeType === Node.TEXT_NODE)
-				text += child.textContent;
-			else if(child.tagName === 'span' && child.getUserData('mark')) {
-				var mark = parseInt(child.getUserData('mark'));
+			
+			var k = child.getUserData('mark');
+			if (k || k===0) {
+				var mark = parseInt(k);
 				var newD = text.length-mark;
 				if (newD !== d) {
 					d = newD;
 					shifts.push(makeTuple(mark, d));
-					console.log(mark);
-					console.log(d);
+					console.debug(mark);
+					console.debug(d);
 				}
 			}
+			
+			text += child.textContent;
 		}
 		return makeTuple(text, makeList(shifts));
 	},
@@ -169,6 +198,12 @@ template() {
 			</f:on>
 			Set target.
 		</div>
+		<div style-background="#aaf">
+			<f:on mousedown>
+				debug
+			</f:on>
+			Debug.
+		</div>
 		
 		<f:each allNotes as note>
 		
@@ -186,15 +221,16 @@ template() {
 						<f:on init>
 							initText note
 						</f:on>
-						<f:on mouseup>
-							updateNote note
-						</f:on>
-						<f:on keyup>
-							updateNote note
-						</f:on>
 						<div class="note" id="{getPosition note allNotes}" style-background="#ffc" contentEditable="true" />
 					</f:wrapper>
 				</f:each>
+				
+				<div style-background="#ffa">
+					<f:on click>
+						updateNote note
+					</f:on>
+					Save.
+				</div>
 			
 				<f:each note_linksToNotes note as link>
 					<div>
