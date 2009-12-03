@@ -7,22 +7,22 @@ template (note::Note) {
 	
 	<div>
 		<div class="zForeground" style-border="1px solid #000" style-margin="4" style-padding="4" style-background-color="#bbb" style-color="#000" style-height="100" style-overflow="auto">
-			<f:on focus>
-				debug "focus"
-			</f:on>
+			// <f:on focus>
+			// 	debug "focus"
+			// </f:on>
 			<f:on blur>
-				debug "blur",
-				x <- getDivSelection,
+				// debug "blur",
+				// x <- getDivSelection,
 				text <- getDivText,
-				debug text,
+				// debug text,
 				note_setText note text
 			</f:on>
-			<f:on globalmouseup>
-				debug "selection changed? (mouseup)"
-			</f:on>
-			<f:on globalkeyup>
-				debug "selection changed? (keyup)"
-			</f:on>
+			// <f:on globalmouseup>
+			// 	debug "selection changed? (mouseup)"
+			// </f:on>
+			// <f:on globalkeyup>
+			// 	debug "selection changed? (keyup)"
+			// </f:on>
 			<f:each note_text note as text>
 				<f:wrapper>
 					<f:on init>

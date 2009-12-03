@@ -16,16 +16,17 @@ getDivText = jsaction()::String {
 initDiv = jsaction()::Void {
 	var div = document.getElementById(env("note").name);
 	var text = evaluateExpr("note_text note", env).getState()[0];
-	var span = document.createElement("span");
-	span.textContent = text;
-	span.style.background = "#aaf";
-	span.onmouseover = function () {console.log("hey.");};
+	// var span = document.createElement("span");
+	// span.textContent = text;
+	// span.style.background = "#aaf";
+	// span.onmouseover = function () {console.log("hey.");};
 	
 	// clear note:
 	while (div.lastChild)
 		div.removeChild(div.lastChild);
 	
-	div.appendChild(span);
+	// div.appendChild(span);
+	div.textContent = text;
 },
 
 // returns (success, range)
