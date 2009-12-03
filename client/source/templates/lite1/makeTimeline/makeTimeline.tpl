@@ -351,6 +351,7 @@ template (movie::Movie)::Timeline {
 										myDragLink = (movie, selectedTimeStartS, selectedTimeDurationS),
 										<f:wrapper>
 											<f:on dragstart>
+												unset draggingLinkTentative,
 												set draggingLink myDragLink,
 												set draggingTimeRange (selectedTimeStart, selectedTimeDuration)
 											</f:on>
@@ -359,6 +360,8 @@ template (movie::Movie)::Timeline {
 											<f:call>svgEvents myDragLink false draggingColorStyle</f:call>
 										</f:wrapper>
 									</f:call>
+									<f:on mouseover>set draggingLinkTentative null</f:on>
+									<f:on mouseout>unset draggingLinkTentative</f:on>
 								</div>
 							</div>
 						</div>

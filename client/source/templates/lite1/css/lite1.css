@@ -61,3 +61,21 @@
 .mine .inside:hover {
 	background-color: rgba(204,0,0,1.0);
 }
+
+
+.drag-new-link {
+	border: 1px dashed #ccc;
+	background-color: #111;
+	cursor: pointer;
+	color: #ccc;
+}
+.dragging-link-tentative .drag-new-link {
+	opacity: 0.7;
+}
+.dragging-link .drag-new-link {
+	opacity: 1.0;
+}
+.dragging-link .drag-new-link:hover {
+	border-color: #f00;
+	color: #f00;
+}
