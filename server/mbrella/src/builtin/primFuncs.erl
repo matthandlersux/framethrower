@@ -126,6 +126,8 @@ returnUnit(Value) ->
 
 returnUnitSet(CellPointer) ->
 	OutputCell = cell:makeCell(set),
+	cell:setFlag(OutputCell, waitForDone, true),
+	cell:addInformant(OutputCell, CellPointer),
 	cell:injectOutput(CellPointer, OutputCell),
 	OutputCell.
 	
@@ -372,6 +374,7 @@ boolToUnit(Bool) ->
 
 gate(CellPointer, InnerValue) ->
 	OutputCell = cell:makeCell(unit),
+	cell:setFlag(OutputCell, waitForDone, true),
 	cell:injectIntercept(OutputCell, gate, [InnerValue]),
 	cell:injectOutput(CellPointer, OutputCell),
 	OutputCell.
@@ -469,8 +472,9 @@ oneToMap(Number1, Number2) ->
 
 debug(CellPointer) ->
 	OutputCell = cell:makeCell(set),
-	cell:injectIntercept(OutputCell, debug),
-	cell:injectOutput(CellPointer, OutputCell),
+	% cell:injectIntercept(OutputCell, debug),
+	% cell:injectOutput(CellPointer, OutputCell),
+	cell:injectOutput(CellPointer, OutputCell, debugOutput, [CellPointer]),
 	OutputCell.
 
 %% ====================================================

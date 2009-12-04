@@ -204,21 +204,26 @@ function helpExecuteAction (instruction) {
 						executeAction(inner(element));
 					});
 				} else { // select is a cell
-					var done = false; uninjected = false;
+					var done = false; uninjected = false; 
+					var state;
 					var injectedFunc = select.injectDependency(function () { // wait until select cell is 'done', then iterate over its elements
 						if (!done) {
 							done = true;
-							forEach(select.getState(), function (element) {
-								executeAction(inner(element));
-							});
+							state = select.getState();
 							if (injectedFunc !== undefined) {
 								injectedFunc.unInject();
 								uninjected = true;
+								forEach(state, function (element) {
+									executeAction(inner(element));
+								});
 							}
 						}
 					});
 					if (done && !uninjected) {
 						injectedFunc.unInject();
+						forEach(state, function (element) {
+							executeAction(inner(element));
+						});
 					}
 				}
 				// extract returns undefined, so even if it is asynchronous we don't need to wait for it
@@ -238,6 +243,8 @@ function helpExecuteAction (instruction) {
 							action = otherwise;
 					}
 				});
+				//TODO: make case in actions work for server
+				console.log("TODO: make case in actions work for server");
 				injectedFunc.unInject();
 				output = helpExecuteAction(action);
 			}

@@ -198,10 +198,6 @@ handle_cast({disconnect, QueryId}, State) ->
 	State1 = removeQuery(State, QueryId),
 	flushOrWait(State1, ?AfterConnectDelay);
 	
-handle_cast({sendElements, []}, State) ->
-	% handle donemessage stuff here
-	flushOrWait(State, ?AdjacentElementDelay);
-	
 handle_cast({sendElements, [PackedElements]}, State) ->
 	QueryId = cellElements:mapKey(PackedElements),
 	Elements = cellElements:mapValue(PackedElements),

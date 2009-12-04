@@ -337,10 +337,10 @@ handle_cast({injectElements, Elements}, CellState) ->
 	
 handle_cast({sendElements, From, Elements}, State) ->
 	% TODO: if elements list is too long, send in chunks
-	if
-		Elements =:= [] ->
-			{noreply, cellState:setDone(State, From)};
-		true -> 
+	% if
+	% 	Elements =:= [] ->
+	% 		{noreply, cellState:setDone(State, From)};
+	% 	true -> 
 			State2 = 
 				case cellState:getIntercept(State) of
 					undefined ->
@@ -355,8 +355,8 @@ handle_cast({sendElements, From, Elements}, State) ->
 			CellState = injectElements(State2, NewElements),
 			
 			% TODO!! IF FLAG IS SET, CHECK IF EMPTY, KILL CELL IF NECESSARY
-			{noreply, CellState}
-	end;
+			{noreply, CellState};
+	% end;
 
 handle_cast({injectOutput, OutputTo, OutputFunction}, State) ->
 	case cellPointer:isCellPointer(OutputTo) of

@@ -448,6 +448,22 @@ sessionOutput(QueryId, _State, _ElementsState) ->
 sessionOutput(QueryId, _State, _ElementsState, Elements, Element)	->
 	throw({undefined, [cellElements:createAddMap(QueryId, Elements)]}).
 	
+	
+%% 
+%% sessionOutput
+%% 		
+%%		
+
+debugOutput() -> undefined.
+
+debugOutput(QueryId, _State, _ElementsState) ->
+	?colortrace(call_worked),
+	throw({undefined, [cellElements:createAddMap(QueryId, [])]}).
+
+debugOutput(QueryId, _State, _ElementsState, Elements, Element)	->
+	io:format("\033[45mRECEIVED FROM: ~p: ~p\033[49m~n", [QueryId, Element]),
+	throw({undefined, [cellElements:createAddMap(QueryId, Elements)]}).	
+	
 %% 
 %% setRangeKey :: Atom -> 
 %% 		
