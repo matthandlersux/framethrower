@@ -3,61 +3,65 @@ debug = jsaction(x::a)::Void {
 	console.log(x);
 },
 
-noteId = function()::String {
-	return env("note").name;
+remoteId = function(x::a)::String {
+	return x.name;
 },
 
 getDivText = jsaction()::String {
-	var div = document.getElementById(env("note").name);
+	var div = document.getElementById(evalExpr("noteId"));
 	// TODO handle <br/>
 	return div.textContent;
 },
 
-initDiv = jsaction()::Void {
-	var div = document.getElementById(env("note").name);
-	var text = evaluateExpr("note_text note", env).getState()[0];
-	// var span = document.createElement("span");
-	// span.textContent = text;
-	// span.style.background = "#aaf";
-	// span.onmouseover = function () {console.log("hey.");};
-	
+setDivText = jsaction(text::String)::Void {
+	var div = document.getElementById(evalExpr("noteId"));
+
 	// clear note:
 	while (div.lastChild)
 		div.removeChild(div.lastChild);
-	
-	// div.appendChild(span);
+
 	div.textContent = text;
 },
 
-// returns (success, range)
-getDivSelection = jsaction()::(Bool, Range) {
-	var div = document.getElementById(env("note").name);
-	if(!def(div))
-		return makeTuple(false, makeTuple(0,0));
-		
-	var range = window.getSelection().getRangeAt(0);
-	console.log(range);
-
-	// does target div contain the selection?:
-	for (
-		var ancestor = range.commonAncestorContainer;
-		def(ancestor) && ancestor!==div;
-		ancestor = ancestor.parentNode
-	);
-	if (ancestor!==div) // nope.
-		return makeTuple(false, makeTuple(0,0));
-		
-	var k = 0, start, end;
-	for (var i=0; i<div.childNodes.length; i++) {
-		var child = div.childNodes[i];
-		if (child===range.startContainer)
-			start = k + range.startOffset;
-		if (child===range.endContainer)
-			end = k + range.endOffset;
-		if (child.nodeType === Node.TEXT_NODE)
-			k += child.length;
-		// else if (child.tagName === 'br')
-		// 	k += 1;
-	}
-	return makeTuple(true, makeTuple(start, end-start));
-}
+// addDivRange = jsaction(rangeId::String, rangeValue::Range, textRange::TextRange)::Void {
+// },
+// 
+// updateDivSelection = jsaction()::Bool {
+// 	var div = document.getElementById(evalExpr("noteId"));
+// 	var range = window.getSelection().getRangeAt(0);
+// 	console.log(range);
+// 
+// 	// does target div contain the selection?:
+// 	var ancestor = range.commonAncestorContainer;
+// 	while (ancestor && ancestor!==div)
+// 		ancestor = ancestor.parentNode;
+// 	if (ancestor!==div) { // no selection
+// 		if(evalExpr("divSelectionS").getState().length>0) { // but there used to be a selection
+// 			executeAction(evalExpr("unset divSelectionS"));
+// 			return true;
+// 		}
+// 		return false; // no change
+// 	}
+// 		
+// 	var k = 0, start, end;
+// 	for (var i=0; i<div.childNodes.length; i++) {
+// 		var child = div.childNodes[i];
+// 		if (child===range.startContainer)
+// 			start = k + range.startOffset;
+// 		if (child===range.endContainer)
+// 			end = k + range.endOffset;
+// 		if (child.textContent)
+// 			k += child.textContent.length;
+// 		// else if (child.tagName === 'br')
+// 		// 	k += 1;
+// 	}
+// 	
+// 	if (evalExpr("divSelectionS").getState().length===0
+// 		|| evalExpr("mapUnit range_start divSelectionS").getState()[0]!==start
+// 		|| evalExpr("mapUnit range_length divSelectionS").getState()[0]!==end-start)
+// 	{
+// 		executeAction(evalExpr("set divSelectionS (makeRange "+start+" "+(end-start)+")"));
+// 		return true;
+// 	}
+// 	return false; // no change
+// }

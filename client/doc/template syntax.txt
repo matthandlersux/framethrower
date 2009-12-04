@@ -52,9 +52,14 @@ JAVASCRIPT
 		JSCODE
 	}
 	
+env("x"):
 note that in both JAVASCRIPT and JSACTION,
 the variable 'env' is a function which takes a string and returns the value in the template environment,
 so Javascript can access the surrounding template closure.
+the parameters to the javascript function are also placed in the environment, for convenience.
+evalExpr("plus 1 x"):
+additionally, 'evalExpr' is a function which evaluates an expression in 'env'.
+thus evalExpr("x") is equivalent to env("x") but with significantly more overhead.
 
 JSACTION
 	jsaction (PARAMS)::TYPE {
