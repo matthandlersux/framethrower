@@ -289,6 +289,7 @@ var semantics = function(){
 		var first = true;
 		var typeString = "";
 		var typeCounter = 0;
+		var envParams = "\n";
 		forEach(argList, function(arg) {
 			if(!first) {
 				funcString += ", ";
@@ -296,6 +297,7 @@ var semantics = function(){
 				first = false;
 			}
 			funcString += arg.name;
+			envParams += "env = envAdd(env, '"+arg.name+"', "+arg.name+");\n";
 			if (def(arg.type)) {
 				typeString += "(" + arg.type + ") -> ";
 			} else {
@@ -303,7 +305,8 @@ var semantics = function(){
 				typeCounter++;
 			}
 		});
-		funcString += ") { " + JS + " }";
+		var defineEval = "function evalExpr(s) {return evaluateExpr(s, env)};\n";
+		funcString += ") { " + envParams + defineEval + JS + " }";
 		if (def(outputType)) {
 			if(outputTypeTransformer)
 				outputType = outputTypeTransformer(outputType);

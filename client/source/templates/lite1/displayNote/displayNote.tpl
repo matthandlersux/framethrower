@@ -4,31 +4,72 @@ template (note::Note) {
 	},
 	colorStyle = defaultColorStyle,
 	
+	// clearMap = action(map::Map k v) {
+	// 	extract map as k, _ {
+	// 		removeEntry map k
+	// 	}
+	// },
+	// 
+	// divSelectionS = state(Unit Range),
+	// 
+	// textRangesById = state(Map String TextRange),
+	
+	noteId = remoteId note,
+	
+	initDiv = action() {
+		setDivText (fetch (note_text note))
+		// clearMap textRangesById,
+		// extract note_linksToMovies note as timeLink {
+		// 	addDivTextRange (timeLink_source timeLink)
+		// },
+		// extract note_linksToNotes note as textLink {
+		// 	addDivTextRange (textLink_source textLink)
+		// },
+		// extract note_linksFromNotes note as textLink {
+		// 	addDivTextRange (textLink_target textLink)
+		// }
+	},
+	
+	// addDivTextRange = action(textRange::TextRange) {
+	// 	range = textRange_range textRange,
+	// 	extract range as rangeValue { // only care about specific selections
+	// 		rangeId = remoteId range,
+	// 		addEntry textRangesById rangeId textRange,
+	// 		addDivRange rangeId rangeValue textRange
+	// 	}
+	// },
+	
 	
 	<div>
 		<div class="zForeground" style-border="1px solid #000" style-margin="4" style-padding="4" style-background-color="#bbb" style-color="#000" style-height="100" style-overflow="auto">
 			// <f:on focus>
 			// 	debug "focus"
 			// </f:on>
-			<f:on blur>
-				// debug "blur",
-				// x <- getDivSelection,
+			// <f:on blur>
+			// 	debug "blur"
+			// </f:on>
+			<f:on uninit>
+				// debug "uninit",
 				text <- getDivText,
 				// debug text,
 				note_setText note text
 			</f:on>
 			// <f:on globalmouseup>
-			// 	debug "selection changed? (mouseup)"
+			// 	didChange <- updateDivSelection,
+			// 	debug didChange,
+			// 	debug (fetch divSelectionS)
 			// </f:on>
 			// <f:on globalkeyup>
-			// 	debug "selection changed? (keyup)"
+			// 	didChange <- updateDivSelection,
+			// 	debug didChange,
+			// 	debug (fetch divSelectionS)
 			// </f:on>
 			<f:each note_text note as text>
 				<f:wrapper>
 					<f:on init>
 						initDiv
 					</f:on>
-					<div class="note" id="{noteId}" contentEditable="true"/>
+					<div class="note" id="{noteId}" contentEditable="true" style-width="100%" style-height="100%"/>
 				</f:wrapper>
 			</f:each>
 		</div>
