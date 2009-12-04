@@ -319,7 +319,7 @@ queryUpdate(QueryId, Elements) ->
 										end,
 							[{struct, [{"action", Modifier}|Fields]}] ++ Updates
 						end,
-	ListOfUpdates = lists:foldr(ElementToUpdate, [], Elements),
+	ListOfUpdates = lists:foldl(ElementToUpdate, [], Elements),
 	{struct, [{"queryUpdate",
 		{struct, [{"queryId", list_to_binary(QueryId)},{"updates", ListOfUpdates}]}	
 	}]}.
