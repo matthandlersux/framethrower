@@ -256,3 +256,7 @@ function evaluateAndInject(expr, depender, func) {
 	return e.inject(depender, func);
 }
 
+function evaluateExpr(s, env) {
+	return evaluate2(parseExpr(s,env));
+}
+

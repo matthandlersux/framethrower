@@ -1,8 +1,14 @@
 
 .play-button, .pause-button, .scroll-button-left, .scroll-button-right,
-	.fullscreen-button, .unfullscreen-button, .close-button {
+	.fullscreen-button, .unfullscreen-button, .close-button, .comment-button {
 		background-image: url(./images/ft.lite.icons.png);
 		background-repeat: no-repeat;
+		opacity: .5;
+}
+
+.play-button:hover, .pause-button:hover, .scroll-button-left:hover, .scroll-button-right:hover,
+	.fullscreen-button:hover, .unfullscreen-button:hover, .close-button:hover, .comment-button:hover {
+		opacity: .7;
 }
 
 /*these are all 50x50 currently*/	
@@ -44,8 +50,26 @@
 
 
 .close-button {
+	width: 16px;
+	height: 12px;
+	background-position: -170px -13px;
+}
+
+
+.delete-button {
+/*	this appears on images in notes to delete links*/
 	width: 12px;
 	height: 12px;
+	background-image: url(./images/ft.lite.icons.png);
+	background-repeat: no-repeat;
 	background-position: -172px -13px;
 }
 
+.comment-button {
+	width: 16px;
+	height: 12px;
+	background-position: -188px -13px;
+	position: absolute;
+	top: 2px;
+	left: 50%;
+}

@@ -340,6 +340,8 @@ template (movie::Movie)::Timeline {
 						<div class="zForeground" style-position="absolute" style-top="20" style-width="100%">
 							<div style-position="absolute" class="timeline-region mine" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-top="0">
 								<div class="inside">
+									<div class="comment-button">
+									</div>
 									<f:on click>
 										createSimpleNoteWithLink movie selectedTimeStart selectedTimeDuration,
 										unset selectedTimeStartS,
@@ -349,6 +351,7 @@ template (movie::Movie)::Timeline {
 										myDragLink = (movie, selectedTimeStartS, selectedTimeDurationS),
 										<f:wrapper>
 											<f:on dragstart>
+												unset draggingLinkTentative,
 												set draggingLink myDragLink,
 												set draggingTimeRange (selectedTimeStart, selectedTimeDuration)
 											</f:on>
@@ -357,6 +360,8 @@ template (movie::Movie)::Timeline {
 											<f:call>svgEvents myDragLink false draggingColorStyle</f:call>
 										</f:wrapper>
 									</f:call>
+									<f:on mouseover>set draggingLinkTentative null</f:on>
+									<f:on mouseout>unset draggingLinkTentative</f:on>
 								</div>
 							</div>
 						</div>
@@ -373,37 +378,50 @@ template (movie::Movie)::Timeline {
 				// Scrollbar
 				<div style-position="absolute" style-bottom="0" style-width="100%" style-height="{scrollbarHeight}" class="scrollbar">
 					<div class="zBackground" style-position="absolute" style-width="100%" style-height="100%" style-background-color="#111" />
-					<div class="zForeground button scroll-button-left" style-position="absolute" style-top="0" style-left="0" style-width="{scrollbarButtonWidth}" style-height="100%">
-						//L
-						<f:on click>notYetImplemented</f:on>
-					</div>
-					<div class="zForeground button scroll-button-right" style-position="absolute" style-top="0" style-right="0" style-width="{scrollbarButtonWidth}" style-height="100%">
-						//R
-						<f:on click>notYetImplemented</f:on>
-					</div>
 					<f:call>
 						scrollbarWidth = subtract mainTimelineWidth (multiply 2 scrollbarButtonWidth),
-
+						scrollbarBackground = state(Unit String, "rgba(68, 68, 88, 0.8)"),
+						scrollLeftOpacity = state(Unit String, ".5"),
+						scrollRightOpacity = state(Unit String, ".5"),
+			
 						// units: fraction
 						left = divide scrollAmount (multiply movieDuration zoomFactor),
 						width = divide mainTimelineWidth (multiply movieDuration zoomFactor),
-
-						<div style-position="absolute" style-top="0" style-left="{scrollbarButtonWidth}" style-width="{scrollbarWidth}" style-height="100%">
-							<f:on click>
-								desiredLeft = subtract (divide (subtract (subtract event.mouseX scrollbarButtonWidth) mainTimelineLeft) scrollbarWidth) (divide width 2),
-								setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
-							</f:on>
-
-							<div class="zForeground" style-position="absolute" style-left="{makePercent left}" style-width="{makePercent width}" style-height="100%" class="scroller">
+						<f:wrapper>
+							<div class="zForeground button scroll-button-left" style-opacity="{scrollLeftOpacity}" style-position="absolute" style-top="0" style-left="0" style-width="{scrollbarButtonWidth}" style-height="100%">
+								//L
 								<f:call>
-									setScroll = action (start::Number, x::Number) {
-										desiredLeft = plus start (divide x scrollbarWidth),
-										setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
-									},
-									dragger (unfetch left) setScroll emptyAction
+									mouseClickSwitch scrollLeftOpacity "0.7" "1"
 								</f:call>
+								//<f:on click>notYetImplemented</f:on>
 							</div>
-						</div>
+							<div class="zForeground button scroll-button-right" style-opacity="{scrollRightOpacity}" style-position="absolute" style-top="0" style-right="0" style-width="{scrollbarButtonWidth}" style-height="100%">
+								//R
+								<f:call>
+									mouseClickSwitch scrollRightOpacity "0.7" "1"
+								</f:call>
+								//<f:on click>notYetImplemented</f:on>
+							</div>
+							<div style-position="absolute" style-top="0" style-left="{scrollbarButtonWidth}" style-width="{scrollbarWidth}" style-height="100%">
+								<f:on click>
+									desiredLeft = subtract (divide (subtract (subtract event.mouseX scrollbarButtonWidth) mainTimelineLeft) scrollbarWidth) (divide width 2),
+									setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
+								</f:on>
+
+								<div class="zForeground" style-position="absolute" style-background-color="{scrollbarBackground}" style-left="{makePercent left}" style-width="{makePercent width}" style-height="72%" class="scroller">
+									<f:call>
+										mouseClickSwitch scrollbarBackground "rgba(68, 68, 88, .9)" "rgba(88, 88, 108, .9)"
+									</f:call>
+									<f:call>
+										setScroll = action (start::Number, x::Number) {
+											desiredLeft = plus start (divide x scrollbarWidth),
+											setScrollAmount (multiply (multiply movieDuration zoomFactor) desiredLeft)
+										},
+										dragger (unfetch left) setScroll emptyAction
+									</f:call>
+								</div>
+							</div>
+						</f:wrapper>
 					</f:call>
 				</div>
 				
