@@ -92,7 +92,7 @@ template (note::Note) {
 								jumpToInMovie movie range
 							</f:on>
 							<f:call>svgEvents (timeLink_target timeLink) false colorStyle</f:call>
-							<div class="button delete-button" style-position="absolute" style-top="0" style-right="0">
+							<div class="button delete-button" style-position="absolute" style-top="2" style-right="2">
 								<f:on click>
 									// prompt to delete this link
 									unlinkTime timeLink
