@@ -362,6 +362,7 @@ template (movie::Movie)::Timeline {
 									</f:call>
 									<f:on mouseover>set draggingLinkTentative null</f:on>
 									<f:on mouseout>unset draggingLinkTentative</f:on>
+									<f:call>tooltipInfo "Add a new comment"</f:call>
 								</div>
 							</div>
 						</div>

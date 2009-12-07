@@ -151,6 +151,24 @@ template () {
 	draggingLinkTentative = state(Unit Null),
 	cssClass = bindUnit (reactiveIfThen draggingLink "dragging-link") (reactiveIfThen draggingLinkTentative "dragging-link-tentative" "none"),
 	
+
+
+
+	// =============
+	// Tooltip
+	// =============
+	tooltipS = state(Unit String),
+	tooltipInfo = template (s::String) {
+		<f:wrapper>
+			<f:on mouseover>
+				set tooltipS s
+			</f:on>
+			<f:on mouseout>
+				unset tooltipS
+			</f:on>
+		</f:wrapper>
+	},
+	
 	
 	<div class="{cssClass}">
 		<f:each draggingLink as link>
@@ -161,6 +179,8 @@ template () {
 				</f:on>
 			</div>
 		</f:each>
+		
+		<f:call>tooltip</f:call>
 	
 
 		
