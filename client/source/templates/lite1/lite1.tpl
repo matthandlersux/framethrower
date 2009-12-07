@@ -276,8 +276,8 @@ template () {
 				<f:each notePops as index, note>
 					<div style-position="relative" style-width="260" style-margin="16" style-float="right">
 						<div style-position="absolute" style-bottom="0" style-width="260">
-							<div style-position="absolute" style-width="100%" style-height="100%" class="zBackground" style-background-color="#333" />						
-							<div class="button close-button" style-float="right">
+							<div class="zBackground timeline-note-box"/>						
+							<div class="button close-button" style-float="right" style-padding-right="2px" style-padding-top="2px">
 								<f:on click>
 									removeEntry notePops index
 								</f:on>
