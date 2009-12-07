@@ -1,4 +1,10 @@
 
+MaybeRange := (Bool, Range),
+emptyMaybeRange = (false, makeRange 0 0),
+makeMaybeRange = makeTuple2 true,
+maybeRange_maybe = fst,
+maybeRange_range = snd,
+
 debug = jsaction(x::a)::Void {
 	console.log(x);
 },
@@ -23,10 +29,8 @@ setDivText = jsaction(text::String)::Void {
 	div.textContent = text;
 },
 
-addDivRange = jsaction(rangeId::String, rangeValue::Range, textRange::TextRange)::Void {
-	// cf creating W3C ranges, which may give us most of this for free...
+addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
 	var div = document.getElementById(evalExpr("noteId"));
-	var text = div.textContent;
 	var start = evalExpr("range_start rangeValue");
 	var end = start + evalExpr("range_length rangeValue");
 	
@@ -44,61 +48,39 @@ addDivRange = jsaction(rangeId::String, rangeValue::Range, textRange::TextRange)
 				range.setEnd(child, end-childStart);
 				break;
 			}
-			
-			// // <...|...|...>
-			// if (start <= childStart && end > childEnd)
-			// 	child.textContent = "";
-			// 	
-			// // |...<...|...>
-			// else if (start < childEnd && end > childEnd)
-			// 	child.textContent = text.substring(childStart, start);
-			// 
-			// // <...|...>...|
-			// else if (start <= childStart && end > childStart)
-			// 	child.textContent = text.substring(end, childEnd);
-			// 
-			// // |...<...>...|
-			// else if (start < childEnd && end > childStart) {
-			// 	child.textContent = text.substring(end, childEnd);
-			// 	var child2 = document.createTextNode( text.substring(childStart, start) );
-			// 	div.insertBefore(child2, child);
-			// 	i++; // keep i correct
-			// }
-			// 
-			// if (end < childEnd) // we're done
-			// 	break;
 
 			childStart = childEnd; // for next child
 		}
 	}
 	
 	var span = document.createElement("span");
-	span.textContent = text.substring(start, end);
-	span.style.border = "1pt solid black";
+	span.id = rangeId;
+	span.className = "noteRange";
 	
 	range.surroundContents(span);
-	
-	// if (i < div.childNodes.length)
-	// 	div.insertBefore(span, div.childNodes[i]);
-	// else
-	// 	div.appendChild(span);
 },
 
-updateDivSelection = jsaction()::Bool {
+removeDivRange = jsaction(rangeId::String)::Void {
+	var span = document.getElementById(rangeId);
+	if (!span)
+		return;
+
+	var text = document.createTextNode(span.textContent);
+	span.parentNode.replaceChild(text, span);
+},
+
+updateDivSelection = jsaction(oldSelection::MaybeRange)::(Bool, MaybeRange) {
 	var div = document.getElementById(evalExpr("noteId"));
 	var range = window.getSelection().getRangeAt(0);
-	console.log(range);
 
 	// does target div contain the selection?:
 	var ancestor = range.commonAncestorContainer;
 	while (ancestor && ancestor!==div)
 		ancestor = ancestor.parentNode;
 	if (ancestor!==div) { // no selection
-		if(evalExpr("divSelectionS").getState().length>0) { // but there used to be a selection
-			executeAction(evalExpr("unset divSelectionS"));
-			return true;
-		}
-		return false; // no change
+		if(evalExpr("maybeRange_maybe oldSelection")) // but there used to be a selection
+			return evalExpr("(true, emptyMaybeRange)"); // range changed, to empty range.
+		return evalExpr("(false, oldSelection)"); // no change
 	}
 		
 	var k = 0, start, end;
@@ -114,12 +96,25 @@ updateDivSelection = jsaction()::Bool {
 		// 	k += 1;
 	}
 	
-	if (evalExpr("divSelectionS").getState().length===0
-		|| evalExpr("mapUnit range_start divSelectionS").getState()[0]!==start
-		|| evalExpr("mapUnit range_length divSelectionS").getState()[0]!==end-start)
+	if (!evalExpr("maybeRange_maybe oldSelection")
+		|| evalExpr("range_start (maybeRange_range oldSelection)") !== start
+		|| evalExpr("range_length (maybeRange_range oldSelection)") !== end-start)
 	{
-		executeAction(evalExpr("set divSelectionS (makeRange "+start+" "+(end-start)+")"));
-		return true;
+		return evalExpr("(true, makeMaybeRange (makeRange "+start+" "+(end-start)+"))");
 	}
 	return false; // no change
+},
+
+divSelectNoteSelection = jsaction()::Void {
+	var noteSelection = document.getElementById("noteSelection");
+	if (!noteSelection)
+		return;
+
+	var range = document.createRange();
+	range.selectNode(noteSelection);
+	
+	var selection = window.getSelection();
+	if (selection.rangeCount > 0)
+		selection.removeAllRanges();
+	selection.addRange(range);
 }

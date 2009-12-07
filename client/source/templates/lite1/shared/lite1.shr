@@ -200,10 +200,6 @@ createSimpleNoteWithLink = action (movie::Movie, start::Number, duration::Number
 	timeRange_setRange timeRange (makeRange start duration),
 	linkTime (makeTimeLink wholeNote timeRange),
 	
-	// link 'this' to whole note:
-	thisRange <- createTextRange note,
-	textRange_setRange thisRange (makeRange 5 4),
-	linkText (makeTextLink thisRange wholeNote),
 	return note
 }
 

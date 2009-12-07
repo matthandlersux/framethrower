@@ -10,7 +10,8 @@ template (note::Note) {
 		}
 	},
 	
-	divSelectionS = state(Unit Range),
+	divSelectionS = state(Unit MaybeRange),
+	divSelection = fetch divSelectionS,
 	
 	textRangesById = state(Map String TextRange),
 	
@@ -32,10 +33,23 @@ template (note::Note) {
 	
 	addDivTextRange = action(textRange::TextRange) {
 		range = textRange_range textRange,
+		rangeId = remoteId range,
 		extract range as rangeValue { // only care about specific selections
-			rangeId = remoteId range,
 			addEntry textRangesById rangeId textRange,
-			addDivRange rangeId rangeValue textRange
+			addDivRange rangeId rangeValue
+		}
+	},
+	
+	updateSelection = action() {
+		changedMaybeRange <- updateDivSelection divSelection,
+		extract boolToUnit (fst changedMaybeRange) as _ { // selection changed
+			removeDivRange "noteSelection",
+			newSelection = snd changedMaybeRange,
+			set divSelectionS newSelection,
+			extract boolToUnit (maybeRange_maybe newSelection) as _ {
+				addDivRange "noteSelection" (maybeRange_range newSelection),
+				divSelectNoteSelection
+			}
 		}
 	},
 	
@@ -46,20 +60,18 @@ template (note::Note) {
 				text <- getDivText,
 				note_setText note text
 			</f:on>
-			// <f:on globalmouseup>
-			// 	didChange <- updateDivSelection,
-			// 	debug didChange,
-			// 	debug (fetch divSelectionS)
-			// </f:on>
-			// <f:on globalkeyup>
-			// 	didChange <- updateDivSelection,
-			// 	debug didChange,
-			// 	debug (fetch divSelectionS)
-			// </f:on>
 			<f:each note_text note as text>
 				<f:wrapper>
 					<f:on init>
-						initDiv
+						set divSelectionS emptyMaybeRange,
+						initDiv,
+						addDivRange "test" (makeRange 5 4)
+					</f:on>
+					<f:on globalmouseup>
+						updateSelection
+					</f:on>
+					<f:on globalkeyup>
+						updateSelection
 					</f:on>
 					<div class="note" id="{noteId}" contentEditable="true" style-width="100%" style-height="100%"/>
 				</f:wrapper>
