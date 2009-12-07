@@ -3,6 +3,7 @@
 	background-color: #334;
 	color: #fff;
 	padding: 3px;
+	-moz-border-radius-topright: 5px;
 /*	border: 1px solid #222;
 	border-size: 1px 1px 0px 0px;*/
 }
