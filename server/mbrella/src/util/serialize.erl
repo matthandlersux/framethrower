@@ -60,7 +60,6 @@ serialize() ->
 %%		
 
 unserialize() ->
-	?trace("Calling Unserialize"),
 	gen_server:call(?MODULE, unserialize, 15000).
 
 %% ====================================================================
@@ -94,11 +93,11 @@ handle_call(unserialize, _From, State) ->
 			?colortrace({serialize_file_error, Reason}),
 			{stop, Reason, State};
 		{ok, ETS} ->
-			RespawnObjects = 	fun({"object." ++ NumString = Name, ObjectData}, {ObjectMax, CellMax}) ->
+			RespawnObjects = 	fun({"object." ++ NumString, ObjectData}, {ObjectMax, CellMax}) ->
 									Object = dataToObject(ObjectData),
 									respawnObject(Object, ETS),
 									{ erlang:max(list_to_integer(NumString),ObjectMax), CellMax};									
-								({"cell." ++ NumString = Name, CellStateData}, {ObjectMax, CellMax}) ->
+								({"cell." ++ NumString, _CellStateData}, {ObjectMax, CellMax}) ->
 									{ObjectMax, erlang:max(list_to_integer(NumString), CellMax)};
 								({scope, ScopeState}, Acc) ->
 									ScopeState1 = respawnScopeState(ScopeState, ETS),
@@ -112,10 +111,21 @@ handle_call(unserialize, _From, State) ->
 			ets:delete(ETS),
 			{reply, ok, State}
 	end;
-handle_call(Msg, From, State) ->
+handle_call(_Msg, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
+
+scourForCells (ObjectToScour, ETS) ->
+	mblib:scour(
+		fun cellPointer:isCellPointer/1,
+		fun(CellPointer) ->
+			CellData = cellToData(CellPointer),
+			scourForCells(CellData, ETS),
+			ets:insert(ETS, {cellPointer:name(CellPointer), CellData})
+		end,
+		ObjectToScour
+	).
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -126,32 +136,21 @@ handle_call(Msg, From, State) ->
 %% --------------------------------------------------------------------
 handle_cast(serialize, State) ->
 	ETS = ets:new(serialize, [public]),
-	
-	SerializeAllCells = 	fun(CellPointer) ->
-								ets:insert(ETS, {cellPointer:name(CellPointer), cellToData(CellPointer)})
-							end,
 	SerializeAllObjects = 	fun({ObjectName, Object}, _Acc) ->
 								ets:insert(ETS, {ObjectName, objectToData(Object)}),
-								ListOfCellPointers = getCellsFromObject(Object),
-								lists:foreach(SerializeAllCells, ListOfCellPointers)
+								scourForCells(Object, ETS)
 							end,
 	objectStore:fold(SerializeAllObjects, []),
 	
 	ScopeState = action:getScopeState(),
-	mblib:scour(
-		fun cellPointer:isCellPointer/1,
-		fun(CellPointer) ->
-			ets:insert(ETS, {cellPointer:name(CellPointer), cellToData(CellPointer)})
-		end,
-		ScopeState
-	),
+	scourForCells(ScopeState, ETS),
 	ets:insert(ETS, {scope, ScopeState}),
 	
 	ets:tab2file(ETS, getFilename(State)),
 	ets:delete(ETS),
 	{noreply, State};
 
-handle_cast(Msg, State) ->
+handle_cast(_Msg, State) ->
     {noreply, State}.
 
 %% --------------------------------------------------------------------
@@ -170,7 +169,7 @@ handle_info(Info, State) ->
 %% Description: Shutdown the server
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
-terminate(Reason, State) ->
+terminate(_Reason, _State) ->
     ok.
 
 %% --------------------------------------------------------------------
@@ -178,7 +177,7 @@ terminate(Reason, State) ->
 %% Purpose: Convert process state when code is changed
 %% Returns: {ok, NewState}
 %% --------------------------------------------------------------------
-code_change(OldVsn, State, Extra) ->
+code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 %% ====================================================
@@ -199,9 +198,10 @@ respawnCell(CellPointer, ETS) ->
 					CellState1 = dataToCell(CellState),
 					CellState2 = cellState:removeSessionOutputs(CellState1),
 					CellState3 = respawnCellState(CellState2, ETS),
+					CellState4 = cellState:rebuildElements(CellState3),
 					% LOOK FOR SELF REFERENCES OR MAKE RESPAWN CELL STATE SMARTER
 					
-					cell:respawn(CellState3);
+					cell:respawn(CellState4);
 				[] ->
 					exit(cell_not_in_serialized_data)
 			end;
@@ -266,23 +266,6 @@ dataToCell(CellState) ->
 
 dataToObject(Object) ->
 	Object.
-
-%% 
-%% getCellsFromObject :: Object -> List CellPointer
-%% 		
-%%		
-
-getCellsFromObject(Object) ->
-	Props = objects:getProps(Object),
-	GetCellPointers = 	fun({_Str, MaybeCellPointer}, ListOfCellPointers) ->
-							case cellPointer:isCellPointer(MaybeCellPointer) of
-								true ->
-									[MaybeCellPointer] ++ ListOfCellPointers;
-								_ ->
-									ListOfCellPointers
-							end
-						end,
-	lists:foldl(GetCellPointers, [], Props).
 	
 %% ---------------------------------------------
 %% State Functions
