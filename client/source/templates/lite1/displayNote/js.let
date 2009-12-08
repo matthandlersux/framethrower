@@ -73,8 +73,41 @@ removeDivRange = jsaction(rangeId::String)::Void {
 },
 
 getDivRange = jsaction(rangeId::String)::(Bool, Range) {
+	var span = document.getElementById(rangeId);
+	if (!span)
+		return evalExpr('(false, makeRange 0 0)');
+		
+	var div = document.getElementById(evalExpr('noteId'));
 	
+	// determine coordinates of range:
+	var k = 0, start;
+	function processChildren(node) {
+		node.normalize();
+		for (var i=0; i<node.childNodes.length; i++) {
+			var child = node.childNodes[i];
+
+			if (child.nodeType===Node.TEXT_NODE)
+				k += child.textContent.length;
+			// else if (child.tagName === 'br')
+			// 	k += 1;
+			else if (child===span)
+				start = k;
+			else
+				processChildren(child);
+
+			if (def(start)) // we're done
+				return;
+		}
+	}
+	processChildren(div);
+	
+	if(!def(start))
+		return evalExpr('(false, makeRange 0 0)');
+	
+	return evalExpr('(true, makeRange '+start+' '+span.textContent.length+')');
 },
+
+getDivSelection = getDivRange "noteSelection",
 
 updateDivSelection = jsaction()::Void {
 	var oldSelection = document.getElementById('noteSelection');
@@ -111,7 +144,7 @@ updateDivSelection = jsaction()::Void {
 	processChildren(div);
 	
 	if(!def(start) || !def(end) || end<start) {
-		console.error('found weird selection: ('+start+','+end+')');
+		console.error('firefox bug? found weird selection: ('+start+','+end+')');
 		return;
 	}
 	
@@ -133,4 +166,24 @@ divSelect = jsaction()::Void {
 	if (selection.rangeCount > 0)
 		selection.removeAllRanges();
 	selection.addRange(range);
-}
+},
+
+highlightDivRange = jsaction(rangeId::String)::Void {
+	var noteSelection = document.getElementById(rangeId);
+	if (!noteSelection)
+		return;
+	
+	noteSelection.className = 'noteRange-highlighted';
+},
+
+highlightDivSelection = highlightDivRange "noteSelection",
+
+unhighlightDivRange = jsaction(rangeId::String)::Void {
+	var noteSelection = document.getElementById(rangeId);
+	if (!noteSelection)
+		return;
+
+	noteSelection.className = 'noteRange';
+},
+
+unhighlightDivSelection = unhighlightDivRange "noteSelection"

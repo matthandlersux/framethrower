@@ -40,28 +40,58 @@ template (note::Note) {
 	
 	<div>
 		<div class="zForeground" style-border="1px solid #000" style-margin="4" style-padding="4" style-background-color="#bbb" style-color="#000" style-height="100" style-overflow="auto">
-			<f:on blur>
-				text <- getDivText,
-				note_setText note text,
-				debug "changed note text"
-				// initDiv
-			</f:on>
 			<f:on globalmouseup>
 				updateDivSelection
 			</f:on>
 			<f:on globalkeyup>
 				updateDivSelection
 			</f:on>
+			<f:on blur>
+				text <- getDivText,
+				note_setText note text
+				// debug "changed note text"
+				// initDiv
+			</f:on>
+			<f:on dragend>
+				extract draggingLink as triple {
+					maybeSelection <- getDivSelection,
+					extract boolToUnit (fst maybeSelection) as _ {
+						range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
+						movie = tuple3get1 triple,
+
+						timeRange <- createTimeRange movie,
+						timeRange_setRange timeRange range,
+						textRange <- createTextRange note,
+						textRange_setRange textRange (snd maybeSelection),
+						linkTime (makeTimeLink textRange timeRange),
+						
+						initDiv
+					}
+				}
+			</f:on>
 			<div class="note" id="{noteId}" contentEditable="true" style-width="100%" style-height="100%"/>
+			
+			// nasty f:trigger analogues:
 			<f:each note_text note as text>
 				<f:wrapper>
 					<f:on init>
-						debug "note_text changed",
-						initDiv,
-						addDivRange "test" (makeRange 5 4)
+						// debug "note_text changed",
+						initDiv
+						// addDivRange "test" (makeRange 5 4)
 					</f:on>
 				</f:wrapper>
 			</f:each>
+			<f:each reactiveOr draggingLink draggingLinkTentative as _>
+				<f:wrapper>
+					<f:on init>
+						highlightDivSelection
+					</f:on>
+					<f:on uninit>
+						unhighlightDivSelection
+					</f:on>
+				</f:wrapper>
+			</f:each>
+
 		</div>
 		<div class="zForeground">
 			<f:each note_linksToMovies note as timeLink>
