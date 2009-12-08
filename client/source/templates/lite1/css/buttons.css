@@ -71,3 +71,41 @@
 	top: 2px;
 	left: 50%;
 }
+
+.timeline:hover .selection-drag-left, .timeline:hover .selection-drag-right {
+	display: block;
+}
+
+.selection-drag-left, .selection-drag-right {
+	display: none;
+	position: absolute;
+	width: 9px;
+	top: 2px;
+	height: 11px;
+	background-color: rgba(230, 138, 0, .5);
+	border: 1px solid rgb(230, 120, 0);
+	background-image: url(./images/ft.lite.icons.png);
+	background-repeat: no-repeat;
+}
+
+.selection-drag-left:hover, .selection-drag-right:hover {
+	background-color: rgba(230, 138, 0, .8);
+}
+
+.selection-drag-left {
+	background-position: -311px -14px;
+	left: -10px;
+	cursor: w-resize;
+	-moz-border-radius-topleft: 3px;
+	-moz-border-radius-bottomleft: 3px;
+	border-right: 0px;
+}
+
+.selection-drag-right {
+	background-position: -323px -14px;
+	cursor: e-resize;
+	right: -10px;
+	-moz-border-radius-topright: 3px;
+	-moz-border-radius-bottomright: 3px;
+	border-left: 0px;
+}

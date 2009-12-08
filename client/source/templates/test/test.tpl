@@ -1,20 +1,16 @@
 template () {
-	xS = state(Unit Number, 100),
-	
-	xS2 = unfetch (fetch xS),
-	//xS2 = xS,
-	
-	moveIt = action (start, xOffset) {
-		set xS (plus start xOffset)
+	myT = template () {
+		counter = state(Unit Number, 0),
+		<div>
+			{counter}
+			<f:on click>
+				set counter (plus 1 (fetch counter))
+			</f:on>
+		</div>
 	},
 	
-	
-	<div style-position="absolute" style-left="{xS}">
-		drag me
-		//{xS2}
-		<f:call>
-			// dragger xS moveIt
-			dragger xS2 moveIt
-		</f:call>
+	<div>
+		<f:call>myT</f:call>
+		<f:call>myT</f:call>
 	</div>
 }

@@ -16,3 +16,7 @@
 .zTarget {
 	z-index: 40;
 }
+
+.zTooltip {
+	z-index: 39;
+}

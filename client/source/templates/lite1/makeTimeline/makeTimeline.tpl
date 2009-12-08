@@ -260,7 +260,7 @@ template (movie::Movie)::Timeline {
 						// Selected time
 						<div class="zForeground" style-position="absolute" style-left="{selectedTimeStartPercent}" style-width="{selectedTimeDurationPercent}" style-height="100%" style-background-color="rgba(255, 204, 51, 0.5)">
 							// draggable sliders
-							<div style-position="absolute" style-left="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa" style-cursor="w-resize">
+							<div class="selection-drag-left" >
 								<f:call>
 									oldTimeS = state(Unit Number),
 									setSelected = action (start::Number, offsetX::Number) {
@@ -280,7 +280,7 @@ template (movie::Movie)::Timeline {
 									dragger (unfetch selectedTimeStart) setSelected doneAction
 								</f:call>
 							</div>
-							<div style-position="absolute" style-right="-12" style-width="12" style-top="0" style-height="19" style-background-color="#aaa" style-cursor="e-resize">
+							<div class="selection-drag-right" >
 								<f:call>
 									oldTimeS = state(Unit Number),
 									setSelected = action (start::Number, offsetX::Number) {
@@ -362,6 +362,7 @@ template (movie::Movie)::Timeline {
 									</f:call>
 									<f:on mouseover>set draggingLinkTentative null</f:on>
 									<f:on mouseout>unset draggingLinkTentative</f:on>
+									<f:call>tooltipInfo "Add a new comment"</f:call>
 								</div>
 							</div>
 						</div>
