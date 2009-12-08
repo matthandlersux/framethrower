@@ -1,3 +1,7 @@
 .noteRange {
 	border: solid 1pt black;
 }
+
+#noteSelection {
+	border-style: dashed;
+}

@@ -1,10 +1,4 @@
 
-MaybeRange := (Bool, Range),
-emptyMaybeRange = (false, makeRange 0 0),
-makeMaybeRange = makeTuple2 true,
-maybeRange_maybe = fst,
-maybeRange_range = snd,
-
 debug = jsaction(x::a)::Void {
 	console.log(x);
 },
@@ -14,13 +8,13 @@ remoteId = function(x::a)::String {
 },
 
 getDivText = jsaction()::String {
-	var div = document.getElementById(evalExpr("noteId"));
+	var div = document.getElementById(evalExpr('noteId'));
 	// TODO handle <br/>
 	return div.textContent;
 },
 
 setDivText = jsaction(text::String)::Void {
-	var div = document.getElementById(evalExpr("noteId"));
+	var div = document.getElementById(evalExpr('noteId'));
 
 	// clear note:
 	while (div.lastChild)
@@ -30,32 +24,40 @@ setDivText = jsaction(text::String)::Void {
 },
 
 addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
-	var div = document.getElementById(evalExpr("noteId"));
-	var start = evalExpr("range_start rangeValue");
-	var end = start + evalExpr("range_length rangeValue");
+	var div = document.getElementById(evalExpr('noteId'));
+	var start = evalExpr('range_start rangeValue');
+	var end = start + evalExpr('range_length rangeValue');
 	
 	var range = document.createRange();
 	var childStart = 0;
-	for(var i=0; i<div.childNodes.length; i++) {
-		var child = div.childNodes[i];
-		if (child.textContent) {
-			var childEnd = childStart + child.textContent.length;
+	function processChildren(node) {
+		node.normalize();
+		for (var i=0; i<node.childNodes.length; i++) {
+			var child = node.childNodes[i];
 			
-			if(childStart<=start && start<childEnd)
-				range.setStart(child, start-childStart);
+			if (child.nodeType===Node.TEXT_NODE) {
+				var childEnd = childStart + child.textContent.length;
+			
+				if (childStart<=start && start<childEnd)
+					range.setStart(child, start-childStart);
 
-			if(childStart<end && end<=childEnd) {
-				range.setEnd(child, end-childStart);
-				break;
+				if (childStart<end && range.startContainer.parentNode===node) // keep track of last 'good enough' end position
+					range.setEnd(child, Math.min(end-childStart, childEnd-childStart));
+
+				childStart = childEnd; // for next child
 			}
-
-			childStart = childEnd; // for next child
+			else
+				processChildren(child);
+				
+			if (childStart>=end) // finished
+				return;
 		}
 	}
+	processChildren(div);
 	
-	var span = document.createElement("span");
+	var span = document.createElement('span');
 	span.id = rangeId;
-	span.className = "noteRange";
+	span.className = 'noteRange';
 	
 	range.surroundContents(span);
 },
@@ -67,46 +69,60 @@ removeDivRange = jsaction(rangeId::String)::Void {
 
 	var text = document.createTextNode(span.textContent);
 	span.parentNode.replaceChild(text, span);
+	text.parentNode.normalize();
 },
 
-updateDivSelection = jsaction(oldSelection::MaybeRange)::(Bool, MaybeRange) {
-	var div = document.getElementById(evalExpr("noteId"));
-	var range = window.getSelection().getRangeAt(0);
+getDivRange = jsaction(rangeId::String)::(Bool, Range) {
+	
+},
 
-	// does target div contain the selection?:
-	var ancestor = range.commonAncestorContainer;
+updateDivSelection = jsaction()::Void {
+	var oldSelection = document.getElementById('noteSelection');
+	var div = document.getElementById(evalExpr('noteId'));
+	var selection = window.getSelection().getRangeAt(0);
+
+	// does this note div contain the selection?:
+	var ancestor = selection.commonAncestorContainer;
 	while (ancestor && ancestor!==div)
 		ancestor = ancestor.parentNode;
-	if (ancestor!==div) { // no selection
-		if(evalExpr("maybeRange_maybe oldSelection")) // but there used to be a selection
-			return evalExpr("(true, emptyMaybeRange)"); // range changed, to empty range.
-		return evalExpr("(false, oldSelection)"); // no change
-	}
-		
+	if (ancestor!==div) // no selection, so leave old one alone
+		return;
+
+	// determine coordinates of new selection:
 	var k = 0, start, end;
-	for (var i=0; i<div.childNodes.length; i++) {
-		var child = div.childNodes[i];
-		if (child===range.startContainer)
-			start = k + range.startOffset;
-		if (child===range.endContainer)
-			end = k + range.endOffset;
-		if (child.textContent)
-			k += child.textContent.length;
-		// else if (child.tagName === 'br')
-		// 	k += 1;
+	function processChildren(node) {
+		node.normalize();
+		for (var i=0; i<node.childNodes.length; i++) {
+			var child = node.childNodes[i];
+
+			if (child.nodeType===Node.TEXT_NODE) {
+				if (child===selection.startContainer)
+					start = k + selection.startOffset;
+				if (child===selection.endContainer)
+					end = k + selection.endOffset;
+				k += child.textContent.length;
+			}
+			// else if (child.tagName === 'br')
+			// 	k += 1;
+			else
+				processChildren(child);
+		}
+	}
+	processChildren(div);
+	
+	if(!def(start) || !def(end) || end<start) {
+		console.error('found weird selection: ('+start+','+end+')');
+		return;
 	}
 	
-	if (!evalExpr("maybeRange_maybe oldSelection")
-		|| evalExpr("range_start (maybeRange_range oldSelection)") !== start
-		|| evalExpr("range_length (maybeRange_range oldSelection)") !== end-start)
-	{
-		return evalExpr("(true, makeMaybeRange (makeRange "+start+" "+(end-start)+"))");
-	}
-	return false; // no change
+	executeAction(evalExpr('removeDivRange "noteSelection"'));
+	executeAction(evalExpr('addDivRange "noteSelection" (makeRange '+start+' '+(end-start)+')'));
+	if(end>start) // same as Range.collapsed?
+		executeAction(evalExpr('divSelect'))
 },
 
-divSelectNoteSelection = jsaction()::Void {
-	var noteSelection = document.getElementById("noteSelection");
+divSelect = jsaction()::Void {
+	var noteSelection = document.getElementById('noteSelection');
 	if (!noteSelection)
 		return;
 
