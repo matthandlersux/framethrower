@@ -38,8 +38,8 @@
 
 .timeline-region .inside {
 	width: 100%;
-	-moz-border-radius: 8px;
-	-webkit-border-radius: 8px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
 	height: 14px;
 	border: 1px solid;
 	cursor: pointer;
@@ -81,7 +81,7 @@
 }
 
 .timeline-note-box {
-	background-color:rgba(50,50,50,.85);
+	background-color:rgba(50,50,50,.95);
 	height:100%;
 	position:absolute;
 	width:100%;
@@ -98,4 +98,11 @@
 	color: #000;
 	height: 100px;
 	overflow: auto;
+}
+
+.tooltip {
+	background-color: #222;
+	border: 1px solid #555;
+	padding: 3px;
+	text-align: center;
 }

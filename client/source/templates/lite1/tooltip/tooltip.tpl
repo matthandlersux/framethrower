@@ -8,7 +8,7 @@ template () {
 	bottom = snd leftBottom,
 	
 	<f:each tooltipS as t>
-		<div class="zTooltip" style-position="absolute" style-left="{left}" style-bottom="{bottom}" style-width="160" style-background-color="#222" style-border="1px solid #555" style-padding="3">
+		<div class="zTooltip tooltip" style-position="absolute" style-left="{left}" style-bottom="{bottom}" style-width="160">
 			{t}
 		</div>
 	</f:each>
