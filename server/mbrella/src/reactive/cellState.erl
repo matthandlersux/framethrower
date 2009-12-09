@@ -6,6 +6,7 @@
 	injectIntercept/2,
 	updateBottom/2,
 	addInformants/2, addInformant/2, removeInformant/2,
+	rebuildElements/1,
 	setDone/2,
 	getElements/1,
 	getOutputs/1,
@@ -183,6 +184,14 @@ setDone(#cellState{informants = Informants, done = Done} = State, CellPointer) -
 %% 
 
 getElements(#cellState{elements = CellElements} = State) -> CellElements.
+
+%% 
+%% rebuildElements :: CellState -> CellState
+%%		used to fix dict internal representation when unserializing cellstate
+%% 
+
+rebuildElements(#cellState{elements = CellElements} = State) ->
+	State#cellState{elements = cellElements:rebuild(CellElements)}.
 
 %% 
 %% getBottom :: CellState -> AST
