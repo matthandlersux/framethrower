@@ -297,7 +297,7 @@ template () {
 					<div style-position="relative" style-width="260" style-margin="16" style-float="right">
 						<div style-position="absolute" style-bottom="0" style-width="260">
 							<div class="zBackground timeline-note-box"/>						
-							<div class="button close-button" style-float="right" style-padding-right="2px" style-padding-top="2px">
+							<div class="button close-button" style-float="right" style-margin-right="2" style-margin-top="2">
 								<f:on click>
 									removeEntry notePops index
 								</f:on>
