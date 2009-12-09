@@ -21,7 +21,7 @@ template (height::Number, items::List (Range, a)) {
 		return arrayToList(ret);
 	},
 	getBackgroundPosition = function (index::Number, height::Number)::String {
-		return "0px -"+(index*height)+"px";
+		return "center -"+(index*height)+"px";
 	},
 
 	url = getUrl items width height movieId,
@@ -60,7 +60,7 @@ template (height::Number, items::List (Range, a)) {
 			// 	set selectedTimeDurationS duration
 			// </f:on>
 			<div style-padding="{padding}" class="chapter">
-				<div class="chapter-inside" style-position="relative" style-overflow="hidden" style-height="{subtract height (multiply 2 padding)}" style-background-image="{url}" style-background-repeat="no-repeat" style-background-position="{getBackgroundPosition index height}">
+				<div class="chapter-inside" style-position="relative" style-max-width="{width}" style-overflow="hidden" style-height="{subtract height (multiply 2 padding)}" style-background-image="{url}" style-background-repeat="no-repeat" style-background-position="{getBackgroundPosition index height}">
 					// <div style-position="absolute" style-bottom="0" style-z-index="4">
 					// 	<div style-background-color="#000" style-color="#fff" style-white-space="nowrap" style-text-overflow="ellipsis" style-padding-right="2" style-opacity="0.5">
 					// 		{content}
