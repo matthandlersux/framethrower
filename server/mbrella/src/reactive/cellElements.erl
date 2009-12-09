@@ -10,6 +10,7 @@
 	modifier/1,
 	switch/1,
 	value/1,
+	rebuild/1,
 	isMap/1, isMap/1,
 	mapValue/1,	mapKey/1,
 	process/2, process/2,
