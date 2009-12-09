@@ -191,14 +191,7 @@ getElements(#cellState{elements = CellElements} = State) -> CellElements.
 %% 
 
 rebuildElements(#cellState{elements = CellElements} = State) ->
-	Type = cellElements:type(CellElements),
-	case Type of 
-		unit ->
-			State;
-		_ ->
-			{_Type, Dict} = CellElements,
-			State#cellState{elements = {Type, dict:from_list(dict:to_list(Dict))}}
-	end.
+	State#cellState{elements = cellElements:rebuild(CellElements)}.
 
 %% 
 %% getBottom :: CellState -> AST

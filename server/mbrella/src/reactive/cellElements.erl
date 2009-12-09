@@ -1,7 +1,22 @@
 -module (cellElements).
--compile(export_all).
 
-%-include().
+-export([
+	new/0, new/1,
+	type/1,
+	create/2,
+	createMap/2, createMap/3, 
+	createAdd/1, createRemove/1,
+	createAddMap/2, createRemoveMap/2,
+	modifier/1,
+	switch/1,
+	value/1,
+	isMap/1, isMap/1,
+	mapValue/1,	mapKey/1,
+	process/2, process/2,
+	toList/1, 
+	toListOfRemoves/1,
+	isEmpty/1, takeOne/1
+]).
 
 -define( trace(X), io:format("TRACE ~p:~p ~p~n", [?MODULE, ?LINE, X]) ).
 
@@ -208,7 +223,15 @@ toListOfRemoves({map, ElementState}) ->
 		end, ElementList
 	).
 
+%% 
+%% rebuild :: CellElements -> CellElements
+%% 		rebuilds elements, used by serialize to deal with screwup on internal Dict structure
+%%		
 
+rebuild({unit, _Data} = CellElements) ->
+	CellElements;
+rebuild({Type, Data}) ->
+	{Type, dict:from_list(dict:to_list(Data))}.
 
 %% ====================================================
 %% External API For Outputs
