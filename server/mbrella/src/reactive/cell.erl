@@ -327,7 +327,11 @@ handle_call(Msg, From, State) ->
     {reply, Reply, State}.
 
 handle_cast(unset, State) ->
-	{noreply, cellState:emptyElements(State)};
+	Elements = cellState:getElements(State),
+	Removes = cellElements:toListOfRemoves(Elements),
+	State1 = cellState:emptyElements(State),
+	% TODO: make sure this works with leashing
+	{noreply, runOutputs(State1, Removes)};
 
 handle_cast({addInformant, InformantCellPointer}, State) ->
 	{noreply, cellState:addInformant(State, InformantCellPointer)};
