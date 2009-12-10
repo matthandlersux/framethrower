@@ -17,6 +17,7 @@
 	uninjectOutput/2, uninjectOutput/3, uninjectOutput/4,
 	injectIntercept/2, injectIntercept/3,
 	addInformant/2, removeInformant/2,
+	unset/1,
 	empty/1,
 	kill/1,
 	getState/1, elementsType/1
