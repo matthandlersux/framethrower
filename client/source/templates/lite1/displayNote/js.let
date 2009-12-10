@@ -3,9 +3,15 @@ debug = jsaction(x::a)::Void {
 	console.log(x);
 },
 
+
 remoteId = function(x::a)::String {
 	return x.name;
 },
+
+
+// ===================
+// DIV Text
+// ===================
 
 getDivText = jsaction()::String {
 	var div = document.getElementById(evalExpr('noteId'));
@@ -22,6 +28,11 @@ setDivText = jsaction(text::String)::Void {
 
 	div.textContent = text;
 },
+
+
+// ===================
+// DIV Ranges
+// ===================
 
 addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
 	var div = document.getElementById(evalExpr('noteId'));
@@ -58,6 +69,7 @@ addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
 	var span = document.createElement('span');
 	span.id = rangeId;
 	span.className = 'noteRange';
+	span.setUserData('cleanups', [], null); // list of cleanup funcs, initially empty
 	
 	range.surroundContents(span);
 },
@@ -66,10 +78,16 @@ removeDivRange = jsaction(rangeId::String)::Void {
 	var span = document.getElementById(rangeId);
 	if (!span)
 		return;
+	
+	var cleanups = span.getUserData('cleanups');
+	for(var i=0; i<cleanups.length; i++)
+		cleanups[i]();
 
-	var text = document.createTextNode(span.textContent);
-	span.parentNode.replaceChild(text, span);
-	text.parentNode.normalize();
+	var parent = span.parentNode;
+	while(span.lastChild) // put all children of span after span
+		parent.insertBefore(span.lastChild, span.nextSibling);
+	parent.removeChild(span);
+	parent.normalize();
 },
 
 getDivRange = jsaction(rangeId::String)::(Bool, Range) {
@@ -106,6 +124,47 @@ getDivRange = jsaction(rangeId::String)::(Bool, Range) {
 	
 	return evalExpr('(true, makeRange '+start+' '+span.textContent.length+')');
 },
+
+injectDivRangeStyle = jsaction(rangeId::String, attribute::String, cell::Unit a)::Void {
+	var span = document.getElementById(rangeId);
+	if (!span)
+		return;
+		
+	var serialized = makeApply(serializeCell, cell);
+	var injectedFunc = evaluateAndInject(serialized, emptyFunction, function(value) {
+		setNodeStyle(span, attribute, value);
+	});
+	span.getUserData('cleanups').push(injectedFunc.uninject);
+},
+
+addDivRangeEventAction = jsaction(rangeId::String, event::String, a::Action Void)::Void {
+	var span = document.getElementById(rangeId);
+	if (!span)
+		return;
+	
+	span[event] = function() {executeAction(a);};
+},
+
+// highlightDivRange = jsaction(rangeId::String)::Void {
+// 	var noteSelection = document.getElementById(rangeId);
+// 	if (!noteSelection)
+// 		return;
+// 
+// 	noteSelection.className = 'noteRange-highlighted';
+// },
+// 
+// unhighlightDivRange = jsaction(rangeId::String)::Void {
+// 	var noteSelection = document.getElementById(rangeId);
+// 	if (!noteSelection)
+// 		return;
+// 
+// 	noteSelection.className = 'noteRange';
+// },
+
+
+// ===================
+// DIV Selection
+// ===================
 
 getDivSelection = getDivRange "noteSelection",
 
@@ -145,6 +204,7 @@ updateDivSelection = jsaction()::Void {
 	
 	if(!def(start) || !def(end) || end<start) {
 		console.error('firefox bug? found weird selection: ('+start+','+end+')');
+		executeAction(evalExpr('removeDivRange "noteSelection"'));
 		return;
 	}
 	
@@ -166,24 +226,4 @@ divSelect = jsaction()::Void {
 	if (selection.rangeCount > 0)
 		selection.removeAllRanges();
 	selection.addRange(range);
-},
-
-highlightDivRange = jsaction(rangeId::String)::Void {
-	var noteSelection = document.getElementById(rangeId);
-	if (!noteSelection)
-		return;
-	
-	noteSelection.className = 'noteRange-highlighted';
-},
-
-highlightDivSelection = highlightDivRange "noteSelection",
-
-unhighlightDivRange = jsaction(rangeId::String)::Void {
-	var noteSelection = document.getElementById(rangeId);
-	if (!noteSelection)
-		return;
-
-	noteSelection.className = 'noteRange';
-},
-
-unhighlightDivSelection = unhighlightDivRange "noteSelection"
+}

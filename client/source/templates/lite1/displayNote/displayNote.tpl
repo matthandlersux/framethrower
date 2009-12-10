@@ -4,36 +4,48 @@ template (note::Note) {
 	},
 	colorStyle = defaultColorStyle,
 	
-	clearMap = action(map::Map k v) {
-		extract map as k, _ {
-			removeEntry map k
-		}
-	},
-	
 	textRangesById = state(Map String TextRange),
 	
 	noteId = remoteId note,
 	
 	initDiv = action() {
 		setDivText (fetch (note_text note)),
-		clearMap textRangesById,
 		extract note_linksToMovies note as timeLink {
-			addDivTextRange (timeLink_source timeLink)
+			addDivTimeLink timeLink
 		},
 		extract note_linksToNotes note as textLink {
-			addDivTextRange (textLink_source textLink)
+			debug "note-to-note links not yet implemented"
 		},
 		extract note_linksFromNotes note as textLink {
-			addDivTextRange (textLink_target textLink)
+			debug "note-to-note links not yet implemented"
 		}
 	},
 	
-	addDivTextRange = action(textRange::TextRange) {
-		range = textRange_range textRange,
-		rangeId = remoteId range,
-		extract range as rangeValue { // only care about specific selections
-			addEntry textRangesById rangeId textRange,
-			addDivRange rangeId rangeValue
+	addDivTimeLink = action(timeLink::TimeLink)::Void {
+		range = textRange_range (timeLink_source timeLink),
+		extract range as rangeValue {
+			rangeId = remoteId range,
+			addDivRange rangeId rangeValue,
+			injectDivRangeStyle rangeId "borderColor" (colorStyle_getBorder colorStyle (bindUnit (reactiveEqual (timeLink_target timeLink)) mouseOverLink)),
+			addDivRangeEventAction rangeId "onmouseover" (set mouseOverLink (timeLink_target timeLink)),
+			addDivRangeEventAction rangeId "onmouseout" (unset mouseOverLink)
+		}
+	},
+	
+	updateDiv = action() {
+		// TODO need to be sure that text and all ranges are updated _atomically_
+		// i.e. make a single action to do so...
+		text <- getDivText,
+		note_setText note text, // doing this first helps, since it will 'initDiv' on other users pretty quick, but still...
+		extract note_linksToMovies note as timeLink {
+			textRange = timeLink_source timeLink,
+			rangeId = remoteId (textRange_range textRange),
+			maybeRange <- getDivRange rangeId,
+			if boolToUnit (fst maybeRange) as _ {
+				textRange_setRange textRange (snd maybeRange)
+			} else {
+				textRange_unsetRange textRange
+			}
 		}
 	},
 	
@@ -47,10 +59,7 @@ template (note::Note) {
 				updateDivSelection
 			</f:on>
 			<f:on blur>
-				text <- getDivText,
-				note_setText note text
-				// debug "changed note text"
-				// initDiv
+				updateDiv
 			</f:on>
 			<f:on dragend>
 				extract draggingLink as triple {
@@ -63,9 +72,13 @@ template (note::Note) {
 						timeRange_setRange timeRange range,
 						textRange <- createTextRange note,
 						textRange_setRange textRange (snd maybeSelection),
-						linkTime (makeTimeLink textRange timeRange),
+						timeLink = makeTimeLink textRange timeRange,
 						
-						initDiv
+						addDivTimeLink timeLink,
+						
+						linkTime timeLink,
+						
+						updateDiv
 					}
 				}
 			</f:on>
@@ -77,20 +90,19 @@ template (note::Note) {
 					<f:on init>
 						// debug "note_text changed",
 						initDiv
-						// addDivRange "test" (makeRange 5 4)
 					</f:on>
 				</f:wrapper>
 			</f:each>
-			<f:each reactiveOr draggingLink draggingLinkTentative as _>
-				<f:wrapper>
-					<f:on init>
-						highlightDivSelection
-					</f:on>
-					<f:on uninit>
-						unhighlightDivSelection
-					</f:on>
-				</f:wrapper>
-			</f:each>
+			// <f:each reactiveOr draggingLink draggingLinkTentative as _>
+			// 	<f:wrapper>
+			// 		<f:on init>
+			// 			highlightDivSelection
+			// 		</f:on>
+			// 		<f:on uninit>
+			// 			unhighlightDivSelection
+			// 		</f:on>
+			// 	</f:wrapper>
+			// </f:each>
 
 		</div>
 		<div class="zForeground">

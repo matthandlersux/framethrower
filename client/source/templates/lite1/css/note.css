@@ -1,8 +1,8 @@
 .noteRange {
-	border: solid 1pt blue;
+	border: solid 1pt;
 }
 
-.noteRange-highlighted, .noteRange:hover {
+/*.noteRange-highlighted, .noteRange:hover {
 	border: solid 1pt orange;
 }
 
@@ -12,4 +12,4 @@
 
 #noteSelection.noteRange-highlighted {
 	border: dashed 2pt red;
-}
+}*/
