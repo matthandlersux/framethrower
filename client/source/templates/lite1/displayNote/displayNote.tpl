@@ -51,7 +51,7 @@ template (note::Note) {
 	
 	
 	<div>
-		<div class="zForeground" style-border="1px solid #000" style-margin="4" style-padding="4" style-background-color="#bbb" style-color="#000" style-height="100" style-overflow="auto">
+		<div class="zForeground timeline-note-text-box">
 			<f:on globalmouseup>
 				updateDivSelection
 			</f:on>
