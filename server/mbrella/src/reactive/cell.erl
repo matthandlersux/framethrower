@@ -131,7 +131,16 @@ removeValue(CellPointer, Value) ->
 removeValues(CellPointer, Values) ->
 	Elements = lists:map(fun(V) -> {remove, V} end, Values),
 	gen_server:cast(cellPointer:pid(CellPointer), {injectElements, Elements}).
-	
+
+%% 
+%% unset :: CellPointer -> ok
+%% 		
+%%		
+
+unset(CellPointer) ->
+	gen_server:cast(cellPointer:pid(CellPointer), unset).
+
+
 %% 
 %% setFlag :: CellPointer -> Atom -> Bool -> ok
 %% 
@@ -317,6 +326,8 @@ handle_call(Msg, From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
+handle_cast(unset, State) ->
+	{noreply, cellState:emptyElements(State)};
 
 handle_cast({addInformant, InformantCellPointer}, State) ->
 	{noreply, cellState:addInformant(State, InformantCellPointer)};

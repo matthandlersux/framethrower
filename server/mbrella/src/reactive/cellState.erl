@@ -360,6 +360,7 @@ injectElements(#cellState{elements = ElementsState} = State, NewElements) ->
 
 isDone(#cellState{done = Done}) ->
 	Done.
+	
 %% ====================================================
 %% Internal API
 %% ====================================================
