@@ -6,8 +6,8 @@
 set(Cell, Value) ->
 	ast:makeActionMethod(actions, performAdd, [Cell, Value]).
 	
-unset(Cell, Value) ->
-	ast:makeActionMethod(actions, performRemove, [Cell, Value]).
+unset(Cell) ->
+	ast:makeActionMethod(actions, performUnset, [Cell]).
 
 add(Cell, Value) ->
 	ast:makeActionMethod(actions, performAdd, [Cell, Value]).
@@ -29,6 +29,12 @@ return(Value) ->
 
 performAdd(Cell, Value) ->
 	cell:addValue(Cell, Value), 
+	void.
+
+% performUnset :: Cell -> Void
+
+performUnset(Cell) ->
+	cell:unset(Cell),
 	void.
 
 % performRemove :: Cell -> Term -> Void
