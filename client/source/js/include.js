@@ -113,7 +113,7 @@ var includes = (function () {
 					print("WARNING:");
 					print.apply(null, arguments);
 				};
-				console.err = console.warn;
+				console.error = console.warn;
 				console.log = function() {
 					print.apply(null, arguments);
 				};

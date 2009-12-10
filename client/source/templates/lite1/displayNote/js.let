@@ -3,18 +3,24 @@ debug = jsaction(x::a)::Void {
 	console.log(x);
 },
 
+
 remoteId = function(x::a)::String {
 	return x.name;
 },
 
+
+// ===================
+// DIV Text
+// ===================
+
 getDivText = jsaction()::String {
-	var div = document.getElementById(evalExpr("noteId"));
+	var div = document.getElementById(evalExpr('noteId'));
 	// TODO handle <br/>
 	return div.textContent;
 },
 
 setDivText = jsaction(text::String)::Void {
-	var div = document.getElementById(evalExpr("noteId"));
+	var div = document.getElementById(evalExpr('noteId'));
 
 	// clear note:
 	while (div.lastChild)
@@ -23,45 +29,201 @@ setDivText = jsaction(text::String)::Void {
 	div.textContent = text;
 },
 
-// addDivRange = jsaction(rangeId::String, rangeValue::Range, textRange::TextRange)::Void {
+
+// ===================
+// DIV Ranges
+// ===================
+
+addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
+	var div = document.getElementById(evalExpr('noteId'));
+	var start = evalExpr('range_start rangeValue');
+	var end = start + evalExpr('range_length rangeValue');
+	
+	var range = document.createRange();
+	var childStart = 0;
+	function processChildren(node) {
+		node.normalize();
+		for (var i=0; i<node.childNodes.length; i++) {
+			var child = node.childNodes[i];
+			
+			if (child.nodeType===Node.TEXT_NODE) {
+				var childEnd = childStart + child.textContent.length;
+			
+				if (childStart<=start && start<childEnd)
+					range.setStart(child, start-childStart);
+
+				if (childStart<end && range.startContainer.parentNode===node) // keep track of last 'good enough' end position
+					range.setEnd(child, Math.min(end-childStart, childEnd-childStart));
+
+				childStart = childEnd; // for next child
+			}
+			else
+				processChildren(child);
+				
+			if (childStart>=end) // finished
+				return;
+		}
+	}
+	processChildren(div);
+	
+	var span = document.createElement('span');
+	span.id = rangeId;
+	span.className = 'noteRange';
+	span.setUserData('cleanups', [], null); // list of cleanup funcs, initially empty
+	
+	range.surroundContents(span);
+},
+
+removeDivRange = jsaction(rangeId::String)::Void {
+	var span = document.getElementById(rangeId);
+	if (!span)
+		return;
+	
+	var cleanups = span.getUserData('cleanups');
+	for(var i=0; i<cleanups.length; i++)
+		cleanups[i]();
+
+	var parent = span.parentNode;
+	while(span.lastChild) // put all children of span after span
+		parent.insertBefore(span.lastChild, span.nextSibling);
+	parent.removeChild(span);
+	parent.normalize();
+},
+
+getDivRange = jsaction(rangeId::String)::(Bool, Range) {
+	var span = document.getElementById(rangeId);
+	if (!span)
+		return evalExpr('(false, makeRange 0 0)');
+		
+	var div = document.getElementById(evalExpr('noteId'));
+	
+	// determine coordinates of range:
+	var k = 0, start;
+	function processChildren(node) {
+		node.normalize();
+		for (var i=0; i<node.childNodes.length; i++) {
+			var child = node.childNodes[i];
+
+			if (child.nodeType===Node.TEXT_NODE)
+				k += child.textContent.length;
+			// else if (child.tagName === 'br')
+			// 	k += 1;
+			else if (child===span)
+				start = k;
+			else
+				processChildren(child);
+
+			if (def(start)) // we're done
+				return;
+		}
+	}
+	processChildren(div);
+	
+	if(!def(start))
+		return evalExpr('(false, makeRange 0 0)');
+	
+	return evalExpr('(true, makeRange '+start+' '+span.textContent.length+')');
+},
+
+injectDivRangeStyle = jsaction(rangeId::String, attribute::String, cell::Unit a)::Void {
+	var span = document.getElementById(rangeId);
+	if (!span)
+		return;
+		
+	var serialized = makeApply(serializeCell, cell);
+	var injectedFunc = evaluateAndInject(serialized, emptyFunction, function(value) {
+		setNodeStyle(span, attribute, value);
+	});
+	span.getUserData('cleanups').push(injectedFunc.uninject);
+},
+
+addDivRangeEventAction = jsaction(rangeId::String, event::String, a::Action Void)::Void {
+	var span = document.getElementById(rangeId);
+	if (!span)
+		return;
+	
+	span[event] = function() {executeAction(a);};
+},
+
+// highlightDivRange = jsaction(rangeId::String)::Void {
+// 	var noteSelection = document.getElementById(rangeId);
+// 	if (!noteSelection)
+// 		return;
+// 
+// 	noteSelection.className = 'noteRange-highlighted';
 // },
 // 
-// updateDivSelection = jsaction()::Bool {
-// 	var div = document.getElementById(evalExpr("noteId"));
-// 	var range = window.getSelection().getRangeAt(0);
-// 	console.log(range);
+// unhighlightDivRange = jsaction(rangeId::String)::Void {
+// 	var noteSelection = document.getElementById(rangeId);
+// 	if (!noteSelection)
+// 		return;
 // 
-// 	// does target div contain the selection?:
-// 	var ancestor = range.commonAncestorContainer;
-// 	while (ancestor && ancestor!==div)
-// 		ancestor = ancestor.parentNode;
-// 	if (ancestor!==div) { // no selection
-// 		if(evalExpr("divSelectionS").getState().length>0) { // but there used to be a selection
-// 			executeAction(evalExpr("unset divSelectionS"));
-// 			return true;
-// 		}
-// 		return false; // no change
-// 	}
-// 		
-// 	var k = 0, start, end;
-// 	for (var i=0; i<div.childNodes.length; i++) {
-// 		var child = div.childNodes[i];
-// 		if (child===range.startContainer)
-// 			start = k + range.startOffset;
-// 		if (child===range.endContainer)
-// 			end = k + range.endOffset;
-// 		if (child.textContent)
-// 			k += child.textContent.length;
-// 		// else if (child.tagName === 'br')
-// 		// 	k += 1;
-// 	}
-// 	
-// 	if (evalExpr("divSelectionS").getState().length===0
-// 		|| evalExpr("mapUnit range_start divSelectionS").getState()[0]!==start
-// 		|| evalExpr("mapUnit range_length divSelectionS").getState()[0]!==end-start)
-// 	{
-// 		executeAction(evalExpr("set divSelectionS (makeRange "+start+" "+(end-start)+")"));
-// 		return true;
-// 	}
-// 	return false; // no change
-// }
+// 	noteSelection.className = 'noteRange';
+// },
+
+
+// ===================
+// DIV Selection
+// ===================
+
+getDivSelection = getDivRange "noteSelection",
+
+updateDivSelection = jsaction()::Void {
+	var oldSelection = document.getElementById('noteSelection');
+	var div = document.getElementById(evalExpr('noteId'));
+	var selection = window.getSelection().getRangeAt(0);
+
+	// does this note div contain the selection?:
+	var ancestor = selection.commonAncestorContainer;
+	while (ancestor && ancestor!==div)
+		ancestor = ancestor.parentNode;
+	if (ancestor!==div) // no selection, so leave old one alone
+		return;
+
+	// determine coordinates of new selection:
+	var k = 0, start, end;
+	function processChildren(node) {
+		node.normalize();
+		for (var i=0; i<node.childNodes.length; i++) {
+			var child = node.childNodes[i];
+
+			if (child.nodeType===Node.TEXT_NODE) {
+				if (child===selection.startContainer)
+					start = k + selection.startOffset;
+				if (child===selection.endContainer)
+					end = k + selection.endOffset;
+				k += child.textContent.length;
+			}
+			// else if (child.tagName === 'br')
+			// 	k += 1;
+			else
+				processChildren(child);
+		}
+	}
+	processChildren(div);
+	
+	if(!def(start) || !def(end) || end<start) {
+		console.error('firefox bug? found weird selection: ('+start+','+end+')');
+		executeAction(evalExpr('removeDivRange "noteSelection"'));
+		return;
+	}
+	
+	executeAction(evalExpr('removeDivRange "noteSelection"'));
+	executeAction(evalExpr('addDivRange "noteSelection" (makeRange '+start+' '+(end-start)+')'));
+	if(end>start) // same as Range.collapsed?
+		executeAction(evalExpr('divSelect'))
+},
+
+divSelect = jsaction()::Void {
+	var noteSelection = document.getElementById('noteSelection');
+	if (!noteSelection)
+		return;
+
+	var range = document.createRange();
+	range.selectNode(noteSelection);
+	
+	var selection = window.getSelection();
+	if (selection.rangeCount > 0)
+		selection.removeAllRanges();
+	selection.addRange(range);
+}

@@ -194,10 +194,12 @@ range_length = tuple2get2,
 createSimpleNoteWithLink = action (movie::Movie, start::Number, duration::Number)::Note {
 	note <- createNote,
 	note_setText note "edit this",
+	
 	wholeNote <- createTextRange note,
 	timeRange <- createTimeRange movie,
 	timeRange_setRange timeRange (makeRange start duration),
 	linkTime (makeTimeLink wholeNote timeRange),
+	
 	return note
 }
 

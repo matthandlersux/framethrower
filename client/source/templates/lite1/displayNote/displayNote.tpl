@@ -4,74 +4,106 @@ template (note::Note) {
 	},
 	colorStyle = defaultColorStyle,
 	
-	// clearMap = action(map::Map k v) {
-	// 	extract map as k, _ {
-	// 		removeEntry map k
-	// 	}
-	// },
-	// 
-	// divSelectionS = state(Unit Range),
-	// 
-	// textRangesById = state(Map String TextRange),
+	textRangesById = state(Map String TextRange),
 	
 	noteId = remoteId note,
 	
 	initDiv = action() {
-		setDivText (fetch (note_text note))
-		// clearMap textRangesById,
-		// extract note_linksToMovies note as timeLink {
-		// 	addDivTextRange (timeLink_source timeLink)
-		// },
-		// extract note_linksToNotes note as textLink {
-		// 	addDivTextRange (textLink_source textLink)
-		// },
-		// extract note_linksFromNotes note as textLink {
-		// 	addDivTextRange (textLink_target textLink)
-		// }
+		setDivText (fetch (note_text note)),
+		extract note_linksToMovies note as timeLink {
+			addDivTimeLink timeLink
+		},
+		extract note_linksToNotes note as textLink {
+			debug "note-to-note links not yet implemented"
+		},
+		extract note_linksFromNotes note as textLink {
+			debug "note-to-note links not yet implemented"
+		}
 	},
 	
-	// addDivTextRange = action(textRange::TextRange) {
-	// 	range = textRange_range textRange,
-	// 	extract range as rangeValue { // only care about specific selections
-	// 		rangeId = remoteId range,
-	// 		addEntry textRangesById rangeId textRange,
-	// 		addDivRange rangeId rangeValue textRange
-	// 	}
-	// },
+	addDivTimeLink = action(timeLink::TimeLink)::Void {
+		range = textRange_range (timeLink_source timeLink),
+		extract range as rangeValue {
+			rangeId = remoteId range,
+			addDivRange rangeId rangeValue,
+			injectDivRangeStyle rangeId "borderColor" (colorStyle_getBorder colorStyle (bindUnit (reactiveEqual (timeLink_target timeLink)) mouseOverLink)),
+			addDivRangeEventAction rangeId "onmouseover" (set mouseOverLink (timeLink_target timeLink)),
+			addDivRangeEventAction rangeId "onmouseout" (unset mouseOverLink)
+		}
+	},
+	
+	updateDiv = action() {
+		// TODO need to be sure that text and all ranges are updated _atomically_
+		// i.e. make a single action to do so...
+		text <- getDivText,
+		note_setText note text, // doing this first helps, since it will 'initDiv' on other users pretty quick, but still...
+		extract note_linksToMovies note as timeLink {
+			textRange = timeLink_source timeLink,
+			rangeId = remoteId (textRange_range textRange),
+			maybeRange <- getDivRange rangeId,
+			if boolToUnit (fst maybeRange) as _ {
+				textRange_setRange textRange (snd maybeRange)
+			} else {
+				textRange_unsetRange textRange
+			}
+		}
+	},
 	
 	
 	<div>
 		<div class="zForeground timeline-note-text-box">
-			// <f:on focus>
-			// 	debug "focus"
-			// </f:on>
-			// <f:on blur>
-			// 	debug "blur"
-			// </f:on>
-			<f:on uninit>
-				// debug "uninit",
-				text <- getDivText,
-				// debug text,
-				note_setText note text
+			<f:on globalmouseup>
+				updateDivSelection
 			</f:on>
-			// <f:on globalmouseup>
-			// 	didChange <- updateDivSelection,
-			// 	debug didChange,
-			// 	debug (fetch divSelectionS)
-			// </f:on>
-			// <f:on globalkeyup>
-			// 	didChange <- updateDivSelection,
-			// 	debug didChange,
-			// 	debug (fetch divSelectionS)
-			// </f:on>
+			<f:on globalkeyup>
+				updateDivSelection
+			</f:on>
+			<f:on blur>
+				updateDiv
+			</f:on>
+			<f:on dragend>
+				extract draggingLink as triple {
+					maybeSelection <- getDivSelection,
+					extract boolToUnit (fst maybeSelection) as _ {
+						range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
+						movie = tuple3get1 triple,
+
+						timeRange <- createTimeRange movie,
+						timeRange_setRange timeRange range,
+						textRange <- createTextRange note,
+						textRange_setRange textRange (snd maybeSelection),
+						timeLink = makeTimeLink textRange timeRange,
+						
+						addDivTimeLink timeLink,
+						
+						linkTime timeLink,
+						
+						updateDiv
+					}
+				}
+			</f:on>
+			<div class="note" id="{noteId}" contentEditable="true" style-width="100%" style-height="100%"/>
+			
+			// nasty f:trigger analogues:
 			<f:each note_text note as text>
 				<f:wrapper>
 					<f:on init>
+						// debug "note_text changed",
 						initDiv
 					</f:on>
-					<div class="note" id="{noteId}" contentEditable="true" style-width="100%" style-height="100%"/>
 				</f:wrapper>
 			</f:each>
+			// <f:each reactiveOr draggingLink draggingLinkTentative as _>
+			// 	<f:wrapper>
+			// 		<f:on init>
+			// 			highlightDivSelection
+			// 		</f:on>
+			// 		<f:on uninit>
+			// 			unhighlightDivSelection
+			// 		</f:on>
+			// 	</f:wrapper>
+			// </f:each>
+
 		</div>
 		<div class="zForeground">
 			<f:each note_linksToMovies note as timeLink>
