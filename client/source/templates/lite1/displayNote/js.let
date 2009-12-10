@@ -134,7 +134,18 @@ injectDivRangeStyle = jsaction(rangeId::String, attribute::String, cell::Unit a)
 	var injectedFunc = evaluateAndInject(serialized, emptyFunction, function(value) {
 		setNodeStyle(span, attribute, value);
 	});
-	span.getUserData('cleanups').push(injectedFunc.uninject);
+	span.getUserData('cleanups').push(injectedFunc.unInject);
+},
+
+injectDivRangeClass = jsaction(rangeId::String, cell::Unit String)::Void {
+	var span = document.getElementById(rangeId);
+	if (!span)
+		return;
+
+	var injectedFunc = cell.inject(emptyFunction, function(value) {
+		span.className = value;
+	});
+	span.getUserData('cleanups').push(injectedFunc.unInject);
 },
 
 addDivRangeEventAction = jsaction(rangeId::String, event::String, a::Action Void)::Void {
@@ -167,9 +178,12 @@ addDivRangeEventAction = jsaction(rangeId::String, event::String, a::Action Void
 // ===================
 
 getDivSelection = getDivRange "noteSelection",
+injectDivSelectionClass = injectDivRangeClass "noteSelection",
+addDivSelectionEventAction = addDivRangeEventAction "noteSelection",
 
-updateDivSelection = jsaction()::Void {
-	var oldSelection = document.getElementById('noteSelection');
+getSelection = jsaction()::(Bool, Range) {
+	// var oldSelection = document.getElementById('noteSelection');
+	// TODO return true iff selection has changed
 	var div = document.getElementById(evalExpr('noteId'));
 	var selection = window.getSelection().getRangeAt(0);
 
@@ -178,7 +192,7 @@ updateDivSelection = jsaction()::Void {
 	while (ancestor && ancestor!==div)
 		ancestor = ancestor.parentNode;
 	if (ancestor!==div) // no selection, so leave old one alone
-		return;
+		return evalExpr('(false, makeRange 0 0)');
 
 	// determine coordinates of new selection:
 	var k = 0, start, end;
@@ -204,23 +218,21 @@ updateDivSelection = jsaction()::Void {
 	
 	if(!def(start) || !def(end) || end<start) {
 		console.error('firefox bug? found weird selection: ('+start+','+end+')');
-		executeAction(evalExpr('removeDivRange "noteSelection"'));
-		return;
+		return evalExpr('(false, makeRange 0 0)');
 	}
 	
-	executeAction(evalExpr('removeDivRange "noteSelection"'));
-	executeAction(evalExpr('addDivRange "noteSelection" (makeRange '+start+' '+(end-start)+')'));
-	if(end>start) // same as Range.collapsed?
-		executeAction(evalExpr('divSelect'))
+	return evalExpr('(true, makeRange '+start+' '+(end-start)+')');
 },
 
-divSelect = jsaction()::Void {
-	var noteSelection = document.getElementById('noteSelection');
-	if (!noteSelection)
+divSelect = selectElement "noteSelection",
+
+selectElement = jsaction(id::String)::Void {
+	var el = document.getElementById(id);
+	if (!el)
 		return;
 
 	var range = document.createRange();
-	range.selectNode(noteSelection);
+	range.selectNode(el);
 	
 	var selection = window.getSelection();
 	if (selection.rangeCount > 0)

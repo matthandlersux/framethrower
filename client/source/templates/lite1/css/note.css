@@ -2,14 +2,6 @@
 	border: solid 1pt;
 }
 
-/*.noteRange-highlighted, .noteRange:hover {
-	border: solid 1pt orange;
+#noteSelection {
+	border: dashed 1pt #888;
 }
-
-#noteSelection.noteRange {
-	border: dashed 1pt gray;
-}
-
-#noteSelection.noteRange-highlighted {
-	border: dashed 2pt red;
-}*/

@@ -148,7 +148,6 @@ function makeEventExtrasEnv(env, extra) {
 		// }
 	}
 	function mouseup(e) {
-		
 		if (mouseIsDragging) {
 			processEvent("dragend", e);
 		} else {
@@ -228,22 +227,22 @@ function makeEventExtrasEnv(env, extra) {
 		e.preventDefault();
 	}
 	
-	document.addEventListener("mousedown", mousedown, true);
-	document.addEventListener("mouseup", mouseup, true);
-	document.addEventListener("dblclick", dblclick, true);
-	document.addEventListener("mousemove", mousemove, true);
-	document.addEventListener("mouseover", mouseover, true);
-	document.addEventListener("mouseout", mouseout, true);
-	document.addEventListener("DOMMouseScroll", mousescroll, true);
-	document.addEventListener("mousewheel", mousescroll, true);
-	document.addEventListener("blur", blur, true);
-	document.addEventListener("focus", focus, true);
-	document.addEventListener("change", change, true);
-	document.addEventListener("submit", submit, true);
+	document.addEventListener("mousedown", mousedown, false);
+	document.addEventListener("mouseup", mouseup, false);
+	document.addEventListener("dblclick", dblclick, false);
+	document.addEventListener("mousemove", mousemove, false);
+	document.addEventListener("mouseover", mouseover, false);
+	document.addEventListener("mouseout", mouseout, false);
+	document.addEventListener("DOMMouseScroll", mousescroll, false);
+	document.addEventListener("mousewheel", mousescroll, false);
+	document.addEventListener("blur", blur, false);
+	document.addEventListener("focus", focus, false);
+	document.addEventListener("change", change, false);
+	document.addEventListener("submit", submit, false);
 	
-	document.addEventListener("keydown", keydown, true);
-	document.addEventListener("keyup", keyup, true);
-	document.addEventListener("keypress", keypress, true);
+	document.addEventListener("keydown", keydown, false);
+	document.addEventListener("keyup", keyup, false);
+	document.addEventListener("keypress", keypress, false);
 })();
 
 
@@ -277,11 +276,11 @@ var initializeGlobalUICells = function () {
 		ui["mouseDown"].control.remove();
 	}
 	
-	window.addEventListener("resize", resizeScreen, true);
+	window.addEventListener("resize", resizeScreen, false);
 	
-	document.addEventListener("mousemove", mousemove, true);
-	document.addEventListener("mousedown", mousedown, true);
-	document.addEventListener("mouseup", mouseup, true);
+	document.addEventListener("mousemove", mousemove, false);
+	document.addEventListener("mousedown", mousedown, false);
+	document.addEventListener("mouseup", mouseup, false);
 	
 	resizeScreen();
 };

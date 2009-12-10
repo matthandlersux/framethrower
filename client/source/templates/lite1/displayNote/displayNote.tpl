@@ -32,8 +32,8 @@ template (note::Note) {
 		}
 	},
 	
-	updateDiv = action() {
-		// TODO need to be sure that text and all ranges are updated _atomically_
+	saveDiv = action() {
+		// TODO need to be sure that text and all ranges are saved _atomically_
 		// i.e. make a single action to do so...
 		text <- getDivText,
 		note_setText note text, // doing this first helps, since it will 'initDiv' on other users pretty quick, but still...
@@ -49,6 +49,41 @@ template (note::Note) {
 		}
 	},
 	
+	updateDivSelection = action() {
+		changedSelection <- getSelection,
+		changed = fst changedSelection,
+		extract boolToUnit changed as _ {
+			selection = snd changedSelection,
+			removeDivRange "noteSelection",
+			addDivRange "noteSelection" selection,
+			extract boolToUnit (greaterThan (range_length selection) 0) as _ {
+				divSelect
+			},
+			injectDivSelectionClass (reactiveIfThen (reactiveOr draggingLink draggingLinkTentative) "drag-new-link" "noteRange"),
+			addDivSelectionEventAction "onmouseup" linkSelection
+		}
+	},
+	
+	linkSelection = action() {
+		extract draggingLink as triple {
+			maybeSelection <- getDivSelection,
+			extract boolToUnit (fst maybeSelection) as _ {
+				range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
+				movie = tuple3get1 triple,
+
+				timeRange <- createTimeRange movie,
+				timeRange_setRange timeRange range,
+				textRange <- createTextRange note,
+				textRange_setRange textRange (snd maybeSelection),
+				timeLink = makeTimeLink textRange timeRange,
+				linkTime timeLink,
+				
+				addDivTimeLink timeLink,
+				
+				saveDiv
+			}
+		}
+	},
 	
 	<div>
 		<div class="zForeground timeline-note-text-box">
@@ -59,28 +94,7 @@ template (note::Note) {
 				updateDivSelection
 			</f:on>
 			<f:on blur>
-				updateDiv
-			</f:on>
-			<f:on dragend>
-				extract draggingLink as triple {
-					maybeSelection <- getDivSelection,
-					extract boolToUnit (fst maybeSelection) as _ {
-						range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
-						movie = tuple3get1 triple,
-
-						timeRange <- createTimeRange movie,
-						timeRange_setRange timeRange range,
-						textRange <- createTextRange note,
-						textRange_setRange textRange (snd maybeSelection),
-						timeLink = makeTimeLink textRange timeRange,
-						
-						addDivTimeLink timeLink,
-						
-						linkTime timeLink,
-						
-						updateDiv
-					}
-				}
+				saveDiv
 			</f:on>
 			<div class="note" id="{noteId}" contentEditable="true" style-width="100%" style-height="100%"/>
 			
@@ -93,16 +107,6 @@ template (note::Note) {
 					</f:on>
 				</f:wrapper>
 			</f:each>
-			// <f:each reactiveOr draggingLink draggingLinkTentative as _>
-			// 	<f:wrapper>
-			// 		<f:on init>
-			// 			highlightDivSelection
-			// 		</f:on>
-			// 		<f:on uninit>
-			// 			unhighlightDivSelection
-			// 		</f:on>
-			// 	</f:wrapper>
-			// </f:each>
 
 		</div>
 		<div class="zForeground">
@@ -132,18 +136,18 @@ template (note::Note) {
 			</f:each>
 			<f:each reactiveOr draggingLink draggingLinkTentative as _>
 				<div class="drag-new-link" style-float="left" style-margin="4" style-width="44" style-height="44" style-font-size="11" style-padding="3">
-					drag here to create link
-					<f:on dragend>
-						extract draggingLink as triple {
-							range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
-							movie = tuple3get1 triple,
-
-							timeRange <- createTimeRange movie,
-							timeRange_setRange timeRange range,
-							textRange <- createTextRange note,
-							linkTime (makeTimeLink textRange timeRange)
-						}
-					</f:on>
+					drag to note or selection
+					// <f:on dragend>
+					// 	extract draggingLink as triple {
+					// 		range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
+					// 		movie = tuple3get1 triple,
+					// 
+					// 		timeRange <- createTimeRange movie,
+					// 		timeRange_setRange timeRange range,
+					// 		textRange <- createTextRange note,
+					// 		linkTime (makeTimeLink textRange timeRange)
+					// 	}
+					// </f:on>
 				</div>
 			</f:each>
 			<div style-clear="both" />
