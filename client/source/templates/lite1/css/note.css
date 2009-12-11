@@ -1,7 +1,24 @@
 .noteRange {
-	border: solid 1pt;
 }
 
 #noteSelection {
-	border: dashed 1pt #888;
+	border: 1px dashed #888;
+}
+.dragging-link-tentative #noteSelection {
+	background-color: #111;
+	border-color: #ccc;
+	color: #ccc;
+	opacity: 0.7;
+}
+.dragging-link #noteSelection {
+	background-color: #111;
+	border-color: #ccc;
+	color: #ccc;
+	opacity: 1.0;
+}
+.dragging-link #noteSelection:hover {
+	background-color: #111;
+	cursor: pointer;
+	border-color: #f00;
+	color: #f00;
 }

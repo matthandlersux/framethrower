@@ -1,15 +1,16 @@
 template (note::Note) {
+	
+	mouseOverSelection = state(Unit Null),
+	
 	getThumbnailURL = function (id::String, time::Number, width::Number, height::Number) {
 		return "url(http:/"+"/media.eversplosion.com/frame.php?id="+id+"&time="+time+"&width="+width+"&height="+height+")";
 	},
 	colorStyle = defaultColorStyle,
 	
-	textRangesById = state(Map String TextRange),
-	
 	noteId = remoteId note,
 	
 	initDiv = action() {
-		setDivText (fetch (note_text note)),
+		initDiv0 (fetch (note_text note)),
 		extract note_linksToMovies note as timeLink {
 			addDivTimeLink timeLink
 		},
@@ -26,13 +27,14 @@ template (note::Note) {
 		extract range as rangeValue {
 			rangeId = remoteId range,
 			addDivRange rangeId rangeValue,
-			injectDivRangeStyle rangeId "borderColor" (colorStyle_getBorder colorStyle (bindUnit (reactiveEqual (timeLink_target timeLink)) mouseOverLink)),
+			injectDivRangeStyle rangeId "background" (colorStyle_getInner colorStyle (bindUnit (reactiveEqual (timeLink_target timeLink)) mouseOverLink)),
 			addDivRangeEventAction rangeId "onmouseover" (set mouseOverLink (timeLink_target timeLink)),
 			addDivRangeEventAction rangeId "onmouseout" (unset mouseOverLink)
 		}
 	},
 	
 	saveDiv = action() {
+		debug "saving...",
 		// TODO need to be sure that text and all ranges are saved _atomically_
 		// i.e. make a single action to do so...
 		text <- getDivText,
@@ -46,21 +48,20 @@ template (note::Note) {
 			} else {
 				textRange_unsetRange textRange
 			}
-		}
+		},
+		debug "saved."
 	},
 	
 	updateDivSelection = action() {
 		changedSelection <- getSelection,
 		changed = fst changedSelection,
-		extract boolToUnit changed as _ {
-			selection = snd changedSelection,
+		selection = snd changedSelection,
+		extract boolToUnit (and changed (greaterThan (range_length selection) 0)) as _ {
 			removeDivRange "noteSelection",
 			addDivRange "noteSelection" selection,
-			extract boolToUnit (greaterThan (range_length selection) 0) as _ {
-				divSelect
-			},
-			injectDivSelectionClass (reactiveIfThen (reactiveOr draggingLink draggingLinkTentative) "drag-new-link" "noteRange"),
-			addDivSelectionEventAction "onmouseup" linkSelection
+			divSelect,
+			addDivSelectionEventAction "onmouseover" (set mouseOverSelection null),
+			addDivSelectionEventAction "onmouseout" (unset mouseOverSelection)
 		}
 	},
 	
@@ -88,7 +89,11 @@ template (note::Note) {
 	<div>
 		<div class="zForeground timeline-note-text-box">
 			<f:on globalmouseup>
-				updateDivSelection
+				if mouseOverSelection as _ {
+					linkSelection
+				} else {
+					updateDivSelection
+				}
 			</f:on>
 			<f:on globalkeyup>
 				updateDivSelection
@@ -127,7 +132,9 @@ template (note::Note) {
 							<div class="button delete-button" style-position="absolute" style-top="2" style-right="2">
 								<f:on click>
 									// prompt to delete this link
-									unlinkTime timeLink
+									unlinkTime timeLink,
+									saveDiv,
+									initDiv
 								</f:on>
 							</div>
 						</div>

@@ -149,8 +149,9 @@ template () {
 	// 	dl
 	// },
 	draggingLinkTentative = state(Unit Null),
-	cssClass = bindUnit (reactiveIfThen draggingLink "dragging-link") (reactiveIfThen draggingLinkTentative "dragging-link-tentative" "none"),
-	
+	// cssClass = bindUnit (reactiveIfThen draggingLinkTentative "dragging-link-tentative") (reactiveIfThen draggingLink "dragging-link" "none"),
+	draggingLinkClass = reactiveIfThen draggingLink "dragging-link" "none",
+	draggingLinkTentativeClass = reactiveIfThen draggingLinkTentative "dragging-link-tentative" "none",
 
 
 
@@ -170,7 +171,8 @@ template () {
 	},
 	
 	
-	<div class="{cssClass}">
+	<div class="{draggingLinkClass}">
+	<div class="{draggingLinkTentativeClass}">
 		<f:each draggingLink as link>
 			<div class="zBackground" style-position="absolute" style-width="1" style-height="1" style-left="{UI.ui:mouseX ui.ui}" style-top="{UI.ui:mouseY ui.ui}">
 				<f:call>svgEvents link false draggingColorStyle</f:call>
@@ -338,5 +340,6 @@ template () {
 				</f:each>
 			</div>
 		</div>
+	</div>
 	</div>
 }

@@ -244,7 +244,7 @@ function helpExecuteAction (instruction) {
 					}
 				});
 				//TODO: make case in actions work for server
-				console.log("TODO: make case in actions work for server");
+				// console.log("TODO: make case in actions work for server");
 				injectedFunc.unInject();
 				output = helpExecuteAction(action);
 			}

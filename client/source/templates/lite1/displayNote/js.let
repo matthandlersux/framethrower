@@ -19,8 +19,16 @@ getDivText = jsaction()::String {
 	return div.textContent;
 },
 
-setDivText = jsaction(text::String)::Void {
+initDiv0 = jsaction(text::String)::Void {
 	var div = document.getElementById(evalExpr('noteId'));
+	
+	if (div.getUserData('cleanups')) {
+		var cleanups = div.getUserData('cleanups');
+		for (var i=0; i<cleanups.length; i++)
+			cleanups[i]();
+	}
+	
+	div.setUserData('cleanups', [], null); // list of cleanup funcs, initially empty
 
 	// clear note:
 	while (div.lastChild)
@@ -69,7 +77,6 @@ addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
 	var span = document.createElement('span');
 	span.id = rangeId;
 	span.className = 'noteRange';
-	span.setUserData('cleanups', [], null); // list of cleanup funcs, initially empty
 	
 	range.surroundContents(span);
 },
@@ -78,10 +85,6 @@ removeDivRange = jsaction(rangeId::String)::Void {
 	var span = document.getElementById(rangeId);
 	if (!span)
 		return;
-	
-	var cleanups = span.getUserData('cleanups');
-	for(var i=0; i<cleanups.length; i++)
-		cleanups[i]();
 
 	var parent = span.parentNode;
 	while(span.lastChild) // put all children of span after span
@@ -134,7 +137,9 @@ injectDivRangeStyle = jsaction(rangeId::String, attribute::String, cell::Unit a)
 	var injectedFunc = evaluateAndInject(serialized, emptyFunction, function(value) {
 		setNodeStyle(span, attribute, value);
 	});
-	span.getUserData('cleanups').push(injectedFunc.unInject);
+	
+	var div = document.getElementById(evalExpr('noteId'));
+	div.getUserData('cleanups').push(injectedFunc.unInject);
 },
 
 injectDivRangeClass = jsaction(rangeId::String, cell::Unit String)::Void {
@@ -145,7 +150,9 @@ injectDivRangeClass = jsaction(rangeId::String, cell::Unit String)::Void {
 	var injectedFunc = cell.inject(emptyFunction, function(value) {
 		span.className = value;
 	});
-	span.getUserData('cleanups').push(injectedFunc.unInject);
+	
+	var div = document.getElementById(evalExpr('noteId'));
+	div.getUserData('cleanups').push(injectedFunc.unInject);
 },
 
 addDivRangeEventAction = jsaction(rangeId::String, event::String, a::Action Void)::Void {
