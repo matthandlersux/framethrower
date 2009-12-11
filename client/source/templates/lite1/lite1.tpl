@@ -97,6 +97,8 @@ template () {
 	mouseOverLink = state(Unit Link),
 	draggingLink = state(Unit Link),
 	draggingTimeRange = state(Unit Range), // this is temporary until I figure out bug with equality
+	
+	isHighlighted = identifier -> reactiveAnd (reactiveNot draggingLink) (bindUnit (reactiveEqual identifier) mouseOverLink),
 
 	svgEvents = template (identifier::Link, isHorizontal::Bool, colorStyle::ColorStyle) {
 		registerSVG = action (identifier::Link, loc::Unit ScreenLocation) {
@@ -258,9 +260,7 @@ template () {
 								return "M "+pv1.point.x+" "+pv1.point.y+" C "+pv1.vel.x+" "+pv1.vel.y+" "+pv2.vel.x+" "+pv2.vel.y+" "+pv2.point.x+" "+pv2.point.y;
 							},
 							
-							isHighlighted = bindUnit (reactiveEqual identifier) mouseOverLink,
-							
-							<svg:path fill="none" stroke-width="{reactiveIfThen isHighlighted 3 2}" stroke="{colorStyle_getBorder colorStyle isHighlighted}" d="{dAtt (fetch loc1) (fetch loc2)}" />
+							<svg:path fill="none" stroke-width="{reactiveIfThen (isHighlighted identifier) 3 2}" stroke="{colorStyle_getBorder colorStyle (isHighlighted identifier)}" d="{dAtt (fetch loc1) (fetch loc2)}" />
 							
 							// <div>{loc1} to {loc2}</div>
 						</f:each>

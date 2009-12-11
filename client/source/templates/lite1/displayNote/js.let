@@ -128,13 +128,13 @@ getDivRange = jsaction(rangeId::String)::(Bool, Range) {
 	return evalExpr('(true, makeRange '+start+' '+span.textContent.length+')');
 },
 
-injectDivRangeStyle = jsaction(rangeId::String, attribute::String, cell::Unit a)::Void {
+injectDivRangeStyle = jsaction(rangeId::String, attribute::String, cell::Unit String)::Void {
 	var span = document.getElementById(rangeId);
 	if (!span)
 		return;
 		
-	var serialized = makeApply(serializeCell, cell);
-	var injectedFunc = evaluateAndInject(serialized, emptyFunction, function(value) {
+	// var serialized = makeApply(serializeCell, cell);
+	var injectedFunc = evaluateAndInject(cell, emptyFunction, function(value) {
 		setNodeStyle(span, attribute, value);
 	});
 	
@@ -160,7 +160,8 @@ addDivRangeEventAction = jsaction(rangeId::String, event::String, a::Action Void
 	if (!span)
 		return;
 	
-	span[event] = function() {executeAction(a);};
+	// span[event] = function() {executeAction(a);};
+	span.addEventListener(event, function() {executeAction(a);}, true);
 },
 
 // highlightDivRange = jsaction(rangeId::String)::Void {

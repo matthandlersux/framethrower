@@ -27,9 +27,10 @@ template (note::Note) {
 		extract range as rangeValue {
 			rangeId = remoteId range,
 			addDivRange rangeId rangeValue,
-			injectDivRangeStyle rangeId "background" (colorStyle_getInner colorStyle (bindUnit (reactiveEqual (timeLink_target timeLink)) mouseOverLink)),
-			addDivRangeEventAction rangeId "onmouseover" (set mouseOverLink (timeLink_target timeLink)),
-			addDivRangeEventAction rangeId "onmouseout" (unset mouseOverLink)
+			injectDivRangeStyle rangeId "borderColor" (colorStyle_getInner colorStyle (isHighlighted (timeLink_target timeLink))),
+			injectDivRangeStyle rangeId "borderWidth" (reactiveIfThen (isHighlighted (timeLink_target timeLink)) "3px" "2px"),
+			addDivRangeEventAction rangeId "mouseover" (set mouseOverLink (timeLink_target timeLink)),
+			addDivRangeEventAction rangeId "mouseout" (unset mouseOverLink)
 		}
 	},
 	
@@ -60,8 +61,8 @@ template (note::Note) {
 			removeDivRange "noteSelection",
 			addDivRange "noteSelection" selection,
 			divSelect,
-			addDivSelectionEventAction "onmouseover" (set mouseOverSelection null),
-			addDivSelectionEventAction "onmouseout" (unset mouseOverSelection)
+			addDivSelectionEventAction "mouseover" (set mouseOverSelection null),
+			addDivSelectionEventAction "mouseout" (unset mouseOverSelection)
 		}
 	},
 	
@@ -124,7 +125,7 @@ template (note::Note) {
 				<div style-float="left" style-margin="4" style-position="relative">
 					<f:each timeRange_range (timeLink_target timeLink) as range>
 						startTime = range_start range,
-						<div style-cursor="pointer" style-border="1px solid" style-border-color="{colorStyle_getBorder colorStyle (bindUnit (reactiveEqual (timeLink_target timeLink)) mouseOverLink)}" style-width="{width}" style-height="{height}" style-background-image="{getThumbnailURL movieId startTime width height}">
+						<div style-cursor="pointer" style-border="1px solid" style-border-color="{colorStyle_getBorder colorStyle (isHighlighted (timeLink_target timeLink))}" style-width="{width}" style-height="{height}" style-background-image="{getThumbnailURL movieId startTime width height}">
 							<f:on click>
 								jumpToInMovie movie range
 							</f:on>
@@ -144,17 +145,17 @@ template (note::Note) {
 			<f:each reactiveOr draggingLink draggingLinkTentative as _>
 				<div class="drag-new-link" style-float="left" style-margin="4" style-width="44" style-height="44" style-font-size="11" style-padding="3">
 					drag to note or selection
-					// <f:on dragend>
-					// 	extract draggingLink as triple {
-					// 		range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
-					// 		movie = tuple3get1 triple,
-					// 
-					// 		timeRange <- createTimeRange movie,
-					// 		timeRange_setRange timeRange range,
-					// 		textRange <- createTextRange note,
-					// 		linkTime (makeTimeLink textRange timeRange)
-					// 	}
-					// </f:on>
+					<f:on dragend>
+						extract draggingLink as triple {
+							range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),
+							movie = tuple3get1 triple,
+					
+							timeRange <- createTimeRange movie,
+							timeRange_setRange timeRange range,
+							textRange <- createTextRange note,
+							linkTime (makeTimeLink textRange timeRange)
+						}
+					</f:on>
 				</div>
 			</f:each>
 			<div style-clear="both" />

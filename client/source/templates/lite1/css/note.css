@@ -1,4 +1,6 @@
 .noteRange {
+	padding: 1px;
+	border-style: solid;
 }
 
 #noteSelection {

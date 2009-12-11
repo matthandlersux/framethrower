@@ -317,9 +317,8 @@ template (movie::Movie)::Timeline {
 									regionLeft = makePercent (divide (range_start range) movieDuration),
 									regionWidth = makePercent (divide (range_duration range) movieDuration),
 									colorStyle = defaultColorStyle,
-									isHighlighted = bindUnit (reactiveEqual (timeLink_target timeLink)) mouseOverLink,
 									<div class="zForeground timeline-region" style-position="absolute" style-left="{regionLeft}" style-width="{regionWidth}" style-top="0">
-										<div class="inside" style-border-color="{colorStyle_getBorder colorStyle isHighlighted}" style-background-color="{colorStyle_getInner colorStyle isHighlighted}">
+										<div class="inside" style-border-color="{colorStyle_getBorder colorStyle (isHighlighted (timeLink_target timeLink))}" style-background-color="{colorStyle_getInner colorStyle (isHighlighted (timeLink_target timeLink))}">
 											<f:on click>
 												note = textRange_note (timeLink_source timeLink),
 												openNote note
