@@ -127,7 +127,8 @@ template (note::Note) {
 						startTime = range_start range,
 						<div style-cursor="pointer" style-border="1px solid" style-border-color="{colorStyle_getBorder colorStyle (isHighlighted (timeLink_target timeLink))}" style-width="{width}" style-height="{height}" style-background-image="{getThumbnailURL movieId startTime width height}">
 							<f:on click>
-								jumpToInMovie movie range
+								jumpToInMovie movie range,
+								scrollToDivRange (remoteId (textRange_range (timeLink_source timeLink)))
 							</f:on>
 							<f:call>svgEvents (timeLink_target timeLink) false colorStyle</f:call>
 							<div class="button delete-button" style-position="absolute" style-top="2" style-right="2">

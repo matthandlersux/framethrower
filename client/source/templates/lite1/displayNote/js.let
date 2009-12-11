@@ -186,6 +186,18 @@ addDivRangeEventAction = jsaction(rangeId::String, event::String, a::Action Void
 	span.addEventListener(event, function() {executeAction(a);}, true);
 },
 
+scrollToDivRange = jsaction(rangeId::String)::Void {
+	var span = document.getElementById(rangeId);
+	if (!span)
+		return;
+	
+	var div = document.getElementById(evalExpr('noteId'));
+	var scrollDiv = div.parentNode;
+	var pos = getRelativePosition(span, div);
+	console.log(pos);
+	scrollDiv.scrollTop = pos[1];
+},
+
 // highlightDivRange = jsaction(rangeId::String)::Void {
 // 	var noteSelection = document.getElementById(rangeId);
 // 	if (!noteSelection)
