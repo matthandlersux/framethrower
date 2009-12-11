@@ -193,8 +193,8 @@ scrollToDivRange = jsaction(rangeId::String)::Void {
 	
 	var div = document.getElementById(evalExpr('noteId'));
 	var scrollDiv = div.parentNode;
-	var pos = getRelativePosition(span, div);
-	console.log(pos);
+	var pos = getRelativePosition(span, scrollDiv);
+	
 	scrollDiv.scrollTop = pos[1];
 },
 
