@@ -143,8 +143,8 @@ template (note::Note) {
 				</div>
 			</f:each>
 			<f:each reactiveOr draggingLink draggingLinkTentative as _>
-				<div class="drag-new-link" style-float="left" style-margin="4" style-width="44" style-height="44" style-font-size="11" style-padding="3">
-					drag to note or selection
+				<div class="drag-new-link" style-float="left" style-margin="4" style-width="55" style-height="44" style-font-size="11" style-padding="3">
+					drag here or drag to selected text
 					<f:on dragend>
 						extract draggingLink as triple {
 							range = (fetch (tuple3get2 triple), fetch (tuple3get3 triple)),

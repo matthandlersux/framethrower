@@ -4,7 +4,8 @@
 }
 
 #noteSelection {
-	border: 1px dashed #888;
+	padding: 0px;
+	border: 1px dashed #111;
 }
 .dragging-link-tentative #noteSelection {
 	background-color: #111;

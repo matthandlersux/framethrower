@@ -342,9 +342,10 @@ template (movie::Movie)::Timeline {
 									<div class="comment-button">
 									</div>
 									<f:on click>
-										createSimpleNoteWithLink movie selectedTimeStart selectedTimeDuration,
+										note <- createSimpleNoteWithLink movie selectedTimeStart selectedTimeDuration,
 										unset selectedTimeStartS,
 										unset selectedTimeDurationS,
+										openNote note
 									</f:on>
 									<f:call>
 										myDragLink = (movie, selectedTimeStartS, selectedTimeDurationS),
@@ -361,7 +362,7 @@ template (movie::Movie)::Timeline {
 									</f:call>
 									<f:on mouseover>set draggingLinkTentative null</f:on>
 									<f:on mouseout>unset draggingLinkTentative</f:on>
-									<f:call>tooltipInfo "Add a new comment"</f:call>
+									<f:call>tooltipInfo "Click for new note, or drag to existing note"</f:call>
 								</div>
 							</div>
 						</div>
