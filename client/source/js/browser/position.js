@@ -11,21 +11,26 @@ function getAllPosition(node) {
 		if (obj.offsetLeft !== undefined) {
 			
 
-			if (obj.style.overflow === "hidden") {
+			if (obj.style.overflow === "hidden" || obj.style.overflow === "auto") {
+				
+				var leftMinBound = obj.scrollLeft;
+				var leftMaxBound = obj.scrollLeft + obj.offsetWidth;
+				var topMinBound = obj.scrollTop;
+				var topMaxBound = obj.scrollTop + obj.offsetHeight;
 
-				if (left < 0) {
-					width += left;
-					left = 0;
+				if (left < leftMinBound) {
+					width += left - leftMinBound;
+					left = leftMinBound;
 				}
-				if (top < 0) {
-					height += top;
-					top = 0;
+				if (top < topMinBound) {
+					height += top - topMinBound;
+					top = topMinBound;
 				}
-				if (left + width > obj.offsetWidth) {
-					width = obj.offsetWidth - left;
+				if (left + width > leftMaxBound) {
+					width = leftMaxBound - left;
 				}
-				if (top + height > obj.offsetHeight) {
-					height = obj.offsetHeight - top;
+				if (top + height > topMaxBound) {
+					height = topMaxBound - top;
 				}
 				
 				if (width < 0 || height < 0) {
@@ -35,8 +40,8 @@ function getAllPosition(node) {
 			}
 
 
-				left += obj.offsetLeft - obj.scrollLeft;
-				top += obj.offsetTop - obj.scrollTop;
+			left += obj.offsetLeft - obj.scrollLeft;
+			top += obj.offsetTop - obj.scrollTop;
 
 		}
 		
