@@ -102,9 +102,19 @@
 }
 
 .timeline-note-thumbnail-box {
-/*	height: 100px;
+	max-height: 200px;
 	overflow: auto;
-*/}
+}
+
+.fullscreen-note .timeline-note-text-box {
+	border: 1px solid #000;
+	margin: 4px;
+	padding: 4px;
+	background-color: #bbb;
+	color: #000;
+	height: 300px;
+	overflow: auto;
+}
 
 .tooltip {
 	background-color: #222;
