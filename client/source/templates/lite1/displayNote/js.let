@@ -98,11 +98,16 @@ addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
 	}
 	processChildren(div);
 	
-	var span = document.createElement('span');
-	span.id = rangeId;
-	span.className = 'noteRange';
+	var rangeSpan = document.createElement('span');
+	rangeSpan.id = rangeId;
+	rangeSpan.className = 'noteRange';
 	
-	range.surroundContents(span);
+	var contentSpan = document.createElement('span');
+	contentSpan.className = 'noteRange-contents';
+	
+	contentSpan.appendChild(range.extractContents());
+	rangeSpan.appendChild(contentSpan);
+	range.insertNode(rangeSpan);
 },
 
 removeDivRange = jsaction(rangeId::String)::Void {
