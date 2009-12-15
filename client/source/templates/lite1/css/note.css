@@ -1,6 +1,11 @@
-.noteRange {
+.noteRange, .noteRange-highlighted {
 	padding: 1px;
-	border-style: solid;
+	border: 2px solid;
+}
+
+.noteRange-highlighted:hover {
+	padding: 1px;
+	border: 4px solid;
 	cursor: pointer;
 }
 

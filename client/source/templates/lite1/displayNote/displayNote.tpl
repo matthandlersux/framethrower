@@ -1,5 +1,7 @@
 template (note::Note) {
 	
+	cleanups = state(Set (Action Void)),
+	
 	mouseOverSelection = state(Unit Null),
 	
 	getThumbnailURL = function (id::String, time::Number, width::Number, height::Number) {
@@ -9,7 +11,15 @@ template (note::Note) {
 	
 	noteId = remoteId note,
 	
+	cleanupDiv = action() {
+		extract cleanups as cleanup {
+			cleanup,
+			remove cleanups cleanup
+		}
+	},
+	
 	initDiv = action() {
+		cleanupDiv,
 		initDiv0 (fetch (note_text note)),
 		extract note_linksToMovies note as timeLink {
 			addDivTimeLink timeLink
@@ -28,7 +38,7 @@ template (note::Note) {
 			rangeId = remoteId range,
 			addDivRange rangeId rangeValue,
 			injectDivRangeStyle rangeId "borderColor" (colorStyle_getInner colorStyle (isHighlighted (timeLink_target timeLink))),
-			injectDivRangeStyle rangeId "borderWidth" (reactiveIfThen (isHighlighted (timeLink_target timeLink)) "3px" "2px"),
+			injectDivRangeClass rangeId (reactiveIfThen (isHighlighted (timeLink_target timeLink)) "noteRange-highlighted" "noteRange"),
 			addDivRangeEventAction rangeId "mouseover" (set mouseOverLink (timeLink_target timeLink)),
 			addDivRangeEventAction rangeId "mouseout" (unset mouseOverLink)
 		}
@@ -108,8 +118,10 @@ template (note::Note) {
 			<f:each note_text note as text>
 				<f:wrapper>
 					<f:on init>
-						// debug "note_text changed",
 						initDiv
+					</f:on>
+					<f:on uninit>
+						cleanupDiv
 					</f:on>
 				</f:wrapper>
 			</f:each>
