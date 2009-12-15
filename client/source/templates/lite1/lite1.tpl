@@ -345,7 +345,7 @@ template () {
 										removeEntry notePops index
 									</f:on>
 								</div>
-								<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="2">
+								<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="3">
 									<f:on click>
 										removeEntry notePops index,
 										set fullscreenNote note
