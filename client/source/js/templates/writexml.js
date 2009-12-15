@@ -472,8 +472,10 @@ function xmlToDOM(xml, env, context, lastElement) {
 			return {node: node, cleanup: null};
 		} else if (xml.event === "uninit") {
 			return {node: node, cleanup: function () {
-				var action = makeClosure(xml.action, env);
-				executeAction(action);
+				setTimeout(function() {
+					var action = makeClosure(xml.action, env);
+					executeAction(action);
+				});
 			}};
 		} else {
 			var eventName, eventGlobal;
