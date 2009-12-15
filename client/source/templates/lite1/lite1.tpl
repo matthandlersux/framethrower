@@ -42,6 +42,8 @@ template () {
 	
 	notePops = state(Map Ord Note),
 	
+	fullscreenNote = state(Unit Note),
+	
 	openNote = action (note::Note) {
 		extract reactiveNot (isNoteOpen note) as _ {
 			nextOrd = fetch (getNextOrd notePops),
@@ -276,7 +278,29 @@ template () {
 				<f:call>xmlp</f:call>
 			</f:each>
 			<f:each reactiveNot fullscreenVideo as _>
-				<f:call>movieSelector</f:call>
+				<f:wrapper>
+					<f:each fullscreenNote as note>
+						<div class="fullscreen-note">
+							<div class="zBackground timeline-note-box"/>
+							<div class="button close-button" style-float="right" style-margin-right="2" style-margin-top="2">
+								<f:on click>
+									unset fullscreenNote
+								</f:on>
+							</div>
+							<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="2">
+								<f:on click>
+									unset fullscreenNote,
+									openNote note
+								</f:on>
+							</div>
+							<div style-clear="both" />
+							<f:call>displayNote note</f:call>
+						</div>
+					</f:each>
+					<f:each reactiveNot fullscreenNote as _>
+						<f:call>movieSelector</f:call>
+					</f:each>
+				</f:wrapper>
 			</f:each>
 			
 			// // for debug:
@@ -294,27 +318,30 @@ template () {
 			// 	{setGlobalDebugVar draggingLink}
 			// </div>
 			
-			<div style-position="absolute" style-bottom="16" style-right="0">
-				<f:each notePops as index, note>
-					<div style-position="relative" style-width="260" style-margin="16" style-float="right">
-						<div style-position="absolute" style-bottom="0" style-width="260">
-							<div class="zBackground timeline-note-box"/>
-							<div class="button close-button" style-float="right" style-margin-right="2" style-margin-top="2">
-								<f:on click>
-									removeEntry notePops index
-								</f:on>
+			<f:each reactiveNot fullscreenNote as _>
+				<div style-position="absolute" style-bottom="16" style-right="0">
+					<f:each notePops as index, note>
+						<div style-position="relative" style-width="260" style-margin="16" style-float="right">
+							<div style-position="absolute" style-bottom="0" style-width="260">
+								<div class="zBackground timeline-note-box"/>
+								<div class="button close-button" style-float="right" style-margin-right="2" style-margin-top="2">
+									<f:on click>
+										removeEntry notePops index
+									</f:on>
+								</div>
+								<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="2">
+									<f:on click>
+										removeEntry notePops index,
+										set fullscreenNote note
+									</f:on>
+								</div>
+								<div style-clear="both" />
+								<f:call>displayNote note</f:call>
 							</div>
-							<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="2">
-								// <f:on click>
-								// 	removeEntry notePops index
-								// </f:on>
-							</div>
-							<div style-clear="both" />
-							<f:call>displayNote note</f:call>
 						</div>
-					</div>
-				</f:each>
-			</div>
+					</f:each>
+				</div>	
+			</f:each>
 			
 		</div>
 		
