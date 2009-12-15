@@ -115,7 +115,7 @@ template (note::Note) {
 			</f:each>
 
 		</div>
-		<div class="zForeground timeline-note-thumbnail-box">
+		<div class="zForeground timeline-note-thumbnail-box" style-overflow="auto">
 			<f:each note_linksToMovies note as timeLink>
 				movie = timeRange_movie (timeLink_target timeLink),
 				aspectRatio = Movie:aspectRatio movie,

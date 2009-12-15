@@ -104,6 +104,7 @@
 .timeline-note-thumbnail-box {
 	max-height: 200px;
 	overflow: auto;
+	position: relative;
 }
 
 .fullscreen-note .timeline-note-text-box {

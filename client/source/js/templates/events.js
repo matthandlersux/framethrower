@@ -276,11 +276,16 @@ var initializeGlobalUICells = function () {
 		ui["mouseDown"].control.remove();
 	}
 	
+	function scroll(e) {
+		checkForDomMoves(e.target);
+	}
+	
 	window.addEventListener("resize", resizeScreen, true);
 	
 	document.addEventListener("mousemove", mousemove, true);
 	document.addEventListener("mousedown", mousedown, true);
 	document.addEventListener("mouseup", mouseup, true);
+	document.addEventListener("scroll", scroll, true);
 	
 	resizeScreen();
 };

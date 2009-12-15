@@ -1,6 +1,11 @@
 .noteRange {
 	padding: 1px;
 	border-style: solid;
+	cursor: pointer;
+}
+
+.noteRange-contents {
+	cursor: auto;
 }
 
 #noteSelection {
