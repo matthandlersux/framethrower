@@ -42,6 +42,8 @@ template () {
 	
 	notePops = state(Map Ord Note),
 	
+	fullscreenNote = state(Unit Note),
+	
 	openNote = action (note::Note) {
 		extract reactiveNot (isNoteOpen note) as _ {
 			nextOrd = fetch (getNextOrd notePops),
@@ -129,7 +131,13 @@ template () {
 				unregisterSVG identifier myPos
 			</f:on>
 			<f:on domMove>
-				set myPos (event.posX, event.posY, event.targetWidth, event.targetHeight, isHorizontal)
+				pos = event.targetPosition,
+				extract boolToUnit (tuple5get1 pos) as _ {
+					set myPos (tuple5get2 pos, tuple5get3 pos, tuple5get4 pos, tuple5get5 pos, isHorizontal)					
+				},
+				extract reactiveNot (boolToUnit (tuple5get1 pos)) as _ {
+					unset myPos
+				}
 			</f:on>
 			<f:on mouseover>
 				set mouseOverLink identifier
@@ -260,8 +268,18 @@ template () {
 								return "M "+pv1.point.x+" "+pv1.point.y+" C "+pv1.vel.x+" "+pv1.vel.y+" "+pv2.vel.x+" "+pv2.vel.y+" "+pv2.point.x+" "+pv2.point.y;
 							},
 							
-							<svg:path fill="none" stroke-width="{reactiveIfThen (isHighlighted identifier) 3 2}" stroke="{colorStyle_getBorder colorStyle (isHighlighted identifier)}" d="{dAtt (fetch loc1) (fetch loc2)}" />
+							myReactiveAnd = function (x, y)::Bool {
+								return true;
+							},
 							
+							visible = reactiveIfThen (unfetch (myReactiveAnd (fetch loc1) (fetch loc2))) "visible" "hidden",
+							
+							// <f:each loc1 as loc1>
+							// 	<f:each loc2 as loc2>
+								
+									<svg:path visibility="{visible}" fill="none" stroke-width="{reactiveIfThen (isHighlighted identifier) 3 2}" stroke="{colorStyle_getBorder colorStyle (isHighlighted identifier)}" d="{dAtt (fetch loc1) (fetch loc2)}" />
+							// 	</f:each>
+							// </f:each>
 							// <div>{loc1} to {loc2}</div>
 						</f:each>
 					</f:each>
@@ -276,7 +294,29 @@ template () {
 				<f:call>xmlp</f:call>
 			</f:each>
 			<f:each reactiveNot fullscreenVideo as _>
-				<f:call>movieSelector</f:call>
+				<f:wrapper>
+					<f:each fullscreenNote as note>
+						<div class="fullscreen-note">
+							<div class="zBackground timeline-note-box"/>
+							<div class="button close-button" style-float="right" style-margin-right="2" style-margin-top="2">
+								<f:on click>
+									unset fullscreenNote
+								</f:on>
+							</div>
+							<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="2">
+								<f:on click>
+									unset fullscreenNote,
+									openNote note
+								</f:on>
+							</div>
+							<div style-clear="both" />
+							<f:call>displayNote note</f:call>
+						</div>
+					</f:each>
+					<f:each reactiveNot fullscreenNote as _>
+						<f:call>movieSelector</f:call>
+					</f:each>
+				</f:wrapper>
 			</f:each>
 			
 			// // for debug:
@@ -294,27 +334,30 @@ template () {
 			// 	{setGlobalDebugVar draggingLink}
 			// </div>
 			
-			<div style-position="absolute" style-bottom="16" style-right="0">
-				<f:each notePops as index, note>
-					<div style-position="relative" style-width="260" style-margin="16" style-float="right">
-						<div style-position="absolute" style-bottom="0" style-width="260">
-							<div class="zBackground timeline-note-box"/>
-							<div class="button close-button" style-float="right" style-margin-right="2" style-margin-top="2">
-								<f:on click>
-									removeEntry notePops index
-								</f:on>
+			<f:each reactiveNot fullscreenNote as _>
+				<div style-position="absolute" style-bottom="16" style-right="0">
+					<f:each notePops as index, note>
+						<div style-position="relative" style-width="260" style-margin="16" style-float="right">
+							<div style-position="absolute" style-bottom="0" style-width="260">
+								<div class="zBackground timeline-note-box"/>
+								<div class="button close-button" style-float="right" style-margin-right="2" style-margin-top="2">
+									<f:on click>
+										removeEntry notePops index
+									</f:on>
+								</div>
+								<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="3">
+									<f:on click>
+										removeEntry notePops index,
+										set fullscreenNote note
+									</f:on>
+								</div>
+								<div style-clear="both" />
+								<f:call>displayNote note</f:call>
 							</div>
-							<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="2">
-								// <f:on click>
-								// 	removeEntry notePops index
-								// </f:on>
-							</div>
-							<div style-clear="both" />
-							<f:call>displayNote note</f:call>
 						</div>
-					</div>
-				</f:each>
-			</div>
+					</f:each>
+				</div>	
+			</f:each>
 			
 		</div>
 		

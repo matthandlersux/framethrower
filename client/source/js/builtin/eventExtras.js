@@ -32,6 +32,11 @@ addEventExtra("event.targetHeight", "Number", function (extra) {
 	return extra.target.offsetHeight;
 });
 
+addEventExtra("event.targetPosition", "(Bool, Number, Number, Number, Number)", function (extra) {
+	return makeTuple(getAllPosition(extra.target));
+});
+
+
 addEventExtra("event.mouseX", "Number", function (extra) {
 	return extra.mouseCurrentPos[0];
 });

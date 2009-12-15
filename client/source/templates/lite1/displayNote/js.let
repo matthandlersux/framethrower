@@ -38,13 +38,11 @@ getDivText = jsaction()::String {
 initDiv0 = jsaction(text::String)::Void {
 	var div = document.getElementById(evalExpr('noteId'));
 	
-	if (div.getUserData('cleanups')) {
-		var cleanups = div.getUserData('cleanups');
-		for (var i=0; i<cleanups.length; i++)
-			cleanups[i]();
-	}
+	if (!div.cleanups)	// TODO hack? storing stuff in a random DOM node...
+		div.cleanups = [];
 	
-	div.setUserData('cleanups', [], null); // list of cleanup funcs, initially empty
+	while (div.cleanups.length>0)
+		div.cleanups.pop()();
 
 	// clear note:
 	while (div.lastChild)
@@ -100,11 +98,16 @@ addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
 	}
 	processChildren(div);
 	
-	var span = document.createElement('span');
-	span.id = rangeId;
-	span.className = 'noteRange';
+	var rangeSpan = document.createElement('span');
+	rangeSpan.id = rangeId;
+	rangeSpan.className = 'noteRange';
 	
-	range.surroundContents(span);
+	var contentSpan = document.createElement('span');
+	contentSpan.className = 'noteRange-contents';
+	
+	contentSpan.appendChild(range.extractContents());
+	rangeSpan.appendChild(contentSpan);
+	range.insertNode(rangeSpan);
 },
 
 removeDivRange = jsaction(rangeId::String)::Void {
@@ -165,7 +168,7 @@ injectDivRangeStyle = jsaction(rangeId::String, attribute::String, cell::Unit St
 	});
 	
 	var div = document.getElementById(evalExpr('noteId'));
-	div.getUserData('cleanups').push(injectedFunc.unInject);
+	div.cleanups.push(injectedFunc.unInject);
 },
 
 injectDivRangeClass = jsaction(rangeId::String, cell::Unit String)::Void {
@@ -178,7 +181,7 @@ injectDivRangeClass = jsaction(rangeId::String, cell::Unit String)::Void {
 	});
 	
 	var div = document.getElementById(evalExpr('noteId'));
-	div.getUserData('cleanups').push(injectedFunc.unInject);
+	div.cleanups.push(injectedFunc.unInject);
 },
 
 addDivRangeEventAction = jsaction(rangeId::String, event::String, a::Action Void)::Void {
