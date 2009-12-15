@@ -101,6 +101,11 @@
 	overflow: auto;
 }
 
+.timeline-note-thumbnail-box {
+/*	height: 100px;
+	overflow: auto;
+*/}
+
 .tooltip {
 	background-color: #222;
 	border: 1px solid #555;

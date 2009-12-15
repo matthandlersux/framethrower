@@ -89,6 +89,8 @@ addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
 
 				childStart = childEnd; // for next child
 			}
+			else if (child.tagName==='br')
+				childStart++;
 			else
 				processChildren(child);
 				
@@ -133,6 +135,8 @@ getDivRange = jsaction(rangeId::String)::(Bool, Range) {
 
 			if (child.nodeType===Node.TEXT_NODE)
 				k += child.textContent.length;
+			else if (child.tagName==='br')
+				k += 1;
 			else if (child===span)
 				start = k;
 			else
@@ -193,26 +197,26 @@ scrollToDivRange = jsaction(rangeId::String)::Void {
 	
 	var div = document.getElementById(evalExpr('noteId'));
 	var scrollDiv = div.parentNode;
-	var pos = getRelativePosition(span, scrollDiv);
-	
+	var pos = getRelativePosition(span, div);
+
 	scrollDiv.scrollTop = pos[1];
 },
 
-// highlightDivRange = jsaction(rangeId::String)::Void {
-// 	var noteSelection = document.getElementById(rangeId);
-// 	if (!noteSelection)
-// 		return;
-// 
-// 	noteSelection.className = 'noteRange-highlighted';
-// },
-// 
-// unhighlightDivRange = jsaction(rangeId::String)::Void {
-// 	var noteSelection = document.getElementById(rangeId);
-// 	if (!noteSelection)
-// 		return;
-// 
-// 	noteSelection.className = 'noteRange';
-// },
+highlightDivRange = jsaction(rangeId::String)::Void {
+	var noteSelection = document.getElementById(rangeId);
+	if (!noteSelection)
+		return;
+
+	noteSelection.className = 'noteRange-highlighted';
+},
+
+unhighlightDivRange = jsaction(rangeId::String)::Void {
+	var noteSelection = document.getElementById(rangeId);
+	if (!noteSelection)
+		return;
+
+	noteSelection.className = 'noteRange';
+},
 
 
 // ===================
@@ -250,8 +254,8 @@ getSelection = jsaction()::(Bool, Range) {
 					end = k + selection.endOffset;
 				k += child.textContent.length;
 			}
-			// else if (child.tagName === 'br')
-			// 	k += 1;
+			else if (child.tagName==='br')
+				k += 1;
 			else
 				processChildren(child);
 		}
