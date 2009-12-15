@@ -129,7 +129,13 @@ template () {
 				unregisterSVG identifier myPos
 			</f:on>
 			<f:on domMove>
-				set myPos (event.posX, event.posY, event.targetWidth, event.targetHeight, isHorizontal)
+				pos = event.targetPosition,
+				extract boolToUnit (tuple5get1 pos) as _ {
+					set myPos (tuple5get2 pos, tuple5get3 pos, tuple5get4 pos, tuple5get5 pos, isHorizontal)					
+				},
+				extract reactiveNot (boolToUnit (tuple5get1 pos)) as _ {
+					unset myPos
+				}
 			</f:on>
 			<f:on mouseover>
 				set mouseOverLink identifier
@@ -260,8 +266,18 @@ template () {
 								return "M "+pv1.point.x+" "+pv1.point.y+" C "+pv1.vel.x+" "+pv1.vel.y+" "+pv2.vel.x+" "+pv2.vel.y+" "+pv2.point.x+" "+pv2.point.y;
 							},
 							
-							<svg:path fill="none" stroke-width="{reactiveIfThen (isHighlighted identifier) 3 2}" stroke="{colorStyle_getBorder colorStyle (isHighlighted identifier)}" d="{dAtt (fetch loc1) (fetch loc2)}" />
+							myReactiveAnd = function (x, y)::Bool {
+								return true;
+							},
 							
+							visible = reactiveIfThen (unfetch (myReactiveAnd (fetch loc1) (fetch loc2))) "visible" "hidden",
+							
+							// <f:each loc1 as loc1>
+							// 	<f:each loc2 as loc2>
+								
+									<svg:path visibility="{visible}" fill="none" stroke-width="{reactiveIfThen (isHighlighted identifier) 3 2}" stroke="{colorStyle_getBorder colorStyle (isHighlighted identifier)}" d="{dAtt (fetch loc1) (fetch loc2)}" />
+							// 	</f:each>
+							// </f:each>
 							// <div>{loc1} to {loc2}</div>
 						</f:each>
 					</f:each>
