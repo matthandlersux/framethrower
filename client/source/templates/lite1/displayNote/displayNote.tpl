@@ -176,7 +176,7 @@ template (note::Note) {
 									svgEvents (timeLink_target timeLink) false colorStyle
 								</f:call>
 								<f:each reactiveEqual (fetch focus) (timeLink) as _>
-									<div class="button delete-button" style-position="absolute" style-top="-10" style-right="-12">
+									<div class="button delete-button">
 										<f:on click>
 											// prompt to delete this link
 											unlinkTime timeLink,

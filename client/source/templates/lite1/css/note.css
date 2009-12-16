@@ -39,6 +39,7 @@
 .collapsedImg {
 	float: left;
 	margin-left: 4px;
+	margin-right: 8px;
 	width: 10px;
 	height: 10px;
 	background-color: #6981A7;
@@ -48,9 +49,16 @@
 	-webkit-border-radius: 4px;
 }
 
+.collapsedImg .delete-button {
+	position: absolute;
+	top: -1px;
+	left: 15px;
+}
+
 .focusedImage {
-	float:right;
-	margin-bottom:3px;
+	float: right;
+	margin-bottom: 3px;
+	margin-right: 5px;
 }
 
 .timeline-note-box {
