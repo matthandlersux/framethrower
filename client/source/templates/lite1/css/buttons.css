@@ -52,9 +52,9 @@
 .close-button {
 	width: 16px;
 	height: 12px;
-	background-position: -340px -13px;
+/*	background-position: -340px -13px;*/
 /*	background-position: -359px -13px;*/
-/*	background-position: -377px -13px;*/
+	background-position: -377px -13px;
 }
 
 

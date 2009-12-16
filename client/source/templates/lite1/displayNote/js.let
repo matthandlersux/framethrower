@@ -37,12 +37,6 @@ getDivText = jsaction()::String {
 
 initDiv0 = jsaction(text::String)::Void {
 	var div = document.getElementById(evalExpr('noteId'));
-	
-	if (!div.cleanups)	// TODO hack? storing stuff in a random DOM node...
-		div.cleanups = [];
-	
-	while (div.cleanups.length>0)
-		div.cleanups.pop()();
 
 	// clear note:
 	while (div.lastChild)
@@ -162,13 +156,12 @@ injectDivRangeStyle = jsaction(rangeId::String, attribute::String, cell::Unit St
 	if (!span)
 		return;
 		
-	// var serialized = makeApply(serializeCell, cell);
-	var injectedFunc = evaluateAndInject(cell, emptyFunction, function(value) {
+	var injectedFunc = cell.inject(emptyFunction, function(value) {
 		setNodeStyle(span, attribute, value);
 	});
 	
 	var div = document.getElementById(evalExpr('noteId'));
-	div.cleanups.push(injectedFunc.unInject);
+	evalExpr("cleanups").control.add(makeActionMethod(injectedFunc.unInject));
 },
 
 injectDivRangeClass = jsaction(rangeId::String, cell::Unit String)::Void {
@@ -181,7 +174,7 @@ injectDivRangeClass = jsaction(rangeId::String, cell::Unit String)::Void {
 	});
 	
 	var div = document.getElementById(evalExpr('noteId'));
-	div.cleanups.push(injectedFunc.unInject);
+	evalExpr("cleanups").control.add(makeActionMethod(injectedFunc.unInject));
 },
 
 addDivRangeEventAction = jsaction(rangeId::String, event::String, a::Action Void)::Void {
