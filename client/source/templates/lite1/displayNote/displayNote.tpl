@@ -102,7 +102,7 @@ template (note::Note) {
 	},
 	
 	<div>
-		<div class="zForeground timeline-note-text-box" style-overflow="auto" style-height="{reactiveIfThen (bindUnit (reactiveEqual note) fullscreenNote) (subtract mainScreenHeight 200) 100}">
+		<div class="zForeground timeline-note-text-box" style-overflow="auto" style-height="{reactiveIfThen (unitEqual fullscreenNote note) (subtract mainScreenHeight 200) 100}">
 			<f:on globalmouseup>
 				if mouseOverSelection as _ {
 					linkSelection

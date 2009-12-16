@@ -108,7 +108,7 @@ template () {
 	draggingLink = state(Unit Link),
 	draggingTimeRange = state(Unit Range), // this is temporary until I figure out bug with equality
 	
-	isHighlighted = identifier -> reactiveAnd (reactiveNot draggingLink) (bindUnit (reactiveEqual identifier) mouseOverLink),
+	isHighlighted = identifier -> reactiveAnd (reactiveNot draggingLink) (unitEqual mouseOverLink identifier),
 
 	svgEvents = template (identifier::Link, isHorizontal::Bool, colorStyle::ColorStyle) {
 		registerSVG = action (identifier::Link, loc::Unit ScreenLocation) {

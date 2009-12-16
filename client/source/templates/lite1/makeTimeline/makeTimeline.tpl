@@ -18,7 +18,7 @@ template (movie::Movie)::Timeline {
 	scrubImageWidth = multiply scrubImageHeight aspectRatio,
 	
 	// small preview (on the right side of the timeline if the video is not full-screened)
-	fullscreened = bindUnit (reactiveEqual fullscreenXMLP) fullscreenVideo,
+	fullscreened = unitEqual fullscreenVideo fullscreenXMLP,
 	smallPreviewHeight = timelineHeight,
 	smallPreviewWidth = multiply smallPreviewHeight aspectRatio,
 	
@@ -476,10 +476,10 @@ template (movie::Movie)::Timeline {
 			// </div>
 			
 			<div style-position="absolute" style-left="50%" style-top="50%" style-width="50" style-height="50" style-margin-left="-25" style-margin-top="-25">
-				<f:each bindUnit (reactiveEqual 0) playingS as _>
+				<f:each unitEqual playingS 0 as _>
 					<div style-width="60" style-height="60" class="button play-button">
 						<f:on click>
-							extract bindUnit (reactiveEqual 0) selectedTimeDurationS as _ {
+							extract unitEqual selectedTimeDurationS 0 as _ {
 								unset selectedTimeStartS,
 								unset selectedTimeDurationS
 							},
@@ -488,7 +488,7 @@ template (movie::Movie)::Timeline {
 						//play button
 					</div>
 				</f:each>
-				<f:each bindUnit (reactiveEqual 1) playingS as _>
+				<f:each unitEqual playingS 1 as _>
 					<div style-width="78" style-height="22" class="loading-icon">
 						<f:on click>
 							set playingS 0,
@@ -500,7 +500,7 @@ template (movie::Movie)::Timeline {
 						//loading icon
 					</div>
 				</f:each>
-				<f:each bindUnit (reactiveEqual 2) playingS as _>
+				<f:each unitEqual playingS 2 as _>
 					<div style-width="60" style-height="60" class="button pause-button">
 						<f:on click>
 							set playingS 0,

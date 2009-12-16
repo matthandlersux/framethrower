@@ -1,3 +1,5 @@
+unitEqual = unit -> value -> bindUnit (reactiveEqual value) unit,
+
 boolToDisplay = function (x::Bool)::String {
 	if (x) return "block";
 	else return "none";
