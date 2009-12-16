@@ -124,12 +124,16 @@
 	text-align: center;
 }
 
+.movieselector {
+	color: white;
+}
+
 .movieselector em {
 	font-size: 22px;
 }
 
 .movieselector p {
-	color: #aaa;
+	color: #999;
 	font-size: 12px;
 	margin-bottom: 42px;
 	margin-left: 30px;
