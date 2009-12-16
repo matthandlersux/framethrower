@@ -36,6 +36,23 @@
 	color: #f00;
 }
 
+.collapsedImg {
+	float: left;
+	margin-left: 4px;
+	width: 10px;
+	height: 10px;
+	background-color: #6981A7;
+	border: 1px;
+	cursor: pointer;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+}
+
+.focusedImage {
+	float:right;
+	margin-bottom:3px;
+}
+
 .timeline-note-box {
 	background-color:rgba(50,50,50,.95);
 	background-image: url(http://media.eversplosion.com/gradient.php?height=80&color1=444&color2=323232);
@@ -54,12 +71,9 @@
 	padding: 4px;
 	background-color: #bbb;
 	color: #000;
-	height: 100px;
-	overflow: auto;
 }
 
 .timeline-note-thumbnail-box {
-	max-height: 200px;
 	overflow: auto;
 	position: relative;
 }
@@ -70,6 +84,12 @@
 	padding: 4px;
 	background-color: #bbb;
 	color: #000;
-	height: 300px;
+}
+
+.fullscreen-note .timeline-note-thumbnail-box {
 	overflow: auto;
+	position: relative;
+	padding-left: 6px;
+	padding-right: 20px;
+	padding-top: 6px;
 }
