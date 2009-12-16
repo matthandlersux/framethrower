@@ -6,9 +6,17 @@
 		opacity: .5;
 }
 
-.play-button:hover, .pause-button:hover, .scroll-button-left:hover, .scroll-button-right:hover,
-	.fullscreen-button:hover, .unfullscreen-button:hover, .close-button:hover, .comment-button:hover, .delete-button:hover {
-		opacity: .7;
+.play-button, .pause-button {
+	opacity: .7;
+}
+
+.play-button:hover, .pause-button:hover {
+	opacity: .9;
+}
+
+.scroll-button-left:hover, .scroll-button-right:hover, .fullscreen-button:hover, .unfullscreen-button:hover,
+	.close-button:hover, .comment-button:hover, .delete-button:hover {
+	opacity: .7;
 }
 
 /*these are all 50x50 currently*/	
@@ -52,15 +60,11 @@
 .close-button {
 	width: 16px;
 	height: 12px;
-	background-position: -340px -13px;
+/*	background-position: -340px -13px;*/
+/*	background-position: -359px -13px;*/
+	background-position: -377px -13px;
 }
 
-/*alternate close button
-.close-button {
-	width: 16px;
-	height: 12px;
-	background-position: -359px -13px;
-}*/
 
 
 .delete-button {

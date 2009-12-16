@@ -1,6 +1,11 @@
-.noteRange {
+.noteRange, .noteRange-highlighted {
 	padding: 1px;
-	border-style: solid;
+	border: 2px solid;
+}
+
+.noteRange-highlighted:hover {
+	padding: 1px;
+	border: 4px solid;
 	cursor: pointer;
 }
 
@@ -46,4 +51,45 @@
 .focusedImage {
 	float:right;
 	margin-bottom:3px;
+}
+
+.timeline-note-box {
+	background-color:rgba(50,50,50,.95);
+	background-image: url(http://media.eversplosion.com/gradient.php?height=80&color1=444&color2=323232);
+	background-repeat: repeat-x;
+	height:100%;
+	position:absolute;
+	width:100%;
+	-moz-border-radius:5px;
+	-webkit-border-radius: 5px;
+	border:1px solid rgb(50,50,50);
+}
+
+.timeline-note-text-box {
+	border: 1px solid #000;
+	margin: 4px;
+	padding: 4px;
+	background-color: #bbb;
+	color: #000;
+}
+
+.timeline-note-thumbnail-box {
+	overflow: auto;
+	position: relative;
+}
+
+.fullscreen-note .timeline-note-text-box {
+	border: 1px solid #000;
+	margin: 4px;
+	padding: 4px;
+	background-color: #bbb;
+	color: #000;
+}
+
+.fullscreen-note .timeline-note-thumbnail-box {
+	overflow: auto;
+	position: relative;
+	padding-left: 6px;
+	padding-right: 20px;
+	padding-top: 6px;
 }

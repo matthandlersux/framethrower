@@ -1,5 +1,7 @@
 template (note::Note) {
 	
+	cleanups = state(Set (Action Void)),
+	
 	mouseOverSelection = state(Unit Null),
 	focus = state(Unit TimeLink),
 	
@@ -16,7 +18,15 @@ template (note::Note) {
 	
 	noteId = remoteId note,
 	
+	cleanupDiv = action() {
+		extract cleanups as cleanup {
+			cleanup,
+			remove cleanups cleanup
+		}
+	},
+	
 	initDiv = action() {
+		cleanupDiv,
 		initDiv0 (fetch (note_text note)),
 		extract note_linksToMovies note as timeLink {
 			addDivTimeLink timeLink
@@ -35,9 +45,14 @@ template (note::Note) {
 			rangeId = remoteId range,
 			addDivRange rangeId rangeValue,
 			injectDivRangeStyle rangeId "borderColor" (colorStyle_getInner colorStyle (isHighlighted (timeLink_target timeLink))),
-			injectDivRangeStyle rangeId "borderWidth" (reactiveIfThen (isHighlighted (timeLink_target timeLink)) "3px" "2px"),
+			injectDivRangeClass rangeId (reactiveIfThen (isHighlighted (timeLink_target timeLink)) "noteRange-highlighted" "noteRange"),
 			addDivRangeEventAction rangeId "mouseover" (set mouseOverLink (timeLink_target timeLink)),
-			addDivRangeEventAction rangeId "mouseout" (unset mouseOverLink)
+			addDivRangeEventAction rangeId "mouseover" (set focus timeLink),
+			addDivRangeEventAction rangeId "mouseout" (unset mouseOverLink),
+			timeRange = timeLink_target timeLink,
+			movie = timeRange_movie timeRange,
+			movieRange = fetch (timeRange_range timeRange),
+			addDivRangeEventAction rangeId "mousedown" (jumpToInMovie movie movieRange)
 		}
 	},
 	
@@ -95,7 +110,7 @@ template (note::Note) {
 	},
 	
 	<div>
-		<div class="zForeground timeline-note-text-box">
+		<div class="zForeground timeline-note-text-box" style-overflow="auto" style-height="{reactiveIfThen (bindUnit (reactiveEqual note) fullscreenNote) (subtract mainScreenHeight 100) 100}">
 			<f:on globalmouseup>
 				if mouseOverSelection as _ {
 					linkSelection
@@ -109,14 +124,16 @@ template (note::Note) {
 			<f:on blur>
 				saveDiv
 			</f:on>
-			<div class="note" id="{noteId}" contentEditable="true" style-width="100%" style-height="100%"/>
+			<div class="note" id="{noteId}" contentEditable="true" style-width="100%" style-height="100%" />
 			
 			// nasty f:trigger analogues:
 			<f:each note_text note as text>
 				<f:wrapper>
 					<f:on init>
-						// debug "note_text changed",
 						initDiv
+					</f:on>
+					<f:on uninit>
+						cleanupDiv
 					</f:on>
 				</f:wrapper>
 			</f:each>
@@ -166,6 +183,7 @@ template (note::Note) {
 											saveDiv,
 											initDiv
 										</f:on>
+										<f:call>tooltipInfo "Remove connection"</f:call>
 									</div>
 								</f:each>
 							</div>

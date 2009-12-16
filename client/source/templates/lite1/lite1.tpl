@@ -45,6 +45,13 @@ template () {
 	fullscreenNote = state(Unit Note),
 	
 	openNote = action (note::Note) {
+		extract fullscreenNote as bigNote {
+			extract boolToUnit (not (equal bigNote note)) as _ {
+				// if a note other than ours is fullscreened, shrink it down
+				unset fullscreenNote,
+				openNote bigNote
+			}
+		},
 		extract reactiveNot (isNoteOpen note) as _ {
 			nextOrd = fetch (getNextOrd notePops),
 			addEntry notePops nextOrd note			
@@ -67,6 +74,7 @@ template () {
 	
 	timelineHeight = 140,
 	separatorHeight = 6,
+	tooltipDelay = 0.7,
 	
 	
 	// =============
@@ -164,18 +172,47 @@ template () {
 	draggingLinkTentativeClass = reactiveIfThen draggingLinkTentative "dragging-link-tentative" "none",
 
 
+	// =============
+	// Timers
+	// =============
+	delay = jsaction(a::Action Void, dt::Number)::Number {
+		return setTimeout(function() { executeAction(a); }, dt*1000);
+	},
+	cancelDelay = jsaction(delayID::Number)::Void {
+		clearTimeout(delayID);
+	},
+
 
 	// =============
 	// Tooltip
 	// =============
 	tooltipS = state(Unit String),
+	tooltipTimerS = state(Unit Number),
+
+	cancelTooltip = action() {
+		unset tooltipS,
+		extract tooltipTimerS as delayID {
+			cancelDelay (fetch tooltipTimerS),
+			unset tooltipTimerS
+		}
+	},
+	
 	tooltipInfo = template (s::String) {
+		turnTooltipOn = action() {
+			set tooltipS s,
+			unset tooltipTimerS
+		},
 		<f:wrapper>
 			<f:on mouseover>
-				set tooltipS s
+				cancelTooltip,
+				delayID <- delay turnTooltipOn tooltipDelay,
+				set tooltipTimerS delayID
 			</f:on>
 			<f:on mouseout>
-				unset tooltipS
+				cancelTooltip
+			</f:on>
+			<f:on mousedown>
+				cancelTooltip
 			</f:on>
 		</f:wrapper>
 	},
@@ -302,8 +339,9 @@ template () {
 								<f:on click>
 									unset fullscreenNote
 								</f:on>
+								<f:call>tooltipInfo "Close this note"</f:call>
 							</div>
-							<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="2">
+							<div class="button unfullscreen-button" style-float="right" style-margin-right="2" style-margin-top="3">
 								<f:on click>
 									unset fullscreenNote,
 									openNote note
@@ -344,12 +382,14 @@ template () {
 									<f:on click>
 										removeEntry notePops index
 									</f:on>
+									<f:call>tooltipInfo "Close this note"</f:call>
 								</div>
 								<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="3">
 									<f:on click>
 										removeEntry notePops index,
 										set fullscreenNote note
 									</f:on>
+									<f:call>tooltipInfo "Fullscreen editing mode"</f:call>
 								</div>
 								<div style-clear="both" />
 								<f:call>displayNote note</f:call>
@@ -374,11 +414,12 @@ template () {
 						<div style-position="relative" style-width="{screenWidth}" style-height="{timelineHeight}" class="timeline">
 							<f:call>timeline_xmlp timeline</f:call>
 							// Movie Title
-							<div class="titlebar zForeground1" style-position="absolute" style-left="0" style-top="-26" style-height="20">
+							<div class="titlebar zForeground1">
 								<div class="button close-button" style-float="right" style-margin-left="8">
 									<f:on click>
 										removeEntry timelines index
 									</f:on>
+									<f:call>tooltipInfo "Close timeline"</f:call>
 								</div>
 								{Movie:title (timeline_movie timeline)}
 
