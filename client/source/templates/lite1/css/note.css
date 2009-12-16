@@ -38,6 +38,8 @@
 
 .timeline-note-box {
 	background-color:rgba(50,50,50,.95);
+	background-image: url(http://media.eversplosion.com/gradient.php?height=80&color1=444&color2=323232);
+	background-repeat: repeat-x;
 	height:100%;
 	position:absolute;
 	width:100%;
