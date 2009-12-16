@@ -1,14 +1,21 @@
 .timeline .titlebar {
 	display: none;
-	background-color: #334;
+	position: absolute;
+	left: 5px;
+	top: -28px;
+	height: 20px;
+	background-color: #222;
 	color: #fff;
 	padding: 3px;
 	-moz-border-radius-topright: 5px;
 	-webkit-border-top-right-radius: 5px;
-/*	border: 1px solid #222;
-	border-size: 1px 1px 0px 0px;*/
+	-moz-border-radius-topleft: 5px;
+	-webkit-border-top-left-radius: 5px;
+	border: 1px solid #666;
+	border-bottom: 0px;
 }
-.timeline:hover .titlebar {
+
+.timeline .titlebar:hover, .timeline:hover .titlebar {
 	display: block;
 }
 
