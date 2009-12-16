@@ -1,7 +1,7 @@
 template () {
 	computeLeftBottom = function (x::Number, y::Number, width::Number, height::Number)::(Number, Number) {
 		
-		return makeTuple2(x, (height - y) + 10);
+		return makeTuple2(x, (height - y) - 60);
 	},
 	leftBottom = computeLeftBottom (fetch (UI.ui:mouseX ui.ui)) (fetch (UI.ui:mouseY ui.ui)) (fetch (UI.ui:screenWidth ui.ui)) (fetch (UI.ui:screenHeight ui.ui)),
 	left = fst leftBottom,

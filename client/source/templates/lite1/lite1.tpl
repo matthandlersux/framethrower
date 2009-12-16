@@ -310,7 +310,7 @@ template () {
 									unset fullscreenNote
 								</f:on>
 							</div>
-							<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="3">
+							<div class="button unfullscreen-button" style-float="right" style-margin-right="2" style-margin-top="3">
 								<f:on click>
 									unset fullscreenNote,
 									openNote note
@@ -381,7 +381,7 @@ template () {
 						<div style-position="relative" style-width="{screenWidth}" style-height="{timelineHeight}" class="timeline">
 							<f:call>timeline_xmlp timeline</f:call>
 							// Movie Title
-							<div class="titlebar zForeground1" style-position="absolute" style-left="0" style-top="-26" style-height="20">
+							<div class="titlebar zForeground1">
 								<div class="button close-button" style-float="right" style-margin-left="8">
 									<f:on click>
 										removeEntry timelines index
