@@ -279,7 +279,7 @@ template (movie::Movie)::Timeline {
 									},
 									dragger (unfetch selectedTimeStart) setSelected doneAction
 								</f:call>
-								//<f:call>tooltipInfo "Drag to select a region of the timeline"</f:call>
+								<f:call>tooltipInfo "Drag to select a region of the timeline"</f:call>
 							</div>
 							<div class="selection-drag-right" >
 								<f:call>
@@ -300,7 +300,7 @@ template (movie::Movie)::Timeline {
 									},
 									dragger (unfetch (plus selectedTimeStart selectedTimeDuration)) setSelected doneAction
 								</f:call>
-								//<f:call>tooltipInfo "Drag to select a region of the timeline"</f:call>
+								<f:call>tooltipInfo "Drag to select a region of the timeline"</f:call>
 							</div>
 						</div>
 					
@@ -364,7 +364,7 @@ template (movie::Movie)::Timeline {
 									</f:call>
 									<f:on mouseover>set draggingLinkTentative null</f:on>
 									<f:on mouseout>unset draggingLinkTentative</f:on>
-									<f:call>tooltipInfo "Click for new note, or drag to existing note" 0.7</f:call>
+									<f:call>tooltipInfo "Click for new note, or drag to existing note"</f:call>
 								</div>
 							</div>
 						</div>

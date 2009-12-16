@@ -151,6 +151,7 @@ template (note::Note) {
 									saveDiv,
 									initDiv
 								</f:on>
+								<f:call>tooltipInfo "Remove connection"</f:call>
 							</div>
 						</div>
 					</f:each>

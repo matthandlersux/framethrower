@@ -82,10 +82,14 @@
 }
 
 .tooltip {
-	background-color: #222;
-	border: 1px solid #555;
+	background-color:#eade9a;
+	border: 1px solid #444;
 	padding: 3px;
-	text-align: center;
+	padding-left: 6px;
+	text-align: left;
+	color: black;
+	font-family: sans-serif;
+	font-size: 11px;
 }
 
 .movieselector {

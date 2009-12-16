@@ -6,9 +6,17 @@
 		opacity: .5;
 }
 
-.play-button:hover, .pause-button:hover, .scroll-button-left:hover, .scroll-button-right:hover,
-	.fullscreen-button:hover, .unfullscreen-button:hover, .close-button:hover, .comment-button:hover, .delete-button:hover {
-		opacity: .7;
+.play-button, .pause-button {
+	opacity: .7;
+}
+
+.play-button:hover, .pause-button:hover {
+	opacity: .9;
+}
+
+.scroll-button-left:hover, .scroll-button-right:hover, .fullscreen-button:hover, .unfullscreen-button:hover,
+	.close-button:hover, .comment-button:hover, .delete-button:hover {
+	opacity: .7;
 }
 
 /*these are all 50x50 currently*/	

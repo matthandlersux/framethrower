@@ -17,6 +17,7 @@ template () {
 				<div class="zBackground" style-background-repeat="no-repeat" style-position="relative" style-width="96" style-height="140" style-background-image="{makeCoverUrl (Movie:id movie)}">
 				
 				</div>
+				<f:call>tooltipInfo (Movie:title movie)</f:call>
 				//{Movie:title movie}
 			</div>
 		</f:each>

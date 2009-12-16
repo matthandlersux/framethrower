@@ -74,6 +74,7 @@ template () {
 	
 	timelineHeight = 140,
 	separatorHeight = 6,
+	tooltipDelay = 0.7,
 	
 	
 	// =============
@@ -187,13 +188,13 @@ template () {
 	// =============
 	tooltipTimerS = state(Unit Number),
 	tooltipS = state(Unit String),
-	tooltipInfo = template (s::String, dt::Number) {
+	tooltipInfo = template (s::String) {
 		<f:wrapper>
 			<f:on mouseover>
 				extract tooltipTimerS as delayID {
 					cancelDelay delayID
 				},
-				delayID <- delay (set tooltipS s) dt,
+				delayID <- delay (set tooltipS s) tooltipDelay,
 				set tooltipTimerS delayID
 			</f:on>
 			<f:on mouseout>
@@ -328,6 +329,7 @@ template () {
 								<f:on click>
 									unset fullscreenNote
 								</f:on>
+								<f:call>tooltipInfo "Close this note"</f:call>
 							</div>
 							<div class="button unfullscreen-button" style-float="right" style-margin-right="2" style-margin-top="3">
 								<f:on click>
@@ -370,12 +372,14 @@ template () {
 									<f:on click>
 										removeEntry notePops index
 									</f:on>
+									<f:call>tooltipInfo "Close this note"</f:call>
 								</div>
 								<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="3">
 									<f:on click>
 										removeEntry notePops index,
 										set fullscreenNote note
 									</f:on>
+									<f:call>tooltipInfo "Fullscreen editing mode"</f:call>
 								</div>
 								<div style-clear="both" />
 								<f:call>displayNote note</f:call>
@@ -405,6 +409,7 @@ template () {
 									<f:on click>
 										removeEntry timelines index
 									</f:on>
+									<f:call>tooltipInfo "Close timeline"</f:call>
 								</div>
 								{Movie:title (timeline_movie timeline)}
 
