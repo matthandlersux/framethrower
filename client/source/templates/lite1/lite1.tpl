@@ -45,6 +45,13 @@ template () {
 	fullscreenNote = state(Unit Note),
 	
 	openNote = action (note::Note) {
+		extract fullscreenNote as bigNote {
+			extract boolToUnit (not (equal bigNote note)) as _ {
+				// if a note other than ours is fullscreened, shrink it down
+				unset fullscreenNote,
+				openNote bigNote
+			}
+		},
 		extract reactiveNot (isNoteOpen note) as _ {
 			nextOrd = fetch (getNextOrd notePops),
 			addEntry notePops nextOrd note			
@@ -303,7 +310,7 @@ template () {
 									unset fullscreenNote
 								</f:on>
 							</div>
-							<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="2">
+							<div class="button fullscreen-button" style-float="right" style-margin-right="2" style-margin-top="3">
 								<f:on click>
 									unset fullscreenNote,
 									openNote note

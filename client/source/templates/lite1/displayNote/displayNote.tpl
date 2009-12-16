@@ -41,6 +41,7 @@ template (note::Note) {
 			injectDivRangeClass rangeId (reactiveIfThen (isHighlighted (timeLink_target timeLink)) "noteRange-highlighted" "noteRange"),
 			addDivRangeEventAction rangeId "mouseover" (set mouseOverLink (timeLink_target timeLink)),
 			addDivRangeEventAction rangeId "mouseout" (unset mouseOverLink)
+			// addDivRangeEventAction 
 		}
 	},
 	
@@ -98,7 +99,7 @@ template (note::Note) {
 	},
 	
 	<div>
-		<div class="zForeground timeline-note-text-box">
+		<div class="zForeground timeline-note-text-box" style-overflow="auto" style-height="{reactiveIfThen (bindUnit (reactiveEqual note) fullscreenNote) (subtract mainScreenHeight 200) 100}">
 			<f:on globalmouseup>
 				if mouseOverSelection as _ {
 					linkSelection
@@ -112,7 +113,7 @@ template (note::Note) {
 			<f:on blur>
 				saveDiv
 			</f:on>
-			<div class="note" id="{noteId}" contentEditable="true" style-width="100%" style-height="100%"/>
+			<div class="note" id="{noteId}" contentEditable="true" style-width="100%" style-height="100%" />
 			
 			// nasty f:trigger analogues:
 			<f:each note_text note as text>

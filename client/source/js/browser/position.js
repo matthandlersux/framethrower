@@ -106,19 +106,29 @@ function getRelativePosition(node, ancestor) {
 	var curleft = curtop = 0;
 
 	var recurse = function() {
-		if(obj !== null && obj !== undefined && obj !== ancestor) {
+		if(obj !== null && obj !== undefined) {
 			if(obj.offsetLeft !== undefined) {
 				curleft += obj.offsetLeft - obj.scrollLeft;
 				curtop += obj.offsetTop - obj.scrollTop;
 			}
-			obj = obj.parentNode;
+
+			if (obj.parentNode===ancestor)
+				return;
+
+			if (obj.offsetParent !== undefined) {
+				obj = obj.offsetParent;
+				recurse();				
+			} else {
+				obj = obj.parentNode;
+				recurse();
+			}
 			recurse();
 		}
 	};
 	recurse();
 	
-	if (obj!==ancestor)
-		console.error("ancestor node not encountered");
+	// if (!obj || obj.parentNode!==ancestor)
+	// 	console.error("ancestor node not encountered");
 	
 	return [curleft, curtop];
 }

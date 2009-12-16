@@ -65,6 +65,7 @@ addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
 	
 	var range = document.createRange();
 	var childStart = 0;
+	var endSet = false;
 	function processChildren(node) {
 		node.normalize();
 		for (var i=0; i<node.childNodes.length; i++) {
@@ -76,8 +77,10 @@ addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
 				if (childStart<=start && start<childEnd)
 					range.setStart(child, start-childStart);
 
-				if (childStart<end && range.startContainer.parentNode===node) // keep track of last 'good enough' end position
+				if (childStart<end && range.startContainer.parentNode===node) { // keep track of last 'good enough' end position
 					range.setEnd(child, Math.min(end-childStart, childEnd-childStart));
+					endSet = true;
+				}
 
 				childStart = childEnd; // for next child
 			}
@@ -86,11 +89,16 @@ addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
 			else
 				processChildren(child);
 				
-			if (childStart>=end) // finished
+			if (endSet && childStart>=end) // finished
 				return;
 		}
 	}
 	processChildren(div);
+	
+	if (!endSet) {
+		console.error('couldn\'t add range ('+start+', '+end+') to div');
+		return;
+	}
 	
 	var rangeSpan = document.createElement('span');
 	rangeSpan.id = rangeId;
@@ -195,7 +203,7 @@ scrollToDivRange = jsaction(rangeId::String)::Void {
 	var scrollDiv = div.parentNode;
 	var pos = getRelativePosition(span, div);
 
-	scrollDiv.scrollTop = pos[1];
+	scrollDiv.scrollTop = Math.max(0, pos[1] - scrollDiv.clientHeight/2);
 },
 
 highlightDivRange = jsaction(rangeId::String)::Void {

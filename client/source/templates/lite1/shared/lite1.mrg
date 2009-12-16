@@ -34,7 +34,8 @@ action() {
 		textRange_setRange textRange (makeRange start (subtract end start)),
 		return textRange
 	},
-	makeTextPoint = start -> makeTextRange start start,
+	makeTextPoint0 = start -> makeTextRange start start,
+	makeTextPoint = start -> makeTextPoint0 (plus 1 start),
 	makeLink = textRange -> timeRange -> linkTime (makeTimeLink textRange timeRange),
 	
 	note_setText note_mressay "This is written as a first post to FilmsFolding. A goal of that project is to build a community and infrastructure of film annotators, the idea being based on three notions:

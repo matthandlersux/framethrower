@@ -97,24 +97,12 @@
 	padding: 4px;
 	background-color: #bbb;
 	color: #000;
-	height: 100px;
-	overflow: auto;
 }
 
 .timeline-note-thumbnail-box {
-	max-height: 200px;
+	max-height: 150px;
 	overflow: auto;
 	position: relative;
-}
-
-.fullscreen-note .timeline-note-text-box {
-	border: 1px solid #000;
-	margin: 4px;
-	padding: 4px;
-	background-color: #bbb;
-	color: #000;
-	height: 300px;
-	overflow: auto;
 }
 
 .tooltip {
