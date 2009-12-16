@@ -1,6 +1,13 @@
 template (note::Note) {
 	
 	mouseOverSelection = state(Unit Null),
+	focus = state(Unit TimeLink),
+	
+	collapsed = boolToUnit (isEnoughToCollapse (fetch (length (note_linksToMovies note)))),
+	
+	isEnoughToCollapse = function (num::Number) {
+		return num > 5;
+	},
 	
 	getThumbnailURL = function (id::String, time::Number, width::Number, height::Number) {
 		return "url(http:/"+"/media.eversplosion.com/frame.php?id="+id+"&time="+time+"&width="+width+"&height="+height+")";
@@ -116,32 +123,75 @@ template (note::Note) {
 
 		</div>
 		<div class="zForeground timeline-note-thumbnail-box" style-overflow="auto">
+			<f:each collapsed as _><f:each focus as timeLink>
+				movie = timeRange_movie (timeLink_target timeLink),
+				aspectRatio = Movie:aspectRatio movie,
+				height = 50,
+				width = multiply height aspectRatio,
+				movieId = Movie:id movie,
+				<f:each timeRange_range (timeLink_target timeLink) as range>
+					startTime = range_start range,
+					<div class="focusedImage">
+						<div style-cursor="pointer" style-border="1px solid" style-border-color="{colorStyle_getBorder colorStyle (isHighlighted (timeLink_target timeLink))}" style-width="{width}" style-height="{height}" style-background-image="{getThumbnailURL movieId startTime width height}"></div>
+					</div>
+				</f:each>
+			</f:each></f:each>
+			
 			<f:each note_linksToMovies note as timeLink>
 				movie = timeRange_movie (timeLink_target timeLink),
 				aspectRatio = Movie:aspectRatio movie,
 				height = 50,
 				width = multiply height aspectRatio,
 				movieId = Movie:id movie,
-				<div style-float="left" style-margin="4" style-position="relative">
-					<f:each timeRange_range (timeLink_target timeLink) as range>
-						startTime = range_start range,
-						<div style-cursor="pointer" style-border="1px solid" style-border-color="{colorStyle_getBorder colorStyle (isHighlighted (timeLink_target timeLink))}" style-width="{width}" style-height="{height}" style-background-image="{getThumbnailURL movieId startTime width height}">
-							<f:on click>
-								jumpToInMovie movie range,
-								scrollToDivRange (remoteId (textRange_range (timeLink_source timeLink)))
-							</f:on>
-							<f:call>svgEvents (timeLink_target timeLink) false colorStyle</f:call>
-							<div class="button delete-button" style-position="absolute" style-top="2" style-right="2">
-								<f:on click>
-									// prompt to delete this link
-									unlinkTime timeLink,
-									saveDiv,
-									initDiv
+				
+				<f:each timeRange_range (timeLink_target timeLink) as range>
+					<div style-float="left" style-margin="4" style-position="relative">
+						<f:each collapsed as _>
+							<div class="collapsedImg" style-background-color="{colorStyle_getBorder colorStyle (isHighlighted (timeLink_target timeLink))}">
+								<f:on mouseover>
+									set focus timeLink
 								</f:on>
+								<f:on click>
+									jumpToInMovie movie range,
+									scrollToDivRange (remoteId (textRange_range (timeLink_source timeLink)))
+								</f:on>
+								<f:call>
+									svgEvents (timeLink_target timeLink) false colorStyle
+								</f:call>
+								<f:each reactiveEqual (fetch focus) (timeLink) as _>
+									<div class="button delete-button" style-position="absolute" style-top="-10" style-right="-12">
+										<f:on click>
+											// prompt to delete this link
+											unlinkTime timeLink,
+											saveDiv,
+											initDiv
+										</f:on>
+									</div>
+								</f:each>
 							</div>
-						</div>
-					</f:each>
-				</div>
+						</f:each>
+						<f:each reactiveNot collapsed as _>
+							startTime = range_start range,
+							<div style-cursor="pointer" style-border="1px solid" style-border-color="{colorStyle_getBorder colorStyle (isHighlighted (timeLink_target timeLink))}" style-width="{width}" style-height="{height}" style-background-image="{getThumbnailURL movieId startTime width height}">
+								<f:on click>
+									jumpToInMovie movie range,
+									scrollToDivRange (remoteId (textRange_range (timeLink_source timeLink)))
+								</f:on>
+								<f:call>
+									svgEvents (timeLink_target timeLink) false colorStyle
+								</f:call>
+								<div class="button delete-button" style-position="absolute" style-top="2" style-right="2">
+									<f:on click>
+										// prompt to delete this link
+										unlinkTime timeLink,
+										saveDiv,
+										initDiv
+									</f:on>
+								</div>
+							</div>
+						</f:each>
+					</div>
+				</f:each>
 			</f:each>
 			<f:each reactiveOr draggingLink draggingLinkTentative as _>
 				<div class="drag-new-link" style-float="left" style-margin="4" style-width="55" style-height="44" style-font-size="11" style-padding="3">

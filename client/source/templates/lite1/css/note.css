@@ -30,3 +30,20 @@
 	border-color: #f00;
 	color: #f00;
 }
+
+.collapsedImg {
+	float: left;
+	margin-left: 4px;
+	width: 10px;
+	height: 10px;
+	background-color: #6981A7;
+	border: 1px;
+	cursor: pointer;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+}
+
+.focusedImage {
+	float:right;
+	margin-bottom:3px;
+}
