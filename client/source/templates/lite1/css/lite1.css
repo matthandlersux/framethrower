@@ -123,3 +123,26 @@
 	padding: 3px;
 	text-align: center;
 }
+
+.movieselector em {
+	font-size: 22px;
+}
+
+.movieselector p {
+	color: #aaa;
+	font-size: 12px;
+	margin-bottom: 42px;
+	margin-left: 30px;
+}
+
+.movieselector-image div{
+	padding: 7px;
+	background-position: 7px 7px;
+	border: 1px solid rgba(0,0,0,0);
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+}
+
+.movieselector-image:hover div{
+	border-color: #ccc;
+}
