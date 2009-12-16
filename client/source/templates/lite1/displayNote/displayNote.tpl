@@ -40,8 +40,11 @@ template (note::Note) {
 			injectDivRangeStyle rangeId "borderColor" (colorStyle_getInner colorStyle (isHighlighted (timeLink_target timeLink))),
 			injectDivRangeClass rangeId (reactiveIfThen (isHighlighted (timeLink_target timeLink)) "noteRange-highlighted" "noteRange"),
 			addDivRangeEventAction rangeId "mouseover" (set mouseOverLink (timeLink_target timeLink)),
-			addDivRangeEventAction rangeId "mouseout" (unset mouseOverLink)
-			// addDivRangeEventAction 
+			addDivRangeEventAction rangeId "mouseout" (unset mouseOverLink),
+			timeRange = timeLink_target timeLink,
+			movie = timeRange_movie timeRange,
+			movieRange = fetch (timeRange_range timeRange),
+			addDivRangeEventAction rangeId "mousedown" (jumpToInMovie movie movieRange)
 		}
 	},
 	
