@@ -186,23 +186,33 @@ template () {
 	// =============
 	// Tooltip
 	// =============
-	tooltipTimerS = state(Unit Number),
 	tooltipS = state(Unit String),
+	tooltipTimerS = state(Unit Number),
+
+	cancelTooltip = action() {
+		unset tooltipS,
+		extract tooltipTimerS as delayID {
+			cancelDelay (fetch tooltipTimerS),
+			unset tooltipTimerS
+		}
+	},
+	
 	tooltipInfo = template (s::String) {
+		turnTooltipOn = action() {
+			set tooltipS s,
+			unset tooltipTimerS
+		},
 		<f:wrapper>
 			<f:on mouseover>
-				extract tooltipTimerS as delayID {
-					cancelDelay delayID
-				},
-				delayID <- delay (set tooltipS s) tooltipDelay,
+				cancelTooltip,
+				delayID <- delay turnTooltipOn tooltipDelay,
 				set tooltipTimerS delayID
 			</f:on>
 			<f:on mouseout>
-				unset tooltipS,
-				extract tooltipTimerS as delayID {
-					cancelDelay delayID,
-					unset tooltipTimerS
-				}
+				cancelTooltip
+			</f:on>
+			<f:on mousedown>
+				cancelTooltip
 			</f:on>
 		</f:wrapper>
 	},

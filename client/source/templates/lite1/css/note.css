@@ -1,3 +1,41 @@
+.timeline-note-box {
+	background-color:rgba(50,50,50,.95);
+	height:100%;
+	position:absolute;
+	width:100%;
+	-moz-border-radius:5px;
+	-webkit-border-radius: 5px;
+	border:1px solid rgb(50,50,50);
+}
+
+.timeline-note-text-box {
+	border: 1px solid #000;
+	margin: 4px;
+	padding: 4px;
+	background-color: #bbb;
+	color: #000;
+	height: 100px;
+	overflow: auto;
+}
+
+.timeline-note-thumbnail-box {
+	max-height: 200px;
+	overflow: auto;
+	position: relative;
+}
+
+.fullscreen-note .timeline-note-text-box {
+	border: 1px solid #000;
+	margin: 4px;
+	padding: 4px;
+	background-color: #bbb;
+	color: #000;
+	height: 300px;
+	overflow: auto;
+}
+
+
+
 .noteRange, .noteRange-highlighted {
 	padding: 1px;
 	border: 2px solid;
@@ -34,40 +72,4 @@
 	cursor: pointer;
 	border-color: #f00;
 	color: #f00;
-}
-
-.timeline-note-box {
-	background-color:rgba(50,50,50,.95);
-	height:100%;
-	position:absolute;
-	width:100%;
-	-moz-border-radius:5px;
-	-webkit-border-radius: 5px;
-	border:1px solid rgb(50,50,50);
-}
-
-.timeline-note-text-box {
-	border: 1px solid #000;
-	margin: 4px;
-	padding: 4px;
-	background-color: #bbb;
-	color: #000;
-	height: 100px;
-	overflow: auto;
-}
-
-.timeline-note-thumbnail-box {
-	max-height: 200px;
-	overflow: auto;
-	position: relative;
-}
-
-.fullscreen-note .timeline-note-text-box {
-	border: 1px solid #000;
-	margin: 4px;
-	padding: 4px;
-	background-color: #bbb;
-	color: #000;
-	height: 300px;
-	overflow: auto;
 }
