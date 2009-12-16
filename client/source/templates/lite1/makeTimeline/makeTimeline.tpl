@@ -364,7 +364,7 @@ template (movie::Movie)::Timeline {
 									</f:call>
 									<f:on mouseover>set draggingLinkTentative null</f:on>
 									<f:on mouseout>unset draggingLinkTentative</f:on>
-									<f:call>tooltipInfo "Click for new note, or drag to existing note"</f:call>
+									<f:call>tooltipInfo "Click for new note, or drag to existing note" 0.7</f:call>
 								</div>
 							</div>
 						</div>

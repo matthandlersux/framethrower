@@ -171,18 +171,37 @@ template () {
 	draggingLinkTentativeClass = reactiveIfThen draggingLinkTentative "dragging-link-tentative" "none",
 
 
+	// =============
+	// Timers
+	// =============
+	delay = jsaction(a::Action Void, dt::Number)::Number {
+		return setTimeout(function() { executeAction(a); }, dt*1000);
+	},
+	cancelDelay = jsaction(delayID::Number)::Void {
+		clearTimeout(delayID);
+	},
+
 
 	// =============
 	// Tooltip
 	// =============
+	tooltipTimerS = state(Unit Number),
 	tooltipS = state(Unit String),
-	tooltipInfo = template (s::String) {
+	tooltipInfo = template (s::String, dt::Number) {
 		<f:wrapper>
 			<f:on mouseover>
-				set tooltipS s
+				extract tooltipTimerS as delayID {
+					cancelDelay delayID
+				},
+				delayID <- delay (set tooltipS s) dt,
+				set tooltipTimerS delayID
 			</f:on>
 			<f:on mouseout>
-				unset tooltipS
+				unset tooltipS,
+				extract tooltipTimerS as delayID {
+					cancelDelay delayID,
+					unset tooltipTimerS
+				}
 			</f:on>
 		</f:wrapper>
 	},
