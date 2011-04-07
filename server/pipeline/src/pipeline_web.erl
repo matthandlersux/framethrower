@@ -55,7 +55,7 @@ loop(Req, DocRoot) ->
 					{Username, Password} = mblib:pump(["username", "password"], 
 												fun(Element) -> proplists:get_value(Element, Data) end),
 					if 
-						Username =:= "echostorm", Password =:= "build7twenty" ->
+						Username =:= "echostorm", Password =:= "insecurepassword" ->
 							try serialize:serializeEnv() of
 								ok -> Req:ok({ "text/plain", [], [ "server state serialized successfully." ]})
 							catch _:_ -> Req:ok({ "text/plain", [], [ "error, serialize screwed up (andrews fault)." ]})
