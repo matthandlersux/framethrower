@@ -1,0 +1,15 @@
+h1. What is Framethrower?
+
+framethrower is a software research project i worked on from 2007-2009. the goal was to create an intelligent interface for understanding and interacting with video. 
+
+h2. What was my role?
+
+i was in charge of the backend. it was a graph database, called mbrella, built in erlang based on a field of mathematics called information theory. the goal was to have a system that could store and lookup stories.
+
+h2. What is interesting in the code?
+
+there were some pretty cool features of the system and database. our front end guys built a functional reactive javascript templating language that basically allowed you to design an entire site without having to configure the database. objects and their structures in the database were created organically by the templates. whenever values in the database changed, updates would get pushed to the browser. the closest thing i've seen to this kind of system to date is http://asana.com/luna/
+
+there were many cool aspects to the database. one in particular was the mewpile (memotable). whenever calculations were run on data from the database, the process would create new structures in the database that were aware of their dependencies. when you try to do the same calculation later, instead of reperforming this, you just become connected to the result cell of that generated structure. we saved a lot of time in calculations this way, and it worked really well with the functional reactive approach.
+
+another interesting aspect of the system were our list of primitive functions. these were basically commutitive actions that can be done on the database to build a result. they can be thought of as sql statements, except that the results of these statements become a node in the database that updates in real time. so if you were to say "get me every movie that has tom cruise in it and references a david lynch film", you would get back a node in the database that from then on would always be populated with this query in real time. 
