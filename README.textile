@@ -4,7 +4,7 @@ framethrower is a software research project i worked on from 2007-2009. the goal
 
 h2. What was my role?
 
-i was in charge of the backend. it was a graph database, called mbrella, built in erlang based on a field of mathematics called information theory. the goal was to have a system that could store and lookup stories.
+i was in charge of the backend. it was a graph database, called mbrella, built in erlang based on a field of mathematics called situation theory (http://www.stanford.edu/~kdevlin/HHL_SituationTheory.pdf). the goal was to have a system that could store and lookup stories.
 
 h2. What is interesting in the code?
 
