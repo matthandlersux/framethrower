@@ -37,28 +37,28 @@
 
 start() -> start_link().
 start_link() ->
-	case gen_server:start_link({local, ?MODULE}, ?MODULE, [], []) of
-		{ok, Pid} -> Pid;
-		Else -> Else
-	end.
-	
-add( BottomExpr, Cell ) -> 
-	gen_server:cast(?MODULE, {add, BottomExpr, Cell}),
-	fun() -> erlang:apply(?MODULE, remove, [BottomExpr] ) end.
+  case gen_server:start_link({local, ?MODULE}, ?MODULE, [], []) of
+    {ok, Pid} -> Pid;
+    Else -> Else
+  end.
 
-remove( BottomExpr ) -> 
-	gen_server:cast(?MODULE, {remove, BottomExpr} ).
-	
+add( BottomExpr, Cell ) ->
+  gen_server:cast(?MODULE, {add, BottomExpr, Cell}),
+  fun() -> erlang:apply(?MODULE, remove, [BottomExpr] ) end.
+
+remove( BottomExpr ) ->
+  gen_server:cast(?MODULE, {remove, BottomExpr} ).
+
 % ets:select can be used to get an expression with variable parameters... like
-% 	a {lambda, apply, etc..} nesting with some variable parameters
-get( BottomExpr ) -> 
-	gen_server:call(?MODULE, {get, BottomExpr}).
+%   a {lambda, apply, etc..} nesting with some variable parameters
+get( BottomExpr ) ->
+  gen_server:call(?MODULE, {get, BottomExpr}).
 
 getTable() ->
-	gen_server:call(?MODULE, getTable).
+  gen_server:call(?MODULE, getTable).
 
 die() ->
-	gen_server:cast(?MODULE, {terminate, killed}).
+  gen_server:cast(?MODULE, {terminate, killed}).
 
 %% ====================================================================
 %% Server functions
@@ -73,13 +73,13 @@ die() ->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
-	% case ets:file2tab(?TABFILE) of
-	% 	{ok, Table} ->
-	% 		State = #memoize{ets = Table};
-	% 	{error, _Reason} ->
-	% 		State = #memoize{}
-	% end,
-	State = #memoize{},
+  % case ets:file2tab(?TABFILE) of
+  %   {ok, Table} ->
+  %     State = #memoize{ets = Table};
+  %   {error, _Reason} ->
+  %     State = #memoize{}
+  % end,
+  State = #memoize{},
     {ok, State}.
 
 %% --------------------------------------------------------------------
@@ -93,16 +93,16 @@ init([]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call({get, Expr}, _, State) ->
-	Unparsed = expr:unparse(Expr),
-	case ets:lookup(?this(ets), Unparsed) of
-		[{_, Reply}] ->
-			good;
-		[] -> 
-			Reply = key_does_not_exist
-	end,
+  Unparsed = expr:unparse(Expr),
+  case ets:lookup(?this(ets), Unparsed) of
+    [{_, Reply}] ->
+      good;
+    [] ->
+      Reply = key_does_not_exist
+  end,
     {reply, Reply, State};
 handle_call(getTable, _, State) ->
-	{reply, ?this(ets), State}.
+  {reply, ?this(ets), State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -112,14 +112,14 @@ handle_call(getTable, _, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast({add, Expr, Cell}, State) ->
-	Unparsed = expr:unparse(Expr),
-	ets:insert(?this(ets), {Unparsed, Cell}),
+  Unparsed = expr:unparse(Expr),
+  ets:insert(?this(ets), {Unparsed, Cell}),
     {noreply, State};
 handle_cast({remove, Expr}, State) ->
-	ets:delete(?this(ets), Expr),
+  ets:delete(?this(ets), Expr),
     {noreply, State};
 handle_cast({terminate, Reason}, State) ->
-	{stop, Reason, State}.
+  {stop, Reason, State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2
@@ -137,8 +137,8 @@ handle_info(Info, State) ->
 %% Returns: any (ignored by gen_server)
 %% --------------------------------------------------------------------
 terminate(Reason, State) ->
-	%ets:tab2file(?this(ets), ?TABFILE),
-	ets:delete(?this(ets)),
+  %ets:tab2file(?this(ets), ?TABFILE),
+  ets:delete(?this(ets)),
     ok.
 
 %% --------------------------------------------------------------------

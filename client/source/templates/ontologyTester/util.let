@@ -1,33 +1,33 @@
 makeSituation = action () {
-	create(Situation, {})
+  create(Situation, {})
 },
 nameSituation = action (sit::Situation, name::String) {
-	add(Situation:propName sit, name)
+  add(Situation:propName sit, name)
 },
 timeSituation = action (sit::Situation, time::Number) {
-	add(Situation:propTime sit, time)
+  add(Situation:propTime sit, time)
 },
 makeSituationNamed = action (name::String) {
-	sit = makeSituation,
-	nameSituation sit name,
-	sit
+  sit = makeSituation,
+  nameSituation sit name,
+  sit
 },
 putSituationIn = action (parent::Situation, child::Situation) {
-	add(Situation:contains parent, child),
-	add(Situation:container child, parent)
+  add(Situation:contains parent, child),
+  add(Situation:container child, parent)
 },
 makeSituationNamedIn = action (name::String, parent::Situation) {
-	sit = makeSituationNamed name,
-	putSituationIn parent sit,
-	sit
+  sit = makeSituationNamed name,
+  putSituationIn parent sit,
+  sit
 },
 
 makePipe = action (instance::Situation, type::Situation) {
-	pipe = create(Pipe, {instance:instance, type:type}),
-	add(Pipe:truth pipe, 1),
-	add(Situation:asInstance instance, pipe),
-	add(Situation:asType type, pipe),
-	pipe
+  pipe = create(Pipe, {instance:instance, type:type}),
+  add(Pipe:truth pipe, 1),
+  add(Situation:asInstance instance, pipe),
+  add(Situation:asType type, pipe),
+  pipe
 },
 
 
@@ -36,73 +36,73 @@ makePipe = action (instance::Situation, type::Situation) {
 
 
 putPipeIn = action (pipe::Pipe, container::List Pipe) {
-	add(Pipe:container pipe, container),
-	extract container as pipeSegment {
-		add(Pipe:contains pipeSegment, pipe)
-	}
+  add(Pipe:container pipe, container),
+  extract container as pipeSegment {
+    add(Pipe:contains pipeSegment, pipe)
+  }
 },
 
 putPipeIn1 = action (pipe::Pipe, pipe0::Pipe) {
-	putPipeIn pipe (cons pipe0 nil)
+  putPipeIn pipe (cons pipe0 nil)
 },
 putPipeIn2 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe) {
-	putPipeIn pipe (cons pipe0 (cons pipe1 nil))
+  putPipeIn pipe (cons pipe0 (cons pipe1 nil))
 },
 putPipeIn3 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe) {
-	putPipeIn pipe (cons pipe0 (cons pipe1 (cons pipe2 nil)))
+  putPipeIn pipe (cons pipe0 (cons pipe1 (cons pipe2 nil)))
 },
 putPipeIn4 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe, pipe3::Pipe) {
-	putPipeIn pipe (cons pipe0 (cons pipe1 (cons pipe2 (cons pipe3 nil))))
+  putPipeIn pipe (cons pipe0 (cons pipe1 (cons pipe2 (cons pipe3 nil))))
 },
 
 
 
 // putPipeIn1 = action (pipe::Pipe, pipe0::Pipe) {
-// 	add(Pipe:container pipe, numToOrd 0, pipe0),
-// 	add(Pipe:contains pipe0, pipe)
+//   add(Pipe:container pipe, numToOrd 0, pipe0),
+//   add(Pipe:contains pipe0, pipe)
 // },
 // putPipeIn2 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe) {
-// 	add(Pipe:container pipe, numToOrd 0, pipe0),
-// 	add(Pipe:container pipe, numToOrd 1, pipe1),
-// 	add(Pipe:contains pipe0, pipe),
-// 	add(Pipe:contains pipe1, pipe)
+//   add(Pipe:container pipe, numToOrd 0, pipe0),
+//   add(Pipe:container pipe, numToOrd 1, pipe1),
+//   add(Pipe:contains pipe0, pipe),
+//   add(Pipe:contains pipe1, pipe)
 // },
 // putPipeIn3 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe) {
-// 	add(Pipe:container pipe, numToOrd 0, pipe0),
-// 	add(Pipe:container pipe, numToOrd 1, pipe1),
-// 	add(Pipe:container pipe, numToOrd 2, pipe2),
-// 	add(Pipe:contains pipe0, pipe),
-// 	add(Pipe:contains pipe1, pipe),
-// 	add(Pipe:contains pipe2, pipe)
+//   add(Pipe:container pipe, numToOrd 0, pipe0),
+//   add(Pipe:container pipe, numToOrd 1, pipe1),
+//   add(Pipe:container pipe, numToOrd 2, pipe2),
+//   add(Pipe:contains pipe0, pipe),
+//   add(Pipe:contains pipe1, pipe),
+//   add(Pipe:contains pipe2, pipe)
 // },
 // putPipeIn4 = action (pipe::Pipe, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe, pipe3::Pipe) {
-// 	add(Pipe:container pipe, numToOrd 0, pipe0),
-// 	add(Pipe:container pipe, numToOrd 1, pipe1),
-// 	add(Pipe:container pipe, numToOrd 2, pipe2),
-// 	add(Pipe:container pipe, numToOrd 3, pipe3),
-// 	add(Pipe:contains pipe0, pipe),
-// 	add(Pipe:contains pipe1, pipe),
-// 	add(Pipe:contains pipe2, pipe),
-// 	add(Pipe:contains pipe3, pipe)
+//   add(Pipe:container pipe, numToOrd 0, pipe0),
+//   add(Pipe:container pipe, numToOrd 1, pipe1),
+//   add(Pipe:container pipe, numToOrd 2, pipe2),
+//   add(Pipe:container pipe, numToOrd 3, pipe3),
+//   add(Pipe:contains pipe0, pipe),
+//   add(Pipe:contains pipe1, pipe),
+//   add(Pipe:contains pipe2, pipe),
+//   add(Pipe:contains pipe3, pipe)
 // },
 
 makePipeIn1 = action (instance::Situation, type::Situation, pipe0::Pipe) {
-	pipe = makePipe instance type,
-	putPipeIn1 pipe pipe0,
-	pipe
+  pipe = makePipe instance type,
+  putPipeIn1 pipe pipe0,
+  pipe
 },
 makePipeIn2 = action (instance::Situation, type::Situation, pipe0::Pipe, pipe1::Pipe) {
-	pipe = makePipe instance type,
-	putPipeIn2 pipe pipe0 pipe1,
-	pipe
+  pipe = makePipe instance type,
+  putPipeIn2 pipe pipe0 pipe1,
+  pipe
 },
 makePipeIn3 = action (instance::Situation, type::Situation, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe) {
-	pipe = makePipe instance type,
-	putPipeIn3 pipe pipe0 pipe1 pipe2,
-	pipe
+  pipe = makePipe instance type,
+  putPipeIn3 pipe pipe0 pipe1 pipe2,
+  pipe
 },
 makePipeIn4 = action (instance::Situation, type::Situation, pipe0::Pipe, pipe1::Pipe, pipe2::Pipe, pipe3::Pipe) {
-	pipe = makePipe instance type,
-	putPipeIn4 pipe pipe0 pipe1 pipe2 pipe3,
-	pipe
+  pipe = makePipe instance type,
+  putPipeIn4 pipe pipe0 pipe1 pipe2 pipe3,
+  pipe
 }

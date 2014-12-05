@@ -1,99 +1,99 @@
 .timeline-left {
-	position:absolute;
-	background-color: #111;
+  position:absolute;
+  background-color: #111;
 }
 .timeline-container {
-	position: absolute;
-	overflow-x: auto;
-	overflow-y: hidden;
-	background-image: url(images/timeline-background.png);
+  position: absolute;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background-image: url(images/timeline-background.png);
 }
 
 .timeline-preview {
-	position: absolute;
+  position: absolute;
 }
 
 .timeline-controls {
-	position: absolute;
+  position: absolute;
 }
 .timeline-controls div {
-	margin: 2px;
+  margin: 2px;
 }
 
 
 .timeline-loading {
-	position: absolute;
-	top:0px;
-	left:0px;
-	height:100%;
-	background-color: rgba(255,255,255,0.1);
+  position: absolute;
+  top:0px;
+  left:0px;
+  height:100%;
+  background-color: rgba(255,255,255,0.1);
 }
 
 
 
 
 .timeline-cut {
-	position: absolute;
-	width: 1px;
-	background-color: #639;
+  position: absolute;
+  width: 1px;
+  background-color: #639;
 }
 
 
 .timeline {
-	position:absolute;
+  position:absolute;
 }
 
 .timeline-layers {
-	position:absolute;
-	top: 14px;
-	left: 0px;
+  position:absolute;
+  top: 14px;
+  left: 0px;
 }
 .timeline-layer {
-	position:relative;
-	height: 24px;
-	margin-bottom: 1px;
-	background-color: rgba(255,255,255,0.1);
+  position:relative;
+  height: 24px;
+  margin-bottom: 1px;
+  background-color: rgba(255,255,255,0.1);
 }
 .timeline-layer-situation {
-	position: absolute;
-	top: 0px;
-	height: 20px;
-	margin:1px 0px;
-	background-color:rgba(34,170,278,0.5);
-	border: 1px solid rgba(34,170,278,0.8);
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	cursor: pointer;
+  position: absolute;
+  top: 0px;
+  height: 20px;
+  margin:1px 0px;
+  background-color:rgba(34,170,278,0.5);
+  border: 1px solid rgba(34,170,278,0.8);
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  cursor: pointer;
 }
 .timeline-layer-situation:hover {
-	background-color:rgba(34,170,278,0.9);
+  background-color:rgba(34,170,278,0.9);
 }
 
 .timeline-layer-item {
-	position: absolute;
-	top: 0px;
-	height: 22px;
-	margin:1px 0px;
-	background-color:#333;
-	opacity: 0.7;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	cursor: pointer;
+  position: absolute;
+  top: 0px;
+  height: 22px;
+  margin:1px 0px;
+  background-color:#333;
+  opacity: 0.7;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  cursor: pointer;
 }
 .timeline-layer-item:hover {
-	opacity: 1.0;
+  opacity: 1.0;
 }
 
 .timeline-selected-layers {
-	position:absolute;
-	top: 18px;
+  position:absolute;
+  top: 18px;
 }
 .timeline-selected-layer {
-	height: 24px;
-	margin-bottom: 1px;
+  height: 24px;
+  margin-bottom: 1px;
 }
 .timeline-selected-layer div {
-	cursor: pointer;
+  cursor: pointer;
 }
 
 
@@ -103,47 +103,47 @@
 
 
 .ruler-container {
-	position: absolute;
-	top: 0px;
-	left: 0px;
-	height: 100%;
-	overflow-x: hidden;
-	overflow-y: hidden;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 .ruler-cursor, .ruler-selected-range, .ruler-selected, .ruler-notch-1, .ruler-notch-2, .ruler-notch-3 {
-	position:absolute;
-	top: 0px;
-	width: 60px;
-	height: 100%;
+  position:absolute;
+  top: 0px;
+  width: 60px;
+  height: 100%;
 }
 
 .rulerMarking, .rulerMarkingHidden {
-	font-family:verdana;
-	font-size:10px;
-	color:#888;
-	-moz-user-select:none;
-	margin-left: 2px;
+  font-family:verdana;
+  font-size:10px;
+  color:#888;
+  -moz-user-select:none;
+  margin-left: 2px;
 }
 
 .rulerMarkingHidden {
-	visibility: hidden;
+  visibility: hidden;
 }
 .ruler-notch-1:hover .rulerMarkingHidden, .ruler-notch-2:hover .rulerMarkingHidden, .ruler-notch-3:hover .rulerMarkingHidden {
-	visibility: visible;
+  visibility: visible;
 }
 
 .ruler-cursor {
-	border-left:1px solid #999;
-	color: #fc0;
+  border-left:1px solid #999;
+  color: #fc0;
 }
 .ruler-selected {
-	border-left: 1px solid #fc0;
+  border-left: 1px solid #fc0;
 }
 .ruler-selected-range {
-	background-color:rgba(255, 204, 0, 0.4);
-	border-left: 1px solid #fc0;
-	border-right: 1px solid #fc0;
+  background-color:rgba(255, 204, 0, 0.4);
+  border-left: 1px solid #fc0;
+  border-right: 1px solid #fc0;
 }
 
 

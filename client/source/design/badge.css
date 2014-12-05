@@ -1,11 +1,11 @@
 .badge {
-	position: absolute;
-	border: 10px solid rgba(0,0,0,0.7);
-	background: transparent;
-	text-align: left;
-/*	overflow: auto;*/
-	-moz-border-radius: 20px;
-	-webkit-border-radius: 20px;
+  position: absolute;
+  border: 10px solid rgba(0,0,0,0.7);
+  background: transparent;
+  text-align: left;
+/*  overflow: auto;*/
+  -moz-border-radius: 20px;
+  -webkit-border-radius: 20px;
 }
 
 .badgeShadow {
@@ -13,29 +13,29 @@
 }
 
 .badgeContent {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	-moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
-	background: #eeeeee;
-	overflow: auto;
-	
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  background: #eeeeee;
+  overflow: auto;
+
 }
 
 .badgeContent div {
-	padding: 3px;
+  padding: 3px;
 }
 
 .badgeArrow {
-	position: absolute;
-	
-	border-top: 30px solid rgba(0,0,0,0);
-	border-right: 30px solid rgba(0,0,0,0);
-	border-bottom: 30px solid rgba(0,0,0,0);
-	border-left: 30px solid rgba(0,0,0,0);
+  position: absolute;
 
-	width:0px; height:0px; font-size: 0px; line-height: 0%;
+  border-top: 30px solid rgba(0,0,0,0);
+  border-right: 30px solid rgba(0,0,0,0);
+  border-bottom: 30px solid rgba(0,0,0,0);
+  border-left: 30px solid rgba(0,0,0,0);
+
+  width:0px; height:0px; font-size: 0px; line-height: 0%;
 }
 
 .baTop {border-bottom-color:#eee;}
@@ -60,76 +60,76 @@
 
 
 .badgePath {
-	-moz-border-radius:8px;
-	-webkit-border-radius:8px;
-	background: white;
-	padding: 5px;
-	margin-bottom: 5px;
-	text-align: left;
+  -moz-border-radius:8px;
+  -webkit-border-radius:8px;
+  background: white;
+  padding: 5px;
+  margin-bottom: 5px;
+  text-align: left;
 }
 
 .badgeColumnLeft, .badgeColumnRight {
-	vertical-align: top;
-	min-width: 250px;
-	display: inline-block;
+  vertical-align: top;
+  min-width: 250px;
+  display: inline-block;
 }
 
 .badgeColumnRight {
-	margin-top: 15px;
+  margin-top: 15px;
 }
 
 .badgeColumnLeft {
-	text-align: center;
-	min-width: 150px;
-	overflow: hidden;
+  text-align: center;
+  min-width: 150px;
+  overflow: hidden;
 }
 
 .badgeInfoList {
 }
 
 .badgeInfoList li, .badgeHeadingArtifacts {
-	padding-bottom: 2px;
-	border-bottom: 1px solid #DDD;
-	padding:2px 10px 2px 32px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #DDD;
+  padding:2px 10px 2px 32px;
 }
 
 .badgeInfoList li:hover {
-	background: #555;
-	color: white;
+  background: #555;
+  color: white;
 }
 
 .badgeHeadingChildren {
-	background:transparent url(images/children.png) no-repeat scroll 6px center;
+  background:transparent url(images/children.png) no-repeat scroll 6px center;
 }
 
 .badgeHeadingInfonsIn {
-	background:transparent url(images/infonsin.png) no-repeat scroll 6px center;
+  background:transparent url(images/infonsin.png) no-repeat scroll 6px center;
 }
 
 .badgeHeadingAbout {
-	background:transparent url(images/infonsabout.png) no-repeat scroll 6px center;
+  background:transparent url(images/infonsabout.png) no-repeat scroll 6px center;
 }
 
 .badgeHeadingArtifacts {
-	background:transparent url(images/artifacts.png) no-repeat scroll 6px center;
-	margin-bottom: 15px;
-	text-align: left;
+  background:transparent url(images/artifacts.png) no-repeat scroll 6px center;
+  margin-bottom: 15px;
+  text-align: left;
 }
 
 .badgeArtifact {
-	background: white;
-	border: 2px solid gray;
-	display: block;
-	margin: 0 auto;
-	margin-bottom: 10px;
+  background: white;
+  border: 2px solid gray;
+  display: block;
+  margin: 0 auto;
+  margin-bottom: 10px;
 }
 
 .badgePopout {
-	position: absolute;
-	background:transparent url(images/popout.png) no-repeat scroll 6px center;
-	right: 14px;
-	width: 20px;
-	height: 20px;
-	z-index: 2;
-	cursor: pointer;
+  position: absolute;
+  background:transparent url(images/popout.png) no-repeat scroll 6px center;
+  right: 14px;
+  width: 20px;
+  height: 20px;
+  z-index: 2;
+  cursor: pointer;
 }

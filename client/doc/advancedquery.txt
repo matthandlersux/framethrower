@@ -11,7 +11,7 @@ XPath based?
 
 Infon:
 <in, realLife, <relation, arg1, arg2, arg3>>
-	infon without context should only match infon true in some context?
+  infon without context should only match infon true in some context?
 
 
 Wildcard: *

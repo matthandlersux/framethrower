@@ -3,7 +3,7 @@ include ../../support/include.mk
 all: $(EBIN_FILES)
 
 debug:
-	$(MAKE) DEBUG=-DDEBUG
+  $(MAKE) DEBUG=-DDEBUG
 
 clean:
-	rm -rf $(EBIN_FILES)
+  rm -rf $(EBIN_FILES)

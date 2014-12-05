@@ -5,9 +5,9 @@ erl="erl"
 webappname="pipeline"
 webappdir="./$webappname"
 if [ -e ../../.server ]; then
-	servername=`cat ../../.server`
+  servername=`cat ../../.server`
 else
-	servername='unknown'
+  servername='unknown'
 fi
 sname="-name $webappname@$servername"
 # mbrellaversion="v1.4"
@@ -73,39 +73,39 @@ else
 fi
 
 #=====interpret input=====
-while [ $# -gt 0 ] 
-	do
-	arg=$1
-	shift;
-	case $arg in
-		-i|--interactive)
-			conf="-config errorlog";
-			daemon="";;
-		-d|--daemon)
-			daemon="-detached";
-			conf="-config errorlognotty";
-			heart="-heart -env HEART_BEAT_TIMEOUT 30";;
-		-s|--serialize)
-			serialize="\\\"$1\\\"";
-			shift;;
-		-u|--unserialize)
-			unserialize="\\\"$1\\\"";
-			shift;;
-		--noconfig)
-			conf="";;
-		-r|--responsetime)
-			responsetime="true";;
-		--help)
-			help;
-			exit 0;;
-		-h|--heart)
-			heart="-heart";
-			daemon="-detached";
-			conf="-config errorlognotty";
-			heartenv="-env HEART_BEAT_TIMEOUT 30";;
-		*)
-			help
-	esac
+while [ $# -gt 0 ]
+  do
+  arg=$1
+  shift;
+  case $arg in
+    -i|--interactive)
+      conf="-config errorlog";
+      daemon="";;
+    -d|--daemon)
+      daemon="-detached";
+      conf="-config errorlognotty";
+      heart="-heart -env HEART_BEAT_TIMEOUT 30";;
+    -s|--serialize)
+      serialize="\\\"$1\\\"";
+      shift;;
+    -u|--unserialize)
+      unserialize="\\\"$1\\\"";
+      shift;;
+    --noconfig)
+      conf="";;
+    -r|--responsetime)
+      responsetime="true";;
+    --help)
+      help;
+      exit 0;;
+    -h|--heart)
+      heart="-heart";
+      daemon="-detached";
+      conf="-config errorlognotty";
+      heartenv="-env HEART_BEAT_TIMEOUT 30";;
+    *)
+      help
+  esac
 done
 
 eval='-eval "mblib:startScript([{serialize, undefined},{unserialize, '${unserialize}'},{responsetime, '${responsetime}'}])."'

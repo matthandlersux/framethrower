@@ -1,11 +1,11 @@
 
 debug = jsaction(x::a)::Void {
-	console.log(x);
+  console.log(x);
 },
 
 
 remoteId = function(x::a)::String {
-	return x.name;
+  return x.name;
 },
 
 
@@ -14,43 +14,43 @@ remoteId = function(x::a)::String {
 // ===================
 
 getDivText = jsaction()::String {
-	var div = document.getElementById(evalExpr('noteId'));
-	
-	var text = "";
-	function processChildren(node) {
-		node.normalize();
-		for (var i=0; i<node.childNodes.length; i++) {
-			var child = node.childNodes[i];
+  var div = document.getElementById(evalExpr('noteId'));
 
-			if (child.nodeType===Node.TEXT_NODE)
-				text += child.textContent;
-			else if (child.tagName==='br')
-				text += '\n';
-			else
-				processChildren(child);
-		}
-	}
-	processChildren(div);
-	
-	return text;
+  var text = "";
+  function processChildren(node) {
+    node.normalize();
+    for (var i=0; i<node.childNodes.length; i++) {
+      var child = node.childNodes[i];
+
+      if (child.nodeType===Node.TEXT_NODE)
+        text += child.textContent;
+      else if (child.tagName==='br')
+        text += '\n';
+      else
+        processChildren(child);
+    }
+  }
+  processChildren(div);
+
+  return text;
 },
 
 initDiv0 = jsaction(text::String)::Void {
-	var div = document.getElementById(evalExpr('noteId'));
+  var div = document.getElementById(evalExpr('noteId'));
 
-	// clear note:
-	while (div.lastChild)
-		div.removeChild(div.lastChild);
-	
-	if (text==="")
-		return;
-		
-	var lines = text.split('\n');
-	div.appendChild(document.createTextNode(lines[0]));
-	for (var i=1; i<lines.length; i++) {
-		div.appendChild(document.createElement('br'));
-		div.appendChild(document.createTextNode(lines[i]));
-	}
+  // clear note:
+  while (div.lastChild)
+    div.removeChild(div.lastChild);
+
+  if (text==="")
+    return;
+
+  var lines = text.split('\n');
+  div.appendChild(document.createTextNode(lines[0]));
+  for (var i=1; i<lines.length; i++) {
+    div.appendChild(document.createElement('br'));
+    div.appendChild(document.createTextNode(lines[i]));
+  }
 },
 
 
@@ -59,167 +59,167 @@ initDiv0 = jsaction(text::String)::Void {
 // ===================
 
 addDivRange = jsaction(rangeId::String, rangeValue::Range)::Void {
-	var div = document.getElementById(evalExpr('noteId'));
-	var start = evalExpr('range_start rangeValue');
-	var end = start + evalExpr('range_length rangeValue');
-	
-	var range = document.createRange();
-	var childStart = 0;
-	var endSet = false;
-	function processChildren(node) {
-		node.normalize();
-		for (var i=0; i<node.childNodes.length; i++) {
-			var child = node.childNodes[i];
-			
-			if (child.nodeType===Node.TEXT_NODE) {
-				var childEnd = childStart + child.textContent.length;
-			
-				if (childStart<=start && start<childEnd)
-					range.setStart(child, start-childStart);
+  var div = document.getElementById(evalExpr('noteId'));
+  var start = evalExpr('range_start rangeValue');
+  var end = start + evalExpr('range_length rangeValue');
 
-				if (childStart<end && range.startContainer.parentNode===node) { // keep track of last 'good enough' end position
-					range.setEnd(child, Math.min(end-childStart, childEnd-childStart));
-					endSet = true;
-				}
+  var range = document.createRange();
+  var childStart = 0;
+  var endSet = false;
+  function processChildren(node) {
+    node.normalize();
+    for (var i=0; i<node.childNodes.length; i++) {
+      var child = node.childNodes[i];
 
-				childStart = childEnd; // for next child
-			}
-			else if (child.tagName==='br')
-				childStart++;
-			else
-				processChildren(child);
-				
-			if (endSet && childStart>=end) // finished
-				return;
-		}
-	}
-	processChildren(div);
-	
-	if (!endSet) {
-		console.error('couldn\'t add range ('+start+', '+end+') to div');
-		return;
-	}
-	
-	var rangeSpan = document.createElement('span');
-	rangeSpan.id = rangeId;
-	rangeSpan.className = 'noteRange';
-	
-	var contentSpan = document.createElement('span');
-	contentSpan.className = 'noteRange-contents';
-	
-	contentSpan.appendChild(range.extractContents());
-	rangeSpan.appendChild(contentSpan);
-	range.insertNode(rangeSpan);
+      if (child.nodeType===Node.TEXT_NODE) {
+        var childEnd = childStart + child.textContent.length;
+
+        if (childStart<=start && start<childEnd)
+          range.setStart(child, start-childStart);
+
+        if (childStart<end && range.startContainer.parentNode===node) { // keep track of last 'good enough' end position
+          range.setEnd(child, Math.min(end-childStart, childEnd-childStart));
+          endSet = true;
+        }
+
+        childStart = childEnd; // for next child
+      }
+      else if (child.tagName==='br')
+        childStart++;
+      else
+        processChildren(child);
+
+      if (endSet && childStart>=end) // finished
+        return;
+    }
+  }
+  processChildren(div);
+
+  if (!endSet) {
+    console.error('couldn\'t add range ('+start+', '+end+') to div');
+    return;
+  }
+
+  var rangeSpan = document.createElement('span');
+  rangeSpan.id = rangeId;
+  rangeSpan.className = 'noteRange';
+
+  var contentSpan = document.createElement('span');
+  contentSpan.className = 'noteRange-contents';
+
+  contentSpan.appendChild(range.extractContents());
+  rangeSpan.appendChild(contentSpan);
+  range.insertNode(rangeSpan);
 },
 
 removeDivRange = jsaction(rangeId::String)::Void {
-	var span = document.getElementById(rangeId);
-	if (!span)
-		return;
+  var span = document.getElementById(rangeId);
+  if (!span)
+    return;
 
-	var parent = span.parentNode;
-	while(span.lastChild) // put all children of span after span
-		parent.insertBefore(span.lastChild, span.nextSibling);
-	parent.removeChild(span);
-	parent.normalize();
+  var parent = span.parentNode;
+  while(span.lastChild) // put all children of span after span
+    parent.insertBefore(span.lastChild, span.nextSibling);
+  parent.removeChild(span);
+  parent.normalize();
 },
 
 getDivRange = jsaction(rangeId::String)::(Bool, Range) {
-	var span = document.getElementById(rangeId);
-	if (!span)
-		return evalExpr('(false, makeRange 0 0)');
-		
-	var div = document.getElementById(evalExpr('noteId'));
-	
-	// determine coordinates of range:
-	var k = 0, start;
-	function processChildren(node) {
-		node.normalize();
-		for (var i=0; i<node.childNodes.length; i++) {
-			var child = node.childNodes[i];
+  var span = document.getElementById(rangeId);
+  if (!span)
+    return evalExpr('(false, makeRange 0 0)');
 
-			if (child.nodeType===Node.TEXT_NODE)
-				k += child.textContent.length;
-			else if (child.tagName==='br')
-				k += 1;
-			else if (child===span)
-				start = k;
-			else
-				processChildren(child);
+  var div = document.getElementById(evalExpr('noteId'));
 
-			if (def(start)) // we're done
-				return;
-		}
-	}
-	processChildren(div);
-	
-	if(!def(start))
-		return evalExpr('(false, makeRange 0 0)');
-	
-	return evalExpr('(true, makeRange '+start+' '+span.textContent.length+')');
+  // determine coordinates of range:
+  var k = 0, start;
+  function processChildren(node) {
+    node.normalize();
+    for (var i=0; i<node.childNodes.length; i++) {
+      var child = node.childNodes[i];
+
+      if (child.nodeType===Node.TEXT_NODE)
+        k += child.textContent.length;
+      else if (child.tagName==='br')
+        k += 1;
+      else if (child===span)
+        start = k;
+      else
+        processChildren(child);
+
+      if (def(start)) // we're done
+        return;
+    }
+  }
+  processChildren(div);
+
+  if(!def(start))
+    return evalExpr('(false, makeRange 0 0)');
+
+  return evalExpr('(true, makeRange '+start+' '+span.textContent.length+')');
 },
 
 injectDivRangeStyle = jsaction(rangeId::String, attribute::String, cell::Unit String)::Void {
-	var span = document.getElementById(rangeId);
-	if (!span)
-		return;
-		
-	var injectedFunc = cell.inject(emptyFunction, function(value) {
-		setNodeStyle(span, attribute, value);
-	});
-	
-	var div = document.getElementById(evalExpr('noteId'));
-	evalExpr("cleanups").control.add(makeActionMethod(injectedFunc.unInject));
+  var span = document.getElementById(rangeId);
+  if (!span)
+    return;
+
+  var injectedFunc = cell.inject(emptyFunction, function(value) {
+    setNodeStyle(span, attribute, value);
+  });
+
+  var div = document.getElementById(evalExpr('noteId'));
+  evalExpr("cleanups").control.add(makeActionMethod(injectedFunc.unInject));
 },
 
 injectDivRangeClass = jsaction(rangeId::String, cell::Unit String)::Void {
-	var span = document.getElementById(rangeId);
-	if (!span)
-		return;
+  var span = document.getElementById(rangeId);
+  if (!span)
+    return;
 
-	var injectedFunc = cell.inject(emptyFunction, function(value) {
-		span.className = value;
-	});
-	
-	var div = document.getElementById(evalExpr('noteId'));
-	evalExpr("cleanups").control.add(makeActionMethod(injectedFunc.unInject));
+  var injectedFunc = cell.inject(emptyFunction, function(value) {
+    span.className = value;
+  });
+
+  var div = document.getElementById(evalExpr('noteId'));
+  evalExpr("cleanups").control.add(makeActionMethod(injectedFunc.unInject));
 },
 
 addDivRangeEventAction = jsaction(rangeId::String, event::String, a::Action Void)::Void {
-	var span = document.getElementById(rangeId);
-	if (!span)
-		return;
-	
-	// span[event] = function() {executeAction(a);};
-	span.addEventListener(event, function() {executeAction(a);}, true);
+  var span = document.getElementById(rangeId);
+  if (!span)
+    return;
+
+  // span[event] = function() {executeAction(a);};
+  span.addEventListener(event, function() {executeAction(a);}, true);
 },
 
 scrollToDivRange = jsaction(rangeId::String)::Void {
-	var span = document.getElementById(rangeId);
-	if (!span)
-		return;
-	
-	var div = document.getElementById(evalExpr('noteId'));
-	var scrollDiv = div.parentNode;
-	var pos = getRelativePosition(span, div);
+  var span = document.getElementById(rangeId);
+  if (!span)
+    return;
 
-	scrollDiv.scrollTop = Math.max(0, pos[1] - scrollDiv.clientHeight/2);
+  var div = document.getElementById(evalExpr('noteId'));
+  var scrollDiv = div.parentNode;
+  var pos = getRelativePosition(span, div);
+
+  scrollDiv.scrollTop = Math.max(0, pos[1] - scrollDiv.clientHeight/2);
 },
 
 highlightDivRange = jsaction(rangeId::String)::Void {
-	var noteSelection = document.getElementById(rangeId);
-	if (!noteSelection)
-		return;
+  var noteSelection = document.getElementById(rangeId);
+  if (!noteSelection)
+    return;
 
-	noteSelection.className = 'noteRange-highlighted';
+  noteSelection.className = 'noteRange-highlighted';
 },
 
 unhighlightDivRange = jsaction(rangeId::String)::Void {
-	var noteSelection = document.getElementById(rangeId);
-	if (!noteSelection)
-		return;
+  var noteSelection = document.getElementById(rangeId);
+  if (!noteSelection)
+    return;
 
-	noteSelection.className = 'noteRange';
+  noteSelection.className = 'noteRange';
 },
 
 
@@ -232,60 +232,60 @@ injectDivSelectionClass = injectDivRangeClass "noteSelection",
 addDivSelectionEventAction = addDivRangeEventAction "noteSelection",
 
 getSelection = jsaction()::(Bool, Range) {
-	// var oldSelection = document.getElementById('noteSelection');
-	// TODO return true iff selection has changed
-	var div = document.getElementById(evalExpr('noteId'));
-	var selection = window.getSelection().getRangeAt(0);
+  // var oldSelection = document.getElementById('noteSelection');
+  // TODO return true iff selection has changed
+  var div = document.getElementById(evalExpr('noteId'));
+  var selection = window.getSelection().getRangeAt(0);
 
-	// does this note div contain the selection?:
-	var ancestor = selection.commonAncestorContainer;
-	while (ancestor && ancestor!==div)
-		ancestor = ancestor.parentNode;
-	if (ancestor!==div) // no selection, so leave old one alone
-		return evalExpr('(false, makeRange 0 0)');
+  // does this note div contain the selection?:
+  var ancestor = selection.commonAncestorContainer;
+  while (ancestor && ancestor!==div)
+    ancestor = ancestor.parentNode;
+  if (ancestor!==div) // no selection, so leave old one alone
+    return evalExpr('(false, makeRange 0 0)');
 
-	// determine coordinates of new selection:
-	var k = 0, start, end;
-	function processChildren(node) {
-		node.normalize();
-		for (var i=0; i<node.childNodes.length; i++) {
-			var child = node.childNodes[i];
+  // determine coordinates of new selection:
+  var k = 0, start, end;
+  function processChildren(node) {
+    node.normalize();
+    for (var i=0; i<node.childNodes.length; i++) {
+      var child = node.childNodes[i];
 
-			if (child.nodeType===Node.TEXT_NODE) {
-				if (child===selection.startContainer)
-					start = k + selection.startOffset;
-				if (child===selection.endContainer)
-					end = k + selection.endOffset;
-				k += child.textContent.length;
-			}
-			else if (child.tagName==='br')
-				k += 1;
-			else
-				processChildren(child);
-		}
-	}
-	processChildren(div);
-	
-	if(!def(start) || !def(end) || end<start) {
-		console.error('firefox bug? found weird selection: ('+start+','+end+')');
-		return evalExpr('(false, makeRange 0 0)');
-	}
-	
-	return evalExpr('(true, makeRange '+start+' '+(end-start)+')');
+      if (child.nodeType===Node.TEXT_NODE) {
+        if (child===selection.startContainer)
+          start = k + selection.startOffset;
+        if (child===selection.endContainer)
+          end = k + selection.endOffset;
+        k += child.textContent.length;
+      }
+      else if (child.tagName==='br')
+        k += 1;
+      else
+        processChildren(child);
+    }
+  }
+  processChildren(div);
+
+  if(!def(start) || !def(end) || end<start) {
+    console.error('firefox bug? found weird selection: ('+start+','+end+')');
+    return evalExpr('(false, makeRange 0 0)');
+  }
+
+  return evalExpr('(true, makeRange '+start+' '+(end-start)+')');
 },
 
 divSelect = selectElement "noteSelection",
 
 selectElement = jsaction(id::String)::Void {
-	var el = document.getElementById(id);
-	if (!el)
-		return;
+  var el = document.getElementById(id);
+  if (!el)
+    return;
 
-	var range = document.createRange();
-	range.selectNode(el);
-	
-	var selection = window.getSelection();
-	if (selection.rangeCount > 0)
-		selection.removeAllRanges();
-	selection.addRange(range);
+  var range = document.createRange();
+  range.selectNode(el);
+
+  var selection = window.getSelection();
+  if (selection.rangeCount > 0)
+    selection.removeAllRanges();
+  selection.addRange(range);
 }

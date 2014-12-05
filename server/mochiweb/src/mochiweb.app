@@ -25,7 +25,7 @@
         mochifmt,
         mochifmt_std,
         mochifmt_records
-	    ]},
+      ]},
   {registered, []},
   {mod, {mochiweb_app, []}},
   {env, []},

@@ -1,123 +1,123 @@
 <tests>
-	<test name='reactiveNotTest1'>
+  <test name='reactiveNotTest1'>
 
-		<endcap name = 'ec' expression = 'reactiveNot (returnUnit null)' />
-		<endcap name = 'ec2' expression = 'reactiveNot (reactiveNot (returnUnit null))' />
+    <endcap name = 'ec' expression = 'reactiveNot (returnUnit null)' />
+    <endcap name = 'ec2' expression = 'reactiveNot (reactiveNot (returnUnit null))' />
 
-		<expectedmessages>
-			<none ecname = 'ec' />
-			<set ecname = 'ec2' >
-				<null />
-			</set>
-		</expectedmessages>
+    <expectedmessages>
+      <none ecname = 'ec' />
+      <set ecname = 'ec2' >
+        <null />
+      </set>
+    </expectedmessages>
 
-	</test>
+  </test>
 
-	<test name='reactiveAndTest1'>
+  <test name='reactiveAndTest1'>
 
-		<startcap name = 'sc' type = 'unit null' />
+    <startcap name = 'sc' type = 'unit null' />
 
-		<endcap name = 'ec' expression = 'reactiveAnd sc (returnUnit null)' />
+    <endcap name = 'ec' expression = 'reactiveAnd sc (returnUnit null)' />
 
-		<expectedmessages>
-			<none ecname = 'ec' />
-		</expectedmessages>
+    <expectedmessages>
+      <none ecname = 'ec' />
+    </expectedmessages>
 
-		<messages>
-			<set scname = 'sc'>
-				<null />
-			</set>
-		</messages>
+    <messages>
+      <set scname = 'sc'>
+        <null />
+      </set>
+    </messages>
 
-		<expectedmessages>
-			<set ecname = 'ec' >
-				<null />
-			</set>
-		</expectedmessages>
-		
-		<messages>
-			<remove scname = 'sc'>
-				<null />
-			</remove>
-		</messages>
-		
-		<expectedmessages>
-			<remove ecname = 'ec' >
-				<null />
-			</remove>
-		</expectedmessages>
-	</test>
+    <expectedmessages>
+      <set ecname = 'ec' >
+        <null />
+      </set>
+    </expectedmessages>
 
-	<test name='reactiveOrTest1'>
+    <messages>
+      <remove scname = 'sc'>
+        <null />
+      </remove>
+    </messages>
 
-		<startcap name = 'sc' type = 'unit null' />
-		<startcap name = 'sc2' type = 'unit null' />
+    <expectedmessages>
+      <remove ecname = 'ec' >
+        <null />
+      </remove>
+    </expectedmessages>
+  </test>
 
-		<endcap name = 'ec' expression = 'reactiveOr sc sc2' />
+  <test name='reactiveOrTest1'>
 
-		<expectedmessages>
-			<none ecname = 'ec' />
-		</expectedmessages>
+    <startcap name = 'sc' type = 'unit null' />
+    <startcap name = 'sc2' type = 'unit null' />
 
-		<messages>
-			<set scname = 'sc'>
-				<null />
-			</set>
-		</messages>
+    <endcap name = 'ec' expression = 'reactiveOr sc sc2' />
 
-		<expectedmessages>
-			<set ecname = 'ec' >
-				<null />
-			</set>
-		</expectedmessages>
-		
-		<messages>
-			<set scname = 'sc2' >
-				<null />
-			</set>
-			<remove scname = 'sc'>
-				<null />
-			</remove>
-		</messages>
-		
-		<expectedmessages>
-			<none ecname = 'ec' />
-		</expectedmessages>
-	</test>
+    <expectedmessages>
+      <none ecname = 'ec' />
+    </expectedmessages>
 
-	<test name='gateTest1'>
+    <messages>
+      <set scname = 'sc'>
+        <null />
+      </set>
+    </messages>
 
-		<startcap name = 'sc' type = 'unit null' />
+    <expectedmessages>
+      <set ecname = 'ec' >
+        <null />
+      </set>
+    </expectedmessages>
 
-		<endcap name = 'ec' expression = 'gate sc 7' />
+    <messages>
+      <set scname = 'sc2' >
+        <null />
+      </set>
+      <remove scname = 'sc'>
+        <null />
+      </remove>
+    </messages>
 
-		<expectedmessages>
-			<none ecname = 'ec' />
-		</expectedmessages>
+    <expectedmessages>
+      <none ecname = 'ec' />
+    </expectedmessages>
+  </test>
 
-		<messages>
-			<set scname = 'sc'>
-				<null />
-			</set>
-		</messages>
+  <test name='gateTest1'>
 
-		<expectedmessages>
-			<set ecname = 'ec' >
-				<number value='7' />
-			</set>
-		</expectedmessages>
-		
-		<messages>
-			<remove scname = 'sc'>
-				<null />
-			</remove>
-		</messages>
-		
-		<expectedmessages>
-			<remove ecname = 'ec'>
-				<number value='7'/>
-			</remove>
-		</expectedmessages>
-	</test>
+    <startcap name = 'sc' type = 'unit null' />
+
+    <endcap name = 'ec' expression = 'gate sc 7' />
+
+    <expectedmessages>
+      <none ecname = 'ec' />
+    </expectedmessages>
+
+    <messages>
+      <set scname = 'sc'>
+        <null />
+      </set>
+    </messages>
+
+    <expectedmessages>
+      <set ecname = 'ec' >
+        <number value='7' />
+      </set>
+    </expectedmessages>
+
+    <messages>
+      <remove scname = 'sc'>
+        <null />
+      </remove>
+    </messages>
+
+    <expectedmessages>
+      <remove ecname = 'ec'>
+        <number value='7'/>
+      </remove>
+    </expectedmessages>
+  </test>
 
 </tests>

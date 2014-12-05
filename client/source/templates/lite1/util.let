@@ -1,49 +1,49 @@
 unitEqual = unit -> value -> bindUnit (reactiveEqual value) unit,
 
 boolToDisplay = function (x::Bool)::String {
-	if (x) return "block";
-	else return "none";
+  if (x) return "block";
+  else return "none";
 },
 
 getNextOrd = map -> defaultValue ordOrigin (mapUnit ordBigger (takeLastKey map)),
 
 debugAction = jsaction (x::a)::Void {
-	console.log(x);
+  console.log(x);
 },
 debug = function (x::a)::Number {
-	console.log(x);
-	return 0;
+  console.log(x);
+  return 0;
 },
 setGlobalDebugVar = function (x::a)::Number {
-	globalDebugVar = x;
-	return 0;
+  globalDebugVar = x;
+  return 0;
 },
 
 emptyAction = action () {
-	
+
 },
 
 notYetImplemented = jsaction ()::Void {
-	alert("Not yet implemented");
+  alert("Not yet implemented");
 },
 
 mouseClickSwitch = template (StyleElement::Unit String, HoverValue::String, ClickValue::String) {
-	OldValue = state(Unit String),
-	<f:wrapper>
-		<f:on init>
-			set OldValue (fetch StyleElement)
-		</f:on>
-		<f:on mouseover>
-			set StyleElement HoverValue
-		</f:on>
-		<f:on mousedown>
-			set StyleElement ClickValue
-		</f:on>
-		<f:on globalmouseup>
-			set StyleElement (fetch OldValue)
-		</f:on>
-		<f:on mouseout>
-			set StyleElement (fetch OldValue)
-		</f:on>
-	</f:wrapper>
+  OldValue = state(Unit String),
+  <f:wrapper>
+    <f:on init>
+      set OldValue (fetch StyleElement)
+    </f:on>
+    <f:on mouseover>
+      set StyleElement HoverValue
+    </f:on>
+    <f:on mousedown>
+      set StyleElement ClickValue
+    </f:on>
+    <f:on globalmouseup>
+      set StyleElement (fetch OldValue)
+    </f:on>
+    <f:on mouseout>
+      set StyleElement (fetch OldValue)
+    </f:on>
+  </f:wrapper>
 }

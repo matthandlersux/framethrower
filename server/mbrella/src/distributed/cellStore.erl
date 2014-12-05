@@ -10,76 +10,76 @@
 -define (this(Field), State#cellStoreState.Field).
 
 -record (cellStoreState, {
-	nameCounter,
-	globalTable
+  nameCounter,
+  globalTable
 }).
 
 start() ->
-	gen_server:start({local, ?MODULE}, ?MODULE, [], []),
-	ok.
+  gen_server:start({local, ?MODULE}, ?MODULE, [], []),
+  ok.
 
 stop() ->
-	gen_server:call(?MODULE, stop).
+  gen_server:call(?MODULE, stop).
 
 getName() ->
-	gen_server:call(?MODULE, getName).
-	
+  gen_server:call(?MODULE, getName).
+
 setCounter(Num) ->
-	gen_server:cast(?MODULE, {setCounter, Num}).
-%% 
+  gen_server:cast(?MODULE, {setCounter, Num}).
+%%
 %% store :: String -> Pid -> ok
-%% 		
-%%		
+%%
+%%
 
 store(Name, Pid) ->
-	gen_server:cast(?MODULE, {store, Name, Pid}).
+  gen_server:cast(?MODULE, {store, Name, Pid}).
 
 getState() ->
-	gen_server:call(?MODULE, getState).
+  gen_server:call(?MODULE, getState).
 
 getStateDict() ->
-	gen_server:call(?MODULE, getStateDict).
+  gen_server:call(?MODULE, getStateDict).
 
-%% 
+%%
 %% lookup :: String -> CellPointer
-%% 		
-%%		
+%%
+%%
 
 lookup(Name) ->
-	gen_server:call(?MODULE, {lookup, Name}).
+  gen_server:call(?MODULE, {lookup, Name}).
 
 %% ====================================================================
 %% Server functions
 %% ====================================================================
 
 init([]) ->
-	process_flag(trap_exit, true),
-	%may want to change globalTable from dict to ETS table
+  process_flag(trap_exit, true),
+  %may want to change globalTable from dict to ETS table
     {ok, #cellStoreState{nameCounter = 0, globalTable = ets:new(cellStore, [named_table])}}.
 
 handle_call(getName, _, State) ->
-	NewNameCounter = ?this(nameCounter) + 1,
-	Name = "cell." ++ integer_to_list(NewNameCounter),
+  NewNameCounter = ?this(nameCounter) + 1,
+  Name = "cell." ++ integer_to_list(NewNameCounter),
     {reply, Name, State#cellStoreState{nameCounter = NewNameCounter}};
 handle_call({lookup, Name}, _, State) ->
-	GlobalCell = case ets:lookup(?this(globalTable), Name) of
-		[{_, Reply}] ->
-			cellPointer:create(Name, Reply);
-		[] -> 
-			notfound
-	end,
+  GlobalCell = case ets:lookup(?this(globalTable), Name) of
+    [{_, Reply}] ->
+      cellPointer:create(Name, Reply);
+    [] ->
+      notfound
+  end,
     {reply, GlobalCell, State};
 handle_call(getStateDict, _, State) ->
     {reply, ?this(globalTable), State};
 handle_call(getState, _, State) ->
     {reply, State, State};
 handle_call(stop, _, State) ->
-	{stop, normal, stopped, State}.
+  {stop, normal, stopped, State}.
 
 handle_cast({setCounter, Num}, State) ->
-	{noreply, State#cellStoreState{nameCounter = Num}};
+  {noreply, State#cellStoreState{nameCounter = Num}};
 handle_cast({store, Name, Pid}, State) ->
-	ets:insert(?this(globalTable), {Name, Pid}),
+  ets:insert(?this(globalTable), {Name, Pid}),
     {noreply, State}.
 
 

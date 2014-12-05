@@ -1,430 +1,430 @@
 [*
-	var fttemplate = function() {
-		var result;
+  var fttemplate = function() {
+    var result;
 *]
 
 
 /~
-	--- These are the token definitions ---
+  --- These are the token definitions ---
 ~/
 
-/~	Grammar Tokens			~/
-	'([\r\n\t\ ])*includefile([\r\n\t\ ])*'	WINCLUDEFILE
-	'([\r\n\t\ ])*function([\r\n\t\ ])*'	WFUNCTION
-	'([\r\n\t\ ])*jsaction([\r\n\t\ ])*'	WJSACTION
-	'([\r\n\t\ ])*template([\r\n\t\ ])*'	WTEMPLATE
-	'([\r\n\t\ ])*action([\r\n\t\ ])*'		WACTION
-	'([\r\n\t\ ])*state([\r\n\t\ ])*'		WSTATE
-	'([\r\n\t\ ])*create([\r\n\t\ ])*'		WCREATE
-	'([\r\n\t\ ])*extract([\r\n\t\ ])*'		WEXTRACT
-	'([\r\n\t\ ])*style([\r\n\t\ ])*'		WSTYLE
-	'([\r\n\t\ ])*as([\r\n\t\ ])*'			WAS
-	'([\r\n\t\ ])*if([\r\n\t\ ])*'			WIF
-	'([\r\n\t\ ])*else([\r\n\t\ ])*'		WELSE
-	'([\r\n\t\ ])*f:each([\r\n\t\ ])*'		FEACH
-	'([\r\n\t\ ])*f:call([\r\n\t\ ])*'		FCALL
-	'([\r\n\t\ ])*f:on([\r\n\t\ ])*'		FON
-	'([\r\n\t\ ])*\{([\r\n\t\ ])*'			LBRACKET
-	'([\r\n\t\ ])*\}([\r\n\t\ ])*'			RBRACKET
-	'([\r\n\t\ ])*\[([\r\n\t\ ])*'			LSQUARE
-	'([\r\n\t\ ])*\]([\r\n\t\ ])*'			RSQUARE
-	'([\r\n\t\ ])*\(([\r\n\t\ ])*'			LPAREN
-	'([\r\n\t\ ])*\)([\r\n\t\ ])*'			RPAREN
-	'([\r\n\t\ ])*,([\r\n\t\ ])*'			COMMA
-	'([\r\n\t\ ])*;([\r\n\t\ ])*'			SEMICOLON
-	'([\r\n\t\ ])*::([\r\n\t\ ])*'			DOUBLECOLON
-	'([\r\n\t\ ])*:=([\r\n\t\ ])*'			COLONEQUALS
-	'([\r\n\t\ ])*:([\r\n\t\ ])*'			COLON
-	'([\r\n\t\ ])*=([\r\n\t\ ])*'			EQUALS
-	'([\r\n\t\ ])*\<\/([\r\n\t\ ])*'		LTSLASH
-	'([\r\n\t\ ])*/([\r\n\t\ ])*'			SLASH
-	'([\r\n\t\ ])*<([\r\n\t\ ])*'			LT
-	'([\r\n\t\ ])*<-([\r\n\t\ ])*'			LTDASH
-	'([\r\n\t\ ])*<~([\r\n\t\ ])*'			LTTILDE
-	'([\r\n\t\ ])*~([\r\n\t\ ])*'			TILDE
-	'([\r\n\t\ ])*>([\r\n\t\ ])*'			GT
-	'([\r\n\t\ ])*-([\r\n\t\ ])*'			DASH
-	'([\r\n\t\ ])*\"([\r\n\t\ ])*'			QUOTE
-	'([\r\n\t\ ])*([^-^~^\{^\}^\(^\)^\,^\;^\:^\=^\<^\/^\"^\ ^\n^\t^\r^\>^\[^\]]|\\.|\^)+([\r\n\t\ ])*'	IDENTIFIER
-	;
+/~  Grammar Tokens      ~/
+  '([\r\n\t\ ])*includefile([\r\n\t\ ])*'  WINCLUDEFILE
+  '([\r\n\t\ ])*function([\r\n\t\ ])*'  WFUNCTION
+  '([\r\n\t\ ])*jsaction([\r\n\t\ ])*'  WJSACTION
+  '([\r\n\t\ ])*template([\r\n\t\ ])*'  WTEMPLATE
+  '([\r\n\t\ ])*action([\r\n\t\ ])*'    WACTION
+  '([\r\n\t\ ])*state([\r\n\t\ ])*'    WSTATE
+  '([\r\n\t\ ])*create([\r\n\t\ ])*'    WCREATE
+  '([\r\n\t\ ])*extract([\r\n\t\ ])*'    WEXTRACT
+  '([\r\n\t\ ])*style([\r\n\t\ ])*'    WSTYLE
+  '([\r\n\t\ ])*as([\r\n\t\ ])*'      WAS
+  '([\r\n\t\ ])*if([\r\n\t\ ])*'      WIF
+  '([\r\n\t\ ])*else([\r\n\t\ ])*'    WELSE
+  '([\r\n\t\ ])*f:each([\r\n\t\ ])*'    FEACH
+  '([\r\n\t\ ])*f:call([\r\n\t\ ])*'    FCALL
+  '([\r\n\t\ ])*f:on([\r\n\t\ ])*'    FON
+  '([\r\n\t\ ])*\{([\r\n\t\ ])*'      LBRACKET
+  '([\r\n\t\ ])*\}([\r\n\t\ ])*'      RBRACKET
+  '([\r\n\t\ ])*\[([\r\n\t\ ])*'      LSQUARE
+  '([\r\n\t\ ])*\]([\r\n\t\ ])*'      RSQUARE
+  '([\r\n\t\ ])*\(([\r\n\t\ ])*'      LPAREN
+  '([\r\n\t\ ])*\)([\r\n\t\ ])*'      RPAREN
+  '([\r\n\t\ ])*,([\r\n\t\ ])*'      COMMA
+  '([\r\n\t\ ])*;([\r\n\t\ ])*'      SEMICOLON
+  '([\r\n\t\ ])*::([\r\n\t\ ])*'      DOUBLECOLON
+  '([\r\n\t\ ])*:=([\r\n\t\ ])*'      COLONEQUALS
+  '([\r\n\t\ ])*:([\r\n\t\ ])*'      COLON
+  '([\r\n\t\ ])*=([\r\n\t\ ])*'      EQUALS
+  '([\r\n\t\ ])*\<\/([\r\n\t\ ])*'    LTSLASH
+  '([\r\n\t\ ])*/([\r\n\t\ ])*'      SLASH
+  '([\r\n\t\ ])*<([\r\n\t\ ])*'      LT
+  '([\r\n\t\ ])*<-([\r\n\t\ ])*'      LTDASH
+  '([\r\n\t\ ])*<~([\r\n\t\ ])*'      LTTILDE
+  '([\r\n\t\ ])*~([\r\n\t\ ])*'      TILDE
+  '([\r\n\t\ ])*>([\r\n\t\ ])*'      GT
+  '([\r\n\t\ ])*-([\r\n\t\ ])*'      DASH
+  '([\r\n\t\ ])*\"([\r\n\t\ ])*'      QUOTE
+  '([\r\n\t\ ])*([^-^~^\{^\}^\(^\)^\,^\;^\:^\=^\<^\/^\"^\ ^\n^\t^\r^\>^\[^\]]|\\.|\^)+([\r\n\t\ ])*'  IDENTIFIER
+  ;
 ##
 
 /~
-	--- And here's the grammar specification ---
+  --- And here's the grammar specification ---
 ~/
 
 TOP:
-	LINE												[* result = {line: %1}; *]
-	| INCLUDEBLOCK										[* result = {includeblock: %1}; *]
-	;
+  LINE                        [* result = {line: %1}; *]
+  | INCLUDEBLOCK                    [* result = {includeblock: %1}; *]
+  ;
 
 INCLUDEBLOCK:
-	WINCLUDEFILE LETLIST LET
-	| WINCLUDEFILE LETLIST NEWTYPE
-	| WINCLUDEFILE LETLIST
-	;
+  WINCLUDEFILE LETLIST LET
+  | WINCLUDEFILE LETLIST NEWTYPE
+  | WINCLUDEFILE LETLIST
+  ;
 
 
 LINE:
-	FUNCTION
-	| JSACTION
-	| TEMPLATE
-	| STATE
-	| LETLISTBLOCK
-	| IFBLOCK
-	| ACTIONTPL
-	| EXPR
-	| XML
-	;
+  FUNCTION
+  | JSACTION
+  | TEMPLATE
+  | STATE
+  | LETLISTBLOCK
+  | IFBLOCK
+  | ACTIONTPL
+  | EXPR
+  | XML
+  ;
 
 FUNCTION:
-	WFUNCTION LPAREN ARGLIST RPAREN LBRACKET FUNCTIONBODY RBRACKET
-	| WFUNCTION LPAREN ARGLIST RPAREN DOUBLECOLON TYPE LBRACKET FUNCTIONBODY RBRACKET
-	;
-	
+  WFUNCTION LPAREN ARGLIST RPAREN LBRACKET FUNCTIONBODY RBRACKET
+  | WFUNCTION LPAREN ARGLIST RPAREN DOUBLECOLON TYPE LBRACKET FUNCTIONBODY RBRACKET
+  ;
+
 JSACTION:
-	WJSACTION LPAREN ARGLIST RPAREN LBRACKET FUNCTIONBODY RBRACKET
-	| WJSACTION LPAREN ARGLIST RPAREN DOUBLECOLON TYPE LBRACKET FUNCTIONBODY RBRACKET
-	;
-	
+  WJSACTION LPAREN ARGLIST RPAREN LBRACKET FUNCTIONBODY RBRACKET
+  | WJSACTION LPAREN ARGLIST RPAREN DOUBLECOLON TYPE LBRACKET FUNCTIONBODY RBRACKET
+  ;
+
 FUNCTIONBODY:
-	FUNCTIONBODY NONBRACKET							[* %% = %s; *]
-	| FUNCTIONBODY QUOTE							[* %% = %s; *]
-	| FUNCTIONBODY LBRACKET FUNCTIONBODY RBRACKET	[* %% = %s; *]
-	|												[* %% = %s; *]
-	;
+  FUNCTIONBODY NONBRACKET              [* %% = %s; *]
+  | FUNCTIONBODY QUOTE              [* %% = %s; *]
+  | FUNCTIONBODY LBRACKET FUNCTIONBODY RBRACKET  [* %% = %s; *]
+  |                        [* %% = %s; *]
+  ;
 
 TEMPLATE:
-	WTEMPLATE LPAREN ARGLIST RPAREN LBRACKET FULLLETLIST RBRACKET
-	| WTEMPLATE LPAREN ARGLIST RPAREN DOUBLECOLON TYPE LBRACKET FULLLETLIST RBRACKET
-	;
+  WTEMPLATE LPAREN ARGLIST RPAREN LBRACKET FULLLETLIST RBRACKET
+  | WTEMPLATE LPAREN ARGLIST RPAREN DOUBLECOLON TYPE LBRACKET FULLLETLIST RBRACKET
+  ;
 
 ARGLIST:
-	ARGLIST COMMA VARIABLE								
-	| VARIABLE											
-	|													
-	;
+  ARGLIST COMMA VARIABLE
+  | VARIABLE
+  |
+  ;
 
 VARIABLE:
-	IDENTIFIER											
-	| IDENTIFIER DOUBLECOLON TYPE						
-	;
+  IDENTIFIER
+  | IDENTIFIER DOUBLECOLON TYPE
+  ;
 
 FULLLETLIST:
-	LETLIST LINE										
-	| LETLIST LINE COMMA								
-	;
+  LETLIST LINE
+  | LETLIST LINE COMMA
+  ;
 
 LETLISTBLOCK:
-	LBRACKET FULLLETLIST RBRACKET
-	;
+  LBRACKET FULLLETLIST RBRACKET
+  ;
 
 LETLIST:
-	LETLIST LET COMMA									
-	| LETLIST NEWTYPE COMMA
-	|													
-	;
+  LETLIST LET COMMA
+  | LETLIST NEWTYPE COMMA
+  |
+  ;
 
 LET:
-	IDENTIFIER EQUALS LINE								
-	;
+  IDENTIFIER EQUALS LINE
+  ;
 
 NEWTYPE:
-	IDENTIFIER COLONEQUALS TYPE								
-	;
+  IDENTIFIER COLONEQUALS TYPE
+  ;
 
 STATE:
-	WSTATE LPAREN TYPE RPAREN
-	| WSTATE LPAREN TYPE COMMA EXPR RPAREN
-	| WSTATE LPAREN TYPE COMMA LBRACKET PROPLIST RBRACKET RPAREN
-	;
+  WSTATE LPAREN TYPE RPAREN
+  | WSTATE LPAREN TYPE COMMA EXPR RPAREN
+  | WSTATE LPAREN TYPE COMMA LBRACKET PROPLIST RBRACKET RPAREN
+  ;
 
 TYPE:
-	TYPE TYPE						[* %% = %s; *]
-	| IDENTIFIER					[* %% = %s; *]
-	| LPAREN INNERTYPE RPAREN		[* %% = %s; *]
-	| LSQUARE INNERTYPE RSQUARE		[* %% = %s; *]
-	| DASH GT						[* %% = %s; *]
-	;
+  TYPE TYPE            [* %% = %s; *]
+  | IDENTIFIER          [* %% = %s; *]
+  | LPAREN INNERTYPE RPAREN    [* %% = %s; *]
+  | LSQUARE INNERTYPE RSQUARE    [* %% = %s; *]
+  | DASH GT            [* %% = %s; *]
+  ;
 
 INNERTYPE:
-	TYPE							[* %% = %s; *]
-	| INNERTYPE COMMA INNERTYPE		[* %% = %s; *]
-	;
+  TYPE              [* %% = %s; *]
+  | INNERTYPE COMMA INNERTYPE    [* %% = %s; *]
+  ;
 
 IFBLOCK:
-	WIF EXPR WAS ASKEYVAL LBRACKET FULLLETLIST RBRACKET WELSE IFBLOCK
-	| WIF EXPR WAS ASKEYVAL LBRACKET FULLLETLIST RBRACKET WELSE LBRACKET FULLLETLIST RBRACKET
-	;
+  WIF EXPR WAS ASKEYVAL LBRACKET FULLLETLIST RBRACKET WELSE IFBLOCK
+  | WIF EXPR WAS ASKEYVAL LBRACKET FULLLETLIST RBRACKET WELSE LBRACKET FULLLETLIST RBRACKET
+  ;
 
 IFACTION:
-	WIF EXPR WAS ASKEYVAL LBRACKET FULLACTLIST RBRACKET WELSE IFACTION
-	| WIF EXPR WAS ASKEYVAL LBRACKET FULLACTLIST RBRACKET WELSE LBRACKET FULLACTLIST RBRACKET
-	;
+  WIF EXPR WAS ASKEYVAL LBRACKET FULLACTLIST RBRACKET WELSE IFACTION
+  | WIF EXPR WAS ASKEYVAL LBRACKET FULLACTLIST RBRACKET WELSE LBRACKET FULLACTLIST RBRACKET
+  ;
 
 ACTIONTPL:
-	WACTION LPAREN ARGLIST RPAREN LBRACKET FULLACTLIST RBRACKET
-	| WACTION LPAREN ARGLIST RPAREN DOUBLECOLON TYPE LBRACKET FULLACTLIST RBRACKET
-	;
+  WACTION LPAREN ARGLIST RPAREN LBRACKET FULLACTLIST RBRACKET
+  | WACTION LPAREN ARGLIST RPAREN DOUBLECOLON TYPE LBRACKET FULLACTLIST RBRACKET
+  ;
 
 FULLACTLIST:
-	ACTLIST ACTION
-	| ACTLIST
-	|
-	;
+  ACTLIST ACTION
+  | ACTLIST
+  |
+  ;
 
 ACTLIST:
-	ACTLIST ACTLINE COMMA
-	|
-	;
+  ACTLIST ACTLINE COMMA
+  |
+  ;
 
 ACTLINE:
-	IDENTIFIER EQUALS LINE
-	| IDENTIFIER COLONEQUALS TYPE
-	| IDENTIFIER LTDASH ACTION
-	| IDENTIFIER LTTILDE EXPR
-	| ACTION
-	;
+  IDENTIFIER EQUALS LINE
+  | IDENTIFIER COLONEQUALS TYPE
+  | IDENTIFIER LTDASH ACTION
+  | IDENTIFIER LTTILDE EXPR
+  | ACTION
+  ;
 
 ACTION:
-	CREATE
-	| EXTRACT
-	| FUNCTION
-	| JSACTION
-	| TEMPLATE
-	| ACTIONTPL
-	| EXPR
-	| STATE
-	| LETLISTBLOCK
-	| IFACTION
-	| XML
-	;
+  CREATE
+  | EXTRACT
+  | FUNCTION
+  | JSACTION
+  | TEMPLATE
+  | ACTIONTPL
+  | EXPR
+  | STATE
+  | LETLISTBLOCK
+  | IFACTION
+  | XML
+  ;
 
 CREATE:
-	WCREATE LPAREN TYPE COMMA LBRACKET PROPLIST RBRACKET RPAREN
-	| WCREATE LPAREN TYPE RPAREN
-	;
+  WCREATE LPAREN TYPE COMMA LBRACKET PROPLIST RBRACKET RPAREN
+  | WCREATE LPAREN TYPE RPAREN
+  ;
 
 PROPLIST:
-	PROPLIST COMMA PROP
-	| PROP
-	|
-	;
+  PROPLIST COMMA PROP
+  | PROP
+  |
+  ;
 
 PROP:
-	IDENTIFIER COLON EXPR
-	;
+  IDENTIFIER COLON EXPR
+  ;
 
 
 EXTRACT:
-	WEXTRACT EXPR WAS ASKEYVAL LBRACKET FULLACTLIST RBRACKET
-	;
+  WEXTRACT EXPR WAS ASKEYVAL LBRACKET FULLACTLIST RBRACKET
+  ;
 
 EXPR:
-	EXPRCODE DOUBLECOLON TYPE
-	| EXPRCODE
-	;
+  EXPRCODE DOUBLECOLON TYPE
+  | EXPRCODE
+  ;
 
 EXPRCODE:
-	IDENTIFIER 						[* %% = %s; *]
-	| STRINGESCAPEQUOTES 			[* %% = %s; *]
-	| LPAREN INNERCODE RPAREN		[* %% = %s; *]
-	| LSQUARE INNERCODE RSQUARE		[* %% = %s; *]
-	| IDENTIFIER COLON IDENTIFIER	[* %% = %s; *]
-	| DASH GT						[* %% = %s; *]
-	| DASH IDENTIFIER				[* %% = %s; *]
-	| EXPRCODE EXPRCODE				[* %% = %s; *]
-	;
-	
+  IDENTIFIER             [* %% = %s; *]
+  | STRINGESCAPEQUOTES       [* %% = %s; *]
+  | LPAREN INNERCODE RPAREN    [* %% = %s; *]
+  | LSQUARE INNERCODE RSQUARE    [* %% = %s; *]
+  | IDENTIFIER COLON IDENTIFIER  [* %% = %s; *]
+  | DASH GT            [* %% = %s; *]
+  | DASH IDENTIFIER        [* %% = %s; *]
+  | EXPRCODE EXPRCODE        [* %% = %s; *]
+  ;
+
 INNERCODE:
-	EXPRCODE						[* %% = %s; *]
-	| INNERCODE COMMA INNERCODE		[* %% = %s; *]
-	;
+  EXPRCODE            [* %% = %s; *]
+  | INNERCODE COMMA INNERCODE    [* %% = %s; *]
+  ;
 
 XML:
-	FOREACH
-	| ON												
-	| CALL												
-	| TAG												
-	| XMLTEXT
-	;
+  FOREACH
+  | ON
+  | CALL
+  | TAG
+  | XMLTEXT
+  ;
 
 FOREACH:
-	LT FEACH EXPR WAS ASKEYVAL GT FULLLETLIST LTSLASH FEACH GT	
-	| LT FEACH EXPR GT FULLLETLIST LTSLASH FEACH GT				
-	;
+  LT FEACH EXPR WAS ASKEYVAL GT FULLLETLIST LTSLASH FEACH GT
+  | LT FEACH EXPR GT FULLLETLIST LTSLASH FEACH GT
+  ;
 
 ON:
-	LT FON IDENTIFIER GT FULLACTLIST LTSLASH FON GT			
-	;
+  LT FON IDENTIFIER GT FULLACTLIST LTSLASH FON GT
+  ;
 
 CALL:
-	LT FCALL GT FULLLETLIST LTSLASH FCALL GT				
-	;
+  LT FCALL GT FULLLETLIST LTSLASH FCALL GT
+  ;
 
 TAG:
-	LT TAGNAME ATTRIBUTES GT XMLLIST LTSLASH TAGNAME GT		
-	| LT TAGNAME ATTRIBUTES SLASH GT						
-	;
+  LT TAGNAME ATTRIBUTES GT XMLLIST LTSLASH TAGNAME GT
+  | LT TAGNAME ATTRIBUTES SLASH GT
+  ;
 
 TAGNAME:
-	IDENTIFIER							[* %% = %s; *]
-	| IDENTIFIER COLON IDENTIFIER		[* %% = %s; *]		
-	;
+  IDENTIFIER              [* %% = %s; *]
+  | IDENTIFIER COLON IDENTIFIER    [* %% = %s; *]
+  ;
 
 
 ASKEYVAL:
-	IDENTIFIER											
-	| IDENTIFIER COMMA IDENTIFIER						
-	;
+  IDENTIFIER
+  | IDENTIFIER COMMA IDENTIFIER
+  ;
 
 XMLLIST:
-	XMLLIST XML											
-	| 													
-	;
+  XMLLIST XML
+  |
+  ;
 
 ATTRIBUTES:
-	ATTRIBUTES ATTASSIGN								
-	|													
-	;
+  ATTRIBUTES ATTASSIGN
+  |
+  ;
 
 ATTASSIGN:
-	WSTYLE EQUALS QUOTE STYLELIST QUOTE					
-	| ATTNAME EQUALS ATTRIBUTE							
-	;
+  WSTYLE EQUALS QUOTE STYLELIST QUOTE
+  | ATTNAME EQUALS ATTRIBUTE
+  ;
 
 ATTNAME:
-	IDENTIFIER					[* %% = %s; *]
-	| KEYWORD					[* %% = %s; *]
-	| ATTNAME DASH ATTNAME		[* %% = %s; *]
-	| ATTNAME COLON ATTNAME		[* %% = %s; *]
-	;
+  IDENTIFIER          [* %% = %s; *]
+  | KEYWORD          [* %% = %s; *]
+  | ATTNAME DASH ATTNAME    [* %% = %s; *]
+  | ATTNAME COLON ATTNAME    [* %% = %s; *]
+  ;
 
 ATTRIBUTE:
-	STRING												
-	| QUOTE INSERT QUOTE								
-	;
+  STRING
+  | QUOTE INSERT QUOTE
+  ;
 
 INSERT:
-	LBRACKET EXPR RBRACKET								
-	;
+  LBRACKET EXPR RBRACKET
+  ;
 
 STYLELIST:
-	STYLELIST SEMICOLON STYLEASSIGN
-	| STYLEASSIGN
-	| STYLELIST SEMICOLON
-	|
-	;
+  STYLELIST SEMICOLON STYLEASSIGN
+  | STYLEASSIGN
+  | STYLELIST SEMICOLON
+  |
+  ;
 
 STYLEASSIGN:
-	STYLEATTNAME COLON STYLETEXT
-	| STYLEATTNAME COLON INSERT
-	;
+  STYLEATTNAME COLON STYLETEXT
+  | STYLEATTNAME COLON INSERT
+  ;
 
 STYLEATTNAME:
-	IDENTIFIER							[* %% = %s; *]
-	| KEYWORD							[* %% = %s; *]
-	| STYLEATTNAME DASH STYLEATTNAME	[* %% = %s; *]
-	;
+  IDENTIFIER              [* %% = %s; *]
+  | KEYWORD              [* %% = %s; *]
+  | STYLEATTNAME DASH STYLEATTNAME  [* %% = %s; *]
+  ;
 
 STYLETEXT:
-	KEYWORD						[* %% = %s; *]
-	| IDENTIFIER				[* %% = %s; *]
-	| COMMA						[* %% = %s; *]
-	| LPAREN					[* %% = %s; *]
-	| RPAREN					[* %% = %s; *]
-	| EQUALS					[* %% = %s; *]
-	| STYLETEXT DASH STYLETEXT	[* %% = %s; *]			
-	| STYLETEXT STYLETEXT		[* %% = %s; *]			
-	;
+  KEYWORD            [* %% = %s; *]
+  | IDENTIFIER        [* %% = %s; *]
+  | COMMA            [* %% = %s; *]
+  | LPAREN          [* %% = %s; *]
+  | RPAREN          [* %% = %s; *]
+  | EQUALS          [* %% = %s; *]
+  | STYLETEXT DASH STYLETEXT  [* %% = %s; *]
+  | STYLETEXT STYLETEXT    [* %% = %s; *]
+  ;
 
 TEXT:
-	LBRACKET			[* %% = %s; *]
-	| RBRACKET			[* %% = %s; *]
-	| LT				[* %% = %s; *]
-	| LTSLASH			[* %% = %s; *]
-	| NONLTBRACKET		[* %% = %s; *]
-	| TEXT TEXT			[* %% = %s; *]
-	|					[* %% = %s; *]
-	;
+  LBRACKET      [* %% = %s; *]
+  | RBRACKET      [* %% = %s; *]
+  | LT        [* %% = %s; *]
+  | LTSLASH      [* %% = %s; *]
+  | NONLTBRACKET    [* %% = %s; *]
+  | TEXT TEXT      [* %% = %s; *]
+  |          [* %% = %s; *]
+  ;
 
 XMLTEXT:
-	NONLT				[* %% = %s; *]
-	| XMLTEXT XMLTEXT	[* %% = %s; *]
-	;
+  NONLT        [* %% = %s; *]
+  | XMLTEXT XMLTEXT  [* %% = %s; *]
+  ;
 
 NONLT:
-	NONLTBRACKET	[* %% = %s; *]
-	| LBRACKET		[* %% = %s; *]
-	| RBRACKET		[* %% = %s; *]
-	;
-	
+  NONLTBRACKET  [* %% = %s; *]
+  | LBRACKET    [* %% = %s; *]
+  | RBRACKET    [* %% = %s; *]
+  ;
+
 NONBRACKET:
-	NONLTBRACKET	[* %% = %s; *]
-	| LT			[* %% = %s; *]
-	| LTSLASH		[* %% = %s; *]
-	;
+  NONLTBRACKET  [* %% = %s; *]
+  | LT      [* %% = %s; *]
+  | LTSLASH    [* %% = %s; *]
+  ;
 
 NONLTBRACKET:
-	KEYWORD			[* %% = %s; *]
-	| LPAREN		[* %% = %s; *]
-	| RPAREN		[* %% = %s; *]
-	| LSQUARE		[* %% = %s; *]
-	| RSQUARE		[* %% = %s; *]	
-	| COMMA			[* %% = %s; *]
-	| SEMICOLON		[* %% = %s; *]
-	| COLON			[* %% = %s; *]
-	| EQUALS		[* %% = %s; *]
-	| SLASH			[* %% = %s; *]
-	| GT			[* %% = %s; *]
-	| IDENTIFIER	[* %% = %s; *]
-	| DASH			[* %% = %s; *]
-	| TILDE			[* %% = %s; *]
-	;
+  KEYWORD      [* %% = %s; *]
+  | LPAREN    [* %% = %s; *]
+  | RPAREN    [* %% = %s; *]
+  | LSQUARE    [* %% = %s; *]
+  | RSQUARE    [* %% = %s; *]
+  | COMMA      [* %% = %s; *]
+  | SEMICOLON    [* %% = %s; *]
+  | COLON      [* %% = %s; *]
+  | EQUALS    [* %% = %s; *]
+  | SLASH      [* %% = %s; *]
+  | GT      [* %% = %s; *]
+  | IDENTIFIER  [* %% = %s; *]
+  | DASH      [* %% = %s; *]
+  | TILDE      [* %% = %s; *]
+  ;
 
 KEYWORD:
-	WINCLUDEFILE	[* %% = %s; *]
-	| WTEMPLATE		[* %% = %s; *]
-	| WFUNCTION		[* %% = %s; *]
-	| WJSACTION		[* %% = %s; *]
-	| WACTION		[* %% = %s; *]
-	| WSTATE		[* %% = %s; *]
-	| WCREATE		[* %% = %s; *]
-	| WEXTRACT		[* %% = %s; *]
-	| WSTYLE		[* %% = %s; *]
-	| WAS			[* %% = %s; *]
-	| WIF			[* %% = %s; *]
-	| WELSE			[* %% = %s; *]
-	| FEACH			[* %% = %s; *]
-	| FCALL			[* %% = %s; *]
-	| FON			[* %% = %s; *]
-	;
+  WINCLUDEFILE  [* %% = %s; *]
+  | WTEMPLATE    [* %% = %s; *]
+  | WFUNCTION    [* %% = %s; *]
+  | WJSACTION    [* %% = %s; *]
+  | WACTION    [* %% = %s; *]
+  | WSTATE    [* %% = %s; *]
+  | WCREATE    [* %% = %s; *]
+  | WEXTRACT    [* %% = %s; *]
+  | WSTYLE    [* %% = %s; *]
+  | WAS      [* %% = %s; *]
+  | WIF      [* %% = %s; *]
+  | WELSE      [* %% = %s; *]
+  | FEACH      [* %% = %s; *]
+  | FCALL      [* %% = %s; *]
+  | FON      [* %% = %s; *]
+  ;
 
 STRINGESCAPEQUOTES:
-	QUOTE TEXT QUOTE	[* %% = %s; *]
-	;
+  QUOTE TEXT QUOTE  [* %% = %s; *]
+  ;
 
 STRING:
-	QUOTE TEXT QUOTE	[* %% = %s; *]
-	;
-		
-	
+  QUOTE TEXT QUOTE  [* %% = %s; *]
+  ;
+
+
 [*
-		return {
-			parse:function(arg1, arg2, arg3) {
-				var errcount = __parse(arg1, arg2, arg3);
-				if (errcount == 0) {
-					return {
-						success:true,
-						result:result
-					};
-				} else {
-					return {
-						success:false,
-						result:errcount
-					};
-				}
-			}
-		};
-	}();
+    return {
+      parse:function(arg1, arg2, arg3) {
+        var errcount = __parse(arg1, arg2, arg3);
+        if (errcount == 0) {
+          return {
+            success:true,
+            result:result
+          };
+        } else {
+          return {
+            success:false,
+            result:errcount
+          };
+        }
+      }
+    };
+  }();
 *]

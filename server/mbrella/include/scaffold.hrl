@@ -3,49 +3,49 @@
 %% ====================================================
 
 -record (object, {
-	name,
-	type,
-	prop = dict:new(),
-	castingDict
-	}).
+  name,
+  type,
+  prop = dict:new(),
+  castingDict
+  }).
 
 -record (classToMake, {
-	name,
-	inherit,
-	prop,
-	memoize
-	}).
+  name,
+  inherit,
+  prop,
+  memoize
+  }).
 
 %% ====================================================
 %% expression records
 %% ====================================================
 
 -record (exprLambda, {
-	expr
+  expr
 }).
 
 -record (exprApply, {
- 	left,
-	right
+   left,
+  right
 }).
 
 -record (exprFun, {
-	type,
-	name,
-	function,
-	bottom
+  type,
+  name,
+  function,
+  bottom
 }).
 
 -record (exprVar, {
-	index
+  index
 }).
 
 
 -record (exprCell, {
-	name,
-	pid,
-	type,
-	bottom
+  name,
+  pid,
+  type,
+  bottom
 }).
 
 %% ====================================================
@@ -53,36 +53,36 @@
 %% ====================================================
 
 -record(depender, {
-	function, 
-	cell, 
-	id
+  function,
+  cell,
+  id
 }).
 
 -record(func, {
-	function,
-	depender
+  function,
+  depender
 }).
 
 -record(dot, {
-	num,
-	value,
-	lines
+  num,
+  value,
+  lines
 }).
 
 %% ====================================================
 %% pointer records
 %% ====================================================
 -record (funPointer, {
-	name
+  name
 }).
 
 -record (objectPointer, {
-	name
+  name
 }).
 
 -record (cellPointer, {
-	name,
-	pid
+  name,
+  pid
 }).
 
 %% ====================================================
@@ -90,33 +90,33 @@
 %% ====================================================
 
 -record (memoize, {
-	ets = ets:new(memoizeTable, [])
+  ets = ets:new(memoizeTable, [])
 }).
 
 -record (serialize, {
-	file,
-	prepareState,
-	variables
+  file,
+  prepareState,
+  variables
 }).
 
 % -record(cellState, {
-% 	funcs, 
-% 	dots, 
-% 	onRemoves=[],
-% 	dependencies=[],
-% 	funcColor=0, 
-% 	intercept, 
-% 	done=false
+%   funcs,
+%   dots,
+%   onRemoves=[],
+%   dependencies=[],
+%   funcColor=0,
+%   intercept,
+%   done=false
 % }).
 -record(scopeState, {
-	dict, 
-	pointerCount
+  dict,
+  pointerCount
 }).
 
 -record(interceptState, {
-	function, 
-	state, 
-	ownerCell
+  function,
+  state,
+  ownerCell
 }).
 
 %% ====================================================
@@ -124,12 +124,12 @@
 %% ====================================================
 
 -record (session, {
-	msgQueue = [],
-	cleanup = [],
-	lastMessageId = 0,
-	queryIdCount = 0,
-	clientState = satisfied,
-	outputTimer,
-	timeout = 300000,
-	debug = 0
+  msgQueue = [],
+  cleanup = [],
+  lastMessageId = 0,
+  queryIdCount = 0,
+  clientState = satisfied,
+  outputTimer,
+  timeout = 300000,
+  debug = 0
 }).

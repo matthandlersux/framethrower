@@ -30,10 +30,10 @@ EBIN_FILES = $(ERL_OBJECTS) $(APP_FILES:%.app=../ebin/%.app)
 MODULES = $(ERL_SOURCES:%.erl=%)
 
 ../ebin/%.app: %.app
-	cp $< $@
+  cp $< $@
 
 $(EBIN_DIR)/%.$(EMULATOR): %.erl
-	$(ERLC) $(ERLC_FLAGS) -o $(EBIN_DIR) $<
+  $(ERLC) $(ERLC_FLAGS) -o $(EBIN_DIR) $<
 
 ./%.$(EMULATOR): %.erl
-	$(ERLC) $(ERLC_FLAGS) -o . $<
+  $(ERLC) $(ERLC_FLAGS) -o . $<

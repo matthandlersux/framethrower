@@ -4,19 +4,19 @@ Pane Set
 
 
 .paneset-vertical, .paneset-horizontal {
-	position:absolute;
-	top: 0px;
-	left: 0px;
+  position:absolute;
+  top: 0px;
+  left: 0px;
 }
 
 .paneset-pane {
-	position:absolute;
-/*	overflow: auto;*/
+  position:absolute;
+/*  overflow: auto;*/
 }
 
 .paneset-spacer {
-	position:absolute;
-	background-color: #ccc;
+  position:absolute;
+  background-color: #ccc;
 }
 
 
@@ -25,78 +25,78 @@ Pane itself
 ================================== */
 
 .pane {
-/*	background-color:yellow;*/
-	position: absolute;
-	overflow: auto;
+/*  background-color:yellow;*/
+  position: absolute;
+  overflow: auto;
 }
 .pane-content {
-	padding-top:4px;
-	/*border: 1px solid #666;*/
+  padding-top:4px;
+  /*border: 1px solid #666;*/
 }
 
 .titlebar {
-	background-color:#EEEEEE;
+  background-color:#EEEEEE;
 }
 .titlebar-focus {
-	padding:3px;
+  padding:3px;
 }
 .titlebar-buttons {
-	position:absolute;
-	right:5px;
-	top:5px;
+  position:absolute;
+  right:5px;
+  top:5px;
 }
 .titlebar-close {
-	background-image:url(images/close.png);
-	height:15px;
-	width:15px;
-	cursor:pointer;
+  background-image:url(images/close.png);
+  height:15px;
+  width:15px;
+  cursor:pointer;
 }
 .tabs {
-	position:relative;
-	top:1px;
-	display: table-row;
+  position:relative;
+  top:1px;
+  display: table-row;
 }
 .tab {
-	background-color:#FFFFFF;
-	border:1px solid #CCCCCC;
-	border-bottom-color: #666;
-	display:table-cell;
-	cursor:pointer;
-	line-height:200%;
+  background-color:#FFFFFF;
+  border:1px solid #CCCCCC;
+  border-bottom-color: #666;
+  display:table-cell;
+  cursor:pointer;
+  line-height:200%;
 }
 .tab[selected=true] {
-	border:1px solid #666;
-	border-bottom-color:#fff;
+  border:1px solid #666;
+  border-bottom-color:#fff;
 }
 .tab-children, .tab-infonsIn, .tab-about, .tab-artifacts {
-	padding:0px 10px 0 24px;
+  padding:0px 10px 0 24px;
 }
 .tab-children {
-	background:transparent url(images/children.png) no-repeat scroll 6px center;
+  background:transparent url(images/children.png) no-repeat scroll 6px center;
 }
 .tab-infonsIn {
-	padding-left:0;
+  padding-left:0;
 }
 .tab-about {
-	padding-left:0;
+  padding-left:0;
 }
 .tab-artifacts {
-	background:transparent url(images/artifacts.png) no-repeat scroll 6px center;
+  background:transparent url(images/artifacts.png) no-repeat scroll 6px center;
 }
 .tab-infonsIn .icon {
-	background-image:url(images/infonsin.png);
+  background-image:url(images/infonsin.png);
 }
 .tab-about .icon {
-	background-image:url(images/infonsabout.png);
+  background-image:url(images/infonsabout.png);
 }
 .tab-infonsIn .icon, .tab-about .icon {
-	-moz-border-radius:8px;
-	-webkit-border-radius:7.5px;
-	
-	float:left;
-	height:15px;
-	width:15px;
-	margin: 6px;
+  -moz-border-radius:8px;
+  -webkit-border-radius:7.5px;
+
+  float:left;
+  height:15px;
+  width:15px;
+  margin: 6px;
 }
 
 
@@ -107,46 +107,46 @@ Within pane
 ================================== */
 
 .properties td, th {
-	padding: 5px;
+  padding: 5px;
 }
 .properties th {
-	text-align: right;
-	font-weight: bold;
-	vertical-align:top;
+  text-align: right;
+  font-weight: bold;
+  vertical-align:top;
 }
 
 
 
 
 .entry {
-	display: table;
-	padding: 4px;
+  display: table;
+  padding: 4px;
 }
 .entry-row {
-	display: table-row;
+  display: table-row;
 }
 .entry-cell, .entry-button {
-	display: table-cell;
-	padding-right: 10px;
-	vertical-align: top;
+  display: table-cell;
+  padding-right: 10px;
+  vertical-align: top;
 }
 .entry-button {
-	/*visibility: hidden;*/
-	opacity: 0.1;
+  /*visibility: hidden;*/
+  opacity: 0.1;
 }
 
 .entry:hover {
-	background-color: #eee;
+  background-color: #eee;
 }
 .entry:hover .entry-button {
-	/*visibility: visible;*/
-	opacity: 1.0;
+  /*visibility: visible;*/
+  opacity: 1.0;
 }
 
 
 .addButton {
-	display: table;
-	background:#333 url(images/add.png) no-repeat scroll left center;
-	color:#fff;
-	padding:4px 4px 4px 18px;
+  display: table;
+  background:#333 url(images/add.png) no-repeat scroll left center;
+  color:#fff;
+  padding:4px 4px 4px 18px;
 }

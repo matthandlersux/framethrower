@@ -18,49 +18,49 @@
 %% --------------------------------------------------------------------
 %% External exports
 -export([
-	start/0,
-	serialize/0,
-	unserialize/0
+  start/0,
+  serialize/0,
+  unserialize/0
 ]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record (state, {
-	filename = "mbrella/data/serialize.ets"
+  filename = "mbrella/data/serialize.ets"
 }).
 
 %% ====================================================================
 %% External functions
 %% ====================================================================
 
-%% 
+%%
 %% new :: ok
-%% 		
-%%		
+%%
+%%
 
-start() -> 
-	case gen_server:start_link({local, ?MODULE}, ?MODULE, [], []) of
-		{ok, Pid} -> Pid;
-		Else -> Else
-	end,
-	ok.
+start() ->
+  case gen_server:start_link({local, ?MODULE}, ?MODULE, [], []) of
+    {ok, Pid} -> Pid;
+    Else -> Else
+  end,
+  ok.
 
-%% 
+%%
 %% serialize :: ok
-%% 		
-%%		
+%%
+%%
 
 serialize() ->
-	gen_server:cast(?MODULE, serialize).
+  gen_server:cast(?MODULE, serialize).
 
-%% 
+%%
 %% unserialize :: ok
-%% 		
-%%		
+%%
+%%
 
 unserialize() ->
-	gen_server:call(?MODULE, unserialize, 15000).
+  gen_server:call(?MODULE, unserialize, 15000).
 
 %% ====================================================================
 %% Server functions
@@ -88,44 +88,44 @@ init([]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call(unserialize, _From, State) ->
-	case ets:file2tab(getFilename(State)) of
-		{error, Reason} ->
-			?colortrace({serialize_file_error, Reason}),
-			{stop, Reason, State};
-		{ok, ETS} ->
-			RespawnObjects = 	fun({"object." ++ NumString, ObjectData}, {ObjectMax, CellMax}) ->
-									Object = dataToObject(ObjectData),
-									respawnObject(Object, ETS),
-									{ erlang:max(list_to_integer(NumString),ObjectMax), CellMax};									
-								({"cell." ++ NumString, _CellStateData}, {ObjectMax, CellMax}) ->
-									{ObjectMax, erlang:max(list_to_integer(NumString), CellMax)};
-								({scope, ScopeState}, Acc) ->
-									ScopeState1 = respawnScopeState(ScopeState, ETS),
-									action:respawnScopeState(ScopeState1),
-									Acc 
-								end,
-			{ObjectMax, CellMax} = ets:foldl(RespawnObjects, {0,0}, ETS),
-			objectStore:setCounter(ObjectMax),
-			cellStore:setCounter(CellMax),
+  case ets:file2tab(getFilename(State)) of
+    {error, Reason} ->
+      ?colortrace({serialize_file_error, Reason}),
+      {stop, Reason, State};
+    {ok, ETS} ->
+      RespawnObjects =   fun({"object." ++ NumString, ObjectData}, {ObjectMax, CellMax}) ->
+                  Object = dataToObject(ObjectData),
+                  respawnObject(Object, ETS),
+                  { erlang:max(list_to_integer(NumString),ObjectMax), CellMax};
+                ({"cell." ++ NumString, _CellStateData}, {ObjectMax, CellMax}) ->
+                  {ObjectMax, erlang:max(list_to_integer(NumString), CellMax)};
+                ({scope, ScopeState}, Acc) ->
+                  ScopeState1 = respawnScopeState(ScopeState, ETS),
+                  action:respawnScopeState(ScopeState1),
+                  Acc
+                end,
+      {ObjectMax, CellMax} = ets:foldl(RespawnObjects, {0,0}, ETS),
+      objectStore:setCounter(ObjectMax),
+      cellStore:setCounter(CellMax),
 
-			ets:delete(ETS),
-			{reply, ok, State}
-	end;
+      ets:delete(ETS),
+      {reply, ok, State}
+  end;
 handle_call(_Msg, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
 
 scourForCells (ObjectToScour, ETS) ->
-	mblib:scour(
-		fun cellPointer:isCellPointer/1,
-		fun(CellPointer) ->
-			CellData = cellToData(CellPointer),
-			scourForCells(CellData, ETS),
-			ets:insert(ETS, {cellPointer:name(CellPointer), CellData})
-		end,
-		ObjectToScour
-	).
+  mblib:scour(
+    fun cellPointer:isCellPointer/1,
+    fun(CellPointer) ->
+      CellData = cellToData(CellPointer),
+      scourForCells(CellData, ETS),
+      ets:insert(ETS, {cellPointer:name(CellPointer), CellData})
+    end,
+    ObjectToScour
+  ).
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -135,20 +135,20 @@ scourForCells (ObjectToScour, ETS) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast(serialize, State) ->
-	ETS = ets:new(serialize, [public]),
-	SerializeAllObjects = 	fun({ObjectName, Object}, _Acc) ->
-								ets:insert(ETS, {ObjectName, objectToData(Object)}),
-								scourForCells(Object, ETS)
-							end,
-	objectStore:fold(SerializeAllObjects, []),
-	
-	ScopeState = action:getScopeState(),
-	scourForCells(ScopeState, ETS),
-	ets:insert(ETS, {scope, ScopeState}),
-	
-	ets:tab2file(ETS, getFilename(State)),
-	ets:delete(ETS),
-	{noreply, State};
+  ETS = ets:new(serialize, [public]),
+  SerializeAllObjects =   fun({ObjectName, Object}, _Acc) ->
+                ets:insert(ETS, {ObjectName, objectToData(Object)}),
+                scourForCells(Object, ETS)
+              end,
+  objectStore:fold(SerializeAllObjects, []),
+
+  ScopeState = action:getScopeState(),
+  scourForCells(ScopeState, ETS),
+  ets:insert(ETS, {scope, ScopeState}),
+
+  ets:tab2file(ETS, getFilename(State)),
+  ets:delete(ETS),
+  {noreply, State};
 
 handle_cast(_Msg, State) ->
     {noreply, State}.
@@ -161,7 +161,7 @@ handle_cast(_Msg, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_info(Info, State) ->
-	?trace(Info),
+  ?trace(Info),
     {noreply, State}.
 
 %% --------------------------------------------------------------------
@@ -184,100 +184,100 @@ code_change(_OldVsn, State, _Extra) ->
 %% Internal API
 %% ====================================================
 
-%% 
+%%
 %% respawnCell :: CellPointer -> ETS -> CellPointer
-%% 		takes a cellpointer and respawns its state from serialized data
-%%		
+%%     takes a cellpointer and respawns its state from serialized data
+%%
 
 respawnCell(CellPointer, ETS) ->
-	CellName = cellPointer:name(CellPointer),	
-	case cellStore:lookup(CellName) of
-		notfound ->
-			case ets:lookup(ETS, CellName) of
-				[{_Name, CellState}] ->
-					CellState1 = dataToCell(CellState),
-					CellState2 = cellState:removeSessionOutputs(CellState1),
-					CellState3 = respawnCellState(CellState2, ETS),
-					CellState4 = cellState:rebuildElements(CellState3),
-					% LOOK FOR SELF REFERENCES OR MAKE RESPAWN CELL STATE SMARTER
-					
-					cell:respawn(CellState4);
-				[] ->
-					exit(cell_not_in_serialized_data)
-			end;
-		FoundCellPointer ->
-			FoundCellPointer
-	end.
+  CellName = cellPointer:name(CellPointer),
+  case cellStore:lookup(CellName) of
+    notfound ->
+      case ets:lookup(ETS, CellName) of
+        [{_Name, CellState}] ->
+          CellState1 = dataToCell(CellState),
+          CellState2 = cellState:removeSessionOutputs(CellState1),
+          CellState3 = respawnCellState(CellState2, ETS),
+          CellState4 = cellState:rebuildElements(CellState3),
+          % LOOK FOR SELF REFERENCES OR MAKE RESPAWN CELL STATE SMARTER
 
-%% 
+          cell:respawn(CellState4);
+        [] ->
+          exit(cell_not_in_serialized_data)
+      end;
+    FoundCellPointer ->
+      FoundCellPointer
+  end.
+
+%%
 %% respawnCellState :: CellState -> ETS -> CellState
-%% 		looks for cellpointers in the cellstate, respawns and replaces those cells, returns updated state
-%%		also removes session pointers
-%%		
+%%     looks for cellpointers in the cellstate, respawns and replaces those cells, returns updated state
+%%    also removes session pointers
+%%
 
 respawnCellState(CellState, ETS) ->
-	mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, CellState).
+  mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, CellState).
 
-%% 
+%%
 %% respawnScopeState :: ScopeState -> ETS -> ScopeState
-%% 		takes the state of the scope and respawns and replaces any cellpointers
-%%		
+%%     takes the state of the scope and respawns and replaces any cellpointers
+%%
 
 respawnScopeState(ScopeState, ETS) ->
-	mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, ScopeState).
+  mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, ScopeState).
 
-%% 
+%%
 %% respawnObject :: Object -> ok
-%% 		
-%%		
+%%
+%%
 
 respawnObject(Object, ETS) ->
-	Object1 = mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, Object),
-	objects:respawn(Object1).
-	
-%% 
+  Object1 = mblib:scour(fun cellPointer:isCellPointer/1, fun(CellPointer) -> respawnCell(CellPointer, ETS) end, Object),
+  objects:respawn(Object1).
+
+%%
 %% objectToData :: Object -> a
-%% 		
-%%		
+%%
+%%
 
 objectToData(Object) ->
-	Object.
+  Object.
 
-%% 
+%%
 %% cellToData :: CellPointer -> a
-%% 		
-%%		
+%%
+%%
 
 cellToData(CellPointer) ->
-	cell:getState(CellPointer).
-	
-%% 
+  cell:getState(CellPointer).
+
+%%
 %% dataToCell :: a -> CellState
-%% 		
-%%		
+%%
+%%
 
 dataToCell(CellState) ->
-	CellState.
-	
-%% 
+  CellState.
+
+%%
 %% dataToObject :: a -> Object
-%% 		
-%%		
+%%
+%%
 
 dataToObject(Object) ->
-	Object.
-	
+  Object.
+
 %% ---------------------------------------------
 %% State Functions
 %% ---------------------------------------------
 
-%% 
+%%
 %% getFilename :: SerializeState -> String
-%% 		
-%%		
+%%
+%%
 
-getFilename(#state{filename = FileName}) -> 
-	FileName.
+getFilename(#state{filename = FileName}) ->
+  FileName.
 
 %% ====================================================
 %% utilities

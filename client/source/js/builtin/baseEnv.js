@@ -6,12 +6,12 @@ base.env will convert literal strings (Number's, String's, Bool's) to their actu
 
 
 var base = function (s) {
-	var lit = parseLiteral(s);
-	if (lit !== undefined) {
-		return lit;
-	} else {
-		return emptyEnv(s);
-	}
+  var lit = parseLiteral(s);
+  if (lit !== undefined) {
+    return lit;
+  } else {
+    return emptyEnv(s);
+  }
 };
 
 // bring in families of assignments from families.js

@@ -28,20 +28,20 @@ lineHasEndpointsBetween = state {makeSituationNamedIn "Interval Between" lineHas
 timeline = state {makeSituationNamedIn "Timeline" universe},
 lineToTimeline = state {makePipe timeline line},
 timelinePoint = state {
-	timelinePoint <- makeSituationNamedIn "time point" timeline,
-	makePipe timelinePoint extNumber,
-	makePipeIn1 timelinePoint linePoint lineToTimeline,
-	return timelinePoint
+  timelinePoint <- makeSituationNamedIn "time point" timeline,
+  makePipe timelinePoint extNumber,
+  makePipeIn1 timelinePoint linePoint lineToTimeline,
+  return timelinePoint
 },
 
 //textline
 textline = state {makeSituationNamedIn "Textline" universe},
 lineToTextline = state {makePipe textline line},
 textlinePoint = state {
-	textlinePoint <- makeSituationNamedIn "text point" textline,
-	makePipe textlinePoint extNumber,
-	makePipeIn1 textlinePoint linePoint lineToTextline,
-	return textlinePoint
+  textlinePoint <- makeSituationNamedIn "text point" textline,
+  makePipe textlinePoint extNumber,
+  makePipeIn1 textlinePoint linePoint lineToTextline,
+  return textlinePoint
 },
 
 
@@ -51,18 +51,18 @@ textlinePoint = state {
 
 //generic essay structure
 essay = state {
-	essay <- makeSituationNamedIn "Essay" universe,
-	makePipe essay extText,
-	return essay
+  essay <- makeSituationNamedIn "Essay" universe,
+  makePipe essay extText,
+  return essay
 },
 textlineToEssay = state {makePipe essay textline},
 
 //generic movie structure
 movie = state {
-	movie <- makeSituationNamedIn "Movie" universe,
-	makePipe movie extVideo,
-	ccaptions <- makeSituationNamedIn "Closed Captions" movie,
-	return movie
+  movie <- makeSituationNamedIn "Movie" universe,
+  makePipe movie extVideo,
+  ccaptions <- makeSituationNamedIn "Closed Captions" movie,
+  return movie
 },
 timelineToMovie = state {makePipe movie timeline},
 
@@ -72,48 +72,48 @@ timelineToMovie = state {makePipe movie timeline},
 // ========================================================================================================
 
 makeInfon2 = action (relation::Situation, p1::Situation, p2::Situation, sit::Situation, arg1::Situation, arg2::Situation) {
-	pipe <- makePipe sit relation,
-	makePipeIn1 arg1 p1 pipe,
-	makePipeIn1 arg2 p2 pipe
+  pipe <- makePipe sit relation,
+  makePipeIn1 arg1 p1 pipe,
+  makePipeIn1 arg2 p2 pipe
 },
 
 makeInfon3 = action (relation::Situation, p1::Situation, p2::Situation, p3::Situation, sit::Situation, arg1::Situation, arg2::Situation, arg3::Situation) {
-	pipe <- makePipe sit relation,
-	makePipeIn1 arg1 p1 pipe,
-	makePipeIn1 arg2 p2 pipe,
-	makePipeIn1 arg3 p3 pipe
+  pipe <- makePipe sit relation,
+  makePipeIn1 arg1 p1 pipe,
+  makePipeIn1 arg2 p2 pipe,
+  makePipeIn1 arg3 p3 pipe
 },
 
 createClone = action (objectToClone::Situation, cloneIntoSituation::Situation, pipe::[Pipe])::(Situation, [Pipe]) {
-	clone <- makeSituation,
-	putSituationIn cloneIntoSituation clone,
-	extract Situation:propName objectToClone as name {
-		nameSituation clone name
-	},
-	clonePipe <- makePipe clone objectToClone,
-	putPipeIn clonePipe pipe,
-	return (clone, [clonePipe])
+  clone <- makeSituation,
+  putSituationIn cloneIntoSituation clone,
+  extract Situation:propName objectToClone as name {
+    nameSituation clone name
+  },
+  clonePipe <- makePipe clone objectToClone,
+  putPipeIn clonePipe pipe,
+  return (clone, [clonePipe])
 },
 
 
 createTimePoint = action (timeline::Situation, pipeFromTimeline::[Pipe], seconds::Number)::Situation {
-	tpPair <- createClone timelinePoint timeline pipeFromTimeline,
-	tp = fst tpPair,
-	set (Situation:propTime tp) seconds,
-	return tp
+  tpPair <- createClone timelinePoint timeline pipeFromTimeline,
+  tp = fst tpPair,
+  set (Situation:propTime tp) seconds,
+  return tp
 },
 createTextPoint = action (textline::Situation, pipeFromTextline::[Pipe], char::Number)::Situation {
-	tpPair <- createClone textlinePoint textline pipeFromTextline,
-	tp = fst tpPair,
-	set (Situation:propTime tp) char,
-	return tp
+  tpPair <- createClone textlinePoint textline pipeFromTextline,
+  tp = fst tpPair,
+  set (Situation:propTime tp) char,
+  return tp
 },
 
 createInterval = action (line::Situation, pipeFromLine::[Pipe], startPoint::Situation, endPoint::Situation)::Situation {
-	intPair <- createClone lineInterval line pipeFromLine,
-	int = fst intPair,
-	makeInfon3 lineHasEndpoints lineHasEndpointsStart lineHasEndpointsEnd lineHasEndpointsBetween line startPoint endPoint int,
-	return int
+  intPair <- createClone lineInterval line pipeFromLine,
+  int = fst intPair,
+  makeInfon3 lineHasEndpoints lineHasEndpointsStart lineHasEndpointsEnd lineHasEndpointsBetween line startPoint endPoint int,
+  return int
 },
 
 
@@ -126,10 +126,10 @@ createInterval = action (line::Situation, pipeFromLine::[Pipe], startPoint::Situ
 // ========================================================================================================
 
 mr = state {
-	mr <- makeSituationNamedIn "Moulin Rouge" universe,
-	extVideo <- create(ExtVideo, {id: "mr", aspectRatio: 2.222, duration: 7668}),
-	set (Situation:propVideo mr) extVideo,
-	return mr
+  mr <- makeSituationNamedIn "Moulin Rouge" universe,
+  extVideo <- create(ExtVideo, {id: "mr", aspectRatio: 2.222, duration: 7668}),
+  set (Situation:propVideo mr) extVideo,
+  return mr
 },
 movieTomr = state {makePipe mr movie},
 
@@ -151,21 +151,21 @@ pipeTimelineToMrEssayTimeline = (cons timelineToMovie (cons movieTomr (snd mrClo
 
 
 universeInit = action () {
-	
-	// //bounded line
-	// boundedLine = makeSituationNamedIn "Bounded Line" universe,
-	// endPoint = makeSituationNamedIn "End Point" boundedLine,
-	// boundedLineToLine = makePipe boundedLine line,
-	// makePipeIn1 endPoint linePoint boundedLineToLine,
 
-	//makePipe timeline boundedLine,
-	
-	lineTohasEndpoints <- makePipe lineHasEndpoints line,
-	pointToStart <- makePipeIn1 lineHasEndpointsStart linePoint lineTohasEndpoints,
-	pointToEnd <- makePipeIn1 lineHasEndpointsEnd linePoint lineTohasEndpoints,
-	intervalToBetween <- makePipeIn1 lineHasEndpointsBetween lineInterval lineTohasEndpoints,
-	
-	return 4 // this shouldn't be necessary.. bug with compiler?
-	
+  // //bounded line
+  // boundedLine = makeSituationNamedIn "Bounded Line" universe,
+  // endPoint = makeSituationNamedIn "End Point" boundedLine,
+  // boundedLineToLine = makePipe boundedLine line,
+  // makePipeIn1 endPoint linePoint boundedLineToLine,
+
+  //makePipe timeline boundedLine,
+
+  lineTohasEndpoints <- makePipe lineHasEndpoints line,
+  pointToStart <- makePipeIn1 lineHasEndpointsStart linePoint lineTohasEndpoints,
+  pointToEnd <- makePipeIn1 lineHasEndpointsEnd linePoint lineTohasEndpoints,
+  intervalToBetween <- makePipeIn1 lineHasEndpointsBetween lineInterval lineTohasEndpoints,
+
+  return 4 // this shouldn't be necessary.. bug with compiler?
+
 }
 

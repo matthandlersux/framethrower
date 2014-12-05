@@ -33,14 +33,14 @@ EBIN_FILES_NO_DOCS = $(ERL_OBJECTS) $(APP_FILES:%.app=../ebin/%.app)
 MODULES = $(ERL_SOURCES:%.erl=%)
 
 ../ebin/%.app: %.app
-	cp $< $@
+  cp $< $@
 
 $(EBIN_DIR)/%.$(EMULATOR): %.erl
-	$(ERLC) $(ERLC_FLAGS) -o $(EBIN_DIR) $<
+  $(ERLC) $(ERLC_FLAGS) -o $(EBIN_DIR) $<
 
 ./%.$(EMULATOR): %.erl
-	$(ERLC) $(ERLC_FLAGS) -o . $<
+  $(ERLC) $(ERLC_FLAGS) -o . $<
 
 $(DOC_DIR)/%.html: %.erl
-	$(ERL) -noshell -run edoc file $< -run init stop
-	mv *.html $(DOC_DIR)
+  $(ERL) -noshell -run edoc file $< -run init stop
+  mv *.html $(DOC_DIR)

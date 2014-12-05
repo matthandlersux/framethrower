@@ -1,22 +1,22 @@
 .relationCreator-word {
-	float: left;
+  float: left;
 }
 
 .relationCreator-spacer {
-	float: left;
-	padding: 0px 3px;
+  float: left;
+  padding: 0px 3px;
 }
 
 .relationCreator-relation {
-	background-color:#414042;
-	padding: 10px;
+  background-color:#414042;
+  padding: 10px;
 }
 
 
 .relationCreator-types {
-	clear: both;
-	background-color:#f1f1f2;
-	padding: 6px;
-	height: 130px;
-	overflow-y: auto;
+  clear: both;
+  background-color:#f1f1f2;
+  padding: 6px;
+  height: 130px;
+  overflow-y: auto;
 }

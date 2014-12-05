@@ -1,35 +1,35 @@
 LINE
-	{kind: "lineExpr", expr: AST, type?: TYPE} |
-	{kind: "lineXML", xml: XML} |
-	{kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
-	{kind: "lineState", action: LINETEMPLATE} | // action takes no parameters |
-	{kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
-	{kind: "extract", select: AST, action: LINETEMPLATE} // this action should take one (or two) parameters. |
-	LINETEMPLATE |
-	LINEACTION
-	
+  {kind: "lineExpr", expr: AST, type?: TYPE} |
+  {kind: "lineXML", xml: XML} |
+  {kind: "lineJavascript", f: JAVASCRIPTFUNCTION, type: TYPE} |
+  {kind: "lineState", action: LINETEMPLATE} | // action takes no parameters |
+  {kind: "actionCreate", type: TYPE, prop: {PROPERTYNAME: AST}} |
+  {kind: "extract", select: AST, action: LINETEMPLATE} // this action should take one (or two) parameters. |
+  LINETEMPLATE |
+  LINEACTION
+
 LINETEMPLATE
-	{kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, newtype: {VARTOCREATE: TYPE}, output: LINE, type: TYPE}
+  {kind: "lineTemplate", params: [VARTOCREATE], let: {VARTOCREATE: LINE}, newtype: {VARTOCREATE: TYPE}, output: LINE, type: TYPE}
 
 LINEACTION
-	{kind: "lineAction", actions: [{name?: VARTOCREATE, action: LINE}], type: TYPE}
+  {kind: "lineAction", actions: [{name?: VARTOCREATE, action: LINE}], type: TYPE}
 
 XML
-	{kind: "for-each", select: AST, lineTemplate: LINETEMPLATE} | // this lineTemplate should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
-	{kind: "call", lineTemplate: LINETEMPLATE} | // this lineTemplate should take zero parameters.
-	{kind: "on", event: EVENT, action: LINETEMPLATE} | // this action should take zero parameters.
-	{kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise: LINETEMPLATE} |
-	// test should evaluate to a cell, if it is non-empty then lineTemplate is run as if it were a for-each. If it is empty, otherwise is called.
-	// lineTemplate should take one parameter
-	// otherwise, if it exists, should take zero parameters
-	XMLNODE 
+  {kind: "for-each", select: AST, lineTemplate: LINETEMPLATE} | // this lineTemplate should take one (or two) parameters. It will get called with the for-each's key (and value if a Map) as its parameters.
+  {kind: "call", lineTemplate: LINETEMPLATE} | // this lineTemplate should take zero parameters.
+  {kind: "on", event: EVENT, action: LINETEMPLATE} | // this action should take zero parameters.
+  {kind: "case", test: AST, lineTemplate: LINETEMPLATE, otherwise: LINETEMPLATE} |
+  // test should evaluate to a cell, if it is non-empty then lineTemplate is run as if it were a for-each. If it is empty, otherwise is called.
+  // lineTemplate should take one parameter
+  // otherwise, if it exists, should take zero parameters
+  XMLNODE
 
 XMLNODE
-	{kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately
-	{kind: "textElement", nodeValue: STRING | XMLINSERT}
+  {kind: "element", nodeName: STRING, attributes: {STRING: STRING | XMLINSERT}, style: {STRING: STRING | XMLINSERT}, children: [XML]} | // I have style separate from attributes just because the browser handles it separately
+  {kind: "textElement", nodeValue: STRING | XMLINSERT}
 
 XMLINSERT
-	{kind: "insert", expr: AST}
+  {kind: "insert", expr: AST}
 
 
 

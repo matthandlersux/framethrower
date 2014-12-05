@@ -1,12 +1,12 @@
 .popup {
-	background-color: rgba(0,0,0,0.8);
-	border: 6px solid rgba(0,0,0,0.7);
-	color: #fff;
-	overflow: auto;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
+  background-color: rgba(0,0,0,0.8);
+  border: 6px solid rgba(0,0,0,0.7);
+  color: #fff;
+  overflow: auto;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
 }
 
 .dragging {
-	cursor: -moz-grabbing;
+  cursor: -moz-grabbing;
 }

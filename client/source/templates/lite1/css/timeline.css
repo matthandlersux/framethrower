@@ -1,51 +1,51 @@
 .timeline .titlebar {
-	display: none;
-	position: absolute;
-	left: 5px;
-	top: -28px;
-	height: 20px;
-	background-color: #222;
-	color: #fff;
-	padding: 3px;
-	-moz-border-radius-topright: 5px;
-	-webkit-border-top-right-radius: 5px;
-	-moz-border-radius-topleft: 5px;
-	-webkit-border-top-left-radius: 5px;
-	border: 1px solid #666;
-	border-bottom: 0px;
+  display: none;
+  position: absolute;
+  left: 5px;
+  top: -28px;
+  height: 20px;
+  background-color: #222;
+  color: #fff;
+  padding: 3px;
+  -moz-border-radius-topright: 5px;
+  -webkit-border-top-right-radius: 5px;
+  -moz-border-radius-topleft: 5px;
+  -webkit-border-top-left-radius: 5px;
+  border: 1px solid #666;
+  border-bottom: 0px;
 }
 
 .timeline .titlebar:hover, .timeline:hover .titlebar {
-	display: block;
+  display: block;
 }
 
 .timeline-container {
-/*	background-color: #111;*/
-/*	background-image: url(images/timeline-background.png);*/
+/*  background-color: #111;*/
+/*  background-image: url(images/timeline-background.png);*/
 }
 
 .chapter {
-	border-right: 1px solid #000;
-	background-image: url(http://media.eversplosion.com/gradient.php?height=125&color1=222&color2=555);
-	background-repeat: repeat-x;
-	background-color: #666;
+  border-right: 1px solid #000;
+  background-image: url(http://media.eversplosion.com/gradient.php?height=125&color1=222&color2=555);
+  background-repeat: repeat-x;
+  background-color: #666;
 }
 
 .chapter-inside {
-	background-color: #333;
+  background-color: #333;
 }
 
 .scrollbar {
-/*	background-color: #111;*/
+/*  background-color: #111;*/
 }
 .scrollbar .button {
-	background-color: #000;
+  background-color: #000;
 }
 .scrollbar .scroller {
-	/*background-color: rgba(68, 68, 88, 0.8);*/
-	border: 1px solid rgba(68,68,88,.9);
-	top: 1px;
-/*	background-color: #22222c;*/
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
+  /*background-color: rgba(68, 68, 88, 0.8);*/
+  border: 1px solid rgba(68,68,88,.9);
+  top: 1px;
+/*  background-color: #22222c;*/
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
 }

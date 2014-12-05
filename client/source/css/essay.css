@@ -1,12 +1,12 @@
 .essayLarge {
-	padding: 7%;
-	line-height: 170%;
+  padding: 7%;
+  line-height: 170%;
 }
 
 .essayLink {
-	background-image: url(images/icon.link.png);
+  background-image: url(images/icon.link.png);
 }
 
 .essayLinkHover {
-	background-image: url(images/icon.link.hover.png);
+  background-image: url(images/icon.link.hover.png);
 }

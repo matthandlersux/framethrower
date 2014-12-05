@@ -4,10 +4,10 @@
 var ROOTDIR = "../../";
 
 function include (bundles, extraFiles) {
-	try {
-		load(ROOTDIR + "source/js/include.js");
-		includes.rhinoInclude(bundles, extraFiles);
-	} catch (e) {}
+  try {
+    load(ROOTDIR + "source/js/include.js");
+    includes.rhinoInclude(bundles, extraFiles);
+  } catch (e) {}
 }
 include(["core"], []);
 
@@ -16,13 +16,13 @@ include(["core"], []);
 var concatted = "";
 var fileList = includes.getFileList(["core", "browser"], ["../../generated/templates/" + arguments[0] + ".js"]);
 forEach(fileList, function(fileName) {
-	concatted += read(fileName) + "\n";
+  concatted += read(fileName) + "\n";
 });
 
 // args.push(">../../generated/minified/alljs.js");
 
 // var opt = {args:args, output:""};
-// 
+//
 // runCommand("cat", opt);
 
 makeDirectory("../../generated/minified");

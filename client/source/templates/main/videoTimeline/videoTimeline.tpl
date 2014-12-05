@@ -1,5 +1,5 @@
 template (width::Number, height::Number) {
-	<div style-width="{width}" style-height="{height}">
-		
-	</div>
+  <div style-width="{width}" style-height="{height}">
+
+  </div>
 }

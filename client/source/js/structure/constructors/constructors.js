@@ -16,43 +16,43 @@ var localIds = makeGenerator("local.");
 // =====================================================================
 
 function makeFun(type, fun, argsLength, name, remoteLevel, lazy) {
-	if(argsLength === 0)
-		return fun();
-	if (name === undefined) name = localIds();
-	if (remoteLevel === undefined) remoteLevel = remote.shared;
-	return {
-		kind: "fun",
-		type: type,
-		fun: fun,
-		argsLength: argsLength,
-		name: name,
-		remote: remoteLevel,
-		lazy: lazy,
-		outsideScope: 0
-	};
+  if(argsLength === 0)
+    return fun();
+  if (name === undefined) name = localIds();
+  if (remoteLevel === undefined) remoteLevel = remote.shared;
+  return {
+    kind: "fun",
+    type: type,
+    fun: fun,
+    argsLength: argsLength,
+    name: name,
+    remote: remoteLevel,
+    lazy: lazy,
+    outsideScope: 0
+  };
 }
 
 function makeObject(type, name, prop, remoteLevel) {
-	if (name === undefined) name = localIds();
-	if (remoteLevel === undefined) remoteLevel = remote.localOnly;
-	if (prop === undefined) prop = {};
-	return {
-		kind: "object",
-		type: type,
-		name: name,
-		prop: prop,
-		remote: remoteLevel,
-		outsideScope: 0
-	};
+  if (name === undefined) name = localIds();
+  if (remoteLevel === undefined) remoteLevel = remote.localOnly;
+  if (prop === undefined) prop = {};
+  return {
+    kind: "object",
+    type: type,
+    name: name,
+    prop: prop,
+    remote: remoteLevel,
+    outsideScope: 0
+  };
 }
 
 // TODO: rename this to makeCell and rename the other function of that name
 function makeStartCap() {
-	return {
-		kind: "cell",
-		remote: remote.localOnly,
-		name: localIds()
-	};
+  return {
+    kind: "cell",
+    remote: remote.localOnly,
+    name: localIds()
+  };
 }
 
 
@@ -63,30 +63,30 @@ function makeStartCap() {
 // =====================================================================
 
 function makeNullObject() {
-	return {
-		kind: "null",
-		type: parseType("Null"),
-		name: "null",
-		remote: remote.localOnly,
-		outsideScope: 0
-	};
+  return {
+    kind: "null",
+    type: parseType("Null"),
+    name: "null",
+    remote: remote.localOnly,
+    outsideScope: 0
+  };
 }
 
 function makeOrd(value) {
-	function stringifyOrdValue(value) {
-		return map(value, function (x) {
-			return x ? "b" : "a";
-		}).join("");
-	}
-	if (value === undefined) value = [true];
-	return {
-		kind: "ord",
-		type: parseType("Ord"),
-		name: stringifyOrdValue(value),
-		value: value,
-		remote: remote.localOnly,
-		outsideScope: 0
-	};
+  function stringifyOrdValue(value) {
+    return map(value, function (x) {
+      return x ? "b" : "a";
+    }).join("");
+  }
+  if (value === undefined) value = [true];
+  return {
+    kind: "ord",
+    type: parseType("Ord"),
+    name: stringifyOrdValue(value),
+    value: value,
+    remote: remote.localOnly,
+    outsideScope: 0
+  };
 }
 
 
@@ -98,32 +98,32 @@ function makeOrd(value) {
 // =====================================================================
 
 function makeList(asArray, remoteLevel) {
-	if (remoteLevel === undefined) remoteLevel = remote.localOnly;
-	return {
-		kind: "list",
-		type: parseType("[a]"),
-		remote: remoteLevel,
-		outsideScope: 0,
-		asArray: asArray
-	};
+  if (remoteLevel === undefined) remoteLevel = remote.localOnly;
+  return {
+    kind: "list",
+    type: parseType("[a]"),
+    remote: remoteLevel,
+    outsideScope: 0,
+    asArray: asArray
+  };
 }
 
 function makeTupleType(n) {
-	var tupleType = "Tuple"+n+" t1";
-	for(var i=2; i<=n; i++) {
-		tupleType += " t"+i;
-	}
-	return tupleType;
+  var tupleType = "Tuple"+n+" t1";
+  for(var i=2; i<=n; i++) {
+    tupleType += " t"+i;
+  }
+  return tupleType;
 }
 
 function makeTuple(asArray, remoteLevel) {
-	if (remoteLevel === undefined) remoteLevel = remote.localOnly;
-	//var n = arguments.length;
+  if (remoteLevel === undefined) remoteLevel = remote.localOnly;
+  //var n = arguments.length;
     return {
         //kind: "tuple"+n,
         kind: "tuple",
-		//name: localIds(),
-		remote: remoteLevel,
+    //name: localIds(),
+    remote: remoteLevel,
         asArray: asArray
     };
 }
@@ -134,31 +134,31 @@ function makeTuple(asArray, remoteLevel) {
 // =====================================================================
 
 function makeXMLP(xml, env) {
-	if (env === undefined) env = emptyEnv;
-	return {
-		kind: "xmlp", 
-		name: localIds(),
-		remote: remote.localOnly,
-		xml: xml,
-		env: env
-	};
+  if (env === undefined) env = emptyEnv;
+  return {
+    kind: "xmlp",
+    name: localIds(),
+    remote: remote.localOnly,
+    xml: xml,
+    env: env
+  };
 }
 
 function makeInstruction(lineAction, env) {
-	return {
-		kind: "instruction",
-		instructions: lineAction.actions,
-		env: env,
-		remote: remote.localOnly
-	};
+  return {
+    kind: "instruction",
+    instructions: lineAction.actions,
+    env: env,
+    remote: remote.localOnly
+  };
 }
 
 // used by builtin actions in functions/actions.js, and also by desugar of jsaction() syntax in semantics.js:
 function makeActionMethod(f) {
-	var action = {kind: "actionMethod", f: f}, // will be interpreted by executeAction()
-		lineAction = {actions: [{action: action}]};
-	
-	return makeInstruction(lineAction, emptyEnv);
+  var action = {kind: "actionMethod", f: f}, // will be interpreted by executeAction()
+    lineAction = {actions: [{action: action}]};
+
+  return makeInstruction(lineAction, emptyEnv);
 }
 
 
@@ -168,19 +168,19 @@ function makeActionMethod(f) {
 // =====================================================================
 
 function makeApplyAST(left, right) {
-	return {
-		cons: "apply",
-		left: left,
-		right: right
-	};
+  return {
+    cons: "apply",
+    left: left,
+    right: right
+  };
 }
 
 function makeLambdaAST(left, right) {
-	return {
-		cons: "lambda",
-		left: left,
-		right: right
-	};
+  return {
+    cons: "lambda",
+    left: left,
+    right: right
+  };
 }
 
 
@@ -190,16 +190,16 @@ function makeLambdaAST(left, right) {
 // =====================================================================
 
 function makeTypeVar(name) {
-	return {kind: "typeVar", value: name};
+  return {kind: "typeVar", value: name};
 }
 function makeTypeName(name) {
-	return {kind: "typeName", value: name};
+  return {kind: "typeName", value: name};
 }
 function makeTypeLambda(left, right) {
-	return {kind: "typeLambda", left: left, right: right};
+  return {kind: "typeLambda", left: left, right: right};
 }
 function makeTypeApply(left, right) {
-	return {kind: "typeApply", left: left, right: right};
+  return {kind: "typeApply", left: left, right: right};
 }
 
 
@@ -210,29 +210,29 @@ function makeTypeApply(left, right) {
 // =====================================================================
 
 function makeVar(deBruijn) {
-	return {
-		kind: "exprVar",
-		deBruijn: deBruijn,
-		name: "/" + deBruijn,
-		outsideScope: deBruijn
-	};
+  return {
+    kind: "exprVar",
+    deBruijn: deBruijn,
+    name: "/" + deBruijn,
+    outsideScope: deBruijn
+  };
 }
 
 function makeApply(left, right) {
-	return {
-		kind: "exprApply",
-		left: left,
-		right: right,
-		outsideScope: maximum(getOutsideScope(left), getOutsideScope(right))
-	};
+  return {
+    kind: "exprApply",
+    left: left,
+    right: right,
+    outsideScope: maximum(getOutsideScope(left), getOutsideScope(right))
+  };
 }
 function makeLambda(varName, expr) {
-	return {
-		kind: "exprLambda",
-		varName: varName,
-		expr: expr,
-		outsideScope: maximum(0, getOutsideScope(expr) - 1)
-	};
+  return {
+    kind: "exprLambda",
+    varName: varName,
+    expr: expr,
+    outsideScope: maximum(0, getOutsideScope(expr) - 1)
+  };
 }
 
 
@@ -250,7 +250,7 @@ function makeLambda(varName, expr) {
 // =====================================================================
 // These are functions that can be called on all expr's.
 // They tag expr's with memoized results
-// 
+//
 // tags: name, stringifyForServer, outsideScope
 // =====================================================================
 
@@ -264,63 +264,63 @@ if x is an object that has the key (ie: the result is already memoized), then re
 otherwise performs f on x to get result. sets x[key] to the result. returns the result.
 */
 function memoizeF(key, f) {
-	return function (x) {
-		if (typeof x === "object") {
-			if (x[key] === undefined) {
-				x[key] = f(x);
-			}
-			return x[key];			
-		} else {
-			return f(x);
-		}
-	};
+  return function (x) {
+    if (typeof x === "object") {
+      if (x[key] === undefined) {
+        x[key] = f(x);
+      }
+      return x[key];
+    } else {
+      return f(x);
+    }
+  };
 }
 
 
 // TODO: stringify should stringify lists properly
 var stringify = memoizeF("name", function (expr) {
-	if (expr.kind === "exprApply") {
-		return "(" + stringify(expr.left) + " " + stringify(expr.right) + ")";
-	} else if (expr.kind === "exprLambda") {
-		return "(\\ " + stringify(expr.expr) + ")";
-	// } else if (expr.kind === "exprVar") {
-	// 	return "/" + expr.deBruijn;
-	} else if (expr.kind === "tuple") {
-		var tupleArray = expr.asArray;
-		var arity = tupleArray.length;
-		var stringifiedArray = map(tupleArray, stringify);
-		return "(makeTuple" + arity + " " + stringifiedArray.join(" ") + ")";
-	} else {
-		var lit = unparseLiteral(expr);
-		if (lit !== undefined) {
-			return lit;
-		} else {
-			// TODO: this shouldn't be called, I think, check
-			return localIds();
-		}
-	}
+  if (expr.kind === "exprApply") {
+    return "(" + stringify(expr.left) + " " + stringify(expr.right) + ")";
+  } else if (expr.kind === "exprLambda") {
+    return "(\\ " + stringify(expr.expr) + ")";
+  // } else if (expr.kind === "exprVar") {
+  //   return "/" + expr.deBruijn;
+  } else if (expr.kind === "tuple") {
+    var tupleArray = expr.asArray;
+    var arity = tupleArray.length;
+    var stringifiedArray = map(tupleArray, stringify);
+    return "(makeTuple" + arity + " " + stringifiedArray.join(" ") + ")";
+  } else {
+    var lit = unparseLiteral(expr);
+    if (lit !== undefined) {
+      return lit;
+    } else {
+      // TODO: this shouldn't be called, I think, check
+      return localIds();
+    }
+  }
 });
 
 var stringifyForServer = memoizeF("stringifyForServer", function (expr) {
-	if (expr.kind === "exprApply") {
-		return "(" + stringifyForServer(expr.left) + " " + stringifyForServer(expr.right) + ")";
-	} else if (expr.kind === "exprLambda") {
-		return "(\\ " + stringifyForServer(expr.expr) + ")";
-	} else if (expr.kind === "tuple") {
-		var tupleArray = expr.asArray;
-		var arity = tupleArray.length;
-		var stringifiedArray = map(tupleArray, stringifyForServer);
-		return "(makeTuple" + arity + " " + stringifiedArray.join(" ") + ")";
-	} else if (expr.kind === "list") {
-		console.log("LIST!!! in stringifyForServer");
-	} else {
-		return "" + stringify(expr); //addition necessary because of optimization hack in unparseLiteral
-	}
+  if (expr.kind === "exprApply") {
+    return "(" + stringifyForServer(expr.left) + " " + stringifyForServer(expr.right) + ")";
+  } else if (expr.kind === "exprLambda") {
+    return "(\\ " + stringifyForServer(expr.expr) + ")";
+  } else if (expr.kind === "tuple") {
+    var tupleArray = expr.asArray;
+    var arity = tupleArray.length;
+    var stringifiedArray = map(tupleArray, stringifyForServer);
+    return "(makeTuple" + arity + " " + stringifiedArray.join(" ") + ")";
+  } else if (expr.kind === "list") {
+    console.log("LIST!!! in stringifyForServer");
+  } else {
+    return "" + stringify(expr); //addition necessary because of optimization hack in unparseLiteral
+  }
 });
 
 function getOutsideScope(expr) {
-	if (expr.outsideScope !== undefined) return expr.outsideScope;
-	else return 0;
+  if (expr.outsideScope !== undefined) return expr.outsideScope;
+  else return 0;
 }
 
 

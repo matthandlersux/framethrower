@@ -1,73 +1,73 @@
 .zoomTimeline .timelineBackground {
-	fill: #CCC;
+  fill: #CCC;
 }
 
 .scrollTimeline .timelineBackground {
-	fill: #AAF;
+  fill: #AAF;
 }
 
 .loadedDuration {
-	fill: #888;
-	opacity: 0.5;
+  fill: #888;
+  opacity: 0.5;
 }
 
 .smallTick {
-	stroke: #444;
-	opacity: 0.2;
+  stroke: #444;
+  opacity: 0.2;
 }
 
 .bigTick {
-	stroke: #444;
-	stroke-width: 1;
-	opacity: 0.5;
+  stroke: #444;
+  stroke-width: 1;
+  opacity: 0.5;
 }
 
 .tickLabel {
-	font-size: 8pt;
-	fill: black;
-	opacity: 0.8;
+  font-size: 8pt;
+  fill: black;
+  opacity: 0.8;
 }
 
 .timepoint {
-	stroke: white;
-	opacity: 0.5;
-	stroke-width: 5;
-	stroke-linecap: round;
-	cursor: pointer;
+  stroke: white;
+  opacity: 0.5;
+  stroke-width: 5;
+  stroke-linecap: round;
+  cursor: pointer;
 }
 .hoveredTimepoint {
-	stroke: orange;
-	opacity: 0.8;
-	stroke-width: 5;
-	stroke-linecap: round;
+  stroke: orange;
+  opacity: 0.8;
+  stroke-width: 5;
+  stroke-linecap: round;
 }
 
 .timeinterval {
-	fill: white;
-	opacity: 0.5;
-	cursor: pointer;
+  fill: white;
+  opacity: 0.5;
+  cursor: pointer;
 }
 .hoveredTimeinterval {
-	fill: orange;
-	opacity: 0.8;
+  fill: orange;
+  opacity: 0.8;
 }
 
 .selectStart {
-	stroke: #CCF;
+  stroke: #CCF;
 }
 
 .selectDuration {
-	fill: #CCF;
-	opacity: 0.5;
+  fill: #CCF;
+  opacity: 0.5;
 }
 
 .previewTime {
-	stroke: white;
+  stroke: white;
 }
 
 .zoomDuration {
-	fill: #AAA;
-	stroke-width: 1;
-	stroke: blue;
-	cursor: move;
+  fill: #AAA;
+  stroke-width: 1;
+  stroke: blue;
+  cursor: move;
 }

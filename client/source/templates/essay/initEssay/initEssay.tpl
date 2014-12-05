@@ -1,34 +1,34 @@
 action () {
-	setEssayText = action (text::String) {
-		set (Situation:propText mrEssay) text
-	},
+  setEssayText = action (text::String) {
+    set (Situation:propText mrEssay) text
+  },
 
-	makeTextPoint = action (char::Number) {
-		createTextPoint mrEssay pipeTextlineToMrEssay char
-	},
-	makeTextRange = action (start::Number, end::Number) {
-		tp1 <- makeTextPoint start,
-		tp2 <- makeTextPoint end,
-		createInterval mrEssay (cons lineToTextline pipeTextlineToMrEssay) tp1 tp2
-	},
+  makeTextPoint = action (char::Number) {
+    createTextPoint mrEssay pipeTextlineToMrEssay char
+  },
+  makeTextRange = action (start::Number, end::Number) {
+    tp1 <- makeTextPoint start,
+    tp2 <- makeTextPoint end,
+    createInterval mrEssay (cons lineToTextline pipeTextlineToMrEssay) tp1 tp2
+  },
 
-	makeVideoPoint = action (time::Number) {
-		createTimePoint mrEssayTimeline pipeTimelineToMrEssayTimeline time
-	},
-	makeVideoRange = action (start::Number, end::Number) {
-		tp1 <- makeVideoPoint start,
-		tp2 <- makeVideoPoint end,
-		createInterval mrEssayTimeline (cons lineToTimeline pipeTimelineToMrEssayTimeline) tp1 tp2
-	},
+  makeVideoPoint = action (time::Number) {
+    createTimePoint mrEssayTimeline pipeTimelineToMrEssayTimeline time
+  },
+  makeVideoRange = action (start::Number, end::Number) {
+    tp1 <- makeVideoPoint start,
+    tp2 <- makeVideoPoint end,
+    createInterval mrEssayTimeline (cons lineToTimeline pipeTimelineToMrEssayTimeline) tp1 tp2
+  },
 
-	makeLink = action (from::Situation, to::Situation) {
-		makeInfon2 ulink ulinkSource ulinkTarget mrEssay from to
-	},
-	
-	
+  makeLink = action (from::Situation, to::Situation) {
+    makeInfon2 ulink ulinkSource ulinkTarget mrEssay from to
+  },
 
-	
-	
+
+
+
+
 
 setEssayText "This is written as a first post to FilmsFolding. A goal of that project is to build a community and infrastructure of film annotators, the idea being based on three notions:
 
@@ -38,7 +38,7 @@ setEssayText "This is written as a first post to FilmsFolding. A goal of that pr
 
 * Films have already been growing into this space, many of them exhibiting added structure that engages the viewer in a layer above the story. I've called the collection of techniques that do this \"folding.\" These are self-aware devices that add new layers to the narrative dynamics. An intelligent way to think about how we would build tools to grow this emerging \"engagement space\" is to understand the already existing, natural tendency in movies, and then build on it.
 
-Toward the goal of discovering the \"existing tendency in movies\" for folding, I propose a discussion about \"Moulin Rouge.\" 
+Toward the goal of discovering the \"existing tendency in movies\" for folding, I propose a discussion about \"Moulin Rouge.\"
 
 A disclaimer first: \"folding\" is not a very ambitious notion. I do not propose it as a new basis for film criticism, and surely not as a primary means for appreciating films. I think it is an interesting, new element of films that is evolving quickly and probably is changing or reflecting similar developments in the way we imagine. It is particularly interesting to someone who wants to understand how we model ourselves, and it would be useful to someone designing a next generation collaborative film annotation tool. But it is only one component in a full theory of narrative dynamics.
 
@@ -59,9 +59,9 @@ This little essay sketches out two things. First there is the matter of the narr
 
 
 
-A common device in narrative is for a story to be \"framed\" by a storyteller. \"The Princess Bride\" is a movie which has little bits at the beginning, middle and end which show a man telling a bedtime story to his grandson. A reason to do this for \"The Princess Bride\" is simple: it provides an easy way for the filmmaker to quickly establish a certain level of fantasy and humor on which that movie depends. 
+A common device in narrative is for a story to be \"framed\" by a storyteller. \"The Princess Bride\" is a movie which has little bits at the beginning, middle and end which show a man telling a bedtime story to his grandson. A reason to do this for \"The Princess Bride\" is simple: it provides an easy way for the filmmaker to quickly establish a certain level of fantasy and humor on which that movie depends.
 
-\"Moulin Rouge\" does this same sort of nesting many times, jumping around and blurring the layers; as intended, we get more engaged in the way the story is being told than in the story itself. 
+\"Moulin Rouge\" does this same sort of nesting many times, jumping around and blurring the layers; as intended, we get more engaged in the way the story is being told than in the story itself.
 
 (A warning here, building on the earlier disclaimer. Real, powerful art -- the kind we can get passionate about and which changes our lives -- has a narrative power that this movie does not have. Films like that, when considered in terms of their narrative dynamics, have deeper, softer goals than \"Moulin Rouge\" and deserve a fuller vocabulary for discussion than \"folding\" alone. With a collaborator, I am developing these modeling tools, and hope to present some of them soon. In that context, you can think of the folded nesting I describe here as simple architectural \"surfaces\" in a metaphoric space with all sorts of connected elements, forces and movement.
 
@@ -71,7 +71,7 @@ I picked \"Moulin Rouge\" because it was fabricated for just the simple thing we
 
 The story is based on the date movie formula which follows the pattern of: couple falls in love, usually by accident; there are external difficulties and they break up. Usually the breakup is due to a misunderstanding. At the end, the two come together again with a public pronouncement of their love, often witnessed by an on-screen audience that is designed to reflect us as audience.
 
-On that formulaic backbone, \"Moulin Rouge\" adds simple elements from: a sacrifice story; another of obsession (for beauty) by a powerful man; love (or at least sex) as a performance; and yearning to \"fly away.\" All of these are combined in interesting but obvious ways, for instance Satine (the heroine) is a \"courtesan\" who performs well as a sex object, and who is willing to do one more trick (with an obsessed rich duke) to get funding to prove she is a \"real\" actress and thus escape. The actual plot is drawn from \"La Boheme\" (which Luhrmann staged) and \"La Traviata,\" as well as the works of Toulouse-Lautrec and a previous film by the name of \"Moulin Rouge.\" 
+On that formulaic backbone, \"Moulin Rouge\" adds simple elements from: a sacrifice story; another of obsession (for beauty) by a powerful man; love (or at least sex) as a performance; and yearning to \"fly away.\" All of these are combined in interesting but obvious ways, for instance Satine (the heroine) is a \"courtesan\" who performs well as a sex object, and who is willing to do one more trick (with an obsessed rich duke) to get funding to prove she is a \"real\" actress and thus escape. The actual plot is drawn from \"La Boheme\" (which Luhrmann staged) and \"La Traviata,\" as well as the works of Toulouse-Lautrec and a previous film by the name of \"Moulin Rouge.\"
 
 So you have these external patterns that by themselves probably shouldn't be counted as folds unless there are self-aware internal references that use them. There are some of these in \"Moulin Rouge,\" like the sign outside Christian's apartment, which is from Luhmann's stage production of \"La Boheme.\" But I'll skip over those.
 
@@ -85,7 +85,7 @@ This curtain wrapper is asymmetric. At the beginning, the curtains open to revea
 
 The second nest, or wrapper is our  \"outer\" narrator. He appears  after a similar placard tells us that this is Paris, 1900. This time the placard is in reverse, white letters on black: same font, style and border. This outer narrator is another persona of Toulouse-Lautrec, as we will see. He is wearing part of the costume he wears at the end, as the singing \"magical sitar\" who sings a song of love, an elaborate cross-fold role written into the play at several levels of the nesting. He indeed sings the song of love, introducing the hero. Notably Christian is introduced as strange and \"enchanted,\" the enchantment in part being (we discover) pharmaceutical.
 
-This nest ends  just before the curtain layer, with a reappearance of this singer, again outside in front of the windmill. This time, he retains the facial makeup of the magical sitar character, which he -- in the inner play in the movie -- has just been prominent, playing a role much like he does in this outer nest: as the physically high observer of the love tragedy. Again at the end we are reminded that Christian is enchanted and by then we know why: through absinthe. 
+This nest ends  just before the curtain layer, with a reappearance of this singer, again outside in front of the windmill. This time, he retains the facial makeup of the magical sitar character, which he -- in the inner play in the movie -- has just been prominent, playing a role much like he does in this outer nest: as the physically high observer of the love tragedy. Again at the end we are reminded that Christian is enchanted and by then we know why: through absinthe.
 
 This already is where the nests get entangled. The primary story is about Christian writing the story at his typewriter. The end of this typing happens  after the outer narrator has begun closing the film, so a layer that begin as inside the song of the sitar ends as outside. This is how it must be, because the sitar himself is a character written on that typewriter. (Or is he? We'll see that it might be the other way around.)
 
@@ -93,7 +93,7 @@ The outer narrator appears in the story in four guises, beginning as the outer n
 
 This outer narrator appears briefly at the end of the first act , together with the older Christian, writing.
 
-The next nesting -- going by the order we see them in the film -- is the writing of the movie we are seeing. This is the beginning of the layer that we noted ended after the layer that starts enclosing it. Here we see Christian in 1900, several months after Satine has died. He has a beard which helps us keep the times straight. He is beginning the writing/typing of what we will see in the nests that are enclosed ever inward. 
+The next nesting -- going by the order we see them in the film -- is the writing of the movie we are seeing. This is the beginning of the layer that we noted ended after the layer that starts enclosing it. Here we see Christian in 1900, several months after Satine has died. He has a beard which helps us keep the times straight. He is beginning the writing/typing of what we will see in the nests that are enclosed ever inward.
 
 You can already see that we have many, many layers, each nominally contained within another, but they touch each other and affect each other in possibly complex ways, which we will get to later. For now we are just doing some high level mapping of the layers.
 
@@ -109,19 +109,19 @@ He sits down to write and the typewriter writes by itself (controlled from the f
 
 This leads to events that result in him being asked to write the script for a play, nominally based on \"The Sound of Music\" (which we have already heard at the red curtain) and to be called \"Spectacular Spectacular.\" The word \"spectacular\" is used in both of its senses here. There is the obvious one meaning \"thrilling;\" but there is the other meaning as well, associated with observation. So the words denote a self-observed entertainment as well as an entertaining look at self-observation.
 
-And THIS, leads to the next fold. These nestings get more significant and there are really only two more of this type to go. The one coming up is Christian's first drink of absinthe after we hear the music from \"Sound of Music\" being played on glasses filled with absinthe . That absinthe music is stopped because \"it's drowning out my words.\" Later, there really is some sort of battle going on between the absinthe and the written words (on the typewriter), but we'll get to that soon. 
+And THIS, leads to the next fold. These nestings get more significant and there are really only two more of this type to go. The one coming up is Christian's first drink of absinthe after we hear the music from \"Sound of Music\" being played on glasses filled with absinthe . That absinthe music is stopped because \"it's drowning out my words.\" Later, there really is some sort of battle going on between the absinthe and the written words (on the typewriter), but we'll get to that soon.
 
 For now, lets just note that we enter another nest, another layer. What happens after this drink, everything, can be seen as a hallucination brought on by the absinthe. It starts with the green fairy (Kylie Minogue)  but she turns into a demon  and we are spun into space with what happens next. That being spun into space is an effect that goes by quickly, and zooms us into the sex club with Christian disguised as an English poet.
 
-A minor nest can be noted if you are reading and watching the film. Christian is a visitor to the club but gets swept up in the performance and his ability to do so is admired (\"good to take interest in our show\"). There is a concurrent case of mistaken identity. 
+A minor nest can be noted if you are reading and watching the film. Christian is a visitor to the club but gets swept up in the performance and his ability to do so is admired (\"good to take interest in our show\"). There is a concurrent case of mistaken identity.
 
-And there is the final nesting, the play within, which goes slowly and with many complicated, intricate notions. The first is when, in the elephant, the crew has to make up the play on the spot . 
+And there is the final nesting, the play within, which goes slowly and with many complicated, intricate notions. The first is when, in the elephant, the crew has to make up the play on the spot .
 
 Following this as entertaining middle, we have the genre of the stage musical mixed in for a bit, where the story and the musical play traditionally get merged in the genre. There are several episodes of these, where we also get the few essential plot points. Interspersed are successively maturing versions of the play within, always with issues about the uncertain end and the role of the magical sitar (Lautrec), his player (the Argentine, standing in for Christian) and how they affect the love (Satine).
 
 The most remarkable musical episode in this middle part is when the sexual tension peaks, and there seems to be sexual coupling everywhere you look, or the desire for it. This is woven together by a tango, expertly intercut with ALL the layers .
 
-We have the final, final nest when the actual play begins . During this play, we have a mirror of the original number with Satine, both with the song and the camera. 
+We have the final, final nest when the actual play begins . During this play, we have a mirror of the original number with Satine, both with the song and the camera.
 
 So far as the date movie story is concerned, the public confession of love occurs and the two are reconciled. This part, we are constantly told -- the Love part -- is true. All else might not be, having been made up.
 
@@ -136,17 +136,17 @@ Setting up all these layers is fun. What makes us call them \"folds\" is when th
 
 The big picture here is that the typed story about the lovers includes a typed script for a play. Each affects the other, with the unusual effect that Christian controls everything that happens with that typewriter. He controls it before it happens as he is in the movie and is writing the play that determines everything. He also controls it through the typewriter after the fact, by recording what happened, potentially all made up.
 
-The chief agent in this is the typewriter which we first see as the young Christian, who comes to town from the sticks . We know this is 1899. We see the typewriter in the first couple minutes of real action, coming brand new from its wooden case, slyly introduced after a \"key\" is presented to the boy. The typewriter is an Underwood No. 5. This is a famed machine, one of the favorite machines for writers until the advent of the electric typewriter and then the personal computer. 
+The chief agent in this is the typewriter which we first see as the young Christian, who comes to town from the sticks . We know this is 1899. We see the typewriter in the first couple minutes of real action, coming brand new from its wooden case, slyly introduced after a \"key\" is presented to the boy. The typewriter is an Underwood No. 5. This is a famed machine, one of the favorite machines for writers until the advent of the electric typewriter and then the personal computer.
 
-For instance, it factors heavily in the William Burroughs \"Naked Lunch\" where typewriters literally do the writing, coming alive and battling each other. Indeed, Kerouac finished \"Naked Lunch\" for his friend on his Underwood No. 5. There's a remarkable history of this machine which factors into the story. The machine first appeared in 1900, just barely in time for the older Christian to write the story about Satine's death. 
+For instance, it factors heavily in the William Burroughs \"Naked Lunch\" where typewriters literally do the writing, coming alive and battling each other. Indeed, Kerouac finished \"Naked Lunch\" for his friend on his Underwood No. 5. There's a remarkable history of this machine which factors into the story. The machine first appeared in 1900, just barely in time for the older Christian to write the story about Satine's death.
 
 But the younger Christian would not have had it when he arrived in 1899, when it is shown. I believe that this is not a goof, nor do I suppose it was intended as an obvious clue to be discovered during the watching. I think it was simply careful writing on the part of Baz, who would have believed that everything we see until the end may well have been created retrospectively at the end or as a hallucination, explaining the anachronistic typewriter at the beginning.
 
-This may seem a reach, so let's back up a bit. We know that Christian writes a play, and that forces are at work to determine how it ends, starting with the Duke's early question . The young Christian wants the girl and is writing that in. The Duke wants the girl too and through an agent we will get to in a minute, is writing in that contradictory ending. We see that Satine also is determined to write the ending with her death, and we see her take something which could be medicine, but is likely poison . We also know that the typewriter is in two worlds, writing both before and after the fact. 
+This may seem a reach, so let's back up a bit. We know that Christian writes a play, and that forces are at work to determine how it ends, starting with the Duke's early question . The young Christian wants the girl and is writing that in. The Duke wants the girl too and through an agent we will get to in a minute, is writing in that contradictory ending. We see that Satine also is determined to write the ending with her death, and we see her take something which could be medicine, but is likely poison . We also know that the typewriter is in two worlds, writing both before and after the fact.
 
-Lets go to the second agent: the absinthe. 
+Lets go to the second agent: the absinthe.
 
-From the beginning, the absinthe could be doing the writing. We have Lautrec guiding the writing of the play, starting in the elephant. He suggests and becomes the magical sitar, whose song determines the end of the thing. As time goes on, he becomes less and less Lautrec and more the sitar. He has a metamorphosis from the writer, to the magical sitar, and then to the outer narrator. All this is through the agency of the absinthe. 
+From the beginning, the absinthe could be doing the writing. We have Lautrec guiding the writing of the play, starting in the elephant. He suggests and becomes the magical sitar, whose song determines the end of the thing. As time goes on, he becomes less and less Lautrec and more the sitar. He has a metamorphosis from the writer, to the magical sitar, and then to the outer narrator. All this is through the agency of the absinthe.
 
 We are reminded of this by the absinthe poster  at the \"stage,\" above Christian's apartment as the play comes together.
 

@@ -1,30 +1,30 @@
 Media Queries:
-	How to access media from media.eversplosion.com for grabbing movies, frames, crops
-	
-	Usage for accessing videos:
-	
-		http://media.eversplosion.com/media.php?id=__MovieName__&type=__MovieType -> URLOfMovie
-		
-			MovieName :: String (ex: "devise-walle" refers to "tmp/devise-walle.mp4" on the server) (eventually this will be changed to a MovieId referencing the database and pointing to S3 store)
-			MovieType :: "scrubber" | "video"
-		
-			extra parameters:
-			
-				start :: Number ( in seconds )
-				end :: Number (in seconds )
-			
-	Usage for grabbing screenshots/screencrops/thumbnails:
-	
-		http://media.eversplosion.com/crop.php?file=__MovieName__&time=__Time__ -> Jpeg
-		
-			MovieName :: String (ex: "devise-walle" refers to "tmp/devise-walle.mp4" on the server) (eventually this will be changed to a MovieId referencing the database and pointing to S3 store)
-			Time :: Number (ex: 100 refers to 100th second of specified video)
-			
-			extra parameters:
-			
-				width :: Number (ex: 100 will set the final width of the image to 100 px)
-				height :: Number (ex: 100 will set the final height of the image to 100 px)
-				cropWidth :: Number (ex: 64 will set the width of the cropped image to 64 px (image can still be stretched by width parameter) )
-				cropHeight :: Number (ex: 64 will set the height of the cropped image to 64 px (image can still be stretched by height parameter) )
-				cropX :: Number (ex: 10 will set the leftmost pixel of the original image to start cropping from to 10 px)
-				cropY :: Number (ex: 10 will set the topmost pixel of the original image to start cropping from to 10 px)
+  How to access media from media.eversplosion.com for grabbing movies, frames, crops
+
+  Usage for accessing videos:
+
+    http://media.eversplosion.com/media.php?id=__MovieName__&type=__MovieType -> URLOfMovie
+
+      MovieName :: String (ex: "devise-walle" refers to "tmp/devise-walle.mp4" on the server) (eventually this will be changed to a MovieId referencing the database and pointing to S3 store)
+      MovieType :: "scrubber" | "video"
+
+      extra parameters:
+
+        start :: Number ( in seconds )
+        end :: Number (in seconds )
+
+  Usage for grabbing screenshots/screencrops/thumbnails:
+
+    http://media.eversplosion.com/crop.php?file=__MovieName__&time=__Time__ -> Jpeg
+
+      MovieName :: String (ex: "devise-walle" refers to "tmp/devise-walle.mp4" on the server) (eventually this will be changed to a MovieId referencing the database and pointing to S3 store)
+      Time :: Number (ex: 100 refers to 100th second of specified video)
+
+      extra parameters:
+
+        width :: Number (ex: 100 will set the final width of the image to 100 px)
+        height :: Number (ex: 100 will set the final height of the image to 100 px)
+        cropWidth :: Number (ex: 64 will set the width of the cropped image to 64 px (image can still be stretched by width parameter) )
+        cropHeight :: Number (ex: 64 will set the height of the cropped image to 64 px (image can still be stretched by height parameter) )
+        cropX :: Number (ex: 10 will set the leftmost pixel of the original image to start cropping from to 10 px)
+        cropY :: Number (ex: 10 will set the topmost pixel of the original image to start cropping from to 10 px)

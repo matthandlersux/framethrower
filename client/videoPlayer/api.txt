@@ -1,21 +1,21 @@
 We do all communication of time in seconds.
 
 For the scrubber,
-	We need to be able to instantiate with a given:
-		width
-		height
-	We need to be able to send message:
-		seek (time) -- tell the player to seek to a specific time
-	We need to be able to receive an event:
-		loadedDuration (time) -- as the video loads, it sends messages back to the browser about the number of seconds that are loaded (this is lower priority than seek)
+  We need to be able to instantiate with a given:
+    width
+    height
+  We need to be able to send message:
+    seek (time) -- tell the player to seek to a specific time
+  We need to be able to receive an event:
+    loadedDuration (time) -- as the video loads, it sends messages back to the browser about the number of seconds that are loaded (this is lower priority than seek)
 
 For the player,
-	We need to be able to instantiate the player with a given:
-		width
-		height
-		start -- in seconds, where to start playing the video
-		duration -- in seconds
-	For now, the player should have the built-in controls for play/pause. You can just use an out-of-the-box video player.
+  We need to be able to instantiate the player with a given:
+    width
+    height
+    start -- in seconds, where to start playing the video
+    duration -- in seconds
+  For now, the player should have the built-in controls for play/pause. You can just use an out-of-the-box video player.
 
 
 

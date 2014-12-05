@@ -1,9 +1,9 @@
 body {
-	overflow: hidden;
-	background-color: #000;
-	color: #ccc;
+  overflow: hidden;
+  background-color: #000;
+  color: #ccc;
 }
 
 .rounded {
-	-moz-border-radius: 2px;
+  -moz-border-radius: 2px;
 }

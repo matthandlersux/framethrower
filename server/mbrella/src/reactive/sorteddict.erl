@@ -70,29 +70,29 @@ foldRange(_, Acc, empty, L, R) -> Acc;
 foldRange(F, Acc, {_,A,Xk,Xv,B}, L, R) when (Xk < L) ->
     foldRange(F, Acc, B, L, R);
 foldRange(F, Acc, {_,A,Xk,Xv,B}, L, R) when (Xk > R) ->
-	foldRange(F, Acc, A, L, R);
+  foldRange(F, Acc, A, L, R);
 foldRange(F, Acc, {_,A,Xk,Xv,B}, L, R) ->
     foldRange(F, F(Xk, Xv, foldRange(F, Acc, A, L, R)), B, L, R).
 
 
 mapRange(_, empty, L, R) -> empty;
 mapRange(F, {C,A,Xk,Xv,B}, L, R) when (Xk < L) ->
-	{C,A,Xk,Xv,mapRange(F, B, L, R)};
+  {C,A,Xk,Xv,mapRange(F, B, L, R)};
 mapRange(F, {C,A,Xk,Xv,B}, L, R) when (Xk > R) ->
-	{C,mapRange(F, A, L, R),Xk,Xv,B};
+  {C,mapRange(F, A, L, R),Xk,Xv,B};
 mapRange(F, {C,A,Xk,Xv,B}, L, R) ->
-	{C,mapRange(F, A, L, R),Xk, F(Xk, Xv), mapRange(F, B, L, R)}.
+  {C,mapRange(F, A, L, R),Xk, F(Xk, Xv), mapRange(F, B, L, R)}.
 
 fprHelper(_, {Acc, undefined}, empty, _, _) -> {Acc, 0};
 fprHelper(_, {Acc, Num}, empty, _, _) -> {Acc, Num + 1};
 fprHelper(F, {Acc, Num}, {_,A,Xk,Xv,B}, L, R) ->
-	{NewAcc, NewNum} = fprHelper(F, {Acc, Num}, A, L, R),
-	if
-		NewNum > R -> {NewAcc, NewNum};
-		NewNum < L -> fprHelper(F, {Acc,NewNum}, B, L, R);
-		true -> fprHelper(F, {F(Xk, Xv, NewAcc),NewNum}, B, L, R)
-	end.
-	
+  {NewAcc, NewNum} = fprHelper(F, {Acc, Num}, A, L, R),
+  if
+    NewNum > R -> {NewAcc, NewNum};
+    NewNum < L -> fprHelper(F, {Acc,NewNum}, B, L, R);
+    true -> fprHelper(F, {F(Xk, Xv, NewAcc),NewNum}, B, L, R)
+  end.
+
 foldPosRange(F, Acc, Data, L, R) -> fprHelper(F, {Acc, undefined}, Data, L, R).
 
 
@@ -100,17 +100,17 @@ foldPosRange(F, Acc, Data, L, R) -> fprHelper(F, {Acc, undefined}, Data, L, R).
 mprHelper(_, undefined, empty, _, _) -> {empty, 0};
 mprHelper(_, Num, empty, _, _) -> {empty, Num + 1};
 mprHelper(F, Num, {C,A,Xk,Xv,B}, L, R) ->
-	{NewA, NewNum} = mprHelper(F, Num, A, L, R),
-	if
-		NewNum > R -> {NewA, NewNum};
-		NewNum < L -> 
-			{NewB, NewerNum} = mprHelper(F, NewNum, B, L, R),
-			{{C, NewA, Xk, Xv, NewB}, NewerNum};
-		true -> 
-			{NewB, NewerNum} = mprHelper(F, NewNum, B, L, R),
-			{{C, NewA, Xk, F(Xk, Xv), NewB}, NewerNum}
-	end.
-	
+  {NewA, NewNum} = mprHelper(F, Num, A, L, R),
+  if
+    NewNum > R -> {NewA, NewNum};
+    NewNum < L ->
+      {NewB, NewerNum} = mprHelper(F, NewNum, B, L, R),
+      {{C, NewA, Xk, Xv, NewB}, NewerNum};
+    true ->
+      {NewB, NewerNum} = mprHelper(F, NewNum, B, L, R),
+      {{C, NewA, Xk, F(Xk, Xv), NewB}, NewerNum}
+  end.
+
 mapPosRange(F, Data, L, R) -> {Ans, _} = mprHelper(F, undefined, Data, L, R), Ans.
 
 
@@ -128,9 +128,9 @@ getNextKey(K, {_,_,K,_,empty}) -> empty;
 getNextKey(K, {_,_,K,_,Right}) -> minKey(Right);
 getNextKey(K, {_,Left,K1,_,_}) when K < K1 ->
     case getNextKey(K, Left) of
-		empty -> K1;
-		Answer -> Answer
-	end;
+    empty -> K1;
+    Answer -> Answer
+  end;
 getNextKey(K, {_,_,K1,_,Right}) when K > K1 ->
     getNextKey(K, Right).
 
@@ -140,61 +140,61 @@ getPrevKey(K, {_,Left,K1,_,_}) when K < K1 ->
     getPrevKey(K, Left);
 getPrevKey(K, {_,_,K1,_,Right}) when K > K1 ->
     case getPrevKey(K, Right) of
-		empty -> K1;
-		Answer -> Answer
-	end.
-	
+    empty -> K1;
+    Answer -> Answer
+  end.
+
 %% getIndex(Key, Dict) -> {ok,Value} | error.
 %% TODO: could be handled more efficiently if we stored index information in the data structure
 getIndex(_, empty) -> {error, 0};
 getIndex(K, {_,Left,K1,_,_}) when K < K1 ->
     getIndex(K, Left);
 getIndex(K, {_,Left,K1,_,Right}) when K > K1 ->
-	case getIndex(K, Right) of
-		{Status, Num} -> {Status, sorteddict:size(Left) + 1 + Num}
-	end;
+  case getIndex(K, Right) of
+    {Status, Num} -> {Status, sorteddict:size(Left) + 1 + Num}
+  end;
 getIndex(_, {_,Left,_,Val,_}) -> {ok, sorteddict:size(Left)}.
 
 
 
 getNearestIndex(Key, Nearest, Dict) ->
-	case getIndex(Key, Dict) of
-		{ok, Num} -> Num;
-		{error, Num} ->
-			case Nearest of
-				right -> Num;
-				left ->
-					if Num-1 < 0 ->
-						Num;
-					true ->
-						Num-1
-					end
-			end
-	end.
+  case getIndex(Key, Dict) of
+    {ok, Num} -> Num;
+    {error, Num} ->
+      case Nearest of
+        right -> Num;
+        left ->
+          if Num-1 < 0 ->
+            Num;
+          true ->
+            Num-1
+          end
+      end
+  end.
 
 
 getNearestIndexRight(Key, Dict) ->
-	getNearestIndex(Key, right, Dict).
+  getNearestIndex(Key, right, Dict).
 
 getNearestIndexLeft(Key, Dict) ->
-	getNearestIndex(Key, left, Dict).
+  getNearestIndex(Key, left, Dict).
 
 
-getByIndex(Index, Dict) -> 
-	case getByIndex1(Index, 0, Dict) of
-		{ok, Val} -> {ok, Val};
-		_ -> error
-	end.
+getByIndex(Index, Dict) ->
+  case getByIndex1(Index, 0, Dict) of
+    {ok, Val} -> {ok, Val};
+    _ -> error
+  end.
 
 getByIndex1(_, Offset, empty) -> Offset;
 getByIndex1(Index, Index, {_,empty,Val,_,_}) -> {ok, Val};
 getByIndex1(Index, Index, {_,A,_,_,_}) -> getByIndex1(Index, Index, A);
 getByIndex1(Index, Offset, {_,A,Xk,_,B}) ->
-	case getByIndex1(Index, Offset, A) of
-		{ok, Val} -> {ok, Val};
-		Index -> {ok, Xk};
-		NewOffset -> getByIndex1(Index, NewOffset+1, B)
-	end.
+  case getByIndex1(Index, Offset, A) of
+    {ok, Val} -> {ok, Val};
+    Index -> {ok, Xk};
+    NewOffset -> getByIndex1(Index, NewOffset+1, B)
+  end.
 
 
 
@@ -265,7 +265,7 @@ fetch_keys({_,L,K,_,R}, Tail) ->
 
 store(K, V, T) ->
     {_,L,K1,V1,R} = store1(K, V, T),
-    {b,L,K1,V1,R}.				%setelement(1, b, T1).
+    {b,L,K1,V1,R}.        %setelement(1, b, T1).
 
 store1(K, V, empty) -> {r,empty,K,V,empty};
 store1(K, V, {C,Left,K1,V1,Right}) when K < K1 ->
@@ -284,9 +284,9 @@ store1(K, V, {C,L,_,_,R}) ->
 %%     end;
 %% store1(K, V, {b,Left,K1,V1,Right}) ->
 %%     if K < K1 ->
-%% 	    lbalance(store1(K, V, Left), K1, V1, Right);
+%%       lbalance(store1(K, V, Left), K1, V1, Right);
 %%        K > K1 ->
-%% 	    rbalance(Left, K1, V1, store1(K, V, Right));
+%%       rbalance(Left, K1, V1, store1(K, V, Right));
 %%        true -> {b,Left,K,V,Right}
 %%     end.
 
@@ -294,7 +294,7 @@ store1(K, V, {C,L,_,_,R}) ->
 
 append(K, V, T) ->
     {_,L,K1,V1,R} = append1(K, V, T),
-    {b,L,K1,V1,R}.				%setelement(1, b, T1).
+    {b,L,K1,V1,R}.        %setelement(1, b, T1).
 
 append1(K, V, empty) -> {r,empty,K,[V],empty};
 append1(K, V, {C,Left,K1,V1,Right}) when K < K1 ->
@@ -307,7 +307,7 @@ append1(K, V, {C,L,_,V1,R}) -> {C,L,K,V1 ++ [V],R}.
 
 append_list(K, V, T) ->
     {_,L,K1,V1,R} = append_list1(K, V, T),
-    {b,L,K1,V1,R}.				%setelement(1, b, T1).
+    {b,L,K1,V1,R}.        %setelement(1, b, T1).
 
 append_list1(K, V, empty) -> {r,empty,K,V,empty};
 append_list1(K, V, {C,Left,K1,V1,Right}) when K < K1 ->
@@ -338,7 +338,7 @@ update(_, F, {RB,A,Xk,Xv,B}) ->
 
 update(K, F, I, T) ->
     {_,L,K1,V1,R} = update1(K, F, I, T),
-    {b,L,K1,V1,R}.				%setelement(1, b, T1).
+    {b,L,K1,V1,R}.        %setelement(1, b, T1).
 
 update1(K, _, I, empty) -> {r,empty,K,I,empty};
 update1(K, F, I, {RB,A,Xk,Xv,B}) when K < Xk ->
@@ -352,7 +352,7 @@ update1(_, F, _, {RB,A,Xk,Xv,B}) ->
 
 update_counter(K, I, T) ->
     {_,L,K1,V1,R} = update_counter1(K, I, T),
-    {b,L,K1,V1,R}.				%setelement(1, b, T1).
+    {b,L,K1,V1,R}.        %setelement(1, b, T1).
 
 update_counter1(K, I, empty) -> {r,empty,K,I,empty};
 update_counter1(K, I, {RB,A,Xk,Xv,B}) when K < Xk ->
@@ -389,45 +389,45 @@ erase(K, T) ->
 erase_aux(_, empty) -> {empty,false};
 erase_aux(K, {b,A,Xk,Xv,B}) ->
     if K < Xk ->
-	    {A1,Dec} = erase_aux(K, A),
-	    if  Dec -> unbalright(b, A1, Xk, Xv, B);
-		true -> {{b,A1,Xk,Xv,B},false}
-	    end;
+      {A1,Dec} = erase_aux(K, A),
+      if  Dec -> unbalright(b, A1, Xk, Xv, B);
+    true -> {{b,A1,Xk,Xv,B},false}
+      end;
        K > Xk ->
-	    {B1,Dec} = erase_aux(K, B),
-	    if  Dec -> unballeft(b, A, Xk, Xv, B1);
-		true -> {{b,A,Xk,Xv,B1},false}
-	    end;
+      {B1,Dec} = erase_aux(K, B),
+      if  Dec -> unballeft(b, A, Xk, Xv, B1);
+    true -> {{b,A,Xk,Xv,B1},false}
+      end;
        true ->
-	    case B of
-		empty -> blackify(A);
-		_ ->
-		    {B1,{Mk,Mv},Dec} = erase_min(B),
-		    if  Dec -> unballeft(b, A, Mk, Mv, B1);
-			true -> {{b,A,Mk,Mv,B1},false}
-		    end
-	    end
+      case B of
+    empty -> blackify(A);
+    _ ->
+        {B1,{Mk,Mv},Dec} = erase_min(B),
+        if  Dec -> unballeft(b, A, Mk, Mv, B1);
+      true -> {{b,A,Mk,Mv,B1},false}
+        end
+      end
     end;
 erase_aux(K, {r,A,Xk,Xv,B}) ->
     if K < Xk ->
-	    {A1,Dec} = erase_aux(K, A),
-	    if  Dec -> unbalright(r, A1, Xk, Xv, B);
-		true -> {{r,A1,Xk,Xv,B},false}
-	    end;
+      {A1,Dec} = erase_aux(K, A),
+      if  Dec -> unbalright(r, A1, Xk, Xv, B);
+    true -> {{r,A1,Xk,Xv,B},false}
+      end;
        K > Xk ->
-	    {B1,Dec} = erase_aux(K, B),
-	    if  Dec -> unballeft(r, A, Xk, Xv, B1);
-		true -> {{r,A,Xk,Xv,B1},false}
-	    end;
+      {B1,Dec} = erase_aux(K, B),
+      if  Dec -> unballeft(r, A, Xk, Xv, B1);
+    true -> {{r,A,Xk,Xv,B1},false}
+      end;
        true ->
-	    case B of
-		empty -> {A,false};
-		_ ->
-		    {B1,{Mk,Mv},Dec} = erase_min(B),
-		    if  Dec -> unballeft(r, A, Mk, Mv, B1);
-			true -> {{r,A,Mk,Mv,B1},false}
-		    end
-	    end
+      case B of
+    empty -> {A,false};
+    _ ->
+        {B1,{Mk,Mv},Dec} = erase_min(B),
+        if  Dec -> unballeft(r, A, Mk, Mv, B1);
+      true -> {{r,A,Mk,Mv,B1},false}
+        end
+      end
     end.
 
 %% erase_min(Node) -> {Node,{NodeKey,NodeVal},Decreased}.
@@ -443,15 +443,15 @@ erase_min({r,empty,Xk,Xv,A}) ->
 erase_min({b,A,Xk,Xv,B}) ->
     {A1,Min,Dec} = erase_min(A),
     if Dec ->
-	    {T,Dec1} = unbalright(b, A1, Xk, Xv, B),
-	    {T,Min,Dec1};
+      {T,Dec1} = unbalright(b, A1, Xk, Xv, B),
+      {T,Min,Dec1};
        true -> {{b,A1,Xk,Xv,B},Min,false}
     end;
 erase_min({r,A,Xk,Xv,B}) ->
     {A1,Min,Dec} = erase_min(A),
     if Dec ->
-	    {T,Dec1} = unbalright(r, A1, Xk, Xv, B),
-	    {T,Min,Dec1};
+      {T,Dec1} = unbalright(r, A1, Xk, Xv, B),
+      {T,Min,Dec1};
        true -> {{r,A1,Xk,Xv,B},Min,false}
     end.
 
@@ -493,8 +493,8 @@ filter(_, empty, New) -> New;
 filter(F, {_,A,Xk,Xv,B}, New0) ->
     New1 = filter(F, A, New0),
     New2 = case F(Xk, Xv) of
-	       true -> store(Xk, Xv, New1);
-	       false -> New1
+         true -> store(Xk, Xv, New1);
+         false -> New1
     end,
     filter(F, B, New2).
 
@@ -502,8 +502,8 @@ filter(F, {_,A,Xk,Xv,B}, New0) ->
 
 merge(F, D1, D2) ->
     fold(fun (K, V2, D) ->
-		 update(K, fun(V1) -> F(K, V1, V2) end, V2, D)
-	 end, D1, D2).				   
+     update(K, fun(V1) -> F(K, V1, V2) end, V2, D)
+   end, D1, D2).
 
 %% Deprecated interface.
 
@@ -526,17 +526,17 @@ erase_check(K, T) ->
 check(T) -> check(T, r).
 
 check(empty, _) -> 1;
-check({r,A,Xk,Xv,B}, b) ->		       	%Must have black parent
+check({r,A,Xk,Xv,B}, b) ->             %Must have black parent
     case {check(A, r),check(B, r)} of
-	{D,D}-> D;
-	{Dl,Dr} -> exit({depth,{r,Dl,Xk,Xv,Dr}})
+  {D,D}-> D;
+  {Dl,Dr} -> exit({depth,{r,Dl,Xk,Xv,Dr}})
     end;
-check({r,_,Xk,Xv,_}, r) ->		       	%Must have black parent
+check({r,_,Xk,Xv,_}, r) ->             %Must have black parent
     exit({parent,{r,'-',Xk,Xv,'-'}});
 check({b,A,Xk,Xv,B}, _) ->
     case {check(A, b),check(B,b)} of
-	{D,D}-> D+1;				%Increase depth
-	{Dl,Dr} -> exit({depth,{b,Dl,Xk,Xv,Dr}})
+  {D,D}-> D+1;        %Increase depth
+  {Dl,Dr} -> exit({depth,{b,Dl,Xk,Xv,Dr}})
     end.
 
 t(Ks) -> t(Ks, new()).
@@ -558,15 +558,15 @@ r1() ->
 
 r2() ->
     {{b,{r,{b,empty,43,43,empty},
-	   46,
-	   46,
-	   {b,empty,48,48,empty}},
-	50,
-	50,
-	{b,empty,53,53,empty}},
+     46,
+     46,
+     {b,empty,48,48,empty}},
+  50,
+  50,
+  {b,empty,53,53,empty}},
      53,
      {b,{b,empty,43,43,empty},
-	46,
-	46,
-	{r,{b,empty,48,48,empty},50,50,empty}}}.
+  46,
+  46,
+  {r,{b,empty,48,48,empty},50,50,empty}}}.
 -endif.

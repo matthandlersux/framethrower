@@ -5,53 +5,53 @@ A let (.let file) contains a comma separated list of LETLINES.
 
 
 TEMPLATE
-	template(PARAMS)::TYPE { //TYPE is optional
-		LETLINES
-	}
+  template(PARAMS)::TYPE { //TYPE is optional
+    LETLINES
+  }
 
 
 PARAMS
-	comma separated list of PARAM
+  comma separated list of PARAM
 
 PARAM
-	VARTOCREATE | VARTOCREATE::TYPE
+  VARTOCREATE | VARTOCREATE::TYPE
 
 
 LETLINES
-	comma separated list of LETLINEs ending with a LINE (the output)
+  comma separated list of LETLINEs ending with a LINE (the output)
 
 LETLINE
-	VARTOCREATE = LINE
-	| VARTOCREATE := TYPE
+  VARTOCREATE = LINE
+  | VARTOCREATE := TYPE
 
 LINE
-	TEMPLATE | EXPR | BLOCK | JAVASCRIPT | JSACTION | CASE | XML | STATE | ACTIONTPL
+  TEMPLATE | EXPR | BLOCK | JAVASCRIPT | JSACTION | CASE | XML | STATE | ACTIONTPL
 
 CASE
-	if EXPR as VARTOCREATE {
-		LETLINES
-	} else if EXPR as VARTOCREATE {
-		LETLINES
-	} ...
-	} else {
-		LETLINES
-	}
+  if EXPR as VARTOCREATE {
+    LETLINES
+  } else if EXPR as VARTOCREATE {
+    LETLINES
+  } ...
+  } else {
+    LETLINES
+  }
 
 EXPR
-	EXPRCODE
-	| EXPRCODE :: TYPE
-	EXPRCODE is an expression. you know what an expression looks like (words with spaces, :, ~, double colon :: not allowed)
+  EXPRCODE
+  | EXPRCODE :: TYPE
+  EXPRCODE is an expression. you know what an expression looks like (words with spaces, :, ~, double colon :: not allowed)
 
 BLOCK
-	{
-		LETLINES
-	}
+  {
+    LETLINES
+  }
 
 JAVASCRIPT
-	function (PARAMS)::TYPE {
-		JSCODE
-	}
-	
+  function (PARAMS)::TYPE {
+    JSCODE
+  }
+
 env("x"):
 note that in both JAVASCRIPT and JSACTION,
 the variable 'env' is a function which takes a string and returns the value in the template environment,
@@ -62,69 +62,69 @@ additionally, 'evalExpr' is a function which evaluates an expression in 'env'.
 thus evalExpr("x") is equivalent to env("x") but with significantly more overhead.
 
 JSACTION
-	jsaction (PARAMS)::TYPE {
-		JSCODE
-	}
+  jsaction (PARAMS)::TYPE {
+    JSCODE
+  }
 
 JSCODE
-	not sure the best way to know when the JSCODE ends.. maybe by counting close-braces?
+  not sure the best way to know when the JSCODE ends.. maybe by counting close-braces?
 
 XML
-	this starts with a open-angle-bracket, and ends when the XML ends (ie: matching closing tag) (not quite right: see note about syntactic sugar below)
-	there are a few special elements:
-		anywhere (in an attribute or in a text node) there can be {EXPR} (the stuff inside the braces should be highlighted like an EXPR)
-		
-		<f:call>LETLINES</f:call>
-		<f:each EXPR as VARTOCREATE>LETLINES</f:each>
-		<f:each EXPR as VARTOCREATE, VARTOCREATE>LETLINES</f:each> // for key, value when iterating through Map's
-		<f:on EVENT>ACTSTMTS</f:on>
-	
-	there is syntactic sugar for having multiple XML elements top-level. If XML is on its own (ie: not part of a LETLINE), then after the XML ends, there can be more text that gets interpreted as XML. The XML thus ends only when there is the ending. This ending can be </f:call>, </f:each>, or } depending on context. Note that each should only end it if it is at the top-level in terms of XML nesting. Also, the } should only end it if it is unbalanced (ie: no preceding { which would imply a {EXPR}).
-	
+  this starts with a open-angle-bracket, and ends when the XML ends (ie: matching closing tag) (not quite right: see note about syntactic sugar below)
+  there are a few special elements:
+    anywhere (in an attribute or in a text node) there can be {EXPR} (the stuff inside the braces should be highlighted like an EXPR)
+
+    <f:call>LETLINES</f:call>
+    <f:each EXPR as VARTOCREATE>LETLINES</f:each>
+    <f:each EXPR as VARTOCREATE, VARTOCREATE>LETLINES</f:each> // for key, value when iterating through Map's
+    <f:on EVENT>ACTSTMTS</f:on>
+
+  there is syntactic sugar for having multiple XML elements top-level. If XML is on its own (ie: not part of a LETLINE), then after the XML ends, there can be more text that gets interpreted as XML. The XML thus ends only when there is the ending. This ending can be </f:call>, </f:each>, or } depending on context. Note that each should only end it if it is at the top-level in terms of XML nesting. Also, the } should only end it if it is unbalanced (ie: no preceding { which would imply a {EXPR}).
+
 EVENT
-	for now treat this as a string. We'll eventually have a list of acceptable events (click, mouseover, etc). We may add parameterized events too (keydown (G key) with shift held, for example).
-		
+  for now treat this as a string. We'll eventually have a list of acceptable events (click, mouseover, etc). We may add parameterized events too (keydown (G key) with shift held, for example).
+
 
 
 STATE
-	state{ACTSTMTS}
-	| state(TYPE)
-	ex: state(Unit Object)
+  state{ACTSTMTS}
+  | state(TYPE)
+  ex: state(Unit Object)
 
 
 VARTOCREATE
-	string with no spaces (these are where variables in scope get created)
+  string with no spaces (these are where variables in scope get created)
 
 TYPE
-	you know what types look like (words with spaces, end it on comma or close-brace)
+  you know what types look like (words with spaces, end it on comma or close-brace)
 
 ACTIONTPL
-	action(PARAMS)::TYPE{ //Type is optional
-		ACTSTMTS
-	}
+  action(PARAMS)::TYPE{ //Type is optional
+    ACTSTMTS
+  }
 
 ACTSTMTS
-	comma separated list of ACTSTMTs
+  comma separated list of ACTSTMTs
 
 ACTSTMT
-	ACTION | VARTOCREATE = LINE | VARTOCREATE := TYPE | VARTOCREATE <- ACTION
-	| VARTOCREATE <~ EXPR  // sugar for VARTOCREATE <- return (EXPR)
+  ACTION | VARTOCREATE = LINE | VARTOCREATE := TYPE | VARTOCREATE <- ACTION
+  | VARTOCREATE <~ EXPR  // sugar for VARTOCREATE <- return (EXPR)
 
 ACTION
-	CREATE | EXTRACT | LINE
+  CREATE | EXTRACT | LINE
 
 CREATE
-	create(TYPE, PROPERTIES) |
-	create(TYPE)
+  create(TYPE, PROPERTIES) |
+  create(TYPE)
 
 PROPERTIES
-	this is a representation of properties of a created object (based on JSON notation). It looks like:
-	{STRING: EXPR}
+  this is a representation of properties of a created object (based on JSON notation). It looks like:
+  {STRING: EXPR}
 
 EXTRACT
-	(extract works like f:each within an action.)
-	extract EXPR as VARTOCREATE {ACTSTMTS}
-	| extract EXPR as VARTOCREATE, VARTOCREATE {ACTSTMTS} // for key, value when extracting from Maps
+  (extract works like f:each within an action.)
+  extract EXPR as VARTOCREATE {ACTSTMTS}
+  | extract EXPR as VARTOCREATE, VARTOCREATE {ACTSTMTS} // for key, value when extracting from Maps
 
 
 Basically the idea is that templates have a bunch of lets: VARTOCREATE = LINE, with the very last one being just a LINE. Action "templates" are the same thing but can also have CREATE and EXTRACT in addition to the normal things in LINE. Also, actions don't need to have the "VARTOCREATE = " at every line other than the last.

@@ -27,70 +27,70 @@
 %% External functions
 %% ====================================================================
 
-%% 
+%%
 %% new :: Pid
-%% 		
-%%		
+%%
+%%
 
 new() -> start().
 start() ->
-	case gen_server:start({local, ?MODULE}, ?MODULE, [], []) of
-		{ok, Pid} -> Pid;
-		Else -> Else
-	end.
+  case gen_server:start({local, ?MODULE}, ?MODULE, [], []) of
+    {ok, Pid} -> Pid;
+    Else -> Else
+  end.
 
-%% 
+%%
 %% store :: AST -> AST -> ok
-%% 		
-%%		
+%%
+%%
 
 store(AST, CellAST) ->
-	gen_server:cast(?MODULE, {store, AST, CellAST}).
-	
-%% 
+  gen_server:cast(?MODULE, {store, AST, CellAST}).
+
+%%
 %% remove :: AST -> AST -> ok
-%% 		
-%%		
+%%
+%%
 
 remove([]) ->
-	ok;
+  ok;
 remove(AST) ->
-	gen_server:cast(?MODULE, {remove, AST}).
+  gen_server:cast(?MODULE, {remove, AST}).
 
-%% 
+%%
 %% get :: AST -> CellPointer
-%% 		
-%%		
+%%
+%%
 
 get(AST) ->
-	gen_server:call(?MODULE, {get, AST}).
+  gen_server:call(?MODULE, {get, AST}).
 
-%% 
+%%
 %% mewpilate :: AST -> NormalizedAST
-%% 		
-%%		
+%%
+%%
 
 mewpilate([]) -> [];
 mewpilate([H|T]) ->
-	[mewpilate(H)|mewpilate(T)];
+  [mewpilate(H)|mewpilate(T)];
 mewpilate(AST) ->
-	mewpilate(ast:type(AST), AST).
-	
-%% 
+  mewpilate(ast:type(AST), AST).
+
+%%
 %% debug :: List CellAST
-%% 		
-%%		
+%%
+%%
 
 debug() ->
-	gen_server:call(?MODULE, debug).
-	
-%% 
+  gen_server:call(?MODULE, debug).
+
+%%
 %% reset :: ok
-%% 		
-%%		
+%%
+%%
 
 reset() ->
-	gen_server:cast(?MODULE, reset).
+  gen_server:cast(?MODULE, reset).
 
 %% ====================================================================
 %% Server functions
@@ -118,22 +118,22 @@ init(_) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call(debug, _, ETS) ->
-	TableList = ets:tab2list(ETS),
-	Unparse = fun({AST, {cell,{{CellName,_},_}}}) ->
-				try io:format("\033[96m~p\033[0m~n~p~n~n", [parse:unparse(AST), CellName] )
-				catch
-					_:_ -> io:format("\033[96m~p\033[0m~n~p~n~n", [AST, CellName] )
-				end
-			end,
-	{reply, lists:foreach(Unparse, TableList), ETS};
+  TableList = ets:tab2list(ETS),
+  Unparse = fun({AST, {cell,{{CellName,_},_}}}) ->
+        try io:format("\033[96m~p\033[0m~n~p~n~n", [parse:unparse(AST), CellName] )
+        catch
+          _:_ -> io:format("\033[96m~p\033[0m~n~p~n~n", [AST, CellName] )
+        end
+      end,
+  {reply, lists:foreach(Unparse, TableList), ETS};
 handle_call({get, AST}, _From, ETS) ->
-	NormalizedAST = mewpilate(AST),
-	Reply = 	case ets:lookup(ETS, NormalizedAST) of
-					[{_, CellAST}] ->
-						CellAST;
-					[] ->
-						false
-				end,
+  NormalizedAST = mewpilate(AST),
+  Reply =   case ets:lookup(ETS, NormalizedAST) of
+          [{_, CellAST}] ->
+            CellAST;
+          [] ->
+            false
+        end,
     {reply, Reply, ETS}.
 
 %% --------------------------------------------------------------------
@@ -144,16 +144,16 @@ handle_call({get, AST}, _From, ETS) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast({store, AST, CellAST}, ETS) ->
-	NormalizedAST = mewpilate(AST),
-	cell:setBottom(ast:toTerm(CellAST), NormalizedAST),
-	ets:insert(ETS, {NormalizedAST, CellAST}),
+  NormalizedAST = mewpilate(AST),
+  cell:setBottom(ast:toTerm(CellAST), NormalizedAST),
+  ets:insert(ETS, {NormalizedAST, CellAST}),
     {noreply, ETS};
 handle_cast({remove, AST}, ETS) ->
-	ets:delete(ETS, AST),
+  ets:delete(ETS, AST),
     {noreply, ETS};
 handle_cast(reset, ETS) ->
-	ets:delete_all_objects(ETS),
-	{noreply, ETS}.
+  ets:delete_all_objects(ETS),
+  {noreply, ETS}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_info/2
@@ -185,29 +185,29 @@ code_change(OldVsn, State, Extra) ->
 %%% Internal functions
 %% --------------------------------------------------------------------
 
-%% 
+%%
 %% mewpilate :: Atom -> AST -> NormalizedAST
-%% 		
-%%		
+%%
+%%
 
 mewpilate(lambda, AST) ->
-	ast:makeLambda(
-		mewpilate( ast:getLambdaAST(AST) ),
-		ast:getArity(AST)
-	);
+  ast:makeLambda(
+    mewpilate( ast:getLambdaAST(AST) ),
+    ast:getArity(AST)
+  );
 mewpilate(apply, AST) ->
-	ast:makeApply(
-		mewpilate( ast:getApplyFunction(AST) ),
-		mewpilate( ast:getApplyParameters(AST) )
-	);
+  ast:makeApply(
+    mewpilate( ast:getApplyFunction(AST) ),
+    mewpilate( ast:getApplyParameters(AST) )
+  );
 mewpilate(tuple, AST) ->
-	ast:makeTuple(
-		list_to_tuple( mewpilate( tuple_to_list( ast:getTuple(AST) ) ) )
-	);
+  ast:makeTuple(
+    list_to_tuple( mewpilate( tuple_to_list( ast:getTuple(AST) ) ) )
+  );
 mewpilate(cell, AST) ->
-	ast:makeCell(
-		ast:getCellName(AST),
-		undefined
-	);
+  ast:makeCell(
+    ast:getCellName(AST),
+    undefined
+  );
 mewpilate(_, AST) ->
-	AST.
+  AST.

@@ -1,126 +1,126 @@
 
 .play-button, .pause-button, .scroll-button-left, .scroll-button-right,
-	.fullscreen-button, .unfullscreen-button, .close-button, .comment-button, .delete-button {
-		background-image: url(./images/ft.lite.icons.png);
-		background-repeat: no-repeat;
-		opacity: .5;
+  .fullscreen-button, .unfullscreen-button, .close-button, .comment-button, .delete-button {
+    background-image: url(./images/ft.lite.icons.png);
+    background-repeat: no-repeat;
+    opacity: .5;
 }
 
 .play-button, .pause-button {
-	opacity: .7;
+  opacity: .7;
 }
 
 .play-button:hover, .pause-button:hover {
-	opacity: .9;
+  opacity: .9;
 }
 
 .scroll-button-left:hover, .scroll-button-right:hover, .fullscreen-button:hover, .unfullscreen-button:hover,
-	.close-button:hover, .comment-button:hover, .delete-button:hover {
-	opacity: .7;
+  .close-button:hover, .comment-button:hover, .delete-button:hover {
+  opacity: .7;
 }
 
-/*these are all 50x50 currently*/	
+/*these are all 50x50 currently*/
 .play-button {
-	background-position: -16px -11px;
+  background-position: -16px -11px;
 }
 .pause-button {
-	background-position: -96px -11px;
+  background-position: -96px -11px;
 }
 .loading-icon {
-	background-image: url(./images/loading.png);
+  background-image: url(./images/loading.png);
 }
 
 
 /*20x16*/
 .scroll-button-left {
-	background-position: -262px -12px;
+  background-position: -262px -12px;
 }
 .scroll-button-right {
-	background-position: -285px -12px;
+  background-position: -285px -12px;
 }
 
 
 /*change these sizes if you like*/
 .fullscreen-button {
-	top: 5px;
-	right: 5px;
-	width: 16px;
-	height: 11px;
-	background-position: -221px -14px;
+  top: 5px;
+  right: 5px;
+  width: 16px;
+  height: 11px;
+  background-position: -221px -14px;
 }
 .unfullscreen-button {
-	top: 10px;
-	right: 10px;
-	width: 16px;
-	height: 11px;
-	background-position: -239px -14px;
+  top: 10px;
+  right: 10px;
+  width: 16px;
+  height: 11px;
+  background-position: -239px -14px;
 }
 
 
 .close-button {
-	width: 16px;
-	height: 12px;
-/*	background-position: -340px -13px;*/
-/*	background-position: -359px -13px;*/
-	background-position: -377px -13px;
+  width: 16px;
+  height: 12px;
+/*  background-position: -340px -13px;*/
+/*  background-position: -359px -13px;*/
+  background-position: -377px -13px;
 }
 
 
 
 .delete-button {
-/*	this appears on images in notes to delete links*/
-	width: 16px;
-	height: 12px;
-	background-position: -170px -13px;
+/*  this appears on images in notes to delete links*/
+  width: 16px;
+  height: 12px;
+  background-position: -170px -13px;
 }
 
 .comment-button {
-	width: 16px;
-	height: 12px;
-	background-position: -188px -13px;
-	position: absolute;
-	top: 2px;
-	left: 50%;
+  width: 16px;
+  height: 12px;
+  background-position: -188px -13px;
+  position: absolute;
+  top: 2px;
+  left: 50%;
 }
 
 .timeline:hover .selection-drag-left, .timeline:hover .selection-drag-right {
-	display: block;
+  display: block;
 }
 
 .selection-drag-left, .selection-drag-right {
-	display: none;
-	position: absolute;
-	width: 9px;
-	top: 2px;
-	height: 11px;
-	background-color: rgba(230, 138, 0, .5);
-	border: 1px solid rgb(230, 120, 0);
-	background-image: url(./images/ft.lite.icons.png);
-	background-repeat: no-repeat;
+  display: none;
+  position: absolute;
+  width: 9px;
+  top: 2px;
+  height: 11px;
+  background-color: rgba(230, 138, 0, .5);
+  border: 1px solid rgb(230, 120, 0);
+  background-image: url(./images/ft.lite.icons.png);
+  background-repeat: no-repeat;
 }
 
 .selection-drag-left:hover, .selection-drag-right:hover {
-	background-color: rgba(230, 138, 0, .8);
+  background-color: rgba(230, 138, 0, .8);
 }
 
 .selection-drag-left {
-	background-position: -311px -14px;
-	left: -10px;
-	cursor: w-resize;
-	-moz-border-radius-topleft: 3px;
-	-moz-border-radius-bottomleft: 3px;
-	-webkit-border-top-left-radius: 3px;
-	-webkit-border-bottom-left-radius: 3px;
-	border-right: 0px;
+  background-position: -311px -14px;
+  left: -10px;
+  cursor: w-resize;
+  -moz-border-radius-topleft: 3px;
+  -moz-border-radius-bottomleft: 3px;
+  -webkit-border-top-left-radius: 3px;
+  -webkit-border-bottom-left-radius: 3px;
+  border-right: 0px;
 }
 
 .selection-drag-right {
-	background-position: -323px -14px;
-	cursor: e-resize;
-	right: -10px;
-	-moz-border-radius-topright: 3px;
-	-moz-border-radius-bottomright: 3px;
-	-webkit-border-top-right-radius: 3px;
-	-webkit-border-bottom-right-radius: 3px;
-	border-left: 0px;
+  background-position: -323px -14px;
+  cursor: e-resize;
+  right: -10px;
+  -moz-border-radius-topright: 3px;
+  -moz-border-radius-bottomright: 3px;
+  -webkit-border-top-right-radius: 3px;
+  -webkit-border-bottom-right-radius: 3px;
+  border-left: 0px;
 }

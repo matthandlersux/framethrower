@@ -1,26 +1,26 @@
 .outline-expanded, .outline-collapsed, .outline-childless {
-	width: 13px;
-	height: 13px;
-	float: left;
-	/*margin-top: 3px;*/
+  width: 13px;
+  height: 13px;
+  float: left;
+  /*margin-top: 3px;*/
 }
 .outline-expanded {
-	background-image: url(images/expanded.png);
+  background-image: url(images/expanded.png);
 }
 .outline-collapsed {
-	background-image: url(images/collapsed.png);
+  background-image: url(images/collapsed.png);
 }
 .outline-childless {
-	background-image: url(images/childless.png);
+  background-image: url(images/childless.png);
 }
 
 .outline {
-	margin: 2px 0px;
+  margin: 2px 0px;
 }
 .outline-node {
-	margin-left: 16px;
+  margin-left: 16px;
 }
 
 .outline-children {
-	margin-left: 24px;
+  margin-left: 24px;
 }

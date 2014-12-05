@@ -1,6 +1,6 @@
 MattsCell = state {
-	MySet <- create(Set String),
-	add MySet "Matt",
-	add MySet "is great",
-	return MySet
+  MySet <- create(Set String),
+  add MySet "Matt",
+  add MySet "is great",
+  return MySet
 }

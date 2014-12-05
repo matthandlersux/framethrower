@@ -1,18 +1,18 @@
 Gradient Generating PHP Script:
 
-	Call script with appropriate parameters to generate a gradient fill for rapid prototyping of page design 
-		Width defaults to 1px
-	
-	Location: http://media.eversplosion.com/gradient.php
-	
-    Usage:                                                                                                   
-            gradient.php?height=__Height__&color1=__Color1__&color2=__Color2__                          
-                                                                                                             
-            gradient.php :: Height -> Color -> Color -> Jpeg                                                                                                                                         
-    
-    		extra parameters:
-				width :: Number
-			
-    Types:                                                                                                   
+  Call script with appropriate parameters to generate a gradient fill for rapid prototyping of page design
+    Width defaults to 1px
+
+  Location: http://media.eversplosion.com/gradient.php
+
+    Usage:
+            gradient.php?height=__Height__&color1=__Color1__&color2=__Color2__
+
+            gradient.php :: Height -> Color -> Color -> Jpeg
+
+        extra parameters:
+        width :: Number
+
+    Types:
             Height :: Number
-         	Color :: String (ex: 'ff0' or 'dd4578')
+           Color :: String (ex: 'ff0' or 'dd4578')

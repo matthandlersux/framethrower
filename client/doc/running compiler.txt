@@ -1,5 +1,5 @@
 go to
-	client/templates/compiler
+  client/templates/compiler
 
 run:
 java -jar js.jar assembler.js DIRECTORY

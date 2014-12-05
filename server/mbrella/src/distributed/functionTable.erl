@@ -16,52 +16,52 @@
 % create:: ok
 % initialize ETS table and add exported primFuncs to table
 create() ->
-	% ets:new(functionTable, [public, named_table]),
-	start(),
-	ok.
+  % ets:new(functionTable, [public, named_table]),
+  start(),
+  ok.
 
 % add:: String -> AST -> ok
 % Add a Name, Value pair to the table
 add(Name, Value) ->
-	gen_server:call(?MODULE, {add, Name, Value}).
+  gen_server:call(?MODULE, {add, Name, Value}).
 
 % lookup:: String -> AST
 % Lookup a function by Name.
 lookup(Name) ->
-	case ets:lookup(functionTable, Name) of
-		[{_, Found}] ->
-			Found;
-		[] -> 
-			case Name of
-				"mapUnit" ++ N ->
-					FunctionArgs = list_to_integer(N),
-					ast:makeFamilyFunction(family, mapUnit, FunctionArgs + 1 , [FunctionArgs]);
-				"makeTuple" ++ N ->
-					Arity = list_to_integer(N),
-					ast:makeFamilyFunction(family, makeTuple, Arity, [Arity]);
-				[$t,$u,$p,$l,$e,_N1,$g,$e,$t,N2] ->
-					ast:makeFamilyFunction(family, tupleGet, 1, [list_to_integer([N2])]);
-				MaybeAccessor ->
-					case string:chr(MaybeAccessor, $:) of
-						0 -> notfound;
-						ColonIndex -> 
-							{ClassName, [_|FieldName]} = lists:split(ColonIndex-1, MaybeAccessor),
-							ast:makeFamilyFunction(objects, accessor, 1, [ClassName, FieldName])
-					end
-			end
-	end.
-	
-	
-	
-	
-%%% Gen Server is here as a hack to workaround an erlang bug with creating an ets table in a -eval script.	
+  case ets:lookup(functionTable, Name) of
+    [{_, Found}] ->
+      Found;
+    [] ->
+      case Name of
+        "mapUnit" ++ N ->
+          FunctionArgs = list_to_integer(N),
+          ast:makeFamilyFunction(family, mapUnit, FunctionArgs + 1 , [FunctionArgs]);
+        "makeTuple" ++ N ->
+          Arity = list_to_integer(N),
+          ast:makeFamilyFunction(family, makeTuple, Arity, [Arity]);
+        [$t,$u,$p,$l,$e,_N1,$g,$e,$t,N2] ->
+          ast:makeFamilyFunction(family, tupleGet, 1, [list_to_integer([N2])]);
+        MaybeAccessor ->
+          case string:chr(MaybeAccessor, $:) of
+            0 -> notfound;
+            ColonIndex ->
+              {ClassName, [_|FieldName]} = lists:split(ColonIndex-1, MaybeAccessor),
+              ast:makeFamilyFunction(objects, accessor, 1, [ClassName, FieldName])
+          end
+      end
+  end.
+
+
+
+
+%%% Gen Server is here as a hack to workaround an erlang bug with creating an ets table in a -eval script.
 
 start() ->
-	gen_server:start({local, ?MODULE}, ?MODULE, [], []),
-	ok.
+  gen_server:start({local, ?MODULE}, ?MODULE, [], []),
+  ok.
 
 stop() ->
-	gen_server:call(?MODULE, stop).
+  gen_server:call(?MODULE, stop).
 
 
 %% ====================================================================
@@ -69,28 +69,28 @@ stop() ->
 %% ====================================================================
 
 init([]) ->
-	process_flag(trap_exit, true),
-	%may want to change globalTable from dict to ETS table
-	ets:new(functionTable, [named_table]),
-	%add the primFuncs to the functionTable
-	{_, PrimFuncExports} = lists:keyfind(exports, 1, primFuncs:module_info()),
-	lists:foreach(fun({Name, Arity}) ->
-		insert(atom_to_list(Name), ast:makeFunction(primFuncs, Name, Arity))
-	end, PrimFuncExports),
-	
-	%add the action functions to the functionTable
-	{_, ActionExports} = lists:keyfind(exports, 1, actions:module_info()),
-	lists:foreach(fun({Name, Arity}) ->
-		insert(atom_to_list(Name), ast:makeFunction(actions, Name, Arity))
-	end, ActionExports),
-	
+  process_flag(trap_exit, true),
+  %may want to change globalTable from dict to ETS table
+  ets:new(functionTable, [named_table]),
+  %add the primFuncs to the functionTable
+  {_, PrimFuncExports} = lists:keyfind(exports, 1, primFuncs:module_info()),
+  lists:foreach(fun({Name, Arity}) ->
+    insert(atom_to_list(Name), ast:makeFunction(primFuncs, Name, Arity))
+  end, PrimFuncExports),
+
+  %add the action functions to the functionTable
+  {_, ActionExports} = lists:keyfind(exports, 1, actions:module_info()),
+  lists:foreach(fun({Name, Arity}) ->
+    insert(atom_to_list(Name), ast:makeFunction(actions, Name, Arity))
+  end, ActionExports),
+
     {ok, nostate}.
 
 handle_call({add, Name, Value}, _, State) ->
-	insert(Name, Value),
-	{reply, ok, State};
+  insert(Name, Value),
+  {reply, ok, State};
 handle_call(stop, _, State) ->
-	{stop, normal, stopped, State}.
+  {stop, normal, stopped, State}.
 
 handle_cast(_, State) ->
     {noreply, State}.
@@ -101,5 +101,5 @@ code_change(_, State, _) -> {ok, State}.
 
 
 insert(Name, Value) ->
-	ets:insert(functionTable, {Name, Value}),
-	ok.
+  ets:insert(functionTable, {Name, Value}),
+  ok.

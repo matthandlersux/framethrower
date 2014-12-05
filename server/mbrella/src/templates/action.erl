@@ -38,87 +38,87 @@
 %% External functions
 %% ====================================================================
 
-start() -> 
-	start_link().
-	
+start() ->
+  start_link().
+
 start_link() ->
-	case gen_server:start({local, ?MODULE}, ?MODULE, [], []) of
-		{ok, Pid} -> Pid;
-		Else -> Else
-	end.
+  case gen_server:start({local, ?MODULE}, ?MODULE, [], []) of
+    {ok, Pid} -> Pid;
+    Else -> Else
+  end.
 
 
 preprocessJSON(Struct) ->
-	%convert fields named 'expr' to be AST from JSON
-	Struct2 = mapFields(Struct, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
+  %convert fields named 'expr' to be AST from JSON
+  Struct2 = mapFields(Struct, <<"expr">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
 
-	%convert fields named 'select' to be AST from JSON
-	Struct3 = mapFields(Struct2, <<"select">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
-		
-	%convert fields named 'prop' to be list of ASTs from JSON list of JSON expressions
-	Struct4 = mapFields(Struct3, <<"prop">>, fun(Prop) -> 
-		lists:map(fun({PropName,PropValue}) ->
-			PropValue2 = convertJSONExpression(PropValue, dict:new()),
-			{binary_to_list(PropName), PropValue2}
-		end, struct:to_list(Prop))
-	end),
-	
-	%convert fields named 'type' to be TYPE instead of JSON
-	Struct5 = mapFields(Struct4, <<"type">>, fun(Type) -> convertJSONType(Type) end),
-	Struct5.
-	
+  %convert fields named 'select' to be AST from JSON
+  Struct3 = mapFields(Struct2, <<"select">>, fun(Expr) -> convertJSONExpression(Expr, dict:new()) end),
+
+  %convert fields named 'prop' to be list of ASTs from JSON list of JSON expressions
+  Struct4 = mapFields(Struct3, <<"prop">>, fun(Prop) ->
+    lists:map(fun({PropName,PropValue}) ->
+      PropValue2 = convertJSONExpression(PropValue, dict:new()),
+      {binary_to_list(PropName), PropValue2}
+    end, struct:to_list(Prop))
+  end),
+
+  %convert fields named 'type' to be TYPE instead of JSON
+  Struct5 = mapFields(Struct4, <<"type">>, fun(Type) -> convertJSONType(Type) end),
+  Struct5.
+
 
 %%
 %% initJSON :: JSON -> ok
 %%
 initJSON(SharedLet) ->
-	SharedLet2 = preprocessJSON(SharedLet),
-	{struct, Lets} = SharedLet2,
-	lists:map(fun(Let) ->
-		{LetName, LetStruct} = Let,
-		LetNameString = binary_to_list(LetName),
-		gen_server:call(?MODULE, {addLet, LetNameString, LetStruct})
-	end, Lets),
-	ok.
+  SharedLet2 = preprocessJSON(SharedLet),
+  {struct, Lets} = SharedLet2,
+  lists:map(fun(Let) ->
+    {LetName, LetStruct} = Let,
+    LetNameString = binary_to_list(LetName),
+    gen_server:call(?MODULE, {addLet, LetNameString, LetStruct})
+  end, Lets),
+  ok.
 
 %%
 %% performAction :: String -> [AST] -> AST
 %%
 performAction(Name, Params) ->
-	gen_server:call(?MODULE, {performAction, Name, Params}).
+  gen_server:call(?MODULE, {performAction, Name, Params}).
 
 %%
 %% applyMrg :: JSON -> ok
 %%
 applyMrg(Struct) ->
-	Struct2 = preprocessJSON(Struct),
-	gen_server:call(?MODULE, {applyMrg, Struct2}),
-	ok.
+  Struct2 = preprocessJSON(Struct),
+  gen_server:call(?MODULE, {applyMrg, Struct2}),
+  ok.
 
 
 %%
 %% getSharedLets :: [{String, AST}]
 %%
 getSharedLets() ->
-	Scope = gen_server:call(?MODULE, getState),
-	Dict = scope:getStateDict(Scope),
-	lists:filter(fun({_Name, Value}) ->
-		(ast:type(Value) =:= cell) orelse (ast:type(Value) =:= object)
-	end, dict:to_list(Dict)).
+  Scope = gen_server:call(?MODULE, getState),
+  Dict = scope:getStateDict(Scope),
+  lists:filter(fun({_Name, Value}) ->
+    (ast:type(Value) =:= cell) orelse (ast:type(Value) =:= object)
+  end, dict:to_list(Dict)).
 
 
 getScopeState() ->
-	scope:getState().
-	
+  scope:getState().
+
 respawnScopeState(ScopeState) ->
-	Scope = scope:respawn(ScopeState),
-	gen_server:call(?MODULE, {respawnScopeState, Scope}).
+  Scope = scope:respawn(ScopeState),
+  gen_server:call(?MODULE, {respawnScopeState, Scope}).
 
 getState() ->
-	gen_server:call(?MODULE, getState).
+  gen_server:call(?MODULE, getState).
 
 stop() ->
-	gen_server:call(?MODULE, stop).
+  gen_server:call(?MODULE, stop).
 
 
 
@@ -135,8 +135,8 @@ stop() ->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
-	process_flag(trap_exit, true),
-	State = scope:makeScope(),
+  process_flag(trap_exit, true),
+  State = scope:makeScope(),
     {ok, State}.
 
 %% --------------------------------------------------------------------
@@ -150,53 +150,53 @@ init([]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call({addLet, LetName, LetStruct}, _, Scope) ->
-	Kind = struct:get_value(<<"kind">>, LetStruct),
-	IsNew = case Kind of
-		<<"lineState">> ->
-			case scope:lookup(LetName, Scope) of
-				notfound -> % not currently in the scope so always add it
-					true;
-				Found -> % already in the scope, so only update if type has changed
-					ActionType = struct:get_value(<<"type">>, struct:get_value(<<"action">>, LetStruct)),
-					ActionOutputType = type:getApplyParam(ActionType),
-					case ast:type(Found) of
-						object ->
-							ObjectName = objects:getName(ast:toTerm(Found)),
-							StateType = objects:getClass(objectStore:lookup(ObjectName)),
-							not(ActionOutputType =:= StateType);
-						cell ->
-							StateOuterType = cell:elementsType(ast:toTerm(Found)),
-							not(type:outerType(ActionOutputType) =:= StateOuterType)
-					end
-			end;
-		_ -> % make any action or template or EXPR get updated each time
-			true
-	end,
-	case IsNew of
-		true ->
-			EvaluatedLine = evaluateLine(LetStruct, Scope),
-			scope:addLet(LetName, EvaluatedLine, Scope);
-		false -> ignore
-	end,
+  Kind = struct:get_value(<<"kind">>, LetStruct),
+  IsNew = case Kind of
+    <<"lineState">> ->
+      case scope:lookup(LetName, Scope) of
+        notfound -> % not currently in the scope so always add it
+          true;
+        Found -> % already in the scope, so only update if type has changed
+          ActionType = struct:get_value(<<"type">>, struct:get_value(<<"action">>, LetStruct)),
+          ActionOutputType = type:getApplyParam(ActionType),
+          case ast:type(Found) of
+            object ->
+              ObjectName = objects:getName(ast:toTerm(Found)),
+              StateType = objects:getClass(objectStore:lookup(ObjectName)),
+              not(ActionOutputType =:= StateType);
+            cell ->
+              StateOuterType = cell:elementsType(ast:toTerm(Found)),
+              not(type:outerType(ActionOutputType) =:= StateOuterType)
+          end
+      end;
+    _ -> % make any action or template or EXPR get updated each time
+      true
+  end,
+  case IsNew of
+    true ->
+      EvaluatedLine = evaluateLine(LetStruct, Scope),
+      scope:addLet(LetName, EvaluatedLine, Scope);
+    false -> ignore
+  end,
     {reply, ok, Scope};
 handle_call({performAction, Name, Params}, _, Scope) ->
-	Closure = case scope:lookup(Name, Scope) of 
-		notfound -> throw("Error finding template: " ++ Name);
-		Found -> Found
-	end,
-	AppliedClosure = ast:makeApply(Closure, Params),
-	Result = executeAction(eval:evaluate(AppliedClosure)),
+  Closure = case scope:lookup(Name, Scope) of
+    notfound -> throw("Error finding template: " ++ Name);
+    Found -> Found
+  end,
+  AppliedClosure = ast:makeApply(Closure, Params),
+  Result = executeAction(eval:evaluate(AppliedClosure)),
     {reply, Result, Scope};
 handle_call({applyMrg, Struct}, _, Scope) ->
-	Action = eval:evaluate(evaluateLine(Struct, Scope)),
-	Result = executeAction(Action),
+  Action = eval:evaluate(evaluateLine(Struct, Scope)),
+  Result = executeAction(Action),
     {reply, Result, Scope};
 handle_call({respawnScopeState, Scope}, _, _) ->
-	{reply, ok, Scope};
+  {reply, ok, Scope};
 handle_call(getState, _, State) ->
-	{reply, State, State};
+  {reply, State, State};
 handle_call(stop, _, State) ->
-	{stop, normal, stopped, State}.
+  {stop, normal, stopped, State}.
 
 %% --------------------------------------------------------------------
 %% Function: handle_cast/2
@@ -206,7 +206,7 @@ handle_call(stop, _, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast({terminate, Reason}, State) ->
-	{stop, Reason, State}.
+  {stop, Reason, State}.
 
 
 %% --------------------------------------------------------------------
@@ -246,112 +246,112 @@ code_change(_OldVsn, State, _Extra) ->
 %%
 
 evaluateLine(Line, Scope) ->
-	Kind = binary_to_list(struct:get_value(<<"kind">>, Line)),
-	case Kind of
-		"lineExpr" ->
-			Expr = (struct:get_value(<<"expr">>, Line)),
-			parse:bind(Expr, Scope);
-		"lineTemplate" ->
-			makeClosure(Line, Scope);
-		"lineState" ->
-			Action = (struct:get_value(<<"action">>, Line)),
-			executeAction(eval:evaluate(evaluateLine(Action, Scope)));
-		"lineAction" ->
-			makeActionClosure(Line, Scope);
-		"actionCreate" ->
-			% TODO actions in a let are possible in actions, but not in templates? may as well be in both.
-			% desugar as a one-action lineAction:			
-			EmptyStruct = {struct, []},
-			ActionStruct = struct:set_value(<<"action">>, Line, EmptyStruct),
-			LineAction = struct:set_value(<<"actions">>, ActionStruct, EmptyStruct),
-			makeActionClosure(LineAction, Scope);
-		"lineJavascript" ->
-			throw("Not expecting lineJavascript on Server");
-		"lineXML" ->
-			throw("Not expecting lineXML on Server")
-	end.
+  Kind = binary_to_list(struct:get_value(<<"kind">>, Line)),
+  case Kind of
+    "lineExpr" ->
+      Expr = (struct:get_value(<<"expr">>, Line)),
+      parse:bind(Expr, Scope);
+    "lineTemplate" ->
+      makeClosure(Line, Scope);
+    "lineState" ->
+      Action = (struct:get_value(<<"action">>, Line)),
+      executeAction(eval:evaluate(evaluateLine(Action, Scope)));
+    "lineAction" ->
+      makeActionClosure(Line, Scope);
+    "actionCreate" ->
+      % TODO actions in a let are possible in actions, but not in templates? may as well be in both.
+      % desugar as a one-action lineAction:
+      EmptyStruct = {struct, []},
+      ActionStruct = struct:set_value(<<"action">>, Line, EmptyStruct),
+      LineAction = struct:set_value(<<"actions">>, ActionStruct, EmptyStruct),
+      makeActionClosure(LineAction, Scope);
+    "lineJavascript" ->
+      throw("Not expecting lineJavascript on Server");
+    "lineXML" ->
+      throw("Not expecting lineXML on Server")
+  end.
 
 %%
 %% executeAction :: InstructionAST -> AST
 %%
 
 executeAction(ActionClosure) ->
-	Instructions = ast:getInstructionActions(ActionClosure),
-	Scope = ast:getInstructionScope(ActionClosure),
-	lists:foldl(fun(ActionLet, _) ->
-		Action = struct:get_value(<<"action">>, ActionLet),
-		ActionKind = struct:get_value(<<"kind">>, Action),
-		Output = case ActionKind of
-			<<"actionCreate">> ->
-				Type = struct:get_value(<<"type">>, Action),
-				case type:isReactive(Type) of
-					true -> 
-						ast:makeCell(cell:makePersistentCell(type:outerType(Type)));
-					false -> 
-						Prop = struct:get_value(<<"prop">>, Action),
-						Prop2 = lists:map(fun({PropName,PropValue}) ->
-							PropValue2 = eval:evaluate(parse:bind(PropValue, Scope)),
-							{PropName, PropValue2}
-						end, Prop),
-						ast:makeObject(objects:create(Type, Prop2))
-				end;
-			<<"extract">> ->
-				% we're dealing with: {kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
-				Closure = makeClosure(struct:get_value(<<"action">>, Action), Scope),
-				Select = eval:evaluate(parse:bind(struct:get_value(<<"select">>, Action), Scope)),
-				
-				SelectType = cell:elementsType(Select),
-				NewCell = cell:makeCell(SelectType),
-				cell:injectIntercept(NewCell, extract, [NewCell, Closure]),
-				cell:injectOutput(Select, NewCell),
-				ast:makeLiteral(void);
-			<<"actionJavascript">> ->
-				ast:makeLiteral(void);
-			_ ->
-				% this is a Line to be evaluated
-				Evaled = eval:evaluateAST(evaluateLine(Action, Scope)),
-				% check if Evaled is an action method, if so execute it now to avoid ugly wrapping
-				case ast:type(Evaled) of
-					actionMethod -> 
-						ast:performActionMethod(Evaled);
-					instruction -> executeAction(Evaled)
-				end
-		end,
-		
-		ActionName = struct:get_value(<<"name">>, ActionLet),
-		case {ActionName, Output} of
-			{undefined, _} ->
-				nosideeffect;
-			{_, undefined} ->
-				throw(["Trying to assign a let action, but the action has no return value", ActionLet]);
-			{_, _} ->
-				scope:addLet(binary_to_list(ActionName), Output, Scope)
-		end,
-		Output
-	end, ast:makeLiteral(void), Instructions).
-	
+  Instructions = ast:getInstructionActions(ActionClosure),
+  Scope = ast:getInstructionScope(ActionClosure),
+  lists:foldl(fun(ActionLet, _) ->
+    Action = struct:get_value(<<"action">>, ActionLet),
+    ActionKind = struct:get_value(<<"kind">>, Action),
+    Output = case ActionKind of
+      <<"actionCreate">> ->
+        Type = struct:get_value(<<"type">>, Action),
+        case type:isReactive(Type) of
+          true ->
+            ast:makeCell(cell:makePersistentCell(type:outerType(Type)));
+          false ->
+            Prop = struct:get_value(<<"prop">>, Action),
+            Prop2 = lists:map(fun({PropName,PropValue}) ->
+              PropValue2 = eval:evaluate(parse:bind(PropValue, Scope)),
+              {PropName, PropValue2}
+            end, Prop),
+            ast:makeObject(objects:create(Type, Prop2))
+        end;
+      <<"extract">> ->
+        % we're dealing with: {kind: "extract", select: AST, action: LINETEMPLATE} // this lineTemplate should take one (or two) parameters.
+        Closure = makeClosure(struct:get_value(<<"action">>, Action), Scope),
+        Select = eval:evaluate(parse:bind(struct:get_value(<<"select">>, Action), Scope)),
+
+        SelectType = cell:elementsType(Select),
+        NewCell = cell:makeCell(SelectType),
+        cell:injectIntercept(NewCell, extract, [NewCell, Closure]),
+        cell:injectOutput(Select, NewCell),
+        ast:makeLiteral(void);
+      <<"actionJavascript">> ->
+        ast:makeLiteral(void);
+      _ ->
+        % this is a Line to be evaluated
+        Evaled = eval:evaluateAST(evaluateLine(Action, Scope)),
+        % check if Evaled is an action method, if so execute it now to avoid ugly wrapping
+        case ast:type(Evaled) of
+          actionMethod ->
+            ast:performActionMethod(Evaled);
+          instruction -> executeAction(Evaled)
+        end
+    end,
+
+    ActionName = struct:get_value(<<"name">>, ActionLet),
+    case {ActionName, Output} of
+      {undefined, _} ->
+        nosideeffect;
+      {_, undefined} ->
+        throw(["Trying to assign a let action, but the action has no return value", ActionLet]);
+      {_, _} ->
+        scope:addLet(binary_to_list(ActionName), Output, Scope)
+    end,
+    Output
+  end, ast:makeLiteral(void), Instructions).
+
 
 %%
 %% makeActionClosure :: Line -> Scope -> InstructionAST
 %%
 
 makeActionClosure(LineAction, Scope) ->
-	ast:makeInstruction(struct:get_value(<<"actions">>, LineAction), Scope).
+  ast:makeInstruction(struct:get_value(<<"actions">>, LineAction), Scope).
 
 %%
 %% makeClosure :: Line -> Scope -> AST
 %%
 
 makeClosure(LineTemplate, ParentScope) ->
-	Params = struct:get_value(<<"params">>, LineTemplate),
-	ParamLength = length(Params),
+  Params = struct:get_value(<<"params">>, LineTemplate),
+  ParamLength = length(Params),
 
-	Lets = struct:get_value(<<"let">>, LineTemplate),
-	LetsList = struct:to_list(Lets),
+  Lets = struct:get_value(<<"let">>, LineTemplate),
+  LetsList = struct:to_list(Lets),
 
-	% the output of the closure
-	Output = struct:get_value(<<"output">>, LineTemplate),
-	ast:makeFamilyFunction(action, closure, ParamLength, [Params, LetsList, Output, ParentScope]).
+  % the output of the closure
+  Output = struct:get_value(<<"output">>, LineTemplate),
+  ast:makeFamilyFunction(action, closure, ParamLength, [Params, LetsList, Output, ParentScope]).
 
 
 %%
@@ -359,81 +359,81 @@ makeClosure(LineTemplate, ParentScope) ->
 %%
 %% closureFunction is called by ast:apply
 
-closureFunction(Params, LetsList, Output, ParentScope, Args) -> 
-	%make a new scope for this closure
-	Scope = scope:extendScope(ParentScope),
+closureFunction(Params, LetsList, Output, ParentScope, Args) ->
+  %make a new scope for this closure
+  Scope = scope:extendScope(ParentScope),
 
-	% add the lets in the closure to the scope lazily	
-	lists:map(fun({LetName, LetValue}) -> 
-		GetValue = fun() -> 
-			evaluateLine(LetValue, Scope)
-		end,
-		scope:addLazyLet(binary_to_list(LetName), GetValue, Scope)
-	end, LetsList),
+  % add the lets in the closure to the scope lazily
+  lists:map(fun({LetName, LetValue}) ->
+    GetValue = fun() ->
+      evaluateLine(LetValue, Scope)
+    end,
+    scope:addLazyLet(binary_to_list(LetName), GetValue, Scope)
+  end, LetsList),
 
-	% add the arguments to the closure to the scope
-	ParamsAndArgs = lists:zip(Params, Args),
-	lists:map(fun({Param, Arg}) -> 
-		scope:addLet(binary_to_list(Param), Arg, Scope)
-	end, ParamsAndArgs),
-	% evaluate the output of the closure
-	evaluateLine(Output, Scope).
+  % add the arguments to the closure to the scope
+  ParamsAndArgs = lists:zip(Params, Args),
+  lists:map(fun({Param, Arg}) ->
+    scope:addLet(binary_to_list(Param), Arg, Scope)
+  end, ParamsAndArgs),
+  % evaluate the output of the closure
+  evaluateLine(Output, Scope).
 
 
 
-%%	===========================
-%%	JSON to AST/TYPE conversion
+%%  ===========================
+%%  JSON to AST/TYPE conversion
 %%
 %%  ===========================
 
 %% Convert a JSON expression to an expression using erlang records in deBruijn format
 convertJSONExpression({struct, [{<<"cons">>, <<"apply">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
-	ast:makeApply(convertJSONExpression(Left, DeBruijnHash), convertJSONExpression(Right, DeBruijnHash));
+  ast:makeApply(convertJSONExpression(Left, DeBruijnHash), convertJSONExpression(Right, DeBruijnHash));
 convertJSONExpression({struct, [{<<"cons">>, <<"lambda">>}, {<<"left">>, Left}, {<<"right">>, Right}]}, DeBruijnHash) ->
-	NewDeBruijnHash = dict:map(fun(_Key, Value) -> Value + 1 end, DeBruijnHash),
-	VarName = Left,
-	NewerDeBruijnHash = dict:store(VarName, 1, NewDeBruijnHash),
-	ast:makeLambda(convertJSONExpression(Right, NewerDeBruijnHash));
+  NewDeBruijnHash = dict:map(fun(_Key, Value) -> Value + 1 end, DeBruijnHash),
+  VarName = Left,
+  NewerDeBruijnHash = dict:store(VarName, 1, NewDeBruijnHash),
+  ast:makeLambda(convertJSONExpression(Right, NewerDeBruijnHash));
 convertJSONExpression(Binary, DeBruijnHash) when is_binary(Binary) ->
-	case dict:find(Binary, DeBruijnHash) of
-		{ok, Index} ->
-			ast:makeVariable(Index);
-		error ->
-			String = binary_to_list(Binary),
-			case parseUtil:extractPrim(String) of
-				error ->
-					ast:makeUnboundVariable(String);
-				Prim ->
-					ast:makeLiteral(Prim)
-			end
-	end.
+  case dict:find(Binary, DeBruijnHash) of
+    {ok, Index} ->
+      ast:makeVariable(Index);
+    error ->
+      String = binary_to_list(Binary),
+      case parseUtil:extractPrim(String) of
+        error ->
+          ast:makeUnboundVariable(String);
+        Prim ->
+          ast:makeLiteral(Prim)
+      end
+  end.
 
 
 %% Convert a JSON type to a type using erlang records
 convertJSONType({struct, [{<<"kind">>, <<"typeApply">>}, {<<"left">>, Left}, {<<"right">>, Right}]}) ->
-	type:makeApply(convertJSONType(Left), convertJSONType(Right));
+  type:makeApply(convertJSONType(Left), convertJSONType(Right));
 convertJSONType({struct, [{<<"kind">>, <<"typeLambda">>}, {<<"left">>, Left}, {<<"right">>, Right}]}) ->
-	type:makeLambda(convertJSONType(Left), convertJSONType(Right));
+  type:makeLambda(convertJSONType(Left), convertJSONType(Right));
 convertJSONType({struct, [{<<"kind">>, <<"typeVar">>}, {<<"value">>, Value}]}) ->
-	String = binary_to_list(Value),
-	type:makeTypeVar(String);
+  String = binary_to_list(Value),
+  type:makeTypeVar(String);
 convertJSONType({struct, [{<<"kind">>, <<"typeName">>}, {<<"value">>, Value}]}) ->
-	String = binary_to_list(Value),
-	type:makeTypeName(String).
+  String = binary_to_list(Value),
+  type:makeTypeName(String).
 
 
 %% run MapFunction on anything with name FieldName in JSON
-mapFields({struct, List}, FieldName, MapFunction) -> 
-	ConvertedList = lists:map(fun({Name, Value}) ->
-		case Name of
-			FieldName -> {Name, MapFunction(Value)};
-			_ -> {Name, mapFields(Value, FieldName, MapFunction)}
-		end
-	end, List),
-	{struct, ConvertedList};
+mapFields({struct, List}, FieldName, MapFunction) ->
+  ConvertedList = lists:map(fun({Name, Value}) ->
+    case Name of
+      FieldName -> {Name, MapFunction(Value)};
+      _ -> {Name, mapFields(Value, FieldName, MapFunction)}
+    end
+  end, List),
+  {struct, ConvertedList};
 mapFields(List, FieldName, MapFunction) when is_list(List) ->
-	lists:map(fun(Element) ->
-		mapFields(Element, FieldName, MapFunction)
-	end, List);
+  lists:map(fun(Element) ->
+    mapFields(Element, FieldName, MapFunction)
+  end, List);
 mapFields(NonJSON, _, _) ->
-	NonJSON.
+  NonJSON.

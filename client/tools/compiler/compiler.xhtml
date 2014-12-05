@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:f="http://www.worldmerge.com/2008/xsl"
@@ -22,34 +22,34 @@ var serverBaseUrl = "THIS SHOULD NOT BE CALLED";
 
 </script>
 
-<script type="text/javascript" src="../../source/js/external/yuiloader-min.js"></script> 
+<script type="text/javascript" src="../../source/js/external/yuiloader-min.js"></script>
 <script src="../../source/js/include.js"></script>
 
 <script>
 
 function initialize() {
-	var templateFile = location.hash.substr(1);
-	if (!templateFile) {
-		alert("Place the name of the template after the hash (universal.xhtml#NAMEOFTEMPLATE)");
-	} else {
-		var totalCompiledJSON = compileFile(templateFile + "/" + templateFile + ".tpl", false);
-		if(!GLOBAL_ERRORS) {
-			desugarFetch(totalCompiledJSON);
-			var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
-			console.log(totalCompiledString);
-			// var fw = new java.io.FileWriter("../../generated/templates/" + arguments[0] + ".js");
-			// var bw = new java.io.BufferedWriter(fw);
-			// 
-			// bw.write(totalCompiledString);
-			// bw.close();
-			// 		
-			var result = typeAnalyze(totalCompiledJSON);
-			if (result.success) {
-				console.log('success');
-			}
-		}
-	}	
-	console.log("Done Compiling");
+  var templateFile = location.hash.substr(1);
+  if (!templateFile) {
+    alert("Place the name of the template after the hash (universal.xhtml#NAMEOFTEMPLATE)");
+  } else {
+    var totalCompiledJSON = compileFile(templateFile + "/" + templateFile + ".tpl", false);
+    if(!GLOBAL_ERRORS) {
+      desugarFetch(totalCompiledJSON);
+      var totalCompiledString = "var mainTemplate = " + outputJSON(totalCompiledJSON, 0) + ";";
+      console.log(totalCompiledString);
+      // var fw = new java.io.FileWriter("../../generated/templates/" + arguments[0] + ".js");
+      // var bw = new java.io.BufferedWriter(fw);
+      //
+      // bw.write(totalCompiledString);
+      // bw.close();
+      //
+      var result = typeAnalyze(totalCompiledJSON);
+      if (result.success) {
+        console.log('success');
+      }
+    }
+  }
+  console.log("Done Compiling");
 }
 
 includes.htmlInclude(["core"], ["assembler.js", "tplparser.js", "semantics.js", "../typeAnalyzer/typeAnalyzer.js"], "initialize()");

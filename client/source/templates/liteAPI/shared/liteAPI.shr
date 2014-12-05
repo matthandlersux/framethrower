@@ -1,10 +1,10 @@
 
 debugString = jsaction(s::String)::Void {
-	console.log(s);
+  console.log(s);
 },
 
 debugNumber = jsaction(n::Number)::Void {
-	console.log(n);
+  console.log(n);
 },
 
 // ====================================================
@@ -22,26 +22,26 @@ allNotes = state(Set Note),
 
 //==== Movie ====//
 
-//	movie_linksFromNotes	::	Movie -> Set TimeLink
+//  movie_linksFromNotes  ::  Movie -> Set TimeLink
 
 movie_linksFromNotes = Movie:_fromNotes,
 
 
 //==== Note ====//
 
-//	note_isPublic			::	Note -> Unit Null
+//  note_isPublic      ::  Note -> Unit Null
 
-//	note_text				::	Note -> Unit String
+//  note_text        ::  Note -> Unit String
 
-//	note_linksToNotes		::	Note -> Set TextLink
+//  note_linksToNotes    ::  Note -> Set TextLink
 
-//	note_linksToMovies		::	Note -> Set TimeLink
+//  note_linksToMovies    ::  Note -> Set TimeLink
 
-//	note_linksFromNotes		::	Note -> Set TextLink
+//  note_linksFromNotes    ::  Note -> Set TextLink
 
-//	createNote				::	Action Note
+//  createNote        ::  Action Note
 
-//	note_setText			::	Note -> String -> Action Void
+//  note_setText      ::  Note -> String -> Action Void
 
 note_isPublic = Note:_isPublic,
 note_text = Note:_text,
@@ -49,177 +49,177 @@ note_linksToNotes = Note:_toNotes,
 note_linksToMovies = Note:_toMovies,
 note_linksFromNotes = Note:_fromNotes,
 createNote = action() {
-	note <- create(Note, {_owner: ""}),
-	set (Note:_text note) "",
-	add allNotes note,
-	return note
+  note <- create(Note, {_owner: ""}),
+  set (Note:_text note) "",
+  add allNotes note,
+  return note
 },
 note_setText = action(note::Note, newText::String, shifts::[(Number, Number)]) {
-	extract note_linksToNotes note as textLink {
-		textRange_update (textLink_source textLink) shifts
-	},
-	extract note_linksToMovies note as timeLink {
-		textRange_update (timeLink_source timeLink) shifts
-	},
-	extract note_linksFromNotes note as textLink {
-		textRange_update (textLink_target textLink) shifts
-	},
-	set (Note:_text note) newText
+  extract note_linksToNotes note as textLink {
+    textRange_update (textLink_source textLink) shifts
+  },
+  extract note_linksToMovies note as timeLink {
+    textRange_update (timeLink_source timeLink) shifts
+  },
+  extract note_linksFromNotes note as textLink {
+    textRange_update (textLink_target textLink) shifts
+  },
+  set (Note:_text note) newText
 },
 
 
 //==== TextLink ====//
 
-//	makeTextLink			::	TextRange -> TextRange -> TextLink
+//  makeTextLink      ::  TextRange -> TextRange -> TextLink
 
-//	textLink_source			::	TextLink -> TextRange
+//  textLink_source      ::  TextLink -> TextRange
 
-//	textLink_target			::	TextLink -> TextRange
+//  textLink_target      ::  TextLink -> TextRange
 
-//	linkText				::	TextLink -> Action Void
+//  linkText        ::  TextLink -> Action Void
 
-//	unlinkText				::	TextLink -> Action Void
+//  unlinkText        ::  TextLink -> Action Void
 
 TextLink := (TextRange, TextRange),
 makeTextLink = makeTuple2,
 textLink_source = tuple2get1,
 textLink_target = tuple2get2,
 linkText = action(link::TextLink) {
-	// record incoming link in target Note:
-	target = textRange_note (textLink_target link),
-	add (Note:_fromNotes target) link,
-	// record outgoing link in source Note:
-	source = textRange_note (textLink_source link),
-	add (Note:_toNotes source) link
+  // record incoming link in target Note:
+  target = textRange_note (textLink_target link),
+  add (Note:_fromNotes target) link,
+  // record outgoing link in source Note:
+  source = textRange_note (textLink_source link),
+  add (Note:_toNotes source) link
 },
 unlinkText = action(link::TextLink) {
-	// remove outgoing link from source Note:
-	source = textRange_note (textLink_source link),
-	remove (Note:_toNotes source) link,
-	// remove incoming link from target Note:
-	target = textRange_note (textLink_target link),
-	remove (Note:_fromNotes target) link
+  // remove outgoing link from source Note:
+  source = textRange_note (textLink_source link),
+  remove (Note:_toNotes source) link,
+  // remove incoming link from target Note:
+  target = textRange_note (textLink_target link),
+  remove (Note:_fromNotes target) link
 },
 
 
 //==== TimeLink ====//
 
-//	makeTimeLink			::	TextRange -> TimeRange -> TimeLink
+//  makeTimeLink      ::  TextRange -> TimeRange -> TimeLink
 
-//	timeLink_source			::	TimeLink -> TextRange
+//  timeLink_source      ::  TimeLink -> TextRange
 
-//	timeLink_target			::	TimeLink -> TimeRange
+//  timeLink_target      ::  TimeLink -> TimeRange
 
-//	linkTime				::	TimeLink -> Action Void
+//  linkTime        ::  TimeLink -> Action Void
 
-//	unlinkTime				::	TimeLink -> Action Void
+//  unlinkTime        ::  TimeLink -> Action Void
 
 TimeLink := (TextRange, TimeRange),
 makeTimeLink = makeTuple2,
 timeLink_source = tuple2get1,
 timeLink_target = tuple2get2,
 linkTime = action(link::TimeLink) {
-	// record incoming link in target Movie:
-	target = timeRange_movie (timeLink_target link),
-	add (Movie:_fromNotes target) link,
-	// record outgoing link in source Note:
-	source = textRange_note (timeLink_source link),
-	add (Note:_toMovies source) link
+  // record incoming link in target Movie:
+  target = timeRange_movie (timeLink_target link),
+  add (Movie:_fromNotes target) link,
+  // record outgoing link in source Note:
+  source = textRange_note (timeLink_source link),
+  add (Note:_toMovies source) link
 },
 unlinkTime = action(link::TimeLink) {
-	// remove outgoing link from source Note:
-	source = textRange_note (timeLink_source link),
-	remove (Note:_toMovies source) link,
-	// remove incoming link from target Movie:
-	target = timeRange_movie (timeLink_target link),
-	remove (Movie:_fromNotes target) link
+  // remove outgoing link from source Note:
+  source = textRange_note (timeLink_source link),
+  remove (Note:_toMovies source) link,
+  // remove incoming link from target Movie:
+  target = timeRange_movie (timeLink_target link),
+  remove (Movie:_fromNotes target) link
 },
 
 
 //==== TextRange ====//
 
-//	textRange_note			::	TextRange -> Note
+//  textRange_note      ::  TextRange -> Note
 
-//	textRange_range			::	TextRange -> Unit Range
+//  textRange_range      ::  TextRange -> Unit Range
 
-//	createTextRange			::	Note -> Action TextRange
+//  createTextRange      ::  Note -> Action TextRange
 
-//	textRange_setRange		::	TextRange -> Range -> Action Void
+//  textRange_setRange    ::  TextRange -> Range -> Action Void
 
-//	textRange_unsetRange	::	TextRange -> Action Void
+//  textRange_unsetRange  ::  TextRange -> Action Void
 
 TextRange := (Note, Unit Range),
 textRange_note = tuple2get1,
 textRange_range = tuple2get2,
 createTextRange = action(note::Note)::TextRange {
-	range <- create(Unit Range),
-	return (note, range)
+  range <- create(Unit Range),
+  return (note, range)
 },
 textRange_setRange = action(textRange::TextRange, range::Range) {
-	set (textRange_range textRange) range
+  set (textRange_range textRange) range
 },
 textRange_unsetRange = action(textRange::TextRange) {
-	unset (textRange_range textRange)
+  unset (textRange_range textRange)
 },
 textRange_update = action(textRange::TextRange, shifts::[(Number,Number)]) {
-	range = fetch (textRange_range textRange),
-	newStart <- shift_index (range_start range) shifts,
-	newEnd <- shift_index (subtract (plus (range_start range) (range_length range)) 1) shifts,
-	textRange_setRange textRange (makeRange newStart (plus (subtract newEnd newStart) 1))
+  range = fetch (textRange_range textRange),
+  newStart <- shift_index (range_start range) shifts,
+  newEnd <- shift_index (subtract (plus (range_start range) (range_length range)) 1) shifts,
+  textRange_setRange textRange (makeRange newStart (plus (subtract newEnd newStart) 1))
 },
 shift_index = action(i::Number, shifts::[(Number,Number)])::Number {
-	theShiftS <- create(Unit Number),
-	extract shifts as shift {
-		j = fst shift,
-		extract boolToUnit (or (equal i j) (greaterThan i j)) as _ {
-			set theShiftS (snd shift)
-		}
-	},
-	debugNumber i,
-	if theShiftS as theShift {
-		debugNumber theShift,
-		return (plus i theShift)
-	} else {
-		debugNumber 0,
-		return i
-	}
+  theShiftS <- create(Unit Number),
+  extract shifts as shift {
+    j = fst shift,
+    extract boolToUnit (or (equal i j) (greaterThan i j)) as _ {
+      set theShiftS (snd shift)
+    }
+  },
+  debugNumber i,
+  if theShiftS as theShift {
+    debugNumber theShift,
+    return (plus i theShift)
+  } else {
+    debugNumber 0,
+    return i
+  }
 },
 
 
 //==== TimeRange ====//
 
-//	timeRange_movie			::	TimeRange -> Movie
+//  timeRange_movie      ::  TimeRange -> Movie
 
-//	timeRange_range			::	TimeRange -> Unit Range
+//  timeRange_range      ::  TimeRange -> Unit Range
 
-//	createTimeRange			::	Movie -> Action TimeRange
+//  createTimeRange      ::  Movie -> Action TimeRange
 
-//	timeRange_setRange		::	TimeRange -> Range -> Action Void
+//  timeRange_setRange    ::  TimeRange -> Range -> Action Void
 
-//	timeRange_unsetRange	::	TimeRange -> Action Void
+//  timeRange_unsetRange  ::  TimeRange -> Action Void
 
 TimeRange := (Movie, Unit Range),
 timeRange_movie = tuple2get1,
 timeRange_range = tuple2get2,
 createTimeRange = action(movie::Movie)::TimeRange {
-	range <- create(Unit Range),
-	return (movie, range)
+  range <- create(Unit Range),
+  return (movie, range)
 },
 timeRange_setRange = action(timeRange::TimeRange, range::Range) {
-	set (timeRange_range timeRange) range
+  set (timeRange_range timeRange) range
 },
 timeRange_unsetRange = action(timeRange::TimeRange) {
-	unset (timeRange_range timeRange)
+  unset (timeRange_range timeRange)
 },
 
 
 //==== Range ====//
 
-//	makeRange				::	Number -> Number -> Range
+//  makeRange        ::  Number -> Number -> Range
 
-//	range_start				::	Range -> Number
+//  range_start        ::  Range -> Number
 
-//	range_length			::	Range -> Number
+//  range_length      ::  Range -> Number
 
 Range := (Number, Number),
 makeRange = makeTuple2,

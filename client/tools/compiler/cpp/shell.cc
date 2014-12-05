@@ -120,17 +120,17 @@ int RunMain(int argc, char* argv[]) {
       i++;
     } else {
       // Use all other arguments as names of files to load and run.
-	  if (first) {
-		fileName = str;
-		first = false;
-	  } else {
-		if (firstArg) {
-			arguments = arguments + "\"" + str + "\"";
-			firstArg = false;
-		} else {
-			arguments = arguments + ", \"" + str + "\"";
-		}
-	  }
+    if (first) {
+    fileName = str;
+    first = false;
+    } else {
+    if (firstArg) {
+      arguments = arguments + "\"" + str + "\"";
+      firstArg = false;
+    } else {
+      arguments = arguments + ", \"" + str + "\"";
+    }
+    }
     }
   }
 
@@ -235,41 +235,41 @@ v8::Handle<v8::Value> Write(const v8::Arguments& args) {
 
 
 v8::Handle<v8::Value> MakeDirectory(const v8::Arguments& args) {
-	if (args.Length() != 1) {
-	  return v8::ThrowException(v8::String::New("Requires 1 Parameter"));
-	}
+  if (args.Length() != 1) {
+    return v8::ThrowException(v8::String::New("Requires 1 Parameter"));
+  }
 
-	v8::String::Utf8Value dirName(args[0]);
-	if (*dirName == NULL) {
-	  return v8::ThrowException(v8::String::New("Directory Name is null"));
-	}
+  v8::String::Utf8Value dirName(args[0]);
+  if (*dirName == NULL) {
+    return v8::ThrowException(v8::String::New("Directory Name is null"));
+  }
 
-	const char* name = ToCString(dirName);
-	
-	bool success = boost::filesystem::create_directory(name);
-	if (success) {
-		return v8::String::New("Success");
-	} else {
-		return v8::String::New("Failed");
-	}
+  const char* name = ToCString(dirName);
+
+  bool success = boost::filesystem::create_directory(name);
+  if (success) {
+    return v8::String::New("Success");
+  } else {
+    return v8::String::New("Failed");
+  }
 }
 
 
 
 v8::Handle<v8::Value> GetCanonicalPath(const v8::Arguments& args) {
-	if (args.Length() != 1) {
-	  return v8::ThrowException(v8::String::New("Requires 1 Parameter"));
-	}
+  if (args.Length() != 1) {
+    return v8::ThrowException(v8::String::New("Requires 1 Parameter"));
+  }
 
-	v8::String::Utf8Value dirName(args[0]);
-	if (*dirName == NULL) {
-	  return v8::ThrowException(v8::String::New("Directory Name is null"));
-	}
+  v8::String::Utf8Value dirName(args[0]);
+  if (*dirName == NULL) {
+    return v8::ThrowException(v8::String::New("Directory Name is null"));
+  }
 
-	const char* name = ToCString(dirName);
-	
-	string fullpath = boost::filesystem::complete(name).string();
-	return v8::String::New(fullpath.c_str());
+  const char* name = ToCString(dirName);
+
+  string fullpath = boost::filesystem::complete(name).string();
+  return v8::String::New(fullpath.c_str());
 }
 
 
@@ -340,8 +340,8 @@ v8::Handle<v8::String> ReadFile(const char* name) {
  */
 v8::Handle<v8::Value> ListFiles(const v8::Arguments& args) {
     v8::String::Utf8Value directory(args[0]);
-	const char * name = ToCString(directory);
-	return ListItems(name, 0);
+  const char * name = ToCString(directory);
+  return ListItems(name, 0);
 }
 
 
@@ -352,8 +352,8 @@ v8::Handle<v8::Value> ListFiles(const v8::Arguments& args) {
  */
 v8::Handle<v8::Value> ListDirectories(const v8::Arguments& args) {
     v8::String::Utf8Value directory(args[0]);
-	const char * name = ToCString(directory);
-	return ListItems(name, 1);
+  const char * name = ToCString(directory);
+  return ListItems(name, 1);
 }
 
 
@@ -363,29 +363,29 @@ v8::Handle<v8::Value> ListDirectories(const v8::Arguments& args) {
  * @param {int} type Type constant - do we list files or directories?
  */
 v8::Handle<v8::Value> ListItems(const char* name, int type) {
-	v8::HandleScope handle_scope;
-	v8::Handle<v8::Array> result = v8::Array::New();
-	int cnt = 0;
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::Array> result = v8::Array::New();
+  int cnt = 0;
 
-	DIR * dp;
-	struct dirent * ep;
-	int cond = (type == 0 ? DT_REG : DT_DIR);
-	
-	dp = opendir(name);
-	if (dp == NULL)	return v8::ThrowException(v8::String::New("Directory cannot be opened"));
-	while ((ep = readdir(dp))) { 
-		if (ep->d_type == cond) {
-			name = ep->d_name;
-			if (type == 0) {
-				result->Set(v8::Integer::New(cnt++), v8::String::New(ep->d_name));
-			} else if ((strcmp(name, ".") != 0) && (strcmp(name, "..") != 0)) {
-				result->Set(v8::Integer::New(cnt++), v8::String::New(ep->d_name));
-			}
-		}
-	}
-	closedir(dp);
-	
-	return handle_scope.Close(result);
+  DIR * dp;
+  struct dirent * ep;
+  int cond = (type == 0 ? DT_REG : DT_DIR);
+
+  dp = opendir(name);
+  if (dp == NULL)  return v8::ThrowException(v8::String::New("Directory cannot be opened"));
+  while ((ep = readdir(dp))) {
+    if (ep->d_type == cond) {
+      name = ep->d_name;
+      if (type == 0) {
+        result->Set(v8::Integer::New(cnt++), v8::String::New(ep->d_name));
+      } else if ((strcmp(name, ".") != 0) && (strcmp(name, "..") != 0)) {
+        result->Set(v8::Integer::New(cnt++), v8::String::New(ep->d_name));
+      }
+    }
+  }
+  closedir(dp);
+
+  return handle_scope.Close(result);
 }
 
 
